@@ -1,13 +1,9 @@
 [![Apache 2.0 License][license-shield]][license-url]
 
-
-
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
 <h1 align="center">Guardian</h1>
-
   <p align="center">
     The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables the ability for applications to offer a requirements-based tokenization implementation.
     <br />
@@ -16,18 +12,17 @@
 
 <p align="center">
     <br />
-    <a href="https://github.com/EnvisionBlockchain/hedera-improvement-proposal/blob/master/HIP/hip-19.md">HIP-19</a>
+    <a href="https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md">HIP-19</a>
     ·
-    <a href="https://github.com/EnvisionBlockchain/hedera-improvement-proposal/blob/master/HIP/hip-28.md">HIP-28</a>
+    <a href="https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md">HIP-28</a>
     ·
-     <a href="https://github.com/EnvisionBlockchain/hedera-improvement-proposal/blob/master/HIP/hip-29.md">HIP-29</a>
+    <a href="https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md">HIP-29</a>
     ·
-     <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
+    <a href="https://github.com/hashgraph/guardian/issues">Report Bug</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Request Policy or Feature</a>
+    <a href="https://github.com/hashgraph/guardian/issues">Request Policy or Feature</a>
   </p>
 </div>
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -56,7 +51,6 @@
   </ol>
 </details>
 
-
 <!-- DISCOVERING ESG ASSETS ON HEDERA -->
 
 ## Discovering ESG assets on Hedera
@@ -75,6 +69,7 @@ To get a local copy up and running follow these simple example steps. When build
 
 * [Docker](https://www.docker.com/) (To build with one command)
 * [MongoDB](https://www.mongodb.com/) and [NodeJS](https://nodejs.org/) (If you would like to manually build every componant) 
+* [Hedera Testnet Account](https://portal.hedera.com/) 
 
 <!-- INSTALLATION -->
 
@@ -82,13 +77,34 @@ To get a local copy up and running follow these simple example steps. When build
 
 1. Clone the repo
    ```
-   git clone https://github.com/github_username/repo_name.git
+   git clone https://github.com/hashgraph/guardian.git
    ```
-2. If you want to build with Docker (Once this step you are finished)
+2. Update the following files with your Hedera Testnet account info as indicated. For example:
+
+   - in `ui-service/.env`:
+   ```
+   ACCOUNT_ID=0.0.123456789
+   PRIVATE_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+   TOPIC_ID=0.0.28583
+   ```
+   - in `ui-service/.env.docker`:
+   ```
+   ACCOUNT_ID=0.0.123456789
+   PRIVATE_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+   TOPIC_ID=0.0.28583
+   ```
+   - in `guardian-service/config.json`:
+   ```
+   {"OPERATOR_ID":"0.0.123456789","OPERATOR_KEY":"302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6"}
+   ```
+   
+   The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, just delete the `TOPIC_ID` line.
+   
+3. If you want to build with Docker (Once this step you are finished)
     ```
     docker-compose up -d --build
     ```
-3. If you want to manually build every componant then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly the MRV Sender Service. See below for commands.
+4. If you want to manually build every componant then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly the MRV Sender Service. See below for commands.
 
     **From the Message broker folder (Need to run first)**
 
@@ -192,7 +208,7 @@ Place holder for some Executive Summary about the iRec Demo
 
 ## Contribute a New Policy
 
-We welcome all methodologies and workflow to be contributed to this repo as an open-source token template and Policy Workflow & Policy Action Execution instance. To do so, please follow the CONTRIBUTING.md instructions to submit a pull request.
+We welcome all methodologies and workflow to be contributed to this repo as an open-source token template and Policy Workflow & Policy Action Execution instance. To do so, please follow the [CONTRIBUTING.md](CONTRIBUTING.md) instructions to submit a pull request.
 
 This is critical to scaling the [Hedera Sustainability Ecosystem](https://github.com/dubgeis/HederaSustainabilityEcosystem/). 
 
@@ -205,7 +221,6 @@ This repo contains a reference implementation of the Guardian to learn how to us
 ![Open Source Guardian Architecture](https://user-images.githubusercontent.com/40637665/137059380-94303137-b9e4-402c-bb67-9212b6f1c4f4.png)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- BUILT WITH -->
@@ -231,11 +246,6 @@ The Guardian solution is built with the following major frameworks/libraries.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-<!-- GETTING STARTED -->
-
-
-
-
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -245,7 +255,7 @@ Roadmap TBA
 - [] Feature 1
     - [] Nested Feature
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/hashgraph/guardian/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -253,7 +263,7 @@ See the [open issues](https://github.com/github_username/repo_name/issues) for a
 <!-- CHANGE LOG -->
 ## Change Log
 
-All notable changes to this project will be documented in this CHANGELOG.md file.
+All notable changes to this project will be documented in this [CHANGELOG.md](CHANGELOG.md) file.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -264,21 +274,21 @@ Thank you for your interest in contributing to the Guardian!
 
 We appreciate your interest in helping us and the rest of our community. We welcome bug reports, feature requests, and code contributions.
 
-For contributing guidlines please see the CONTRIBUTING.md here
+For contributing guidlines please see the [CONTRIBUTING.md](CONTRIBUTING.md) here
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- LICENSE -->
 ## License
 
-This repo is under Apache 2.0 License. See `LICENSE.txt` for more information.
+This repo is under Apache 2.0 License. See [LICENSE](LICENSE) for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- Security -->
 ## Security
 
-Please do not file a public ticket mentioning the vulnerability. Refer to the security policy defined in the SECURITY.md.
+Please do not file a public ticket mentioning the vulnerability. Refer to the security policy defined in the [SECURITY.md](SECURITY.md).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -296,4 +306,4 @@ For any questions please reach out to the Envision Blockchain Solutions team at:
 
 [license-shield]: https://img.shields.io/hexpm/l/apa
 
-[license-url]: https://github.com/EnvisionBlockchain/tomcat-guardian/blob/policy-engine/LICENSE
+[license-url]: https://github.com/hashgraph/guardian/blob/main/LICENSE
