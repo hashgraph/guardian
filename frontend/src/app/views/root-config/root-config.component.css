@@ -1,0 +1,89 @@
+.sensors-table {
+    width: 100%;
+}
+
+.sensors-table .mat-column-id {
+    width: 675px;
+    border-right: 1px solid currentColor;
+    padding-right: 8px;
+}
+
+.sensors-table .mat-column-projectId {
+    padding-left: 8px;
+}
+
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.progress {
+    width: 500px;
+    margin-left: 20px;
+    background: #fff;
+    height: 50px;
+    display: block;
+    margin-top: 20px;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+a {
+    color: rgb(0, 0, 238);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.list {
+    width: 800px;
+    padding: 20px 20px 0px 20px;
+    margin: 20px;
+    border: 1px solid #c7c7c7;
+    border-radius: 6px;
+    position: relative;
+}
+
+.list-item {
+    margin-bottom: 20px;
+}
+
+.example-full-width {
+    width: 100%; 
+}
+
+.list-button{
+    width: 600px;
+    padding: 0px 20px 0px 20px;
+}
+
+.random-icon {
+    width: 45px;
+    height: 45px;
+    border: 1px solid #999;
+    border-radius: 4px;
+    background: url(/assets/pngwing.com.png) 0px 0px / 46px 44px;
+    position: absolute;
+    top: 20px;
+    right: -62px;
+    cursor: pointer;
+}

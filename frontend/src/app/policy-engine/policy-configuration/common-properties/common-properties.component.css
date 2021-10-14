@@ -1,0 +1,268 @@
+.label {
+    display: flex;
+}
+
+.label-header {
+    padding: 5px;
+    font-weight: 500;
+}
+
+.label-value {
+    padding: 5px;
+}
+
+.grid-field {
+    display: flex;
+    height: 50px;
+    margin-bottom: 5px;
+    margin-left: 25px;
+}
+
+
+.grid-field-label {
+    height: 50px;
+    margin-right: 8px;
+    align-content: center;
+    display: flex;
+    align-items: center;
+    min-width: 30px;
+}
+
+.grid-field-label.field-name {
+    min-width: 202px;
+}
+
+.add-btn {
+    color: #6166ff;
+    margin-bottom: 5px;
+    position: relative;
+}
+
+.add-btn span {
+    position: absolute;
+    left: 40px;
+    top: 1px
+}
+
+.grid-setting {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+}
+
+
+.table {
+    border: 1px solid #3f51b5;
+    margin: 5px;
+    display: inline-flex;
+    overflow: hidden;
+    max-height: calc(100% - 50px);
+    position: relative;
+    padding-top: 26px;
+    background: #3f51b5;
+}
+.table-body {
+    overflow-y: scroll;
+    max-height: 100%;
+}
+
+.header {
+    width: 480px;
+    margin: 0;
+    background: #3f51b5;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+.header .propHeader {
+    background: #3f51b5;
+    color: #fff;
+    position: relative;
+}
+.header .propHeader .propHeaderCell {
+    font-weight: 500;
+}
+.header .propRowCol {
+    background: #3f51b5;
+    width: 18px;
+    position: relative;
+}
+
+.properties {
+    width: 530px;
+    margin: 0px;
+    background: #e5e5e5;
+}
+.propHeader {
+    background: #e5e5e5;
+    color: black;
+    position: relative;
+    font-weight: 500;
+}
+.propRow .propRowCell {
+    background: #fff;
+}
+.propRow:nth-child(2n) .propRowCell {
+    background: #f7f7f7;
+}
+.cellName {
+    width: 160px;
+    padding-left: 5px;
+}
+.subRow .cellName {
+    padding-left: 20px;
+    width: 145px;
+}
+.subRow-2 .cellName {
+    padding-left: 40px;
+    width: 125px;
+}
+
+.propRowCol {
+    background: #e5e5e5;
+    width: 18px;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+}
+.propRowCol  mat-icon {
+    position: absolute;
+    left: -1px;
+    top: -1px;
+    height: 20px;
+    width: 20px;
+    pointer-events: none;
+}
+.propRowCol[collapse="true"]  mat-icon {
+    transform: rotate(-90deg);
+    top: 2px;
+}
+.propRow[collapse="true"] {
+    display: none;
+}
+
+.ui-properties {
+    width: 478px;
+    margin: 0px 5px;
+    background: #e5e5e5;
+    border: 1px solid #3f51b5;
+    border-top: none;
+}
+
+.ui-properties .ui-prop-row {
+    display: flex;
+}
+
+.ui-properties .ui-prop-row-col {
+    height: 22px;
+    position: relative;
+    width: 24px;
+}
+.ui-properties .ui-prop-row-header {
+    height: 18px;
+    background: #e5e5e5;
+    color: black;
+    position: relative;
+    font-weight: 500;
+    padding: 2px 5px;
+}
+
+.ui-properties .ui-prop-row-body {
+    width: 100%;
+    min-height: 60px;
+    background: #fff;
+    border-left: 24px solid #e5e5e5;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+
+.propAdd {
+    height: 20px;
+    width: 250px;
+    overflow: hidden;
+    cursor: pointer;
+    font-size: 12px;
+    color: #6166ff;
+    padding-left: 23px;
+    position: relative;
+    font-weight: 500;
+}
+
+.propAdd mat-icon {
+    position: absolute;
+    left: 1px;
+    top: -1px;
+    font-size: 20px;
+    pointer-events: none;
+}
+.propAdd span {
+    pointer-events: none;
+}
+
+.propAdd:hover {
+    text-decoration: underline;
+}
+
+.icon-event {
+    display: inline-block;
+    overflow: visible;
+    font-size: 18px;
+    line-height: 10px;
+    height: 18px;
+    color: #ffc107;
+    width: 16px;
+    position: relative;
+    top: 4px;
+}
+
+.icon-link {
+    display: inline-block;
+    overflow: visible;
+    font-size: 18px;
+    line-height: 10px;
+    height: 18px;
+    color: #6166ff;
+    width: 18px;
+    position: relative;
+    top: 4px;
+}
+
+.cellName span {
+    width: 150px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.properties input {
+    width: 325px;
+}
+
+.properties input[type="checkbox"] {
+    width: auto;
+}
+
+input[readonly] {
+    border-color: transparent;
+    background: transparent;
+    outline: none;
+}
+
+input[readonly][type="checkbox"] {
+    pointer-events: none;
+    filter: grayscale(1);
+}
+
+*[readonly="true"] .propAdd {
+    pointer-events: none;
+    filter: grayscale(1);
+}
+
+.readonly-prop {
+    padding-left: 4px;
+}

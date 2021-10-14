@@ -1,0 +1,46 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo
+    restart: always
+    expose:
+      - 27017
+  message-broker:
+    build:
+      context: .
+      dockerfile: ./message-broker/Dockerfile
+    ports:
+      - 3003:3003
+    expose:
+      - 7500
+  ui-service:
+    build:
+      context: .
+      dockerfile: ./ui-service/Dockerfile
+    ports:
+      - 3002:3002
+    depends_on:
+      - mongo
+      - message-broker
+      - guardian-service
+  guardian-service:
+    build:
+      context: .
+      dockerfile: ./guardian-service/Dockerfile
+    #    ports:
+    #      - 3004:3004
+    depends_on:
+      - mongo
+      - message-broker
+  mrv-sender:
+    build:
+      context: .
+      dockerfile: ./mrv-sender/Dockerfile
+    ports:
+      - 3005:3005
+volumes:
+  mongo:
+  # volume-guardian-service:
+  # volume-ui-service:
+  # volume-mrv-sender:
+#  volume-message-broker:

@@ -1,0 +1,103 @@
+form {
+    display: flex;
+    flex-direction: column;
+    /* width: 400px; */
+    /* padding: 40px 40px 70px 40px; */
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -65%);
+    /* box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%); */
+
+    width: 646px;
+    height: 367px;
+    border-radius: 30px;
+    background-color: rgba(255, 255, 255, 0.55);
+    /*backdrop-filter: blur(2px);*/
+    align-items: center;
+    padding: 69px;
+    box-sizing: border-box;
+}
+
+form ::ng-deep .mat-form-field {
+    width: 260px;
+}
+
+form ::ng-deep .mat-form-field .mat-form-field-outline-start,
+form ::ng-deep .mat-form-field .mat-form-field-outline-gap,
+form ::ng-deep .mat-form-field .mat-form-field-outline-end {
+    background-color: rgba(255, 255, 255, 0.65);
+}
+
+form ::ng-deep button.mat-raised-button {
+    background: #000000;
+    width: 260px;
+}
+
+form ::ng-deep button.mat-raised-button-disabled .mat-button-wrapper {
+    color: #fff;
+}
+
+form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.debug-user {
+    padding: 10px;
+}
+
+.link {
+    color: #1a0dab;
+    text-decoration: none;
+    cursor: pointer;
+    display: table;
+}
+.link:hover {
+    text-decoration: underline;
+}
+
+.login-header {
+    font-size: 20px;
+    color: #838383;
+    padding-bottom: 20px;
+}
+
+.create-link {
+    color: #0B73F8;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    position: relative;
+    top: 33px;
+}
+
+.create-link mat-icon {
+    font-weight: bold;
+}

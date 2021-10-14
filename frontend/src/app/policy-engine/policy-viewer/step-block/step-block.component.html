@@ -1,0 +1,9 @@
+<div class="content" [hidden]="!isActive">
+  <div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="activeBlock">
+    <render-block [block]="activeBlock" [policyId]="policyId"></render-block>
+  </div>
+</div>

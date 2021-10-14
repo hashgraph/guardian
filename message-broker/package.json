@@ -1,0 +1,24 @@
+{
+  "name": "message-broker",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc -w",
+    "start": "node dist/index.js",
+    "debug": "nodemon dist/index.js",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "fastmq": "^1.3.8"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.39",
+    "nodemon": "^2.0.7",
+    "typescript": "^4.2.4",
+    "@types/express": "^4.17.13"
+  }
+}

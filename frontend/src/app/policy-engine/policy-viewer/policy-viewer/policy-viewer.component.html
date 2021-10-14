@@ -1,0 +1,97 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <ng-container *ngIf="!isConfirmed">
+        <div class="not-exist">
+            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="isConfirmed && policyId && !policy">
+        <div class="not-exist" *ngIf="!policy">
+            Policy doesn't exist
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="isConfirmed && policyId && policy">
+        <render-block [block]="policy" [policyId]="policyId"></render-block>
+    </ng-container>
+
+    <ng-container *ngIf="isConfirmed && !policyId && policies">
+        <div class="actions">
+            <button *ngIf="role == 'ROOT_AUTHORITY'" mat-raised-button color="primary" (click)="newPolicy()" style="margin: 15px;min-width: 100px">Create Policy</button>
+        </div>
+        <div class="table-container">
+            <table mat-table [dataSource]="policies" class="table">
+                <ng-container matColumnDef="id">
+                    <th mat-header-cell *matHeaderCellDef> ID </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.id }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef> Policy Name </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.name }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="version">
+                    <th mat-header-cell *matHeaderCellDef> Version </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.version }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef> Description </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.description }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef> Status </th>
+                    <td mat-cell *matCellDef="let element">
+                        <span *ngIf="element.status =='DRAFT'" class="status-draft">Draft</span>
+                        <span *ngIf="element.status =='PUBLISH'" class="status-publish">Publish</span>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="edit">
+                    <th mat-header-cell *matHeaderCellDef> Edit </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.status =='DRAFT'" class="btn-settings" [routerLink]="['/policy-configuration']"
+                            [queryParams]="{ policyId: element.id }">
+                            <mat-icon>settings</mat-icon>
+                            <span>Edit</span>
+                        </div>
+                        <div *ngIf="element.status =='PUBLISH'" class="btn-settings" [routerLink]="['/policy-configuration']"
+                            [queryParams]="{ policyId: element.id }">
+                            <mat-icon>settings</mat-icon>
+                            <span>View</span>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="open">
+                    <th mat-header-cell *matHeaderCellDef> Open </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.status =='PUBLISH'" class="btn-settings" [routerLink]="['/policy-viewer']"
+                            [queryParams]="{ policyId: element.id }">
+                            <mat-icon>login</mat-icon>
+                            <span>Open</span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="operation">
+                    <th mat-header-cell *matHeaderCellDef> Operation </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.status =='DRAFT'" class="btn-approve" (click)="publish(element)">Publish</div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="columns"></tr>
+                <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+            </table>
+        </div>
+    </ng-container>
+</div>

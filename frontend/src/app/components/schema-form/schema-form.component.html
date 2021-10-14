@@ -1,0 +1,19 @@
+<form *ngIf="options" [formGroup]="options">
+
+    <ng-container *ngFor="let item of fields">
+        <mat-form-field *ngIf="!item.group && !item.hide" class="example-full-width" appearance="outline" required>
+            <mat-label>{{item.title}}:</mat-label>
+            <input matInput [formControlName]="item.name" [readonly]="item.readonly">
+        </mat-form-field>
+
+        <div *ngIf="item.group" class="group">
+            <mat-label class="group-label">{{item.title}}:</mat-label>
+            <div class="group-form">
+                <app-schema-form [formGroup]="item.group" [contextDocument]="item.contextDocument" [readonly]="readonly"
+                    [hide]="hide" [type]="item.type">
+                </app-schema-form>
+            </div>
+        </div>
+    </ng-container>
+
+</form>

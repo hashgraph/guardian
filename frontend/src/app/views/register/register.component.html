@@ -1,0 +1,42 @@
+<div class="content login">
+    <div class="overlay"></div>
+    <form [formGroup]="loginForm" (ngSubmit)="signup()">
+        <div class="login-header">
+            Create Account
+        </div>
+        
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Username:</mat-label>
+            <input matInput formControlName="login">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>ROLE</mat-label>
+            <mat-select formControlName="role">
+                <mat-option value="ROOT_AUTHORITY">Root Authority</mat-option>
+                <mat-option value="INSTALLER">Installer</mat-option>
+                <mat-option value="AUDITOR">Auditor</mat-option>
+                <mat-option value="ORIGINATOR">Originator</mat-option>
+              </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Password:</mat-label>
+            <input matInput formControlName="password">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Confirm Password:</mat-label>
+            <input matInput formControlName="confirmPassword">
+        </mat-form-field>
+
+        <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Create</button>
+        <button mat-icon-button class="close-button" type="button" (click)="goBack()">
+            <mat-icon>clear</mat-icon>
+        </button>
+    </form>
+
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+</div>

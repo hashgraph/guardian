@@ -1,0 +1,118 @@
+<div class="content">
+    <form *ngIf="!hasParam; else chainTpl" class="filters" [formGroup]="searchForm" (ngSubmit)="updateFilter()">
+        <mat-form-field class="search-input" appearance="outline">
+            <mat-label>HASH/ID:</mat-label>
+            <input matInput type="text" placeholder="HASH/ID" formControlName="value">
+            <button mat-icon-button matSuffix type="submit" [disabled]="!searchForm.valid">
+                <mat-icon>search</mat-icon>
+            </button>
+        </mat-form-field>
+        <!-- <button class="search-btn" mat-raised-button color="primary" type="submit" [disabled]="!searchForm.valid">Search</button> -->
+    </form>
+
+    <ng-template #chainTpl>
+        <div *ngIf="chain" class="display-chain">
+            <div class="verified-presentation">
+                <div class="header">
+                    <a routerLink="/audit" class="go-back-link">
+                        <mat-icon>chevron_left</mat-icon>
+                        {{vp.label}}: {{vp.id}}
+                    </a>
+                    Verified Presentation
+                    <mat-icon>check_circle</mat-icon>
+
+                    <a class="open-vp" (click)="openDocument(vp)">View in JSON</a>
+                </div>
+                <div class="vp-section">
+                    <div class="vp-section-header">
+                        Token & Issuer
+                        <a class="open-vp" (click)="openDocument(vpMint)">VC Files</a>
+                    </div>
+                    <div class="vp-table">
+                        <div class="vp-field">
+                            <div class="vp-field-label">Token</div>
+                            <div class="vp-field-value">{{vpMint.tokenId}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Issuer: Name</div>
+                            <div class="vp-field-value" [title]="vpMint.issuer">{{userMap[vpMint.issuer]}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Mint date</div>
+                            <div class="vp-field-value">{{vpMint.date}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="vp-section">
+                    <div class="vp-section-header">
+                        Policy Overview
+                        <a class="open-vp" (click)="openDocument(vpPolicy)">VC Files</a>
+                    </div>
+                    <div class="vp-table">
+                        <div class="vp-field">
+                            <div class="vp-field-label">Policy Name</div>
+                            <div class="vp-field-value">{{vpPolicy.name}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Description</div>
+                            <div class="vp-field-value">{{vpPolicy.description}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Version</div>
+                            <div class="vp-field-value">{{vpPolicy.version}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Issuer: Name</div>
+                            <div class="vp-field-value" [title]="vpPolicy.issuer">{{userMap[vpPolicy.issuer]}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="vp-description">
+                    This Carbon Offset Claim has met all the requirements as issued in the policy secured to this token.
+                </div>
+                <div class="vp-signature">
+                    <div class="vp-field-label">Verified Signature:</div>
+                    <div class="vp-field-value">{{vp.document.proof.jws}}</div>
+                </div>
+            </div>
+            <div class="chain-container" (wheel)="onWheel($event)">
+                <!-- <ng-container *ngFor="let item of chain">
+                    <div class="chain-item item-type-{{item.type}}">
+                        <div class="chain-title">
+                            {{item.type}} <span *ngIf="item.schema">({{item.schema}})</span>
+                        </div>
+                        <div class="chain-id">
+                            <span>{{item.label}}:</span>{{item.id}}
+                        </div>
+                        <div class="chain-document">
+                            <a (click)="openDocument(item)">View Document</a>
+                        </div>
+                    </div>
+                </ng-container> -->
+                <ng-container *ngFor="let item of chain">
+                    <div class="chain-item item-type-{{item.type}}">
+                        <div class="chain-title">
+                            <mat-icon>account_circle</mat-icon> {{item.schema}}
+                        </div>
+                        <div class="chain-id">
+                            {{formatFields(item)}}
+                        </div>
+                        <div class="parties">
+                            <div class="parties-label">Parties:</div>
+                            <div class="parties-value">
+                                <div class="partie" [title]="item.document.issuer">{{userMap[item.document.issuer]}}</div>
+                            </div>
+                        </div>
+                        <div class="chain-document">
+                            <a (click)="openDocument(item)">VC Files</a>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </ng-template>
+    
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+</div>

@@ -1,0 +1,88 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    /*width: 400px;*/
+    padding: 40px 40px 70px 40px;
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    transform: translate(-50%, -65%);
+    /*box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);*/
+    
+    background: #fff;
+    border-radius: 30px;
+    width: 839px;
+    height: 653px;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+
+.login-header {
+    font-size: 20px;
+    color: #838383;
+    padding-bottom: 20px;
+}
+
+.overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.close-button {
+    position: absolute;
+    right: 16px;
+    top: 13px;
+    opacity: 0.44;
+}
+
+.close-button:hover {
+    opacity: 1;
+}
+
+form ::ng-deep button.mat-raised-button {
+    background: #000000;
+    width: 260px;
+}
+
+form ::ng-deep button.mat-raised-button-disabled .mat-button-wrapper {
+    color: #fff;
+}
+
+form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+mat-form-field {
+    width: 653px;
+    margin: 18px 0;
+}

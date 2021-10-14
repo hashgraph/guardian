@@ -1,0 +1,101 @@
+.example-spacer {
+    flex: 1 1 auto;
+}
+
+.nav-bar {
+    padding: 0px 60px;
+}
+
+.content {
+    position: relative;
+    height: var(--header-height);
+}
+
+.content.header .mat-toolbar.mat-primary {
+    background-color: transparent;
+}
+
+::ng-deep .mat-tab-nav-bar.mat-background-primary>.mat-tab-link-container {
+    background-color: transparent;
+    transition: background-color .3s linear;
+}
+
+::ng-deep .mat-tab-nav-bar.mat-background-primary>.mat-tab-link-container .mat-tab-link {
+    font-size: 20px;
+    line-height: 23px;
+    font-weight: normal;
+    color: #fff;
+    opacity: 1;
+    transition: color .3s linear;
+}
+
+::ng-deep .mat-toolbar-row,
+::ng-deep .mat-toolbar-single-row {
+    height: var(--header-height);
+}
+
+.user-name {
+    padding: 15px 40px 0px 35px;
+    position: relative;
+    height: 40px;
+}
+
+.user-name mat-icon {
+    position: absolute;
+    left: 0;
+    top: 9px;
+}
+
+.admin-panel {
+    padding: 15px 35px 0px 35px;
+    position: relative;
+    height: 40px;
+    color: rgba(0, 0, 0, 1);
+}
+
+mat-icon {
+    color: #000;
+    width: 48px;
+    height: 48px;
+    line-height: 48px !important;
+    font-size: 48px;
+    position: relative;
+    left: -32px;
+}
+
+a[hidden="true"] {
+    display: none;
+}
+
+.btn-home {
+    cursor: pointer;
+    font-size: 40px;
+    line-height: 45px;
+    font-weight: bold;
+    color: #000;
+    transition: color .3s linear;
+}
+
+.current-user-name {
+    font-size: 20px;
+    line-height: 23px;
+}
+
+.current-user-role {
+    font-size: 16px;
+    line-height: 18px;
+    color: #707070;
+}
+
+.current-user {
+    margin: 12px 0;
+}
+
+.debug-user button {
+    width: 48%;
+    margin: 5px 1%;
+}
+
+.debug-user {
+    white-space: normal;
+}

@@ -1,0 +1,95 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: fixed;
+    z-index: 999;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.table {
+    width: 100%;
+}
+
+.btn-approve {
+    background: #4caf50;
+    border-radius: 6px;
+    color: #fff;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+
+.status-draft {
+    font-weight: 500;
+    color: #2196f3;
+}
+
+
+.status-publish {
+    font-weight: 500;
+    color: #4caf50;
+}
+
+.btn-settings {
+    color: #3f51b5;
+    font-weight: 500;
+    cursor: pointer;
+    padding-left: 22px;
+    position: relative;
+    width: 40px;
+    display: inline-block;
+}
+.btn-settings:hover {
+    text-decoration: underline;
+}
+
+.btn-settings mat-icon {
+    position: absolute;
+    left: 0;
+    top: -1px;
+    font-size: 20px;
+}
+
+.table .mat-column-edit {
+    width: 110px;
+}
+
+.table .mat-column-open {
+    width: 110px;
+}
+
+.table .mat-column-operation {
+    width: 110px;
+}
+
+.table .mat-column-status {
+    width: 110px;
+}
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+}

@@ -1,0 +1,11 @@
+.mat-button-base:not([started]) {
+    background-color: rgba(0,0,0,.12);
+}
+form {
+    display: flex;
+    flex-direction: column;
+    width: 452px;
+    height: 500px;
+    overflow: visible;
+}
+

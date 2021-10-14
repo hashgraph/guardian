@@ -1,0 +1,58 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+a {
+    color: rgb(0, 0, 238);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.schemes-table {
+    width: 100%;
+}
+
+.g-btn {
+    margin-left: 5px;
+    margin-top: 12px;
+}
+
+.schemes-table .mat-column-selected {
+    width: 40px;
+}
+
+.actions {
+    position: relative;
+    z-index: 1;
+    margin-left: 35px;
+}
+
+.actions ::ng-deep button.mat-raised-button.mat-primary {
+    margin: 12px 10px 0 10px;
+}
+
+.table-container {
+    height: calc(100vh - var(--header-height) - 60px);
+    overflow-y: auto;
+    position: relative;
+    z-index: 0;
+}

@@ -1,0 +1,23 @@
+{
+  "author": "",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^16.3.2",
+    "tslint": "^6.1.3",
+    "typescript": "^4.3.5"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "ISC",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "name": "interfaces",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "lint": "tslint --project .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.0"
+}

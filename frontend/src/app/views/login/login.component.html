@@ -1,0 +1,46 @@
+<div class="content login">
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="login">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password">
+        </mat-form-field>
+        <p *ngIf="errorMessage">{{errorMessage}}</p>
+
+        <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Log In</button>
+
+        <a [routerLink]="['/register']" class="create-link">Create new <mat-icon>chevron_right</mat-icon></a>
+    </form>
+
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <!-- <div style="
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        border: 1px solid;
+        background: white;
+        height: 270px;
+        overflow: scroll;">
+        <div class="debug-user">
+            Predefined users:
+            <button mat-raised-button (click)="login('RootAuthority','test')">Root Authority</button>
+            <button mat-raised-button (click)="login('Installer','test')">Installer</button>
+            <button mat-raised-button (click)="login('Installer2','test')">Installer 2</button>
+            <button mat-raised-button (click)="login('Auditor','test')">Auditor</button>
+
+
+        </div>
+        <div class="debug-user">
+            users:
+            <div class="link" *ngFor="let item of users" (click)="setLogin(item.username,'test')">{{item.username}}
+                ({{item.role}})</div>
+        </div>
+    </div> -->
+</div>

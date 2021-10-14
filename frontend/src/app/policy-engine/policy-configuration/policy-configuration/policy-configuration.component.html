@@ -1,0 +1,153 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div class="not-exist" *ngIf="!policy">
+        Policy doesn't exist
+    </div>
+    <div class="render" *ngIf="policy" [attr.readonly]="readonly">
+        <div class="main">
+            <div class="main-body">
+                <div class="top-toolbar">
+
+                    <div class="btn-new-block btn-status-edit" (click)="savePolicy()" title="Save Policy">
+                        <mat-icon>save</mat-icon>
+                        <span>Save</span>
+                    </div>
+
+                    <div class="btn-new-block btn-status-all" (click)="saveAsPolicy()" title="Save Policy">
+                        <mat-icon>save</mat-icon>
+                        <span>Save As</span>
+                    </div>
+
+                    <div class="delimiter"></div>
+
+                    <div class="btn-new-block btn-status-all" (click)="restartService()" title="Restart Service">
+                        <mat-icon>refresh</mat-icon>
+                        <span>Restart</span>
+                    </div>
+
+                    <div class="delimiter"></div>
+
+                    <div class="btn-new-block btn-status-edit" (click)="publishPolicy()" title="Publish Policy">
+                        <mat-icon>public</mat-icon>
+                        <span>Publish</span>
+                    </div>
+
+                    <div class="delimiter"></div>
+
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceContainerBlock')"
+                        title="Add 'Container' Block">
+                        <mat-icon>tab</mat-icon>
+                        <span>Container</span>
+                    </div>
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceStepBlock')"
+                        title="Add 'Step' Block">
+                        <mat-icon>vertical_split</mat-icon>
+                        <span>Step</span>
+                    </div>
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceDocumentsSource')"
+                        title="Add 'Documents Source' Block">
+                        <mat-icon>table_view</mat-icon>
+                        <span>Documents</span>
+                    </div>
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('requestVcDocument')"
+                        title="Add 'Request' Block">
+                        <mat-icon>dynamic_form</mat-icon>
+                        <span>Request</span>
+                    </div>
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('sendToGuardian')"
+                        title="Add 'Send' Block">
+                        <mat-icon>send</mat-icon>
+                        <span>Send</span>
+                    </div>
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceAction')"
+                        title="Add 'Action' Block">
+                        <mat-icon>flash_on</mat-icon>
+                        <span>Action</span>
+                    </div>
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('externalDataBlock')"
+                        title="Add 'Action' Block">
+                        <mat-icon>cloud</mat-icon>
+                        <span>External Data</span>
+                    </div>
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('aggregateDocument')"
+                        title="Add 'Aggregate' Block">
+                        <mat-icon>merge_type</mat-icon>
+                        <span>Aggregate Data</span>
+                    </div>
+                    <div class="btn-new-block btn-status-edit" [matMenuTriggerFor]="tokensMenu">
+                        <mat-icon>paid</mat-icon>
+                        <span>Tokens</span>
+                    </div>
+                </div>
+
+                <div class="view-menu">
+                    <div class="btn-view-menu" (click)="onView('blocks')" title="Blocks"
+                        [attr.active]="currentView == 'blocks'">
+                        <mat-icon>view_agenda</mat-icon>
+                    </div>
+                    <div class="btn-view-menu" (click)="onView('json')" title="JSON"
+                        [attr.active]="currentView == 'json'">
+                        <mat-icon>code</mat-icon>
+                    </div>
+                    <div class="btn-view-menu" (click)="onView('yaml')" title="YAML"
+                        [attr.active]="currentView == 'yaml'">
+                        <mat-icon>segment</mat-icon>
+                    </div>
+                </div>
+
+                <div class="tree-container code-container-{{currentView}}">
+                    <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code" [readonly]="readonly">
+                    </textarea>
+                    <tree-flat-overview 
+                        *ngIf="currentView == 'blocks'"
+                        [blocks]="blocks"
+                        (delete)="onDelete($event)"
+                        (select)="onSelect($event)"
+                        (reorder)="onReorder($event)"
+                    ></tree-flat-overview>
+                </div>
+            </div>
+        </div>
+
+        <div class="setting">
+            <div class="group policy-config" [attr.col-group]="colGroup1">
+                <div class="group-header">
+                    <div class="group-title">Policy</div>
+                    <div class="group-col" (click)="onColGroup(1)">
+                        <mat-icon>expand_more</mat-icon>
+                    </div>
+                </div>
+                <div class="group-body">
+                    <policy-properties [policy]="policy" [readonly]="readonly"></policy-properties>
+                </div>
+            </div>
+            <div class="group properties-config" *ngIf="currentBlock" [attr.col-group]="colGroup2"
+                [attr.hide]="currentView !== 'blocks'">
+                <div class="group-header">
+                    <div class="group-title">Properties</div>
+                    <div class="group-col" (click)="onColGroup(2)">
+                        <mat-icon>expand_more</mat-icon>
+                    </div>
+                </div>
+                <div class="group-body">
+                    <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
+                        [permissions]="permissions" [readonly]="readonly" [tokens]="tokens">
+                    </common-properties>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<mat-menu #tokensMenu="matMenu">
+    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('mintDocument')" title="Add 'Mint' Block">
+        <mat-icon>paid</mat-icon>
+        <span>Mint</span>
+    </div>
+    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('wipeDocument')" title="Add 'Wipe' Block">
+        <mat-icon>delete</mat-icon>
+        <span>Wipe</span>
+    </div>
+</mat-menu>
