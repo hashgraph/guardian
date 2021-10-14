@@ -69,7 +69,7 @@ Code contributions to the Guardian are handled using [Pull Requests][pull-reques
 
   If you're working on a bug fix, check to see whether the bug has already been reported. If it has but no one is assigned to it, ask one of the maintainers to assign it to you before beginning work. If you're confident the bug hasn't been reported yet, create a new [Bug Report](#bug-reports) and ask us to assign it to you.
 
-  If you are thinking about adding entirely new functionality, open a [Feature Request](#feature-requests) or get in touch with us on [Discord](discord) to ask for feedback first before beginning work; this is to ensure that nobody else is already working on the feature (or another similar feature) and to confirm that it makes sense for such functionality to be included in the Guardian.
+  If you are thinking about adding entirely new functionality, open a [Feature Request](#feature-requests) or get in touch with us on [Discord](https://hedera.com/discord) to ask for feedback first before beginning work; this is to ensure that nobody else is already working on the feature (or another similar feature) and to confirm that it makes sense for such functionality to be included in the Guardian.
 * All code contributions must be accompanied with new or modified tests that verify that the code works as expected; i.e. that the issue has been fixed or that the functionality works as intended.
 
 ### Pull Request Readiness
@@ -86,11 +86,11 @@ To contribute, please fork the GitHub repository and submit a pull request to th
 
 ### Getting Your Pull Request Merged
 
-All Pull Requests must be approved by at least one member of the Guardian team before it can be merged in. The members only have limited bandwidth to review Pull Requests so it's not unusual for a Pull Request to go unreviewed for a few days, especially if it's a large or complex one. After a couple of weeks, if you haven't received any feedback regarding your Pull Request from the Guardian team, feel free to contact us on [Discord](discord) to ask for a review.
+All Pull Requests must be approved by at least one member of the Guardian team before it can be merged in. The members only have limited bandwidth to review Pull Requests so it's not unusual for a Pull Request to go unreviewed for a few days, especially if it's a large or complex one. After a couple of weeks, if you haven't received any feedback regarding your Pull Request from the Guardian team, feel free to contact us on [Discord](https://hedera.com/discord) to ask for a review.
 
 ## Getting in Contact
 
-* Join us in our [Discord][discord] channel; there you can engage with the Hedera team and other developers and enthusiasts.
+* Join us in our [Discord](https://hedera.com/discord) channel; there you can engage with the Hedera team and other developers and enthusiasts.
 
 [license]: https://github.com/hashgraph/guardian/blob/main/LICENSE
 [mwe]: https://en.wikipedia.org/wiki/Minimal_Working_Example

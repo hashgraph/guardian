@@ -4,7 +4,7 @@
     "@entity": "dist/entity",
     "@subscribers": "dist/subscribers"
   },
-  "author": "",
+  "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
     "@hashgraph/sdk": "^2.0.26",
     "@transmute/credentials-context": "^0.7.0-unstable.5",
@@ -37,7 +37,7 @@
     "tslint": "^6.1.3",
     "typescript": "^4.3.5"
   },
-  "license": "ISC",
+  "license": "Apache-2.0",
   "main": "dist/index.js",
   "name": "guardian-service",
   "scripts": {
@@ -47,5 +47,5 @@
     "lint": "tslint --project .",
     "start": "node dist/index.js"
   },
-  "version": "0.0.1"
+  "version": "1.0.0-beta.1"
 }

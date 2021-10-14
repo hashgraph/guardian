@@ -1,5 +1,5 @@
 {
-  "author": "",
+  "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "description": "",
   "devDependencies": {
     "@types/node": "^16.3.2",
@@ -9,7 +9,7 @@
   "files": [
     "dist"
   ],
-  "license": "ISC",
+  "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "name": "interfaces",
@@ -19,5 +19,5 @@
     "lint": "tslint --project .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "1.0.0"
+  "version": "1.0.0-beta.1"
 }
