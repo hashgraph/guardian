@@ -1,0 +1,76 @@
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.context {
+    width: 450px;
+    min-height: 290px;
+    margin-bottom: 25px;
+}
+
+.custom-fields-row {
+    display: flex;
+    margin-bottom: 8px;
+    height: 60px;
+}
+
+.custom-fields-name {
+    width: 238px;
+    margin-right: 12px;
+    height: 60px;
+}
+
+.fields {
+    max-height: 350px;
+    overflow: auto;
+    padding-bottom: 5px;
+}
+
+.custom-fields-type {
+    width: 200px;
+    height: 60px;
+}
+
+.custom-fields-row {
+    display: flex;
+    margin-bottom: 8px;
+    height: 60px;
+}
+
+.custom-fields-row mat-form-field {
+    width: 100%;
+}
+
+
+.default-fields-row {
+    display: flex;
+    margin-bottom: 8px;
+    height: 60px;
+}
+
+.default-fields-name {
+    width: 238px;
+    margin-right: 12px;
+    height: 60px;
+}
+
+
+.default-fields-type {
+    width: 200px;
+    height: 60px;
+}
+
+.default-fields-row {
+    display: flex;
+    margin-bottom: 8px;
+    height: 60px;
+}
+
+.default-fields-row mat-form-field {
+    width: 100%;
+}
+
+
+

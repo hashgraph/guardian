@@ -1,0 +1,14 @@
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.group-label {
+    color: rgba(0,0,0,.6);
+}
+
+.group-form {
+    margin-left: 16px;
+    margin-top: 10px;
+}

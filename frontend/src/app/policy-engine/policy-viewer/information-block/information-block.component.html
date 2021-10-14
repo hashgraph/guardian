@@ -1,0 +1,6 @@
+<div class="content" [hidden]="!isActive">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div>{{content}}</div>
+</div>

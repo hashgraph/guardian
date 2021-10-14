@@ -1,0 +1,415 @@
+
+
+.content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.render {
+    position: relative;
+    flex: 1;
+}
+
+.main {
+    width: calc(100% - 575px);
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    background: #eee;
+}
+
+.setting {
+    width: 575px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    background: #819ba9;
+    display: flex;
+    flex-direction: column;
+}
+
+.example-tree-invisible {
+    display: none;
+}
+
+.example-tree ul,
+.example-tree li {
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-type: none;
+}
+
+.example-tree .mat-nested-tree-node div[role=group] {
+    padding-left: 40px;
+}
+
+.example-tree div[role=group] > .mat-tree-node {
+    padding-left: 40px;
+}
+
+.mat-tree {
+    background: transparent;
+}
+
+
+*[role="group"] {
+    position: relative;
+}
+
+*[role="group"]::after {
+    content: " ";
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 9px;
+    width: 4px;
+    border-left: 1px solid rgb(0 0 0 / 20%);
+    border-bottom: 1px solid rgb(0 0 0 / 20%);
+}
+
+
+.block {
+    background: #fff;
+    border: 1px solid #000;
+    border-radius: 4px;
+    padding: 4px 12px;
+    margin: 8px;
+    cursor: pointer;
+    position: relative;
+    height: 22px;
+    user-select: none;
+}
+
+.block[selected="true"] {
+    border-color: #3f51b5;
+    box-shadow: 0px 0px 3px 1px #3f51b5;
+}
+
+.block[fixed="true"] {
+    margin-left: 32px;
+    background: #ececec;
+}
+
+.block mat-icon {
+    display: none;
+}
+
+.block[fixed="true"] mat-icon {
+    display: block;
+    position: absolute;
+    left: -36px;
+    top: 1px;
+    color: #7d7d7d;
+}
+
+.bottom-toolbar {
+    position: absolute;
+    bottom: 0;
+    background: #fff;
+    left: 0;
+    right: 0;
+    box-shadow: -1px -3px 3px -1px rgb(0 0 0 / 40%);
+    height: 120px;
+}
+
+.main-body {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0px;
+}
+
+.group {
+    border: 2px solid #d4d4d4;
+    padding-top: 30px;
+    margin: 5px;
+    position: relative;
+    background: #fff;
+}
+
+.group[col-group="true"] {
+    height: 0px;
+    min-height: 0px;
+    max-height: 0px;
+    overflow: hidden;
+    flex: 0;
+}
+
+.group-header {
+    position: absolute;
+    display: flex;
+    left: 0;
+    top: 0;
+    right: 0;
+    background: #3f51b5;
+    color: #fff;
+    height: 30px;
+}
+
+.group-title {
+    padding: 4px 10px;
+}
+
+.group-col {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    cursor: pointer;
+}
+
+.policy-config {
+    min-height: 220px;
+    max-height: 30%;
+    flex: 3;
+    display: flex;
+}
+
+.properties-config {
+    flex: 7;
+}
+
+.properties-config .group-body {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 30px;
+    bottom: 0;
+}
+
+.group[hide="true"] .group-body {
+    filter: grayscale(1);
+    pointer-events: none;
+}
+
+.group-col {
+    user-select: none;
+}
+
+.group[col-group="true"] .group-col mat-icon{
+    transform: rotate(-90deg);
+}
+
+.btn-delete {
+    position: absolute;
+    top: 5px;
+    right: -26px;
+    width: 20px;
+    height: 20px;
+    color: #f11000;
+    font-size: 19px;
+}
+
+.btn-delete mat-icon {
+    display: block;
+    font-size: 20px;
+}
+
+*[readonly="true"] .btn-delete {
+    display: none;
+}
+
+.top-toolbar {
+    display: flex;
+    background: #fff;
+    border: 6px solid #819ba9;
+    border-left-width: 4px;
+    border-right-width: 0px;
+    box-shadow: inset 0 0 0 2px #d4d4d4;
+}
+
+.btn-new-block {
+    display: flex;
+    overflow: hidden;
+    min-width: 50px;
+    height: 40px;
+    flex-direction: column;
+    border: 1px solid transparent;
+    margin: 2px;
+    padding: 2px;
+    font-size: 12px;
+    align-items: center;
+    align-content: center;
+    color: #3f51b5;
+    cursor: pointer;
+    padding-top: 4px;
+}
+
+.btn-new-block:hover {
+    background: rgb(63 81 181 / 3%);
+    border: 1px solid #3f51b5;
+}
+
+.btn-new-block span {
+    font-size: 12px;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+    line-height: 14px;
+}
+
+.btn-new-block-menu {
+    display: flex;
+    overflow: hidden;
+    min-width: 50px;
+    height: 26px;
+    flex-direction: row;
+    border: 1px solid transparent;
+    margin: 2px;
+    padding: 2px;
+    font-size: 12px;
+    align-items: center;
+    align-content: center;
+    color: #3f51b5;
+    cursor: pointer;
+    padding-top: 4px;
+}
+
+.btn-new-block-menu:hover {
+    background: rgb(63 81 181 / 3%);
+    border: 1px solid #3f51b5;
+}
+
+.btn-new-block-menu span {
+    font-size: 14px;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+    line-height: 15px;
+    padding-left: 8px;
+}
+
+.block-icon {
+    display: inline-block;
+    font-size: 16px;
+    line-height: 16px;
+    overflow: hidden;
+    height: 16px;
+    position: relative;
+    top: 3px;
+}
+
+.block-icon mat-icon {
+    display: block;
+    font-size: 16px;
+    width: 22px;
+    height: 16px;
+    line-height: 16px;
+}
+
+
+.delimiter {
+    width: 6px;
+    height: 38px;
+    border-left: 1px solid #3f51b5;
+    margin: 6px 0px 6px 6px;
+}
+
+.render[readonly="true"] .btn-status-edit {
+    pointer-events: none;
+    color: #b9b9b9;
+}
+
+input[readonly] {
+    border-color: transparent;
+    background: transparent;
+}
+
+.tree-container {
+    position: absolute;
+    left: 0;
+    top: 64px;
+    right: 0;
+    bottom: 0;
+    background: #eee;
+    border-left: 4px solid #819ba9;
+    border-bottom: 6px solid #819ba9;
+}
+
+.code-container-blocks {
+    overflow: scroll;
+}
+
+.code-container-yaml, 
+.code-container-json {
+    overflow: hidden;
+}
+
+.view-menu {
+    position: absolute;
+    top: 70px;
+    right: 22px;
+    background: #fff;
+    border: 1px solid;
+    display: flex;
+    height: 28px;
+    width: 90px;
+    overflow: hidden;
+    z-index: 9;
+}
+
+.btn-view-menu {
+    height: 20px;
+    width: 22px;
+    padding: 2px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    margin: 1px;
+    color: #3f51b5;
+}
+
+.btn-view-menu:hover {
+    background: rgb(63 81 181 / 3%);
+    border: 1px solid #3f51b5;
+}
+
+.btn-view-menu mat-icon {
+    display: block;
+    font-size: 20px;
+}
+
+.textarea-code {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    resize: none;
+    overflow: scroll;
+    width: 100%;
+    margin: 0px;
+    border: none;
+    padding: 0;
+}
+
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+}

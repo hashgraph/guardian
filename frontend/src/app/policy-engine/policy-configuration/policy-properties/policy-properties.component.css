@@ -1,0 +1,21 @@
+.policy-properties {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    padding-bottom: 16px;
+}
+
+input[readonly] {
+    border-color: transparent;
+    background: transparent;
+}
+
+textarea[readonly] {
+    border-color: transparent;
+    background: transparent;
+}
+
+.readonly-prop {
+    padding-left: 4px;
+}

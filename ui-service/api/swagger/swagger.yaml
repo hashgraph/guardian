@@ -1,0 +1,41 @@
+swagger: "2.0"
+info:
+  title: Guardian API
+  version: 1.0.0
+host: localhost:3050
+basePath: /
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /api/account/current-user:
+    get:
+      description: Get current user
+      responses:
+        200:
+          description: Current user  
+  
+  /api/account/register:
+    post:
+      description: Register user
+      responses:
+        200:
+          description: Register user 
+          
+  /api/account/login:
+    post:
+      description: Login user
+      responses:
+        200:
+          description: Login user
+          
+  /api/account/get-all-users:
+    get:
+      description: Return all users
+      responses:
+        200:
+          description: Return all users
+          

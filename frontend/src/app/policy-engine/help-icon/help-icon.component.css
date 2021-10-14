@@ -1,0 +1,13 @@
+
+.help {
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+    line-height: 15px;
+    overflow: hidden;
+    position: absolute;
+    cursor: help;
+}
+.help mat-icon {
+    font-size: 18px;
+}

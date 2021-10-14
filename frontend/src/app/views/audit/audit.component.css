@@ -1,0 +1,45 @@
+.table {
+    width: 100%;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+a {
+    color: rgb(0, 0, 238);
+    cursor: pointer;
+    text-decoration: underline;
+}
+a[disabled="true"]{
+    color: rgb(150, 150, 150);
+    cursor: default;
+    pointer-events: none;
+}
+
+.table .mat-column-owner  {
+    max-width: 410px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+}

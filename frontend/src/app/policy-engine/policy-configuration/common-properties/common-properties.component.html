@@ -1,0 +1,108 @@
+<div class="grid-setting" [attr.readonly]="readonly">
+    <div class="table">
+        <table class="header">
+            <tr class="propHeader">
+                <td class="propRowCol"></td>
+                <th class="propHeaderCell cellName">Property</th>
+                <th class="propHeaderCell">Value</th>
+            </tr>
+        </table>
+        <div class="table-body">
+            <table *ngIf="block" class="properties">
+                <tr class="propHeader">
+                    <td class="propRowCol" (click)="onHide(propHidden, 'metaData')"
+                        [attr.collapse]="propHidden.metaData">
+                        <mat-icon>
+                            expand_more
+                        </mat-icon>
+                    </td>
+                    <td class="propHeaderCell cellName">Meta Data</td>
+                    <td class="propHeaderCell"></td>
+                </tr>
+
+                <!-- Meta Data  -->
+                <!-- <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">ID</td>
+                    <td class="propRowCell">
+                        <span class="readonly-prop">{{id}}</span>
+                    </td>
+                </tr> -->
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Type</td>
+                    <td class="propRowCell">
+                        <span class="readonly-prop">{{block.blockType}}</span>
+                    </td>
+                </tr>
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Tag</td>
+                    <td class="propRowCell">
+                        <input [(ngModel)]="block.tag" [readonly]="readonly">
+                    </td>
+                </tr>
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Permissions</td>
+                    <td class="propRowCell">
+                        <mat-select *ngIf="allPermissions" [(ngModel)]="block.permissions" multiple
+                            [disabled]="readonly">
+                            <mat-option *ngFor="let item of allPermissions" [value]="item.value">{{item.name}}
+                            </mat-option>
+                        </mat-select>
+                    </td>
+                </tr>
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Default Active</td>
+                    <td class="propRowCell">
+                        <input type="checkbox" [(ngModel)]="block.defaultActive" [readonly]="readonly">
+                    </td>
+                </tr>
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Dependencies</td>
+                    <td class="propRowCell">
+                        <mat-select [(value)]="block.dependencies" multiple [disabled]="readonly">
+                            <mat-option *ngFor="let item of allBlocks" [value]="item.tag">{{item.tag}}</mat-option>
+                        </mat-select>
+                    </td>
+                </tr>
+            </table>
+            <document-source *ngIf="currentBlock.blockType=='interfaceDocumentsSource'" [block]="currentBlock"
+                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </document-source>
+            <action-config *ngIf="currentBlock.blockType=='interfaceAction'" [block]="currentBlock" [schemes]="schemes"
+                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </action-config>
+            <container-config *ngIf="currentBlock.blockType=='interfaceContainerBlock'" [block]="currentBlock"
+                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </container-config>
+            <request-config *ngIf="currentBlock.blockType=='requestVcDocument'" [block]="currentBlock"
+                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </request-config>
+            <container-config *ngIf="currentBlock.blockType=='interfaceStepBlock'" [block]="currentBlock"
+                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </container-config>
+            <mint-config *ngIf="currentBlock.blockType=='mintDocument'" [block]="currentBlock" [schemes]="schemes"
+                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </mint-config>
+            <send-config *ngIf="currentBlock.blockType=='sendToGuardian'" [block]="currentBlock" [schemes]="schemes"
+                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </send-config>
+            <external-data-config *ngIf="currentBlock.blockType=='externalDataBlock'" [block]="currentBlock"
+                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </external-data-config>
+            <aggregate-config *ngIf="currentBlock.blockType=='aggregateDocument'" [block]="currentBlock"
+                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </aggregate-config>
+            <mint-config *ngIf="currentBlock.blockType=='wipeDocument'" [block]="currentBlock" [schemes]="schemes"
+                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </mint-config>
+        </div>
+    </div>
+    <!-- <div class="fields" style="padding: 5px;">
+        <button mat-raised-button color="primary" (click)="save()">Save Block Property</button>
+    </div> -->
+</div>

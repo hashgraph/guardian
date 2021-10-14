@@ -1,0 +1,35 @@
+::ng-deep mat-step-header {
+    pointer-events: none !important;
+    cursor: default;
+    background: none !important;
+}
+
+::ng-deep .mat-expansion-panel-header[aria-disabled=true]  .mat-expansion-panel-header-title {
+    color: rgba(0,0,0,.87) !important;
+}
+::ng-deep .mat-expansion-panel-header[aria-disabled=true]  .mat-expansion-panel-header-description {
+    color: rgba(0,0,0,.54) !important;
+}
+
+.content {
+    position: absolute;
+    top: var(--header-height);
+    right: 0;
+    left: 0;
+    height: calc(100vh - var(--header-height));
+    overflow: auto;
+}
+
+body {
+    overflow: hidden;
+}
+
+::ng-deep .helpText {
+    font-size: 14px;
+}
+
+.app {
+    background: center / cover no-repeat url('../assets/bg.jpg') #fff;
+    width: 100vw;
+    min-height: 100vh;
+}

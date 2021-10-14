@@ -1,0 +1,123 @@
+/* You can add global styles to this file, and also import other style files */
+@import './variables.scss';
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+    Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 300;
+}
+
+.signed-in {
+    &>.content {
+        background: #fff;
+    }
+
+    .content.header {
+        background-color: #000;
+
+        .btn-home {
+            color: #fff;
+        }
+
+        .example-icon mat-icon {
+            color: rgba(255, 255, 255, 0.54);
+        }
+    }
+}
+
+.mat-table {
+    tr.mat-header-row {
+        box-shadow: 0 3px 6px rgb(0 0 0 / 16%);
+        position: relative;
+    }
+
+    tr.mat-row,
+    tr.mat-footer-row {
+        height: var(--table-row-height);
+
+        &:hover {
+            background-color: rgba(112, 112, 112, 0.04);
+        }
+
+        td {
+            font-size: 20px;
+            line-height: 23px;
+
+            a,
+            .btn-field,
+            .btn-link {
+                width: auto;
+                font-size: 20px;
+                color: #0B73F8;
+                text-decoration: none;
+                display: inline-block;
+                border-bottom: 3px solid #0C77FF;
+                padding-bottom: 3px;
+                font-weight: normal;
+                text-transform: capitalize;
+            }
+        }
+    }
+}
+
+button.mat-raised-button,
+button.mat-button {
+    /*width: 260px;*/
+    height: 47px;
+    /*background: #000000 0% 0% no-repeat padding-box;*/
+    box-shadow: 0px 3px 6px #00000029;
+    border-radius: 24px;
+    padding: 0 41px;
+    /*opacity: 0.65;*/
+
+    &.mat-primary {
+        background-color: var(--button-primary-color);
+    }
+}
+
+.cdk-overlay-pane {
+    .mat-dialog-container {
+        border-radius: 30px;
+
+        .mat-dialog-content {
+            max-height: unset;
+        }
+    }
+
+    .mat-menu-panel {
+        max-width: unset;
+        max-height: unset;
+    }
+}
+
+* {
+    -webkit-overflow-scrolling: auto;
+}
+
+*::-webkit-scrollbar {
+    width: 7px;
+    height: 0;
+}
+
+*::-webkit-scrollbar-track {
+    /*margin: 54px 0 53px;*/
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.0);
+    border-radius: 10px;
+    box-shadow: rgba(255,255,255,0.3) 0 0 0 1px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.45);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.55);
+}
