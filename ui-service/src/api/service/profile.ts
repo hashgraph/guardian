@@ -273,8 +273,8 @@ profileAPI.post('/set-vc-profile', async (req: Request, res: Response) => {
 
 profileAPI.get('/random-key', async (req: Request, res: Response) => {
     try {
-        const OPERATOR_ID = '0.0.1548173';
-        const OPERATOR_KEY = '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc';
+        const OPERATOR_ID = process.env.OPERATOR_ID;
+        const OPERATOR_KEY = process.env.OPERATOR_KEY;
         const treasury = await HederaHelper.setOperator(OPERATOR_ID, OPERATOR_KEY).SDK.newAccount(40);
         res.status(200).json({
             id: treasury.id.toString(),
