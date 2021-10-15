@@ -14,11 +14,10 @@ export class Utils {
     }
 
     public static encode(data: Uint8Array): string {
-        return Buffer.from(data).toString("hex");
+        return Buffer.from(data).toString();
     }
 
     public static decode(text: string): Uint8Array {
-        const str = text.startsWith("0x") ? text.substring(2) : text;
-        return Buffer.from(str, "hex");
+        return new Uint8Array(Buffer.from(text));
     }
 }
