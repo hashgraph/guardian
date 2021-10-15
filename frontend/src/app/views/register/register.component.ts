@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { AuthStateService } from 'src/app/services/auth-state.service';
+import { UserRole } from 'interfaces';
 
 const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
     let pass = group.get('password');
@@ -29,6 +31,7 @@ export class RegisterComponent implements OnInit {
 
     constructor(
         private auth: AuthService,
+        private authState: AuthStateService,
         private fb: FormBuilder,
         private route: ActivatedRoute,
         private router: Router) { }
@@ -44,7 +47,13 @@ export class RegisterComponent implements OnInit {
             this.auth.createUser(d.login, d.password, d.role).subscribe((result) => {
                 this.auth.login(d.login, d.password).subscribe((result) => {
                     this.loading = false;
-                    this.router.navigate(['/']);
+                    localStorage.setItem('accessToken', result.accessToken);
+                    this.authState.updateState(true);
+                    if (result.role == UserRole.ROOT_AUTHORITY) {
+                        this.router.navigate(['/config']);
+                    } else {
+                        this.router.navigate(['/']);
+                    }
                 }, (error) => {
                     this.loading = false;
                 })

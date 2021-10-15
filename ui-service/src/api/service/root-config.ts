@@ -3,7 +3,7 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import { Request, Response, Router } from 'express';
 import { SchemaEntity, UserRole, UserState } from 'interfaces';
-import { HederaHelper } from 'vc-modules';
+import { HcsVcDocument, HederaHelper, IHederaHelper, VcSubject } from 'vc-modules';
 
 async function wait(s: number): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -69,43 +69,44 @@ rootAPI.post('/set-root-config', async (req: Request, res: Response) => {
     }
 
     const data = req.body;
+    const { hederaAccountId, hederaAccountKey } = data;
 
-    let rootObject: any, did: string, document: any, vc: any, hederaHelper: any, hcsDid: any;
+    let rootObject: any,
+        did: string,
+        document: any,
+        vc: HcsVcDocument<VcSubject>,
+        hcsDid: any;
     try {
         const hederaConnection = await HederaHelper
             .newNetwork(
-                data.hederaAccountId,
-                data.hederaAccountKey,
+                hederaAccountId,
+                hederaAccountKey,
                 data.appnetName,
                 data.didServerUrl,
                 data.didTopicMemo,
                 data.vcTopicMemo,
             );
 
-        hederaHelper = HederaHelper
-            .setOperator(data.hederaAccountId, data.hederaAccountKey)
+        await wait(15);
+
+        const hederaHelper = HederaHelper
+            .setOperator(hederaAccountId, hederaAccountKey)
             .setAddressBook(
                 hederaConnection.addressBookId,
                 hederaConnection.didTopicId,
                 hederaConnection.vcTopicId,
             );
 
-        console.log('wait');
-        await wait(30);
-        console.log('wait');
-
         const res = await hederaHelper.DID.createDid(data.hederaAccountKey);
         data.vc.id = res.did;
         vc = await vcHelper.createVC(res.did, data.hederaAccountKey, null, data.vc);
-
-        console.log('create root VC');
 
         hcsDid = res.hcsDid;
         did = res.did;
         document = res.document;
         rootObject = {
-            hederaAccountId: data.hederaAccountId,
-            hederaAccountKey: data.hederaAccountKey,
+            hederaAccountId: hederaAccountId,
+            hederaAccountKey: hederaAccountKey,
             addressBook: hederaConnection.addressBookId,
             didTopic: hederaConnection.didTopicId,
             vcTopic: hederaConnection.vcTopicId,
@@ -137,18 +138,34 @@ rootAPI.post('/set-root-config', async (req: Request, res: Response) => {
             state: UserState.CONFIRMED
         });
 
-        hederaHelper.DID.createVcTransaction(vc, data.hederaAccountKey).then(function (message: any) {
+        const hederaHelper = HederaHelper
+            .setOperator(hederaAccountId, hederaAccountKey)
+            .setAddressBook(
+                rootObject.addressBook,
+                rootObject.didTopic,
+                rootObject.vcTopic,
+            );
+        console.log(
+            hederaAccountId, 
+            hederaAccountKey,
+            rootObject.addressBook,
+            rootObject.didTopic,
+            rootObject.vcTopic
+        );
+        hederaHelper.DID.createVcTransaction(vc, hederaAccountKey).then(function (message: any) {
             const hash = message.getCredentialHash();
             const operation = message.getOperation();
             guardians.setVcDocument({ hash, operation });
-            console.log('Update VC');
+        }, function (error: any) {
+            console.error(error);
         });
 
         hederaHelper.DID.createDidTransaction(hcsDid).then(function (message: any) {
             const did = message.getDid();
             const operation = message.getOperation();
             guardians.setDidDocument({ did, operation });
-            console.log('Update DID');
+        }, function (error: any) {
+            console.error(error);
         });
     } catch (error) {
         console.error(error);
