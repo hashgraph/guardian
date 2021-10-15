@@ -191,6 +191,8 @@ profileAPI.post('/set-hedera-profile', async (req: Request, res: Response) => {
             const operation = message.getOperation();
             console.log(did, operation);
             guardians.setDidDocument({ did, operation });
+        }, function (error) {
+            console.error(error);
         });
 
         res.json(result);

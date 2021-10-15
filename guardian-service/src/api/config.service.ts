@@ -5,7 +5,18 @@ import { HederaHelper } from 'vc-modules';
 
 export const readConfig = async function (): Promise<any> {
     const fileName = path.join(process.cwd(), 'config.json');
-    const fileContent = await readJSON(fileName);
+    let fileContent: any;
+    try {
+        fileContent = await readJSON(fileName);
+    } catch (error) {
+        throw ('you need to create a file \'config.json\'');
+    }
+    if (!fileContent.hasOwnProperty('OPERATOR_ID') || fileContent['OPERATOR_ID'].length < 5) {
+        throw ('You need to fill OPERATOR_ID field in config.json file');
+    }
+    if (!fileContent.hasOwnProperty('OPERATOR_KEY') || fileContent['OPERATOR_KEY'].length < 5) {
+        throw ('You need to fill OPERATOR_KEY field in config.json file');
+    }
     let regenerate = false;
     if (!fileContent.hasOwnProperty('ADDRESS_BOOK')) {
         regenerate = true;

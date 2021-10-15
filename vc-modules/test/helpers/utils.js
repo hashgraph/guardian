@@ -17,6 +17,3 @@ describe("HederaUtils", function () {
     });
 
 });
-
-
-
