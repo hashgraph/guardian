@@ -145,13 +145,7 @@ rootAPI.post('/set-root-config', async (req: Request, res: Response) => {
                 rootObject.didTopic,
                 rootObject.vcTopic,
             );
-        console.log(
-            hederaAccountId, 
-            hederaAccountKey,
-            rootObject.addressBook,
-            rootObject.didTopic,
-            rootObject.vcTopic
-        );
+
         hederaHelper.DID.createVcTransaction(vc, hederaAccountKey).then(function (message: any) {
             const hash = message.getCredentialHash();
             const operation = message.getOperation();
