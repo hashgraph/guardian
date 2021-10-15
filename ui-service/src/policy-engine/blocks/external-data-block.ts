@@ -26,7 +26,10 @@ export class ExternalDataBlock {
         const currentIndex = ref.parent.children.findIndex(el => this === el);
         const nextBlock = ref.parent.children[currentIndex + 1];
         if (nextBlock && nextBlock.runAction) {
-            nextBlock.runAction({data: doc}, null);
+            nextBlock.runAction({data: doc}, null).then(
+                function () { },
+                function (error: any) { console.error(error); }
+            );
         }
     }
 }

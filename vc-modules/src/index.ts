@@ -1,4 +1,4 @@
-export { HederaHelper, IHederaNetwork } from "./helpers/hedera-helper";
+export { HederaHelper, IHederaNetwork, IHederaHelper } from "./helpers/hedera-helper";
 export { VCHelper} from "./helpers/hedera-vc-helper";
 export { HcsVcDocument } from "./vc/vc-document";
 export { HcsVpDocument } from "./vc/vp-document";

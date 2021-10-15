@@ -45,7 +45,7 @@ export class HederaDIDHelper {
                     });
                 await transaction.execute(this.client);
             } catch (error) {
-                reject("BAD_REQUEST");
+                reject(error);
             }
         });
         return transaction;
@@ -86,8 +86,8 @@ export class HederaDIDHelper {
                         reject("Error while sending DID message transaction: " + e);
                     });
                 const txResponse = await transactionId.execute(this.client);
-            } catch (e) {
-                reject("BAD_REQUEST");
+            } catch (error) {
+                reject(error);
             }
         });
         return transaction;
