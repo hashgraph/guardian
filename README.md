@@ -18,9 +18,9 @@
     ·
     <a href="https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md">HIP-29</a>
     ·
-    <a href="https://github.com/hashgraph/guardian/issues">Report Bug</a>
+    <a href="https://github.com/hashgraph/guardian/issues">Report a Bug</a>
     ·
-    <a href="https://github.com/hashgraph/guardian/issues">Request Policy or Feature</a>
+    <a href="https://github.com/hashgraph/guardian/issues">Request a Policy or a Feature</a>
   </p>
 </div>
 
@@ -55,7 +55,7 @@
 
 ## Discovering ESG assets on Hedera
 
-As identified in Hedera Improvement Proposal 19 (hip-19), each transaction on the Hedera network must contain a specific identifier in the memo field for discoverability. The Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of newly minted tokens, you will find a [Verifiable Link](https://github.com/InterWorkAlliance/Sustainability/blob/2d07029cade3050d76f716034593cb067d1c4e7f/vem/supply/verification.md) which will allow users to discover the published standard the token is following and the entire history of the ESG asset and corresponding data to be publicly discoverable. This is further defined in Hedera Improvement Proposal 28 (hip-28)
+As identified in Hedera Improvement Proposal 19 (HIP-19), each transaction on the Hedera network must contain a specific identifier in the memo field for discoverability. The Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of newly minted tokens, you will find a [Verifiable Link](https://github.com/InterWorkAlliance/Sustainability/blob/2d07029cade3050d76f716034593cb067d1c4e7f/vem/supply/verification.md) which will allow users to discover the published standard the token is following and the entire history of the ESG asset and corresponding data to be publicly discoverable. This is further defined in Hedera Improvement Proposal 28 (HIP-28)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
