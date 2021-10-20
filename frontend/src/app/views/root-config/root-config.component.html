@@ -6,18 +6,29 @@
 
     <div *ngIf="loading && progress" class="loading">
         <div class="progress">
+            <span>Finishing Setup</span>
             <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
         </div>
     </div>
 
-    <ng-container *ngIf="root; else elseTemplate">
-        <div class="list">
+    <div class="root-config" *ngIf="root; else elseTemplate">
+        <div class="config-display">
+            <div class="list-item">
+                <h4 mat-line>DID Document</h4>
+                <p mat-line class="root-field">
+                    <a (click)="openDocument(root.didDocument)">View Document</a>
+                </p>
+            </div>
+            <div class="list-item">
+                <h4 mat-line>VC Document</h4>
+                <p mat-line class="root-field">
+                    <a (click)="openDocument(root.vcDocument)">View Document</a>
+                </p>
+            </div>
             <div class="list-item">
                 <h4 mat-line>Balance</h4>
                 <p mat-line class="root-field"> {{balance}} </p>
             </div>
-        </div>
-        <div class="list">
             <div class="list-item">
                 <h4 mat-line>Appnet Name</h4>
                 <p mat-line class="root-field"> {{root.appnetName}} </p>
@@ -45,6 +56,8 @@
                 <p mat-line class="root-field"> {{root.vcTopicMemo}} </p>
                 <mat-divider></mat-divider>
             </div>
+        </div>
+        <div class="config-display">
             <div class="list-item">
                 <h4 mat-line>Hedera Account Id</h4>
                 <p mat-line class="root-field"> {{root.hederaAccountId}} </p>
@@ -56,38 +69,13 @@
                 <p mat-line class="root-field"> {{root.did}} </p>
                 <mat-divider></mat-divider>
             </div>
-            <div class="list-item">
-                <h4 mat-line>DID Document</h4>
-                <p mat-line class="root-field">
-                    <a (click)="openDocument(root.didDocument)">View Document</a>
-                </p>
-            </div>
-            <div class="list-item">
-                <h4 mat-line>VC Document</h4>
-                <p mat-line class="root-field">
-                    <a (click)="openDocument(root.vcDocument)">View Document</a>
-                </p>
-            </div>
+            
         </div>
-    </ng-container>
+    </div>
     <ng-template #elseTemplate>
         <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
             <div class="list">
-                <div (click)="randomKey()" class="random-icon"></div>
-                <div class="list-item">
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>OPERATOR ID:</mat-label>
-                        <input matInput placeholder="0.0.1548173" formControlName="hederaAccountId">
-                    </mat-form-field>
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>OPERATOR KEY:</mat-label>
-                        <input matInput
-                            placeholder="302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc"
-                            formControlName="hederaAccountKey">
-                    </mat-form-field>
-                    <mat-divider></mat-divider>
-                </div>
-
+                <h3>Finish Setup</h3>
                 <div class="list-item">
                     <app-schema-form [formGroup]="vcForm" [contextDocument]="vcContextDocument" [hide]="hideVC">
                     </app-schema-form>
@@ -114,10 +102,27 @@
                         <mat-label>VC Topic Memo:</mat-label>
                         <input matInput placeholder="Test Identity SDK appnet VC topic" formControlName="vcTopicMemo">
                     </mat-form-field>
+                    <mat-divider></mat-divider>
+                </div>
+
+                <div class="list-item">
+                    <mat-form-field class="example-full-width" appearance="outline">
+                        <mat-label>OPERATOR ID (Hedera Account):</mat-label>
+                        <input matInput placeholder="0.0.1548173" formControlName="hederaAccountId">
+                    </mat-form-field>
+                    <mat-form-field class="example-full-width" appearance="outline">
+                        <mat-label>OPERATOR KEY (Hedera Account Private Key):</mat-label>
+                        <input matInput
+                            placeholder="302e020100300506032b657004220420e..."
+                            formControlName="hederaAccountKey">
+                    </mat-form-field>
                 </div>
             </div>
             <div class="list-button">
-                <button mat-raised-button type="submit" color="primary" [disabled]="!hederaForm.valid">Connect</button>
+                <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="randomKey()">Generate</button>
+            </div>
+            <div class="list-button">
+                <button mat-raised-button type="submit" [disabled]="!hederaForm.valid">Connect</button>
             </div>
         </form>
 

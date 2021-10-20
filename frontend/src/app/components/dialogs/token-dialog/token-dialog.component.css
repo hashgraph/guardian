@@ -10,7 +10,7 @@ form {
 }
 
 form[ft='false'] {
-    height: 400px
+    height: 510px
 }
 
 form[ft='true'] {

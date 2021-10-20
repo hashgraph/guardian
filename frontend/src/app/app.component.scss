@@ -29,7 +29,17 @@ body {
 }
 
 .app {
-    background: center / cover no-repeat url('../assets/bg.jpg') #fff;
     width: 100vw;
     min-height: 100vh;
+    position: relative;
+
+    .background {
+        filter: brightness(0.5);
+        background: center / cover no-repeat url('../assets/bg.jpg') #fff;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
 }

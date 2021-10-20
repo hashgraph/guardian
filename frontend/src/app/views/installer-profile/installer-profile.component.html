@@ -94,9 +94,11 @@
                     <input matInput
                         placeholder="302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc"
                         formControlName="key">
-                    <div (click)="randomKey()" class="random-icon"></div>
+                    <!-- <button matSuffix mat-button class="embedded-btn" color="primary" (click)="randomKey()" type="button">Generate</button> -->
+                    <!-- <div (click)="randomKey()" class="random-icon"></div> -->
                 </mat-form-field>
 
+                <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="randomKey()">Generate</button>
                 <button mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
             </form>
         </div>
