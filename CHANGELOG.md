@@ -21,8 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New design
+- New UI design applied
 
 ### Fixed
 
-- Displaying VP for NFT 
+- VP and trust chain display for NFT 
+- Display of errors during a transaction;
+- @hashgraph/sdk version was downgraded to 2.1.0 because of the [issue](https://github.com/hashgraph/hedera-sdk-js/issues/675)
