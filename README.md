@@ -18,9 +18,9 @@
     ·
     <a href="https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md">HIP-29</a>
     ·
-    <a href="https://github.com/hashgraph/guardian/issues">Report Bug</a>
+    <a href="https://github.com/hashgraph/guardian/issues">Report a Bug</a>
     ·
-    <a href="https://github.com/hashgraph/guardian/issues">Request Policy or Feature</a>
+    <a href="https://github.com/hashgraph/guardian/issues">Request a Policy or a Feature</a>
   </p>
 </div>
 
@@ -55,7 +55,7 @@
 
 ## Discovering ESG assets on Hedera
 
-As identified in Hedera Improvement Proposal 19 (hip-19), each transaction on the Hedera network must contain a specific identifier in the memo field for discoverability. The Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of newly minted tokens, you will find a [Verifiable Link](https://github.com/InterWorkAlliance/Sustainability/blob/2d07029cade3050d76f716034593cb067d1c4e7f/vem/supply/verification.md) which will allow users to discover the published standard the token is following and the entire history of the ESG asset and corresponding data to be publicly discoverable. This is further defined in Hedera Improvement Proposal 28 (hip-28)
+As identified in Hedera Improvement Proposal 19 (HIP-19), each transaction on the Hedera network must contain a specific identifier in the memo field for discoverability. The Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of newly minted tokens, you will find a [Verifiable Link](https://github.com/InterWorkAlliance/Sustainability/blob/2d07029cade3050d76f716034593cb067d1c4e7f/vem/supply/verification.md) which will allow users to discover the published standard the token is following and the entire history of the ESG asset and corresponding data to be publicly discoverable. This is further defined in Hedera Improvement Proposal 28 (HIP-28)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -82,17 +82,15 @@ To get a local copy up and running, follow these simple example steps. When buil
    in `ui-service/.env`:
 
    ```
-   ACCOUNT_ID=0.0.123456789
-   PRIVATE_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
-   TOPIC_ID=0.0.28583
+   OPERATOR_ID=0.0.123456789
+   OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
    ```
 
    in `ui-service/.env.docker`:
 
    ```
-   ACCOUNT_ID=0.0.123456789
-   PRIVATE_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
-   TOPIC_ID=0.0.28583
+   OPERATOR_ID=0.0.123456789
+   OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
    ```
 
    in `guardian-service/config.json`:
@@ -189,7 +187,7 @@ To get a local copy up and running, follow these simple example steps. When buil
 
 ![Guardian step 3](https://user-images.githubusercontent.com/40637665/137956842-d9b3d0a3-7021-4304-9d1b-83d06ac115e2.png)
 
-4. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Navigate to the [Demo Artifacts folder](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts) and download the `iRec_Application_Details.json file`. Then click on the **Import** button and upload the iRec_Application_Details.json file.
+4. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Navigate to the [Demo Artifacts folder](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts) and download the `iRec_Application_Details.json` file. Then click on the **Import** button and upload the `iRec_Application_Details.json` file.
 
 ![Guardian step 4](https://user-images.githubusercontent.com/40637665/137962816-b2791931-552e-4cbc-8290-002909421abb.png)
 
