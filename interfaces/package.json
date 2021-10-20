@@ -19,5 +19,5 @@
     "lint": "tslint --project .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "1.0.0-beta.2"
+  "version": "1.0.0-beta.3"
 }
