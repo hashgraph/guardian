@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, FormControl, Validators, ValidatorFn, AbstractC
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { UserRole } from 'interfaces';
+import { Observable, ReplaySubject } from 'rxjs';
 
 const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
     let pass = group.get('password');
@@ -29,12 +30,20 @@ export class RegisterComponent implements OnInit {
         confirmPassword: ['test', Validators.required],
     }, { validators: checkPasswords });
 
+    private _isRoleSelected$ = new ReplaySubject<boolean>(1);
+
     constructor(
         private auth: AuthService,
         private authState: AuthStateService,
         private fb: FormBuilder,
         private route: ActivatedRoute,
-        private router: Router) { }
+        private router: Router) {
+        this._isRoleSelected$.next(false);
+    }
+
+    public get isRoleSelected$(): Observable<boolean> {
+        return this._isRoleSelected$;
+    }
 
     ngOnInit() {
         this.loading = false;
@@ -61,6 +70,11 @@ export class RegisterComponent implements OnInit {
                 this.loading = false;
             })
         }
+    }
+
+    setRole(role: string): void {
+        this.loginForm.patchValue({role});
+        this._isRoleSelected$.next(!!role);
     }
 
     goBack(): void {

@@ -7,13 +7,12 @@
                 <mat-icon>search</mat-icon>
             </button>
         </mat-form-field>
-        <!-- <button class="search-btn" mat-raised-button color="primary" type="submit" [disabled]="!searchForm.valid">Search</button> -->
     </form>
 
     <ng-template #chainTpl>
         <div *ngIf="chain" class="display-chain">
             <div class="verified-presentation">
-                <div class="header">
+                <div *ngIf="vp" class="header">
                     <a routerLink="/audit" class="go-back-link">
                         <mat-icon>chevron_left</mat-icon>
                         {{vp.label}}: {{vp.id}}
@@ -21,9 +20,16 @@
                     Verified Presentation
                     <mat-icon>check_circle</mat-icon>
 
-                    <a class="open-vp" (click)="openDocument(vp)">View in JSON</a>
+                    <a class="open-vp" (click)="openDocument(vp)">VP File</a>
                 </div>
-                <div class="vp-section">
+                <div *ngIf="!vp && chain" class="header">
+                    <a routerLink="/audit" class="go-back-link">
+                        <mat-icon>chevron_left</mat-icon>
+                        {{chain[0].label}}: {{chain[0].id}}
+                    </a>
+                    <a class="open-vp" (click)="openDocument(chain[0])">File</a>
+                </div>
+                <div *ngIf="vpMint" class="vp-section">
                     <div class="vp-section-header">
                         Token & Issuer
                         <a class="open-vp" (click)="openDocument(vpMint)">VC Files</a>
@@ -43,7 +49,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="vp-section">
+                <div *ngIf="vpPolicy" class="vp-section">
                     <div class="vp-section-header">
                         Policy Overview
                         <a class="open-vp" (click)="openDocument(vpPolicy)">VC Files</a>
@@ -70,44 +76,43 @@
                 <div class="vp-description">
                     This Carbon Offset Claim has met all the requirements as issued in the policy secured to this token.
                 </div>
-                <div class="vp-signature">
+                <div *ngIf="vp" class="vp-signature">
                     <div class="vp-field-label">Verified Signature:</div>
                     <div class="vp-field-value">{{vp.document.proof.jws}}</div>
                 </div>
             </div>
-            <div class="chain-container" (wheel)="onWheel($event)">
-                <!-- <ng-container *ngFor="let item of chain">
-                    <div class="chain-item item-type-{{item.type}}">
-                        <div class="chain-title">
-                            {{item.type}} <span *ngIf="item.schema">({{item.schema}})</span>
-                        </div>
-                        <div class="chain-id">
-                            <span>{{item.label}}:</span>{{item.id}}
-                        </div>
-                        <div class="chain-document">
-                            <a (click)="openDocument(item)">View Document</a>
-                        </div>
-                    </div>
-                </ng-container> -->
-                <ng-container *ngFor="let item of chain">
-                    <div class="chain-item item-type-{{item.type}}">
-                        <div class="chain-title">
-                            <mat-icon>account_circle</mat-icon> {{item.schema}}
-                        </div>
-                        <div class="chain-id">
-                            {{formatFields(item)}}
-                        </div>
-                        <div class="parties">
-                            <div class="parties-label">Parties:</div>
-                            <div class="parties-value">
-                                <div class="partie" [title]="item.document.issuer">{{userMap[item.document.issuer]}}</div>
+            <div class="container">
+                <div class="chain-container" (wheel)="onWheel($event)" #scrollContainer>
+                    <ng-container *ngFor="let item of chain">
+                        <div class="chain-item item-type-{{item.type}}">
+                            <div class="chain-title">
+                                <ng-container [ngSwitch]="item.schema">
+                                    <mat-icon *ngSwitchCase="'Policy'">format_list_bulleted</mat-icon>
+                                    <mat-icon *ngSwitchCase="'Inverter'" svgIcon="iot"></mat-icon>
+                                    <mat-icon *ngSwitchCase="'MRV'" svgIcon="mrv"></mat-icon>
+                                    <mat-icon *ngSwitchCase="'MintToken'" svgIcon="token"></mat-icon>
+                                    <mat-icon *ngSwitchCase="'MintNFToken'" svgIcon="token"></mat-icon>
+                                    <mat-icon *ngSwitchDefault>account_circle</mat-icon>
+                                </ng-container>
+                                
+                                {{item.schema}}
+                            </div>
+                            <div class="chain-id">
+                                {{formatFields(item)}}
+                            </div>
+                            <div class="parties">
+                                <div class="parties-label">Parties:</div>
+                                <div class="parties-value">
+                                    <div class="partie" [title]="item.document.issuer">{{getParties(item)}}</div>
+                                </div>
+                            </div>
+                            <div class="chain-document">
+                                <a (click)="openDocument(item)">VC Files</a>
                             </div>
                         </div>
-                        <div class="chain-document">
-                            <a (click)="openDocument(item)">VC Files</a>
-                        </div>
-                    </div>
-                </ng-container>
+                    </ng-container>
+                </div>
+                <mat-icon (click)="onScrollButtonPress(scrollContainer, 100)">chevron_right</mat-icon>
             </div>
         </div>
     </ng-template>

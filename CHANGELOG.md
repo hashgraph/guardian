@@ -17,5 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Ui-service: Contains the back-end for the front-end and contains the Policy Workflow Engine
 
 
+## [v1.0.0-beta.2] - 2021-10-20
 
+### Added
 
+- New UI design applied
+
+### Fixed
+
+- VP and trust chain display for NFT 
+- Display of errors during a transaction;
+- @hashgraph/sdk version was downgraded to 2.1.0 because of the [issue](https://github.com/hashgraph/hedera-sdk-js/issues/675)

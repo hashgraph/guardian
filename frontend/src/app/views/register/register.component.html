@@ -1,8 +1,8 @@
 <div class="content login">
     <div class="overlay"></div>
-    <form [formGroup]="loginForm" (ngSubmit)="signup()">
-        <div class="login-header">
-            Create Account
+    <form [formGroup]="loginForm" (ngSubmit)="signup()" *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
+        <div class="login-header" (click)="setRole('')">
+            <mat-icon>chevron_left</mat-icon> Create Account
         </div>
         
         <mat-form-field class="example-full-width" appearance="outline">
@@ -10,7 +10,7 @@
             <input matInput formControlName="login">
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <!-- <mat-form-field appearance="outline">
             <mat-label>ROLE</mat-label>
             <mat-select formControlName="role">
                 <mat-option value="ROOT_AUTHORITY">Root Authority</mat-option>
@@ -18,7 +18,7 @@
                 <mat-option value="AUDITOR">Auditor</mat-option>
                 <mat-option value="ORIGINATOR">Originator</mat-option>
               </mat-select>
-        </mat-form-field>
+        </mat-form-field> -->
 
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Password:</mat-label>
@@ -31,10 +31,31 @@
         </mat-form-field>
 
         <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Create</button>
-        <button mat-icon-button class="close-button" type="button" (click)="goBack()">
-            <mat-icon>clear</mat-icon>
-        </button>
     </form>
+
+    <ng-template #selectRoleTemplate>
+        <div class="role-select-step">
+            <div class="login-header">
+                Select Account Type
+            </div>
+            <button mat-button (click)="setRole('ROOT_AUTHORITY')">
+                <span class="role-name">Root Authority (offset providers)</span>
+                <span class="role-description">For regulating entities to provide Offset credentials.</span>
+            </button>
+            <button mat-button (click)="setRole('INSTALLER')">
+                <span class="role-name">Installer (offset applicants)</span>
+                <span class="role-description">For those applying to show Offsets (Farmers, Green Energy…)</span>
+            </button>
+            <button mat-button (click)="setRole('AUDITOR')">
+                <span class="role-name">Auditor</span>
+                <span class="role-description">Anyone looking to verify an offset.</span>
+            </button>
+
+            <button mat-icon-button class="close-button" type="button" (click)="goBack()">
+                <mat-icon>clear</mat-icon>
+            </button>
+        </div>
+    </ng-template>
 
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
