@@ -27,7 +27,7 @@
 }
 
 a {
-    color: rgb(0, 0, 238);
+    color: #0C77FF;
     cursor: pointer;
     text-decoration: underline;
 }
@@ -86,12 +86,24 @@ a[disabled="true"]{
 .display-chain {
 }
 
+.container {
+    display: flex;
+}
+
+.container > mat-icon {
+    font-size: 50px;
+    flex: 0 0 80px;
+    align-self: center;
+    user-select: none;
+    cursor: pointer;
+}
+
 .chain-container {
     /* display: flex;
     flex-direction: column;
     align-content: center;
     align-items: center; */
-    margin-top: 5px;
+    margin-top: 60px;
     margin-left: 20px;
     margin-right: 20px;
     padding-top: 20px;

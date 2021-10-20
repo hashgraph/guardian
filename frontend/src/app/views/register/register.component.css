@@ -22,7 +22,8 @@
     align-content: center;
 }
 
-form {
+form,
+.role-select-step {
     display: flex;
     flex-direction: column;
     /*width: 400px;*/
@@ -36,7 +37,7 @@ form {
     background: #fff;
     border-radius: 30px;
     width: 839px;
-    height: 653px;
+    /*height: 653px;*/
     box-sizing: border-box;
     align-items: center;
 }
@@ -46,6 +47,15 @@ form {
     font-size: 20px;
     color: #838383;
     padding-bottom: 20px;
+    display: flex;
+    cursor: pointer;
+}
+
+.login-header mat-icon {
+    font-size: 30px;
+    position: relative;
+    top: -4px;
+    left: -10px;
 }
 
 .overlay {
@@ -85,4 +95,30 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
 mat-form-field {
     width: 653px;
     margin: 18px 0;
+}
+
+.role-name {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 23px;
+    color: #2F2F2F;
+}
+
+.role-select-step {
+    height: auto;
+}
+
+.role-select-step button:not(.close-button) {
+    height: 106px;
+    width: 90%;
+    border-radius: 53px;
+    margin: 12px 0;
+}
+
+.role-description {
+    font-size: 20px;
+    font-weight: normal;
+    color: #2F2F2F;
+    line-height: 23px;
 }
