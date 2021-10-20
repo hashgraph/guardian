@@ -84,7 +84,6 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    OPERATOR_ID=0.0.123456789
    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
-   TOPIC_ID=0.0.28583
    ```
 
    in `ui-service/.env.docker`:
@@ -92,7 +91,6 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    OPERATOR_ID=0.0.123456789
    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
-   TOPIC_ID=0.0.28583
    ```
 
    in `guardian-service/config.json`:
@@ -189,7 +187,7 @@ To get a local copy up and running, follow these simple example steps. When buil
 
 ![Guardian step 3](https://user-images.githubusercontent.com/40637665/137956842-d9b3d0a3-7021-4304-9d1b-83d06ac115e2.png)
 
-4. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Navigate to the [Demo Artifacts folder](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts) and download the `iRec_Application_Details.json file`. Then click on the **Import** button and upload the iRec_Application_Details.json file.
+4. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Navigate to the [Demo Artifacts folder](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts) and download the `iRec_Application_Details.json` file. Then click on the **Import** button and upload the `iRec_Application_Details.json` file.
 
 ![Guardian step 4](https://user-images.githubusercontent.com/40637665/137962816-b2791931-552e-4cbc-8290-002909421abb.png)
 
