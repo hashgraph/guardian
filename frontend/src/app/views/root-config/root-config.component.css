@@ -44,8 +44,22 @@
     display: block;
     margin-top: 20px;
     position: absolute;
-    left: 0;
-    top: 0;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -100%);
+    text-align: center;
+}
+
+.progress > span {
+    font-size: 40px;
+    padding-bottom: 30px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.progress mat-progress-bar {
+    height: 30px;
+    border-radius: 36px;
 }
 
 a {
@@ -72,8 +86,10 @@ a {
 }
 
 .list-button{
-    width: 600px;
-    padding: 0px 20px 0px 20px;
+    width: 800px;
+    padding: 0;
+    margin: 0 auto;
+    text-align: right;
 }
 
 .random-icon {
@@ -86,4 +102,24 @@ a {
     top: 20px;
     right: -62px;
     cursor: pointer;
+}
+
+.config-display .list-item {
+    display: flex;
+    gap: 20px;
+}
+
+.config-display {
+    padding: 20px;
+}
+
+.root-config {
+    display: flex;
+}
+
+.list h3 {
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    margin-bottom: 40px;
 }

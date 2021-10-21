@@ -12,13 +12,19 @@ body {
   font-weight: 300;
 }
 
+.mat-subheading-1,.mat-typography h4 {
+    font-size: 20px;
+    line-height: 23px;
+    flex: 0 0 190px;
+}
+
 .signed-in {
     &>.content {
         background: #fff;
     }
 
     .content.header {
-        background-color: #000;
+        background-color: var(--header-background-color);
 
         .btn-home {
             color: #fff;
@@ -29,6 +35,29 @@ body {
         }
     }
 }
+
+.embedded-btn {
+    padding: 0 0 !important;
+    width: 140px;
+    height: 34px !important;
+    color: #fff !important;
+    position: relative;
+    top: -6px;
+}
+
+.installer-profile .list {
+    margin: 20px auto !important;
+}
+
+.list {
+    border: unset !important;
+}
+
+.list-button button.mat-raised-button {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
 
 .mat-table {
     tr.mat-header-row {
@@ -47,6 +76,7 @@ body {
         td {
             font-size: 20px;
             line-height: 23px;
+            padding: 0 10px;
 
             a,
             .btn-field,

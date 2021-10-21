@@ -58,6 +58,7 @@ export const trustChainAPI = async function (
             type: 'VC',
             id: vc.hash,
             document: vc.document,
+            owner: vc.owner,
             schema: schema,
             tag: vc.tag,
             label: 'HASH'
@@ -69,6 +70,7 @@ export const trustChainAPI = async function (
             type: 'DID',
             id: issuer,
             document: didDocuments,
+            owner: issuer,
             schema: null,
             label: 'DID',
             tag: null
@@ -104,9 +106,10 @@ export const trustChainAPI = async function (
                     type: 'VC',
                     id: policy.hash,
                     document: policy.document,
+                    owner: policy.owner,
                     schema: getField(policy, 'type'),
                     label: 'HASH',
-                    tag: "Inspection & Policy Requirements met."
+                    tag: "Policy Created"
                 });
                 const issuer = getIssuer(policy);
 
@@ -116,6 +119,7 @@ export const trustChainAPI = async function (
                     type: 'DID',
                     id: issuer,
                     document: didDocuments,
+                    owner: issuer,
                     schema: null,
                     label: 'DID',
                     tag: null
@@ -132,6 +136,7 @@ export const trustChainAPI = async function (
                         type: 'VC',
                         id: rootAuthority.hash,
                         document: rootAuthority.document,
+                        owner: rootAuthority.owner,
                         schema: getField(rootAuthority, 'type'),
                         label: 'HASH',
                         tag: "Account Creation"
@@ -163,6 +168,7 @@ export const trustChainAPI = async function (
                     type: 'VP',
                     id: root.hash,
                     document: root.document,
+                    owner: root.owner,
                     schema: 'VerifiablePresentation',
                     label: 'HASH',
                     tag: root.tag
@@ -184,6 +190,7 @@ export const trustChainAPI = async function (
                     type: 'VP',
                     id: root.document.id,
                     document: root.document,
+                    owner: root.owner,
                     schema: 'VerifiablePresentation',
                     label: 'ID',
                     tag: root.tag

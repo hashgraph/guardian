@@ -60,3 +60,22 @@
     position: relative;
     font-weight: 500;
 } */
+
+/*
+.content {
+    white-space: nowrap;
+}
+*/
+
+.content .btn-option {
+    height: 26px;
+    text-align: center;
+    border-radius: 60px !important;
+    position: relative;
+    margin-right: 46px;
+    height: 38px;
+    box-shadow: 0px 3px 6px #00000029;
+    border-radius: 24px !important;
+    padding: 8px 20px !important;
+    box-sizing: border-box;
+}
