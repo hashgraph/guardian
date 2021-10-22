@@ -207,8 +207,8 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    savePolicy() {
-        this.onView('blocks');
+    async savePolicy() {
+        await this.onView('blocks');
         const root = this.blocks[0];
         if (root) {
             this.loading = true;

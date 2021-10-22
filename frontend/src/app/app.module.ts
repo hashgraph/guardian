@@ -80,7 +80,6 @@ import { ImportSchemaDialog } from './components/dialogs/import-schema/import-sc
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TreeFlatOverview } from './components/tree-flat-overview/tree-flat-overview';
 import { AggregateConfigComponent } from './policy-engine/policy-configuration/aggregate-config/aggregate-config.component';
-import { PolicyDialog } from './components/dialogs/policy-dialog/policy-dialog.component';
 import { InformationConfigComponent } from './policy-engine/policy-configuration/information-config/information-config.component';
 
 @NgModule({
@@ -127,7 +126,6 @@ import { InformationConfigComponent } from './policy-engine/policy-configuration
         ImportSchemaDialog,
         TreeFlatOverview,
         AggregateConfigComponent,
-        PolicyDialog,
         InformationConfigComponent
     ],
     imports: [
