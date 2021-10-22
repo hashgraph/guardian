@@ -100,6 +100,9 @@
             <mint-config *ngIf="currentBlock.blockType=='wipeDocument'" [block]="currentBlock" [schemes]="schemes"
                 [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </mint-config>
+            <information-config *ngIf="currentBlock.blockType=='informationBlock'" [block]="currentBlock" [schemes]="schemes"
+                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </information-config>
         </div>
     </div>
     <!-- <div class="fields" style="padding: 5px;">

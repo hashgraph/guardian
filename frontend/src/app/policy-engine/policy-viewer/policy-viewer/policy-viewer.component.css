@@ -93,3 +93,45 @@
     font-size: 20px;
     color: darkgrey;
 }
+
+a.go-back-link {
+    text-decoration: none;
+    color: #707070;
+    padding: 5px 30px 5px 26px;
+}
+
+a.go-back-link mat-icon {
+    color: #707070;
+    position: absolute;
+    top: 2px;
+    left: 1px;
+}
+
+.policy-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    color: #707070;
+    font-size: 14px;
+    border-bottom: 1px solid #f7f7f7;
+    display: flex;
+    box-sizing: border-box;
+    justify-content: space-between;
+}
+
+.policy-container {
+    position: absolute;
+    left: 0;
+    top: 30px;
+    right: 0;
+    bottom: 0;
+}
+
+.policy-header span{
+    margin-right: 30px;
+    height: 30px;
+    padding: 5px 0px;
+    box-sizing: border-box;
+}

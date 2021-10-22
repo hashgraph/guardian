@@ -16,6 +16,7 @@ import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.compo
 export class PolicyViewerComponent implements OnInit {
     policyId!: string;
     policy: any | null;
+    policyInfo: any | null;
     policies: any[] | null;
     columns: string[] = [];
     columnsRole = {
@@ -89,8 +90,16 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     loadPolicyById(policyId: string) {
-        this.policyEngineService.getPolicy(policyId).subscribe((policy: any) => {
-            this.policy = policy;
+        forkJoin([
+            this.policyEngineService.getPolicy(policyId),
+            this.policyEngineService.getAllPolicy()
+        ]).subscribe((value) => {
+            this.policy = value[0];
+            if(value[1]) {
+                this.policyInfo =  value[1].find(e=>e.id == policyId);
+            } else {
+                this.policyInfo = null;
+            }
             setTimeout(() => {
                 this.loading = false;
             }, 500);
