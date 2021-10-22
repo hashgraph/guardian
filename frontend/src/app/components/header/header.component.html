@@ -10,17 +10,21 @@
     </div>
 
     <span class="example-spacer"></span>
-    <div *ngIf="username; else notLogged" class="example-icon user-name">
-      <span>{{username}}</span>
-    </div>
-    <ng-template #notLogged>
-      <div class="example-icon admin-panel">
-        <span>Demo Admin Panel</span>
+
+    <button mat-icon-button class="user-content" [matMenuTriggerFor]="menu">
+      <div class="user-info">
+        <div *ngIf="username; else notLogged" class="example-icon user-name">
+          <span>{{username}}</span>
+        </div>
+        <ng-template #notLogged>
+          <div class="example-icon admin-panel">
+            <span>Demo Admin Panel</span>
+          </div>
+        </ng-template>
+        <div class="user-info-icon">
+          <mat-icon>{{menuIcon}}</mat-icon>
+        </div>
       </div>
-    </ng-template>
-    <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon"
-      [matMenuTriggerFor]="menu">
-      <mat-icon>{{menuIcon}}</mat-icon>
     </button>
 
     <mat-menu #menu="matMenu">
@@ -33,22 +37,19 @@
           width: 409px;
           border-radius: 30px;
           overflow: scroll;">
-          <div class="debug-user">
-              <button mat-raised-button (click)="authState.doLogin('RootAuthority','test')">Root Authority</button>
-              <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>
-              <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
-              <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>
+        <div class="debug-user">
+          <button mat-raised-button (click)="authState.doLogin('RootAuthority','test')">Root Authority</button>
+          <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>
+          <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
+          <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>
+        </div>
+        <div class="debug-user">
+          <div class="current-user" *ngFor="let user of testUsers$ | async"
+            (click)="authState.setCredentials(user.username, 'test')">
+            <div class="current-user-name">{{user.username}}</div>
+            <div class="current-user-role">{{user.role}}</div>
           </div>
-          <div class="debug-user">
-              <div
-                class="current-user"
-                *ngFor="let user of testUsers$ | async"
-                (click)="authState.setCredentials(user.username, 'test')"
-              >
-                <div class="current-user-name">{{user.username}}</div>
-                <div class="current-user-role">{{user.role}}</div>
-              </div>
-          </div>
+        </div>
       </div>
     </mat-menu>
   </mat-toolbar>

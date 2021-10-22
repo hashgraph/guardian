@@ -35,9 +35,11 @@
 }
 
 .user-name {
-    padding: 15px 40px 0px 35px;
+    padding: 3px 56px 0px 35px;
     position: relative;
-    height: 40px;
+    height: 48px;
+    font-size: 20px;
+    box-sizing: border-box;
 }
 
 .user-name mat-icon {
@@ -47,20 +49,25 @@
 }
 
 .admin-panel {
-    padding: 15px 35px 0px 35px;
+    padding: 3px 56px 0px 35px;
     position: relative;
-    height: 40px;
+    height: 48px;
+    font-size: 20px;
+    box-sizing: border-box;
+    color: #fff;
+}
+.admin-panel + .user-info-icon mat-icon {
     color: #fff;
 }
 
 mat-icon {
-    color: #fff;
+    color: rgba(255, 255, 255, 0.54);
     width: 48px;
     height: 48px;
     line-height: 48px !important;
     font-size: 48px;
     position: relative;
-    left: -32px;
+    left: 0px;
 }
 
 a[hidden="true"] {
@@ -98,4 +105,27 @@ a[hidden="true"] {
 
 .debug-user {
     white-space: normal;
+}
+
+.user-info {
+    display: table;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.user-info-icon {
+    position: absolute;
+    right: 0px;
+    top: 0;
+    height: 48px;
+    width: 48px;
+}
+
+.user-content {
+    height: 48px;
+    width: 48px;
+    overflow: visible;
+    position: relative;
+    margin-right: 20px;
 }

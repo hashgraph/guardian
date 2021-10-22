@@ -143,7 +143,7 @@ export class HeaderComponent implements OnInit {
     // }, () => {
     //     this.router.navigate(['/login']);
     // });
-    localStorage.removeItem('accessToken');
+    this.auth.removeAccessToken();
     this.authState.updateState(false);
     this.router.navigate(['/login']);
   }

@@ -56,7 +56,7 @@ export class RegisterComponent implements OnInit {
             this.auth.createUser(d.login, d.password, d.role).subscribe((result) => {
                 this.auth.login(d.login, d.password).subscribe((result) => {
                     this.loading = false;
-                    localStorage.setItem('accessToken', result.accessToken);
+                    this.auth.setAccessToken(result.accessToken);
                     this.authState.updateState(true);
                     if (result.role == UserRole.ROOT_AUTHORITY) {
                         this.router.navigate(['/config']);

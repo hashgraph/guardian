@@ -2,7 +2,7 @@
     background: #fff;
     position: fixed;
     z-index: 999;
-    top: var(--header-height);
+    top: var(--header-height-policy);
     left: 0;
     bottom: 0;
     right: 0;
@@ -72,10 +72,15 @@
     text-align: center;
     border-radius: 60px !important;
     position: relative;
-    margin-right: 46px;
+    margin-right: 10px;
     height: 38px;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 24px !important;
     padding: 8px 20px !important;
     box-sizing: border-box;
+}
+
+.content {
+    flex-wrap: nowrap;
+    display: flex;
 }

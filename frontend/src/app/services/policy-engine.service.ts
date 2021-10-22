@@ -1,19 +1,99 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable, Subscription} from 'rxjs';
-import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, Observer, Subject, Subscription } from 'rxjs';
+import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
+import { AuthService } from './auth.service';
+import { ToastrService } from 'ngx-toastr';
 
-// /*
 @Injectable()
 export class PolicyEngineService {
-  private obs: WebSocketSubject<string>;
+  private socket: any;
+  private websocketSubject: Subject<unknown>;
+  private wsSubjectConfig: WebSocketSubjectConfig<string>;
 
-  constructor(private http: HttpClient) {
-    this.obs = webSocket({
-      url: `${location.origin.replace(/^https?/, 'ws')}?token=${localStorage.getItem('accessToken')}`,
+  private connectionStatus: boolean = false;
+  private reconnectInterval: number = 5000;  /// pause between connections
+  private reconnectAttempts: number = 10;  /// number of connection attempts
+
+  constructor(
+    private http: HttpClient,
+    private auth: AuthService,
+    private toastr: ToastrService
+  ) {
+    this.websocketSubject = new Subject();
+    this.wsSubjectConfig = {
+      url: this.getUrl(null),
       deserializer: (e) => e.data,
       serializer: (value) => value,
+      closeObserver: {
+        next: this.closeWebSocket.bind(this)
+      },
+      openObserver: {
+        next: this.openWebSocket.bind(this)
+      }
+    };
+
+    this.connect();
+    this.auth.subscribe(() => {
+      this.reconnectAttempts = 10;
+      this.connect();
+    })
+  }
+
+  private getBaseUrl() {
+    return `${location.origin.replace(/^https?/, 'ws')}`;
+  }
+
+  private getUrl(accessToken: string | null) {
+    return `${this.getBaseUrl()}?token=${accessToken}`;
+  }
+
+  private closeWebSocket() {
+    if (this.socket) {
+      this.socket.unsubscribe();
+    }
+    this.socket = null;
+    this.connectionStatus = false;
+    this.reconnect();
+    this.toastr.error(this.getBaseUrl(), "Close Web Socket", {
+      timeOut: 10000,
+      closeButton: true,
+      positionClass: 'toast-bottom-right',
+      enableHtml: true
     });
+  }
+
+  private openWebSocket() {
+    this.connectionStatus = true;
+    this.reconnectAttempts = 10;
+  }
+
+  private connect(): void {
+    const accessToken = this.auth.getAccessToken();
+    if (!accessToken) {
+      return;
+    }
+    this.wsSubjectConfig.url = this.getUrl(accessToken);
+    this.socket = webSocket(this.wsSubjectConfig);
+    this.socket.subscribe(
+      (m: any) => {
+        this.websocketSubject.next(m);
+      },
+      (error: Event) => {
+        if (!this.socket) {
+          this.reconnect();
+        }
+      });
+  }
+
+  private reconnect(): void {
+    setTimeout(() => {
+      if (this.reconnectAttempts < 0) {
+        return;
+      }
+      this.reconnectAttempts--;
+      this.connect();
+    }, this.reconnectInterval);
   }
 
   public getAllPolicy(): Observable<any[]> {
@@ -37,11 +117,11 @@ export class PolicyEngineService {
   }
 
   public subscribe(
-    next?: ((id: string) => void),
+    next?: ((id: any) => void),
     error?: ((error: any) => void),
     complete?: (() => void)
   ): Subscription {
-    return this.obs.subscribe(next, error, complete);
+    return this.websocketSubject.subscribe(next, error, complete);
   }
 
   public loadPolicy(policyId: string): Observable<any> {
@@ -65,10 +145,10 @@ export class PolicyEngineService {
   }
 
   public toYAML(json: any): Observable<any> {
-    return this.http.post<any>(`/policy/to-yaml`, {json});
+    return this.http.post<any>(`/policy/to-yaml`, { json });
   }
-  
+
   public fromYAML(yaml: string): Observable<any> {
-    return this.http.post<any>(`/policy/from-yaml`, {yaml});
+    return this.http.post<any>(`/policy/from-yaml`, { yaml });
   }
 }

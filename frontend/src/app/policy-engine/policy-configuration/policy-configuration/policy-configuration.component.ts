@@ -371,6 +371,9 @@ export class PolicyConfigurationComponent implements OnInit {
         if (blockType == 'interfaceDocumentsSource') {
             return 'table_view';
         }
+        if (blockType == 'informationBlock') {
+            return 'info';
+        }
         if (blockType == 'requestVcDocument') {
             return 'dynamic_form';
         }
