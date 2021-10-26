@@ -98,8 +98,10 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    {"OPERATOR_ID":"0.0.123456789","OPERATOR_KEY":"302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6"}
    ```
-
-   The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, delete the `TOPIC_ID` line.
+ 
+   - The `OPERATOR_ID` is the Hedera account's `accountId`
+   - The `OPERATOR_KEY` is the Hedera account's `privateKey`
+   - The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, delete the `TOPIC_ID` line.
 
 3. If you want to build with Docker (Once this step you are finished)
    ```
