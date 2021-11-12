@@ -1,4 +1,4 @@
-import {Singleton} from '@helpers/decorators/singleton';
+import { Singleton } from '@helpers/decorators/singleton';
 import {
     IAddressBookConfig,
     IApprovalDocument,
@@ -65,8 +65,10 @@ export class Guardians {
      * Return address book
      * @param params
      */
-    public async getAddressBook(params: IFilter): Promise<IAddressBookConfig> {
-        return (await this.channel.request(this.target, MessageAPI.GET_ADDRESS_BOOK, params)).payload;
+    public async getAddressBook(owner: string): Promise<IAddressBookConfig> {
+        return (await this.channel.request(this.target, MessageAPI.GET_ADDRESS_BOOK,
+            { owner: owner }
+        )).payload;
     }
 
     /**

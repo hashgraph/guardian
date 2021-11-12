@@ -8,9 +8,23 @@ describe('Token service', function () {
     const SET_TOKEN = 'set-token';
     const GET_TOKENS = 'get-tokens';
 
+    const tokens = [];
+
     before(async function () {
         channel = createChannel();
         const tokenRepository = createTable();
+        tokenRepository.create = function (items) {
+            return items = Object.assign({ _id: "1" }, items, true);
+        };
+        tokenRepository.save = async function (items) {
+            tokens.push(items);
+        }
+        tokenRepository.find = async function (param) {
+            if (!param) {
+                return tokens;
+            }
+            return param;
+        }
         service = tokenAPI(channel,
             tokenRepository,
         );
@@ -22,10 +36,56 @@ describe('Token service', function () {
     });
 
     it('Test SET_TOKEN', async function () {
-        assert.fail();
+        let value = await channel.run(SET_TOKEN, {
+            tokenId: 'tokenId',
+            tokenName: 'tokenName',
+            tokenSymbol: 'tokenSymbol',
+            tokenType: 'tokenType',
+            decimals: 'decimals',
+            initialSupply: 'initialSupply',
+            adminId: 'adminId',
+            adminKey: 'adminKey',
+            kycKey: 'kycKey',
+            freezeKey: 'freezeKey',
+            wipeKey: 'wipeKey',
+            supplyKey: 'supplyKey'
+        });
+        assert.deepEqual(value, [{
+            _id: '1',
+            tokenId: 'tokenId',
+            tokenName: 'tokenName',
+            tokenSymbol: 'tokenSymbol',
+            tokenType: 'tokenType',
+            decimals: 'decimals',
+            initialSupply: 'initialSupply',
+            adminId: 'adminId',
+            adminKey: 'adminKey',
+            kycKey: 'kycKey',
+            freezeKey: 'freezeKey',
+            wipeKey: 'wipeKey',
+            supplyKey: 'supplyKey'
+        }]);
     });
 
     it('Test GET_TOKENS', async function () {
-        assert.fail();
+        let value = await channel.run(GET_TOKENS, null);
+        assert.deepEqual(value, [{
+            _id: '1',
+            tokenId: 'tokenId',
+            tokenName: 'tokenName',
+            tokenSymbol: 'tokenSymbol',
+            tokenType: 'tokenType',
+            decimals: 'decimals',
+            initialSupply: 'initialSupply',
+            adminId: 'adminId',
+            adminKey: 'adminKey',
+            kycKey: 'kycKey',
+            freezeKey: 'freezeKey',
+            wipeKey: 'wipeKey',
+            supplyKey: 'supplyKey'
+        }]);
+
+        value = await channel.run(GET_TOKENS, { tokenId: "tokenId" });
+        assert.deepEqual(value, { where: { tokenId: { '$eq': 'tokenId' } } });
     });
 });

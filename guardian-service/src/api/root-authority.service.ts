@@ -52,16 +52,11 @@ export const rootAuthorityAPI = async function (
     });
 
     channel.response(MessageAPI.GET_ADDRESS_BOOK, async (msg, res) => {
-        const reqObj: any = { where: {} };
-
-        if (msg.payload.owner) {
-            reqObj.where['did'] = { $eq: msg.payload.owner }
+        if(!msg.payload) {
+            res.send(null);
+            return;
         }
-
-        if (msg.payload.owners) {
-            reqObj.where['did'] = { $in: msg.payload.owners }
-        }
-
+        
         const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload.owner } } });
         if (!rootConfig) {
             res.send(null);

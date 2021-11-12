@@ -115,7 +115,7 @@ export class RequestVcDocumentBlock {
         }
         if (idType == 'DID') {
             const ref = PolicyBlockHelpers.GetBlockRef(this);
-            const addressBook = await this.guardians.getAddressBook({ owner: ref.policyOwner });
+            const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
             const hederaHelper = HederaHelper
                 .setOperator(userHederaAccount, userHederaKey)
                 .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);

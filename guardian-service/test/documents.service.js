@@ -2,7 +2,7 @@ const { expect, assert } = require('chai');
 const { documentsAPI } = require('../dist/api/documents.service');
 const { createChannel, createTable } = require('./helper');
 
-describe('Config service', function () {
+describe('Documents service', function () {
     let service, channel;
 
     const GET_DID_DOCUMENTS = 'get-did-documents';
@@ -88,6 +88,7 @@ describe('Config service', function () {
             field2: 'field2'
         });
         assert.deepEqual(value, {
+            "_id": "1",
             'did': 'did',
             'field1': 'field1',
             'field2': 'field2'
@@ -139,6 +140,7 @@ describe('Config service', function () {
             field2: 'field2'
         });
         assert.deepEqual(value, {
+            "_id": "1",
             field1: 'field1',
             field2: 'field2',
             signature: 1
@@ -208,6 +210,7 @@ describe('Config service', function () {
             field2: 'field2'
         });
         assert.deepEqual(value, {
+            "_id": "1",
             field1: 'field1',
             field2: 'field2'
         });

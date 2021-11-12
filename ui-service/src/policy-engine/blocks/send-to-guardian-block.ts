@@ -25,12 +25,12 @@ export class SendToGuardianBlock {
 
     async documentSender(state, user): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
-       
+
         let document = state.data;
         document.policyId = ref.policyId;
         document.tag = ref.tag;
 
-        if (ref.options.forceNew) { 
+        if (ref.options.forceNew) {
             document = { ...document };
             document.id = undefined;
             state.data = document;
@@ -73,11 +73,11 @@ export class SendToGuardianBlock {
         const currentIndex = ref.parent.children.findIndex(el => this === el);
         const nextBlock = ref.parent.children[currentIndex + 1];
         if (nextBlock) {
-            if(user) {
+            if (user) {
                 const target = ref.parent;
                 const _state = StateContainer.GetBlockState(target.uuid, user);
                 _state.index = currentIndex + 1;
-                await StateContainer.SetBlockState(target.uuid, _state, user, null); 
+                await StateContainer.SetBlockState(target.uuid, _state, user, null);
             }
             if (nextBlock.runAction) {
                 await nextBlock.runAction(state, user);
@@ -122,7 +122,7 @@ export class SendToGuardianBlock {
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const addressBook = await this.guardians.getAddressBook({ owner: ref.policyOwner });
+        const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
         const hederaHelper = HederaHelper
             .setOperator(userID, userKey)
             .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);

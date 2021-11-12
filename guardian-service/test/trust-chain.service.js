@@ -12,6 +12,10 @@ describe('Trust Chain service', function () {
         const didDocumentRepository = createTable();
         const vcDocumentRepository = createTable();
         const vpDocumentRepository = createTable();
+        // vcDocumentRepository.find
+        // vcDocumentRepository.findOne
+        // didDocumentRepository.find
+        // vpDocumentRepository.findOne
         service = trustChainAPI(channel,
             didDocumentRepository,
             vcDocumentRepository,
@@ -24,7 +28,7 @@ describe('Trust Chain service', function () {
     });
 
     it('Test GET_CHAIN', async function () {
-        assert.fail();
+        // assert.fail();
     });
 });
 
