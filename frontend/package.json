@@ -2,7 +2,7 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
     "@angular/animations": "~12.1.1",
-    "@angular/cdk": "^12.1.1",
+    "@angular/cdk": "^13.0.1",
     "@angular/common": "~12.1.1",
     "@angular/compiler": "~12.1.1",
     "@angular/core": "~12.1.1",
