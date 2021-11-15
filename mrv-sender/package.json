@@ -7,7 +7,7 @@
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.8",
     "@transmute/security-context": "0.7.0-unstable.8",
     "@transmute/vc.js": "0.7.0-unstable.8",
-    "axios": "^0.21.1",
+    "axios": "^0.24.0",
     "did-sdk-js": "git+https://github.com/EnvisionBlockchain/did-sdk-js.git",
     "express": "^4.17.1",
     "vc-modules": "file:../vc-modules"
