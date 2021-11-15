@@ -14,7 +14,7 @@ describe('Token service', function () {
         channel = createChannel();
         const tokenRepository = createTable();
         tokenRepository.create = function (items) {
-            return items = Object.assign({ _id: "1" }, items, true);
+            return items = Object.assign({ _id: '1' }, items, true);
         };
         tokenRepository.save = async function (items) {
             tokens.push(items);
@@ -85,7 +85,7 @@ describe('Token service', function () {
             supplyKey: 'supplyKey'
         }]);
 
-        value = await channel.run(GET_TOKENS, { tokenId: "tokenId" });
+        value = await channel.run(GET_TOKENS, { tokenId: 'tokenId' });
         assert.deepEqual(value, { where: { tokenId: { '$eq': 'tokenId' } } });
     });
 });

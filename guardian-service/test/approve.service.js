@@ -64,7 +64,7 @@ describe('Approve service', function () {
             field2: 'field2'
         });
         assert.deepEqual(value, {
-            "_id": "1",
+            '_id': '1',
             field1: 'field1',
             field2: 'field2'
         });

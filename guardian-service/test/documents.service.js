@@ -3,7 +3,7 @@ const { documentsAPI } = require('../dist/api/documents.service');
 const { createChannel, createTable } = require('./helper');
 
 describe('Documents service', function () {
-    let service, channel;
+    let channel;
 
     const GET_DID_DOCUMENTS = 'get-did-documents';
     const GET_VC_DOCUMENTS = 'get-vc-documents';
@@ -88,7 +88,7 @@ describe('Documents service', function () {
             field2: 'field2'
         });
         assert.deepEqual(value, {
-            "_id": "1",
+            '_id': '1',
             'did': 'did',
             'field1': 'field1',
             'field2': 'field2'
@@ -140,7 +140,7 @@ describe('Documents service', function () {
             field2: 'field2'
         });
         assert.deepEqual(value, {
-            "_id": "1",
+            '_id': '1',
             field1: 'field1',
             field2: 'field2',
             signature: 1
@@ -210,7 +210,7 @@ describe('Documents service', function () {
             field2: 'field2'
         });
         assert.deepEqual(value, {
-            "_id": "1",
+            '_id': '1',
             field1: 'field1',
             field2: 'field2'
         });

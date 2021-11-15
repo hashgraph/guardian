@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 function createChannel() {
     let channel;
@@ -33,7 +33,7 @@ function createTable() {
             return [id, item];
         },
         create: function (item) {
-            item._id = "1";
+            item._id = '1';
             return item;
         },
         save: async function (item) {

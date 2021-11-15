@@ -13,43 +13,43 @@ describe('Schema service', function () {
     const EXPORT_SCHEMES = 'export-schema';
 
     const s1 = {
-        "_id": "1",
-        "document": {
+        '_id': '1',
+        'document': {
             '@id': localSchema + '#type',
             '@context': {
                 'f1': { '@id': 'https://www.schema.org/text' },
                 'f2': { '@id': 'https://www.schema.org/text' },
             }
         },
-        "entity": "entity",
-        "isDefault": false,
-        "type": "type"
+        'entity': 'entity',
+        'isDefault': false,
+        'type': 'type'
     }
     const s2 = {
-        "_id": "1",
-        "document": {
+        '_id': '1',
+        'document': {
             '@id': localSchema + '#type2',
             '@context': {
                 'f3': { '@id': 'https://localhost/schema#type3' },
                 'f4': { '@id': 'https://www.schema.org/text' },
             }
         },
-        "entity": "entity2",
-        "isDefault": false,
-        "type": "type2"
+        'entity': 'entity2',
+        'isDefault': false,
+        'type': 'type2'
     }
     const s3 = {
-        "_id": "1",
-        "document": {
+        '_id': '1',
+        'document': {
             '@id': localSchema + '#type3',
             '@context': {
                 'f5': { '@id': 'https://www.schema.org/text' },
                 'f6': { '@id': 'https://www.schema.org/text' },
             }
         },
-        "entity": "entity3",
-        "isDefault": false,
-        "type": "type3"
+        'entity': 'entity3',
+        'isDefault': false,
+        'type': 'type3'
     }
 
     const schemas = [];
@@ -60,12 +60,12 @@ describe('Schema service', function () {
         schemaRepository.create = function (items) {
             if (Array.isArray(items)) {
                 for (let i = 0; i < items.length; i++) {
-                    items[i] = Object.assign({ _id: "1" }, items[i], true);
+                    items[i] = Object.assign({ _id: '1' }, items[i], true);
                     items[i].document = Object.assign({}, items[i].document, true);
                 }
                 return items;
             } else {
-                items = Object.assign({ _id: "1" }, items, true);
+                items = Object.assign({ _id: '1' }, items, true);
                 items.document = Object.assign({}, items.document, true);
                 return items;
             }
@@ -100,8 +100,8 @@ describe('Schema service', function () {
 
     it('Test SET_SCHEMA', async function () {
         let value = await channel.run(SET_SCHEMA, {
-            type: "type",
-            entity: "entity",
+            type: 'type',
+            entity: 'entity',
             isDefault: false,
             document: {
                 '@id': localSchema + '#type',
@@ -118,17 +118,17 @@ describe('Schema service', function () {
         let value = await channel.run(GET_SCHEMES, null);
         assert.deepEqual(value, [s1]);
 
-        value = await channel.run(GET_SCHEMES, { type: "type", entity: "entity" });
+        value = await channel.run(GET_SCHEMES, { type: 'type', entity: 'entity' });
         assert.deepEqual(value, { where: { type: { '$eq': 'type' } } });
 
-        value = await channel.run(GET_SCHEMES, { entity: "entity" });
+        value = await channel.run(GET_SCHEMES, { entity: 'entity' });
         assert.deepEqual(value, { where: { entity: { '$eq': 'entity' } } });
     });
 
     it('Test IMPORT_SCHEMA|EXPORT_SCHEMES', async function () {
         await channel.run(SET_SCHEMA, {
-            type: "type2",
-            entity: "entity2",
+            type: 'type2',
+            entity: 'entity2',
             isDefault: false,
             document: {
                 '@id': localSchema + '#type2',
@@ -139,8 +139,8 @@ describe('Schema service', function () {
             }
         });
         await channel.run(SET_SCHEMA, {
-            type: "type3",
-            entity: "entity3",
+            type: 'type3',
+            entity: 'entity3',
             isDefault: false,
             document: {
                 '@id': localSchema + '#type3',
@@ -151,10 +151,10 @@ describe('Schema service', function () {
             }
         });
 
-        const export1 = await channel.run(EXPORT_SCHEMES, ["type"]);
+        const export1 = await channel.run(EXPORT_SCHEMES, ['type']);
         assert.deepEqual(export1, [s1]);
 
-        const export2 = await channel.run(EXPORT_SCHEMES, ["type", "type2"]);
+        const export2 = await channel.run(EXPORT_SCHEMES, ['type', 'type2']);
         assert.deepEqual(export2, [s1, s2, s3]);
 
         schemas.length = 0;
