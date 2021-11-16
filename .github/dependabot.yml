@@ -1,0 +1,38 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/frontend"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 5
+- package-ecosystem: npm
+  directory: "/guardian-services"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 5
+- package-ecosystem: npm
+  directory: "/interfaces"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 5
+- package-ecosystem: npm
+  directory: "/message-broker"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 5
+- package-ecosystem: npm
+  directory: "/mrv-sender"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 5
+- package-ecosystem: npm
+  directory: "/ui-service"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 5
+- package-ecosystem: npm
+  directory: "/vc-modules"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 5
+
