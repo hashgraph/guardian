@@ -253,7 +253,6 @@ export const schemaAPI = async function (
             let index = 0;
             while (index < result.length) {
                 const relationships = getRelationships(result[index]);
-                console.log(relationships);
                 for (let i = 0; i < relationships.length; i++) {
                     const type = relationships[i];
                     if (!mapType[type]) {
