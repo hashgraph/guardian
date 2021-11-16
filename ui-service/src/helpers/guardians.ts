@@ -1,4 +1,4 @@
-import { Singleton } from '@helpers/decorators/singleton';
+import {Singleton} from '@helpers/decorators/singleton';
 import {
     IAddressBookConfig,
     IApprovalDocument,

@@ -119,6 +119,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 '@context': {
                     'name': { '@id': 'https://www.schema.org/text' },
                     'description': { '@id': 'https://www.schema.org/text' },
+                    'topicDescription': { '@id': 'https://www.schema.org/text' },             
                     'version': { '@id': 'https://www.schema.org/text' },
                     'policyTag': { '@id': 'https://www.schema.org/text' }
                 }

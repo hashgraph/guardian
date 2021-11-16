@@ -202,6 +202,7 @@ export class BlockTreeGenerator {
             model.name = policy.name;
             model.version = policy.version;
             model.description = policy.description;
+            model.topicDescription = policy.topicDescription;
             model.policyPoles = policy.policyPoles;
 
             const result = await getMongoRepository(Policy).save(model);
@@ -255,7 +256,7 @@ export class BlockTreeGenerator {
             const root = await guardians.getRootConfig(user.did);
             const topicId = await HederaHelper
                 .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-                .newTopic(root.hederaAccountKey);
+                .newTopic(root.hederaAccountKey, model.topicDescription);
             model.status = 'PUBLISH';
             model.topicId = topicId;
 
@@ -264,6 +265,7 @@ export class BlockTreeGenerator {
                 id: `${model.id}`,
                 name: model.name,
                 description: model.description,
+                topicDescription: model.topicDescription,
                 version: model.version,
                 policyTag: model.policyTag
             }

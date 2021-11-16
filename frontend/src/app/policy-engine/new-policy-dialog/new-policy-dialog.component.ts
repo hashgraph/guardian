@@ -13,6 +13,7 @@ export class NewPolicyDialog {
         name: ['', Validators.required],
         version: ['', Validators.required],
         description: ['', Validators.required],
+        topicDescription: ['', Validators.required],
         policyTag: ['', Validators.required],
     });
 

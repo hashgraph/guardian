@@ -20,6 +20,9 @@ export class Policy {
     description: string;
 
     @Column()
+    topicDescription: string;
+    
+    @Column()
     config: Object;
 
     @Column()
