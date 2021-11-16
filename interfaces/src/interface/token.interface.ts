@@ -3,6 +3,7 @@ export interface IToken {
     tokenId: string;
     tokenName: string;
     tokenSymbol: string;
+    tokenType: string;
     decimals: string;
     initialSupply: string;
     adminId: string;

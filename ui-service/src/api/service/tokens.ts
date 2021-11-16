@@ -17,6 +17,15 @@ const getTokenInfo = (info: any, token: any, tokenId: string) => {
         token.hBarBalance = info[tokenId].hBarBalance;
         token.frozen = !!info[tokenId].frozen;
         token.kyc = !!info[tokenId].kyc;
+        try {
+            if (token.decimals) {
+                token.balance = (
+                    token.balance / Math.pow(10, token.decimals)
+                ).toFixed(token.decimals)
+            }
+        } catch (error) {
+            token.balance = "N/A";
+        }
     } else {
         token.associated = false;
         token.balance = null;
@@ -143,13 +152,23 @@ tokenAPI.get('/user-tokens', async (req: Request, res: Response) => {
     const installerDID = user.did;
     const installerKey = await wallet.getKey(user.walletToken, KeyType.KEY, installerDID);
 
-    const tokens = (await guardians.getTokens(null));
+    const tokens = (await guardians.getTokens(null)) || [];
+    const result = tokens.map(e => {
+        return {
+            id: e.id,
+            tokenId: e.tokenId,
+            tokenName: e.tokenName,
+            tokenSymbol: e.tokenSymbol,
+            tokenType: e.tokenType,
+            decimals: e.decimals,
+        }
+    });
     try {
         const info = await HederaHelper
             .setOperator(installerID, installerKey).SDK
             .accountInfo(user.hederaAccountId);
-        for (let i = 0; i < tokens.length; i++) {
-            const element = tokens[i];
+        for (let i = 0; i < result.length; i++) {
+            const element = result[i];
             getTokenInfo(info, element, element.tokenId);
         }
     } catch (error) {
@@ -157,7 +176,7 @@ tokenAPI.get('/user-tokens', async (req: Request, res: Response) => {
         return;
     }
 
-    res.json(tokens as ITokenInfo[]);
+    res.json(result as ITokenInfo[]);
 });
 
 tokenAPI.post('/associate', async (req: Request, res: Response) => {
