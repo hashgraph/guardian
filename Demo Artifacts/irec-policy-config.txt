@@ -52,8 +52,8 @@
           "children": [],
           "uiMetaData": {
             "type": "text",
-            "title": "Wait fo approve",
-            "description": "Wait fo approve"
+            "title": "Waiting for approval",
+            "description": "Waiting for approval"
           },
           "permissions": [
             "INSTALLER"
@@ -285,7 +285,7 @@
           "children": [],
           "uiMetaData": {
             "type": "text",
-            "description": "your application was rejected",
+            "description": "Your application was rejected",
             "title": "Rejected"
           },
           "stopPropagation": true,
