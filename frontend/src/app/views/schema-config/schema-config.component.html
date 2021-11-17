@@ -27,14 +27,58 @@
                     <th mat-header-cell *matHeaderCellDef> Entity </th>
                     <td mat-cell *matCellDef="let element">{{element.entity}}</td>
                 </ng-container>
-                <ng-container matColumnDef="isDefault">
-                    <th mat-header-cell *matHeaderCellDef> Default </th>
-                    <td mat-cell *matCellDef="let element"> {{element.isDefault}} </td>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef> Status </th>
+                    <td mat-cell *matCellDef="let element">
+                        <span [ngSwitch]="element.status">
+                            <p *ngSwitchCase="'DRAFT'">
+                                <span class="schema-status status-DRAFT">Draft</span>
+                            </p>
+                            <p *ngSwitchCase="'PUBLISHED'">
+                                <span class="schema-status status-PUBLISHED">Published</span>
+                            </p>
+                            <p *ngSwitchCase="'UNPUBLISHED'">
+                                <span class="schema-status status-UNPUBLISHED">Unpublished</span>
+                            </p>
+                            <p *ngSwitchDefault>
+                                <span class="schema-status">{{element.status}}</span>
+                            </p>
+                        </span>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="operation">
+                    <th mat-header-cell *matHeaderCellDef> Operations </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.status =='DRAFT'" class="btn-approve" (click)="publish(element)">Publish</div>
+                        <div *ngIf="element.status =='PUBLISHED'" class="btn-unpublished" (click)="unpublished(element)">Unpublish</div>
+                        <div *ngIf="element.status =='UNPUBLISHED'" class="btn-approve" (click)="publish(element)">Publish</div>
+                    </td>
                 </ng-container>
                 <ng-container matColumnDef="document">
                     <th mat-header-cell *matHeaderCellDef> Document </th>
                     <td mat-cell *matCellDef="let element">
-                        <a (click)="openDocument(element)">open</a>
+                        <div class="btn-settings" (click)="openDocument(element)">
+                            <mat-icon>segment</mat-icon>
+                            <span>Document</span>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="edit">
+                    <th mat-header-cell *matHeaderCellDef> </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.status =='DRAFT'" class="btn-settings" (click)="editDocument(element)">
+                            <mat-icon>edit</mat-icon>
+                            <span>Edit</span>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="delete">
+                    <th mat-header-cell *matHeaderCellDef> </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.status =='DRAFT'" class="btn-settings btn-delete" (click)="deleteSchema(element)">
+                            <mat-icon>delete</mat-icon>
+                            <span>Delete</span>
+                        </div>
                     </td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="schemaColumns; sticky: true"></tr>

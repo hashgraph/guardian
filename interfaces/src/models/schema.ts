@@ -1,22 +1,31 @@
 import {ISchema} from '../interface/schema.interface';
 import {SchemaEntity} from '../type/schema-entity.type';
+import {SchemaStatus} from '../type/schema-status.type';
 
 export class Schema {
     public id: string;
     public type: string;
     public entity: SchemaEntity;
+    public readonly: boolean;
     public document: any;
     public fullDocument: any;
+    public status: SchemaStatus;
 
     constructor(data: ISchema) {
         this.id = data.id;
         this.type = data.type;
         this.entity = data.entity;
         this.document = data.document;
+        this.readonly = data.readonly;
+        this.status = data.status || SchemaStatus.DRAFT;
         this.fullDocument = JSON.parse(JSON.stringify(data.document));
     }
 
     static map(data: ISchema[]): Schema[] {
+        if(!data) {
+            return null;
+        }
+
         const schemes = data.map(e => new Schema(e));
         const ids: any = {};
 

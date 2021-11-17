@@ -5,11 +5,9 @@ import {
     IChainItem,
     IDidDocument,
     IFullConfig,
-    IPolicy,
     IRootConfig,
     ISchema,
     IToken,
-    IVC,
     IVCDocument,
     IVPDocument,
     MessageAPI
@@ -236,5 +234,17 @@ export class Guardians {
 
     public async exportSchemes(ids: string[]): Promise<ISchema[]> {
         return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
+    }
+
+    public async publishSchema(id: string): Promise<ISchema[]> {
+        return (await this.channel.request(this.target, MessageAPI.PUBLISH_SCHEMA, id)).payload;
+    }
+
+    public async unpublishedSchema(id: string): Promise<ISchema[]> {
+        return (await this.channel.request(this.target, MessageAPI.UNPUBLISHED_SCHEMA, id)).payload;
+    }
+
+    public async deleteSchema(id: string): Promise<ISchema[]> {
+        return (await this.channel.request(this.target, MessageAPI.DELETE_SCHEMA, id)).payload;
     }
 }

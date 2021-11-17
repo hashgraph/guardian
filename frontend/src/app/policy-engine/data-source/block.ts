@@ -1,8 +1,3 @@
-// interface IPolicy {
-//     id: string;
-//     name: string;
-//     root: IBlock<any, any>
-// }
 export interface IBlock<U> {
     id: string;
     tag: string;

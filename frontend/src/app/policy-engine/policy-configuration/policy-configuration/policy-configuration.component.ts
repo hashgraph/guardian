@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { BlockNode, TreeDataSource } from '../../data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, Token } from 'interfaces';
+import { Schema, SchemaStatus, Token } from 'interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -92,10 +92,12 @@ export class PolicyConfigurationComponent implements OnInit {
             const schemes = data[0] || [];
             const tokens = data[1] || [];
             const policy = data[2];
-            this.schemes = Schema.map(schemes);
+            this.schemes = Schema.map(schemes) || [];
+            this.schemes = this.schemes.filter(s=>s.status == SchemaStatus.PUBLISHED);
             this.schemes.unshift({
                 type: ""
             } as any);
+
             this.tokens = tokens.map((e: any) => new Token(e));
             this.setPolicy(policy);
             setTimeout(() => {

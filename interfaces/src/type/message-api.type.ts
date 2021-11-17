@@ -19,6 +19,9 @@ export enum MessageAPI {
     GET_VP_DOCUMENTS = 'get-vp-documents',
     GET_CHAIN = 'get-chain',
     SET_VP_DOCUMENT = 'set-vp-document',
-    IMPORT_SCHEMA = "import-schema",
-    EXPORT_SCHEMES = "export-schema"
+    IMPORT_SCHEMA = 'import-schema',
+    EXPORT_SCHEMES = 'export-schema',
+    PUBLISH_SCHEMA = 'publish-schema',
+    UNPUBLISHED_SCHEMA = 'unpublished-schema',
+    DELETE_SCHEMA = 'delete-schema'
 }

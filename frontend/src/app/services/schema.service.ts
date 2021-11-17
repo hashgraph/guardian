@@ -13,14 +13,22 @@ export class SchemaService {
   public createSchema(
     type: string,
     entity: SchemaEntity,
-    isDefault: boolean,
     document: any
   ): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/create', { type, entity, document, isDefault });
+    return this.http.post<any[]>('/api/schema/create', { type, entity, document });
+  }
+
+  public updateSchema(
+    id: any,
+    type: string,
+    entity: SchemaEntity,
+    document: any
+  ): Observable<ISchema[]> {
+    return this.http.post<any[]>('/api/schema/update', { id, type, entity, document });
   }
 
   public getSchemes(): Observable<ISchema[]> {
-    return this.http.get<any[]>('/api/schema/');
+    return this.http.get<any[]>('/api/schema');
   }
 
   public getSchemesByEntity(): Observable<ISchema[]> {
@@ -33,5 +41,17 @@ export class SchemaService {
 
   public exportSchemes(ids: string[]): Observable<any> {
     return this.http.post<any[]>(`/api/schema/export`, { ids });
+  }
+
+  public publishSchema(id: any): Observable<ISchema[]> {
+    return this.http.post<any[]>('/api/schema/publish', { id });
+  }
+
+  public unpublishedSchema(id: any): Observable<ISchema[]> {
+    return this.http.post<any[]>('/api/schema/unpublished', { id });
+  }
+
+  public deleteSchema(id: any): Observable<ISchema[]> {
+    return this.http.post<any[]>('/api/schema/delete', { id });
   }
 }

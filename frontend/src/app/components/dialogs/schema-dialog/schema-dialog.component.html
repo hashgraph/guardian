@@ -1,4 +1,4 @@
 <h1 mat-dialog-title>New Schema</h1>
 <div mat-dialog-content>
-    <app-schema-configuration [schemes]="schemes" (document)="getDocument($event)"></app-schema-configuration>
+    <app-schema-configuration [value]="scheme" [schemes]="schemes" (document)="getDocument($event)"></app-schema-configuration>
 </div>

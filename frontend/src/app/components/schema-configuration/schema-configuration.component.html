@@ -11,7 +11,7 @@
             <mat-option value="NONE">NONE</mat-option>
             <mat-option value="INSTALLER">INSTALLER</mat-option>
             <mat-option value="INVERTER">INVERTER</mat-option>
-            <mat-option value="MRV">MRV</mat-option>
+            <mat-option value="MRV">MRV</mat-option>            
         </mat-select>
     </mat-form-field>
 
@@ -55,6 +55,9 @@
                             </mat-optgroup>
                         </mat-select>
                     </mat-form-field>
+                </div>
+                <div class="custom-fields-remove" (click)="onRemove(item)">
+                    <mat-icon>delete</mat-icon>
                 </div>
             </div>
         </div>

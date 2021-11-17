@@ -41,7 +41,11 @@ export class PolicyEngineService {
   }
 
   private getBaseUrl() {
-    return `${location.origin.replace(/^https?/, 'ws')}`;
+    let url = location.origin;
+    if(/^https/.test(url)) {
+      return `${url.replace(/^https/, 'wss')}`;
+    }
+    return `${url.replace(/^http/, 'ws')}`;
   }
 
   private getUrl(accessToken: string | null) {

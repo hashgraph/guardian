@@ -1,4 +1,4 @@
-import { ISchema, SchemaEntity } from 'interfaces';
+import { ISchema, SchemaEntity, SchemaStatus } from 'interfaces';
 import { BeforeInsert, Column, Entity, ObjectIdColumn } from 'typeorm';
 
 @Entity()
@@ -15,7 +15,10 @@ export class Schema implements ISchema {
     entity: SchemaEntity;
 
     @Column()
-    isDefault: boolean;
+    status: SchemaStatus;
+
+    @Column()
+    readonly: boolean;
 
     @Column()
     document: any;
@@ -23,6 +26,7 @@ export class Schema implements ISchema {
     @BeforeInsert()
     setDefaults() {
         this.entity = this.entity || SchemaEntity.NONE;
-        this.isDefault = !!this.isDefault;
+        this.readonly = !!this.readonly;
+        this.status = this.status || SchemaStatus.DRAFT;
     }
 }

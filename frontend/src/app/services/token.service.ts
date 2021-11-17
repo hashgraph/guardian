@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {IPolicy, ISession, IToken} from 'interfaces';
+import {ISession, IToken} from 'interfaces';
 import {Observable} from 'rxjs';
 
 @Injectable()

@@ -5,9 +5,8 @@ import { forkJoin } from 'rxjs';
 import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.component';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
-import { SchemaService } from '../../services/schema.service';
 import { TokenService } from '../../services/token.service';
-import { IUserProfile, ISession, Token, Schema, IToken, UserState, SchemaEntity } from 'interfaces';
+import { IUserProfile, ISession, Token, IToken, UserState } from 'interfaces';
 
 interface IHederaForm {
     id: string,
@@ -25,7 +24,6 @@ export class InstallerProfileComponent implements OnInit {
     profile: any = null;
     balance: string | null = null;
     tokens: Token[] | null = null;
-    schemes: Schema[] = [];
     rootAuthorities: ISession[] = [];
     hederaForm = this.fb.group({
         id: ['', Validators.required],
@@ -48,7 +46,6 @@ export class InstallerProfileComponent implements OnInit {
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
-        private schemaService: SchemaService,
         private fb: FormBuilder,
         public dialog: MatDialog) {
     }
@@ -81,18 +78,15 @@ export class InstallerProfileComponent implements OnInit {
             this.profileService.getRootBalance(),
             this.profileService.getCurrentProfile(),
             this.tokenService.getUserTokens(),
-            this.schemaService.getSchemesByEntity(),
             this.profileService.getRootAuthorities(),
         ]).subscribe((value) => {
             const balance: string | null = value[0];
             const profile: IUserProfile = value[1];
             const tokens: IToken[] = value[2];
-            const schemes: any[] = value[3];
-            const rootAuthorities: ISession[] = value[4]
+            const rootAuthorities: ISession[] = value[3];
 
             this.balance = balance;
             this.tokens = tokens.map(e => new Token(e));
-            this.schemes = Schema.map(schemes).filter(e => e.entity == SchemaEntity.INSTALLER);
             this.rootAuthorities = rootAuthorities || [];
 
             if (profile) {

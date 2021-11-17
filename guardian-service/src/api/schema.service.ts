@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { ISchema, MessageAPI, SchemaEntity } from 'interfaces';
+import { ISchema, MessageAPI, SchemaEntity, SchemaStatus } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 
 const localSchema = 'https://localhost/schema';
@@ -19,7 +19,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 }
             },
             entity: SchemaEntity.INVERTER,
-            isDefault: true
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
         });
         await schemaRepository.save(item);
 
@@ -33,7 +34,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 }
             },
             entity: SchemaEntity.INSTALLER,
-            isDefault: true
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
         });
         await schemaRepository.save(item);
 
@@ -50,7 +52,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 }
             },
             entity: SchemaEntity.MRV,
-            isDefault: true
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
         });
         await schemaRepository.save(item);
 
@@ -65,7 +68,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 }
             },
             entity: SchemaEntity.TOKEN,
-            isDefault: true
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
         });
         await schemaRepository.save(item);
 
@@ -80,7 +84,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 }
             },
             entity: SchemaEntity.TOKEN,
-            isDefault: true
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
         });
         await schemaRepository.save(item);
 
@@ -93,7 +98,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 }
             },
             entity: SchemaEntity.ROOT_AUTHORITY,
-            isDefault: true
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
         });
         await schemaRepository.save(item);
 
@@ -108,7 +114,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 }
             },
             entity: SchemaEntity.TOKEN,
-            isDefault: true
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
         });
         await schemaRepository.save(item);
 
@@ -119,13 +126,14 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 '@context': {
                     'name': { '@id': 'https://www.schema.org/text' },
                     'description': { '@id': 'https://www.schema.org/text' },
-                    'topicDescription': { '@id': 'https://www.schema.org/text' },             
+                    'topicDescription': { '@id': 'https://www.schema.org/text' },
                     'version': { '@id': 'https://www.schema.org/text' },
                     'policyTag': { '@id': 'https://www.schema.org/text' }
                 }
             },
             entity: SchemaEntity.ROOT_AUTHORITY,
-            isDefault: true
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
         });
         await schemaRepository.save(item);
     }
@@ -156,9 +164,55 @@ export const schemaAPI = async function (
     channel: any,
     schemaRepository: MongoRepository<Schema>
 ): Promise<void> {
+    channel.response(MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
+        if (msg.payload) {
+            const id = msg.payload as string;
+            const item = await schemaRepository.findOne(id);
+            if (item) {
+                item.status = SchemaStatus.PUBLISHED;
+                await schemaRepository.update(item.id, item);
+            }
+        }
+        const schemes = await schemaRepository.find();
+        res.send(schemes);
+    });
+
+    channel.response(MessageAPI.UNPUBLISHED_SCHEMA, async (msg, res) => {
+        if (msg.payload) {
+            const id = msg.payload as string;
+            const item = await schemaRepository.findOne(id);
+            if (item) {
+                item.status = SchemaStatus.UNPUBLISHED;
+                await schemaRepository.update(item.id, item);
+            }
+        }
+        const schemes = await schemaRepository.find();
+        res.send(schemes);
+    });
+    
+    channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
+        if (msg.payload) {
+            const id = msg.payload as string;
+            await schemaRepository.delete(id);
+        }
+        const schemes = await schemaRepository.find();
+        res.send(schemes);
+    });
+
     channel.response(MessageAPI.SET_SCHEMA, async (msg, res) => {
-        const schemaObject = schemaRepository.create(msg.payload);
-        const result = await schemaRepository.save(schemaObject);
+        if (msg.payload.id) {
+            const id = msg.payload.id as string;
+            const item = await schemaRepository.findOne(id);
+            if (item) {
+                item.type = msg.payload.type;
+                item.entity = msg.payload.entity;
+                item.document = msg.payload.document;
+                const result = await schemaRepository.update(item.id, item);
+            }
+        } else {
+            const schemaObject = schemaRepository.create(msg.payload);
+            const result = await schemaRepository.save(schemaObject);
+        }
         const schemes = await schemaRepository.find();
         res.send(schemes);
     });
