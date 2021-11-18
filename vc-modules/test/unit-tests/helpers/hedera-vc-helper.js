@@ -3,7 +3,7 @@ const {
     DefaultDocumentLoader,
     VCDocumentLoader,
     DIDDocumentLoader
-} = require("../../dist/index");
+} = require("../../../dist/index");
 const { expect, assert } = require('chai');
 
 class _DocumentLoader {

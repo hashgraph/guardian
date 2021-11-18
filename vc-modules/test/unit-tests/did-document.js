@@ -1,6 +1,6 @@
 const {
     HcsDidDocument
-} = require("../dist/did-document");
+} = require("../../dist/did-document");
 const {FileId} = require("@hashgraph/sdk");
 const {DidDocumentBase, HcsDidRootKey, HcsDid} = require("did-sdk-js");
 const {expect, assert} = require('chai');
