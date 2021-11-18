@@ -29,7 +29,8 @@
     "dev": "tsc -w",
     "lint": "tslint --project .",
     "test": "mocha test/unit-tests/**/*.js",
-    "test:network": "mocha test/network-tests/**/*.js"
+    "test:network": "mocha test/network-tests/**/*.js",
+    "test:hedera": "mocha test/test.js"
   },
   "version": "1.0.0-beta.2"
 }
