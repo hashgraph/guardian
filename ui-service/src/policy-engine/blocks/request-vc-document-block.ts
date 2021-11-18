@@ -31,14 +31,7 @@ export class RequestVcDocumentBlock {
     @Inject()
     private users: Users;
 
-    private _schema: any;
-    private get schema(): any {
-        if (!this._schema) {
-            const ref = PolicyBlockHelpers.GetBlockRef(this);
-            throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
-        }
-        return this._schema;
-    }
+    private schema: any;
 
     private init(): void {
         const { options, blockType, uuid } = PolicyBlockHelpers.GetBlockRef(this);
@@ -49,14 +42,18 @@ export class RequestVcDocumentBlock {
     }
 
     constructor() {
-        this.guardians.getSchemes({}).then(schemas => {
-            this._schema = Schema.map(schemas).find(s => s.type === PolicyBlockHelpers.GetBlockUniqueOptionsObject(this).schema);
-        });
-
     }
 
     async getData(user: IAuthUser): Promise<any> {
         const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
+        if(!this.schema) {
+            const schemas = await this.guardians.getSchemes({}) || [];
+            this.schema = Schema.map(schemas).find(s => s.type === options.schema);
+        }
+        if (!this.schema) {
+            const ref = PolicyBlockHelpers.GetBlockRef(this);
+            throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
+        }
         return {
             data: this.schema,
             uiMetaData: options.uiMetaData || {},

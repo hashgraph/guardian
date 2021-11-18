@@ -7,10 +7,17 @@ describe('Schema service', function () {
 
     const localSchema = 'https://localhost/schema';
 
+    const PUBLISH_SCHEMA = 'publish-schema';
+    const UNPUBLISHED_SCHEMA = 'unpublished-schema';
+    const DELETE_SCHEMA = 'delete-schema';
     const SET_SCHEMA = 'set-schema';
     const GET_SCHEMES = 'get-schemes';
     const IMPORT_SCHEMA = 'import-schema';
     const EXPORT_SCHEMES = 'export-schema';
+
+    const DRAFT = 'DRAFT';
+    const PUBLISHED = 'PUBLISHED';
+    const UNPUBLISHED = 'UNPUBLISHED';
 
     const s1 = {
         '_id': '1',
@@ -22,11 +29,12 @@ describe('Schema service', function () {
             }
         },
         'entity': 'entity',
-        'isDefault': false,
+        'status': PUBLISHED,
+        'readonly': false,
         'type': 'type'
     }
     const s2 = {
-        '_id': '1',
+        '_id': '2',
         'document': {
             '@id': localSchema + '#type2',
             '@context': {
@@ -35,11 +43,12 @@ describe('Schema service', function () {
             }
         },
         'entity': 'entity2',
-        'isDefault': false,
+        'status': PUBLISHED,
+        'readonly': false,
         'type': 'type2'
     }
     const s3 = {
-        '_id': '1',
+        '_id': '3',
         'document': {
             '@id': localSchema + '#type3',
             '@context': {
@@ -48,11 +57,13 @@ describe('Schema service', function () {
             }
         },
         'entity': 'entity3',
-        'isDefault': false,
+        'status': PUBLISHED,
+        'readonly': false,
         'type': 'type3'
     }
 
-    const schemas = [];
+    let schemas = [];
+    let index = 0;
 
     before(async function () {
         channel = createChannel();
@@ -60,12 +71,12 @@ describe('Schema service', function () {
         schemaRepository.create = function (items) {
             if (Array.isArray(items)) {
                 for (let i = 0; i < items.length; i++) {
-                    items[i] = Object.assign({ _id: '1' }, items[i], true);
+                    items[i] = Object.assign({ _id: String(++index) }, items[i], true);
                     items[i].document = Object.assign({}, items[i].document, true);
                 }
                 return items;
             } else {
-                items = Object.assign({ _id: '1' }, items, true);
+                items = Object.assign({ _id: String(++index) }, items, true);
                 items.document = Object.assign({}, items.document, true);
                 return items;
             }
@@ -86,6 +97,22 @@ describe('Schema service', function () {
             }
             return param;
         }
+
+        schemaRepository.findOne = async function (id) {
+            return schemas.find(e => e._id == id);
+        }
+
+        schemaRepository.update = async function (id, item) {
+            const i = schemas.findIndex(e => e._id == id);
+            if (i > -1) {
+                schemas[i] = item
+            }
+        }
+
+        schemaRepository.delete = async function (id) {
+            schemas = schemas.filter(e => e._id != id);
+        }
+
         service = schemaAPI(channel,
             schemaRepository
         );
@@ -96,13 +123,17 @@ describe('Schema service', function () {
         assert.exists(channel.map[GET_SCHEMES]);
         assert.exists(channel.map[IMPORT_SCHEMA]);
         assert.exists(channel.map[EXPORT_SCHEMES]);
+        assert.exists(channel.map[PUBLISH_SCHEMA]);
+        assert.exists(channel.map[UNPUBLISHED_SCHEMA]);
+        assert.exists(channel.map[DELETE_SCHEMA]);
     });
 
     it('Test SET_SCHEMA', async function () {
         let value = await channel.run(SET_SCHEMA, {
             type: 'type',
             entity: 'entity',
-            isDefault: false,
+            readonly: false,
+            status: PUBLISHED,
             document: {
                 '@id': localSchema + '#type',
                 '@context': {
@@ -129,7 +160,8 @@ describe('Schema service', function () {
         await channel.run(SET_SCHEMA, {
             type: 'type2',
             entity: 'entity2',
-            isDefault: false,
+            readonly: false,
+            status: PUBLISHED,
             document: {
                 '@id': localSchema + '#type2',
                 '@context': {
@@ -141,7 +173,8 @@ describe('Schema service', function () {
         await channel.run(SET_SCHEMA, {
             type: 'type3',
             entity: 'entity3',
-            isDefault: false,
+            readonly: false,
+            status: PUBLISHED,
             document: {
                 '@id': localSchema + '#type3',
                 '@context': {
@@ -166,5 +199,121 @@ describe('Schema service', function () {
         import2[1].type = 'type';
         import2[1].document['@id'] = 'https://localhost/schema#type';
         assert.deepEqual(import2, [s1, s1, s2, s3]);
+    });
+
+    it('Test PUBLISH_SCHEMA', async function () {
+        index = 0;
+        schemas.length = 0;
+        await channel.run(SET_SCHEMA, {
+            type: 'type',
+            entity: 'entity',
+            readonly: false,
+            status: DRAFT,
+            document: {
+                '@id': localSchema + '#type',
+                '@context': {
+                    'f1': { '@id': 'https://www.schema.org/text' },
+                    'f2': { '@id': 'https://www.schema.org/text' },
+                }
+            }
+        });
+        await channel.run(SET_SCHEMA, {
+            type: 'type2',
+            entity: 'entity2',
+            readonly: false,
+            status: DRAFT,
+            document: {
+                '@id': localSchema + '#type2',
+                '@context': {
+                    'f3': { '@id': 'https://www.schema.org/text' },
+                    'f4': { '@id': 'https://www.schema.org/text' },
+                }
+            }
+        });
+        let value = await channel.run(PUBLISH_SCHEMA, "2");
+        assert.deepEqual(value,[
+            {
+                '_id': '1',
+                'document': {
+                    '@id': localSchema + '#type',
+                    '@context': {
+                        'f1': { '@id': 'https://www.schema.org/text' },
+                        'f2': { '@id': 'https://www.schema.org/text' },
+                    }
+                },
+                'entity': 'entity',
+                'status': DRAFT,
+                'readonly': false,
+                'type': 'type'
+            },
+            {
+                '_id': '2',
+                'document': {
+                    '@id': localSchema + '#type2',
+                    '@context': {
+                        'f3': { '@id': 'https://www.schema.org/text' },
+                        'f4': { '@id': 'https://www.schema.org/text' },
+                    }
+                },
+                'entity': 'entity2',
+                'status': PUBLISHED,
+                'readonly': false,
+                'type': 'type2'
+            }
+        ]);
+    });
+
+    it('Test UNPUBLISHED_SCHEMA', async function () {
+        let value = await channel.run(UNPUBLISHED_SCHEMA, "2");
+        assert.deepEqual(value,[
+            {
+                '_id': '1',
+                'document': {
+                    '@id': localSchema + '#type',
+                    '@context': {
+                        'f1': { '@id': 'https://www.schema.org/text' },
+                        'f2': { '@id': 'https://www.schema.org/text' },
+                    }
+                },
+                'entity': 'entity',
+                'status': DRAFT,
+                'readonly': false,
+                'type': 'type'
+            },
+            {
+                '_id': '2',
+                'document': {
+                    '@id': localSchema + '#type2',
+                    '@context': {
+                        'f3': { '@id': 'https://www.schema.org/text' },
+                        'f4': { '@id': 'https://www.schema.org/text' },
+                    }
+                },
+                'entity': 'entity2',
+                'status': UNPUBLISHED,
+                'readonly': false,
+                'type': 'type2'
+            }
+        ]);
+    });
+
+    it('Test DELETE_SCHEMA', async function () {
+        let value = await channel.run(DELETE_SCHEMA, "2");
+        assert.deepEqual(value,[
+            {
+                '_id': '1',
+                'document': {
+                    '@id': localSchema + '#type',
+                    '@context': {
+                        'f1': { '@id': 'https://www.schema.org/text' },
+                        'f2': { '@id': 'https://www.schema.org/text' },
+                    }
+                },
+                'entity': 'entity',
+                'status': DRAFT,
+                'readonly': false,
+                'type': 'type'
+            }
+        ]);
     });
 });
