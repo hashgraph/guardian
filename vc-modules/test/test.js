@@ -14,7 +14,7 @@ async function wait(timeout) {
 
 describe("Hedera", function () {
     this.timeout(10 * 60 * 1000);
-    
+
     it('Test ', async function () {
         const OPERATOR_ID = "0.0.1548173";
         const OPERATOR_KEY = "302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc";
@@ -33,6 +33,6 @@ describe("Hedera", function () {
                 console.error(error)
             }
         }
-        await wait(10000);
+        console.log("end");
     });
 });
