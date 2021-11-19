@@ -30,7 +30,7 @@
     "lint": "tslint --project .",
     "test": "mocha test/unit-tests/**/*.js",
     "test:network": "mocha test/network-tests/**/*.js",
-    "test:hedera": "mocha test/test.js"
+    "test:stability": "mocha test/stability.js"
   },
   "version": "1.0.0-beta.2"
 }

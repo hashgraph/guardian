@@ -1,6 +1,7 @@
 const {
     HederaHelper,
 } = require("../../dist/index");
+const { Client, AccountBalanceQuery } = require("@hashgraph/sdk");
 const { expect, assert } = require('chai');
 
 async function delay(ms) {
@@ -8,7 +9,7 @@ async function delay(ms) {
 }
 
 describe("Hedera SDK Helper", function () {
-    const transactionTimeout = 10 * 1000;
+    const transactionTimeout = 30 * 1000;
 
     let sdk, accountId, accountKey, tokenId, account2Id, account2Key;
 
@@ -106,12 +107,14 @@ describe("Hedera SDK Helper", function () {
     it('Test SDK associate', async function () {
         this.timeout(2 * transactionTimeout);
         if (!tokenId) assert.fail('Token not created');
+        console.log("newAccount")
         const { id, key } = await sdk.newAccount(initialBalance);
         account2Id = id;
         account2Key = key
         await delay(1000);
         if (!account2Id) assert.fail('Account not created');
         // associate(tokenId: string | TokenId, id: string, key: string)
+        console.log("associate")
         const status = await sdk.associate(tokenId, account2Id.toString(), account2Key.toString());
         assert.equal(status, true);
     });
@@ -163,7 +166,7 @@ describe("Hedera SDK Helper", function () {
         this.timeout(2 * transactionTimeout);
         if (!account2Id) assert.fail('Account not created');
 
-       // revokeKyc(tokenId: TokenId, accountId: string, kycKey: string)
+        // revokeKyc(tokenId: TokenId, accountId: string, kycKey: string)
         const status = await sdk.revokeKyc(tokenId, account2Id.toString(), accountKey.toString());
         assert.equal(status, true);
     });
@@ -205,7 +208,7 @@ describe("Hedera SDK Helper", function () {
         this.timeout(2 * transactionTimeout);
         if (!account2Id) assert.fail('Account not created');
 
-       // dissociate(tokenId: string | TokenId, id: string, key: string)
+        // dissociate(tokenId: string | TokenId, id: string, key: string)
         const status = await sdk.dissociate(tokenId, account2Id.toString(), account2Key.toString());
         assert.equal(status, true);
     });
