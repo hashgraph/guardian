@@ -5,11 +5,6 @@ import {Request, Response, Router} from 'express';
 import {ITokenInfo, UserRole} from 'interfaces';
 import {HederaHelper} from 'vc-modules';
 
-/**
- * Token route
- */
-export const tokenAPI = Router();
-
 const getTokenInfo = (info: any, token: any, tokenId: string) => {
     if (info[tokenId]) {
         token.associated = true;
@@ -34,6 +29,11 @@ const getTokenInfo = (info: any, token: any, tokenId: string) => {
         token.kyc = null;
     }
 }
+
+/**
+ * Token route
+ */
+export const tokenAPI = Router();
 
 tokenAPI.post('/create', async (req: Request, res: Response) => {
     const guardians = new Guardians();
@@ -101,12 +101,12 @@ tokenAPI.post('/create', async (req: Request, res: Response) => {
             decimals: _decimals,
             initialSupply: _initialSupply,
             policies,
-            adminId: treasuryId.toString(),
-            adminKey: adminKey.toString(),
-            kycKey: kycKey.toString(),
-            freezeKey: freezeKey.toString(),
-            wipeKey: wipeKey.toString(),
-            supplyKey: supplyKey.toString(),
+            adminId: treasuryId ? treasuryId.toString() : null,
+            adminKey: adminKey ? adminKey.toString() : null,
+            kycKey: kycKey ? kycKey.toString() : null,
+            freezeKey: freezeKey ? freezeKey.toString() : null,
+            wipeKey: wipeKey ? wipeKey.toString() : null,
+            supplyKey: supplyKey ? supplyKey.toString() : null,
         }
 
     } catch (error) {
