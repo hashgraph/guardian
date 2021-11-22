@@ -192,3 +192,124 @@ paths:
           description: Have not permissions
         500:
           description: Internal server error
+          
+  /api/tokens/associate:
+    post:
+      description: Associate token
+      responses:
+        200:
+          description: Associate token
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/tokens/all-users:
+    get:
+      description: Get all users with role installer
+      responses:
+        200:
+          description: Return all users with role installer
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/tokens/associate-users:
+    get:
+      description: Chack user state
+      responses:
+        200:
+          description: Return token information
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/tokens/user-kyc:
+    post:
+      description: Set user kyc
+      responses:
+        200:
+          description: Return token information
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/tokens/user-freeze:
+    post:
+      description: Set user freeze
+      responses:
+        200:
+          description: Return token information
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/root-balance:
+    get:
+      description: Root balance
+      responses:
+        200:
+          description: Return root balance
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/root-config:
+    get:
+      description: Get root config
+      responses:
+        200:
+          description: Return root config
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/set-root-config:
+    post:
+      description: Set root config
+      responses:
+        200:
+          description: Return operation result
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/get-vp-documents:
+    get:
+      description: Get vp documents
+      responses:
+        200:
+          description: Return vp documents
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/search-vc-documents:
+    post:
+      description: Search vc documents
+      responses:
+        200:
+          description: Return vc documents
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/search-documents:
+    get:
+      description: Search documents
+      responses:
+        200:
+          description: Return documents
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
