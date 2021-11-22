@@ -4,7 +4,8 @@ const {
     PrivateKey,
     AccountCreateTransaction,
     Hbar,
-    TokenCreateTransaction
+    TokenCreateTransaction,
+    AccountInfoQuery
 } = require("@hashgraph/sdk");
 const { expect, assert } = require('chai');
 
@@ -36,7 +37,7 @@ describe("Stability test", function () {
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
-            .setInitialBalance(new Hbar(10));
+            .setInitialBalance(new Hbar(25));
         const txResponse = await transaction.execute(client);
         const receipt = await txResponse.getReceipt(client);
         newAccountId = receipt.accountId.toString();
@@ -46,7 +47,7 @@ describe("Stability test", function () {
 
     it('AccountBalanceQuery', async function () {
         let success = 0, failed = 0;
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 10; i++) {
             try {
                 console.log("execute ", i);
                 const query = new AccountBalanceQuery().setAccountId(OPERATOR_ID);
@@ -60,13 +61,32 @@ describe("Stability test", function () {
             }
         }
         console.log("end", 'success:', success, 'failed:', failed);
+        assert.equal(failed, 0);
+    });
 
+    it('AccountInfoQuery', async function () {
+        let success = 0, failed = 0;
+        for (let i = 0; i < 10; i++) {
+            try {
+                console.log("execute ", i);
+                const info = await new AccountInfoQuery()
+                    .setAccountId(OPERATOR_ID)
+                    .execute(client);
+                console.log(!!info);
+                await wait(1000);
+                ++success;
+            } catch (error) {
+                console.error(error);
+                ++failed;
+            }
+        }
+        console.log("end", 'success:', success, 'failed:', failed);
         assert.equal(failed, 0);
     });
 
     it('AccountCreateTransaction', async function () {
         let success = 0, failed = 0;
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 10; i++) {
             try {
                 console.log("execute ", i);
                 const newPrivateKey = PrivateKey.generate();
@@ -85,7 +105,6 @@ describe("Stability test", function () {
             }
         }
         console.log("end", 'success:', success, 'failed:', failed);
-
         assert.equal(failed, 0);
     });
 
@@ -102,7 +121,7 @@ describe("Stability test", function () {
                     .setTreasuryAccountId(newAccountId)
                     .setDecimals(2)
                     .setInitialSupply(0)
-                    .setMaxTransactionFee(new Hbar(2))
+                    .setMaxTransactionFee(new Hbar(5))
                     .setTokenMemo("Memo");
                 transaction = transaction.setAdminKey(newPrivateKey);
                 transaction = transaction.setKycKey(newPrivateKey);
@@ -122,8 +141,8 @@ describe("Stability test", function () {
                 ++failed;
             }
         }
-        console.log("end", 'success:', success, 'failed:', failed);
 
+        console.log("end", 'success:', success, 'failed:', failed);
         assert.equal(failed, 0);
     });
 });
