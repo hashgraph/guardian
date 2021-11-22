@@ -187,23 +187,6 @@ describe("Hedera SDK Helper", function () {
         await delay(100);
     });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     it('Test SDK dissociate', async function () {
         this.timeout(2 * transactionTimeout);
         if (!account2Id) assert.fail('Account not created');
@@ -222,11 +205,6 @@ describe("Hedera SDK Helper", function () {
         assert.notExists(accountInfo[tokenId]);
         await delay(100);
     });
-
-
-
-
-
 
     // it('Test SDK newToken', async function () {
     //     const accountInfo = await sdk.accountInfo(accountId);
