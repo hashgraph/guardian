@@ -144,10 +144,6 @@ export class PolicyEngineService {
     return this.http.post<any>(`/policy/publish/${policyId}`, null);
   }
 
-  public restartService(): Observable<any> {
-    return this.http.get('/api/restart-service');
-  }
-
   public toYAML(json: any): Observable<any> {
     return this.http.post<any>(`/policy/to-yaml`, { json });
   }

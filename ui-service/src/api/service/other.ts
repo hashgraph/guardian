@@ -11,23 +11,6 @@ import {User} from '@entity/user';
  */
 export const otherAPI = Router();
 
-otherAPI.get('/restart-service', (req, res) => {
-    setTimeout(function () {
-        // When NodeJS exits
-        process.on('exit', function () {
-
-            require('child_process').spawn(process.argv.shift(), process.argv, {
-                cwd: process.cwd(),
-                detached: true,
-                stdio: 'inherit'
-            });
-        });
-        process.exit();
-    }, 1000);
-
-    res.send({});
-})
-
 otherAPI.get('/get-policy-list', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});

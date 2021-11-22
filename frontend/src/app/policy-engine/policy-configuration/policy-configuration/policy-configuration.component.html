@@ -22,13 +22,6 @@
 
                     <div class="delimiter"></div>
 
-                    <div class="btn-new-block btn-status-all" (click)="restartService()" title="Restart Service">
-                        <mat-icon>refresh</mat-icon>
-                        <span>Restart</span>
-                    </div>
-
-                    <div class="delimiter"></div>
-
                     <div class="btn-new-block btn-status-edit" (click)="publishPolicy()" title="Publish Policy">
                         <mat-icon>public</mat-icon>
                         <span>Publish</span>
@@ -105,7 +98,7 @@
                 <div class="tree-container code-container-{{currentView}}">
                     <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code" [readonly]="readonly">
                     </textarea>
-                    <tree-flat-overview 
+                    <tree-flat-overview
                         *ngIf="currentView == 'blocks'"
                         [blocks]="blocks"
                         (delete)="onDelete($event)"
