@@ -39,3 +39,156 @@ paths:
         200:
           description: Return all users
           
+  /api/profile/user-balance:
+    get:
+      description: User balance
+      responses:
+        200:
+          description: Return user balance
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/profile/user-state:
+    get:
+      description: User state
+      responses:
+        200:
+          description: Return user state
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/profile:
+    get:
+      description: User profile
+      responses:
+        200:
+          description: Return user prefile
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/profile/set-hedera-profile:
+    post:
+      description: Set hedera profile
+      responses:
+        200:
+          description: Return action result
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/profile/get-root-authority:
+    get:
+      description: Root Authority users
+      responses:
+        200:
+          description: Return Root Authority users
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/profile/set-vc-profile:
+    post:
+      description: Set vc profile
+      responses:
+        200:
+          description: Return action result
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/profile/random-key:
+    get:
+      description: Generate random key
+      responses:
+        200:
+          description: Generate and return random key for user
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/schema/create:
+    post:
+      description: Create new schema
+      responses:
+        200:
+          description: Return action result
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/schema:
+    get:
+      description: Get all schemas
+      responses:
+        200:
+          description: Return all schemas
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/schema/import:
+    post:
+      description: Import new schema
+      responses:
+        200:
+          description: Return action result
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/schema/export:
+    post:
+      description: Export schema
+      responses:
+        200:
+          description: Return action result
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/tokens/create:
+    post:
+      description: Create new token
+      responses:
+        200:
+          description: Return action result
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/tokens:
+    get:
+      description: Get all tokens
+      responses:
+        200:
+          description: Return tokens
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
+          
+  /api/tokens/user-tokens:
+    get:
+      description: Get tokens for user
+      responses:
+        200:
+          description: Return tokens for user
+        403:
+          description: Have not permissions
+        500:
+          description: Internal server error
