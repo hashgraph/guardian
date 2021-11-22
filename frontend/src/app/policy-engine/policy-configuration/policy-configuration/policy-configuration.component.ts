@@ -265,10 +265,6 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    restartService() {
-        this.policyEngineService.restartService().subscribe(console.log);
-    }
-
     async onView(type: string) {
         if (type == this.currentView) {
             return;
