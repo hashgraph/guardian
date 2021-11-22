@@ -47,7 +47,11 @@ This folder contains sample files that are referenced in the Demo Usage Guide
    
    ![Guardian step 7](https://user-images.githubusercontent.com/40637665/137964384-6e05ee6e-1e5a-41c3-801b-ec94a50de916.png)
    
-   Click on the "block" icon that is just to the right of the "code" icon. You'll notice that the Policy configuration editor now visually shows the Policy Workflow with all of the necessary Workgroups, Actions, State Objects, and Transactions. Click through on several blocks, and you'll notice that you can edit some elements on the right-hand side. Depending on what you are clicking on, different properties will display on the right-bottom box. You can edit properties from permissions, dependencies, tags, UI elements, etc. Moving along with our flow. Click on the **mint_token** block and select the token we created from the properties box in the right hand side. We will now press the **Save** button and the **Publish** button.
+   Click on the "block" icon that is just to the right of the "code" icon. You'll notice that the Policy configuration editor now visually shows the Policy Workflow with all of the necessary Workgroups, Actions, State Objects, and Transactions. Click through on several blocks, and you'll notice that you can edit some elements on the right-hand side. Depending on what you are clicking on, different properties will display on the right-bottom box. You can edit properties from permissions, dependencies, tags, UI elements, etc. Moving along with our flow. Click on the **mint_token** block and select the token we created from the properties box in the right hand side. 
+   
+   ![image](https://user-images.githubusercontent.com/40637665/142920856-cfdaa439-2ca0-4c49-a696-87882d317a2b.png)
+   
+   We will now press the **Save** button and the **Publish** button.
    
    ![Guardian step 7 2](https://user-images.githubusercontent.com/40637665/137965045-951900d7-fd64-489a-9282-8131ca9216b4.png)
 
