@@ -87,13 +87,6 @@ schemaAPI.get('/', async (req: Request, res: Response) => {
     res.status(200).json(schemes);
 });
 
-schemaAPI.get('/by-entity', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-
-    const schemes = (await guardians.getSchemes(null));
-    res.status(200).json(schemes);
-});
-
 schemaAPI.post('/import', async (req: Request, res: Response) => {
     const guardians = new Guardians();
     const newSchemes = req.body.schemes;

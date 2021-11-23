@@ -1,9 +1,7 @@
 import express from 'express';
 import FastMQ from 'fastmq'
-
 import { createConnection } from 'typeorm';
-import { DefaultDocumentLoader, HederaListener, ListenerType, VCHelper } from 'vc-modules';
-
+import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
 import { approveAPI } from '@api/approve.service';
 import { configAPI, readConfig } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -19,10 +17,6 @@ import { Schema } from '@entity/schema';
 import { Token } from '@entity/token';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-// import { DIDSubscriber } from '@subscribers/did-subscriber';
-// import { VCSubscriber } from '@subscribers/vc-subscriber';
-// import { VerifySubscriber } from '@subscribers/verify-subscribe';
-
 import { DIDDocumentLoader } from './document-loader/did-document-loader';
 import { SchemaDocumentLoader } from './document-loader/vc-document-loader';
 
@@ -69,25 +63,12 @@ Promise.all([
     vcHelper.buildDocumentLoader();
     // Document Loader -->
 
-    // <-- Listeners
-    // const verifySubscriber = new VerifySubscriber(vcDocumentRepository, vcHelper);
-    // const vcSubscriber = new VCSubscriber(vcDocumentRepository);
-    // const didSubscriber = new DIDSubscriber(didDocumentRepository);
-    // const hederaListener = new HederaListener();
-    // hederaListener.addListener(ListenerType.VC, fileConfig['VC_TOPIC_ID'], 20000);
-    // hederaListener.addListener(ListenerType.DID, fileConfig['DID_TOPIC_ID'], 20000);
-    // hederaListener.subscribe([ListenerType.VC, ListenerType.MRV], null, vcSubscriber);
-    // hederaListener.subscribe([ListenerType.DID], null, didSubscriber);
-    // Listeners -->
-
     await setDefaultSchema(schemaRepository);
     await configAPI(channel, fileConfig);
     await schemaAPI(channel, schemaRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentLoader, schemaDocumentLoader);
-    await rootAuthorityAPI(channel,
-        configRepository, didDocumentRepository, vcDocumentRepository/*, hederaListener*/
-    );
+    await rootAuthorityAPI(channel, configRepository, didDocumentRepository, vcDocumentRepository);
     await documentsAPI(
         channel,
         didDocumentRepository,
@@ -98,36 +79,6 @@ Promise.all([
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-
-    // channel.response('get-listeners', async (msg, res) => {
-    //     try {
-    //         const listeners = hederaListener.getListeners().map(e => {
-    //             return {
-    //                 topicId: e.topicId,
-    //                 type: e.type,
-    //                 status: e.status,
-    //                 startTime: e.startTime
-    //             }
-    //         });
-    //         res.send(listeners);
-    //     } catch (e) {
-    //         res.send(null);
-    //     }
-    // });
-
-    // channel.response('reboot-listeners', async (msg, res) => {
-    //     try {
-    //         hederaListener.removeListeners();
-    //         const rootConfig = await configRepository.find();
-    //         for (let i = 0; i < rootConfig.length; i++) {
-    //             const element = rootConfig[i];
-    //             hederaListener.addListener(ListenerType.VC, element.vcTopic, 10000);
-    //             hederaListener.addListener(ListenerType.DID, element.didTopic, 10000);
-    //         }
-    //     } catch (e) {
-    //         res.send(null);
-    //     }
-    // });
 
     app.listen(PORT, () => {
         console.log('guardian service started', PORT);

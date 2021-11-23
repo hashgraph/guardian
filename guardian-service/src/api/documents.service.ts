@@ -1,7 +1,6 @@
 import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { VerifySubscriber } from '@subscribers/verify-subscribe';
 import { DidMethodOperation, HcsVcOperation } from 'did-sdk-js';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, IDidDocument, IVCDocument, IVPDocument, MessageAPI } from 'interfaces';
 import { MongoRepository } from 'typeorm';

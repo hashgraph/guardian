@@ -74,7 +74,7 @@ export class RootConfigComponent implements OnInit {
         forkJoin([
             this.rootConfigService.getRootBalance(),
             this.rootConfigService.getRootConfig(),
-            this.schemaService.getSchemesByEntity()
+            this.schemaService.getSchemes()
         ]).subscribe((value) => {
             const balance: string | null = value[0];
             const root: IFullConfig | null = value[1];

@@ -3,14 +3,12 @@ import { RootConfig } from '@entity/root-config';
 import { VcDocument } from '@entity/vc-document';
 import { IAddressBookConfig, IFullConfig, IRootConfig, MessageAPI, SchemaEntity } from 'interfaces';
 import { MongoRepository } from 'typeorm';
-import { HederaListener, ListenerType } from 'vc-modules';
 
 export const rootAuthorityAPI = async function (
     channel: any,
     configRepository: MongoRepository<RootConfig>,
     didDocumentRepository: MongoRepository<DidDocument>,
-    vcDocumentRepository: MongoRepository<VcDocument>/*,
-    hederaListener: HederaListener*/
+    vcDocumentRepository: MongoRepository<VcDocument>
 ) {
     channel.response(MessageAPI.GET_ROOT_CONFIG, async (msg, res) => {
         const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload } } });
@@ -46,8 +44,6 @@ export const rootAuthorityAPI = async function (
     channel.response(MessageAPI.SET_ROOT_CONFIG, async (msg, res) => {
         const rootObject = configRepository.create(msg.payload as RootConfig);
         const result: IRootConfig = await configRepository.save(rootObject);
-        // hederaListener.addListener(ListenerType.VC, result.vcTopic, true);
-        // hederaListener.addListener(ListenerType.DID, result.didTopic, true);
         res.send(result);
     });
 

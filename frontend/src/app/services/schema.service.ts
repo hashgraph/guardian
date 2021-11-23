@@ -31,10 +31,6 @@ export class SchemaService {
     return this.http.get<any[]>('/api/schema');
   }
 
-  public getSchemesByEntity(): Observable<ISchema[]> {
-    return this.http.get<any[]>(`/api/schema/by-entity`);
-  }
-
   public importSchemes(schemes: any[]): Observable<ISchema[]> {
     return this.http.post<any[]>(`/api/schema/import`, { schemes });
   }

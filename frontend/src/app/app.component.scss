@@ -43,3 +43,7 @@ body {
         bottom: 0;
     }
 }
+
+::ng-deep .toast-container .ngx-toastr {
+    width: 450px;
+}

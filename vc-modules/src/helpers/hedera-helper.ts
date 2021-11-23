@@ -7,6 +7,7 @@ import {
 import { HederaSDKHelper } from "./hedera-sdk-helper";
 import { HederaDIDHelper } from "./hedera-did-helper";
 import { AddressBook, HcsIdentityNetwork, HcsIdentityNetworkBuilder } from "did-sdk-js";
+import { MAX_FEE } from "./max-fee";
 
 export interface IHederaNetwork {
     network: HcsIdentityNetwork,
@@ -58,15 +59,10 @@ export class HederaHelper {
         this.network = "testnet";
         this.addressBook = new AddressBook()
         this.identityNetwork = HcsIdentityNetwork.fromAddressBook(this.network, this.addressBook);
-
-        // this.addressBook.setFileId(fileId);
-        // this.addressBook.setDidTopicId(didTopicId);
-        // this.addressBook.setVcTopicId(vcTopicId);
         const ab = AddressBook.fromJson(`{"didTopicId":"${didTopicId}","vcTopicId":"${vcTopicId}"}`, fileId);
         this.addressBook.setFileId(ab.getFileId());
         this.addressBook.setDidTopicId(ab.getDidTopicId());
         this.addressBook.setVcTopicId(ab.getVcTopicId());
-
         this.DID = new HederaDIDHelper(this.client, this.identityNetwork);
         return this;
     }
@@ -86,13 +82,12 @@ export class HederaHelper {
         const client = Client.forTestnet();
         client.setOperator(operatorId, operatorKey);
 
-        const FEE = new Hbar(2);
         const didNetwork = await new HcsIdentityNetworkBuilder()
             .setNetwork(network)
             .setAppnetName(appnetName)
             .addAppnetDidServer(didServerUrl)
             .setPublicKey(operatorKey.publicKey)
-            .setMaxTransactionFee(FEE)
+            .setMaxTransactionFee(new Hbar(MAX_FEE))
             .setDidTopicMemo(didTopicMemo)
             .setVCTopicMemo(vcTopicMemo)
             .execute(client);

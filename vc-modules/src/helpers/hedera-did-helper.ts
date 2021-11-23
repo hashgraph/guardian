@@ -15,6 +15,7 @@ import {
 } from "did-sdk-js";
 import { HcsVcDocument } from "../vc/vc-document";
 import { HcsDidDocument } from "../did-document";
+import { MAX_FEE } from "./max-fee";
 
 export class HederaDIDHelper {
     public readonly client: Client;
@@ -32,11 +33,10 @@ export class HederaDIDHelper {
         const key = (typeof privateKey == "string") ? PrivateKey.fromString(privateKey) : privateKey;
         const transaction = new Promise<HcsVcMessage>(async (resolve, reject) => {
             try {
-                const fee: Hbar = new Hbar(10);
                 const transaction = this.network
                     .createVcTransaction(HcsVcOperation.ISSUE, vc.toCredentialHash(), key.publicKey)
                     .signMessage(doc => key.sign(doc))
-                    .buildAndSignTransaction(tx => tx.setMaxTransactionFee(fee))
+                    .buildAndSignTransaction(tx => tx.setMaxTransactionFee(new Hbar(MAX_FEE)))
                     .onMessageConfirmed((env: MessageEnvelope<HcsVcMessage>) => {
                         resolve(env.open());
                     })
@@ -78,7 +78,7 @@ export class HederaDIDHelper {
                     .createDidTransaction(DidMethodOperation.CREATE)
                     .setDidDocument(didDocument)
                     .signMessage((doc: Uint8Array) => didRootKey.sign(doc))
-                    .buildAndSignTransaction((tx) => tx.setMaxTransactionFee(new Hbar(10)))
+                    .buildAndSignTransaction((tx) => tx.setMaxTransactionFee(new Hbar(MAX_FEE)))
                     .onMessageConfirmed((env: MessageEnvelope<HcsDidMessage>) => {
                         resolve(env.open());
                     })

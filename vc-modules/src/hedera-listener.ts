@@ -1,5 +1,5 @@
-import { Client, Timestamp, TopicId, TopicMessage, TopicMessageQuery } from "@hashgraph/sdk";
-import { HcsDidMessage, HcsDidTopicListener, HcsVcMessage, HcsVcTopicListener, Message, MessageEnvelope, MessageListener } from "did-sdk-js";
+import { Client, Timestamp, TopicId } from "@hashgraph/sdk";
+import { HcsDidTopicListener, HcsVcTopicListener, MessageEnvelope, MessageListener } from "did-sdk-js";
 
 export interface IListener<T> {
     on: (topicId: string, message: T) => Promise<boolean>;
@@ -11,7 +11,6 @@ export enum ListenerType {
     MRV = "MRV",
     DID = "DID"
 }
-
 
 class Listener {
     public readonly type: ListenerType;

@@ -22,6 +22,7 @@ import {
     TransactionResponse,
     TransferTransaction
 } from "@hashgraph/sdk";
+import { MAX_FEE } from "./max-fee";
 
 export class HederaSDKHelper {
     public readonly client: Client;
@@ -64,7 +65,7 @@ export class HederaSDKHelper {
             .setTreasuryAccountId(treasury.id)
             .setDecimals(decimals)
             .setInitialSupply(initialSupply)
-            .setMaxTransactionFee(new Hbar(10))
+            .setMaxTransactionFee(new Hbar(MAX_FEE))
             .setTokenMemo(tokenMemo);
 
         if (adminKey) {
@@ -344,7 +345,7 @@ export class HederaSDKHelper {
         const client = this.client;
 
         const topicCreateTransaction = new TopicCreateTransaction()
-            .setMaxTransactionFee(new Hbar(2))
+            .setMaxTransactionFee(new Hbar(MAX_FEE))
 
         if (topicMemo) {
             topicCreateTransaction.setTopicMemo(topicMemo);
