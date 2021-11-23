@@ -19,6 +19,7 @@ import {createConnection, getMongoRepository} from 'typeorm';
 import WebSocket from 'ws';
 import {authorizationHelper} from './auth/authorizationHelper';
 import {StateContainer} from '@policy-engine/state-container';
+import {swaggerAPI} from '@api/service/swagger';
 
 const PORT = process.env.PORT || 3002;
 
@@ -74,6 +75,7 @@ Promise.all([
     app.use('/api/schema', authorizationHelper, schemaAPI);
     app.use('/api/tokens', authorizationHelper, tokenAPI);
     app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
+    app.use('/api-docs/', swaggerAPI);
     app.use('/', frontendService);
     /////////////////////////////////////////
 
@@ -81,4 +83,3 @@ Promise.all([
         console.log('UI service started on', PORT);
     });
 });
-
