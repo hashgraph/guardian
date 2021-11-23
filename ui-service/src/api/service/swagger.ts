@@ -5,7 +5,7 @@ import swaggerUi from 'swagger-ui-express';
 import {readFileSync} from 'fs';
 
 function ReadSwaggerConfig() {
-    const configPath = path.join(__dirname, 'api', 'swagger', 'swagger.yaml');
+    const configPath = path.join(process.cwd(), 'api', 'swagger', 'swagger.yaml');
     const swaggerYaml = readFileSync(configPath, 'utf-8');
 
     return yaml.load(swaggerYaml, {
