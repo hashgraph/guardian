@@ -2,7 +2,6 @@ import {Request, Response, Router} from 'express';
 import yaml, { JSON_SCHEMA } from 'js-yaml';
 import path from 'path';
 import swaggerUi from 'swagger-ui-express';
-import {readFile} from 'fs-extra';
 import {readFileSync} from 'fs';
 
 function ReadSwaggerConfig() {
