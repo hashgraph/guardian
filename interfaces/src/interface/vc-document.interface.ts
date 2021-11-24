@@ -3,13 +3,15 @@ import {SchemaEntity} from '../type/schema-entity.type';
 import {IVC} from './vc.interface';
 
 export interface IVCDocument {
-    id: string;
+    id?: string;
     owner: string;
     hash: string;
     document: IVC;
-    createDate: Date;
-    updateDate: Date;
-    status: DocumentStatus;
+    createDate?: Date;
+    updateDate?: Date;
+    status?: DocumentStatus;
     type: SchemaEntity;
-    signature: number
+    signature?: number;
+    policyId: string;
+    tag: string;
 }

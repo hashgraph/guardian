@@ -33,13 +33,28 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
     return false;
 }
 
+/**
+ * Connecting to the message broker methods of working with trust chain.
+ * 
+ * @param channel - channel
+ * @param didDocumentRepository - table with DID Documents
+ * @param vcDocumentRepository - table with VC Documents
+ * @param vpDocumentRepository - table with VP Documents
+ */
 export const trustChainAPI = async function (
     channel: any,
     didDocumentRepository: MongoRepository<DidDocument>,
     vcDocumentRepository: MongoRepository<VcDocument>,
     vpDocumentRepository: MongoRepository<VpDocument>
 ): Promise<void> {
-
+    /**
+     * Search parent by VC or VP Document
+     * 
+     * @param {IChainItem[]} chain - current trust chain
+     * @param {VcDocument | VpDocument} vc - Document
+     * @param {Object} map - ids map
+     * @param {string} policyId - policy Id
+     */
     async function getParents(chain: IChainItem[], vc: VcDocument | VpDocument, map: any, policyId: any) {
         if (!vc) {
             return;
@@ -92,6 +107,12 @@ export const trustChainAPI = async function (
         }
     }
 
+    /**
+     * Return Policy Info by Policy Id
+     * 
+     * @param {IChainItem[]} chain - current trust chain
+     * @param {string} policyId - policy Id
+     */
     async function getPolicyInfo(chain: IChainItem[], policyId: any) {
         if (policyId) {
             const policy = await vcDocumentRepository.findOne({
@@ -146,6 +167,13 @@ export const trustChainAPI = async function (
         }
     }
 
+    /**
+     * Return trust chain
+     * 
+     * @param {string} payload - hash or uuid
+     * 
+     * @returns {IChainItem[]} - trust chain
+     */
     channel.response(MessageAPI.GET_CHAIN, async (msg, res) => {
         try {
             const hash = msg.payload;

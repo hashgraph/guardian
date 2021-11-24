@@ -3,6 +3,9 @@ import { IAddressBookConfig, MessageAPI } from 'interfaces';
 import path from 'path';
 import { HederaHelper } from 'vc-modules';
 
+/**
+ * Create or read default address book.
+ */
 export const readConfig = async function (): Promise<any> {
     const fileName = path.join(process.cwd(), 'config.json');
     let fileContent: any;
@@ -45,10 +48,21 @@ export const readConfig = async function (): Promise<any> {
     return fileContent;
 }
 
+/**
+ * Connecting to the message broker methods of working with root address book.
+ * 
+ * @param channel - channel
+ * @param approvalDocumentRepository - table with approve documents
+ */
 export const configAPI = async function (
     channel: any,
     fileContent: any
 ): Promise<void> {
+    /**
+     * Return Root Address book
+     * 
+     * @returns {IAddressBookConfig} - Address book
+     */
     channel.response(MessageAPI.GET_ROOT_ADDRESS_BOOK, async (msg, res) => {
         const config: IAddressBookConfig = {
             owner: null,
