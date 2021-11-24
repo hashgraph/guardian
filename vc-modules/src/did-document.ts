@@ -1,5 +1,9 @@
 import { DidDocumentBase, HcsDidRootKey } from "did-sdk-js";
 
+/**
+ * The base for a DID document generation in JSON-LD format.
+ * DID documents according to W3C draft specification must be compatible with JSON-LD version 1.1 Up until now there is
+ */
 export class HcsDidDocument extends DidDocumentBase {
     public static readonly CONTEXT: string = "@context";
     public static readonly ID: string = "id";

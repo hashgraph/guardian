@@ -17,6 +17,9 @@ import { HcsVcDocument } from "../vc/vc-document";
 import { HcsDidDocument } from "../did-document";
 import { MAX_FEE } from "./max-fee";
 
+/**
+ * Methods for send documents from Hedera Network
+ */
 export class HederaDIDHelper {
     public readonly client: Client;
     public readonly network: HcsIdentityNetwork;
@@ -26,6 +29,14 @@ export class HederaDIDHelper {
         this.network = network;
     }
 
+    /**
+     * Create VC Transaction
+     * 
+     * @param {HcsVcDocument<T>} vc - VC Document
+     * @param {PrivateKey | string} privateKey - Account Private Key
+     * 
+     * @returns {HcsVcMessage} - result
+     */
     public async createVcTransaction<T extends CredentialSubject>(
         vc: HcsVcDocument<T>,
         privateKey: PrivateKey | string
@@ -51,6 +62,13 @@ export class HederaDIDHelper {
         return transaction;
     }
 
+    /**
+     * Create DID
+     * 
+     * @param {PrivateKey | string} [privateKey] - Account Private Key
+     * 
+     * @returns {any} - DID, Private Key, DID Document
+     */
     public async createDid(privateKey?: string): Promise<{
         hcsDid: HcsDid;
         did: string;
@@ -69,6 +87,13 @@ export class HederaDIDHelper {
         };
     }
 
+    /**
+     * Create DID Transaction
+     * 
+     * @param {HcsDid} hcsDid - DID Document
+     * 
+     * @returns {HcsDidMessage} - result
+     */
     public async createDidTransaction(hcsDid: HcsDid): Promise<HcsDidMessage> {
         const transaction = new Promise<HcsDidMessage>(async (resolve, reject) => {
             try {

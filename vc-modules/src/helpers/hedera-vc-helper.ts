@@ -11,6 +11,9 @@ import { DocumentLoaderFunction } from "../document-loader/document-loader-funct
 import { Utils } from "./utils";
 import { HcsVpDocument } from "../vc/vp-document";
 
+/**
+ * Methods for creating and verifying VC and VP documents
+ */
 export class VCHelper {
     private documentLoaders: DocumentLoader[];
     private schemaContext: string[];
@@ -21,18 +24,45 @@ export class VCHelper {
         this.documentLoaders = [];
     }
 
+    /**
+     * Add Schema context
+     * 
+     * @param {string} context - context
+     * 
+     */
     public addContext(context: string): void {
         this.schemaContext.push(context);
     }
 
+    /**
+     * Add DID or Schema document loader
+     * 
+     * @param {DocumentLoader} documentLoader - Document Loader
+     * 
+     */
     public addDocumentLoader(documentLoader: DocumentLoader): void {
         this.documentLoaders.push(documentLoader);
     }
 
+    /**
+     * Build Document Loader
+     * Builded loader is used to sign and verify documents
+     * 
+     * @param {DocumentLoader} documentLoader - Document Loader
+     * 
+     */
     public buildDocumentLoader(): void {
         this.loader = DocumentLoader.build(this.documentLoaders)
     }
 
+    /**
+     * Create Suite by DID
+     * 
+     * @param {string} did - DID
+     * @param {PrivateKey | string} privateKey - Private Key
+     * 
+     * @returns {any} - Root Id, DID, Private Key
+     */
     private async getSuite(did: string, key: string | PrivateKey): Promise<any> {
         const privateKey = (typeof key == "string") ? PrivateKey.fromString(key) : key;
         const didRoot = HcsDidRootKey.fromId(did);
@@ -41,6 +71,15 @@ export class VCHelper {
         return { didRootId, didId, privateKey };
     }
 
+    /**
+     * Create Credential Object (VC without a signature)
+     * 
+     * @param {string} did - DID
+     * @param {string} schema - schema id
+     * @param {any} data - Object
+     * 
+     * @returns {any} - VC Document
+     */
     public async createCredential(
         did: string,
         schema: string,
@@ -62,6 +101,15 @@ export class VCHelper {
         return vc.toJsonTree();
     }
 
+    /**
+     * Sign Credential Object
+     * 
+     * @param {string} did - DID
+     * @param {PrivateKey | string} privateKey - Private Key
+     * @param {any} credential - Credential Object
+     * 
+     * @returns {HcsVcDocument<VcSubject>} - VC Document
+     */
     public async issueCredential(
         did: string,
         key: string | PrivateKey,
@@ -79,6 +127,16 @@ export class VCHelper {
         return vc;
     }
 
+    /**
+     * Create VC Document
+     * 
+     * @param {string} did - DID
+     * @param {PrivateKey | string} privateKey - Private Key
+     * @param {string} schema - schema id
+     * @param {any} data - Credential Object
+     * 
+     * @returns {HcsVcDocument<VcSubject>} - VC Document
+     */
     public async createVC(
         did: string,
         key: string | PrivateKey,
@@ -110,6 +168,16 @@ export class VCHelper {
         return vc;
     }
 
+    /**
+     * Create VP Document
+     * 
+     * @param {string} did - DID
+     * @param {PrivateKey | string} privateKey - Private Key
+     * @param {HcsVcDocument<VcSubject>[]} vcs - VC Documents
+     * @param {string} [uuid] - new uuid
+     * 
+     * @returns {HcsVpDocument} - VP Document
+     */
     public async createVP(
         did: string,
         key: string | PrivateKey,
@@ -130,6 +198,13 @@ export class VCHelper {
         return vp;
     }
 
+    /**
+     * Verify VC Document
+     * 
+     * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
+     * 
+     * @returns {boolean} - is verified
+     */
     public async verifyVC(vcDocument: HcsVcDocument<VcSubject> | any) {
         let vc: any;
         if (vcDocument && typeof vcDocument.toJsonTree === "function") {
