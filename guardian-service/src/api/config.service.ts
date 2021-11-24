@@ -28,14 +28,18 @@ export const readConfig = async function (): Promise<any> {
         regenerate = true;
     }
     if (regenerate) {
-        const net = await HederaHelper.newNetwork(
-            fileContent['OPERATOR_ID'],
-            fileContent['OPERATOR_KEY'],
-            '', '', '', ''
-        );
-        fileContent['ADDRESS_BOOK'] = net.addressBookId;
-        fileContent['VC_TOPIC_ID'] = net.vcTopicId;
-        fileContent['DID_TOPIC_ID'] = net.didTopicId;
+        try {
+            const net = await HederaHelper.newNetwork(
+                fileContent['OPERATOR_ID'],
+                fileContent['OPERATOR_KEY'],
+                '', '', '', ''
+            );
+            fileContent['ADDRESS_BOOK'] = net.addressBookId;
+            fileContent['VC_TOPIC_ID'] = net.vcTopicId;
+            fileContent['DID_TOPIC_ID'] = net.didTopicId;
+        } catch (error) {
+            throw ('Failed to create Address Book: \n' + error);
+        }
         await writeJSON(fileName, fileContent);
     }
     return fileContent;
