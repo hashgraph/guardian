@@ -1,5 +1,9 @@
 import { CredentialSubject, HcsVcDocumentJsonProperties } from "did-sdk-js";
 
+/**
+ * A verifiable credential contains claims about one or more subjects. 
+ * VcSubject defines a property for the expression of claims about one or more subjects.
+ */
 export class VcSubject extends CredentialSubject {
     public static readonly CREDENTIAL_TYPE: string = "type";
     public static readonly CREDENTIAL_ID: string = "id";

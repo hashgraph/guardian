@@ -2,6 +2,10 @@ import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DocumentLoader, IDocumentFormat } from 'vc-modules';
 
+/**
+ * Schema Documents Loader.
+ * Used for schema validation.
+ */
 export class SchemaDocumentLoader extends DocumentLoader {
     private schemaRepository: MongoRepository<Schema>;
     private readonly context: string;

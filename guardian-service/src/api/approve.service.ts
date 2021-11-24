@@ -2,10 +2,27 @@ import {ApprovalDocument} from '@entity/approval-document';
 import {IApprovalDocument, MessageAPI} from 'interfaces';
 import {MongoRepository} from 'typeorm';
 
+/**
+ * Connecting to the message broker methods of working with Approve documents.
+ * 
+ * @param channel - channel
+ * @param approvalDocumentRepository - table with approve documents
+ */
 export const approveAPI = async function (
     channel: any,
     approvalDocumentRepository: MongoRepository<ApprovalDocument>
 ): Promise<void> {
+    /**
+     * Return approve documents
+     * 
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.id] - document id 
+     * @param {string} [payload.owner] - document owner 
+     * @param {string} [payload.approver] - document approver 
+     * @param {string} [payload.policyId] - policy id 
+     * 
+     * @returns {IApprovalDocument[]} - approve documents
+     */
     channel.response(MessageAPI.GET_APPROVE_DOCUMENTS, async (msg, res) => {
         if (msg.payload.id) {
             const document = await approvalDocumentRepository.findOne(msg.payload.id);
@@ -26,6 +43,13 @@ export const approveAPI = async function (
         }
     });
 
+    /**
+     * Create or update approve documents
+     * 
+     * @param {IApprovalDocument[]} payload - documents
+     * 
+     * @returns {IApprovalDocument[]} - new approve documents
+     */
     channel.response(MessageAPI.SET_APPROVE_DOCUMENTS, async (msg, res) => {
         const id = msg.payload.id;
         let result;
@@ -41,6 +65,13 @@ export const approveAPI = async function (
         res.send(result);
     })
 
+    /**
+     * Update approve document
+     * 
+     * @param {IApprovalDocument} payload - document
+     * 
+     * @returns {IApprovalDocument} - new approve document
+     */
     channel.response(MessageAPI.UPDATE_APPROVE_DOCUMENTS, async (msg, res) => {
         const documentObject = msg.payload;
         const id = documentObject.id;

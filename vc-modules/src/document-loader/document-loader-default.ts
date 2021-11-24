@@ -4,7 +4,10 @@ import securityContexts from "@transmute/security-context";
 import { IDocumentFormat } from "./document-format";
 import { DocumentLoader } from "./document-loader";
 
-
+/**
+ * Default Documents Loader
+ * Used for VC validation.
+ */
 export class DefaultDocumentLoader extends DocumentLoader {
     public async has(iri: string): Promise<boolean> {
         if ((didContexts.contexts as Map<string, object>).has(iri)) {

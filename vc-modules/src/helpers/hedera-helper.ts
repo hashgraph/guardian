@@ -31,6 +31,12 @@ export interface IHederaHelper {
     setAddressBook(fileId: string, didTopicId: string, vcTopicId: string): IHederaHelper
 }
 
+/**
+ * Contains methods for working with documents and the Hedera Network
+ * 
+ * DID - Methods for send documents from Hedera Network
+ * SDK - Contains methods to simplify work with hashgraph sdk
+ */
 export class HederaHelper {
     public DID: HederaDIDHelper;
     public SDK: HederaSDKHelper;
@@ -43,11 +49,23 @@ export class HederaHelper {
     constructor() {
     }
 
+    /**
+     * Set the account that will, by default, pay for transactions and queries built with this client.
+     * 
+     * @param {string | AccountId} operatorId - Operator Id
+     * @param {string | PrivateKey} operatorKey - Operator Private Key
+     */
     public static setOperator(operatorId: string | AccountId, operatorKey: string | PrivateKey): IBaseHederaHelper {
         const hederaHelper = new HederaHelper();
         return hederaHelper.setOperator(operatorId, operatorKey);
     }
 
+    /**
+     * Set the account that will, by default, pay for transactions and queries built with this client.
+     * 
+     * @param {string | AccountId} operatorId - Operator Id
+     * @param {string | PrivateKey} operatorKey - Operator Private Key
+     */
     public setOperator(operatorId: string | AccountId, operatorKey: string | PrivateKey): IBaseHederaHelper {
         this.client = Client.forTestnet();
         this.client.setOperator(operatorId, operatorKey);
@@ -55,6 +73,13 @@ export class HederaHelper {
         return this;
     }
 
+    /**
+     * Set AddressBook
+     * 
+     * @param {string} fileId - AddressBook Id
+     * @param {string} didTopicId - DID Topic Id
+     * @param {string} vcTopicId -  VC Topic Id
+     */
     public setAddressBook(fileId: string, didTopicId: string, vcTopicId: string): IHederaHelper {
         this.network = "testnet";
         this.addressBook = new AddressBook()
@@ -67,6 +92,16 @@ export class HederaHelper {
         return this;
     }
 
+    /**
+     * Create appnet's identity network based on Hedera HCS DID method specification.
+     * 
+     * @param {string} id - Operator Id
+     * @param {string} key - Operator Private Key
+     * @param {string} appnetName - Name of the appnet.
+     * @param {string} didServerUrl - List of appnet API servers.
+     * @param {string} didTopicMemo - DID Topic memo field.
+     * @param {string} vcTopicMemo - VC Topic memo field.
+     */
     public static async newNetwork(
         id: string,
         key: string,

@@ -3,6 +3,10 @@ import { HcsVcDocument, VcSubject } from "..";
 
 const VERIFIABLE_CREDENTIAL = "verifiableCredential";
 
+/**
+ * The base for a VP document generation in JSON-LD format.
+ * VP documents according to W3C draft specification must be compatible with JSON-LD version 1.1 Up until now there is
+ */
 export class HcsVpDocument {
     protected id: string;
     protected context: string[];

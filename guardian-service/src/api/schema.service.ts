@@ -4,6 +4,11 @@ import { MongoRepository } from 'typeorm';
 
 const localSchema = 'https://localhost/schema';
 
+/**
+ * Creation of default schemes.
+ * 
+ * @param schemaRepository - table with schemes
+ */
 export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
     if (await schemaRepository.count() === 0) {
         let item = schemaRepository.create({
@@ -159,11 +164,24 @@ const getRelationships = function (schema: Schema) {
     return result;
 }
 
-
+/**
+ * Connect to the message broker methods of working with schemes.
+ * 
+ * @param channel - channel
+ * @param schemaRepository - table with schemes
+ */
 export const schemaAPI = async function (
     channel: any,
     schemaRepository: MongoRepository<Schema>
 ): Promise<void> {
+    /**
+     * Change the status of a schema on PUBLISHED.
+     * 
+     * @param {Object} payload - filters
+     * @param {string} payload.id - schema id 
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
     channel.response(MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
         if (msg.payload) {
             const id = msg.payload as string;
@@ -177,6 +195,14 @@ export const schemaAPI = async function (
         res.send(schemes);
     });
 
+    /**
+     * Change the status of a schema on UNPUBLISHED.
+     * 
+     * @param {Object} payload - filters
+     * @param {string} payload.id - schema id 
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
     channel.response(MessageAPI.UNPUBLISHED_SCHEMA, async (msg, res) => {
         if (msg.payload) {
             const id = msg.payload as string;
@@ -189,7 +215,15 @@ export const schemaAPI = async function (
         const schemes = await schemaRepository.find();
         res.send(schemes);
     });
-    
+
+    /**
+     * Delete a schema.
+     * 
+     * @param {Object} payload - filters
+     * @param {string} payload.id - schema id 
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
     channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
         if (msg.payload) {
             const id = msg.payload as string;
@@ -199,6 +233,13 @@ export const schemaAPI = async function (
         res.send(schemes);
     });
 
+    /**
+     * Create or update schema
+     * 
+     * @param {ISchema} payload - schema
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
     channel.response(MessageAPI.SET_SCHEMA, async (msg, res) => {
         if (msg.payload.id) {
             const id = msg.payload.id as string;
@@ -217,6 +258,15 @@ export const schemaAPI = async function (
         res.send(schemes);
     });
 
+    /**
+     * Return schemes
+     * 
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.type] - schema type 
+     * @param {string} [payload.entity] - schema entity type
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
     channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
         let schemes: ISchema[] = null;
         if (msg.payload) {
@@ -235,6 +285,13 @@ export const schemaAPI = async function (
         res.send(schemes);
     });
 
+    /**
+     * Import schemes
+     * 
+     * @param {ISchema[]} payload - schemes
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
     channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
         try {
             let items = msg.payload;
@@ -286,7 +343,14 @@ export const schemaAPI = async function (
         }
     });
 
-
+    /**
+     * Export schemes
+     * 
+     * @param {Object} payload - filters
+     * @param {string[]} payload.ids - schema ids
+     * 
+     * @returns {ISchema[]} - array of selected and nested schemas
+     */
     channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
         try {
             let ids = msg.payload as string[];
