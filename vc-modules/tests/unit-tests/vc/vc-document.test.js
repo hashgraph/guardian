@@ -1,7 +1,7 @@
 const {
     HcsVcDocument,
     VcSubject
-} = require("../../dist/index");
+} = require("../../../dist/index");
 
 const { FileId } = require("@hashgraph/sdk");
 const { TimestampUtils } = require("did-sdk-js");

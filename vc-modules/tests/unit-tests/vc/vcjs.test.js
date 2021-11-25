@@ -1,9 +1,9 @@
 const {
     HcsVcDocument, VcSubject, HcsVpDocument
-} = require("../../dist/index");
+} = require("../../../dist/index");
 const {
     VCJS
-} = require("../../dist/vc/vcjs");
+} = require("../../../dist/vc/vcjs");
 
 const { PrivateKey } = require("@hashgraph/sdk");
 const { expect, assert } = require('chai');

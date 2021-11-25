@@ -1,6 +1,6 @@
 const {
     VcSubject
-} = require("../../dist/index");
+} = require("../../../dist/index");
 const { expect, assert } = require('chai');
 
 describe("VcSubject", function () {

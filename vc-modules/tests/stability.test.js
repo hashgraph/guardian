@@ -26,6 +26,7 @@ describe("Stability test", function () {
 
     const OPERATOR_ID = "0.0.1548173";
     const OPERATOR_KEY = "302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc";
+    const maxTransaction = 10;
 
     const client = Client.forTestnet();
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
@@ -33,7 +34,6 @@ describe("Stability test", function () {
     let newAccountId, newAccountKey;
 
     before(async function () {
-        console.log("Create Test Account ...");
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
@@ -42,17 +42,14 @@ describe("Stability test", function () {
         const receipt = await txResponse.getReceipt(client);
         newAccountId = receipt.accountId.toString();
         newAccountKey = newPrivateKey;
-        console.log(newAccountId.toString(), newAccountKey.toString());
     });
 
     it('AccountBalanceQuery', async function () {
         let success = 0, failed = 0;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < maxTransaction; i++) {
             try {
-                console.log("execute ", i);
                 const query = new AccountBalanceQuery().setAccountId(OPERATOR_ID);
                 const accountBalance = await query.execute(client);
-                console.log(!!accountBalance);
                 await wait(1000);
                 ++success;
             } catch (error) {
@@ -61,18 +58,17 @@ describe("Stability test", function () {
             }
         }
         console.log("end", 'success:', success, 'failed:', failed);
+        assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('AccountInfoQuery', async function () {
         let success = 0, failed = 0;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < maxTransaction; i++) {
             try {
-                console.log("execute ", i);
                 const info = await new AccountInfoQuery()
                     .setAccountId(OPERATOR_ID)
                     .execute(client);
-                console.log(!!info);
                 await wait(1000);
                 ++success;
             } catch (error) {
@@ -80,15 +76,14 @@ describe("Stability test", function () {
                 ++failed;
             }
         }
-        console.log("end", 'success:', success, 'failed:', failed);
+        assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('AccountCreateTransaction', async function () {
         let success = 0, failed = 0;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < maxTransaction; i++) {
             try {
-                console.log("execute ", i);
                 const newPrivateKey = PrivateKey.generate();
                 const transaction = new AccountCreateTransaction()
                     .setKey(newPrivateKey.publicKey)
@@ -96,7 +91,6 @@ describe("Stability test", function () {
                 const txResponse = await transaction.execute(client);
                 const receipt = await txResponse.getReceipt(client);
                 const newAccountId = receipt.accountId;
-                console.log(newAccountId.toString());
                 await wait(1000);
                 ++success;
             } catch (error) {
@@ -104,7 +98,7 @@ describe("Stability test", function () {
                 ++failed;
             }
         }
-        console.log("end", 'success:', success, 'failed:', failed);
+        assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
@@ -112,9 +106,8 @@ describe("Stability test", function () {
         let success = 0, failed = 0;
 
         const newPrivateKey = PrivateKey.generate();
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < maxTransaction; i++) {
             try {
-                console.log("execute ", i);
                 let transaction = new TokenCreateTransaction()
                     .setTokenName("Test")
                     .setTokenSymbol("T")
@@ -133,7 +126,6 @@ describe("Stability test", function () {
                 const txResponse = await signTx.execute(client);
                 const receipt = await txResponse.getReceipt(client);
                 const tokenId = receipt.tokenId;
-                console.log(tokenId.toString());
                 await wait(1000);
                 ++success;
             } catch (error) {
@@ -142,7 +134,7 @@ describe("Stability test", function () {
             }
         }
 
-        console.log("end", 'success:', success, 'failed:', failed);
+        assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 });

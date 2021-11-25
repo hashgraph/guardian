@@ -1,8 +1,6 @@
 const {
     VCHelper,
-    DefaultDocumentLoader,
-    VCDocumentLoader,
-    DIDDocumentLoader
+    DefaultDocumentLoader
 } = require("../../../dist/index");
 const { expect, assert } = require('chai');
 

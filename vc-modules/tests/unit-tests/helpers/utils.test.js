@@ -1,6 +1,6 @@
 const {
     HederaUtils
-} = require("../../dist/index");
+} = require("../../../dist/index");
 const { expect, assert } = require('chai');
 
 describe("HederaUtils", function () {
