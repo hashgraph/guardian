@@ -13,6 +13,9 @@ interface IHederaForm {
     key: string,
 }
 
+/**
+ * The page with the profile settings of a regular user.
+ */
 @Component({
     selector: 'app-installer-profile',
     templateUrl: './installer-profile.component.html',

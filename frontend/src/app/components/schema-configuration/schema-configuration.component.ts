@@ -16,6 +16,9 @@ interface IField {
     type: FieldType
 }
 
+/**
+ * Schemes constructor
+ */
 @Component({
     selector: 'app-schema-configuration',
     templateUrl: './schema-configuration.component.html',

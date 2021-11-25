@@ -1,6 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
+/**
+ * Component for display block of 'informationBlock' types.
+ */
 @Component({
     selector: 'app-information-block',
     templateUrl: './information-block.component.html',

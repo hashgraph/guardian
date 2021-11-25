@@ -2,6 +2,9 @@ import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Schema } from 'interfaces';
 
+/**
+ * Form built by schema
+ */
 @Component({
     selector: 'app-schema-form',
     templateUrl: './schema-form.component.html',

@@ -3,7 +3,9 @@ import {Injectable} from '@angular/core';
 import {ISession, IUser} from 'interfaces';
 import {Observable, of, Subject, Subscription} from 'rxjs';
 
-
+/**
+ * Services for working from accounts.
+ */
 @Injectable()
 export class AuthService {
   private accessTokenSubject: Subject<string | null>;

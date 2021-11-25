@@ -2,6 +2,9 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../data-source/tree-data-source';
 
+/**
+ * Settings for block of 'requestVcDocument' type.
+ */
 @Component({
     selector: 'request-config',
     templateUrl: './request-config.component.html',
@@ -25,13 +28,6 @@ export class RequestConfigComponent implements OnInit {
     };
 
     block!: BlockNode;
-
-    // type!: string;
-    // schema!: string;
-    // privateFields!: any[];
-    // content!: string;
-    // dialogContent!: string;
-    // dialogClass!: string;
 
     constructor() {
     }

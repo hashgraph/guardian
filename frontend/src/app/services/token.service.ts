@@ -3,6 +3,9 @@ import {Injectable} from '@angular/core';
 import {ISession, IToken} from 'interfaces';
 import {Observable} from 'rxjs';
 
+/**
+ * Services for working from Tokens.
+ */
 @Injectable()
 export class TokenService {
   constructor(

@@ -1,7 +1,9 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
 import {PolicyEngineService} from 'src/app/services/policy-engine.service';
 
+/**
+ * Component for display block of 'requestVcDocument' type.
+ */
 @Component({
   selector: 'action-block',
   templateUrl: './action-block.component.html',
@@ -24,8 +26,7 @@ export class ActionBlockComponent implements OnInit {
   content: any;
 
   constructor(
-    private policyEngineService: PolicyEngineService,
-    private dialog: MatDialog
+    private policyEngineService: PolicyEngineService
   ) {
 
   }

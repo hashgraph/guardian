@@ -3,6 +3,9 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
+/**
+ * Component for display block of 'requestVcDocument' types.
+ */
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',

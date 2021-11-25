@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,6 +9,9 @@ import { SchemaDialog } from '../../components/dialogs/schema-dialog/schema-dial
 import { ISchema, ISession, Schema, SchemaStatus, UserState } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/components/dialogs/import-schema/import-schema-dialog.component';
 
+/**
+ * Page for creating, editing, importing and exporting schemes.
+ */
 @Component({
     selector: 'app-schema-config',
     templateUrl: './schema-config.component.html',

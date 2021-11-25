@@ -5,6 +5,9 @@ import { Observable, throwError } from "rxjs";
 import { catchError } from "rxjs/operators";
 import { ToastrService } from "ngx-toastr";
 
+/**
+ * Error interceptor.
+ */
 @Injectable()
 export class HandleErrorsService implements HttpInterceptor {
   constructor(

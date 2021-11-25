@@ -2,6 +2,9 @@ import {Component, Input, OnInit} from '@angular/core';
 import {PolicyEngineService} from 'src/app/services/policy-engine.service';
 import {Subscription} from 'rxjs';
 
+/**
+ * Component for display block of 'interfaceStepBlock' types.
+ */
 @Component({
   selector: 'step-block',
   templateUrl: './step-block.component.html',
