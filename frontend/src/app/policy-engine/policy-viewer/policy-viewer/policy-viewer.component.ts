@@ -8,6 +8,10 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TokenService } from 'src/app/services/token.service';
 import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
 
+/**
+ * Component for choosing a policy and
+ * display blocks of the selected policy
+ */
 @Component({
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',

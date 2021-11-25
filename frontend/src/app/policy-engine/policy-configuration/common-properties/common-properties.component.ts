@@ -2,6 +2,9 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../data-source/tree-data-source';
 
+/**
+ * Settings for all blocks.
+ */
 @Component({
     selector: 'common-properties',
     templateUrl: './common-properties.component.html',

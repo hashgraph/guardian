@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { RootConfigService } from '../../services/root-config.service';
 import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
@@ -10,6 +10,9 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { SchemaFormComponent } from 'src/app/components/schema-form/schema-form.component';
 import { IFullConfig, Schema, SchemaEntity } from 'interfaces';
 
+/**
+ * RootAuthority profile settings page.
+ */
 @Component({
     selector: 'app-root-config',
     templateUrl: './root-config.component.html',

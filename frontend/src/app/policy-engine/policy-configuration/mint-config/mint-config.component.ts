@@ -2,6 +2,9 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../data-source/tree-data-source';
 
+/**
+ * Settings for block of 'mintDocument' and 'wipeDocument' types.
+ */
 @Component({
     selector: 'mint-config',
     templateUrl: './mint-config.component.html',

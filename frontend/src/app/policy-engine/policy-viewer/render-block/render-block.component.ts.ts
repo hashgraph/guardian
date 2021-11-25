@@ -7,6 +7,9 @@ import {InformationBlockComponent} from '../information-block/information-block.
 import {RequestDocumentBlockComponent} from '../request-document-block/request-document-block.component';
 import {StepBlockComponent} from '../step-block/step-block.component';
 
+/**
+ * Component for display all blocks.
+ */
 @Component({
   selector: 'render-block',
   templateUrl: './render-block.component.html',

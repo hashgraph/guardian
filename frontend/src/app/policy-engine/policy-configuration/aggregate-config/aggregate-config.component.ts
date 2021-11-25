@@ -2,6 +2,9 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../data-source/tree-data-source';
 
+/**
+ * Settings for block of 'aggregateDocument' type.
+ */
 @Component({
     selector: 'aggregate-config',
     templateUrl: './aggregate-config.component.html',

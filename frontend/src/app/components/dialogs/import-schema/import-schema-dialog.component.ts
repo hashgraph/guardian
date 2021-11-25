@@ -1,8 +1,9 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { SchemaFormComponent } from '../../schema-form/schema-form.component';
 
+/**
+ * Dialog allowing you to select a file and load schemes.
+ */
 @Component({
     selector: 'import-schema-dialog',
     templateUrl: './import-schema-dialog.component.html',
@@ -15,7 +16,6 @@ export class ImportSchemaDialog {
 
     constructor(
         public dialogRef: MatDialogRef<ImportSchemaDialog>,
-        private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.schemes = data.schemes || [];

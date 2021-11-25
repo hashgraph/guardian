@@ -5,12 +5,14 @@ import { Observable } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { AuthService } from '../../services/auth.service';
 
+/**
+ * Header and Navigation
+ */
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-
 export class HeaderComponent implements OnInit {
   links: any = null;
   activeLink: string = "";

@@ -3,6 +3,9 @@ import { Injectable } from '@angular/core';
 import { ISchema, SchemaEntity } from 'interfaces';
 import { Observable } from 'rxjs';
 
+/**
+ * Services for working from Schemes.
+ */
 @Injectable()
 export class SchemaService {
   constructor(

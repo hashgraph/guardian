@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Observer, Subject, Subscription } from 'rxjs';
-import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
 
+/**
+ * Services for working from policy and separate blocks.
+ */
 @Injectable()
 export class PolicyEngineService {
   private socket: any;

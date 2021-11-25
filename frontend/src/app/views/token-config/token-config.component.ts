@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
@@ -7,6 +7,9 @@ import { TokenDialog } from '../../components/dialogs/token-dialog/token-dialog.
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserState, Token } from 'interfaces';
 
+/**
+ * Page for creating tokens.
+ */
 @Component({
     selector: 'app-token-config',
     templateUrl: './token-config.component.html',

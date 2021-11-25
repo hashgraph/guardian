@@ -1,5 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 
+/**
+ * Settings for policy.
+ */
 @Component({
     selector: 'policy-properties',
     templateUrl: './policy-properties.component.html',

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NestedTreeControl } from '@angular/cdk/tree';
-import { BlockNode, TreeDataSource } from '../../data-source/tree-data-source';
+import { BlockNode } from '../../data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema, SchemaStatus, Token } from 'interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -29,6 +28,9 @@ const allPermissions: any = [
     },
 ];
 
+/**
+ * The page for editing the policy and blocks.
+ */
 @Component({
     selector: 'app-policy-configuration',
     templateUrl: './policy-configuration.component.html',

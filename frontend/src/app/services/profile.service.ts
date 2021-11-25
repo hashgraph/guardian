@@ -3,6 +3,9 @@ import {Injectable} from '@angular/core';
 import {ISession, IUser, IUserProfile} from 'interfaces';
 import {Observable} from 'rxjs';
 
+/**
+ * Services for working from user profile.
+ */
 @Injectable()
 export class ProfileService {
   constructor(

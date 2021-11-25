@@ -1,6 +1,9 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
+/**
+ * Dialog for display json
+ */
 @Component({
     selector: 'vc-dialog',
     templateUrl: './vc-dialog.component.html',
