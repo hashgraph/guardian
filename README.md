@@ -107,9 +107,6 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    docker-compose up -d --build
    ```
-   
-   Note, for the message-broker service **skipLibCheck** flag has been enabled due to instability of typescript building the guardian as a pre-production system. Recommended that once stable this flag should be removed, [see more on issue #26](https://github.com/hashgraph/guardian/issues/26).    
-   
 4. If you want to manually build every component, then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly, the MRV Sender Service. See below for commands.
 
    **From the Message broker folder (Need to run first)**

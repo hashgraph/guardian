@@ -11,8 +11,7 @@
         "outDir": "dist/",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true
+        "esModuleInterop": true
     },
     "include": [
         "src/**/*"
