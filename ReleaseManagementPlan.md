@@ -1,5 +1,5 @@
 # Release Management Plan
-This document describes general approach to release management for the Guardian codebase, and contians detailed sequence of events/actions required for production of releases. The purpose of this document is to inform the community about the processes, and provide guidance to internal teams working on the product.
+This document describes general approach to release management for the Guardian codebase, and contians detailed sequence of events/actions required for production of releases. The purpose of this document is to inform the community about the process, and provide guidance to internal teams working on the product.
 
 ### Release schedule and numbering
 
