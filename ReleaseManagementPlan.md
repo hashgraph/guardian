@@ -61,7 +61,7 @@ Release sprint contain additional activities:
 - PO posts community announcements in the discord and slack channels
 
 
-#### Artefacts list
+#### Artifacts list
 
 - Source code archives (in github)
 - Docker image (in Docker Hub)
