@@ -37,9 +37,9 @@
         <div class="table-container">
             <table mat-table [dataSource]="policies" class="table">
                 <ng-container matColumnDef="id">
-                    <th mat-header-cell *matHeaderCellDef> ID </th>
+                    <th mat-header-cell *matHeaderCellDef> Hedera Topic Id </th>
                     <td mat-cell *matCellDef="let element">
-                        {{ element.id }}
+                        <a [href]="element.topicURL">{{element.topicId}}</a>
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="name">

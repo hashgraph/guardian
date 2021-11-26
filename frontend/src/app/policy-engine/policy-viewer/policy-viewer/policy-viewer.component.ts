@@ -121,7 +121,7 @@ export class PolicyViewerComponent implements OnInit {
             ]).subscribe((value) => {
                 const policies: any[] = value[0];
                 const tokens: IToken[] = value[1];
-                this.policies = policies;
+                this.updatePolicy(policies);
                 this.tokens = tokens;
                 setTimeout(() => {
                     this.loading = false;
@@ -135,7 +135,7 @@ export class PolicyViewerComponent implements OnInit {
                 this.policyEngineService.getAllPolicy(),
             ]).subscribe((value) => {
                 const policies: any[] = value[0];
-                this.policies = policies;
+                this.updatePolicy(policies);
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -157,7 +157,7 @@ export class PolicyViewerComponent implements OnInit {
             if (result) {
                 this.loading = true;
                 this.policyEngineService.createPolicy(result).subscribe((policies: any) => {
-                    this.policies = policies;
+                    this.updatePolicy(policies);
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
@@ -171,12 +171,20 @@ export class PolicyViewerComponent implements OnInit {
     publish(element: any) {
         this.loading = true;
         this.policyEngineService.publishPolicy(element.id).subscribe((policies: any) => {
-            this.policies = policies;
+            this.updatePolicy(policies);
             setTimeout(() => {
                 this.loading = false;
             }, 500);
         }, (e) => {
             this.loading = false;
         });
+    }
+
+    updatePolicy(policies: any[]) {
+        this.policies = policies || [];
+        for (let i = 0; i < this.policies.length; i++) {
+            const element = this.policies[i];
+            element.topicURL = `https://testnet.dragonglass.me/hedera/topics/${element.topicId}`
+        }
     }
 }
