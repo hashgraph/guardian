@@ -169,14 +169,56 @@ To get a local copy up and running, follow these simple example steps. When buil
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-## Testing
-   To start tests run in testing service folder
+## Unit Tests
+
+To run all unit tests, the following command needs to be executed:
 ```
+Some commands here
+```
+
+There is also an ability to run tests of guardian services separately.
+
+To run **guardian-service** unit tests, following commands needs to be executed:
+```
+cd guardian-service 
 npm run test
 ```
 
-# API Documentation
-Run guardian and follow [this](http://localhost:3002/api-docs) link
+To run **vc-modules** unit tests, following commands needs to be executed:
+```
+cd vc-modules
+npm run test
+```
+
+It is also an ability to run Hedera network test only. To do that, the following command needs to be executed:
+```
+npm run test:network
+```
+
+To run stability tests (certain transactions will be executed 10 times each), the following command needs to be executed:
+```
+npm run test:stability
+```
+
+To run **ui-service** unit tests, following commands needs to be executed:
+```
+cd ui-service
+npm run test
+```
+
+To run **message-broker** unit tests, following commands needs to be executed:
+```
+cd message-broker
+npm run test
+```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+## Swagger API
+
+After successfully launching your application, you can find the generated Swagger API by [following this link](http://localhost:3002/api-docs).
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Demo Usage Guide
 
