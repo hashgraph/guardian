@@ -169,6 +169,15 @@ To get a local copy up and running, follow these simple example steps. When buil
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+## Testing
+   To start tests run in testing service folder
+```
+npm run test
+```
+
+# API Documentation
+Run guardian and follow [this](http://localhost:3002/api-docs) link
+
 ## Demo Usage Guide
 
 Navigate to the `/demo artifacts` folder for the Demo Usage Guide or [click here](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts).
