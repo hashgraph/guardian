@@ -171,13 +171,6 @@ To get a local copy up and running, follow these simple example steps. When buil
 
 ## Unit Tests
 
-To run all unit tests, the following command needs to be executed:
-```
-Some commands here
-```
-
-There is also an ability to run tests of guardian services separately.
-
 To run **guardian-service** unit tests, following commands needs to be executed:
 ```
 cd guardian-service 
