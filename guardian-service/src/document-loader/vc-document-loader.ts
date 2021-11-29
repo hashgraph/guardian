@@ -1,6 +1,7 @@
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DocumentLoader, IDocumentFormat } from 'vc-modules';
+import { schemasToContext } from '@transmute/jsonld-schema';
 
 /**
  * Schema Documents Loader.
@@ -35,23 +36,8 @@ export class SchemaDocumentLoader extends DocumentLoader {
     }
 
     public async getDocument(type?: string): Promise<any> {
-        const schema = await this.schemaRepository.find();
-        const document = {
-            '@context': {
-                '@version': 1.1,
-                'id': '@id',
-                'type': '@type',
-                'name': 'https://schema.org/name',
-                'description': 'https://schema.org/description',
-                'identifier': 'https://schema.org/identifier'
-            }
-        }
-
-        for (let i = 0; i < schema.length; i++) {
-            const element = schema[i];
-            document['@context'][element.type] = element.document;
-        }
-
-        return document;
+        const schemes = await this.schemaRepository.find();
+        const context = schemasToContext(schemes);
+        return context;
     }
 }
