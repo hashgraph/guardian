@@ -10,6 +10,7 @@ const localSchema = 'https://localhost/schema';
  * @param schemaRepository - table with schemes
  */
 export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
+    /*
     if (await schemaRepository.count() === 0) {
         let item = schemaRepository.create({
             type: 'Inverter',
@@ -142,6 +143,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
         });
         await schemaRepository.save(item);
     }
+    */
 }
 
 const getRelationships = function (schema: Schema) {
@@ -245,14 +247,14 @@ export const schemaAPI = async function (
             const id = msg.payload.id as string;
             const item = await schemaRepository.findOne(id);
             if (item) {
-                item.type = msg.payload.type;
+                item.name = msg.payload.name;
                 item.entity = msg.payload.entity;
                 item.document = msg.payload.document;
-                const result = await schemaRepository.update(item.id, item);
+                await schemaRepository.update(item.id, item);
             }
         } else {
             const schemaObject = schemaRepository.create(msg.payload);
-            const result = await schemaRepository.save(schemaObject);
+            await schemaRepository.save(schemaObject);
         }
         const schemes = await schemaRepository.find();
         res.send(schemes);
@@ -293,54 +295,54 @@ export const schemaAPI = async function (
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
-        try {
-            let items = msg.payload;
-            if (!Array.isArray(items)) {
-                items = [items];
-            }
-            items = items.filter((e) => e.type && e.document);
-            const schemes = await schemaRepository.find();
-            const mapName = {};
-            for (let i = 0; i < schemes.length; i++) {
-                mapName[schemes[i].type] = true;
-            }
-            const mapId = {};
-            for (let i = 0; i < items.length; i++) {
-                const element = items[i];
-                const type = element.type;
-                const id = localSchema + '#' + type;
-                if (mapName[type]) {
-                    const newType = type + `(${(new Date()).getTime()})`;
-                    const newId = localSchema + '#' + newType;
-                    element.type = newType;
-                    mapId[id] = newId;
-                    mapName[newType] = true;
-                } else {
-                    mapId[id] = id;
-                    mapName[type] = true;
-                }
-            }
-            for (let i = 0; i < items.length; i++) {
-                const element = items[i].document;
-                if (mapId[element['@id']]) {
-                    element['@id'] = mapId[element['@id']];
-                }
-                const context = element['@context'];
-                const keys = Object.keys(context);
-                for (let j = 0; j < keys.length; j++) {
-                    const key = keys[j];
-                    if (mapId[context[key]['@id']]) {
-                        context[key]['@id'] = mapId[context[key]['@id']];
-                    }
-                }
-            }
-            const schemaObject = schemaRepository.create(items);
-            const result = await schemaRepository.save(schemaObject);
-            const newSchemes = await schemaRepository.find();
-            res.send(newSchemes);
-        } catch (error) {
-            console.error(error)
-        }
+        // try {
+        //     let items = msg.payload;
+        //     if (!Array.isArray(items)) {
+        //         items = [items];
+        //     }
+        //     items = items.filter((e) => e.type && e.document);
+        //     const schemes = await schemaRepository.find();
+        //     const mapName = {};
+        //     for (let i = 0; i < schemes.length; i++) {
+        //         mapName[schemes[i].type] = true;
+        //     }
+        //     const mapId = {};
+        //     for (let i = 0; i < items.length; i++) {
+        //         const element = items[i];
+        //         const type = element.type;
+        //         const id = localSchema + '#' + type;
+        //         if (mapName[type]) {
+        //             const newType = type + `(${(new Date()).getTime()})`;
+        //             const newId = localSchema + '#' + newType;
+        //             element.type = newType;
+        //             mapId[id] = newId;
+        //             mapName[newType] = true;
+        //         } else {
+        //             mapId[id] = id;
+        //             mapName[type] = true;
+        //         }
+        //     }
+        //     for (let i = 0; i < items.length; i++) {
+        //         const element = items[i].document;
+        //         if (mapId[element['@id']]) {
+        //             element['@id'] = mapId[element['@id']];
+        //         }
+        //         const context = element['@context'];
+        //         const keys = Object.keys(context);
+        //         for (let j = 0; j < keys.length; j++) {
+        //             const key = keys[j];
+        //             if (mapId[context[key]['@id']]) {
+        //                 context[key]['@id'] = mapId[context[key]['@id']];
+        //             }
+        //         }
+        //     }
+        //     const schemaObject = schemaRepository.create(items);
+        //     const result = await schemaRepository.save(schemaObject);
+        //     const newSchemes = await schemaRepository.find();
+        //     res.send(newSchemes);
+        // } catch (error) {
+        //     console.error(error)
+        // }
     });
 
     /**
@@ -352,39 +354,37 @@ export const schemaAPI = async function (
      * @returns {ISchema[]} - array of selected and nested schemas
      */
     channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
-        try {
-            let ids = msg.payload as string[];
-            let schemes = await schemaRepository.find();
-
-            const mapType: any = {};
-            const mapSchemes: any = {};
-            const result = [];
-            for (let i = 0; i < schemes.length; i++) {
-                const schema = schemes[i];
-                mapType[schema.type] = false;
-                mapSchemes[schema.type] = schema;
-                if (ids.indexOf(schema.type) != -1) {
-                    mapType[schema.type] = true;
-                    result.push(schema);
-                }
-            }
-
-            let index = 0;
-            while (index < result.length) {
-                const relationships = getRelationships(result[index]);
-                for (let i = 0; i < relationships.length; i++) {
-                    const type = relationships[i];
-                    if (!mapType[type]) {
-                        mapType[type] = true;
-                        result.push(mapSchemes[type]);
-                    }
-                }
-                index++;
-            }
-            res.send(result);
-        } catch (error) {
-            console.error(error);
-            res.send(null);
-        }
+        // try {
+        //     let ids = msg.payload as string[];
+        //     let schemes = await schemaRepository.find();
+        //     const mapType: any = {};
+        //     const mapSchemes: any = {};
+        //     const result = [];
+        //     for (let i = 0; i < schemes.length; i++) {
+        //         const schema = schemes[i];
+        //         mapType[schema.type] = false;
+        //         mapSchemes[schema.type] = schema;
+        //         if (ids.indexOf(schema.type) != -1) {
+        //             mapType[schema.type] = true;
+        //             result.push(schema);
+        //         }
+        //     }
+        //     let index = 0;
+        //     while (index < result.length) {
+        //         const relationships = getRelationships(result[index]);
+        //         for (let i = 0; i < relationships.length; i++) {
+        //             const type = relationships[i];
+        //             if (!mapType[type]) {
+        //                 mapType[type] = true;
+        //                 result.push(mapSchemes[type]);
+        //             }
+        //         }
+        //         index++;
+        //     }
+        //     res.send(result);
+        // } catch (error) {
+        //     console.error(error);
+        //     res.send(null);
+        // }
     });
 }
