@@ -1,7 +1,8 @@
-import { readJSON, writeJSON } from 'fs-extra';
-import { IAddressBookConfig, MessageAPI } from 'interfaces';
+import {readJSON, writeJSON} from 'fs-extra';
+import {IAddressBookConfig, MessageAPI} from 'interfaces';
 import path from 'path';
-import { HederaHelper } from 'vc-modules';
+import {HederaHelper} from 'vc-modules';
+import {AccountId, PrivateKey} from "@hashgraph/sdk";
 
 /**
  * Create or read default address book.
@@ -19,6 +20,16 @@ export const readConfig = async function (): Promise<any> {
     }
     if (!fileContent.hasOwnProperty('OPERATOR_KEY') || fileContent['OPERATOR_KEY'].length < 5) {
         throw ('You need to fill OPERATOR_KEY field in config.json file');
+    }
+    try {
+        const accountId = AccountId.fromString(fileContent['OPERATOR_ID']);
+    } catch (error) {
+        throw ('OPERATOR_ID field in .env file: ' + error.message);
+    }
+    try {
+        const accountKey = PrivateKey.fromString(fileContent['OPERATOR_KEY']);
+    } catch (error) {
+        throw ('OPERATOR_KEY field in .env file: ' + error.message);
     }
     let regenerate = false;
     if (!fileContent.hasOwnProperty('ADDRESS_BOOK')) {
