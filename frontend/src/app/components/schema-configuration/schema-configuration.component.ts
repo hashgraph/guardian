@@ -1,20 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Schema } from 'interfaces';
-
-enum FieldType {
-    Text = "https://www.schema.org/text",
-    Value = "https://www.schema.org/value",
-    Identifier = "https://www.schema.org/identifier",
-    DateTime = "https://www.schema.org/DateTime",
-    Amount = "https://www.schema.org/amount",
-    Duration = "https://www.schema.org/duration",
-}
-
-interface IField {
-    name: string,
-    type: FieldType
-}
+import { Schema, SchemaField } from 'interfaces';
 
 /**
  * Schemes constructor
@@ -27,50 +13,151 @@ interface IField {
 export class SchemaConfigurationComponent implements OnInit {
     @Input('schemes') schemes!: Schema[];
     @Input('value') value!: Schema;
-    @Output('document') document = new EventEmitter<any | null>();
+    @Output('document') document = new EventEmitter<Schema | null>();
 
     started = false;
-    fieldsForm: FormGroup;
-    dataForm: FormGroup;
-    defaultFields: FormControl;
-    defaultFieldsMap: any;
-    typesMap: any;
-    types: any;
+    fieldsForm!: FormGroup;
+    dataForm!: FormGroup;
+    defaultFields!: FormControl;
+    defaultFieldsMap!: any;
+    typesMap!: any;
+    types!: any[];
     fields!: any[];
-    schemaTypes: any;
+    schemaTypes!: any;
+    schemaTypeMap!: any;
 
     constructor(
         private fb: FormBuilder
     ) {
+
         this.defaultFieldsMap = {};
         this.defaultFieldsMap["NONE"] = [];
-        this.defaultFieldsMap["INSTALLER"] = [{ name: "policyId", type: "https://www.schema.org/identifier" }];
-        this.defaultFieldsMap["INVERTER"] = [{ name: "policyId", type: "https://www.schema.org/identifier" }];
+        this.defaultFieldsMap["INSTALLER"] = [
+            {
+                name: 'policyId',
+                description: '',
+                required: true,
+                isArray: false,
+                isRef: false,
+                type: 'string',
+                format: undefined,
+                pattern: undefined
+            }
+        ];
+        this.defaultFieldsMap["INVERTER"] = [
+            {
+                name: 'policyId',
+                description: '',
+                required: true,
+                isArray: false,
+                isRef: false,
+                type: 'string',
+                format: undefined,
+                pattern: undefined
+            }
+        ];
         this.defaultFieldsMap["MRV"] = [
-            { name: "accountId", type: "https://www.schema.org/text" },
-            { name: "policyId", type: "https://www.schema.org/identifier" }
+            {
+                name: 'accountId',
+                description: '',
+                required: true,
+                isArray: false,
+                isRef: false,
+                type: 'string',
+                format: undefined,
+                pattern: undefined
+            },
+            {
+                name: 'policyId',
+                description: '',
+                required: true,
+                isArray: false,
+                isRef: false,
+                type: 'string',
+                format: undefined,
+                pattern: undefined
+            }
         ];
         this.defaultFieldsMap["TOKEN"] = [];
 
         this.types = [
-            { name: "Text", value: FieldType.Text },
-            { name: "Value", value: FieldType.Value },
-            { name: "Identifier", value: FieldType.Identifier },
-            { name: "DateTime", value: FieldType.DateTime },
-            { name: "Amount", value: FieldType.Amount },
-            { name: "Duration", value: FieldType.Duration },
+            { name: "Number", value: "1" },
+            { name: "Integer", value: "2" },
+            { name: "String", value: "3" },
+            { name: "Boolean", value: "4" },
+            { name: "Date", value: "5" },
+            { name: "Time", value: "6" },
+            { name: "DateTime", value: "7" },
+            { name: "Duration", value: "8" },
+            { name: "URL", value: "9" },
+            { name: "Email", value: "10" },
         ];
-
-        this.typesMap = {};
-        for (let i = 0; i < this.types.length; i++) {
-            const element = this.types[i];
-            this.typesMap[element.value] = element.name;
-        }
+        this.schemaTypeMap = {};
+        this.schemaTypeMap["1"] = {
+            type: 'number',
+            format: undefined,
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["2"] = {
+            type: 'integer',
+            format: undefined,
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["3"] = {
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["4"] = {
+            type: 'boolean',
+            format: undefined,
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["5"] = {
+            type: 'string',
+            format: 'date',
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["6"] = {
+            type: 'string',
+            format: 'time',
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["7"] = {
+            type: 'string',
+            format: 'date-time',
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["8"] = {
+            type: 'string',
+            format: 'duration',
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["9"] = {
+            type: 'string',
+            format: 'url',
+            pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["10"] = {
+            type: 'string',
+            format: 'email',
+            pattern: undefined,
+            isRef: false
+        };
 
         this.fieldsForm = this.fb.group({});
         this.defaultFields = new FormControl("NONE", Validators.required);
         this.dataForm = this.fb.group({
-            type: ['', Validators.required],
+            name: ['', Validators.required],
             entity: this.defaultFields,
             fields: this.fieldsForm
         });
@@ -84,56 +171,91 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        if (changes.schemes) {
+            this.schemaTypes = [];
+            if (this.schemes) {
+                for (let i = 0; i < this.schemes.length; i++) {
+                    let index = String(this.types.length + i + 1);
+                    this.schemaTypes.push({
+                        name: this.schemes[i].name,
+                        value: index
+                    });
+                    this.schemaTypeMap[index] = {
+                        type: this.schemes[i].name,
+                        format: undefined,
+                        pattern: undefined,
+                        isRef: true,
+                    }
+                }
+            }
+        }
         if (changes.value) {
             if (this.value) {
                 this.fieldsForm.reset();
                 this.dataForm.setValue({
-                    type: this.value.type,
+                    name: this.value.name,
                     entity: this.value.entity,
                     fields: {}
                 });
-                const document = this.value.document;
-                const context = document["@context"];
-
                 const defaultFields = this.defaultFieldsMap[this.value.entity] || [];
                 const defaultFieldsMap: any = {};
                 for (let index = 0; index < defaultFields.length; index++) {
                     defaultFieldsMap[defaultFields[index].name] = true;
                 }
-                const fields = Object.keys(context);
+                const fields = this.value.fields;
                 this.fields = [];
                 for (let index = 0; index < fields.length; index++) {
                     const field = fields[index];
-                    if(defaultFieldsMap[field]) {
+                    if (defaultFieldsMap[field.title]) {
                         continue;
                     }
+                    const type = this.getType(field);
                     const fieldName = "fieldName" + this.fields.length;
                     const fieldType = "fieldType" + this.fields.length;
-                    const controlName = new FormControl(field, Validators.required);
-                    const controlType = new FormControl(context[field]["@id"], Validators.required);
+                    const fieldRequired = "fieldRequired" + this.fields.length;
+                    const fieldArray = "fieldArray" + this.fields.length;
+                    const controlName = new FormControl(field.title, Validators.required);
+                    const controlType = new FormControl(type, Validators.required);
+                    const controlRequired = new FormControl(field.required);
+                    const controlArray = new FormControl(field.isArray);
+
                     this.fields.push({
                         name: "",
-                        type: FieldType.Text,
                         fieldName: fieldName,
                         fieldType: fieldType,
+                        fieldRequired: fieldRequired,
+                        fieldArray: fieldArray,
                         controlName: controlName,
-                        controlType: controlType
+                        controlType: controlType,
+                        controlRequired: controlRequired,
+                        controlArray: controlArray,
+                        required: false,
+                        isArray: false
                     });
                     this.fieldsForm.addControl(fieldName, controlName);
                     this.fieldsForm.addControl(fieldType, controlType);
+                    this.fieldsForm.addControl(fieldRequired, controlRequired);
+                    this.fieldsForm.addControl(fieldArray, controlArray);
                 }
             }
         }
-        if (changes.schemes) {
-            if (this.schemes) {
-                this.schemaTypes = this.schemes.map(e => ({
-                    name: e.type,
-                    value: e.document["@id"]
-                }));
-            } else {
-                this.schemaTypes = [];
+    }
+
+    getType(field: SchemaField) {
+        const keys = Object.keys( this.schemaTypeMap);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const option =  this.schemaTypeMap[key];
+            if(
+                option.type == field.type &&
+                option.format == field.format &&
+                option.pattern == field.pattern &&
+                option.isRef == field.isRef
+            ) {
+                return key;
             }
         }
+        return null;
     }
 
     onAdd(event: MouseEvent) {
@@ -141,18 +263,29 @@ export class SchemaConfigurationComponent implements OnInit {
 
         const fieldName = "fieldName" + this.fields.length;
         const fieldType = "fieldType" + this.fields.length;
+        const fieldRequired = "fieldRequired" + this.fields.length;
+        const fieldArray = "fieldArray" + this.fields.length;
         const controlName = new FormControl('', Validators.required);
-        const controlType = new FormControl(this.types[0].value, Validators.required);
+        const controlType = new FormControl("3", Validators.required);
+        const controlRequired = new FormControl(false);
+        const controlArray = new FormControl(false);
         this.fields.push({
             name: "",
-            type: FieldType.Text,
             fieldName: fieldName,
             fieldType: fieldType,
+            fieldRequired: fieldRequired,
+            fieldArray: fieldArray,
             controlName: controlName,
-            controlType: controlType
+            controlType: controlType,
+            controlRequired: controlRequired,
+            controlArray: controlArray,
+            required: false,
+            isArray: false
         });
         this.fieldsForm.addControl(fieldName, controlName);
         this.fieldsForm.addControl(fieldType, controlType);
+        this.fieldsForm.addControl(fieldRequired, controlRequired);
+        this.fieldsForm.addControl(fieldArray, controlArray);
         this.fields = this.fields.slice();
     }
 
@@ -160,6 +293,8 @@ export class SchemaConfigurationComponent implements OnInit {
         this.fields = this.fields.filter(e => e != item);
         this.fieldsForm.removeControl(item.fieldName);
         this.fieldsForm.removeControl(item.fieldType);
+        this.fieldsForm.removeControl(item.fieldRequired);
+        this.fieldsForm.removeControl(item.fieldArray);
     }
 
     onNoClick(): void {
@@ -168,41 +303,44 @@ export class SchemaConfigurationComponent implements OnInit {
 
     onSubmit() {
         const value = this.dataForm.value;
-        const schema: any = {}
-
-        const defaultFields = this.defaultFieldsMap[value.entity];
-
-        for (let i = 0; i < defaultFields.length; i++) {
-            const element = defaultFields[i];
-
-            const name = element.name;
-            const type = { "@id": element.type };
-            if (name && !schema[name]) {
-                schema[name] = type;
-            }
-        }
-
-        const fields = value.fields;
-
+        const schema = new Schema();
+        const schemaName = value.name.replace(/\s/ig, "_");
+        schema.name = schemaName;
+        schema.entity = value.entity;
+        const fields: SchemaField[] = [];
         for (let i = 0; i < this.fields.length; i++) {
             const element = this.fields[i];
-            const name = fields[element.fieldName];
-            const type = { "@id": fields[element.fieldType] };
-            if (name && !schema[name]) {
-                schema[name] = type;
-            }
+            const name = value.fields[element.fieldName];
+            const typeIndex = value.fields[element.fieldType];
+            const required = value.fields[element.fieldRequired];
+            const isArray = value.fields[element.fieldArray];
+            const type = this.schemaTypeMap[typeIndex];
+            fields.push({
+                title: name,
+                description: '',
+                required: required,
+                isArray: isArray,
+                isRef: type.isRef,
+                type: type.type,
+                format: type.format,
+                pattern: type.pattern,
+            });
         }
-
-        const type = value.type.replace(/\s/ig, "_");
-        const document = {
-            "@id": "https://localhost/schema#" + type,
-            "@context": schema
+        const defaultFields = this.defaultFieldsMap[value.entity];
+        for (let i = 0; i < defaultFields.length; i++) {
+            const element = defaultFields[i];
+            fields.push({
+                title: element.name,
+                description: '',
+                required: element.required,
+                isArray: element.isArray,
+                isRef: element.isRef,
+                type: element.type,
+                format: element.format,
+                pattern: element.pattern,
+            });
         }
-
-        this.document.emit({
-            type: type,
-            entity: value.entity,
-            document: document,
-        });
+        schema.update(fields);
+        this.document.emit(schema);
     }
 }

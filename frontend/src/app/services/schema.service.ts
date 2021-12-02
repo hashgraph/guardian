@@ -14,20 +14,20 @@ export class SchemaService {
   }
 
   public createSchema(
-    type: string,
+    name: string,
     entity: SchemaEntity,
-    document: any
+    document: string
   ): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/create', { type, entity, document });
+    return this.http.post<any[]>('/api/schema/create', { name, entity, document });
   }
 
   public updateSchema(
     id: any,
-    type: string,
+    name: string,
     entity: SchemaEntity,
-    document: any
+    document: string
   ): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/update', { id, type, entity, document });
+    return this.http.post<any[]>('/api/schema/update', { id, name, entity, document });
   }
 
   public getSchemes(): Observable<ISchema[]> {

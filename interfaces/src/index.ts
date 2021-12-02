@@ -26,3 +26,5 @@ export {IChainItem} from './interface/chain-item.interface';
 export {Token} from './models/token';
 export {Schema} from './models/schema';
 export {SchemaStatus} from './type/schema-status.type';
+export {ISchemaDocument} from './interface/schema-document.interface';
+export {SchemaField} from './models/schema';

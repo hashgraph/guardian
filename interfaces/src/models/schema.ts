@@ -3,77 +3,187 @@ import { ISchema } from '../interface/schema.interface';
 import { SchemaEntity } from '../type/schema-entity.type';
 import { SchemaStatus } from '../type/schema-status.type';
 
-interface SchemaField {
+export interface SchemaField {
     title: string;
     description: string;
     required: boolean;
     isArray: boolean;
     isRef: boolean;
     type: string;
-    fields: SchemaField[];
+    format?: string;
+    pattern?: string;
+    fields?: SchemaField[];
 }
 
 export class Schema {
+    public static LOCAL_SCHEMA = 'https://localhost/schema';
     public id: string;
     public name: string;
     public entity: SchemaEntity;
     public status: SchemaStatus;
     public readonly: boolean;
-    public document: ISchemaDocument;
+    public document: string;
+    public schema: ISchemaDocument;
     public fields: SchemaField[];
     public ref: string;
 
-    constructor(data: ISchema) {
-        this.id = data.id;
-        this.name = data.name;
-        this.entity = data.entity;
-        this.status = data.status;
-        this.readonly = data.readonly;
-        this.document = data.document;
-
-        this.mapFields();
+    constructor(data?: ISchema) {
+        if (data) {
+            this.id = data.id;
+            this.status = data.status;
+            this.readonly = data.readonly;
+            this.name = data.name;
+            this.entity = data.entity;
+        } else {
+            this.id = null;
+            this.status = null;
+            this.readonly = null;
+            this.name = null;
+            this.entity = null;
+        }
+        if (data && data.document) {
+            this.document = data.document;
+            this.schema = JSON.parse(data.document);
+            this.mapFields();
+        } else {
+            this.document = null;
+            this.schema = null;
+            this.ref = null;
+            this.fields = [];
+        }
     }
 
     private mapFields() {
         this.fields = [];
         this.ref = null;
-        if (this.document) {
-            this.ref = this.document.$id;
+        if (this.schema) {
+            this.ref = this.schema.$id;
             const required = {};
-            if (this.document.required) {
-                for (let i = 0; i < this.document.required.length; i++) {
-                    const element = this.document.required[i];
+            if (this.schema.required) {
+                for (let i = 0; i < this.schema.required.length; i++) {
+                    const element = this.schema.required[i];
                     required[element] = true;
                 }
             }
-            if (this.document.properties) {
-                const properties = Object.keys(this.document.properties);
+            if (this.schema.properties) {
+                const properties = Object.keys(this.schema.properties);
                 for (let i = 0; i < properties.length; i++) {
                     const name = properties[i];
-                    let property = this.document.properties[name];
-                    if (property.oneOf || property.oneOf.length) {
+                    if (name == '@context' || name == 'type' || name == 'id') {
+                        continue;
+                    }
+                    let property = this.schema.properties[name];
+                    if (property.oneOf && property.oneOf.length) {
                         property = property.oneOf[0];
                     }
-                    const title = property.title || "";
-                    const description = property.description || "";
+                    const title = property.title || '';
+                    const description = property.description || '';
                     const isArray = property.type == SchemaDataTypes.array;
                     if (isArray) {
                         property = property.items;
                     }
                     const isRef = !!property.$ref;
-                    const type = isRef ? property.$ref : String(property.type);
+                    let type = String(property.type);
+                    if(isRef) {
+                        type = property.$ref.replace(/^#/,'');
+                    }
+                    const format = isRef || !property.format ? null : String(property.format);
+                    const pattern = isRef || !property.pattern ? null : String(property.pattern);
                     this.fields.push({
                         title: title,
                         description: description,
                         type: type,
+                        format: format,
+                        pattern: pattern,
                         required: !!required[name],
                         isRef: isRef,
                         isArray: isArray,
-                        fields: null
+                        fields: null,
                     })
                 }
             }
         }
+    }
+
+    public update(fields?: SchemaField[]) {
+        if (fields) {
+            this.fields = fields;
+        }
+        if (!this.fields) {
+            return null;
+        }
+
+        const document = {
+            '$id': `#${this.name}`,
+            '$comment': `{"term": "${this.name}", "@id": "${Schema.LOCAL_SCHEMA}#${this.name}"}`,
+            'title': '',
+            'description': '',
+            'type': 'object',
+            'properties': {
+                '@context': {
+                    'oneOf': [
+                        { 'type': 'string' },
+                        {
+                            'type': 'array',
+                            'items': { 'type': 'string' }
+                        },
+                    ],
+                },
+                'type': {
+                    'oneOf': [
+                        { 'type': 'string' },
+                        {
+                            'type': 'array',
+                            'items': { 'type': 'string' }
+                        },
+                    ],
+                },
+                'id': { 'type': 'string' }
+            },
+            'required': ['@context', 'type'],
+            'additionalProperties': false,
+        }
+        const properties = document.properties;
+        const required = document.required;
+        for (let i = 0; i < this.fields.length; i++) {
+            const field = this.fields[i];
+            let item: any;
+            let property: any;
+            if (field.isArray) {
+                item = {};
+                property = {
+                    'title': field.title,
+                    'description': field.description,
+                    'type': 'array',
+                    'items': item
+                }
+            } else {
+                item = {
+                    'title': field.title,
+                    'description': field.description,
+                };
+                property = item;
+            }
+            if (field.isRef) {
+                property['$comment'] = `{"term": "${field.title}", "@id": "${Schema.LOCAL_SCHEMA}#${field.type}"}`;
+                item['$ref'] = `#${field.type}`;
+            } else {
+                property['$comment'] = `{"term": "${field.title}", "@id": "https://www.schema.org/text"}`;
+                item['type'] = field.type;
+                if (field.format) {
+                    item['format'] = field.format;
+                }
+                if (field.pattern) {
+                    item['pattern'] = field.pattern;
+                }
+            }
+            if (field.required) {
+                required.push(field.title);
+            }
+            properties[field.title] = property;
+        }
+        this.schema = document as any;
+        this.document = JSON.stringify(document);
     }
 
     public static mapRef(data: ISchema[]): Schema[] {
@@ -97,5 +207,19 @@ export class Schema {
             }
         }
         return schemes;
+    }
+
+    public clone(): Schema {
+        const clone = new Schema();
+        clone.id = clone.id;
+        clone.status = clone.status;
+        clone.readonly = clone.readonly;
+        clone.name = clone.name;
+        clone.entity = clone.entity;
+        clone.document = clone.document;
+        clone.schema = clone.schema;
+        clone.fields = clone.fields;
+        clone.ref = clone.ref;
+        return clone
     }
 }

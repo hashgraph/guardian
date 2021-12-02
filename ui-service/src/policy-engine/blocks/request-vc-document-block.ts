@@ -48,7 +48,7 @@ export class RequestVcDocumentBlock {
         const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
         if(!this.schema) {
             const schemas = await this.guardians.getSchemes({}) || [];
-            this.schema = Schema.map(schemas).find(s => s.type === options.schema);
+            this.schema = Schema.mapRef(schemas).find(s => s.name === options.schema);
         }
         if (!this.schema) {
             const ref = PolicyBlockHelpers.GetBlockRef(this);

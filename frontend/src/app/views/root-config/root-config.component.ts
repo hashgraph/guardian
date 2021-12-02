@@ -36,7 +36,7 @@ export class RootConfigComponent implements OnInit {
     progressInterval: any;
 
     vcForm: FormGroup;
-    vcContextDocument: any;
+    schemaFields: any;
     hideVC: any;
 
     constructor(
@@ -81,7 +81,7 @@ export class RootConfigComponent implements OnInit {
         ]).subscribe((value) => {
             const balance: string | null = value[0];
             const root: IFullConfig | null = value[1];
-            const schemes = Schema.map(value[2]);
+            const schemes = Schema.mapRef(value[2]);
 
             this.isConfirmed = !!root;
             if (this.isConfirmed) {
@@ -91,7 +91,7 @@ export class RootConfigComponent implements OnInit {
 
             const rootAuthority = schemes
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
-            this.vcContextDocument = rootAuthority.fullDocument;
+            this.schemaFields = rootAuthority.fields;
 
             setTimeout(() => {
                 this.loading = false;
