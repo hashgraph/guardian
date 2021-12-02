@@ -1,11 +1,24 @@
 export enum SchemaDataTypes {
-    'string',
-    'number',
-    'integer',
-    'boolean',
-    'null',
-    'object',
-    'array',
+    string = 'string',
+    number = 'number',
+    integer = 'integer',
+    boolean = 'boolean',
+    null = 'null',
+    object = 'object',
+    array = 'array',
+}
+
+export enum SchemaDataFormat {
+    date = 'date',
+    time = 'time',
+    dateTime = 'date-time',
+    duration = 'duration',
+    uri = 'uri',
+    email = 'email',
+    ipv4 = 'ipv4',
+    ipv6 = 'ipv6',
+    regex = 'regex',
+    uuid = 'uuid'
 }
 
 export interface ISchemaDocument {
@@ -13,13 +26,15 @@ export interface ISchemaDocument {
     title?: string;
     description?: string;
     type?: SchemaDataTypes;
+    format?: SchemaDataFormat;
+    pattern?: string;
     properties?: {
-        [x:string]: ISchemaDocument;
+        [x: string]: ISchemaDocument;
     }
     required?: string[];
     additionalProperties?: boolean;
     $defs?: {
-        [x:string]: ISchemaDocument;
+        [x: string]: ISchemaDocument;
     }
     $ref?: string;
     items?: ISchemaDocument;

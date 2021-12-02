@@ -94,7 +94,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const schemes = data[0] || [];
             const tokens = data[1] || [];
             const policy = data[2];
-            this.schemes = Schema.map(schemes) || [];
+            this.schemes = Schema.mapRef(schemes) || [];
             this.schemes = this.schemes.filter(s=>s.status == SchemaStatus.PUBLISHED);
             this.schemes.unshift({
                 type: ""

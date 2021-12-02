@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Schema } from 'interfaces';
+import { Schema, SchemaField } from 'interfaces';
 
 /**
  * Form built by schema
@@ -14,10 +14,9 @@ export class SchemaFormComponent implements OnInit {
     @Input('formGroup') group!: FormGroup;
     @Input('readonly') readonly!: any;
     @Input('hide') hide!: any;
-
-    @Input('contextDocument') contextDocument!: any;
+    @Input('fields') schemaFields!: SchemaField[];
     @Input('schemes') schemes!: Schema[];
-    @Input('type') type!: string;
+    @Input('schemaName') schemaName!: string;
 
     fields: any[] | undefined = []
     options: FormGroup | undefined;
@@ -29,82 +28,85 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (this.contextDocument) {
-            this.update(this.contextDocument);
+        if (this.schemaFields) {
+            this.update(this.schemaFields);
             return;
-        } else if (this.schemes && this.type) {
-            const item = this.schemes.find(e => e.type == this.type);
+        } else if (this.schemes && this.schemaName) {
+            const item = this.schemes.find(e => e.name == this.schemaName);
             if (item) {
-                this.update(item.fullDocument);
+                this.update(item.fields);
                 return;
             }
         }
-        this.update(null);
+        this.update();
     }
 
-    update(contextDocument: any) {
+    update(schemaFields?: SchemaField[]) {
         this.group.removeControl("_type");
         this.group.removeControl("_context");
         this.group.removeControl("_options");
 
         this.fields = undefined;
         this.options = undefined;
-        if (!contextDocument) {
+        if (!schemaFields) {
             return;
         }
 
-        const _id = contextDocument['@id'] || "";
-        const _context = contextDocument['@context'] || "";
 
-        const fields: any[] = [];
-        const group: any = {};
-        const keys = Object.keys(_context);
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
-            if (_context[key]['@context']) {
-                group[key] = new FormGroup({});
-                fields.push({
-                    group: group[key],
-                    control: null,
-                    title: key,
-                    name: key,
-                    readonly: false,
-                    hide: false,
-                    contextDocument: _context[key],
-                    type: null
-                })
-            } else {
-                const readonly = this.readonly ? this.readonly[key] : "";
-                const hide = this.hide ? this.hide[key] : "";
-                if (!hide) {
-                    group[key] = new FormControl(readonly, Validators.required);
-                    fields.push({
-                        group: null,
-                        control: group[key],
-                        title: key,
-                        name: key,
-                        readonly: !!readonly,
-                        hide: !!hide,
-                        contextDocument: null,
-                        type: null
-                    })
-                }
-            }
-        }
-        this.options = this.fb.group(group);
-        this.fields = fields;
-        this.group.addControl("_options", this.options);
 
-        //!
-        const param = _id.split("#");
-        if (param[1]) {
-            const t = new FormControl(param[1], Validators.required);
-            this.group.addControl("_type", t);
-        }
-        if (param[0]) {
-            const c = new FormControl([param[0]], Validators.required);
-            this.group.addControl("_context", c);
-        }
+
+
+
+        // const _id = contextDocument['@id'] || "";
+        // const _context = contextDocument['@context'] || "";
+        // const fields: any[] = [];
+        // const group: any = {};
+        // const keys = Object.keys(_context);
+        // for (let i = 0; i < keys.length; i++) {
+        //     const key = keys[i];
+        //     if (_context[key]['@context']) {
+        //         group[key] = new FormGroup({});
+        //         fields.push({
+        //             group: group[key],
+        //             control: null,
+        //             title: key,
+        //             name: key,
+        //             readonly: false,
+        //             hide: false,
+        //             contextDocument: _context[key],
+        //             type: null
+        //         })
+        //     } else {
+        //         const readonly = this.readonly ? this.readonly[key] : "";
+        //         const hide = this.hide ? this.hide[key] : "";
+        //         if (!hide) {
+        //             group[key] = new FormControl(readonly, Validators.required);
+        //             fields.push({
+        //                 group: null,
+        //                 control: group[key],
+        //                 title: key,
+        //                 name: key,
+        //                 readonly: !!readonly,
+        //                 hide: !!hide,
+        //                 contextDocument: null,
+        //                 type: null
+        //             })
+        //         }
+        //     }
+        // }
+        // this.options = this.fb.group(group);
+        // this.fields = fields;
+        // this.group.addControl("_options", this.options);
+        // //!
+        // const param = _id.split("#");
+        // if (param[1]) {
+        //     const t = new FormControl(param[1], Validators.required);
+        //     this.group.addControl("_type", t);
+        // }
+        // if (param[0]) {
+        //     const c = new FormControl([param[0]], Validators.required);
+        //     this.group.addControl("_context", c);
+        // }
     }
 
     public static getOptions(value: any): any {
