@@ -9,8 +9,8 @@
         <div *ngIf="item.group" class="group">
             <mat-label class="group-label">{{item.title}}:</mat-label>
             <div class="group-form">
-                <app-schema-form [formGroup]="item.group" [contextDocument]="item.contextDocument" [readonly]="readonly"
-                    [hide]="hide" [type]="item.type">
+                <app-schema-form [formGroup]="item.group" [fields]="item.fields" [readonly]="readonly"
+                    [hide]="hide" [schemaName]="item.schemaName">
                 </app-schema-form>
             </div>
         </div>
