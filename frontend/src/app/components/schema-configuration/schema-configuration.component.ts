@@ -175,13 +175,13 @@ export class SchemaConfigurationComponent implements OnInit {
             this.schemaTypes = [];
             if (this.schemes) {
                 for (let i = 0; i < this.schemes.length; i++) {
-                    let index = String(this.types.length + i + 1);
+                    const index = String(this.types.length + i + 1);
                     this.schemaTypes.push({
                         name: this.schemes[i].name,
                         value: index
                     });
                     this.schemaTypeMap[index] = {
-                        type: this.schemes[i].name,
+                        type: '#' + this.schemes[i].name,
                         format: undefined,
                         pattern: undefined,
                         isRef: true,
@@ -206,7 +206,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.fields = [];
                 for (let index = 0; index < fields.length; index++) {
                     const field = fields[index];
-                    if (defaultFieldsMap[field.title]) {
+                    if (defaultFieldsMap[field.name]) {
                         continue;
                     }
                     const type = this.getType(field);
@@ -214,7 +214,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     const fieldType = "fieldType" + this.fields.length;
                     const fieldRequired = "fieldRequired" + this.fields.length;
                     const fieldArray = "fieldArray" + this.fields.length;
-                    const controlName = new FormControl(field.title, Validators.required);
+                    const controlName = new FormControl(field.name, Validators.required);
                     const controlType = new FormControl(type, Validators.required);
                     const controlRequired = new FormControl(field.required);
                     const controlArray = new FormControl(field.isArray);
@@ -242,11 +242,11 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     getType(field: SchemaField) {
-        const keys = Object.keys( this.schemaTypeMap);
+        const keys = Object.keys(this.schemaTypeMap);
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
-            const option =  this.schemaTypeMap[key];
-            if(
+            const option = this.schemaTypeMap[key];
+            if (
                 option.type == field.type &&
                 option.format == field.format &&
                 option.pattern == field.pattern &&
@@ -316,7 +316,8 @@ export class SchemaConfigurationComponent implements OnInit {
             const isArray = value.fields[element.fieldArray];
             const type = this.schemaTypeMap[typeIndex];
             fields.push({
-                title: name,
+                name: name,
+                title: '',
                 description: '',
                 required: required,
                 isArray: isArray,
@@ -330,7 +331,8 @@ export class SchemaConfigurationComponent implements OnInit {
         for (let i = 0; i < defaultFields.length; i++) {
             const element = defaultFields[i];
             fields.push({
-                title: element.name,
+                name: element.name,
+                title: '',
                 description: '',
                 required: element.required,
                 isArray: element.isArray,
