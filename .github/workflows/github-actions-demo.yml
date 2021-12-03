@@ -14,10 +14,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install, build, test
         run: |
-          cd interfaces
+          pushd interfaces
           npm install
           npm run build
-          cd vc-modules
+          popd
+          pushd vc-modules
           npm install
           npm run build
         env:
