@@ -22,11 +22,10 @@ jobs:
           npm install
           npm run build
           npm run test
-          pupd
+          popd
           pushd frontend
           npm install
           npm run build
-          npm run test
           popd
           pushd guardian-service
           npm install
