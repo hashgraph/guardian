@@ -17,10 +17,12 @@ jobs:
           pushd interfaces
           npm install
           npm run build
+          npm run lint
           popd
           pushd vc-modules
           npm install
           npm run build
+          npm run lint
           npm run test
           popd
           pushd frontend
@@ -30,6 +32,7 @@ jobs:
           pushd guardian-service
           npm install
           npm run build
+          npm run lint
           npm run test
           popd
           pushd message-broker
@@ -39,6 +42,7 @@ jobs:
           pushd ui-service
           npm install
           npm run build
+          npm run lint
           npm run test
           popd
         env:
