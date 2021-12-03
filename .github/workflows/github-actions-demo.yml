@@ -21,5 +21,26 @@ jobs:
           pushd vc-modules
           npm install
           npm run build
+          npm run test
+          pupd
+          pushd frontend
+          npm install
+          npm run build
+          npm run test
+          popd
+          pushd guardian-service
+          npm install
+          npm run build
+          npm run test
+          popd
+          pushd message-broker
+          npm install
+          npm run build
+          popd
+          pushd ui-service
+          npm install
+          npm run build
+          npm run test
+          popd
         env:
           CI: true
