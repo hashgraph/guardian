@@ -43,3 +43,8 @@ jobs:
           popd
         env:
           CI: true
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        if: always()
+        with:
+          files: test_results/**/*.xml
