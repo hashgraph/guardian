@@ -4,8 +4,9 @@ import { SchemaEntity } from '../type/schema-entity.type';
 import { SchemaStatus } from '../type/schema-status.type';
 
 export interface SchemaField {
-    title: string;
-    description: string;
+    name: string;
+    title?: string;
+    description?: string;
     required: boolean;
     isArray: boolean;
     isRef: boolean;
@@ -13,6 +14,10 @@ export interface SchemaField {
     format?: string;
     pattern?: string;
     fields?: SchemaField[];
+    context?: {
+        type: string;
+        context: string;
+    }
 }
 
 export class Schema {
@@ -26,6 +31,10 @@ export class Schema {
     public schema: ISchemaDocument;
     public fields: SchemaField[];
     public ref: string;
+    public readonly context: {
+        type: string;
+        context: string;
+    };
 
     constructor(data?: ISchema) {
         if (data) {
@@ -44,16 +53,41 @@ export class Schema {
         if (data && data.document) {
             this.document = data.document;
             this.schema = JSON.parse(data.document);
-            this.mapFields();
+            this.context = {
+                type: this.getType(this.schema['$id']),
+                context: Schema.LOCAL_SCHEMA
+            };
+            this.getFields();
         } else {
             this.document = null;
             this.schema = null;
             this.ref = null;
             this.fields = [];
+            this.context = null;
         }
     }
 
-    private mapFields() {
+    private getId(type: string) {
+        return `#${type}`;
+    }
+
+    private getType(ref: string) {
+        if (ref) {
+            const id = ref.split("#");
+            return id[id.length - 1];
+        }
+        return ref;
+    }
+
+    private getUrl(type: string) {
+        return `${Schema.LOCAL_SCHEMA}#${type}`
+    }
+
+    private getComment(term: string, id: string) {
+        return `{"term": "${term}", "@id": "${id}"}`
+    }
+
+    private getFields() {
         this.fields = [];
         this.ref = null;
         if (this.schema) {
@@ -84,12 +118,18 @@ export class Schema {
                     }
                     const isRef = !!property.$ref;
                     let type = String(property.type);
-                    if(isRef) {
-                        type = property.$ref.replace(/^#/,'');
+                    let context = null;
+                    if (isRef) {
+                        type = property.$ref;
+                        context = {
+                            type: this.getType(property.$ref),
+                            context: Schema.LOCAL_SCHEMA
+                        }
                     }
                     const format = isRef || !property.format ? null : String(property.format);
                     const pattern = isRef || !property.pattern ? null : String(property.pattern);
                     this.fields.push({
+                        name: name,
                         title: title,
                         description: description,
                         type: type,
@@ -99,6 +139,7 @@ export class Schema {
                         isRef: isRef,
                         isArray: isArray,
                         fields: null,
+                        context: context
                     })
                 }
             }
@@ -114,8 +155,8 @@ export class Schema {
         }
 
         const document = {
-            '$id': `#${this.name}`,
-            '$comment': `{"term": "${this.name}", "@id": "${Schema.LOCAL_SCHEMA}#${this.name}"}`,
+            '$id': this.getId(this.name),
+            '$comment': this.getComment(this.name, this.getUrl(this.name)),
             'title': '',
             'description': '',
             'type': 'object',
@@ -165,10 +206,10 @@ export class Schema {
                 property = item;
             }
             if (field.isRef) {
-                property['$comment'] = `{"term": "${field.title}", "@id": "${Schema.LOCAL_SCHEMA}#${field.type}"}`;
-                item['$ref'] = `#${field.type}`;
+                property['$comment'] = this.getComment(field.name, this.getUrl(field.type));
+                item['$ref'] = field.type;
             } else {
-                property['$comment'] = `{"term": "${field.title}", "@id": "https://www.schema.org/text"}`;
+                property['$comment'] = this.getComment(field.name, "https://www.schema.org/text");
                 item['type'] = field.type;
                 if (field.format) {
                     item['format'] = field.format;
@@ -178,9 +219,9 @@ export class Schema {
                 }
             }
             if (field.required) {
-                required.push(field.title);
+                required.push(field.name);
             }
-            properties[field.title] = property;
+            properties[field.name] = property;
         }
         this.schema = document as any;
         this.document = JSON.stringify(document);
