@@ -9,8 +9,8 @@
                 {{description}}
             </div>
             <div class="schema-form">
-                <app-schema-form [formGroup]="dataForm" [hide]="hideFields" [fields]="schemaFields">
-                </app-schema-form>
+                <!-- <app-schema-form [formGroup]="dataForm" [hide]="hideFields" [fields]="schemaFields">
+                </app-schema-form> -->
             </div>
             <div>
                 <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
@@ -31,9 +31,9 @@
         </div>
         <div *ngIf="data.schemaFields" mat-dialog-content class="body-dialog-template">
             <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit()" class="form-{{data.type}}">
-                <app-schema-form [formGroup]="data.dataForm" [fields]="schemaFields"
+                <!-- <app-schema-form [formGroup]="data.dataForm" [fields]="schemaFields"
                     [hide]="data.hideFields">
-                </app-schema-form>
+                </app-schema-form> -->
                 <div mat-dialog-actions>
                     <button mat-raised-button color="primary" type="submit"
                         [disabled]="!data.dataForm.valid">Ok</button>

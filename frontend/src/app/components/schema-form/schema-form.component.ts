@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Schema, SchemaField } from 'interfaces';
 
 /**
@@ -11,133 +11,137 @@ import { Schema, SchemaField } from 'interfaces';
     styleUrls: ['./schema-form.component.css']
 })
 export class SchemaFormComponent implements OnInit {
-    @Input('formGroup') group!: FormGroup;
-    @Input('readonly') readonly!: any;
-    @Input('hide') hide!: any;
+    @Input('private-fields') hide!: string[];
+    @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
-    @Input('schemes') schemes!: Schema[];
-    @Input('schemaName') schemaName!: string;
+    @Input('context') context!: any;
+    @Input('formGroup') group!: FormGroup;
 
-    fields: any[] | undefined = []
     options: FormGroup | undefined;
+    fields: any[] | undefined = [];
+
+    @Output('change') change = new EventEmitter<Schema | null>();
 
     constructor(private fb: FormBuilder) {
     }
 
+
     ngOnInit(): void {
     }
 
-    ngOnChanges(changes: SimpleChanges) {
+    ngOnChanges() {
         if (this.schemaFields) {
             this.update(this.schemaFields);
             return;
-        } else if (this.schemes && this.schemaName) {
-            const item = this.schemes.find(e => e.name == this.schemaName);
-            if (item) {
-                this.update(item.fields);
-                return;
-            }
+        } else if (this.schema) {
+            this.context = this.schema.context;
+            this.update(this.schema.fields);
+            return;
         }
         this.update();
     }
 
-    update(schemaFields?: SchemaField[]) {
-        this.group.removeControl("_type");
-        this.group.removeControl("_context");
-        this.group.removeControl("_options");
+    addItem(item: any) {
+        const listItem: any = {
+            name: item.name,
+            index: String(item.list.length),
+        }
+        if (item.isRef) {
+            listItem.control = new FormGroup({});
+        } else {
+            listItem.control = new FormControl("", item.required ? Validators.required : null);
+        }
+        item.list.push(listItem);
+        item.control.push(listItem.control);
+        this.options?.updateValueAndValidity();
+        this.change.emit();
+    }
 
-        this.fields = undefined;
-        this.options = undefined;
+    addGroup(item: any) {
+        item.control = new FormGroup({});
+        setTimeout(() => {
+            this.options?.addControl(item.name, item.control);
+            this.change.emit();
+        });
+    }
+
+    removeGroup(item: any) {
+        this.options?.removeControl(item.name);
+        this.options?.updateValueAndValidity();
+        item.control = null;
+        this.change.emit();
+    }
+
+    onRemove(item: any, listItem: any) {
+        const index = item.list.indexOf(listItem);
+        item.control.removeAt(index);
+        item.list.splice(index, 1);
+        for (let index = 0; index < item.list.length; index++) {
+            const element = item.list[index];
+            element.index = String(index);
+        }
+        this.options?.updateValueAndValidity();
+        this.change.emit();
+    }
+
+    update(schemaFields?: SchemaField[]) {
         if (!schemaFields) {
             return;
         }
 
-
-
-
-
-
-        // const _id = contextDocument['@id'] || "";
-        // const _context = contextDocument['@context'] || "";
-        // const fields: any[] = [];
-        // const group: any = {};
-        // const keys = Object.keys(_context);
-        // for (let i = 0; i < keys.length; i++) {
-        //     const key = keys[i];
-        //     if (_context[key]['@context']) {
-        //         group[key] = new FormGroup({});
-        //         fields.push({
-        //             group: group[key],
-        //             control: null,
-        //             title: key,
-        //             name: key,
-        //             readonly: false,
-        //             hide: false,
-        //             contextDocument: _context[key],
-        //             type: null
-        //         })
-        //     } else {
-        //         const readonly = this.readonly ? this.readonly[key] : "";
-        //         const hide = this.hide ? this.hide[key] : "";
-        //         if (!hide) {
-        //             group[key] = new FormControl(readonly, Validators.required);
-        //             fields.push({
-        //                 group: null,
-        //                 control: group[key],
-        //                 title: key,
-        //                 name: key,
-        //                 readonly: !!readonly,
-        //                 hide: !!hide,
-        //                 contextDocument: null,
-        //                 type: null
-        //             })
-        //         }
-        //     }
-        // }
-        // this.options = this.fb.group(group);
-        // this.fields = fields;
-        // this.group.addControl("_options", this.options);
-        // //!
-        // const param = _id.split("#");
-        // if (param[1]) {
-        //     const t = new FormControl(param[1], Validators.required);
-        //     this.group.addControl("_type", t);
-        // }
-        // if (param[0]) {
-        //     const c = new FormControl([param[0]], Validators.required);
-        //     this.group.addControl("_context", c);
-        // }
-    }
-
-    public static getOptions(value: any): any {
-        const data = this._getOptionsValue(value._options);
-        data["type"] = value._type;
-        data["@context"] = value._context;
-        return data;
-    }
-
-    public static _getOptionsValue(value: any): any {
-        if (Array.isArray(value)) {
-            return value;
-        }
-        if (typeof value == "object") {
-            const res: any = {};
-            const keys = Object.keys(value);
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-                if (key == "_options") {
-                    const options = this._getOptionsValue(value[key]);
-                    Object.assign(res, options);
-                } else if (key == "_type") {
-                    res["type"] = value[key];
-                } else if (key == "_context") {
-                    res["@context"] = value[key];
-                } else {
-                    res[key] = this._getOptionsValue(value[key]);
+        const group: any = {};
+        const fields: any[] = [];
+        for (let i = 0; i < schemaFields.length; i++) {
+            const field = schemaFields[i];
+            const item: any = {
+                name: field.name,
+                required: field.required,
+                isArray: field.isArray,
+                isRef: field.isRef,
+                hide: false,
+                context: field.context
+            }
+            if (!field.isArray && !field.isRef) {
+                item.control = new FormControl("", field.required ? Validators.required : null);
+                group[field.name] = item.control;
+            }
+            if (!field.isArray && field.isRef) {
+                item.fields = field.fields;
+                if (field.required) {
+                    item.control = new FormGroup({});
+                    group[field.name] = item.control;
                 }
             }
-            return res;
+            if (field.isArray && !field.isRef) {
+                item.control = new FormArray([]);
+                group[field.name] = item.control;
+                item.list = [];
+                if (field.required) {
+                    this.addItem(item);
+                }  
+            }
+            if (field.isArray && field.isRef) {
+                item.control = new FormArray([]);
+                group[field.name] = item.control;
+                item.list = [];
+                item.fields = field.fields;
+                if (field.required) {
+                    this.addItem(item);
+                }
+            }
+            fields.push(item);
         }
-        return value;
+        this.fields = fields;
+
+        this.options = this.group;
+        const keys = Object.keys(group);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            this.options.addControl(key, group[key]);
+        }
+        if (this.context) {
+            this.options.addControl("type", new FormControl(this.context.type));
+            this.options.addControl("@context", new FormControl(this.context.context));
+        }
     }
 }

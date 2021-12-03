@@ -42,45 +42,45 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 type: 'string',
             }
         };
-        const _required = ['@context', 'type'];
+        const _required = [];
         
         let item: any;
         item = schemaRepository.create({
             name: 'Inverter',
             document: JSON.stringify({
                 '$id': '#Inverter',
-                '$comment': `{'term': 'Inverter', '@id': '${localSchema}#Inverter'}`,
+                '$comment': `{"term": "Inverter", "@id": "${localSchema}#Inverter"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
                 'properties': {
                     ..._properties,
                     'policyId': {
-                        '$comment': `{'term': 'policyId', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'projectId': {
-                        '$comment': `{'term': 'projectId', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "projectId", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'projectName': {
-                        '$comment': `{'term': 'projectName', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "projectName", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'sensorType': {
-                        '$comment': `{'term': 'sensorType', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "sensorType", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'capacity': {
-                        '$comment': `{'term': 'capacity', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "capacity", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
@@ -106,20 +106,20 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             name: 'Installer',
             document: JSON.stringify({
                 '$id': '#Installer',
-                '$comment': `{'term': 'Installer', '@id': '${localSchema}#Installer'}`,
+                '$comment': `{"term": "Installer", "@id": "${localSchema}#Installer"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
                 'properties': {
                     ..._properties,
                     'policyId': {
-                        '$comment': `{'term': 'policyId', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'name': {
-                        '$comment': `{'term': 'name', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "name", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
@@ -142,38 +142,38 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             name: 'MRV',
             document: JSON.stringify({
                 '$id': '#MRV',
-                '$comment': `{'term': 'MRV', '@id': '${localSchema}#MRV'}`,
+                '$comment': `{"term": "MRV", "@id": "${localSchema}#MRV"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
                 'properties': {
                     ..._properties,
                     'policyId': {
-                        '$comment': `{'term': 'policyId', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'accountId': {
-                        '$comment': `{'term': 'accountId', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "accountId", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'date': {
-                        '$comment': `{'term': 'date', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'amount': {
-                        '$comment': `{'term': 'amount', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'period': {
-                        '$comment': `{'term': 'period', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "period", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
@@ -199,26 +199,26 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             name: 'MintToken',
             document: JSON.stringify({
                 '$id': '#MintToken',
-                '$comment': `{'term': 'MintToken', '@id': '${localSchema}#MintToken'}`,
+                '$comment': `{"term": "MintToken", "@id": "${localSchema}#MintToken"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
                 'properties': {
                     ..._properties,
                     'date': {
-                        '$comment': `{'term': 'date', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'amount': {
-                        '$comment': `{'term': 'amount', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'tokenId': {
-                        '$comment': `{'term': 'tokenId', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
@@ -242,26 +242,26 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             name: 'WipeToken',
             document: JSON.stringify({
                 '$id': '#WipeToken',
-                '$comment': `{'term': 'WipeToken', '@id': '${localSchema}#WipeToken'}`,
+                '$comment': `{"term": "WipeToken", "@id": "${localSchema}#WipeToken"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
                 'properties': {
                     ..._properties,
                     'date': {
-                        '$comment': `{'term': 'date', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'amount': {
-                        '$comment': `{'term': 'amount', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'tokenId': {
-                        '$comment': `{'term': 'tokenId', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
@@ -285,14 +285,14 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             name: 'RootAuthority',
             document: JSON.stringify({
                 '$id': '#RootAuthority',
-                '$comment': `{'term': 'RootAuthority', '@id': '${localSchema}#RootAuthority'}`,
+                '$comment': `{"term": "RootAuthority", "@id": "${localSchema}#RootAuthority"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
                 'properties': {
                     ..._properties,
                     'name': {
-                        '$comment': `{'term': 'date', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
@@ -314,21 +314,21 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             name: 'MintNFToken',
             document: JSON.stringify({
                 '$id': '#MintNFToken',
-                '$comment': `{'term': 'MintNFToken', '@id': '${localSchema}#MintNFToken'}`,
+                '$comment': `{"term": "MintNFToken", "@id": "${localSchema}#MintNFToken"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
                 'properties': {
                     ..._properties,
                     'date': {
-                        '$comment': `{'term': 'date', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'serials':
                     {
-                        '$comment': `{'term': 'serials', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "serials", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'array',
@@ -337,7 +337,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                         }
                     },
                     'tokenId': {
-                        '$comment': `{'term': 'tokenId', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
@@ -361,38 +361,38 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             name: 'Policy',
             document: JSON.stringify({
                 '$id': '#Policy',
-                '$comment': `{'term': 'Policy', '@id': '${localSchema}#Policy'}`,
+                '$comment': `{"term": "Policy", "@id": "${localSchema}#Policy"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
                 'properties': {
                     ..._properties,
                     'name': {
-                        '$comment': `{'term': 'name', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "name", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'description': {
-                        '$comment': `{'term': 'description', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "description", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'topicDescription': {
-                        '$comment': `{'term': 'topicDescription', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "topicDescription", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'version': {
-                        '$comment': `{'term': 'version', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "version", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
                     },
                     'policyTag': {
-                        '$comment': `{'term': 'policyTag', '@id': 'https://www.schema.org/text'}`,
+                        '$comment': `{"term": "policyTag", "@id": "https://www.schema.org/text"}`,
                         'title': '',
                         'description': '',
                         'type': 'string'
@@ -418,7 +418,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 
 const getRelationships = function (schema: Schema) {
     const document = schema.document;
-    const id = document['@id'] as string;
+    const id = document["@id"] as string;
     const context = document['@context'];
     const result = [];
     if (id.startsWith(`${localSchema}#`)) {
@@ -426,7 +426,7 @@ const getRelationships = function (schema: Schema) {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const field = context[key];
-            const fieldId = field['@id'] as string;
+            const fieldId = field["@id"] as string;
             const fieldIds = fieldId.split('#');
             if (fieldIds[0] == localSchema && fieldIds[1]) {
                 result.push(fieldIds[1]);
@@ -594,15 +594,15 @@ export const schemaAPI = async function (
         //     }
         //     for (let i = 0; i < items.length; i++) {
         //         const element = items[i].document;
-        //         if (mapId[element['@id']]) {
-        //             element['@id'] = mapId[element['@id']];
+        //         if (mapId[element["@id"]]) {
+        //             element["@id"] = mapId[element["@id"]];
         //         }
         //         const context = element['@context'];
         //         const keys = Object.keys(context);
         //         for (let j = 0; j < keys.length; j++) {
         //             const key = keys[j];
-        //             if (mapId[context[key]['@id']]) {
-        //                 context[key]['@id'] = mapId[context[key]['@id']];
+        //             if (mapId[context[key]["@id"]]) {
+        //                 context[key]["@id"] = mapId[context[key]["@id"]];
         //             }
         //         }
         //     }

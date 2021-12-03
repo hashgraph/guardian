@@ -37,7 +37,8 @@ export class SchemaDocumentLoader extends DocumentLoader {
 
     public async getDocument(type?: string): Promise<any> {
         const schemes = await this.schemaRepository.find();
-        const context = schemasToContext(schemes);
+        const documents = schemes.map(s=>JSON.parse(s.document))
+        const context = schemasToContext(documents);
         return context;
     }
 }
