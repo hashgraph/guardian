@@ -1,4 +1,4 @@
-[![Apache 2.0 License][license-shield]][license-url]
+[![Apache 2.0 License][license-shield]][license-url] ![tests results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg)
 
 <!-- PROJECT LOGO -->
 <br />

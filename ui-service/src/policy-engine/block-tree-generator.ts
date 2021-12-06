@@ -19,6 +19,7 @@ import {SchemaEntity, UserRole} from 'interfaces';
 import {HederaHelper} from 'vc-modules';
 import {Guardians} from '@helpers/guardians';
 import {VcHelper} from '@helpers/vcHelper';
+import * as Buffer from 'buffer';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -179,6 +180,14 @@ export class BlockTreeGenerator {
                     return;
                 }
                 ws.user = user;
+            });
+
+            ws.on("message", (data: Buffer) => {
+                switch (data.toString()) {
+                    case "ping":
+                        ws.send('pong');
+                        break;
+                }
             });
         });
     }
