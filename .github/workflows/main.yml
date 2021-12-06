@@ -12,7 +12,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install, build, test
+      - name: Build, test
         run: |
           pushd interfaces
           npm install
@@ -22,7 +22,6 @@ jobs:
           pushd vc-modules
           npm install
           npm run build
-          npm run lint
           npm run test
           popd
           pushd frontend
@@ -32,7 +31,6 @@ jobs:
           pushd guardian-service
           npm install
           npm run build
-          npm run lint
           npm run test
           popd
           pushd message-broker
@@ -42,7 +40,35 @@ jobs:
           pushd ui-service
           npm install
           npm run build
+          npm run test
+          popd
+        env:
+          CI: true
+      - name: Lint
+        run: |
+          pushd interfaces
           npm run lint
+          popd
+          pushd vc-modules
+          npm run lint
+          popd
+          pushd guardian-service
+          npm run lint
+          popd
+          pushd ui-service
+          npm run lint
+          popd
+        env:
+          CI: true
+      - name: Test
+        run: |
+          pushd vc-modules
+          npm run test
+          popd
+          pushd guardian-service
+          npm run test
+          popd
+          pushd ui-service
           npm run test
           popd
         env:
