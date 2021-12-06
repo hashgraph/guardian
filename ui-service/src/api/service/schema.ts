@@ -99,16 +99,6 @@ schemaAPI.post('/export', async (req: Request, res: Response) => {
     const guardians = new Guardians();
     const ids = req.body.ids as string[];
     const schemes = (await guardians.exportSchemes(ids));
-    const documents = [];
-    for (let i = 0; i < schemes.length; i++) {
-        const element = schemes[i];
-        documents.push({
-            name: element.name,
-            uuid: element.uuid,
-            entity: element.entity,
-            document: element.document,
-        })
-    }
     const json = schemes;
     res.status(200).json({ schemes: json });
 });
