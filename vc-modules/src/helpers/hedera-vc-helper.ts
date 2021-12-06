@@ -95,7 +95,7 @@ export class VCHelper {
         let vc = new HcsVcDocument<VcSubject>();
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
-        vc.addType(vcSubject.getType());
+        // vc.addType(vcSubject.getType());
         vc.addCredentialSubject(vcSubject);
         vc.setIssuer(did);
         return vc.toJsonTree();
@@ -159,7 +159,7 @@ export class VCHelper {
         let vc = new HcsVcDocument<VcSubject>();
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
-        vc.addType(vcSubject.getType());
+        // vc.addType(vcSubject.getType());
         vc.addCredentialSubject(vcSubject);
         vc.setIssuer(didId);
 

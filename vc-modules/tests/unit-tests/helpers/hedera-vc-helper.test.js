@@ -120,8 +120,7 @@ describe("VCHelper", function () {
             ],
             "id": vc.id,
             "type": [
-                "VerifiableCredential",
-                "Test"
+                "VerifiableCredential"
             ],
             "credentialSubject": [
                 {
@@ -150,8 +149,7 @@ describe("VCHelper", function () {
             ],
             "id": root.id,
             "type": [
-                "VerifiableCredential",
-                "Test"
+                "VerifiableCredential"
             ],
             "credentialSubject": [
                 {
@@ -180,8 +178,7 @@ describe("VCHelper", function () {
             ],
             "id": root.id,
             "type": [
-                "VerifiableCredential",
-                "Test"
+                "VerifiableCredential"
             ],
             "credentialSubject": [
                 {
@@ -223,8 +220,7 @@ describe("VCHelper", function () {
                     ],
                     "id": rootVC.id,
                     "type": [
-                        "VerifiableCredential",
-                        "Test"
+                        "VerifiableCredential"
                     ],
                     "credentialSubject": [
                         {
