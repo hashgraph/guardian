@@ -1,7 +1,7 @@
-import {Guardians} from '@helpers/guardians';
-import {Users} from '@helpers/users';
-import {Request, Response, Router} from 'express';
-import {UserRole} from 'interfaces';
+import { Guardians } from '@helpers/guardians';
+import { Users } from '@helpers/users';
+import { Request, Response, Router } from 'express';
+import { UserRole } from 'interfaces';
 
 /**
  * Schema route
@@ -13,7 +13,7 @@ schemaAPI.post('/create', async (req: Request, res: Response) => {
     const users = new Users();
 
     if (!(await users.permission(req, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
+        res.status(403).send({ code: 403, message: 'Forbidden' });
         return;
     }
 
@@ -28,7 +28,7 @@ schemaAPI.post('/update', async (req: Request, res: Response) => {
     const users = new Users();
 
     if (!(await users.permission(req, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
+        res.status(403).send({ code: 403, message: 'Forbidden' });
         return;
     }
 
@@ -43,11 +43,11 @@ schemaAPI.post('/publish', async (req: Request, res: Response) => {
     const users = new Users();
 
     if (!(await users.permission(req, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
+        res.status(403).send({ code: 403, message: 'Forbidden' });
         return;
     }
 
-    const {id} = req.body;
+    const { id } = req.body;
     const schemes = (await guardians.publishSchema(id));
     res.status(200).json(schemes);
 });
@@ -57,11 +57,11 @@ schemaAPI.post('/unpublished', async (req: Request, res: Response) => {
     const users = new Users();
 
     if (!(await users.permission(req, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
+        res.status(403).send({ code: 403, message: 'Forbidden' });
         return;
     }
 
-    const {id} = req.body;
+    const { id } = req.body;
     const schemes = (await guardians.unpublishedSchema(id));
     res.status(200).json(schemes);
 });
@@ -71,11 +71,11 @@ schemaAPI.post('/delete', async (req: Request, res: Response) => {
     const users = new Users();
 
     if (!(await users.permission(req, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
+        res.status(403).send({ code: 403, message: 'Forbidden' });
         return;
     }
 
-    const {id} = req.body;
+    const { id } = req.body;
     const schemes = (await guardians.deleteSchema(id));
     res.status(200).json(schemes);
 });
@@ -99,10 +99,15 @@ schemaAPI.post('/export', async (req: Request, res: Response) => {
     const guardians = new Guardians();
     const ids = req.body.ids as string[];
     const schemes = (await guardians.exportSchemes(ids));
+    const documents = [];
     for (let i = 0; i < schemes.length; i++) {
         const element = schemes[i];
-        element.id = undefined;
-        element.readonly = undefined;
+        documents.push({
+            name: element.name,
+            uuid: element.uuid,
+            entity: element.entity,
+            document: element.document,
+        })
     }
     const json = schemes;
     res.status(200).json({ schemes: json });

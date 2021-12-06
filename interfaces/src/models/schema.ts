@@ -23,6 +23,8 @@ export interface SchemaField {
 export class Schema {
     public static LOCAL_SCHEMA = 'https://localhost/schema';
     public id: string;
+    public uuid: string;
+    public hash: string;
     public name: string;
     public entity: SchemaEntity;
     public status: SchemaStatus;
@@ -31,7 +33,7 @@ export class Schema {
     public schema: ISchemaDocument;
     public fields: SchemaField[];
     public ref: string;
-    public readonly context: {
+    public context: {
         type: string;
         context: string;
     };
@@ -39,11 +41,16 @@ export class Schema {
     constructor(data?: ISchema) {
         if (data) {
             this.id = data.id;
-            this.status = data.status;
-            this.readonly = data.readonly;
+            this.uuid = data.uuid;
+            this.hash = data.hash;
             this.name = data.name;
             this.entity = data.entity;
+            this.status = data.status;
+            this.readonly = data.readonly;
+
         } else {
+            this.uuid = Schema.randomUUID();
+            this.hash = null;
             this.id = null;
             this.status = null;
             this.readonly = null;
@@ -90,59 +97,61 @@ export class Schema {
     private getFields() {
         this.fields = [];
         this.ref = null;
-        if (this.schema) {
-            this.ref = this.schema.$id;
-            const required = {};
-            if (this.schema.required) {
-                for (let i = 0; i < this.schema.required.length; i++) {
-                    const element = this.schema.required[i];
-                    required[element] = true;
+
+        if (!this.schema || !this.schema.properties) {
+            return;
+        }
+
+        this.ref = this.schema.$id;
+        const required = {};
+        if (this.schema.required) {
+            for (let i = 0; i < this.schema.required.length; i++) {
+                const element = this.schema.required[i];
+                required[element] = true;
+            }
+        }
+
+        const properties = Object.keys(this.schema.properties);
+        for (let i = 0; i < properties.length; i++) {
+            const name = properties[i];
+            if (name == '@context' || name == 'type' || name == 'id') {
+                continue;
+            }
+            let property = this.schema.properties[name];
+            if (property.oneOf && property.oneOf.length) {
+                property = property.oneOf[0];
+            }
+            const title = property.title || '';
+            const description = property.description || '';
+            const isArray = property.type == SchemaDataTypes.array;
+            if (isArray) {
+                property = property.items;
+            }
+            const isRef = !!property.$ref;
+            let type = String(property.type);
+            let context = null;
+            if (isRef) {
+                type = property.$ref;
+                context = {
+                    type: this.getType(property.$ref),
+                    context: Schema.LOCAL_SCHEMA
                 }
             }
-            if (this.schema.properties) {
-                const properties = Object.keys(this.schema.properties);
-                for (let i = 0; i < properties.length; i++) {
-                    const name = properties[i];
-                    if (name == '@context' || name == 'type' || name == 'id') {
-                        continue;
-                    }
-                    let property = this.schema.properties[name];
-                    if (property.oneOf && property.oneOf.length) {
-                        property = property.oneOf[0];
-                    }
-                    const title = property.title || '';
-                    const description = property.description || '';
-                    const isArray = property.type == SchemaDataTypes.array;
-                    if (isArray) {
-                        property = property.items;
-                    }
-                    const isRef = !!property.$ref;
-                    let type = String(property.type);
-                    let context = null;
-                    if (isRef) {
-                        type = property.$ref;
-                        context = {
-                            type: this.getType(property.$ref),
-                            context: Schema.LOCAL_SCHEMA
-                        }
-                    }
-                    const format = isRef || !property.format ? null : String(property.format);
-                    const pattern = isRef || !property.pattern ? null : String(property.pattern);
-                    this.fields.push({
-                        name: name,
-                        title: title,
-                        description: description,
-                        type: type,
-                        format: format,
-                        pattern: pattern,
-                        required: !!required[name],
-                        isRef: isRef,
-                        isArray: isArray,
-                        fields: null,
-                        context: context
-                    })
-                }
-            }
+            const format = isRef || !property.format ? null : String(property.format);
+            const pattern = isRef || !property.pattern ? null : String(property.pattern);
+            this.fields.push({
+                name: name,
+                title: title,
+                description: description,
+                type: type,
+                format: format,
+                pattern: pattern,
+                required: !!required[name],
+                isRef: isRef,
+                isArray: isArray,
+                fields: null,
+                context: context
+            })
         }
     }
 
@@ -155,8 +164,8 @@ export class Schema {
         }
 
         const document = {
-            '$id': this.getId(this.name),
-            '$comment': this.getComment(this.name, this.getUrl(this.name)),
+            '$id': this.getId(this.uuid),
+            '$comment': this.getComment(this.uuid, this.getUrl(this.uuid)),
             'title': '',
             'description': '',
             'type': 'object',
@@ -253,14 +262,45 @@ export class Schema {
     public clone(): Schema {
         const clone = new Schema();
         clone.id = clone.id;
-        clone.status = clone.status;
-        clone.readonly = clone.readonly;
+        clone.uuid = clone.uuid;
+        clone.hash = clone.hash;
         clone.name = clone.name;
         clone.entity = clone.entity;
+        clone.status = clone.status;
+        clone.readonly = clone.readonly;
         clone.document = clone.document;
         clone.schema = clone.schema;
         clone.fields = clone.fields;
         clone.ref = clone.ref;
+        clone.context = clone.context;
         return clone
+    }
+
+    public static randomUUID(): string {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    public static validate(schema: any) {
+        try {
+            if (!schema.name) {
+                return false;
+            }
+            if (!schema.uuid) {
+                return false;
+            }
+            if (!schema.document) {
+                return false;
+            }
+            const doc = JSON.parse(schema.document);
+            if (!doc['$id']) {
+                return false;
+            }
+        } catch (error) {
+            return false;
+        }
+        return true;
     }
 }

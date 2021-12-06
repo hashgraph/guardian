@@ -15,7 +15,7 @@
         </div>
         <div class="types-body">
             <div *ngFor="let item of newSchemes" [title]="getTitle(item)">
-                <div>{{item.type}} ({{item.entity}})</div>
+                <div>{{item.uuid}} {{item.name}} ({{item.entity}})</div>
             </div>
         </div>
     </div>
