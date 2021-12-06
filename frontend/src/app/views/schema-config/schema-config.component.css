@@ -128,6 +128,7 @@ a {
     color: #f44336;
 }
 
+.schemes-table .mat-column-uuid,
 .schemes-table .mat-column-type,
 .schemes-table .mat-column-entity {
     padding-left: 10px;

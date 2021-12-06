@@ -99,7 +99,6 @@ export class RootConfigComponent implements OnInit {
 
             this.schema = schemes
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
-            this.schema = schemes[schemes.length - 1];
 
             setTimeout(() => {
                 this.loading = false;

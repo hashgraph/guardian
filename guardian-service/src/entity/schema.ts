@@ -1,4 +1,4 @@
-import { ISchema, SchemaEntity, SchemaStatus, ISchemaDocument } from 'interfaces';
+import { ISchema, SchemaEntity, SchemaStatus, Schema as SchemaModel } from 'interfaces';
 import { BeforeInsert, Column, Entity, ObjectIdColumn } from 'typeorm';
 
 @Entity()
@@ -9,6 +9,12 @@ export class Schema implements ISchema {
     @Column({
         unique: true
     })
+    uuid: string;
+
+    @Column()
+    hash: string;
+
+    @Column()
     name: string;
 
     @Column()
@@ -28,5 +34,6 @@ export class Schema implements ISchema {
         this.entity = this.entity || SchemaEntity.NONE;
         this.status = this.status || SchemaStatus.DRAFT;
         this.readonly = !!this.readonly;
+        this.uuid = this.uuid || SchemaModel.randomUUID();
     }
 }
