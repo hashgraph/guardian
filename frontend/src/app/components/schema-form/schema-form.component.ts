@@ -11,7 +11,7 @@ import { Schema, SchemaField } from 'interfaces';
     styleUrls: ['./schema-form.component.css']
 })
 export class SchemaFormComponent implements OnInit {
-    @Input('private-fields') hide!: string[];
+    @Input('private-fields') hide!: { [x: string]: boolean };
     @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
     @Input('context') context!: any;
@@ -30,6 +30,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnChanges() {
+        this.hide = this.hide || {};
         if (this.schemaFields) {
             this.update(this.schemaFields);
             return;
@@ -93,6 +94,9 @@ export class SchemaFormComponent implements OnInit {
         const fields: any[] = [];
         for (let i = 0; i < schemaFields.length; i++) {
             const field = schemaFields[i];
+            if(this.hide[field.name]) {
+                continue
+            }
             const item: any = {
                 name: field.name,
                 required: field.required,
@@ -118,7 +122,7 @@ export class SchemaFormComponent implements OnInit {
                 item.list = [];
                 if (field.required) {
                     this.addItem(item);
-                }  
+                }
             }
             if (field.isArray && field.isRef) {
                 item.control = new FormArray([]);

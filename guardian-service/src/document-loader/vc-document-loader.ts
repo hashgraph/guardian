@@ -35,7 +35,7 @@ export class SchemaDocumentLoader extends DocumentLoader {
         throw new Error('IRI not found: ' + iri);
     }
 
-    public async getDocument(type?: string): Promise<any> {
+    public async getDocument(uuid?: string): Promise<any> {
         const schemes = await this.schemaRepository.find();
         const documents = schemes.map(s=>JSON.parse(s.document))
         const context = schemasToContext(documents);

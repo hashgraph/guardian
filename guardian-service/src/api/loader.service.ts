@@ -42,9 +42,10 @@ export const loaderAPI = async function (
         try {
             let documents: any;
             if (msg.payload) {
-                documents = await schemaDocumentLoader.getDocument(msg.payload)
+                const uuid = msg.payload as string;
+                documents = await schemaDocumentLoader.getDocument(uuid);
             } else {
-                documents = await schemaDocumentLoader.getDocument()
+                documents = await schemaDocumentLoader.getDocument();
             }
             res.send(documents);
         } catch (e) {

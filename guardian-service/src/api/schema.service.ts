@@ -50,8 +50,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             uuid: "9d31b4ee-2280-43ee-81e7-b225ee208802",
             entity: SchemaEntity.INVERTER,
             document: JSON.stringify({
-                '$id': '#Inverter',
-                '$comment': `{"term": "Inverter", "@id": "${localSchema}#Inverter"}`,
+                '$id': '#9d31b4ee-2280-43ee-81e7-b225ee208802',
+                '$comment': `{"term": "9d31b4ee-2280-43ee-81e7-b225ee208802", "@id": "${localSchema}#9d31b4ee-2280-43ee-81e7-b225ee208802"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
@@ -108,8 +108,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             uuid: "b613e284-5af3-465e-a9a9-329a706180fc",
             entity: SchemaEntity.INSTALLER,
             document: JSON.stringify({
-                '$id': '#Installer',
-                '$comment': `{"term": "Installer", "@id": "${localSchema}#Installer"}`,
+                '$id': '#b613e284-5af3-465e-a9a9-329a706180fc',
+                '$comment': `{"term": "b613e284-5af3-465e-a9a9-329a706180fc", "@id": "${localSchema}#b613e284-5af3-465e-a9a9-329a706180fc"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
@@ -145,8 +145,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             uuid: "c4623dbd-2453-4c12-941f-032792a00727",
             entity: SchemaEntity.MRV,
             document: JSON.stringify({
-                '$id': '#MRV',
-                '$comment': `{"term": "MRV", "@id": "${localSchema}#MRV"}`,
+                '$id': '#c4623dbd-2453-4c12-941f-032792a00727',
+                '$comment': `{"term": "c4623dbd-2453-4c12-941f-032792a00727", "@id": "${localSchema}#c4623dbd-2453-4c12-941f-032792a00727"}`,
                 'title': '',
                 'description': '',
                 'type': 'object',
