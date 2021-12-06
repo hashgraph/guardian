@@ -112,7 +112,7 @@
                   "onlyOwnDocuments": true,
                   "dataType": "vc-documents",
                   "filters": {
-                    "schema": "Inverter",
+                    "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802",
                     "type": "Inverter"
                   },
                   "uiMetaData": {
@@ -159,7 +159,7 @@
                     "INSTALLER"
                   ],
                   "type": "download",
-                  "schema": "MRV",
+                  "schema": "c4623dbd-2453-4c12-941f-032792a00727",
                   "stopPropagation": true,
                   "targetUrl": "http://message-broker:3003/mrv",
                   "uiMetaData": {
@@ -185,7 +185,7 @@
                         "INSTALLER"
                       ],
                       "blockType": "requestVcDocument",
-                      "schema": "Inverter",
+                      "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802",
                       "idType": "DID",
                       "uiMetaData": {
                         "type": "dialog",
@@ -245,7 +245,7 @@
                   "onlyOwnDocuments": true,
                   "dataType": "vc-documents",
                   "filters": {
-                    "schema": "MRV",
+                    "schema": "c4623dbd-2453-4c12-941f-032792a00727",
                     "type": "MRV"
                   },
                   "uiMetaData": {
@@ -428,7 +428,7 @@
           "tag": "mrv_source",
           "blockType": "externalDataBlock",
           "entityType": "MRV",
-          "schema": "MRV",
+          "schema": "c4623dbd-2453-4c12-941f-032792a00727",
           "uiMetaData": {}
         },
         {

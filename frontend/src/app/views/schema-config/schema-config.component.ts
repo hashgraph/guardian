@@ -24,6 +24,7 @@ export class SchemaConfigComponent implements OnInit {
     publishSchemes: Schema[] = [];
     schemaColumns: string[] = [
         'selected',
+        'uuid',
         'type',
         'entity',
         'status',
@@ -52,7 +53,6 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         this.profileService.getCurrentState().subscribe((profile: ISession) => {
             this.isConfirmed = !!profile && profile.state == UserState.CONFIRMED;
-            this.isConfirmed = true;
             if (this.isConfirmed) {
                 this.loadSchemes();
             } else {
@@ -200,11 +200,11 @@ export class SchemaConfigComponent implements OnInit {
 
     setSchema(data: ISchema[]) {
         this.schemes = Schema.mapRef(data) || [];
-        this.publishSchemes = this.schemes.filter(s=>s.status == SchemaStatus.PUBLISHED);
+        this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
     }
 
     exportSchemes() {
-        const ids = this.schemes.filter((s: any) => s._selected).map(s => s.name);
+        const ids = this.schemes.filter((s: any) => s._selected).map(s => s.uuid);
         this.schemaService.exportSchemes(ids).subscribe((data) => {
             this.downloadObjectAsJson(data.schemes, 'schema');
             this.loading = false;

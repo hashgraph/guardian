@@ -7,5 +7,8 @@ export enum SchemaEntity {
     ROOT_AUTHORITY = 'ROOT_AUTHORITY',
     MINT = 'MINT',
     RETIREMENT = 'RETIREMENT',
-    POLICY = 'POLICY'
+    POLICY = 'POLICY',
+    MINT_TOKEN = 'MINT_TOKEN',
+    WIPE_TOKEN = 'WIPE_TOKEN',
+    MINT_NFTOKEN = 'MINT_NFTOKEN'
 }

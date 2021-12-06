@@ -3,14 +3,17 @@
         <mat-spinner></mat-spinner>
     </div>
     <ng-container *ngIf="type=='page'">
-        <form *ngIf="schemaFields" [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-{{type}}">
+        <form *ngIf="schema" [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-{{type}}">
             <h1 mat-dialog-title>{{title}}</h1>
             <div class="description">
                 {{description}}
             </div>
             <div class="schema-form">
-                <!-- <app-schema-form [formGroup]="dataForm" [hide]="hideFields" [fields]="schemaFields">
-                </app-schema-form> -->
+                <app-schema-form
+                    [formGroup]="dataForm" 
+                    [schema]="schema" 
+                    [private-fields]="hideFields">
+                </app-schema-form>
             </div>
             <div>
                 <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
@@ -29,11 +32,13 @@
         <div class="description">
             {{description}}
         </div>
-        <div *ngIf="data.schemaFields" mat-dialog-content class="body-dialog-template">
+        <div *ngIf="data.schema" mat-dialog-content class="body-dialog-template">
             <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit()" class="form-{{data.type}}">
-                <!-- <app-schema-form [formGroup]="data.dataForm" [fields]="schemaFields"
-                    [hide]="data.hideFields">
-                </app-schema-form> -->
+                <app-schema-form
+                    [formGroup]="data.dataForm" 
+                    [schema]="data.schema" 
+                    [private-fields]="data.hideFields">
+                </app-schema-form>
                 <div mat-dialog-actions>
                     <button mat-raised-button color="primary" type="submit"
                         [disabled]="!data.dataForm.valid">Ok</button>

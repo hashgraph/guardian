@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { ISchema, MessageAPI, SchemaEntity, SchemaStatus } from 'interfaces';
+import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, Schema as SchemaModel } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 
 const localSchema = 'https://localhost/schema';
@@ -43,10 +43,12 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
             }
         };
         const _required = [];
-        
+
         let item: any;
         item = schemaRepository.create({
             name: 'Inverter',
+            uuid: "9d31b4ee-2280-43ee-81e7-b225ee208802",
+            entity: SchemaEntity.INVERTER,
             document: JSON.stringify({
                 '$id': '#Inverter',
                 '$comment': `{"term": "Inverter", "@id": "${localSchema}#Inverter"}`,
@@ -96,7 +98,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 ],
                 'additionalProperties': false,
             }),
-            entity: SchemaEntity.INVERTER,
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -104,6 +105,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 
         item = schemaRepository.create({
             name: 'Installer',
+            uuid: "b613e284-5af3-465e-a9a9-329a706180fc",
+            entity: SchemaEntity.INSTALLER,
             document: JSON.stringify({
                 '$id': '#Installer',
                 '$comment': `{"term": "Installer", "@id": "${localSchema}#Installer"}`,
@@ -132,7 +135,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 ],
                 'additionalProperties': false,
             }),
-            entity: SchemaEntity.INSTALLER,
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -140,6 +142,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 
         item = schemaRepository.create({
             name: 'MRV',
+            uuid: "c4623dbd-2453-4c12-941f-032792a00727",
+            entity: SchemaEntity.MRV,
             document: JSON.stringify({
                 '$id': '#MRV',
                 '$comment': `{"term": "MRV", "@id": "${localSchema}#MRV"}`,
@@ -189,7 +193,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 ],
                 'additionalProperties': false,
             }),
-            entity: SchemaEntity.MRV,
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -197,6 +200,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 
         item = schemaRepository.create({
             name: 'MintToken',
+            uuid: "MintToken",
+            entity: SchemaEntity.MINT_TOKEN,
             document: JSON.stringify({
                 '$id': '#MintToken',
                 '$comment': `{"term": "MintToken", "@id": "${localSchema}#MintToken"}`,
@@ -232,7 +237,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 ],
                 'additionalProperties': false,
             }),
-            entity: SchemaEntity.TOKEN,
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -240,6 +244,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 
         item = schemaRepository.create({
             name: 'WipeToken',
+            uuid: "WipeToken",
+            entity: SchemaEntity.WIPE_TOKEN,
             document: JSON.stringify({
                 '$id': '#WipeToken',
                 '$comment': `{"term": "WipeToken", "@id": "${localSchema}#WipeToken"}`,
@@ -275,7 +281,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 ],
                 'additionalProperties': false,
             }),
-            entity: SchemaEntity.TOKEN,
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -283,6 +288,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 
         item = schemaRepository.create({
             name: 'RootAuthority',
+            uuid: "RootAuthority",
+            entity: SchemaEntity.ROOT_AUTHORITY,
             document: JSON.stringify({
                 '$id': '#RootAuthority',
                 '$comment': `{"term": "RootAuthority", "@id": "${localSchema}#RootAuthority"}`,
@@ -304,7 +311,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 ],
                 'additionalProperties': false,
             }),
-            entity: SchemaEntity.ROOT_AUTHORITY,
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -312,6 +318,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 
         item = schemaRepository.create({
             name: 'MintNFToken',
+            uuid: "MintNFToken",
+            entity: SchemaEntity.MINT_NFTOKEN,
             document: JSON.stringify({
                 '$id': '#MintNFToken',
                 '$comment': `{"term": "MintNFToken", "@id": "${localSchema}#MintNFToken"}`,
@@ -351,7 +359,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 ],
                 'additionalProperties': false,
             }),
-            entity: SchemaEntity.TOKEN,
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -359,6 +366,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 
         item = schemaRepository.create({
             name: 'Policy',
+            uuid: "Policy",
+            entity: SchemaEntity.POLICY,
             document: JSON.stringify({
                 '$id': '#Policy',
                 '$comment': `{"term": "Policy", "@id": "${localSchema}#Policy"}`,
@@ -408,7 +417,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 ],
                 'additionalProperties': false,
             }),
-            entity: SchemaEntity.ROOT_AUTHORITY,
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -416,21 +424,13 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
     }
 }
 
-const getRelationships = function (schema: Schema) {
-    const document = schema.document;
-    const id = document["@id"] as string;
-    const context = document['@context'];
+const getRelationships = function (schema: SchemaModel) {
+    const fields = schema.fields;
     const result = [];
-    if (id.startsWith(`${localSchema}#`)) {
-        const keys = Object.keys(context);
-        for (let index = 0; index < keys.length; index++) {
-            const key = keys[index];
-            const field = context[key];
-            const fieldId = field["@id"] as string;
-            const fieldIds = fieldId.split('#');
-            if (fieldIds[0] == localSchema && fieldIds[1]) {
-                result.push(fieldIds[1]);
-            }
+    for (let i = 0; i < fields.length; i++) {
+        const element = fields[i];
+        if (element.isRef) {
+            result.push(element.type);
         }
     }
     return result;
@@ -499,7 +499,10 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
         if (msg.payload) {
             const id = msg.payload as string;
-            await schemaRepository.delete(id);
+            const item = await schemaRepository.findOne(id);
+            if (item) {
+                await schemaRepository.delete(item.id);
+            }
         }
         const schemes = await schemaRepository.find();
         res.send(schemes);
@@ -565,54 +568,28 @@ export const schemaAPI = async function (
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
-        // try {
-        //     let items = msg.payload;
-        //     if (!Array.isArray(items)) {
-        //         items = [items];
-        //     }
-        //     items = items.filter((e) => e.type && e.document);
-        //     const schemes = await schemaRepository.find();
-        //     const mapName = {};
-        //     for (let i = 0; i < schemes.length; i++) {
-        //         mapName[schemes[i].type] = true;
-        //     }
-        //     const mapId = {};
-        //     for (let i = 0; i < items.length; i++) {
-        //         const element = items[i];
-        //         const type = element.type;
-        //         const id = localSchema + '#' + type;
-        //         if (mapName[type]) {
-        //             const newType = type + `(${(new Date()).getTime()})`;
-        //             const newId = localSchema + '#' + newType;
-        //             element.type = newType;
-        //             mapId[id] = newId;
-        //             mapName[newType] = true;
-        //         } else {
-        //             mapId[id] = id;
-        //             mapName[type] = true;
-        //         }
-        //     }
-        //     for (let i = 0; i < items.length; i++) {
-        //         const element = items[i].document;
-        //         if (mapId[element["@id"]]) {
-        //             element["@id"] = mapId[element["@id"]];
-        //         }
-        //         const context = element['@context'];
-        //         const keys = Object.keys(context);
-        //         for (let j = 0; j < keys.length; j++) {
-        //             const key = keys[j];
-        //             if (mapId[context[key]["@id"]]) {
-        //                 context[key]["@id"] = mapId[context[key]["@id"]];
-        //             }
-        //         }
-        //     }
-        //     const schemaObject = schemaRepository.create(items);
-        //     const result = await schemaRepository.save(schemaObject);
-        //     const newSchemes = await schemaRepository.find();
-        //     res.send(newSchemes);
-        // } catch (error) {
-        //     console.error(error)
-        // }
+        try {
+            let items: ISchema[] = msg.payload;
+            if (!Array.isArray(items)) {
+                items = [items];
+            }
+
+            items = items.filter((e) => e.uuid && e.document);
+            const schemes = await schemaRepository.find();
+            const mapName = {};
+            for (let i = 0; i < schemes.length; i++) {
+                mapName[schemes[i].uuid] = true;
+            }
+            items = items.filter((e) => !mapName[e.uuid]);
+
+            const schemaObject = schemaRepository.create(items);
+            await schemaRepository.save(schemaObject);
+
+            const newSchemes = await schemaRepository.find();
+            res.send(newSchemes);
+        } catch (error) {
+            console.error(error)
+        }
     });
 
     /**
@@ -624,37 +601,38 @@ export const schemaAPI = async function (
      * @returns {ISchema[]} - array of selected and nested schemas
      */
     channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
-        // try {
-        //     let ids = msg.payload as string[];
-        //     let schemes = await schemaRepository.find();
-        //     const mapType: any = {};
-        //     const mapSchemes: any = {};
-        //     const result = [];
-        //     for (let i = 0; i < schemes.length; i++) {
-        //         const schema = schemes[i];
-        //         mapType[schema.type] = false;
-        //         mapSchemes[schema.type] = schema;
-        //         if (ids.indexOf(schema.type) != -1) {
-        //             mapType[schema.type] = true;
-        //             result.push(schema);
-        //         }
-        //     }
-        //     let index = 0;
-        //     while (index < result.length) {
-        //         const relationships = getRelationships(result[index]);
-        //         for (let i = 0; i < relationships.length; i++) {
-        //             const type = relationships[i];
-        //             if (!mapType[type]) {
-        //                 mapType[type] = true;
-        //                 result.push(mapSchemes[type]);
-        //             }
-        //         }
-        //         index++;
-        //     }
-        //     res.send(result);
-        // } catch (error) {
-        //     console.error(error);
-        //     res.send(null);
-        // }
+        try {
+            const ids = msg.payload as string[];
+            const data = await schemaRepository.find();
+            const schemes = data.map(s => new SchemaModel(s));
+            const mapType: any = {};
+            const mapSchemes: any = {};
+            const result = [];
+            for (let i = 0; i < schemes.length; i++) {
+                const schema = schemes[i];
+                mapType[schema.ref] = false;
+                mapSchemes[schema.ref] = schema;
+                if (ids.indexOf(schema.uuid) != -1) {
+                    mapType[schema.ref] = true;
+                    result.push(schema);
+                }
+            }
+            let index = 0;
+            while (index < result.length) {
+                const relationships = getRelationships(result[index]);
+                for (let i = 0; i < relationships.length; i++) {
+                    const id = relationships[i];
+                    if (!mapType[id]) {
+                        mapType[id] = true;
+                        result.push(mapSchemes[id]);
+                    }
+                }
+                index++;
+            }
+            res.send(result);
+        } catch (error) {
+            console.error(error);
+            res.send(null);
+        }
     });
 }
