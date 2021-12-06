@@ -76,7 +76,7 @@ export class RequestVcDocumentBlock {
         const userHederaAccount = userFull.hederaAccountId;
         const userHederaKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userFull.did);
 
-        const credentialSubject = document._options;
+        const credentialSubject = document;
         const schema = ref.options.schema;
         const idType = ref.options.idType;
         const id = await this.generateId(idType, userFull, userHederaAccount, userHederaKey);
