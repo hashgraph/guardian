@@ -35,7 +35,7 @@ export class Schema {
     public ref: string;
     public context: {
         type: string;
-        context: string;
+        context: string[];
     };
 
     constructor(data?: ISchema) {
@@ -62,7 +62,7 @@ export class Schema {
             this.schema = JSON.parse(data.document);
             this.context = {
                 type: this.getType(this.schema['$id']),
-                context: Schema.LOCAL_SCHEMA
+                context: [Schema.LOCAL_SCHEMA]
             };
             this.getFields();
         } else {
@@ -134,7 +134,7 @@ export class Schema {
                 type = property.$ref;
                 context = {
                     type: this.getType(property.$ref),
-                    context: Schema.LOCAL_SCHEMA
+                    context: [Schema.LOCAL_SCHEMA]
                 }
             }
             const format = isRef || !property.format ? null : String(property.format);
