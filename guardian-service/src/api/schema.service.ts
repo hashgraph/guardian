@@ -45,159 +45,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
         const _required = [];
 
         let item: any;
-        item = schemaRepository.create({
-            name: 'Inverter',
-            uuid: "9d31b4ee-2280-43ee-81e7-b225ee208802",
-            entity: SchemaEntity.INVERTER,
-            document: JSON.stringify({
-                '$id': '#9d31b4ee-2280-43ee-81e7-b225ee208802',
-                '$comment': `{"term": "9d31b4ee-2280-43ee-81e7-b225ee208802", "@id": "${localSchema}#9d31b4ee-2280-43ee-81e7-b225ee208802"}`,
-                'title': '',
-                'description': '',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'policyId': {
-                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'projectId': {
-                        '$comment': `{"term": "projectId", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'projectName': {
-                        '$comment': `{"term": "projectName", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'sensorType': {
-                        '$comment': `{"term": "sensorType", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'capacity': {
-                        '$comment': `{"term": "capacity", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                },
-                'required': [
-                    ..._required,
-                    'policyId',
-                    'projectId',
-                    'projectName',
-                    'sensorType',
-                    'capacity'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            name: 'Installer',
-            uuid: "b613e284-5af3-465e-a9a9-329a706180fc",
-            entity: SchemaEntity.INSTALLER,
-            document: JSON.stringify({
-                '$id': '#b613e284-5af3-465e-a9a9-329a706180fc',
-                '$comment': `{"term": "b613e284-5af3-465e-a9a9-329a706180fc", "@id": "${localSchema}#b613e284-5af3-465e-a9a9-329a706180fc"}`,
-                'title': '',
-                'description': '',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'policyId': {
-                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'name': {
-                        '$comment': `{"term": "name", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    }
-                },
-                'required': [
-                    ..._required,
-                    'policyId',
-                    'name'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            name: 'MRV',
-            uuid: "c4623dbd-2453-4c12-941f-032792a00727",
-            entity: SchemaEntity.MRV,
-            document: JSON.stringify({
-                '$id': '#c4623dbd-2453-4c12-941f-032792a00727',
-                '$comment': `{"term": "c4623dbd-2453-4c12-941f-032792a00727", "@id": "${localSchema}#c4623dbd-2453-4c12-941f-032792a00727"}`,
-                'title': '',
-                'description': '',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'policyId': {
-                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'accountId': {
-                        '$comment': `{"term": "accountId", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'date': {
-                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'amount': {
-                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                    'period': {
-                        '$comment': `{"term": "period", "@id": "https://www.schema.org/text"}`,
-                        'title': '',
-                        'description': '',
-                        'type': 'string'
-                    },
-                },
-                'required': [
-                    ..._required,
-                    'policyId',
-                    'accountId',
-                    'date',
-                    'amount',
-                    'period'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
+        
         item = schemaRepository.create({
             name: 'MintToken',
             uuid: "MintToken",
@@ -414,6 +262,160 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                     'topicDescription',
                     'version',
                     'policyTag'
+                ],
+                'additionalProperties': false,
+            }),
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
+        });
+        await schemaRepository.save(item);
+
+        
+        item = schemaRepository.create({
+            name: 'Inverter',
+            uuid: "9d31b4ee-2280-43ee-81e7-b225ee208802",
+            entity: SchemaEntity.INVERTER,
+            document: JSON.stringify({
+                '$id': '#9d31b4ee-2280-43ee-81e7-b225ee208802',
+                '$comment': `{"term": "9d31b4ee-2280-43ee-81e7-b225ee208802", "@id": "${localSchema}#9d31b4ee-2280-43ee-81e7-b225ee208802"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'policyId': {
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'projectId': {
+                        '$comment': `{"term": "projectId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'projectName': {
+                        '$comment': `{"term": "projectName", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'sensorType': {
+                        '$comment': `{"term": "sensorType", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'capacity': {
+                        '$comment': `{"term": "capacity", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                },
+                'required': [
+                    ..._required,
+                    'policyId',
+                    'projectId',
+                    'projectName',
+                    'sensorType',
+                    'capacity'
+                ],
+                'additionalProperties': false,
+            }),
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
+        });
+        await schemaRepository.save(item);
+
+        item = schemaRepository.create({
+            name: 'Installer',
+            uuid: "b613e284-5af3-465e-a9a9-329a706180fc",
+            entity: SchemaEntity.INSTALLER,
+            document: JSON.stringify({
+                '$id': '#b613e284-5af3-465e-a9a9-329a706180fc',
+                '$comment': `{"term": "b613e284-5af3-465e-a9a9-329a706180fc", "@id": "${localSchema}#b613e284-5af3-465e-a9a9-329a706180fc"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'policyId': {
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'name': {
+                        '$comment': `{"term": "name", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    }
+                },
+                'required': [
+                    ..._required,
+                    'policyId',
+                    'name'
+                ],
+                'additionalProperties': false,
+            }),
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
+        });
+        await schemaRepository.save(item);
+
+        item = schemaRepository.create({
+            name: 'MRV',
+            uuid: "c4623dbd-2453-4c12-941f-032792a00727",
+            entity: SchemaEntity.MRV,
+            document: JSON.stringify({
+                '$id': '#c4623dbd-2453-4c12-941f-032792a00727',
+                '$comment': `{"term": "c4623dbd-2453-4c12-941f-032792a00727", "@id": "${localSchema}#c4623dbd-2453-4c12-941f-032792a00727"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'policyId': {
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'accountId': {
+                        '$comment': `{"term": "accountId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'date': {
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'amount': {
+                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'period': {
+                        '$comment': `{"term": "period", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                },
+                'required': [
+                    ..._required,
+                    'policyId',
+                    'accountId',
+                    'date',
+                    'amount',
+                    'period'
                 ],
                 'additionalProperties': false,
             }),
