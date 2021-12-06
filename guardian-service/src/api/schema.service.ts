@@ -622,14 +622,24 @@ export const schemaAPI = async function (
                 const relationships = getRelationships(result[index]);
                 for (let i = 0; i < relationships.length; i++) {
                     const id = relationships[i];
-                    if (!mapType[id]) {
+                    if (mapType[id] === false) {
                         mapType[id] = true;
                         result.push(mapSchemes[id]);
                     }
                 }
                 index++;
             }
-            res.send(result);
+            const documents = [];
+            for (let i = 0; i < result.length; i++) {
+                const element = result[i];
+                documents.push({
+                    name: element.name,
+                    uuid: element.uuid,
+                    entity: element.entity,
+                    document: element.document,
+                })
+            }
+            res.send(documents);
         } catch (error) {
             console.error(error);
             res.send(null);

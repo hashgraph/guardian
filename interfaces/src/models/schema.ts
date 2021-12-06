@@ -87,7 +87,7 @@ export class Schema {
     }
 
     private getUrl(type: string) {
-        return `${Schema.LOCAL_SCHEMA}#${type}`
+        return `${Schema.LOCAL_SCHEMA}${type}`
     }
 
     private getComment(term: string, id: string) {
@@ -165,7 +165,7 @@ export class Schema {
 
         const document = {
             '$id': this.getId(this.uuid),
-            '$comment': this.getComment(this.uuid, this.getUrl(this.uuid)),
+            '$comment': this.getComment(this.uuid, this.getUrl(this.getId(this.uuid))),
             'title': '',
             'description': '',
             'type': 'object',
