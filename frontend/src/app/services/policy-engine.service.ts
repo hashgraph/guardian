@@ -10,6 +10,8 @@ import { ToastrService } from 'ngx-toastr';
  */
 @Injectable()
 export class PolicyEngineService {
+  private static HEARTBEAT_DELAY = 60 * 1000;
+
   private socket: any;
   private websocketSubject: Subject<unknown>;
   private wsSubjectConfig: WebSocketSubjectConfig<string>;
@@ -84,6 +86,9 @@ export class PolicyEngineService {
     this.socket = webSocket(this.wsSubjectConfig);
     this.socket.subscribe(
       (m: any) => {
+        if (m === "pong") {
+          return;
+        }
         this.websocketSubject.next(m);
       },
       (error: Event) => {
@@ -91,6 +96,12 @@ export class PolicyEngineService {
           this.reconnect();
         }
       });
+    this.heartbeat();
+  }
+
+  private heartbeat() {
+    this.socket.next('ping');
+    setTimeout(this.heartbeat.bind(this), PolicyEngineService.HEARTBEAT_DELAY);
   }
 
   private reconnect(): void {
