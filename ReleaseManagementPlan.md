@@ -3,7 +3,7 @@ This document describes general approach to release management for the Guardian 
 
 ### Release schedule and numbering
 
-The Guardian development team follows Scrum methodology with 2-week sprints. Software releases are produced on regular cadence every other sprint, i.e every 4 weeks; regardless of the status of features in development. Releases are produced on Mondays following the end-of-sprint review on Friday previous week.
+The Guardian development team follows Scrum methodology with 2-week sprints. Software releases are produced on regular cadence every other sprint, i.e every 4 weeks; regardless of the status of features in development. Releases are produced on Mondays at 12:00 EST, following the go/no-go decisition taken at the end-of-sprint review on Friday previous week.
 
 The Guardian uses semantic versioning for releases in the major.minor.build format. Each number incremented sequentially to denote the following changes:
 - major: a signifcant milestone in product lifecycle has been reached
