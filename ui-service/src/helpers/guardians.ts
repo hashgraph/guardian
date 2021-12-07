@@ -185,6 +185,17 @@ export class Guardians {
     }
 
     /**
+     * Return Schema
+     * 
+     * @param {string} uuid - schema uuid
+     * 
+     * @returns {any} - Schema Document
+     */
+    public async loadSchema(uuid: string): Promise<any> {
+        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA, uuid)).payload;
+    }
+
+    /**
      * Create or update DID Documents
      * 
      * @param {IDidDocument} item - document
@@ -306,7 +317,7 @@ export class Guardians {
      * Register MRV reciever
      * @param cb
      */
-    public registerMRVReciever(cb: (data: any) => Promise<void>): void {
+    public registerMRVReceiver(cb: (data: any) => Promise<void>): void {
         this.channel.response('mrv-data', async (msg, res) => {
             await cb(msg.payload);
             res.send();

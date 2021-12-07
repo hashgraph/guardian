@@ -23,13 +23,13 @@ export class VCDocumentLoader extends DocumentLoader {
         if (iri == this.context) {
             return {
                 documentUrl: iri,
-                document: await this.getDocument(),
+                document: await this.getDocument(iri),
             };
         }
         throw new Error('IRI not found');
     }
 
-    public async getDocument(): Promise<any> {
+    public async getDocument(iri: string): Promise<any> {
         const document = await this.guardians.loadSchemaDocument(null);
         if (!document) {
             throw new Error('Schema not found');
