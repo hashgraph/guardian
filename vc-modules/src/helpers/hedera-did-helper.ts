@@ -2,7 +2,7 @@ import {
     Client,
     Hbar,
     PrivateKey,
-} from "@hashgraph/sdk";
+} from '@hashgraph/sdk';
 import {
     CredentialSubject,
     HcsVcMessage,
@@ -12,10 +12,10 @@ import {
     HcsDidMessage,
     DidMethodOperation,
     HcsDid
-} from "did-sdk-js";
-import { HcsVcDocument } from "../vc/vc-document";
-import { HcsDidDocument } from "../did-document";
-import { MAX_FEE } from "./max-fee";
+} from 'did-sdk-js';
+import { HcsVcDocument } from '../vc/vc-document';
+import { HcsDidDocument } from '../did-document';
+import { MAX_FEE } from './max-fee';
 
 /**
  * Methods for send documents from Hedera Network
@@ -41,7 +41,7 @@ export class HederaDIDHelper {
         vc: HcsVcDocument<T>,
         privateKey: PrivateKey | string
     ): Promise<HcsVcMessage> {
-        const key = (typeof privateKey == "string") ? PrivateKey.fromString(privateKey) : privateKey;
+        const key = (typeof privateKey == 'string') ? PrivateKey.fromString(privateKey) : privateKey;
         const transaction = new Promise<HcsVcMessage>(async (resolve, reject) => {
             try {
                 const transaction = this.network
@@ -52,7 +52,7 @@ export class HederaDIDHelper {
                         resolve(env.open());
                     })
                     .onError((e: Error) => {
-                        reject("Error while sending VC message transaction: " + e);
+                        reject('Error while sending VC message transaction: ' + e);
                     });
                 await transaction.execute(this.client);
             } catch (error) {
@@ -108,7 +108,7 @@ export class HederaDIDHelper {
                         resolve(env.open());
                     })
                     .onError((e: Error) => {
-                        reject("Error while sending DID message transaction: " + e);
+                        reject('Error while sending DID message transaction: ' + e);
                     });
                 const txResponse = await transactionId.execute(this.client);
             } catch (error) {

@@ -3,11 +3,11 @@ import {
     Client,
     Hbar,
     PrivateKey,
-} from "@hashgraph/sdk";
-import { HederaSDKHelper } from "./hedera-sdk-helper";
-import { HederaDIDHelper } from "./hedera-did-helper";
-import { AddressBook, HcsIdentityNetwork, HcsIdentityNetworkBuilder } from "did-sdk-js";
-import { MAX_FEE } from "./max-fee";
+} from '@hashgraph/sdk';
+import { HederaSDKHelper } from './hedera-sdk-helper';
+import { HederaDIDHelper } from './hedera-did-helper';
+import { AddressBook, HcsIdentityNetwork, HcsIdentityNetworkBuilder } from 'did-sdk-js';
+import { MAX_FEE } from './max-fee';
 
 export interface IHederaNetwork {
     network: HcsIdentityNetwork,
@@ -81,7 +81,7 @@ export class HederaHelper {
      * @param {string} vcTopicId -  VC Topic Id
      */
     public setAddressBook(fileId: string, didTopicId: string, vcTopicId: string): IHederaHelper {
-        this.network = "testnet";
+        this.network = 'testnet';
         this.addressBook = new AddressBook()
         this.identityNetwork = HcsIdentityNetwork.fromAddressBook(this.network, this.addressBook);
         const ab = AddressBook.fromJson(`{"didTopicId":"${didTopicId}","vcTopicId":"${vcTopicId}"}`, fileId);
@@ -113,7 +113,7 @@ export class HederaHelper {
         const operatorId = AccountId.fromString(id);
         const operatorKey = PrivateKey.fromString(key);
 
-        const network = "testnet";
+        const network = 'testnet';
         const client = Client.forTestnet();
         client.setOperator(operatorId, operatorKey);
 
