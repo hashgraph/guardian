@@ -23,5 +23,6 @@ export enum MessageAPI {
     EXPORT_SCHEMES = 'export-schema',
     PUBLISH_SCHEMA = 'publish-schema',
     UNPUBLISHED_SCHEMA = 'unpublished-schema',
-    DELETE_SCHEMA = 'delete-schema'
+    DELETE_SCHEMA = 'delete-schema',
+    LOAD_SCHEMA = 'load-schema'
 }

@@ -34,6 +34,19 @@ class _DocumentLoader {
     }
 }
 
+class _SchemaLoader {
+    document = null;
+
+    constructor(document) {
+        this.document = document;
+    }
+
+    get(type) {
+        return this.document;
+    }
+}
+
+
 describe("VCHelper", function () {
     let vcHelper, did, privateKey, data;
 
@@ -51,7 +64,7 @@ describe("VCHelper", function () {
 
     it('Test DocumentLoaderBuild', async function () {
         const context = 'https://localhost/schema';
-        const schema = {
+        const schemaDocument = {
             "@context": {
                 "@version": 1.1,
                 "id": "@id",
@@ -89,10 +102,166 @@ describe("VCHelper", function () {
                 "#did-root-key"
             ]
         }
+
+        const schema = {
+            'type': 'object',
+            'properties': {
+                '@context': {
+                    'oneOf': [
+                        {
+                            'type': 'string',
+                        },
+                        {
+                            'type': 'array',
+                            'items': {
+                                'type': 'string',
+                            }
+                        },
+                    ],
+                },
+                'id': {
+                    'type': 'string',
+                },
+                'type': {
+                    'oneOf': [
+                        {
+                            'type': 'string',
+                        },
+                        {
+                            'type': 'array',
+                            'items': {
+                                'type': 'string',
+                            }
+                        },
+                    ],
+                },
+                'issuer': {
+                    'oneOf': [
+                        {
+                            'type': 'string',
+                        },
+                        {
+                            'type': 'object',
+                            'properties': {
+                                'id': {
+                                    'type': 'string',
+                                },
+                            },
+                        },
+                    ],
+                },
+                'issuanceDate': { 'type': 'string' },
+                'credentialSubject': {
+                    'oneOf': [
+                        {
+                            "$ref": "#Test"
+                        },
+                        {
+                            'type': 'array',
+                            'items': {
+                                "$ref": "#Test"
+                            },
+                        }
+                    ],
+                },
+                'proof': {
+                    'type': 'object',
+                    'properties': {
+                        'type': {
+                            'oneOf': [
+                                {
+                                    'type': 'string',
+                                },
+                                {
+                                    'type': 'array',
+                                    'items': {
+                                        'type': 'string',
+                                    }
+                                },
+                            ],
+                        },
+                        'created': {
+                            'type': 'string',
+                        },
+                        'proofPurpose': {
+                            'type': 'string',
+                        },
+                        'verificationMethod': {
+                            'type': 'string',
+                        },
+                        'jws': {
+                            'type': 'string',
+                        },
+                    },
+                    'additionalProperties': false,
+                }
+            },
+            'required': ['@context'],
+            'additionalProperties': false,
+            '$defs': {
+                "#Test": {
+                    "$id": "#Test",
+                    "$comment": "{\"term\": \"Test\", \"@id\": \"https://localhost/schema#Test\"}",
+                    "title": "",
+                    "description": "",
+                    "type": "object",
+                    "properties": {
+                        "@context": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ]
+                        },
+                        "type": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ]
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "field1": {
+                            "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "",
+                            "description": "",
+                            "type": "string"
+                        },
+                        "field2": {
+                            "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "",
+                            "description": "",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "field1",
+                        "field2"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        };
+
         vcHelper.addContext(context);
         vcHelper.addDocumentLoader(new DefaultDocumentLoader());
-        vcHelper.addDocumentLoader(new _DocumentLoader(context, schema));
+        vcHelper.addDocumentLoader(new _DocumentLoader(context, schemaDocument));
         vcHelper.addDocumentLoader(new _DocumentLoader("did:hedera:", didDoc));
+        vcHelper.addSchemaLoader(new _SchemaLoader(schema));
         vcHelper.buildDocumentLoader();
         assert.exists(vcHelper.loader);
     });
@@ -249,5 +418,24 @@ describe("VCHelper", function () {
 
         verify = await vcHelper.verifyVC(vc.toJsonTree());
         assert.equal(verify, true);
+    });
+
+    it('Test verifySchema', async function () {
+        let vc = await vcHelper.createVC(did, privateKey, "Test", data);
+
+        let verify = await vcHelper.verifySchema(vc);
+        assert.equal(verify, true);
+
+        verify = await vcHelper.verifySchema(vc.toJsonTree());
+        assert.equal(verify, true);
+
+        vc = await vcHelper.createVC(did, privateKey, "Test", {
+            "@context": ["https://localhost/schema"],
+            "type": "Test",
+            "field1": "field1"
+        });
+
+        verify = await vcHelper.verifySchema(vc);
+        assert.equal(verify, false);
     });
 });
