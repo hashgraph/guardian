@@ -61,7 +61,7 @@ export class Schema {
             this.document = data.document;
             this.schema = JSON.parse(data.document);
             this.context = {
-                type: this.getType(this.schema['$id']),
+                type: this.getType(this.schema.$id),
                 context: [Schema.LOCAL_SCHEMA]
             };
             this.getFields();
@@ -215,16 +215,16 @@ export class Schema {
                 property = item;
             }
             if (field.isRef) {
-                property['$comment'] = this.getComment(field.name, this.getUrl(field.type));
-                item['$ref'] = field.type;
+                property.$comment = this.getComment(field.name, this.getUrl(field.type));
+                item.$ref = field.type;
             } else {
-                property['$comment'] = this.getComment(field.name, "https://www.schema.org/text");
-                item['type'] = field.type;
+                property.$comment = this.getComment(field.name, "https://www.schema.org/text");
+                item.type = field.type;
                 if (field.format) {
-                    item['format'] = field.format;
+                    item.format = field.format;
                 }
                 if (field.pattern) {
-                    item['pattern'] = field.pattern;
+                    item.pattern = field.pattern;
                 }
             }
             if (field.required) {
@@ -295,7 +295,7 @@ export class Schema {
                 return false;
             }
             const doc = JSON.parse(schema.document);
-            if (!doc['$id']) {
+            if (!doc.$id) {
                 return false;
             }
         } catch (error) {
