@@ -27,7 +27,7 @@
             "INSTALLER"
           ],
           "blockType": "requestVcDocument",
-          "schema": "iRec_Application_Details",
+          "schema": "1a5347ba-5e5f-49a7-8734-3dcc953a03ed",
           "idType": "OWNER",
           "uiMetaData": {
             "type": "page",
