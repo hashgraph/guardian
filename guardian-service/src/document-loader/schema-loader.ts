@@ -1,11 +1,11 @@
-import { SchemaLoader as ISchemaLoader } from 'vc-modules';
+import { SchemaLoader } from 'vc-modules';
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 
 /**
  * VC documents loader
  */
-export class SchemaLoader extends ISchemaLoader {
+export class SchemaObjectLoader extends SchemaLoader {
     private schemaRepository: MongoRepository<Schema>;
 
     constructor(

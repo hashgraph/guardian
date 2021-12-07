@@ -2,7 +2,7 @@ const { expect, assert } = require('chai');
 const { loaderAPI } = require('../dist/api/loader.service');
 const { SchemaDocumentLoader } = require('../dist/document-loader/vc-document-loader');
 const { DIDDocumentLoader } = require('../dist/document-loader/did-document-loader');
-const { SchemaLoader } = require('../dist/document-loader/schema-loader');
+const { SchemaObjectLoader } = require('../dist/document-loader/schema-loader');
 
 const { createChannel, createTable } = require('./helper');
 
@@ -60,7 +60,7 @@ describe('Loader service', function () {
 
         const schemaDocumentLoader = new SchemaDocumentLoader('https://localhost/schema', schemaRepository);
         const didDocumentLoader = new DIDDocumentLoader(didDocumentRepository);
-        const schemaLoader = new SchemaLoader(schemaRepository);
+        const schemaLoader = new SchemaObjectLoader(schemaRepository);
         service = loaderAPI(channel, didDocumentLoader, schemaDocumentLoader, schemaLoader);
     });
 
