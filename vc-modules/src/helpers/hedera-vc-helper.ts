@@ -10,7 +10,8 @@ import { DocumentLoader } from "../document-loader/document-loader";
 import { DocumentLoaderFunction } from "../document-loader/document-loader-function";
 import { Utils } from "./utils";
 import { HcsVpDocument } from "../vc/vp-document";
-
+import { check } from '@transmute/jsonld-schema';
+import { SchemaLoader } from "../document-loader/schema-loader";
 /**
  * Methods for creating and verifying VC and VP documents
  */
@@ -18,6 +19,7 @@ export class VCHelper {
     private documentLoaders: DocumentLoader[];
     private schemaContext: string[];
     private loader: DocumentLoaderFunction;
+    private schemaLoader: (type: string) => Promise<any>;
 
     constructor() {
         this.schemaContext = [];
@@ -52,7 +54,21 @@ export class VCHelper {
      * 
      */
     public buildDocumentLoader(): void {
-        this.loader = DocumentLoader.build(this.documentLoaders)
+        this.loader = DocumentLoader.build(this.documentLoaders);
+    }
+
+    /**
+     * Add Schema loader
+     * 
+     * @param {DocumentLoader} documentLoader - Document Loader
+     * 
+     */
+    public addSchemaLoader(schemaLoader: SchemaLoader): void {
+        if(schemaLoader) {
+            this.schemaLoader = schemaLoader.get.bind(schemaLoader);
+        } else {
+            this.schemaLoader = null;
+        }
     }
 
     /**
@@ -214,5 +230,49 @@ export class VCHelper {
         }
         const verify = await VCJS.verify(vc, this.loader);
         return verify;
+    }
+
+    /**
+     * Verify Schema
+     * 
+     * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
+     * 
+     * @returns {boolean} - is verified
+     */
+    public async verifySchema(vcDocument: HcsVcDocument<VcSubject> | any) {
+        let vc: any;
+        if (vcDocument && typeof vcDocument.toJsonTree === "function") {
+            vc = vcDocument.toJsonTree();
+        } else {
+            vc = vcDocument;
+        }
+
+        if (!vc["credentialSubject"]) {
+            throw new Error('"credentialSubject" property is required.');
+        }
+
+        const subjects = vc["credentialSubject"];
+        const subject = Array.isArray(subjects) ? subjects[0] : subjects;
+
+        if (!this.schemaLoader) {
+            throw new Error('Schema Loader not found');
+        }
+
+        const schema = await this.schemaLoader(subject.type);
+
+        if (!schema) {
+            throw new Error('Schema not found');
+        }
+
+        try {
+            const res = await check({
+                input: vc,
+                schema: schema,
+                documentLoader: this.loader as any,
+            });
+            return res.ok;
+        } catch (error) {
+            return false;
+        }
     }
 }

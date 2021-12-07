@@ -168,7 +168,10 @@ export const documentsAPI = async function (
         }
         let verify: boolean;
         try {
-            verify = await vc.verifyVC(result.document);
+            verify = await vc.verifySchema(result.document);
+            if(verify) {
+                verify = await vc.verifyVC(result.document);
+            }
         } catch (error) {
             verify = false;
         }

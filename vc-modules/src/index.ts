@@ -6,5 +6,6 @@ export { VcSubject } from "./vc/vc-subject";
 export { HederaListener, ListenerType, IListener } from "./hedera-listener";
 export { DocumentLoader } from "./document-loader/document-loader";
 export { IDocumentFormat } from "./document-loader/document-format";
+export { SchemaLoader } from "./document-loader/schema-loader";
 export { DefaultDocumentLoader } from "./document-loader/document-loader-default";
 export { Utils as HederaUtils } from "./helpers/utils";

@@ -1,4 +1,5 @@
 import { DIDDocumentLoader } from 'document-loader/did-document-loader';
+import { SchemaLoader } from 'document-loader/schema-loader';
 import { SchemaDocumentLoader } from 'document-loader/vc-document-loader';
 import { MessageAPI } from 'interfaces';
 
@@ -12,7 +13,8 @@ import { MessageAPI } from 'interfaces';
 export const loaderAPI = async function (
     channel: any,
     didDocumentLoader: DIDDocumentLoader,
-    schemaDocumentLoader: SchemaDocumentLoader
+    schemaDocumentLoader: SchemaDocumentLoader,
+    schemaLoader: SchemaLoader
 ): Promise<void> {
     /**
      * Return DID Document
@@ -47,6 +49,23 @@ export const loaderAPI = async function (
             } else {
                 documents = await schemaDocumentLoader.getDocument();
             }
+            res.send(documents);
+        } catch (e) {
+            res.send(null);
+        }
+    });
+    /**
+     * 
+     * Return Schema
+     * 
+     * @param {string} [payload] - schema type
+     * 
+     * @returns {any} - Schema Document
+     */
+    channel.response(MessageAPI.LOAD_SCHEMA, async (msg, res) => {
+        try {
+            const uuid = msg.payload as string;
+            const documents = await schemaLoader.get(uuid);
             res.send(documents);
         } catch (e) {
             res.send(null);
