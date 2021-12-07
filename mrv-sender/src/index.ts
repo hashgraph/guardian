@@ -1,7 +1,7 @@
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import axios from 'axios';
-import {DefaultDocumentLoader, HederaHelper, VCHelper} from 'vc-modules';
-import {VCDocumentLoader} from './document-loader/vc-document-loader';
+import { DefaultDocumentLoader, HederaHelper, VCHelper } from 'vc-modules';
+import { VCDocumentLoader } from './document-loader/vc-document-loader';
 
 const PORT = process.env.PORT || 3005;
 (async () => {
@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3005;
     vcHelper.buildDocumentLoader();
 
     app.post('/mrv-generate', async (req: Request, res: Response) => {
-        const {num, config, setting} = req.body;
+        const { num, config, setting } = req.body;
         const {
             url,
             topic,
@@ -51,8 +51,8 @@ const PORT = process.env.PORT || 3005;
                     const key = keys[i];
                     const item = setting[key];
                     if (item.random) {
-                        const _decimal = Math.pow(10, item.decimal);
-                        vcSubject[key] = Math.round(Math.random() * _decimal);
+                        const _decimal = Math.pow(10, item.decimal + 1);
+                        vcSubject[key] = String(Math.round(Math.random() * _decimal));
                     } else {
                         vcSubject[key] = String(item.value);
                     }
