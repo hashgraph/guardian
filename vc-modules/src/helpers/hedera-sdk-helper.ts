@@ -21,8 +21,8 @@ import {
     TopicCreateTransaction,
     TransactionResponse,
     TransferTransaction
-} from "@hashgraph/sdk";
-import { MAX_FEE } from "./max-fee";
+} from '@hashgraph/sdk';
+import { MAX_FEE } from './max-fee';
 
 /**
  * Contains methods to simplify work with hashgraph sdk

@@ -1,5 +1,5 @@
-import { Client, Timestamp, TopicId } from "@hashgraph/sdk";
-import { HcsDidTopicListener, HcsVcTopicListener, MessageEnvelope, MessageListener } from "did-sdk-js";
+import { Client, Timestamp, TopicId } from '@hashgraph/sdk';
+import { HcsDidTopicListener, HcsVcTopicListener, MessageEnvelope, MessageListener } from 'did-sdk-js';
 
 export interface IListener<T> {
     on: (topicId: string, message: T) => Promise<boolean>;
@@ -7,9 +7,9 @@ export interface IListener<T> {
 }
 
 export enum ListenerType {
-    VC = "VC",
-    MRV = "MRV",
-    DID = "DID"
+    VC = 'VC',
+    MRV = 'MRV',
+    DID = 'DID'
 }
 
 /**
@@ -38,7 +38,7 @@ class Listener {
     constructor(type: ListenerType, topicId: string) {
         this.startDate = new Date();
 
-        console.log("Create Listener", type, topicId, this.startDate);
+        console.log('Create Listener', type, topicId, this.startDate);
 
         this.type = type;
         this.topicId = topicId;
@@ -78,7 +78,7 @@ class Listener {
             this._listener.onError(this._error);
             this._listener.subscribe(client, this._response);
             this.subscribed = true;
-            console.log("Subscribe", this.type, this.topicId);
+            console.log('Subscribe', this.type, this.topicId);
         }
     }
 
@@ -111,7 +111,7 @@ class Subscriber {
     public readonly callback: IListener<any>;
 
     constructor(type: ListenerType[], topicId: string | null, callback: IListener<any>) {
-        console.log("Subscriber", type, topicId)
+        console.log('Subscriber', type, topicId)
         this.type = type || [];
         this.topicId = topicId;
         this.callback = callback;
@@ -229,7 +229,7 @@ export class HederaListener {
 
     private buildResponse(listener: Listener): (env: MessageEnvelope<any>) => void {
         return ((env: MessageEnvelope<any>) => {
-            console.log("onResponse", listener.topicId);
+            console.log('onResponse', listener.topicId);
             const message = env.open();
             this._response(listener, message);
         }).bind(this);
@@ -237,7 +237,7 @@ export class HederaListener {
 
     private buildError(listener: Listener): (error: Error) => void {
         return ((error: Error) => {
-            console.log("onError", listener.topicId, error);
+            console.log('onError', listener.topicId, error);
             this._error(listener, error);
         }).bind(this);
     }

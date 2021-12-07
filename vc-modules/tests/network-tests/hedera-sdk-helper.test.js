@@ -1,21 +1,21 @@
 const {
     HederaHelper, HederaUtils
-} = require("../../dist/index");
-const { Client, AccountBalanceQuery } = require("@hashgraph/sdk");
+} = require('../../dist/index');
+const { Client, AccountBalanceQuery } = require('@hashgraph/sdk');
 const { expect, assert } = require('chai');
 
 async function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-describe("Hedera SDK Helper", function () {
+describe('Hedera SDK Helper', function () {
     const transactionTimeout = 30 * 1000;
 
     let sdk, accountId, accountKey, tokenId, account2Id, account2Key, token2Id, nft;
 
     const initialBalance = 5;
-    const OPERATOR_ID = "0.0.1548173";
-    const OPERATOR_KEY = "302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc";
+    const OPERATOR_ID = '0.0.1548173';
+    const OPERATOR_KEY = '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc';
 
     this.timeout(60 * transactionTimeout);
 
@@ -257,7 +257,7 @@ describe("Hedera SDK Helper", function () {
         if (!accountId) assert.fail('Account not created');
         if (!token2Id) assert.fail('Token not created');
 
-        const data = HederaUtils.decode("1");
+        const data = HederaUtils.decode('1');
         nft = await sdk.mintNFT(token2Id, accountKey, data, 'Memo');
         assert.exists(nft);
         await delay(1000);
