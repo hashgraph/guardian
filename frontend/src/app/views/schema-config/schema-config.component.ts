@@ -88,11 +88,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.createSchema(
-                    schema.name,
-                    schema.entity,
-                    schema.document
-                ).subscribe((data) => {
+                this.schemaService.createSchema(schema).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
@@ -127,12 +123,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.updateSchema(
-                    element.id,
-                    schema.name,
-                    schema.entity,
-                    schema.document
-                ).subscribe((data) => {
+                this.schemaService.updateSchema(schema, element.id).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
