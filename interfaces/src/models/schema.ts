@@ -41,7 +41,7 @@ export class Schema {
     constructor(data?: ISchema) {
         if (data) {
             this.id = data.id;
-            this.uuid = data.uuid;
+            this.uuid = data.uuid || Schema.randomUUID();
             this.hash = data.hash;
             this.name = data.name;
             this.entity = data.entity;
