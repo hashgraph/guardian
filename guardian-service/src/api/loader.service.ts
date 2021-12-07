@@ -1,5 +1,5 @@
 import { DIDDocumentLoader } from 'document-loader/did-document-loader';
-import { SchemaLoader } from 'document-loader/schema-loader';
+import { SchemaObjectLoader } from 'document-loader/schema-loader';
 import { SchemaDocumentLoader } from 'document-loader/vc-document-loader';
 import { MessageAPI } from 'interfaces';
 
@@ -14,7 +14,7 @@ export const loaderAPI = async function (
     channel: any,
     didDocumentLoader: DIDDocumentLoader,
     schemaDocumentLoader: SchemaDocumentLoader,
-    schemaLoader: SchemaLoader
+    schemaObjectLoader: SchemaObjectLoader
 ): Promise<void> {
     /**
      * Return DID Document
@@ -65,7 +65,7 @@ export const loaderAPI = async function (
     channel.response(MessageAPI.LOAD_SCHEMA, async (msg, res) => {
         try {
             const uuid = msg.payload as string;
-            const documents = await schemaLoader.get(uuid);
+            const documents = await schemaObjectLoader.get(uuid);
             res.send(documents);
         } catch (e) {
             res.send(null);
