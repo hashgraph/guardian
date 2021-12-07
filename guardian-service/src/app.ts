@@ -19,7 +19,7 @@ import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { DIDDocumentLoader } from './document-loader/did-document-loader';
 import { SchemaDocumentLoader } from './document-loader/vc-document-loader';
-import { SchemaLoader } from 'document-loader/schema-loader';
+import { SchemaLoader } from './document-loader/schema-loader';
 
 const PORT = process.env.PORT || 3001;
 
