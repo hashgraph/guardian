@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { ISchema, MessageAPI, SchemaEntity, SchemaStatus } from 'interfaces';
+import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, Schema as SchemaModel } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 
 const localSchema = 'https://localhost/schema';
@@ -11,132 +11,414 @@ const localSchema = 'https://localhost/schema';
  */
 export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
     if (await schemaRepository.count() === 0) {
-        let item = schemaRepository.create({
-            type: 'Inverter',
-            document: {
-                '@id': localSchema + '#Inverter',
-                '@context': {
-                    'policyId': { '@id': 'https://www.schema.org/identifier' },
-                    'projectId': { '@id': 'https://www.schema.org/identifier' },
-                    'projectName': { '@id': 'https://www.schema.org/name' },
-                    'sensorType': { '@id': 'https://www.schema.org/text' },
-                    'capacity': { '@id': 'https://www.schema.org/value' }
-                }
+        const _properties = {
+            '@context': {
+                oneOf: [
+                    {
+                        type: 'string',
+                    },
+                    {
+                        type: 'array',
+                        items: {
+                            type: 'string',
+                        }
+                    },
+                ],
             },
+            type: {
+                oneOf: [
+                    {
+                        type: 'string',
+                    },
+                    {
+                        type: 'array',
+                        items: {
+                            type: 'string',
+                        }
+                    },
+                ],
+            },
+            id: {
+                type: 'string',
+            }
+        };
+        const _required = [];
+
+        let item: any;
+        
+        item = schemaRepository.create({
+            name: 'MintToken',
+            uuid: "MintToken",
+            entity: SchemaEntity.MINT_TOKEN,
+            document: JSON.stringify({
+                '$id': '#MintToken',
+                '$comment': `{"term": "MintToken", "@id": "${localSchema}#MintToken"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'date': {
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'amount': {
+                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'tokenId': {
+                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    }
+                },
+                'required': [
+                    ..._required,
+                    'date',
+                    'amount',
+                    'tokenId'
+                ],
+                'additionalProperties': false,
+            }),
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
+        });
+        await schemaRepository.save(item);
+
+        item = schemaRepository.create({
+            name: 'WipeToken',
+            uuid: "WipeToken",
+            entity: SchemaEntity.WIPE_TOKEN,
+            document: JSON.stringify({
+                '$id': '#WipeToken',
+                '$comment': `{"term": "WipeToken", "@id": "${localSchema}#WipeToken"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'date': {
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'amount': {
+                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'tokenId': {
+                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    }
+                },
+                'required': [
+                    ..._required,
+                    'date',
+                    'amount',
+                    'tokenId'
+                ],
+                'additionalProperties': false,
+            }),
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
+        });
+        await schemaRepository.save(item);
+
+        item = schemaRepository.create({
+            name: 'RootAuthority',
+            uuid: "RootAuthority",
+            entity: SchemaEntity.ROOT_AUTHORITY,
+            document: JSON.stringify({
+                '$id': '#RootAuthority',
+                '$comment': `{"term": "RootAuthority", "@id": "${localSchema}#RootAuthority"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'name': {
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    }
+                },
+                'required': [
+                    ..._required,
+                    'name'
+                ],
+                'additionalProperties': false,
+            }),
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
+        });
+        await schemaRepository.save(item);
+
+        item = schemaRepository.create({
+            name: 'MintNFToken',
+            uuid: "MintNFToken",
+            entity: SchemaEntity.MINT_NFTOKEN,
+            document: JSON.stringify({
+                '$id': '#MintNFToken',
+                '$comment': `{"term": "MintNFToken", "@id": "${localSchema}#MintNFToken"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'date': {
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'serials':
+                    {
+                        '$comment': `{"term": "serials", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'array',
+                        'items': {
+                            'type': 'string',
+                        }
+                    },
+                    'tokenId': {
+                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    }
+                },
+                'required': [
+                    ..._required,
+                    'date',
+                    'serials',
+                    'tokenId'
+                ],
+                'additionalProperties': false,
+            }),
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
+        });
+        await schemaRepository.save(item);
+
+        item = schemaRepository.create({
+            name: 'Policy',
+            uuid: "Policy",
+            entity: SchemaEntity.POLICY,
+            document: JSON.stringify({
+                '$id': '#Policy',
+                '$comment': `{"term": "Policy", "@id": "${localSchema}#Policy"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'name': {
+                        '$comment': `{"term": "name", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'description': {
+                        '$comment': `{"term": "description", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'topicDescription': {
+                        '$comment': `{"term": "topicDescription", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'version': {
+                        '$comment': `{"term": "version", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'policyTag': {
+                        '$comment': `{"term": "policyTag", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    }
+                },
+                'required': [
+                    ..._required,
+                    'name',
+                    'description',
+                    'topicDescription',
+                    'version',
+                    'policyTag'
+                ],
+                'additionalProperties': false,
+            }),
+            status: SchemaStatus.PUBLISHED,
+            readonly: true
+        });
+        await schemaRepository.save(item);
+
+        
+        item = schemaRepository.create({
+            name: 'Inverter',
+            uuid: "9d31b4ee-2280-43ee-81e7-b225ee208802",
             entity: SchemaEntity.INVERTER,
+            document: JSON.stringify({
+                '$id': '#9d31b4ee-2280-43ee-81e7-b225ee208802',
+                '$comment': `{"term": "9d31b4ee-2280-43ee-81e7-b225ee208802", "@id": "${localSchema}#9d31b4ee-2280-43ee-81e7-b225ee208802"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'policyId': {
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'projectId': {
+                        '$comment': `{"term": "projectId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'projectName': {
+                        '$comment': `{"term": "projectName", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'sensorType': {
+                        '$comment': `{"term": "sensorType", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'capacity': {
+                        '$comment': `{"term": "capacity", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                },
+                'required': [
+                    ..._required,
+                    'policyId',
+                    'projectId',
+                    'projectName',
+                    'sensorType',
+                    'capacity'
+                ],
+                'additionalProperties': false,
+            }),
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
         await schemaRepository.save(item);
 
         item = schemaRepository.create({
-            type: 'Installer',
-            document: {
-                '@id': localSchema + '#Installer',
-                '@context': {
-                    'policyId': { '@id': 'https://www.schema.org/identifier' },
-                    'name': { '@id': 'https://www.schema.org/text' }
-                }
-            },
+            name: 'Installer',
+            uuid: "b613e284-5af3-465e-a9a9-329a706180fc",
             entity: SchemaEntity.INSTALLER,
+            document: JSON.stringify({
+                '$id': '#b613e284-5af3-465e-a9a9-329a706180fc',
+                '$comment': `{"term": "b613e284-5af3-465e-a9a9-329a706180fc", "@id": "${localSchema}#b613e284-5af3-465e-a9a9-329a706180fc"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'policyId': {
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'name': {
+                        '$comment': `{"term": "name", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    }
+                },
+                'required': [
+                    ..._required,
+                    'policyId',
+                    'name'
+                ],
+                'additionalProperties': false,
+            }),
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
         await schemaRepository.save(item);
 
         item = schemaRepository.create({
-            type: 'MRV',
-            document: {
-                '@id': localSchema + '#MRV',
-                '@context': {
-                    'policyId': { '@id': 'https://www.schema.org/identifier' },
-                    'accountId': { '@id': 'https://www.schema.org/text' },
-                    'date': { '@id': 'https://www.schema.org/text' },
-                    'amount': { '@id': 'https://www.schema.org/amount' },
-                    'period': { '@id': 'https://www.schema.org/text' }
-                }
-            },
+            name: 'MRV',
+            uuid: "c4623dbd-2453-4c12-941f-032792a00727",
             entity: SchemaEntity.MRV,
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            type: 'MintToken',
-            document: {
-                '@id': localSchema + '#MintToken',
-                '@context': {
-                    'date': { '@id': 'https://www.schema.org/text' },
-                    'amount': { '@id': 'https://www.schema.org/amount' },
-                    'tokenId': { '@id': 'https://www.schema.org/identifier' }
-                }
-            },
-            entity: SchemaEntity.TOKEN,
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            type: 'WipeToken',
-            document: {
-                '@id': localSchema + '#WipeToken',
-                '@context': {
-                    'date': { '@id': 'https://www.schema.org/text' },
-                    'amount': { '@id': 'https://www.schema.org/amount' },
-                    'tokenId': { '@id': 'https://www.schema.org/identifier' }
-                }
-            },
-            entity: SchemaEntity.TOKEN,
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            type: 'RootAuthority',
-            document: {
-                '@id': localSchema + '#RootAuthority',
-                '@context': {
-                    'name': { '@id': 'https://www.schema.org/text' }
-                }
-            },
-            entity: SchemaEntity.ROOT_AUTHORITY,
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            type: 'MintNFToken',
-            document: {
-                '@id': localSchema + '#MintNFToken',
-                '@context': {
-                    'date': { '@id': 'https://www.schema.org/text' },
-                    'serials': { '@id': 'https://www.schema.org/ItemList' },
-                    'tokenId': { '@id': 'https://www.schema.org/identifier' }
-                }
-            },
-            entity: SchemaEntity.TOKEN,
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            type: 'Policy',
-            document: {
-                '@id': localSchema + '#Policy',
-                '@context': {
-                    'name': { '@id': 'https://www.schema.org/text' },
-                    'description': { '@id': 'https://www.schema.org/text' },
-                    'topicDescription': { '@id': 'https://www.schema.org/text' },
-                    'version': { '@id': 'https://www.schema.org/text' },
-                    'policyTag': { '@id': 'https://www.schema.org/text' }
-                }
-            },
-            entity: SchemaEntity.ROOT_AUTHORITY,
+            document: JSON.stringify({
+                '$id': '#c4623dbd-2453-4c12-941f-032792a00727',
+                '$comment': `{"term": "c4623dbd-2453-4c12-941f-032792a00727", "@id": "${localSchema}#c4623dbd-2453-4c12-941f-032792a00727"}`,
+                'title': '',
+                'description': '',
+                'type': 'object',
+                'properties': {
+                    ..._properties,
+                    'policyId': {
+                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'accountId': {
+                        '$comment': `{"term": "accountId", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'date': {
+                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'amount': {
+                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                    'period': {
+                        '$comment': `{"term": "period", "@id": "https://www.schema.org/text"}`,
+                        'title': '',
+                        'description': '',
+                        'type': 'string'
+                    },
+                },
+                'required': [
+                    ..._required,
+                    'policyId',
+                    'accountId',
+                    'date',
+                    'amount',
+                    'period'
+                ],
+                'additionalProperties': false,
+            }),
             status: SchemaStatus.PUBLISHED,
             readonly: true
         });
@@ -144,21 +426,13 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
     }
 }
 
-const getRelationships = function (schema: Schema) {
-    const document = schema.document;
-    const id = document['@id'] as string;
-    const context = document['@context'];
+const getRelationships = function (schema: SchemaModel) {
+    const fields = schema.fields;
     const result = [];
-    if (id.startsWith(`${localSchema}#`)) {
-        const keys = Object.keys(context);
-        for (let index = 0; index < keys.length; index++) {
-            const key = keys[index];
-            const field = context[key];
-            const fieldId = field['@id'] as string;
-            const fieldIds = fieldId.split('#');
-            if (fieldIds[0] == localSchema && fieldIds[1]) {
-                result.push(fieldIds[1]);
-            }
+    for (let i = 0; i < fields.length; i++) {
+        const element = fields[i];
+        if (element.isRef) {
+            result.push(element.type);
         }
     }
     return result;
@@ -227,7 +501,10 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
         if (msg.payload) {
             const id = msg.payload as string;
-            await schemaRepository.delete(id);
+            const item = await schemaRepository.findOne(id);
+            if (item) {
+                await schemaRepository.delete(item.id);
+            }
         }
         const schemes = await schemaRepository.find();
         res.send(schemes);
@@ -245,14 +522,14 @@ export const schemaAPI = async function (
             const id = msg.payload.id as string;
             const item = await schemaRepository.findOne(id);
             if (item) {
-                item.type = msg.payload.type;
+                item.name = msg.payload.name;
                 item.entity = msg.payload.entity;
                 item.document = msg.payload.document;
-                const result = await schemaRepository.update(item.id, item);
+                await schemaRepository.update(item.id, item);
             }
         } else {
             const schemaObject = schemaRepository.create(msg.payload);
-            const result = await schemaRepository.save(schemaObject);
+            await schemaRepository.save(schemaObject);
         }
         const schemes = await schemaRepository.find();
         res.send(schemes);
@@ -294,48 +571,22 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
         try {
-            let items = msg.payload;
+            let items: ISchema[] = msg.payload;
             if (!Array.isArray(items)) {
                 items = [items];
             }
-            items = items.filter((e) => e.type && e.document);
+
+            items = items.filter((e) => e.uuid && e.document);
             const schemes = await schemaRepository.find();
             const mapName = {};
             for (let i = 0; i < schemes.length; i++) {
-                mapName[schemes[i].type] = true;
+                mapName[schemes[i].uuid] = true;
             }
-            const mapId = {};
-            for (let i = 0; i < items.length; i++) {
-                const element = items[i];
-                const type = element.type;
-                const id = localSchema + '#' + type;
-                if (mapName[type]) {
-                    const newType = type + `(${(new Date()).getTime()})`;
-                    const newId = localSchema + '#' + newType;
-                    element.type = newType;
-                    mapId[id] = newId;
-                    mapName[newType] = true;
-                } else {
-                    mapId[id] = id;
-                    mapName[type] = true;
-                }
-            }
-            for (let i = 0; i < items.length; i++) {
-                const element = items[i].document;
-                if (mapId[element['@id']]) {
-                    element['@id'] = mapId[element['@id']];
-                }
-                const context = element['@context'];
-                const keys = Object.keys(context);
-                for (let j = 0; j < keys.length; j++) {
-                    const key = keys[j];
-                    if (mapId[context[key]['@id']]) {
-                        context[key]['@id'] = mapId[context[key]['@id']];
-                    }
-                }
-            }
+            items = items.filter((e) => !mapName[e.uuid]);
+
             const schemaObject = schemaRepository.create(items);
-            const result = await schemaRepository.save(schemaObject);
+            await schemaRepository.save(schemaObject);
+
             const newSchemes = await schemaRepository.find();
             res.send(newSchemes);
         } catch (error) {
@@ -353,35 +604,44 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
         try {
-            let ids = msg.payload as string[];
-            let schemes = await schemaRepository.find();
-
+            const ids = msg.payload as string[];
+            const data = await schemaRepository.find();
+            const schemes = data.map(s => new SchemaModel(s));
             const mapType: any = {};
             const mapSchemes: any = {};
             const result = [];
             for (let i = 0; i < schemes.length; i++) {
                 const schema = schemes[i];
-                mapType[schema.type] = false;
-                mapSchemes[schema.type] = schema;
-                if (ids.indexOf(schema.type) != -1) {
-                    mapType[schema.type] = true;
+                mapType[schema.ref] = false;
+                mapSchemes[schema.ref] = schema;
+                if (ids.indexOf(schema.uuid) != -1) {
+                    mapType[schema.ref] = true;
                     result.push(schema);
                 }
             }
-
             let index = 0;
             while (index < result.length) {
                 const relationships = getRelationships(result[index]);
                 for (let i = 0; i < relationships.length; i++) {
-                    const type = relationships[i];
-                    if (!mapType[type]) {
-                        mapType[type] = true;
-                        result.push(mapSchemes[type]);
+                    const id = relationships[i];
+                    if (mapType[id] === false) {
+                        mapType[id] = true;
+                        result.push(mapSchemes[id]);
                     }
                 }
                 index++;
             }
-            res.send(result);
+            const documents = [];
+            for (let i = 0; i < result.length; i++) {
+                const element = result[i];
+                documents.push({
+                    name: element.name,
+                    uuid: element.uuid,
+                    entity: element.entity,
+                    document: element.document,
+                })
+            }
+            res.send(documents);
         } catch (error) {
             console.error(error);
             res.send(null);

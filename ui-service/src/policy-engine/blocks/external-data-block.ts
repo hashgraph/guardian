@@ -2,6 +2,8 @@ import {ExternalData} from '@policy-engine/helpers/decorators';
 import {HcsVcDocument, VcSubject} from 'vc-modules';
 import {DocumentSignature, DocumentStatus} from 'interfaces';
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
+import {Inject} from '@helpers/decorators/inject';
+import {VcHelper} from '@helpers/vcHelper';
 
 /**
  * External data block
@@ -11,7 +13,20 @@ import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
     commonBlock: false,
 })
 export class ExternalDataBlock {
-    async recieveData(data) {
+    @Inject()
+    private vcHelper: VcHelper;
+
+    async receiveData(data) {
+        let verify: boolean;
+        try {
+            verify = await this.vcHelper.verifySchema(data.document);
+            if(verify) {
+                verify = await this.vcHelper.verifyVC(data.document);
+            }
+        } catch (error) {
+            verify = false;
+        }
+        const signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const vc = HcsVcDocument.fromJsonTree<VcSubject>(data.document, null, VcSubject);
         const doc = {
@@ -19,7 +34,7 @@ export class ExternalDataBlock {
             owner: data.owner,
             document: vc.toJsonTree(),
             status: DocumentStatus.NEW,
-            signature: DocumentSignature.NEW,
+            signature:signature,
             policyId: ref.policyId,
             type: ref.options.entityType
         };

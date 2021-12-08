@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISchema, SchemaEntity } from 'interfaces';
+import { ISchema, Schema, SchemaEntity } from 'interfaces';
 import { Observable } from 'rxjs';
 
 /**
@@ -13,21 +13,27 @@ export class SchemaService {
   ) {
   }
 
-  public createSchema(
-    type: string,
-    entity: SchemaEntity,
-    document: any
-  ): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/create', { type, entity, document });
+  public createSchema(schema: Schema): Observable<ISchema[]> {
+    const data = {
+      uuid: schema.uuid,
+      hash: schema.hash,
+      name: schema.name,
+      entity: schema.entity,
+      document: schema.document
+    }
+    return this.http.post<any[]>('/api/schema/create', data);
   }
 
-  public updateSchema(
-    id: any,
-    type: string,
-    entity: SchemaEntity,
-    document: any
-  ): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/update', { id, type, entity, document });
+  public updateSchema(schema: Schema, id?: string): Observable<ISchema[]> {
+    const data = {
+      id: id || schema.id,
+      uuid: schema.uuid,
+      hash: schema.hash,
+      name: schema.name,
+      entity: schema.entity,
+      document: schema.document
+    }
+    return this.http.post<any[]>('/api/schema/update', data);
   }
 
   public getSchemes(): Observable<ISchema[]> {
@@ -42,15 +48,15 @@ export class SchemaService {
     return this.http.post<any[]>(`/api/schema/export`, { ids });
   }
 
-  public publishSchema(id: any): Observable<ISchema[]> {
+  public publishSchema(id: string): Observable<ISchema[]> {
     return this.http.post<any[]>('/api/schema/publish', { id });
   }
 
-  public unpublishedSchema(id: any): Observable<ISchema[]> {
+  public unpublishedSchema(id: string): Observable<ISchema[]> {
     return this.http.post<any[]>('/api/schema/unpublished', { id });
   }
 
-  public deleteSchema(id: any): Observable<ISchema[]> {
+  public deleteSchema(id: string): Observable<ISchema[]> {
     return this.http.post<any[]>('/api/schema/delete', { id });
   }
 }

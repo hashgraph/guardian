@@ -19,6 +19,7 @@ import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { DIDDocumentLoader } from './document-loader/did-document-loader';
 import { SchemaDocumentLoader } from './document-loader/vc-document-loader';
+import { SchemaObjectLoader } from './document-loader/schema-loader';
 
 const PORT = process.env.PORT || 3001;
 
@@ -56,10 +57,13 @@ Promise.all([
     const defaultDocumentLoader = new DefaultDocumentLoader();
     const schemaDocumentLoader = new SchemaDocumentLoader('https://localhost/schema', schemaRepository);
     const didDocumentLoader = new DIDDocumentLoader(didDocumentRepository);
+    const schemaObjectLoader = new SchemaObjectLoader(schemaRepository);
+    
     vcHelper.addContext('https://localhost/schema');
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(schemaDocumentLoader);
     vcHelper.addDocumentLoader(didDocumentLoader);
+    vcHelper.addSchemaLoader(schemaObjectLoader);
     vcHelper.buildDocumentLoader();
     // Document Loader -->
 
@@ -67,7 +71,7 @@ Promise.all([
     await configAPI(channel, fileConfig);
     await schemaAPI(channel, schemaRepository);
     await tokenAPI(channel, tokenRepository);
-    await loaderAPI(channel, didDocumentLoader, schemaDocumentLoader);
+    await loaderAPI(channel, didDocumentLoader, schemaDocumentLoader, schemaObjectLoader);
     await rootAuthorityAPI(channel, configRepository, didDocumentRepository, vcDocumentRepository);
     await documentsAPI(
         channel,

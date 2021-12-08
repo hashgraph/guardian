@@ -1,8 +1,8 @@
-import didContexts from "@transmute/did-context";
-import credentialsContexts from "@transmute/credentials-context";
-import securityContexts from "@transmute/security-context";
-import { IDocumentFormat } from "./document-format";
-import { DocumentLoader } from "./document-loader";
+import didContexts from '@transmute/did-context';
+import credentialsContexts from '@transmute/credentials-context';
+import securityContexts from '@transmute/security-context';
+import { IDocumentFormat } from './document-format';
+import { DocumentLoader } from './document-loader';
 
 /**
  * Default Documents Loader
@@ -41,6 +41,6 @@ export class DefaultDocumentLoader extends DocumentLoader {
                 document: securityContexts.contexts.get(iri),
             };
         }
-        throw new Error("IRI not found: " + iri);
+        throw new Error('IRI not found: ' + iri);
     }
 }

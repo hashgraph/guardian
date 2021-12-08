@@ -25,7 +25,7 @@ export class SchemaDialog {
         this.scheme = data.scheme || null;
     }
 
-    getDocument(document: any) {
-        this.dialogRef.close(document);
+    getDocument(schema: Schema | null) {
+        this.dialogRef.close(schema);
     }
 }

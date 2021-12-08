@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Schema } from 'interfaces';
 
 /**
  * Dialog allowing you to select a file and load schemes.
@@ -88,12 +89,7 @@ export class ImportSchemaDialog {
     validationSchema(schemes: any[]) {
         for (let i = 0; i < schemes.length; i++) {
             const schema = schemes[i];
-            if (
-                !schema.type ||
-                !schema.entity ||
-                !schema.document ||
-                !schema.document["@id"]
-            ) {
+            if (!Schema.validate(schema)) {
                 return null;
             }
         }
@@ -101,6 +97,6 @@ export class ImportSchemaDialog {
     }
 
     getTitle(schema:any) {
-        return JSON.stringify(schema.document, null, 2);
+        return schema.document;
     }
 }

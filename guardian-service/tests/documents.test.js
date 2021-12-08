@@ -20,6 +20,9 @@ describe('Documents service', function () {
         const vc = {
             verifyVC: async function () {
                 return true;
+            },
+            verifySchema: async function () {
+                return true;
             }
         };
 

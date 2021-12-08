@@ -1,12 +1,12 @@
 const {
     HcsDidDocument
-} = require("../../dist/did-document");
-const {FileId} = require("@hashgraph/sdk");
-const {HcsDidRootKey, HcsDid, AddressBook} = require("did-sdk-js");
+} = require('../../dist/did-document');
+const {FileId} = require('@hashgraph/sdk');
+const {HcsDidRootKey, HcsDid, AddressBook} = require('did-sdk-js');
 const {expect, assert} = require('chai');
 const network = 'testnet';
 
-describe("HcsDidDocument", function() {
+describe('HcsDidDocument', function() {
     let didTopicId;
 
     before(async function () {

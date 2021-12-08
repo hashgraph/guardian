@@ -24,6 +24,7 @@ export class SchemaConfigComponent implements OnInit {
     publishSchemes: Schema[] = [];
     schemaColumns: string[] = [
         'selected',
+        'uuid',
         'type',
         'entity',
         'status',
@@ -52,6 +53,8 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         this.profileService.getCurrentState().subscribe((profile: ISession) => {
             this.isConfirmed = !!profile && profile.state == UserState.CONFIRMED;
+            //TEST VALUE
+            this.isConfirmed = true;
             if (this.isConfirmed) {
                 this.loadSchemes();
             } else {
@@ -82,14 +85,10 @@ export class SchemaConfigComponent implements OnInit {
                 schemes: this.publishSchemes
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
+        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+            if (schema) {
                 this.loading = true;
-                this.schemaService.createSchema(
-                    result.type,
-                    result.entity,
-                    result.document
-                ).subscribe((data) => {
+                this.schemaService.createSchema(schema).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
@@ -106,7 +105,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
-                document: element.fullDocument,
+                document: element.schema,
                 title: 'Schema'
             }
         });
@@ -121,15 +120,10 @@ export class SchemaConfigComponent implements OnInit {
                 scheme: element
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
+        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+            if (schema) {
                 this.loading = true;
-                this.schemaService.updateSchema(
-                    element.id,
-                    result.type,
-                    result.entity,
-                    result.document
-                ).subscribe((data) => {
+                this.schemaService.updateSchema(schema, element.id).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
@@ -198,12 +192,12 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     setSchema(data: ISchema[]) {
-        this.schemes = Schema.map(data) || [];
-        this.publishSchemes = this.schemes.filter(s=>s.status == SchemaStatus.PUBLISHED);
+        this.schemes = Schema.mapRef(data) || [];
+        this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
     }
 
     exportSchemes() {
-        const ids = this.schemes.filter((s: any) => s._selected).map(s => s.type);
+        const ids = this.schemes.filter((s: any) => s._selected).map(s => s.uuid);
         this.schemaService.exportSchemes(ids).subscribe((data) => {
             this.downloadObjectAsJson(data.schemes, 'schema');
             this.loading = false;

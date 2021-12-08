@@ -36,8 +36,9 @@ export class RootConfigComponent implements OnInit {
     progressInterval: any;
 
     vcForm: FormGroup;
-    vcContextDocument: any;
+    schema: any;
     hideVC: any;
+    formValid: boolean = false;
 
     constructor(
         private auth: AuthService,
@@ -53,6 +54,13 @@ export class RootConfigComponent implements OnInit {
         this.hideVC = {
             id: true
         }
+        this.hederaForm.statusChanges.subscribe(
+            (result) => {
+                setTimeout(() => {
+                    this.formValid = result == 'VALID';
+                });  
+            }
+        );
     }
 
     ngOnInit() {
@@ -81,7 +89,7 @@ export class RootConfigComponent implements OnInit {
         ]).subscribe((value) => {
             const balance: string | null = value[0];
             const root: IFullConfig | null = value[1];
-            const schemes = Schema.map(value[2]);
+            const schemes = Schema.mapRef(value[2]);
 
             this.isConfirmed = !!root;
             if (this.isConfirmed) {
@@ -89,9 +97,8 @@ export class RootConfigComponent implements OnInit {
                 this.root = root;
             }
 
-            const rootAuthority = schemes
+            this.schema = schemes
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
-            this.vcContextDocument = rootAuthority.fullDocument;
 
             setTimeout(() => {
                 this.loading = false;
@@ -106,7 +113,7 @@ export class RootConfigComponent implements OnInit {
         if (this.hederaForm.valid) {
             const value = this.hederaForm.value;
             const data = {
-                vc: SchemaFormComponent.getOptions(value.vc),
+                vc: value.vc,
                 hederaAccountId: value.hederaAccountId,
                 hederaAccountKey: value.hederaAccountKey,
                 appnetName: value.appnetName,
@@ -172,5 +179,9 @@ export class RootConfigComponent implements OnInit {
         }, (error) => {
             this.loading = false;
         });
+    }
+
+    onChangeForm() {
+        this.vcForm.updateValueAndValidity();
     }
 }
