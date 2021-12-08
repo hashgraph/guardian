@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TokenService } from 'src/app/services/token.service';
+import { ExportPolicyDialog } from '../../export-policy-dialog/export-policy-dialog.component';
 import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
 
 /**
@@ -30,6 +31,7 @@ export class PolicyViewerComponent implements OnInit {
             'version',
             'description',
             'status',
+            'export',
             'edit',
             'open',
             'operation'
@@ -77,7 +79,7 @@ export class PolicyViewerComponent implements OnInit {
             const isLogin = !!user;
             this.isConfirmed = isLogin ? user.did : false;
             this.role = isLogin ? user.role : null;
-            if(this.isConfirmed) {
+            if (this.isConfirmed) {
                 if (this.policyId) {
                     this.loadPolicyById(this.policyId);
                 } else {
@@ -99,8 +101,8 @@ export class PolicyViewerComponent implements OnInit {
             this.policyEngineService.getAllPolicy()
         ]).subscribe((value) => {
             this.policy = value[0];
-            if(value[1]) {
-                this.policyInfo =  value[1].find(e=>e.id == policyId);
+            if (value[1]) {
+                this.policyInfo = value[1].find(e => e.id == policyId);
             } else {
                 this.policyInfo = null;
             }
@@ -186,5 +188,38 @@ export class PolicyViewerComponent implements OnInit {
             const element = this.policies[i];
             element.topicURL = `https://testnet.dragonglass.me/hedera/topics/${element.topicId}`
         }
+    }
+
+    exportPolicy(element: any) {
+        const dialogRef = this.dialog.open(ExportPolicyDialog, {
+            width: '700px',
+            data: {
+                policyId: element.id
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.loading = true;
+                this.policyEngineService.exportPolicyDownload(element.id, result).subscribe(() => {
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
+    importPolicy() {
+        const dialogRef = this.dialog.open(ExportPolicyDialog, {
+            width: '700px',
+            data: {
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+            }
+        });
     }
 }

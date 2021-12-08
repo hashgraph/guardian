@@ -1,0 +1,73 @@
+<h1 mat-dialog-title>Export Policy</h1>
+<div mat-dialog-content>
+    <div class="context">
+        <div *ngIf="loading" class="loading">
+            <mat-spinner></mat-spinner>
+        </div>
+        <div *ngIf="policy" class="policy">
+            <div class="field-header">Policy</div>
+            <div class="field">
+                <div class="field-name">Name:</div>
+                <div class="field-value">{{policy.name}}</div>
+            </div>
+            <div class="field">
+                <div class="field-name">Version:</div>
+                <div class="field-value">{{policy.version}}</div>
+            </div>
+            <div class="field">
+                <div class="field-name">Description:</div>
+                <div class="field-value">{{policy.description}}</div>
+            </div>
+            <div class="field">
+                <div class="field-name">Topic Description:</div>
+                <div class="field-value">{{policy.topicDescription}}</div>
+            </div>
+        </div>
+        <div *ngIf="schemas">
+            <div class="field-header">Schemas</div>
+            <div *ngFor="let item of schemas" class="schema-item">
+                <div class="field">
+                    <div class="field-name">
+                        <mat-checkbox [(ngModel)]="item.selected" color="primary"></mat-checkbox>
+                    </div>
+                    <div class="field-value">{{item.name}} ({{item.uuid}})</div>
+                </div>
+                <div *ngIf="item.relationships && item.relationships.length" class="field-relationships">
+                    <div class="field-value">Relationships ({{item.relationships.length}})</div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="tokens">
+            <div class="field-header">Tokens</div>
+            <div *ngFor="let item of tokens" class="token-item">
+                <div class="field">
+                    <div class="field-name">
+                        <mat-checkbox [(ngModel)]="item.selected" color="primary"></mat-checkbox>
+                    </div>
+                    <div class="field-value">{{item.tokenId}}</div>
+                    <div class="field-value">{{item.tokenName}} ({{policy.tokenSymbol}})</div>
+                    <div class="field-value">{{item.tokenName}}</div>
+                </div>
+                <div class="field-keys">
+                    <mat-checkbox  [(ngModel)]="item.adminKey" color="primary">Admin Key</mat-checkbox>
+                </div>
+                <div class="field-keys">
+                    <mat-checkbox  [(ngModel)]="item.kycKey" color="primary">KYC Key</mat-checkbox>
+                </div>
+                <div class="field-keys">
+                    <mat-checkbox  [(ngModel)]="item.freezeKey" color="primary">Freeze Key</mat-checkbox>
+                </div>
+                <div class="field-keys">
+                    <mat-checkbox  [(ngModel)]="item.supplyKey" color="primary">Supply Key</mat-checkbox>
+                </div>
+                <div class="field-keys">
+                    <mat-checkbox  [(ngModel)]="item.wipeKey" color="primary">Wipe Key</mat-checkbox>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dialog-actions">
+        <button mat-raised-button color="primary" class="btn-ok" (click)="onSubmit()" [disabled]="loading">Ok</button>
+        <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+    </div>
+</div>

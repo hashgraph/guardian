@@ -629,6 +629,7 @@ export const schemaAPI = async function (
                         result.push(mapSchemes[id]);
                     }
                 }
+                result[index].relationships = relationships;
                 index++;
             }
             const documents = [];
@@ -639,6 +640,7 @@ export const schemaAPI = async function (
                     uuid: element.uuid,
                     entity: element.entity,
                     document: element.document,
+                    relationships: element.relationships,
                 })
             }
             res.send(documents);
