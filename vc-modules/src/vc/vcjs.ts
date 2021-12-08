@@ -1,10 +1,10 @@
-import { ld as vcjs } from "@transmute/vc.js";
+import { ld as vcjs } from '@transmute/vc.js';
 import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
-import { HcsVcDocument } from "./vc-document";
-import { CredentialSubject, Hashing } from "did-sdk-js";
-import { DocumentLoaderFunction } from "../document-loader/document-loader-function";
-import { PrivateKey } from "@hashgraph/sdk";
-import { HcsVpDocument } from "./vp-document";
+import { HcsVcDocument } from './vc-document';
+import { CredentialSubject, Hashing } from 'did-sdk-js';
+import { DocumentLoaderFunction } from '../document-loader/document-loader-function';
+import { PrivateKey } from '@hashgraph/sdk';
+import { HcsVpDocument } from './vp-document';
 
 export interface ISuite {
     issuer: string;
@@ -34,7 +34,7 @@ export class VCJS {
         const privateKeyBase58 = Hashing.base58.encode(secretKey);
         const key = await Ed25519VerificationKey2018.from({
             id: id,
-            type: "Ed25519VerificationKey2018",
+            type: 'Ed25519VerificationKey2018',
             controller: did,
             publicKeyBase58: publicKeyBase58,
             privateKeyBase58: privateKeyBase58,
@@ -92,7 +92,7 @@ export class VCJS {
         const vp = vpDocument.toJsonTree();
         const verifiablePresentation = await vcjs.createVerifiablePresentation({
             presentation: vp,
-            challenge: "123",
+            challenge: '123',
             suite: suite,
             documentLoader: documentLoader,
         });

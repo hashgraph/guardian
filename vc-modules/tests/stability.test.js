@@ -6,7 +6,7 @@ const {
     Hbar,
     TokenCreateTransaction,
     AccountInfoQuery
-} = require("@hashgraph/sdk");
+} = require('@hashgraph/sdk');
 const { expect, assert } = require('chai');
 
 async function wait(timeout) {
@@ -21,11 +21,11 @@ async function wait(timeout) {
     });
 }
 
-describe("Stability test", function () {
+describe('Stability test', function () {
     this.timeout(10 * 60 * 1000);
 
-    const OPERATOR_ID = "0.0.1548173";
-    const OPERATOR_KEY = "302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc";
+    const OPERATOR_ID = '0.0.1548173';
+    const OPERATOR_KEY = '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc';
     const maxTransaction = 10;
 
     const client = Client.forTestnet();
@@ -57,7 +57,7 @@ describe("Stability test", function () {
                 ++failed;
             }
         }
-        console.log("end", 'success:', success, 'failed:', failed);
+        console.log('end', 'success:', success, 'failed:', failed);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
@@ -109,13 +109,13 @@ describe("Stability test", function () {
         for (let i = 0; i < maxTransaction; i++) {
             try {
                 let transaction = new TokenCreateTransaction()
-                    .setTokenName("Test")
-                    .setTokenSymbol("T")
+                    .setTokenName('Test')
+                    .setTokenSymbol('T')
                     .setTreasuryAccountId(newAccountId)
                     .setDecimals(2)
                     .setInitialSupply(0)
                     .setMaxTransactionFee(new Hbar(5))
-                    .setTokenMemo("Memo");
+                    .setTokenMemo('Memo');
                 transaction = transaction.setAdminKey(newPrivateKey);
                 transaction = transaction.setKycKey(newPrivateKey);
                 transaction = transaction.setFreezeKey(newPrivateKey);

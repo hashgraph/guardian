@@ -1,12 +1,13 @@
-import {BasicBlock} from '@policy-engine/helpers/decorators';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {HcsVcDocument, HcsVpDocument, HederaHelper, HederaUtils, VcSubject} from 'vc-modules';
-import {Guardians} from '@helpers/guardians';
-import {Inject} from '@helpers/decorators/inject';
-import {Users} from '@helpers/users';
-import {VcHelper} from '@helpers/vcHelper';
+import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
+import { HcsVcDocument, HcsVpDocument, HederaHelper, HederaUtils, VcSubject } from 'vc-modules';
+import { Guardians } from '@helpers/guardians';
+import { Inject } from '@helpers/decorators/inject';
+import { Users } from '@helpers/users';
+import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
-import {BlockActionError} from '@policy-engine/errors';
+import { BlockActionError } from '@policy-engine/errors';
+import { DocumentSignature } from 'interfaces';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -72,7 +73,7 @@ export class MintBlock {
                 owner: owner,
                 document: vc.toJsonTree(),
                 type: DataTypes.MINT as any,
-                policyId:  ref.policyId,
+                policyId: ref.policyId,
                 tag: ref.tag
             })
             return true;
@@ -81,7 +82,7 @@ export class MintBlock {
         }
     }
 
-    private async saveVP(vp: HcsVpDocument, sensorDid: string, type: DataTypes, ref:any): Promise<boolean> {
+    private async saveVP(vp: HcsVpDocument, sensorDid: string, type: DataTypes, ref: any): Promise<boolean> {
         try {
             if (!vp) {
                 return false;
@@ -91,7 +92,7 @@ export class MintBlock {
                 document: vp.toJsonTree(),
                 owner: sensorDid,
                 type: type as any,
-                policyId:  ref.policyId,
+                policyId: ref.policyId,
                 tag: ref.tag
             })
             return true;
@@ -182,30 +183,38 @@ export class MintBlock {
             rule
         } = ref.options;
 
-        const token = (await this.guardians.getTokens({tokenId}))[0];
+        const token = (await this.guardians.getTokens({ tokenId }))[0];
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
         const root = await this.guardians.getRootConfig(ref.policyOwner);
 
-        let curUser: any = null;
-        let vcs: HcsVcDocument<VcSubject>[] = null;
+        let docs = [];
         if (Array.isArray(state.data)) {
-            const docs = state.data as any[];
-            if (!docs.length) {
-                throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
-            }
-            vcs = docs.map(e => HcsVcDocument.fromJsonTree(e.document, null, VcSubject));
-            curUser = await this.users.getUserById(docs[0].owner);
+            docs = state.data as any[];
         } else {
-            const doc = state.data;
-            const vc = HcsVcDocument.fromJsonTree(doc.document, null, VcSubject);
-            vcs = [vc];
-            curUser = await this.users.getUserById(doc.owner);
+            docs = [state.data];
         }
+
+        if (!docs.length && docs[0]) {
+            throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
+        }
+
+        const vcs: HcsVcDocument<VcSubject>[] = [];
+        for (let i = 0; i < docs.length; i++) {
+            const element = docs[i];
+            if (element.signature === DocumentSignature.INVALID) {
+                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
+            }
+            vcs.push(HcsVcDocument.fromJsonTree(element.document, null, VcSubject));
+        }
+
+        const curUser = await this.users.getUserById(docs[0].owner);
+
         if (!curUser) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
+
         try {
             await this.mintProcessing(token, vcs, rule, root, curUser, ref);
         } catch (e) {

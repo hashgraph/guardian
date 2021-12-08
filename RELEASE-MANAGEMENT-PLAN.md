@@ -3,7 +3,7 @@ This document describes general approach to release management for the Guardian 
 
 ### Release schedule and numbering
 
-The Guardian development team follows Scrum methodology with 2-week sprints. Software releases are produced on regular cadence every other sprint, i.e every 4 weeks; regardless of the status of features in development. Releases are produced on Mondays following the end-of-sprint review on Friday previous week.
+The Guardian development team follows Scrum methodology with 2-week sprints. Software releases are produced on regular cadence every other sprint, i.e every 4 weeks; regardless of the status of features in development. Releases are produced on Mondays at 12:00 EST, following the go/no-go decisition taken at the end-of-sprint review on Friday previous week.
 
 The Guardian uses semantic versioning for releases in the major.minor.build format. Each number incremented sequentially to denote the following changes:
 - major: a signifcant milestone in product lifecycle has been reached
@@ -72,17 +72,5 @@ Release sprint contain additional activities:
   - MRV Sender Service
 - Changelog and release notes (.md file in github)
 - User guide and demo guide (.md file in github)
-
-### Release checklist
-
-- [ ] Demo/User guide updated to reflect the new changes 
-- [ ] All issues merged in the develop branched are marked as Done, those which have been created by community stakeholders have a comment in which a stakeholder is tagged (for notification).
-- [ ] Unit tests passed :tada: (manual run)
-- [ ] "Develop" branch tagged with an appropriate release number before merge to main
-- [ ] "Develop" branch is squash-merged to main
-- [ ] "Main" branch is tagged with the appropriate release number and the release is created
-- [ ] Github actions CI run, unit tests passed :tada:, all artefacts produced and uploaded into the corresponding repos
-- [ ] Release Notes are posted in Slack and Discord channels
-- [ ] Next release label is created
 
 

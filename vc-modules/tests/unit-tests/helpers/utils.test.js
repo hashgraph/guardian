@@ -1,9 +1,9 @@
 const {
     HederaUtils
-} = require("../../../dist/index");
+} = require('../../../dist/index');
 const { expect, assert } = require('chai');
 
-describe("HederaUtils", function () {
+describe('HederaUtils', function () {
 
     it('Test Utils', async function () {
         const uuid = HederaUtils.randomUUID();
@@ -12,8 +12,8 @@ describe("HederaUtils", function () {
         const key = HederaUtils.randomKey();
         assert.exists(key);
 
-        const message = HederaUtils.encode(HederaUtils.decode("Test Message"));
-        assert.equal(message, "Test Message");
+        const message = HederaUtils.encode(HederaUtils.decode('Test Message'));
+        assert.equal(message, 'Test Message');
     });
 
 });

@@ -54,9 +54,9 @@ Promise.all([
     app.use(express.json());
 
     new Guardians().setChannel(channel);
-    new Guardians().registerMRVReciever(async (data) => {
+    new Guardians().registerMRVReceiver(async (data) => {
         console.log(data);
-        await StateContainer.RecieveExternalData(data);
+        await StateContainer.ReceiveExternalData(data);
     });
 
     const server = createServer(app);

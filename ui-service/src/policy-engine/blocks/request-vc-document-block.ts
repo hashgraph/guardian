@@ -48,7 +48,7 @@ export class RequestVcDocumentBlock {
         const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
         if(!this.schema) {
             const schemas = await this.guardians.getSchemes({}) || [];
-            this.schema = Schema.map(schemas).find(s => s.type === options.schema);
+            this.schema = Schema.mapRef(schemas).find(s => s.uuid === options.schema);
         }
         if (!this.schema) {
             const ref = PolicyBlockHelpers.GetBlockRef(this);
@@ -76,7 +76,7 @@ export class RequestVcDocumentBlock {
         const userHederaAccount = userFull.hederaAccountId;
         const userHederaKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userFull.did);
 
-        const credentialSubject = document._options;
+        const credentialSubject = document;
         const schema = ref.options.schema;
         const idType = ref.options.idType;
         const id = await this.generateId(idType, userFull, userHederaAccount, userHederaKey);

@@ -1,7 +1,7 @@
-import { CredentialSubject, Hashing, HcsVcDocumentBase, HcsVcDocumentJsonProperties, JsonClass } from "did-sdk-js";
-import { HcsVcDocument, VcSubject } from "..";
+import { CredentialSubject, Hashing, HcsVcDocumentBase, HcsVcDocumentJsonProperties, JsonClass } from 'did-sdk-js';
+import { HcsVcDocument, VcSubject } from '..';
 
-const VERIFIABLE_CREDENTIAL = "verifiableCredential";
+const VERIFIABLE_CREDENTIAL = 'verifiableCredential';
 
 /**
  * The base for a VP document generation in JSON-LD format.
@@ -15,8 +15,8 @@ export class HcsVpDocument {
     protected proof: any;
 
     constructor() {
-        this.type = ["VerifiablePresentation"];
-        this.context = ["https://www.w3.org/2018/credentials/v1"];
+        this.type = ['VerifiablePresentation'];
+        this.context = ['https://www.w3.org/2018/credentials/v1'];
     }
 
     public getId(): string {

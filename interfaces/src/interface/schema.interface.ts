@@ -3,9 +3,11 @@ import {SchemaStatus} from '../type/schema-status.type';
 
 export interface ISchema {
     id: string;
-    type: string;
+    uuid: string;
+    hash: string;
+    name: string;
     entity: SchemaEntity;
     status: SchemaStatus;
     readonly: boolean;
-    document: any;
+    document: string;
 }
