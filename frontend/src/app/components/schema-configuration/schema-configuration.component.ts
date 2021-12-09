@@ -13,7 +13,6 @@ import { Schema, SchemaField } from 'interfaces';
 export class SchemaConfigurationComponent implements OnInit {
     @Input('schemes') schemes!: Schema[];
     @Input('value') value!: Schema;
-    @Output('document') document = new EventEmitter<Schema | null>();
 
     started = false;
     fieldsForm!: FormGroup;
@@ -158,6 +157,7 @@ export class SchemaConfigurationComponent implements OnInit {
         this.defaultFields = new FormControl("NONE", Validators.required);
         this.dataForm = this.fb.group({
             name: ['', Validators.required],
+            description: [''],
             entity: this.defaultFields,
             fields: this.fieldsForm
         });
@@ -194,6 +194,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.fieldsForm.reset();
                 this.dataForm.setValue({
                     name: this.value.name,
+                    description: this.value.description,
                     entity: this.value.entity,
                     fields: {}
                 });
@@ -297,15 +298,11 @@ export class SchemaConfigurationComponent implements OnInit {
         this.fieldsForm.removeControl(item.fieldArray);
     }
 
-    onNoClick(): void {
-        this.document.emit(null);
-    }
-
-    onSubmit() {
+    public getSchema() {
         const value = this.dataForm.value;
         const schema = new Schema();
-        const schemaName = value.name.replace(/\s/ig, "_");
-        schema.name = schemaName;
+        schema.name = value.name;
+        schema.description = value.description;
         schema.entity = value.entity;
         const fields: SchemaField[] = [];
         for (let i = 0; i < this.fields.length; i++) {
@@ -343,6 +340,10 @@ export class SchemaConfigurationComponent implements OnInit {
             });
         }
         schema.update(fields);
-        this.document.emit(schema);
+        return schema;
+    }
+
+    public get valid() {
+        return this.dataForm.valid;
     }
 }

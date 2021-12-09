@@ -13,7 +13,8 @@ import { Schema } from 'interfaces';
     styleUrls: ['./schema-dialog.component.css']
 })
 export class SchemaDialog {
-    @ViewChild('document') document!: SchemaConfigurationComponent;
+    @ViewChild('document') schema!: SchemaConfigurationComponent;
+
     schemes: Schema[];
     scheme: Schema;
 
@@ -26,6 +27,15 @@ export class SchemaDialog {
     }
 
     getDocument(schema: Schema | null) {
+        this.dialogRef.close(schema);
+    }
+
+    onClose() {
+        this.dialogRef.close(null);
+    }
+
+    onCreate() {
+        const schema = this.schema?.getSchema();
         this.dialogRef.close(schema);
     }
 }

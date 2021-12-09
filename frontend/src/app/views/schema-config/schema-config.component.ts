@@ -80,7 +80,8 @@ export class SchemaConfigComponent implements OnInit {
 
     newSchemes() {
         const dialogRef = this.dialog.open(SchemaDialog, {
-            width: '500px',
+            width: '950px',
+            panelClass: 'g-dialog',
             data: {
                 schemes: this.publishSchemes
             }
@@ -114,7 +115,8 @@ export class SchemaConfigComponent implements OnInit {
 
     editDocument(element: Schema) {
         const dialogRef = this.dialog.open(SchemaDialog, {
-            width: '500px',
+            width: '950px',
+            panelClass: 'g-dialog',
             data: {
                 schemes: this.publishSchemes,
                 scheme: element

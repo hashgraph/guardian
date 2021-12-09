@@ -18,6 +18,9 @@ export class Schema implements ISchema {
     name: string;
 
     @Column()
+    description: string;
+
+    @Column()
     entity: SchemaEntity;
 
     @Column()

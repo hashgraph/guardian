@@ -26,6 +26,7 @@ export class Schema {
     public uuid: string;
     public hash: string;
     public name: string;
+    public description: string;
     public entity: SchemaEntity;
     public status: SchemaStatus;
     public readonly: boolean;
@@ -40,22 +41,24 @@ export class Schema {
 
     constructor(data?: ISchema) {
         if (data) {
-            this.id = data.id;
+            this.id = data.id || "";
             this.uuid = data.uuid || Schema.randomUUID();
-            this.hash = data.hash;
-            this.name = data.name;
-            this.entity = data.entity;
-            this.status = data.status;
-            this.readonly = data.readonly;
+            this.hash = data.hash || "";
+            this.name = data.name || "";
+            this.description = data.description || "";
+            this.entity = data.entity || SchemaEntity.NONE;
+            this.status = data.status || SchemaStatus.DRAFT;
+            this.readonly = data.readonly || false;
 
         } else {
             this.uuid = Schema.randomUUID();
-            this.hash = null;
-            this.id = null;
-            this.status = null;
-            this.readonly = null;
-            this.name = null;
-            this.entity = null;
+            this.hash = "";
+            this.id = "";
+            this.status = SchemaStatus.DRAFT;
+            this.readonly = false;
+            this.name = "";
+            this.description = "";
+            this.entity = SchemaEntity.NONE;
         }
         if (data && data.document) {
             this.document = data.document;
@@ -166,8 +169,8 @@ export class Schema {
         const document = {
             '$id': this.getId(this.uuid),
             '$comment': this.getComment(this.uuid, this.getUrl(this.getId(this.uuid))),
-            'title': '',
-            'description': '',
+            'title': this.name,
+            'description': this.description,
             'type': 'object',
             'properties': {
                 '@context': {
@@ -265,6 +268,7 @@ export class Schema {
         clone.uuid = clone.uuid;
         clone.hash = clone.hash;
         clone.name = clone.name;
+        clone.description = clone.description;
         clone.entity = clone.entity;
         clone.status = clone.status;
         clone.readonly = clone.readonly;

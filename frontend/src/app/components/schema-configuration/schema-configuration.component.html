@@ -1,34 +1,44 @@
-<form class="context" [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+<form class="context" [formGroup]="dataForm">
 
-    <mat-form-field class="example-full-width" appearance="outline">
-        <mat-label>SCHEMA NAME:</mat-label>
-        <input matInput type="text" placeholder="Schema Name" formControlName="name">
-    </mat-form-field>
+    <div class="optional-row">
+        <mat-form-field appearance="outline">
+            <mat-label>* Schema Name</mat-label>
+            <input matInput type="text" placeholder="Schema Name" formControlName="name">
+        </mat-form-field>
+    
+        <mat-form-field appearance="outline">
+            <mat-label>For (Entity)</mat-label>
+            <mat-select formControlName="entity">
+                <mat-option value="NONE">NONE</mat-option>
+                <mat-option value="INSTALLER">INSTALLER</mat-option>
+                <mat-option value="INVERTER">INVERTER</mat-option>
+                <mat-option value="MRV">MRV</mat-option>            
+            </mat-select>
+        </mat-form-field>
+    </div>
 
     <mat-form-field appearance="outline">
-        <mat-label>ENTITY:</mat-label>
-        <mat-select formControlName="entity">
-            <mat-option value="NONE">NONE</mat-option>
-            <mat-option value="INSTALLER">INSTALLER</mat-option>
-            <mat-option value="INVERTER">INVERTER</mat-option>
-            <mat-option value="MRV">MRV</mat-option>            
-        </mat-select>
+        <mat-label>Description for Schema (optional)</mat-label>
+        <input matInput type="text" placeholder="Description for Schema (optional)" formControlName="description">
     </mat-form-field>
 
-    <div class="fields">
+    <div class="delimiter">
 
-        <div *ngIf="fields" class="custom-fields">
+    </div>
+
+    <div *ngIf="fields && fields.length" class="fields">
+        <div class="custom-fields">
             <div *ngFor="let field of fields" class="custom-field">
                 <div class="custom-field-name">
                     <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>FIELD NAME:</mat-label>
-                        <input matInput placeholder="Name" [formControl]="field.controlName">
+                        <mat-label>Field name</mat-label>
+                        <input matInput placeholder="Field name" [formControl]="field.controlName">
                     </mat-form-field>
                 </div>
                 <div class="custom-field-type">
                     
                     <mat-form-field appearance="outline">
-                        <mat-label>TYPE:</mat-label>
+                        <mat-label>Field type</mat-label>
                         <mat-select [formControl]="field.controlType">
                             <mat-optgroup  label="Simple Types">
                                 <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
@@ -41,10 +51,10 @@
 
                 </div>
                 <div class="custom-field-required">
-                    <mat-checkbox class="example-margin" [formControl]="field.controlRequired">Required</mat-checkbox>
+                    <mat-checkbox color="primary" [formControl]="field.controlRequired">Required Field</mat-checkbox>
                 </div>
                 <div class="custom-field-isArray">
-                    <mat-checkbox class="example-margin" [formControl]="field.controlArray">Is Array</mat-checkbox>
+                    <mat-checkbox color="primary" [formControl]="field.controlArray">Allow multiple answers</mat-checkbox>
                 </div>
                 <div class="custom-field-remove">
                     <div class="custom-fields-remove" (click)="onRemove(field)">
@@ -73,14 +83,10 @@
     </div>
 
     <div>
-        <button type="button" mat-icon-button aria-label="" (click)="onAdd($event)" style="color: #6166ff;margin-bottom: 5px;">
-            <mat-icon>add</mat-icon> <span style="position: absolute;left: 40px;top: 1px">Add new field</span>
-        </button>
-    </div>
-
-    <div mat-dialog-actions>
-        <button mat-raised-button color="primary" type="submit" [attr.started]="started"
-            [disabled]="!dataForm.valid">Ok</button>
-        <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+        <div class="add-btn" (click)="onAdd($event)">
+            <span>
+                <mat-icon>add</mat-icon> Add Field
+            </span>
+        </div>
     </div>
 </form>
