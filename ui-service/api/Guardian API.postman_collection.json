@@ -1,0 +1,2927 @@
+{
+	"info": {
+		"_postman_id": "a5a7ff66-461c-4a97-b68c-eb3ab679b04e",
+		"name": "Guardian API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "api",
+			"item": [
+				{
+					"name": "account",
+					"item": [
+						{
+							"name": "/api/account/current-user",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/account/current-user",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"account",
+										"current-user"
+									]
+								},
+								"description": "Get current user"
+							},
+							"response": [
+								{
+									"name": "Current user",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/account/current-user",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"account",
+												"current-user"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/account/register",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/account/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"account",
+										"register"
+									]
+								},
+								"description": "Register user"
+							},
+							"response": [
+								{
+									"name": "Register user",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/account/register",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"account",
+												"register"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/account/login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/account/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"account",
+										"login"
+									]
+								},
+								"description": "Login user"
+							},
+							"response": [
+								{
+									"name": "Login user",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/account/login",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"account",
+												"login"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/account/get-all-users",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/account/get-all-users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"account",
+										"get-all-users"
+									]
+								},
+								"description": "Return all users"
+							},
+							"response": [
+								{
+									"name": "Return all users",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/account/get-all-users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"account",
+												"get-all-users"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "profile",
+					"item": [
+						{
+							"name": "/api/profile",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/profile",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile"
+									]
+								},
+								"description": "User profile"
+							},
+							"response": [
+								{
+									"name": "Return user prefile",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/profile/user-balance",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/profile/user-balance",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile",
+										"user-balance"
+									]
+								},
+								"description": "User balance"
+							},
+							"response": [
+								{
+									"name": "Return user balance",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/user-balance",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"user-balance"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/user-balance",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"user-balance"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/user-balance",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"user-balance"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/profile/user-state",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/profile/user-state",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile",
+										"user-state"
+									]
+								},
+								"description": "User state"
+							},
+							"response": [
+								{
+									"name": "Return user state",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/user-state",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"user-state"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/user-state",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"user-state"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/user-state",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"user-state"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/profile/set-hedera-profile",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/profile/set-hedera-profile",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile",
+										"set-hedera-profile"
+									]
+								},
+								"description": "Set hedera profile"
+							},
+							"response": [
+								{
+									"name": "Return action result",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/set-hedera-profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"set-hedera-profile"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/set-hedera-profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"set-hedera-profile"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/set-hedera-profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"set-hedera-profile"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/profile/get-root-authority",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/profile/get-root-authority",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile",
+										"get-root-authority"
+									]
+								},
+								"description": "Root Authority users"
+							},
+							"response": [
+								{
+									"name": "Return Root Authority users",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/get-root-authority",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"get-root-authority"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/get-root-authority",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"get-root-authority"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/get-root-authority",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"get-root-authority"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/profile/set-vc-profile",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/profile/set-vc-profile",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile",
+										"set-vc-profile"
+									]
+								},
+								"description": "Set vc profile"
+							},
+							"response": [
+								{
+									"name": "Return action result",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/set-vc-profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"set-vc-profile"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/set-vc-profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"set-vc-profile"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/set-vc-profile",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"set-vc-profile"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/profile/random-key",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/profile/random-key",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile",
+										"random-key"
+									]
+								},
+								"description": "Generate random key"
+							},
+							"response": [
+								{
+									"name": "Generate and return random key for user",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/random-key",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"random-key"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/random-key",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"random-key"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/profile/random-key",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"profile",
+												"random-key"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "schema",
+					"item": [
+						{
+							"name": "/api/schema",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/schema",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"schema"
+									]
+								},
+								"description": "Get all schemas"
+							},
+							"response": [
+								{
+									"name": "Return all schemas",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/schema/create",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/schema/create",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"schema",
+										"create"
+									]
+								},
+								"description": "Create new schema"
+							},
+							"response": [
+								{
+									"name": "Return action result",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"create"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"create"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"create"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/schema/import",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/schema/import",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"schema",
+										"import"
+									]
+								},
+								"description": "Import new schema"
+							},
+							"response": [
+								{
+									"name": "Return action result",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/import",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"import"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/import",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"import"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/import",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"import"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/schema/export",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/schema/export",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"schema",
+										"export"
+									]
+								},
+								"description": "Export schema"
+							},
+							"response": [
+								{
+									"name": "Return action result",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/export",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"export"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/export",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"export"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/schema/export",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"schema",
+												"export"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "tokens",
+					"item": [
+						{
+							"name": "/api/tokens",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/tokens",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"tokens"
+									]
+								},
+								"description": "Get all tokens"
+							},
+							"response": [
+								{
+									"name": "Return tokens",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/tokens/create",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/tokens/create",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"tokens",
+										"create"
+									]
+								},
+								"description": "Create new token"
+							},
+							"response": [
+								{
+									"name": "Return action result",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"create"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"create"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/create",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"create"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/tokens/user-tokens",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/tokens/user-tokens",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"tokens",
+										"user-tokens"
+									]
+								},
+								"description": "Get tokens for user"
+							},
+							"response": [
+								{
+									"name": "Return tokens for user",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-tokens",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-tokens"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-tokens",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-tokens"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-tokens",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-tokens"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/tokens/associate",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/tokens/associate",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"tokens",
+										"associate"
+									]
+								},
+								"description": "Associate token"
+							},
+							"response": [
+								{
+									"name": "Associate token",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/associate",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"associate"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/associate",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"associate"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/associate",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"associate"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/tokens/all-users",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/tokens/all-users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"tokens",
+										"all-users"
+									]
+								},
+								"description": "Get all users with role installer"
+							},
+							"response": [
+								{
+									"name": "Return all users with role installer",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/all-users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"all-users"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/all-users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"all-users"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/all-users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"all-users"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/tokens/associate-users",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/tokens/associate-users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"tokens",
+										"associate-users"
+									]
+								},
+								"description": "Chack user state"
+							},
+							"response": [
+								{
+									"name": "Return token information",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/associate-users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"associate-users"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/associate-users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"associate-users"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/associate-users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"associate-users"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/tokens/user-kyc",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/tokens/user-kyc",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"tokens",
+										"user-kyc"
+									]
+								},
+								"description": "Set user kyc"
+							},
+							"response": [
+								{
+									"name": "Return token information",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-kyc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-kyc"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-kyc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-kyc"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-kyc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-kyc"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "/api/tokens/user-freeze",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/tokens/user-freeze",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"tokens",
+										"user-freeze"
+									]
+								},
+								"description": "Set user freeze"
+							},
+							"response": [
+								{
+									"name": "Return token information",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-freeze",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-freeze"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Have not permissions",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-freeze",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-freeze"
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal server error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/api/tokens/user-freeze",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"tokens",
+												"user-freeze"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "/api/root-balance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/root-balance",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"root-balance"
+							]
+						},
+						"description": "Root balance"
+					},
+					"response": [
+						{
+							"name": "Return root balance",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/root-balance",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"root-balance"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Have not permissions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/root-balance",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"root-balance"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Internal server error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/root-balance",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"root-balance"
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "/api/root-config",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/root-config",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"root-config"
+							]
+						},
+						"description": "Get root config"
+					},
+					"response": [
+						{
+							"name": "Return root config",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/root-config",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"root-config"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Have not permissions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/root-config",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"root-config"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Internal server error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/root-config",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"root-config"
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "/api/set-root-config",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/set-root-config",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"set-root-config"
+							]
+						},
+						"description": "Set root config"
+					},
+					"response": [
+						{
+							"name": "Return operation result",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/set-root-config",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"set-root-config"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Have not permissions",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/set-root-config",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"set-root-config"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Internal server error",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/set-root-config",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"set-root-config"
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "/api/get-vp-documents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/get-vp-documents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"get-vp-documents"
+							]
+						},
+						"description": "Get vp documents"
+					},
+					"response": [
+						{
+							"name": "Return vp documents",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/get-vp-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"get-vp-documents"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Have not permissions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/get-vp-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"get-vp-documents"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Internal server error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/get-vp-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"get-vp-documents"
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "/api/search-vc-documents",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/search-vc-documents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"search-vc-documents"
+							]
+						},
+						"description": "Search vc documents"
+					},
+					"response": [
+						{
+							"name": "Return vc documents",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/search-vc-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"search-vc-documents"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Have not permissions",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/search-vc-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"search-vc-documents"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Internal server error",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/search-vc-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"search-vc-documents"
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "/api/search-documents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/search-documents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"search-documents"
+							]
+						},
+						"description": "Search documents"
+					},
+					"response": [
+						{
+							"name": "Return documents",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/search-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"search-documents"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Have not permissions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/search-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"search-documents"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Internal server error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/search-documents",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"search-documents"
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "/"
+		}
+	]
+}
