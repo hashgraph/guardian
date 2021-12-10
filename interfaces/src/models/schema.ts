@@ -13,6 +13,7 @@ export interface SchemaField {
     type: string;
     format?: string;
     pattern?: string;
+    readOnly: boolean;
     fields?: SchemaField[];
     context?: {
         type: string;
@@ -117,15 +118,15 @@ export class Schema {
         const properties = Object.keys(this.schema.properties);
         for (let i = 0; i < properties.length; i++) {
             const name = properties[i];
-            if (name == '@context' || name == 'type' || name == 'id') {
+            let property = this.schema.properties[name];
+            if (property.readOnly) {
                 continue;
             }
-            let property = this.schema.properties[name];
             if (property.oneOf && property.oneOf.length) {
                 property = property.oneOf[0];
             }
-            const title = property.title || '';
-            const description = property.description || '';
+            const title = property.title || name;
+            const description = property.description || name;
             const isArray = property.type == SchemaDataTypes.array;
             if (isArray) {
                 property = property.items;
@@ -142,6 +143,7 @@ export class Schema {
             }
             const format = isRef || !property.format ? null : String(property.format);
             const pattern = isRef || !property.pattern ? null : String(property.pattern);
+            const readOnly = !!property.readOnly;
             this.fields.push({
                 name: name,
                 title: title,
@@ -152,6 +154,7 @@ export class Schema {
                 required: !!required[name],
                 isRef: isRef,
                 isArray: isArray,
+                readOnly: readOnly,
                 fields: null,
                 context: context
             })
@@ -181,6 +184,7 @@ export class Schema {
                             'items': { 'type': 'string' }
                         },
                     ],
+                    'readOnly': true
                 },
                 'type': {
                     'oneOf': [
@@ -190,8 +194,12 @@ export class Schema {
                             'items': { 'type': 'string' }
                         },
                     ],
+                    'readOnly': true
                 },
-                'id': { 'type': 'string' }
+                'id': {
+                    'type': 'string',
+                    'readOnly': true
+                }
             },
             'required': ['@context', 'type'],
             'additionalProperties': false,
@@ -200,6 +208,12 @@ export class Schema {
         const required = document.required;
         for (let i = 0; i < this.fields.length; i++) {
             const field = this.fields[i];
+            field.title = field.title || field.name;
+            field.description = field.description || field.name;
+            if (!field.readOnly) {
+                field.name = `field${i}`;
+            }
+
             let item: any;
             let property: any;
             if (field.isArray) {
