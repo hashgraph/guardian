@@ -5,6 +5,7 @@ import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Guardians } from '@helpers/guardians';
 import { findAllEntities } from '@helpers/utils';
+import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
 
 export const importExportAPI = Router();
 
@@ -92,7 +93,52 @@ importExportAPI.post('/export/:policyId/download', async (req: AuthenticatedRequ
     // }
 });
 
-importExportAPI.put('/import', async (req: AuthenticatedRequest, res: Response) => {
+importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        let {policy, tokens, schemas} = req.body
+        const guardians = new Guardians();
+
+        const dateNow = '_' + Date.now();
+
+        const existingTokens = await guardians.getTokens({});
+        const existingSchemas = await guardians.getSchemes({});
+        for (let token of tokens) {
+            delete token.selected;
+        }
+        tokens = tokens.filter(token => existingTokens.includes(token.tokenId));
+        tokens = tokens.map(t => existingTokens.find(_t => t.tokenId === _t.tokenId));
+
+        for (let schema of schemas) {
+            const oldUUID = schema.uuid;
+            const newUUID = GenerateUUIDv4();
+            if (existingSchemas.map(schema => schema.uuid).includes(oldUUID)) {
+                schema.name = schema.name + dateNow;
+            }
+            schema.uuid = newUUID;
+            policy = JSON.parse(JSON.stringify(policy).replace(new RegExp(oldUUID, 'g'), newUUID));
+        }
+
+        const policyRepository = getMongoRepository(Policy);
+        policy.policyTag = policy.tag + dateNow;
+        if (await policyRepository.findOne({name: policy.name})) {
+            policy.name = policy.name + dateNow;
+        }
+
+        delete policy.id;
+        delete policy.status;
+        await Promise.all([
+            Promise.all(tokens.map(token => guardians.setToken(token))),
+            guardians.importSchemes(schemas),
+            policyRepository.save(policyRepository.create(policy))
+        ]);
+
+        res.json(await policyRepository.find());
+    } catch (e) {
+        res.status(500).send(e);
+    }
+});
+
+importExportAPI.put('/import/upload', async (req: AuthenticatedRequest, res: Response) => {
     const zip = new JSZip();
 
     const content = await zip.loadAsync(req.body);
@@ -108,9 +154,10 @@ importExportAPI.put('/import', async (req: AuthenticatedRequest, res: Response) 
         .filter(file => /^tokens\/.+/.test(file[0]))
         .map(file => file[1].async('string')));
 
-    res.json({
-        policy: JSON.parse(policyString),
-        tokens: tokensStringArray.map(item => JSON.parse(item)),
-        schemas: schemaStringArray.map(item => JSON.parse(item))
-    });
+    const policy = JSON.parse(policyString);
+    const tokens = tokensStringArray.map(item => JSON.parse(item));
+    const schemas = schemaStringArray.map(item => JSON.parse(item));
+
+
+    res.json({policy, tokens, schemas});
 })

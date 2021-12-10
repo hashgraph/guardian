@@ -177,13 +177,13 @@ export class PolicyEngineService {
   }
 
   public importFileUpload(policyFile: any): Observable<any> {
-    return this.http.put('api/package/import', policyFile, {
+    return this.http.put('/api/package/import/upload', policyFile, {
       headers: {
         'Content-Type': 'binary/octet-stream'
       }
     });
   }
   public importUpload(policyData: any): Observable<any[]> {
-    return of([]);
+    return this.http.post<any[]>('/api/package/import', policyData);
   }
 }
