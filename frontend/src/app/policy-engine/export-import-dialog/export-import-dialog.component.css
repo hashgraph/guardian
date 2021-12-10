@@ -38,9 +38,9 @@ form {
 }
 
 .delimiter {
-    padding: 55px 55px;
+    padding: 50px 50px;
     width: 100%;
-    height: 110px;
+    height: 100px;
     box-sizing: border-box;
     position: relative;
 }
@@ -49,7 +49,7 @@ form {
     content: '';
     position: absolute;
     height: 2px;
-    top: 55px;
+    top: 50px;
     left: 0px;
     right: 0px;
     border-top: 1px solid #c8c8c8;
@@ -57,11 +57,11 @@ form {
 
 .field-value {  
     color: #000;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .field-name {  
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .field {

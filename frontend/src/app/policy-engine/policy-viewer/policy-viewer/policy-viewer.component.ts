@@ -26,8 +26,8 @@ export class PolicyViewerComponent implements OnInit {
     columns: string[] = [];
     columnsRole = {
         "ROOT_AUTHORITY": [
-            'id',
             'name',
+            'id',
             'version',
             'description',
             'status',
@@ -193,8 +193,8 @@ export class PolicyViewerComponent implements OnInit {
     exportPolicy(element: any) {
         this.loading = true;
         this.policyEngineService.exportPolicy(element.id).subscribe((data: any) => {
-            data.schemas.forEach((s: any) => s.selected == true);
-            data.tokens.forEach((s: any) => s.selected == true);
+            data.schemas.forEach((s: any) => { s.selected = true });
+            data.tokens.forEach((s: any) => { s.selected = true });
             this.policyEngineService.exportPolicyDownload(element.id, data).subscribe((result: any) => {
                 let downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(result);
@@ -226,7 +226,6 @@ export class PolicyViewerComponent implements OnInit {
                 console.log(arrayBuffer);
                 this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
                     console.log('upload complete', data);
-                    debugger;
                     const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
                         width: '950px',
                         panelClass: 'g-dialog',
@@ -236,6 +235,8 @@ export class PolicyViewerComponent implements OnInit {
                     });
                     dialogRef.afterClosed().subscribe(async (result) => {
                         if (result) {
+                            //save policy
+                            this.loadAllPolicy();
                         }
                     });
                 });

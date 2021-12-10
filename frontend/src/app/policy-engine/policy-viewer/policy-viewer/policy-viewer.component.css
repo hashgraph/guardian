@@ -139,3 +139,19 @@ a.go-back-link mat-icon {
     padding: 5px 0px;
     box-sizing: border-box;
 }
+
+
+.table-container .mat-column-name {
+    padding-left: 24px;
+}
+
+.table-container .mat-column-id,
+.table-container .mat-column-version,
+.table-container .mat-column-description,
+.table-container .mat-column-status,
+.table-container .mat-column-export,
+.table-container .mat-column-edit,
+.table-container .mat-column-open,
+.table-container .mat-column-operation {
+    padding-left: 8px;
+}

@@ -14,33 +14,27 @@ export class ExportPolicyDialog {
     loading = true;
     policyId!: any;
     policy!: any;
+    schemes!: string;
+    tokens!: string;
 
     constructor(
         public dialogRef: MatDialogRef<ExportPolicyDialog>,
         private policyEngineService: PolicyEngineService,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.policyId = data.policyId;
-        this.policy = data.policy;
+
+        if(data.policy) {
+            this.policy = data.policy.policy;
+            this.schemes = data.policy.schemas.map((s:any)=>s.name).join(', ');
+            this.tokens = data.policy.tokens.map((s:any)=>s.tokenName).join(', ');
+        }
     }
 
     ngOnInit() {
         this.loading = false;
-        // this.loading = true;
-        // this.policyEngineService.exportPolicy(this.policyId).subscribe((data: any) => {
-        //     this.setData(data);
-        //     setTimeout(() => {
-        //         this.loading = false;
-        //     }, 500);
-        // }, (e) => {
-        //     this.loading = false;
-        // });
     }
 
     setData(data: any) {
-        // this.policy = data.policy;
-        // this.schemas = data.schemas;
-        // this.tokens = data.tokens;
-        // console.log(data);
     }
 
     onClose(): void {
