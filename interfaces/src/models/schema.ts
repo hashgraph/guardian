@@ -221,6 +221,7 @@ export class Schema {
                 property = {
                     'title': field.title,
                     'description': field.description,
+                    'readOnly': !!field.readOnly,
                     'type': 'array',
                     'items': item
                 }
@@ -228,6 +229,7 @@ export class Schema {
                 item = {
                     'title': field.title,
                     'description': field.description,
+                    'readOnly': !!field.readOnly
                 };
                 property = item;
             }

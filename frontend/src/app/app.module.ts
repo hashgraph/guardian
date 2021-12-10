@@ -81,7 +81,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TreeFlatOverview } from './components/tree-flat-overview/tree-flat-overview';
 import { AggregateConfigComponent } from './policy-engine/policy-configuration/aggregate-config/aggregate-config.component';
 import { InformationConfigComponent } from './policy-engine/policy-configuration/information-config/information-config.component';
-import { ExportPolicyDialog } from './policy-engine/export-policy-dialog/export-policy-dialog.component';
+import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-import-dialog.component';
 
 @NgModule({
     declarations: [

@@ -6,7 +6,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TokenService } from 'src/app/services/token.service';
-import { ExportPolicyDialog } from '../../export-policy-dialog/export-policy-dialog.component';
+import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../export-import-dialog/export-import-dialog.component';
 import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
 
 /**
@@ -191,7 +191,7 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     exportPolicy(element: any) {
-        const dialogRef = this.dialog.open(ExportPolicyDialog, {
+        const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
             width: '700px',
             data: {
                 policyId: element.id
@@ -200,13 +200,13 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.exportPolicyDownload(element.id, result).subscribe((result) => {
+                this.policyEngineService.exportPolicyDownload(element.id, result).subscribe((result:any) => {
                     console.log(result);
-                  let downloadLink = document.createElement('a');
-                  downloadLink.href = window.URL.createObjectURL(result);
-                  downloadLink.setAttribute('download', 'policy.zip');
-                  document.body.appendChild(downloadLink);
-                  downloadLink.click();
+                    let downloadLink = document.createElement('a');
+                    downloadLink.href = window.URL.createObjectURL(result);
+                    downloadLink.setAttribute('download', 'policy.zip');
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
@@ -218,23 +218,24 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     importPolicy() {
-        // const dialogRef = this.dialog.open(ExportPolicyDialog, {
-        //     width: '700px',
-        //     data: {
-        //     }
-        // });
-        // dialogRef.afterClosed().subscribe(async (result) => {
-        //     if (result) {
-        //     }
-        // });
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.click();
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.click();
 
-      input.onchange = (e: any) => {
-        const file = e.target.files[0];
-        console.log(file);
-
-      }
+        input.onchange = (e: any) => {
+            const file = e.target.files[0];
+            console.log(file);
+            const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
+                width: '950px',
+                panelClass: 'g-dialog',
+                data: {
+                    policy: {}
+                }
+            });
+            dialogRef.afterClosed().subscribe(async (result) => {
+                if (result) {
+                }
+            });
+        }
     }
 }

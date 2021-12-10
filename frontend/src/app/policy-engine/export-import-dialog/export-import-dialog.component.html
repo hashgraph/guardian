@@ -1,28 +1,74 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Policy Import Preview
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onImport()">
+                Import
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <div *ngIf="loading" class="loading">
+                <mat-spinner></mat-spinner>
+            </div>
+
+
+            <div *ngIf="policy" class="policy">
+                <div class="policy-header">Policy</div>
+
+                <div class="delimiter"></div>
+
+                <div class="field">
+                    <div class="field-name">Description:</div>
+                    <div class="field-value">Description</div>
+                </div>
+
+                <div class="field">
+                    <div class="field-name">Version:</div>
+                    <div class="field-value">Version</div>
+                </div>
+
+                <div class="field-last">
+                    <div class="field-name">Topic Description:</div>
+                    <div class="field-value">Topic Description</div>
+                </div>
+
+                <div class="delimiter"></div>
+
+                <div class="field-last">
+                    <div class="field-name">Schemes</div>
+                    <div class="field-value">Version</div>
+                </div>
+
+                <div class="delimiter"></div>
+
+                <div class="field-last">
+                    <div class="field-name">Tokens</div>
+                    <div class="field-value">Version</div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- 
 <h1 mat-dialog-title>Export Policy</h1>
 <div mat-dialog-content>
-    <div class="context">
-        <div *ngIf="loading" class="loading">
-            <mat-spinner></mat-spinner>
-        </div>
-        <div *ngIf="policy" class="policy">
-            <div class="field-header">Policy</div>
-            <div class="field">
-                <div class="field-name">Name:</div>
-                <div class="field-value">{{policy.name}}</div>
-            </div>
-            <div class="field">
-                <div class="field-name">Version:</div>
-                <div class="field-value">{{policy.version}}</div>
-            </div>
-            <div class="field">
-                <div class="field-name">Description:</div>
-                <div class="field-value">{{policy.description}}</div>
-            </div>
-            <div class="field">
-                <div class="field-name">Topic Description:</div>
-                <div class="field-value">{{policy.topicDescription}}</div>
-            </div>
-        </div>
+    <div >
+
         <div *ngIf="schemas">
             <div class="field-header">Schemas</div>
             <div *ngFor="let item of schemas" class="schema-item">
@@ -69,4 +115,4 @@
         <button mat-raised-button color="primary" class="btn-ok" (click)="onSubmit()" [disabled]="loading">Ok</button>
         <button mat-button type="button" (click)="onNoClick()">Cancel</button>
     </div>
-</div>
+</div> -->
