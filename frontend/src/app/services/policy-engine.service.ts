@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpResponse} from '@angular/common/http';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { Observable, Subject, Subscription, of } from 'rxjs';
 import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
@@ -47,7 +47,7 @@ export class PolicyEngineService {
 
   private getBaseUrl() {
     let url = location.origin;
-    if(/^https/.test(url)) {
+    if (/^https/.test(url)) {
       return `${url.replace(/^https/, 'wss')}`;
     }
     return `${url.replace(/^http/, 'ws')}`;
@@ -170,7 +170,7 @@ export class PolicyEngineService {
     return this.http.get<any>(`/api/package/export/${policyId}`);
   }
 
-  public exportPolicyDownload(policyId: string, data:any): Observable<Blob> {
+  public exportPolicyDownload(policyId: string, data: any): Observable<Blob> {
     return this.http.post(`/api/package/export/${policyId}/download`, data, {
       responseType: 'blob'
     });
@@ -182,5 +182,8 @@ export class PolicyEngineService {
         'Content-Type': 'binary/octet-stream'
       }
     });
+  }
+  public importUpload(policyData: any): Observable<any[]> {
+    return of([]);
   }
 }

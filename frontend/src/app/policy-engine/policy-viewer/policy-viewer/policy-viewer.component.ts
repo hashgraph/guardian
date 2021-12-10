@@ -216,16 +216,15 @@ export class PolicyViewerComponent implements OnInit {
         const input = document.createElement('input');
         input.type = 'file';
         input.click();
-
         input.onchange = (e: any) => {
             const file = e.target.files[0];
             const reader = new FileReader()
             reader.readAsArrayBuffer(file);
             reader.addEventListener('load', (e: any) => {
                 const arrayBuffer = e.target.result;
-                console.log(arrayBuffer);
+                this.loading = true;
                 this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
-                    console.log('upload complete', data);
+                    this.loading = false;
                     const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
                         width: '950px',
                         panelClass: 'g-dialog',
@@ -235,8 +234,13 @@ export class PolicyViewerComponent implements OnInit {
                     });
                     dialogRef.afterClosed().subscribe(async (result) => {
                         if (result) {
-                            //save policy
-                            this.loadAllPolicy();
+                            this.loading = true;
+                            this.policyEngineService.importUpload(data).subscribe((policies) => {
+                                this.updatePolicy(policies);
+                                setTimeout(() => {
+                                    this.loading = false;
+                                }, 500);
+                            });
                         }
                     });
                 });
