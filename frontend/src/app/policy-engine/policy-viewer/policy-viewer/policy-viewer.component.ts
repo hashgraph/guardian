@@ -191,29 +191,24 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     exportPolicy(element: any) {
-        const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
-            width: '700px',
-            data: {
-                policyId: element.id
-            }
-        });
-        dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-                this.loading = true;
-                this.policyEngineService.exportPolicyDownload(element.id, result).subscribe((result: any) => {
-                    console.log(result);
-                    let downloadLink = document.createElement('a');
-                    downloadLink.href = window.URL.createObjectURL(result);
-                    downloadLink.setAttribute('download', 'policy.zip');
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }, (e) => {
+        this.loading = true;
+        this.policyEngineService.exportPolicy(element.id).subscribe((data: any) => {
+            data.schemas.forEach((s: any) => s.selected == true);
+            data.tokens.forEach((s: any) => s.selected == true);
+            this.policyEngineService.exportPolicyDownload(element.id, data).subscribe((result: any) => {
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(result);
+                downloadLink.setAttribute('download', 'policy.zip');
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
                     this.loading = false;
-                });
-            }
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+        }, (e) => {
+            this.loading = false;
         });
     }
 
@@ -229,13 +224,14 @@ export class PolicyViewerComponent implements OnInit {
             reader.addEventListener('load', (e: any) => {
                 const arrayBuffer = e.target.result;
                 console.log(arrayBuffer);
-                this.policyEngineService.importFileUpload(arrayBuffer).subscribe(() => {
-                    console.log('upload complete');
+                this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
+                    console.log('upload complete', data);
+                    debugger;
                     const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
                         width: '950px',
                         panelClass: 'g-dialog',
                         data: {
-                            policy: {}
+                            policy: data
                         }
                     });
                     dialogRef.afterClosed().subscribe(async (result) => {
