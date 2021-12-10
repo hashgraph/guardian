@@ -200,7 +200,13 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.exportPolicyDownload(element.id, result).subscribe(() => {
+                this.policyEngineService.exportPolicyDownload(element.id, result).subscribe((result) => {
+                    console.log(result);
+                  let downloadLink = document.createElement('a');
+                  downloadLink.href = window.URL.createObjectURL(result);
+                  downloadLink.setAttribute('download', 'policy.zip');
+                  document.body.appendChild(downloadLink);
+                  downloadLink.click();
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
@@ -212,14 +218,23 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     importPolicy() {
-        const dialogRef = this.dialog.open(ExportPolicyDialog, {
-            width: '700px',
-            data: {
-            }
-        });
-        dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-            }
-        });
+        // const dialogRef = this.dialog.open(ExportPolicyDialog, {
+        //     width: '700px',
+        //     data: {
+        //     }
+        // });
+        // dialogRef.afterClosed().subscribe(async (result) => {
+        //     if (result) {
+        //     }
+        // });
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.click();
+
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        console.log(file);
+
+      }
     }
 }

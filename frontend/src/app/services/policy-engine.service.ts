@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpResponse} from '@angular/common/http';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
@@ -170,7 +170,9 @@ export class PolicyEngineService {
     return this.http.get<any>(`/api/package/export/${policyId}`);
   }
 
-  public exportPolicyDownload(policyId: string, data:any): Observable<void> {
-    return this.http.post<any>(`/api/package/export/${policyId}/download`, data);
+  public exportPolicyDownload(policyId: string, data:any): Observable<Blob> {
+    return this.http.post(`/api/package/export/${policyId}/download`, data, {
+      responseType: 'blob'
+    });
   }
 }

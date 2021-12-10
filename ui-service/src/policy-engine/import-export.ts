@@ -8,8 +8,6 @@ import { findAllEntities } from '@helpers/utils';
 
 export const importExportAPI = Router();
 
-const FILENAME = 'policy.zip'
-
 importExportAPI.get('/export/:policyId', async (req: AuthenticatedRequest, res: Response) => {
     const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
     const guardians = new Guardians();
@@ -46,11 +44,32 @@ importExportAPI.get('/export/:policyId', async (req: AuthenticatedRequest, res: 
 
 
 importExportAPI.post('/export/:policyId/download', async (req: AuthenticatedRequest, res: Response) => {
+    const guardians = new Guardians();
+    const zip = new JSZip();
     const {schemas, tokens} = req.body;
+    const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
 
-    console.log(schemas, tokens);
+    const [readySchemas, readyTokens] = await Promise.all([
+        guardians.exportSchemes(schemas.filter(item => item.selected).map(item => item.uuid)),
+        guardians.getTokens({ ids: tokens.filter(item => item.selected).map(item => item.tokenId) })
+    ]);
 
-    res.json({});
+    zip.folder('schemas')
+    for (let schema of readySchemas) {
+        zip.file(`schemas/${schema.name}.json`, JSON.stringify(schema));
+    }
+
+    zip.folder('tokens')
+    for (let token of tokens) {
+        zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
+    }
+    zip.file(`policy.json`, JSON.stringify(policy));
+
+    const arcStream = zip.generateNodeStream();
+
+    res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
+    res.setHeader('Content-type', 'application/zip');
+    arcStream.pipe(res);
 
     // const data = {
     //     schemas: [
@@ -71,14 +90,4 @@ importExportAPI.post('/export/:policyId/download', async (req: AuthenticatedRequ
     //         }
     //     ]
     // }
-
-    // const zip = new JSZip();
-    // zip.file('schema1.json', '{"test": "this is test1"}');
-    // zip.file('schema2.json', '{"test": "this is test2"}');
-    //
-    // const arcStream = zip.generateNodeStream();
-    //
-    // res.setHeader('Content-disposition', `attachment; filename=${FILENAME}`);
-    // res.setHeader('Content-type', 'application/zip');
-    // arcStream.pipe(res);
 });
