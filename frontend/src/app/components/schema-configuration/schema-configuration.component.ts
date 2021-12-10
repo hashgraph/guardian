@@ -40,7 +40,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 isRef: false,
                 type: 'string',
                 format: undefined,
-                pattern: undefined
+                pattern: undefined,
+                readOnly: true
             }
         ];
         this.defaultFieldsMap["INVERTER"] = [
@@ -52,7 +53,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 isRef: false,
                 type: 'string',
                 format: undefined,
-                pattern: undefined
+                pattern: undefined,
+                readOnly: true
             }
         ];
         this.defaultFieldsMap["MRV"] = [
@@ -64,7 +66,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 isRef: false,
                 type: 'string',
                 format: undefined,
-                pattern: undefined
+                pattern: undefined,
+                readOnly: true
             },
             {
                 name: 'policyId',
@@ -74,7 +77,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 isRef: false,
                 type: 'string',
                 format: undefined,
-                pattern: undefined
+                pattern: undefined,
+                readOnly: true
             }
         ];
         this.defaultFieldsMap["TOKEN"] = [];
@@ -215,7 +219,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     const fieldType = "fieldType" + this.fields.length;
                     const fieldRequired = "fieldRequired" + this.fields.length;
                     const fieldArray = "fieldArray" + this.fields.length;
-                    const controlName = new FormControl(field.name, Validators.required);
+                    const controlName = new FormControl(field.description, Validators.required);
                     const controlType = new FormControl(type, Validators.required);
                     const controlRequired = new FormControl(field.required);
                     const controlArray = new FormControl(field.isArray);
@@ -314,14 +318,15 @@ export class SchemaConfigurationComponent implements OnInit {
             const type = this.schemaTypeMap[typeIndex];
             fields.push({
                 name: name,
-                title: '',
-                description: '',
+                title: name,
+                description: name,
                 required: required,
                 isArray: isArray,
                 isRef: type.isRef,
                 type: type.type,
                 format: type.format,
                 pattern: type.pattern,
+                readOnly: false,
             });
         }
         const defaultFields = this.defaultFieldsMap[value.entity];
@@ -337,6 +342,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 type: element.type,
                 format: element.format,
                 pattern: element.pattern,
+                readOnly: true,
             });
         }
         schema.update(fields);

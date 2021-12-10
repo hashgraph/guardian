@@ -9,7 +9,12 @@
             New Schema
         </div>
         <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!schema?.valid">Create</div>
+            <div *ngIf="!scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(schemaControl?.valid && started)">
+                Create
+            </div>
+            <div *ngIf="scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(schemaControl?.valid && started)">
+                Save
+            </div>
         </div>
     </div>
     <div class="g-dialog-body">
