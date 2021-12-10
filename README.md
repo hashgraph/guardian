@@ -78,7 +78,9 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    git clone https://github.com/hashgraph/guardian.git
    ```
-2. Update the following files with your Hedera Testnet account info as indicated. For example:
+2. Update the following files with your Hedera Testnet account info as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+   
+   For example:
 
    in `ui-service/.env`:
 
