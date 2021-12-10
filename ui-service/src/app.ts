@@ -21,7 +21,6 @@ import {authorizationHelper} from './auth/authorizationHelper';
 import {StateContainer} from '@policy-engine/state-container';
 import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
-import multer from 'multer';
 
 const PORT = process.env.PORT || 3002;
 
