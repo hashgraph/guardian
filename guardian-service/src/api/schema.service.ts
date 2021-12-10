@@ -13,7 +13,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
     if (await schemaRepository.count() === 0) {
         const _properties = {
             '@context': {
-                oneOf: [
+                'oneOf': [
                     {
                         type: 'string',
                     },
@@ -24,9 +24,10 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                         }
                     },
                 ],
+                'readOnly': true
             },
-            type: {
-                oneOf: [
+            'type': {
+                'oneOf': [
                     {
                         type: 'string',
                     },
@@ -37,9 +38,11 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                         }
                     },
                 ],
+                'readOnly': true
             },
-            id: {
-                type: 'string',
+            'id': {
+                'type': 'string',
+                'readOnly': true
             }
         };
         const _required = [];
