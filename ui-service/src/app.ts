@@ -21,6 +21,7 @@ import {authorizationHelper} from './auth/authorizationHelper';
 import {StateContainer} from '@policy-engine/state-container';
 import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
+import multer from 'multer';
 
 const PORT = process.env.PORT || 3002;
 
@@ -52,6 +53,11 @@ Promise.all([
     // Init services
     const app = express();
     app.use(express.json());
+    app.use(express.raw({
+        inflate: true,
+        limit: '4096kb',
+        type: 'binary/octet-stream'
+    }));
 
     new Guardians().setChannel(channel);
     new Guardians().registerMRVReceiver(async (data) => {
@@ -71,7 +77,7 @@ Promise.all([
 
     // Config routes
     app.use('/policy/', authorizationHelper, policyGenerator.getRouter());
-    app.use('/api/account/', accountAPI, importExportAPI);
+    app.use('/api/account/', accountAPI);
     app.use('/api/profile/', authorizationHelper, profileAPI);
     app.use('/api/schema', authorizationHelper, schemaAPI);
     app.use('/api/tokens', authorizationHelper, tokenAPI);

@@ -233,8 +233,15 @@ export class PolicyViewerComponent implements OnInit {
 
       input.onchange = (e: any) => {
         const file = e.target.files[0];
-        console.log(file);
-
+        const reader = new FileReader()
+        reader.readAsArrayBuffer(file);
+        reader.addEventListener('load', (e: any) => {
+          const arrayBuffer = e.target.result;
+          console.log(arrayBuffer);
+          this.policyEngineService.importFileUpload(arrayBuffer).subscribe(() => {
+            console.log('upload complete');
+          });
+        });
       }
     }
 }

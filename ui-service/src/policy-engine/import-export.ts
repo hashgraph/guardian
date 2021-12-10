@@ -91,3 +91,26 @@ importExportAPI.post('/export/:policyId/download', async (req: AuthenticatedRequ
     //     ]
     // }
 });
+
+importExportAPI.put('/import', async (req: AuthenticatedRequest, res: Response) => {
+    const zip = new JSZip();
+
+    const content = await zip.loadAsync(req.body);
+
+    let policyString = await content.files['policy.json'].async('string');
+    const schemaStringArray = await Promise.all(Object.entries(content.files)
+        .filter(file => !file[1].dir)
+        .filter(file => /^schemas\/.+/.test(file[0]))
+        .map(file => file[1].async('string')));
+
+    const tokensStringArray = await Promise.all(Object.entries(content.files)
+        .filter(file => !file[1].dir)
+        .filter(file => /^tokens\/.+/.test(file[0]))
+        .map(file => file[1].async('string')));
+
+    res.json({
+        policy: JSON.parse(policyString),
+        tokens: tokensStringArray.map(item => JSON.parse(item)),
+        schemas: schemaStringArray.map(item => JSON.parse(item))
+    });
+})
