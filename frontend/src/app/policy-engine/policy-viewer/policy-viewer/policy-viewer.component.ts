@@ -200,7 +200,7 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.exportPolicyDownload(element.id, result).subscribe((result:any) => {
+                this.policyEngineService.exportPolicyDownload(element.id, result).subscribe((result: any) => {
                     console.log(result);
                     let downloadLink = document.createElement('a');
                     downloadLink.href = window.URL.createObjectURL(result);
@@ -218,33 +218,32 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     importPolicy() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.click();
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.click();
 
-      input.onchange = (e: any) => {
-        const file = e.target.files[0];
-        const reader = new FileReader()
-        reader.readAsArrayBuffer(file);
-        reader.addEventListener('load', (e: any) => {
-          const arrayBuffer = e.target.result;
-          console.log(arrayBuffer);
-          this.policyEngineService.importFileUpload(arrayBuffer).subscribe(() => {
-            console.log('upload complete');
-            const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
-                width: '950px',
-                panelClass: 'g-dialog',
-                data: {
-                    policy: {}
-                }
+        input.onchange = (e: any) => {
+            const file = e.target.files[0];
+            const reader = new FileReader()
+            reader.readAsArrayBuffer(file);
+            reader.addEventListener('load', (e: any) => {
+                const arrayBuffer = e.target.result;
+                console.log(arrayBuffer);
+                this.policyEngineService.importFileUpload(arrayBuffer).subscribe(() => {
+                    console.log('upload complete');
+                    const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
+                        width: '950px',
+                        panelClass: 'g-dialog',
+                        data: {
+                            policy: {}
+                        }
+                    });
+                    dialogRef.afterClosed().subscribe(async (result) => {
+                        if (result) {
+                        }
+                    });
+                });
             });
-            dialogRef.afterClosed().subscribe(async (result) => {
-                if (result) {
-                }
-            });
-          });
-        });
-      }
+        }
     }
-
 }
