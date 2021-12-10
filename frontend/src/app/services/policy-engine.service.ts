@@ -175,4 +175,12 @@ export class PolicyEngineService {
       responseType: 'blob'
     });
   }
+
+  public importFileUpload(policyFile: any): Observable<any> {
+    return this.http.put('api/package/import', policyFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
+  }
 }

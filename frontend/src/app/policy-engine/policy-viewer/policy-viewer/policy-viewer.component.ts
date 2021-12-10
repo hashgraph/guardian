@@ -218,13 +218,19 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     importPolicy() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.click();
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.click();
 
-        input.onchange = (e: any) => {
-            const file = e.target.files[0];
-            console.log(file);
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        const reader = new FileReader()
+        reader.readAsArrayBuffer(file);
+        reader.addEventListener('load', (e: any) => {
+          const arrayBuffer = e.target.result;
+          console.log(arrayBuffer);
+          this.policyEngineService.importFileUpload(arrayBuffer).subscribe(() => {
+            console.log('upload complete');
             const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
                 width: '950px',
                 panelClass: 'g-dialog',
@@ -236,6 +242,9 @@ export class PolicyViewerComponent implements OnInit {
                 if (result) {
                 }
             });
-        }
+          });
+        });
+      }
     }
+
 }
