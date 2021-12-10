@@ -44,9 +44,8 @@
                     <div class="field-name">
                         <mat-checkbox [(ngModel)]="item.selected" color="primary"></mat-checkbox>
                     </div>
-                    <div class="field-value">{{item.tokenId}}</div>
-                    <div class="field-value">{{item.tokenName}} ({{policy.tokenSymbol}})</div>
-                    <div class="field-value">{{item.tokenName}}</div>
+                    <div class="field-value">{{item.tokenId}} </div>
+                    <div class="field-value">{{item.tokenName}} ({{item.tokenSymbol}})</div>
                 </div>
                 <div class="field-keys">
                     <mat-checkbox  [(ngModel)]="item.adminKey" color="primary">Admin Key</mat-checkbox>

@@ -45,6 +45,7 @@ form {
 }
 .field-value {
     display: inline-block;
+    margin-right: 8px;
 }
 
 .field-header {

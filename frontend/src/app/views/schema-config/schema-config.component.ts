@@ -53,8 +53,6 @@ export class SchemaConfigComponent implements OnInit {
         this.loading = true;
         this.profileService.getCurrentState().subscribe((profile: ISession) => {
             this.isConfirmed = !!profile && profile.state == UserState.CONFIRMED;
-            //TEST VALUE
-            this.isConfirmed = true;
             if (this.isConfirmed) {
                 this.loadSchemes();
             } else {
