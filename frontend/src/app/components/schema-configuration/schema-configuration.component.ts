@@ -202,16 +202,11 @@ export class SchemaConfigurationComponent implements OnInit {
                     entity: this.value.entity,
                     fields: {}
                 });
-                const defaultFields = this.defaultFieldsMap[this.value.entity] || [];
-                const defaultFieldsMap: any = {};
-                for (let index = 0; index < defaultFields.length; index++) {
-                    defaultFieldsMap[defaultFields[index].name] = true;
-                }
                 const fields = this.value.fields;
                 this.fields = [];
                 for (let index = 0; index < fields.length; index++) {
                     const field = fields[index];
-                    if (defaultFieldsMap[field.name]) {
+                    if (field.readOnly) {
                         continue;
                     }
                     const type = this.getType(field);

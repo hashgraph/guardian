@@ -7,7 +7,7 @@
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>
                         <span *ngIf="item.required" class="required-field">*</span>
-                        {{item.name}}:
+                        {{item.description}}:
                     </mat-label>
                     <input matInput [formControlName]="item.name" >
                 </mat-form-field>
@@ -16,7 +16,7 @@
             <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
                 <mat-label class="group-label">
                     <span *ngIf="item.required" class="required-field">*</span>
-                    {{item.name}}:
+                    {{item.description}}:
                 </mat-label>
                 <app-schema-form 
                     *ngIf="item.control"
@@ -32,7 +32,7 @@
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
                 <mat-label class="array-label">
                     <span *ngIf="item.required" class="required-field">*</span>
-                    {{item.name}}:
+                    {{item.description}}:
                 </mat-label>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item" 
                     [attr.index]="listItem.index"
@@ -40,7 +40,7 @@
                     [formGroup]="item.control">
                     <div class="form-field">
                         <mat-form-field class="example-full-width" appearance="outline">
-                            <mat-label>{{listItem.name}} {{listItem.index}}:</mat-label>
+                            <mat-label>{{listItem.description}} ({{listItem.index}}):</mat-label>
                             <input matInput [formControl]="listItem.control">
                         </mat-form-field>
                     </div>
@@ -54,13 +54,13 @@
             <div *ngIf="item.isArray && item.isRef" class="form-field-group">
                 <mat-label class="array-label">
                     <span *ngIf="item.required" class="required-field">*</span>
-                    {{item.name}}:
+                    {{item.description}}:
                 </mat-label>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item" 
                     [attr.index]="listItem.index"
                     [attr.required]="item.required">
                     <div class="form-field-group">
-                        <mat-label class="group-label">{{item.name}} {{listItem.index}}:</mat-label>
+                        <mat-label class="group-label">{{item.description}} ({{listItem.index}}):</mat-label>
                         <app-schema-form 
                             [formGroup]="listItem.control" 
                             [fields]="item.fields" 
@@ -76,31 +76,5 @@
             </div>
         </div>
 
-        <!-- <mat-form-field *ngIf="!item.group && !item.hide" class="example-full-width" appearance="outline" required>
-            <mat-label>{{item.title}}:</mat-label>
-            <input matInput [formControlName]="item.name" [readonly]="item.readonly">
-        </mat-form-field>
-
-        <div *ngIf="item.group" class="group">
-            <mat-label class="group-label">{{item.title}}:</mat-label>
-            <div class="group-form">
-                <app-schema-form [formGroup]="item.group" [fields]="item.fields" [readonly]="readonly" [hide]="hide"
-                    [schemaName]="item.schemaName">
-                </app-schema-form>
-            </div>
-        </div> -->
     </ng-container>
-
 </form>
-
-<!-- 
-name: name,
-title: title,
-description: description,
-type: type,
-format: format,
-pattern: pattern,
-required: !!required[name],
-isRef: isRef,
-isArray: isArray,
-fields: null, -->
