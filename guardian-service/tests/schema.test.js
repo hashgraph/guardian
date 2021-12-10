@@ -495,28 +495,46 @@ describe('Schema service', function () {
             })
         });
 
+        const s1e = {
+            ...s1,
+            'relationships': []
+        }
+
         const export1 = await channel.run(EXPORT_SCHEMES, ['0fae2a20-0db2-4835-bab9-99b4effbe03e']);
-        assert.deepEqual(export1, [s1], 'Export 1');
+        assert.deepEqual(export1, [s1e], 'Export 1');
+
+        const s2e = {
+            ...s2,
+            'relationships': ['#ad2de08d-a43c-43c7-a458-3f0e8db65e8f']
+        }
+
+        const s3e = {
+            ...s3,
+            'relationships': []
+        }
 
         const export2 = await channel.run(EXPORT_SCHEMES, ['0fae2a20-0db2-4835-bab9-99b4effbe03e', '59b934e2-9eb6-4395-9b85-ad3624f1f752']);
-        assert.deepEqual(export2, [s1, s2, s3], 'Export 2');
+        assert.deepEqual(export2, [s1e, s2e, s3e], 'Export 2');
 
         schemas.length = 0;
 
         const s1i = {
             ...s1,
             '_id': '4',
-            'id': '4'
+            'id': '4',
+            'relationships': []
         }
         const s2i = {
             ...s2,
             '_id': '5',
-            'id': '5'
+            'id': '5',
+            'relationships': ['#ad2de08d-a43c-43c7-a458-3f0e8db65e8f']
         }
         const s3i = {
             ...s3,
             '_id': '6',
-            'id': '6'
+            'id': '6',
+            'relationships': []
         }
         const import1 = await channel.run(IMPORT_SCHEMA, export1);
         assert.deepEqual(import1, [s1i], 'Import 1');
