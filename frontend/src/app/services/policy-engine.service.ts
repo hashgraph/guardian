@@ -165,4 +165,12 @@ export class PolicyEngineService {
   public fromYAML(yaml: string): Observable<any> {
     return this.http.post<any>(`/policy/from-yaml`, { yaml });
   }
+
+  public exportPolicy(policyId: string): Observable<void> {
+    return this.http.get<any>(`/api/package/export/${policyId}`);
+  }
+
+  public exportPolicyDownload(policyId: string, data:any): Observable<void> {
+    return this.http.post<any>(`/api/package/export/${policyId}/download`, data);
+  }
 }

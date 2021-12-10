@@ -69,6 +69,10 @@
     font-size: 20px;
 }
 
+.table .mat-column-export {
+    width: 110px;
+}
+
 .table .mat-column-edit {
     width: 110px;
 }

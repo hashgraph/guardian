@@ -35,14 +35,23 @@ export const tokenAPI = async function (
      * @returns {IToken[]} - tokens
      */
     channel.response(MessageAPI.GET_TOKENS, async (msg, res) => {
-        if (msg.payload && msg.payload.tokenId) {
-            const reqObj: any = { where: {} };
-            reqObj.where['tokenId'] = { $eq: msg.payload.tokenId }
-            const tokens: IToken[] = await tokenRepository.find(reqObj);
-            res.send(tokens);
-        } else {
-            const tokens: IToken[] = await tokenRepository.find();
-            res.send(tokens);
+        if (msg.payload) {
+            if (msg.payload.tokenId) {
+                const reqObj: any = { where: {} };
+                reqObj.where['tokenId'] = { $eq: msg.payload.tokenId }
+                const tokens: IToken[] = await tokenRepository.find(reqObj);
+                res.send(tokens);
+                return;
+            }
+            if (msg.payload.ids) {
+                const reqObj: any = { where: {} };
+                reqObj.where['tokenId'] = { $in: msg.payload.ids }
+                const tokens: IToken[] = await tokenRepository.find(reqObj);
+                res.send(tokens);
+                return;
+            }
         }
+        const tokens: IToken[] = await tokenRepository.find();
+        res.send(tokens);
     })
 }

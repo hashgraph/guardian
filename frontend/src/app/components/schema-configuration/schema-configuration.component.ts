@@ -181,7 +181,7 @@ export class SchemaConfigurationComponent implements OnInit {
                         value: index
                     });
                     this.schemaTypeMap[index] = {
-                        type: '#' + this.schemes[i].name,
+                        type: this.schemes[i].ref,
                         format: undefined,
                         pattern: undefined,
                         isRef: true,
