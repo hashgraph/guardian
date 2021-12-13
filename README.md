@@ -216,6 +216,12 @@ After successfully launching your application, you can find the generated Swagge
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+## Postman Collection
+
+Postman Collection that covers all available API endpoints could be found [here](https://github.com/hashgraph/guardian/tree/main/ui-service/api/Guardian%20API.postman_collection.json).
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Demo Usage Guide
 
 Navigate to the `/demo artifacts` folder for the Demo Usage Guide or [click here](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts).
