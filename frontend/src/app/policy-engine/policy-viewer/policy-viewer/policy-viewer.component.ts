@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TokenService } from 'src/app/services/token.service';
+import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../export-import-dialog/export-import-dialog.component';
 import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
 
 /**
@@ -25,11 +26,12 @@ export class PolicyViewerComponent implements OnInit {
     columns: string[] = [];
     columnsRole = {
         "ROOT_AUTHORITY": [
-            'id',
             'name',
+            'id',
             'version',
             'description',
             'status',
+            'export',
             'edit',
             'open',
             'operation'
@@ -77,7 +79,7 @@ export class PolicyViewerComponent implements OnInit {
             const isLogin = !!user;
             this.isConfirmed = isLogin ? user.did : false;
             this.role = isLogin ? user.role : null;
-            if(this.isConfirmed) {
+            if (this.isConfirmed) {
                 if (this.policyId) {
                     this.loadPolicyById(this.policyId);
                 } else {
@@ -99,8 +101,8 @@ export class PolicyViewerComponent implements OnInit {
             this.policyEngineService.getAllPolicy()
         ]).subscribe((value) => {
             this.policy = value[0];
-            if(value[1]) {
-                this.policyInfo =  value[1].find(e=>e.id == policyId);
+            if (value[1]) {
+                this.policyInfo = value[1].find(e => e.id == policyId);
             } else {
                 this.policyInfo = null;
             }
@@ -185,6 +187,64 @@ export class PolicyViewerComponent implements OnInit {
         for (let i = 0; i < this.policies.length; i++) {
             const element = this.policies[i];
             element.topicURL = `https://testnet.dragonglass.me/hedera/topics/${element.topicId}`
+        }
+    }
+
+    exportPolicy(element: any) {
+        this.loading = true;
+        this.policyEngineService.exportPolicy(element.id).subscribe((data: any) => {
+            data.schemas.forEach((s: any) => { s.selected = true });
+            data.tokens.forEach((s: any) => { s.selected = true });
+            this.policyEngineService.exportPolicyDownload(element.id, data).subscribe((result: any) => {
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(result);
+                downloadLink.setAttribute('download', 'policy.zip');
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    importPolicy() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.click();
+        input.onchange = (e: any) => {
+            const file = e.target.files[0];
+            const reader = new FileReader()
+            reader.readAsArrayBuffer(file);
+            reader.addEventListener('load', (e: any) => {
+                const arrayBuffer = e.target.result;
+                this.loading = true;
+                this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
+                    this.loading = false;
+                    const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
+                        width: '950px',
+                        panelClass: 'g-dialog',
+                        data: {
+                            policy: data
+                        }
+                    });
+                    dialogRef.afterClosed().subscribe(async (result) => {
+                        if (result) {
+                            this.loading = true;
+                            this.policyEngineService.importUpload(data).subscribe((policies) => {
+                                this.updatePolicy(policies);
+                                setTimeout(() => {
+                                    this.loading = false;
+                                }, 500);
+                            });
+                        }
+                    });
+                });
+            });
         }
     }
 }

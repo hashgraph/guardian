@@ -13,9 +13,11 @@ import { Schema } from 'interfaces';
     styleUrls: ['./schema-dialog.component.css']
 })
 export class SchemaDialog {
-    @ViewChild('document') document!: SchemaConfigurationComponent;
+    @ViewChild('document') schemaControl!: SchemaConfigurationComponent;
+
     schemes: Schema[];
     scheme: Schema;
+    started: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
@@ -25,7 +27,22 @@ export class SchemaDialog {
         this.scheme = data.scheme || null;
     }
 
+    ngOnInit(): void {
+        setTimeout(() => {
+            this.started = true;
+        });
+    }
+
     getDocument(schema: Schema | null) {
+        this.dialogRef.close(schema);
+    }
+
+    onClose() {
+        this.dialogRef.close(null);
+    }
+
+    onCreate() {
+        const schema = this.schemaControl?.getSchema();
         this.dialogRef.close(schema);
     }
 }

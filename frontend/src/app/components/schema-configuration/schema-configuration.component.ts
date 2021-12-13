@@ -13,7 +13,6 @@ import { Schema, SchemaField } from 'interfaces';
 export class SchemaConfigurationComponent implements OnInit {
     @Input('schemes') schemes!: Schema[];
     @Input('value') value!: Schema;
-    @Output('document') document = new EventEmitter<Schema | null>();
 
     started = false;
     fieldsForm!: FormGroup;
@@ -41,7 +40,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 isRef: false,
                 type: 'string',
                 format: undefined,
-                pattern: undefined
+                pattern: undefined,
+                readOnly: true
             }
         ];
         this.defaultFieldsMap["INVERTER"] = [
@@ -53,7 +53,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 isRef: false,
                 type: 'string',
                 format: undefined,
-                pattern: undefined
+                pattern: undefined,
+                readOnly: true
             }
         ];
         this.defaultFieldsMap["MRV"] = [
@@ -65,7 +66,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 isRef: false,
                 type: 'string',
                 format: undefined,
-                pattern: undefined
+                pattern: undefined,
+                readOnly: true
             },
             {
                 name: 'policyId',
@@ -75,7 +77,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 isRef: false,
                 type: 'string',
                 format: undefined,
-                pattern: undefined
+                pattern: undefined,
+                readOnly: true
             }
         ];
         this.defaultFieldsMap["TOKEN"] = [];
@@ -158,6 +161,7 @@ export class SchemaConfigurationComponent implements OnInit {
         this.defaultFields = new FormControl("NONE", Validators.required);
         this.dataForm = this.fb.group({
             name: ['', Validators.required],
+            description: [''],
             entity: this.defaultFields,
             fields: this.fieldsForm
         });
@@ -181,7 +185,7 @@ export class SchemaConfigurationComponent implements OnInit {
                         value: index
                     });
                     this.schemaTypeMap[index] = {
-                        type: '#' + this.schemes[i].name,
+                        type: this.schemes[i].ref,
                         format: undefined,
                         pattern: undefined,
                         isRef: true,
@@ -194,19 +198,15 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.fieldsForm.reset();
                 this.dataForm.setValue({
                     name: this.value.name,
+                    description: this.value.description,
                     entity: this.value.entity,
                     fields: {}
                 });
-                const defaultFields = this.defaultFieldsMap[this.value.entity] || [];
-                const defaultFieldsMap: any = {};
-                for (let index = 0; index < defaultFields.length; index++) {
-                    defaultFieldsMap[defaultFields[index].name] = true;
-                }
                 const fields = this.value.fields;
                 this.fields = [];
                 for (let index = 0; index < fields.length; index++) {
                     const field = fields[index];
-                    if (defaultFieldsMap[field.name]) {
+                    if (field.readOnly) {
                         continue;
                     }
                     const type = this.getType(field);
@@ -214,7 +214,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     const fieldType = "fieldType" + this.fields.length;
                     const fieldRequired = "fieldRequired" + this.fields.length;
                     const fieldArray = "fieldArray" + this.fields.length;
-                    const controlName = new FormControl(field.name, Validators.required);
+                    const controlName = new FormControl(field.description, Validators.required);
                     const controlType = new FormControl(type, Validators.required);
                     const controlRequired = new FormControl(field.required);
                     const controlArray = new FormControl(field.isArray);
@@ -297,15 +297,11 @@ export class SchemaConfigurationComponent implements OnInit {
         this.fieldsForm.removeControl(item.fieldArray);
     }
 
-    onNoClick(): void {
-        this.document.emit(null);
-    }
-
-    onSubmit() {
+    public getSchema() {
         const value = this.dataForm.value;
         const schema = new Schema();
-        const schemaName = value.name.replace(/\s/ig, "_");
-        schema.name = schemaName;
+        schema.name = value.name;
+        schema.description = value.description;
         schema.entity = value.entity;
         const fields: SchemaField[] = [];
         for (let i = 0; i < this.fields.length; i++) {
@@ -317,14 +313,15 @@ export class SchemaConfigurationComponent implements OnInit {
             const type = this.schemaTypeMap[typeIndex];
             fields.push({
                 name: name,
-                title: '',
-                description: '',
+                title: name,
+                description: name,
                 required: required,
                 isArray: isArray,
                 isRef: type.isRef,
                 type: type.type,
                 format: type.format,
                 pattern: type.pattern,
+                readOnly: false,
             });
         }
         const defaultFields = this.defaultFieldsMap[value.entity];
@@ -340,9 +337,14 @@ export class SchemaConfigurationComponent implements OnInit {
                 type: element.type,
                 format: element.format,
                 pattern: element.pattern,
+                readOnly: true,
             });
         }
         schema.update(fields);
-        this.document.emit(schema);
+        return schema;
+    }
+
+    public get valid() {
+        return this.dataForm.valid;
     }
 }

@@ -47,3 +47,110 @@ body {
 ::ng-deep .toast-container .ngx-toastr {
     width: 450px;
 }
+
+
+::ng-deep .g-dialog {
+    mat-dialog-container {
+        padding: 0px;
+    }
+    
+    .g-dialog-header {
+        height: 90px;
+        padding: 22px;
+        box-sizing: border-box;
+        border-radius: 30px;
+        box-shadow: 0px 0px 7px 0px rgb(0 0 0 / 20%);
+        margin-bottom: 5px;
+        display: flex;
+        user-select: none;
+
+        .g-dialog-cancel {
+            height: 46px;
+            width: 46px;
+            margin-right: 12px;
+        }
+
+        .g-dialog-title {
+            height: 46px;
+            flex: 1;
+            padding: 14px 0px;
+            box-sizing: border-box;
+            color: #646464;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .g-dialog-actions {
+            height: 46px;
+            flex: 0;
+        }
+
+        .g-dialog-cancel-btn {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #969696;
+
+            &:hover {
+                background: #f7f7f7;
+            }
+
+            mat-icon {
+                height: 28px;
+                width: 28px;
+                margin: 4px;
+                pointer-events: none;
+                font-size: 28px;
+            }
+        }
+
+        .g-dialog-actions-btn {
+            height: 46px;
+            font-weight: 500;
+            font-size: 20px;
+            color: #fff;
+            border-radius: 23px;
+            padding: 13px 20px;
+            box-sizing: border-box;
+            min-width: 250px;
+            text-align: center;
+            cursor: pointer;
+            background-color: var(--button-primary-color);
+
+            &[disabled="true"] {
+                background-color: #5a5a5a !important;
+                pointer-events: none;
+            }
+
+            &:hover {
+                background-color: var(--button-primary-color-hover);
+            }
+        }
+    }
+    
+    .g-dialog-body {
+        padding: 12px 14px 0px 20px;
+        max-height: calc(100vh - 300px);
+        overflow-y: auto;
+        margin-top: 10px;
+        margin-bottom: 30px;
+        margin-right: 8px;
+        margin-left: 2px;
+    }
+}
+
+::ng-deep body .mat-form-field-wrapper {
+    padding-bottom: 12px;
+}
+
+::ng-deep body .mat-checkbox-checked.mat-primary .mat-checkbox-background {
+    background-color: var(--button-primary-color);
+}
+
+::ng-deep body .mat-checkbox-frame {
+    border-width: 1px;
+    border-color: rgb(0 0 0 / 40%);
+}

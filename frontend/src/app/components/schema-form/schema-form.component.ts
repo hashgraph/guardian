@@ -61,7 +61,7 @@ export class SchemaFormComponent implements OnInit {
     addGroup(item: any) {
         item.control = new FormGroup({});
         setTimeout(() => {
-            this.options?.addControl(item.name, item.control);
+            this.options?.addControl(item.d, item.control);
             this.change.emit();
         });
     }
@@ -99,6 +99,7 @@ export class SchemaFormComponent implements OnInit {
             }
             const item: any = {
                 name: field.name,
+                description: field.description,
                 required: field.required,
                 isArray: field.isArray,
                 isRef: field.isRef,

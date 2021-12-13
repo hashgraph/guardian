@@ -21,7 +21,7 @@ export class Policy {
 
     @Column()
     topicDescription: string;
-    
+
     @Column()
     config: Object;
 
@@ -37,7 +37,9 @@ export class Policy {
     @Column()
     topicId: string;
 
-    @Column()
+    @Column({
+        unique: true
+    })
     policyTag: string;
 
     @BeforeInsert()
