@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { NestedTreeControl } from '@angular/cdk/tree';
-import { BlockNode, TreeDataSource } from '../../data-source/tree-data-source';
+import { BlockNode } from '../../data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, Token } from 'interfaces';
+import { Schema, SchemaStatus, Token } from 'interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,6 +28,9 @@ const allPermissions: any = [
     },
 ];
 
+/**
+ * The page for editing the policy and blocks.
+ */
 @Component({
     selector: 'app-policy-configuration',
     templateUrl: './policy-configuration.component.html',
@@ -92,10 +94,12 @@ export class PolicyConfigurationComponent implements OnInit {
             const schemes = data[0] || [];
             const tokens = data[1] || [];
             const policy = data[2];
-            this.schemes = Schema.map(schemes);
+            this.schemes = Schema.mapRef(schemes) || [];
+            this.schemes = this.schemes.filter(s=>s.status == SchemaStatus.PUBLISHED);
             this.schemes.unshift({
                 type: ""
             } as any);
+
             this.tokens = tokens.map((e: any) => new Token(e));
             this.setPolicy(policy);
             setTimeout(() => {
@@ -207,8 +211,8 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    savePolicy() {
-        this.onView('blocks');
+    async savePolicy() {
+        await this.onView('blocks');
         const root = this.blocks[0];
         if (root) {
             this.loading = true;
@@ -261,10 +265,6 @@ export class PolicyConfigurationComponent implements OnInit {
         } else {
             this.colGroup2 = !this.colGroup2;
         }
-    }
-
-    restartService() {
-        this.policyEngineService.restartService().subscribe(console.log);
     }
 
     async onView(type: string) {
@@ -370,6 +370,9 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         if (blockType == 'interfaceDocumentsSource') {
             return 'table_view';
+        }
+        if (blockType == 'informationBlock') {
+            return 'info';
         }
         if (blockType == 'requestVcDocument') {
             return 'dynamic_form';

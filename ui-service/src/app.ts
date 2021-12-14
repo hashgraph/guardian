@@ -19,6 +19,8 @@ import {createConnection, getMongoRepository} from 'typeorm';
 import WebSocket from 'ws';
 import {authorizationHelper} from './auth/authorizationHelper';
 import {StateContainer} from '@policy-engine/state-container';
+import {swaggerAPI} from '@api/service/swagger';
+import {importExportAPI} from '@policy-engine/import-export';
 
 const PORT = process.env.PORT || 3002;
 
@@ -50,11 +52,16 @@ Promise.all([
     // Init services
     const app = express();
     app.use(express.json());
+    app.use(express.raw({
+        inflate: true,
+        limit: '4096kb',
+        type: 'binary/octet-stream'
+    }));
 
     new Guardians().setChannel(channel);
-    new Guardians().registerMRVReciever(async (data) => {
+    new Guardians().registerMRVReceiver(async (data) => {
         console.log(data);
-        await StateContainer.RecieveExternalData(data);
+        await StateContainer.ReceiveExternalData(data);
     });
 
     const server = createServer(app);
@@ -73,7 +80,9 @@ Promise.all([
     app.use('/api/profile/', authorizationHelper, profileAPI);
     app.use('/api/schema', authorizationHelper, schemaAPI);
     app.use('/api/tokens', authorizationHelper, tokenAPI);
+    app.use('/api/package', importExportAPI);
     app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
+    app.use('/api-docs/', swaggerAPI);
     app.use('/', frontendService);
     /////////////////////////////////////////
 
@@ -81,4 +90,3 @@ Promise.all([
         console.log('UI service started on', PORT);
     });
 });
-

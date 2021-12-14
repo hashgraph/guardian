@@ -21,8 +21,12 @@ import {
     TopicCreateTransaction,
     TransactionResponse,
     TransferTransaction
-} from "@hashgraph/sdk";
+} from '@hashgraph/sdk';
+import { MAX_FEE } from './max-fee';
 
+/**
+ * Contains methods to simplify work with hashgraph sdk
+ */
 export class HederaSDKHelper {
     public readonly client: Client;
 
@@ -30,16 +34,43 @@ export class HederaSDKHelper {
         this.client = client
     }
 
+    /**
+     * Set the account that will, by default, pay for transactions and queries built with this client.
+     * 
+     * @param {string | AccountId} operatorId - Operator Id
+     * @param {string | PrivateKey} operatorKey - Operator Private Key
+     */
     public setOperator(operatorId: string | AccountId, operatorKey: string | PrivateKey): HederaSDKHelper {
         this.client.setOperator(operatorId, operatorKey);
         return this;
     }
 
+    /**
+     * Clear current Operator Account
+     */
     public clearOperator(): HederaSDKHelper {
         this.client.setOperator(null, null);
         return this;
     }
 
+    /**
+     * Create new token (TokenCreateTransaction)
+     * 
+     * @param {string} name - Token name
+     * @param {string} symbol - Token symbol
+     * @param {boolean} nft - Fungible or NonFungible Token
+     * @param {number} decimals - Decimals
+     * @param {number} initialSupply - Initial Supply
+     * @param {string} tokenMemo - Memo field
+     * @param {any} treasury - treasury account
+     * @param {PrivateKey} [adminKey] - set admin key 
+     * @param {PrivateKey} [kycKey] - set kyc key 
+     * @param {PrivateKey} [freezeKey] - set freeze key 
+     * @param {PrivateKey} [wipeKey] - set wipe key 
+     * @param {PrivateKey} [supplyKey] - set supply key 
+     * 
+     * @returns {string} - Token id
+     */
     public async newToken(
         name: string,
         symbol: string,
@@ -64,7 +95,7 @@ export class HederaSDKHelper {
             .setTreasuryAccountId(treasury.id)
             .setDecimals(decimals)
             .setInitialSupply(initialSupply)
-            .setMaxTransactionFee(new Hbar(10))
+            .setMaxTransactionFee(new Hbar(MAX_FEE))
             .setTokenMemo(tokenMemo);
 
         if (adminKey) {
@@ -94,6 +125,13 @@ export class HederaSDKHelper {
         return tokenId.toString();
     }
 
+    /**
+     * Get balance account (AccountBalanceQuery)
+     * 
+     * @param {string | AccountId} accountId - Account Id
+     * 
+     * @returns {string} - balance
+     */
     public async balance(accountId: string | AccountId): Promise<string> {
         const client = this.client;
         const query = new AccountBalanceQuery()
@@ -102,6 +140,13 @@ export class HederaSDKHelper {
         return accountBalance.hbars.toString();
     }
 
+    /**
+     * Get associate tokens and balance (AccountInfoQuery)
+     * 
+     * @param {string | AccountId} accountId - Account Id
+     * 
+     * @returns {any} - associate tokens and balance
+     */
     public async accountInfo(accountId?: string | AccountId): Promise<any> {
         const client = this.client;
         const info = await new AccountInfoQuery()
@@ -123,6 +168,15 @@ export class HederaSDKHelper {
         return tokens;
     }
 
+    /**
+     * Associate tokens with account (TokenAssociateTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string} id - Account Id
+     * @param {string} key - Account Private Id
+     * 
+     * @returns {boolean} - Status
+     */
     public async associate(tokenId: string | TokenId, id: string, key: string) {
         const client = this.client;
         const accountId = AccountId.fromString(id);
@@ -138,6 +192,15 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+    /**
+     * Dissociate tokens with account (TokenDissociateTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string} id - Account Id
+     * @param {string} key - Account Private Id
+     * 
+     * @returns {boolean} - Status
+     */
     public async dissociate(tokenId: string | TokenId, id: string, key: string) {
         const client = this.client;
         const accountId = AccountId.fromString(id);
@@ -153,6 +216,15 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+    /**
+     * Freezes transfers of the specified token for the account (TokenFreezeTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string} accountId - Account Id
+     * @param {string} freezeKey - Token freeze key
+     * 
+     * @returns {boolean} - Status
+     */
     public async freeze(tokenId: string | TokenId, accountId: string, freezeKey: string) {
         const client = this.client;
         const _freezeKey = PrivateKey.fromString(freezeKey);
@@ -167,6 +239,15 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+    /**
+     * Unfreezes transfers of the specified token for the account (TokenUnfreezeTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string} accountId - Account Id
+     * @param {string} freezeKey - Token freeze key
+     * 
+     * @returns {boolean} - Status
+     */
     public async unfreeze(tokenId: string | TokenId, accountId: string, freezeKey: string) {
         const client = this.client;
         const _freezeKey = PrivateKey.fromString(freezeKey);
@@ -181,6 +262,15 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+    /**
+     * Grants KYC to the account for the given token (TokenGrantKycTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string} accountId - Account Id
+     * @param {string} kycKey - Token KYC key
+     * 
+     * @returns {boolean} - Status
+     */
     public async grantKyc(tokenId: TokenId, accountId: string, kycKey: string) {
         const client = this.client;
         const _kycKey = PrivateKey.fromString(kycKey);
@@ -195,6 +285,15 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+    /**
+     * Revokes the KYC to the account for the given token (TokenRevokeKycTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string} accountId - Account Id
+     * @param {string} kycKey - Token KYC key
+     * 
+     * @returns {boolean} - Status
+     */
     public async revokeKyc(tokenId: TokenId, accountId: string, kycKey: string) {
         const client = this.client;
         const _kycKey = PrivateKey.fromString(kycKey);
@@ -209,6 +308,17 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+
+    /**
+     * Minting fungible token allows you to increase the total supply of the token (TokenMintTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string | PrivateKey} supplyKey - Token Supply key
+     * @param {number} amount - amount
+     * @param {string} [transactionMemo] - Memo field
+     * 
+     * @returns {boolean} - Status
+     */
     public async mint(
         tokenId: string | TokenId,
         supplyKey: string | PrivateKey,
@@ -229,6 +339,17 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+    /**
+     * Minting a non-fungible token creates an NFT with 
+     * its unique metadata for the class of NFTs defined by the token ID (TokenMintTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string | PrivateKey} supplyKey - Token Supply key
+     * @param {Uint8Array[]} data - token data
+     * @param {string} [transactionMemo] - Memo field
+     * 
+     * @returns {number[]} - serials
+     */
     public async mintNFT(
         tokenId: string | TokenId,
         supplyKey: string | PrivateKey,
@@ -253,6 +374,17 @@ export class HederaSDKHelper {
         }
     }
 
+    /**
+     * Wipes the provided amount of fungible tokens from the specified account (TokenWipeTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string | AccountId} targetId - Target Account Id
+     * @param {string | PrivateKey} wipeKey - Token Wipe key
+     * @param {number} amount - amount
+     * @param {string} [transactionMemo] - Memo field
+     * 
+     * @returns {boolean} - Status
+     */
     public async wipe(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -275,6 +407,18 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+    /**
+     * Transfer tokens from some accounts to other accounts (TransferTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string | AccountId} targetId - Target Account Id
+     * @param {string | AccountId} scoreId - Treasury Account Id
+     * @param {string | PrivateKey} scoreKey - Token Score key
+     * @param {number} amount - amount
+     * @param {string} [transactionMemo] - Memo field
+     * 
+     * @returns {boolean} - Status
+     */
     public async transfer(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -297,6 +441,18 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
+    /**
+     * Transfer non-fungible token from some accounts to other accounts (TransferTransaction)
+     * 
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string | AccountId} targetId - Target Account Id
+     * @param {string | AccountId} scoreId - Treasury Account Id
+     * @param {string | PrivateKey} scoreKey - Token Score key
+     * @param {number[]} serials - serials
+     * @param {string} [transactionMemo] - Memo field
+     * 
+     * @returns {boolean} - Status
+     */
     public async transferNFT(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -324,7 +480,13 @@ export class HederaSDKHelper {
         return transactionStatus == Status.Success;
     }
 
-
+    /**
+     * Create new Account (AccountCreateTransaction)
+     * 
+     * @param {number} initialBalance - Initial Balance
+     * 
+     * @returns {any} - Account Id and Account Private Key
+     */
     public async newAccount(initialBalance: number): Promise<{ id: AccountId; key: PrivateKey; }> {
         const client = this.client;
         const newPrivateKey = PrivateKey.generate();
@@ -340,11 +502,18 @@ export class HederaSDKHelper {
         };
     }
 
+    /**
+     * Create new Topic (TopicCreateTransaction)
+     * 
+     * @param {PrivateKey | string} [key] - Topic Admin Key
+     * 
+     * @returns {string} - Topic Id
+     */
     public async newTopic(key: PrivateKey | string | null, topicMemo?: string): Promise<string> {
         const client = this.client;
 
         const topicCreateTransaction = new TopicCreateTransaction()
-            .setMaxTransactionFee(new Hbar(2))
+            .setMaxTransactionFee(new Hbar(MAX_FEE))
 
         if (topicMemo) {
             topicCreateTransaction.setTopicMemo(topicMemo);

@@ -1,19 +1,80 @@
 <form *ngIf="options" [formGroup]="options">
-
     <ng-container *ngFor="let item of fields">
-        <mat-form-field *ngIf="!item.group && !item.hide" class="example-full-width" appearance="outline" required>
-            <mat-label>{{item.title}}:</mat-label>
-            <input matInput [formControlName]="item.name" [readonly]="item.readonly">
-        </mat-form-field>
 
-        <div *ngIf="item.group" class="group">
-            <mat-label class="group-label">{{item.title}}:</mat-label>
-            <div class="group-form">
-                <app-schema-form [formGroup]="item.group" [contextDocument]="item.contextDocument" [readonly]="readonly"
-                    [hide]="hide" [type]="item.type">
+        <div *ngIf="!item.hide" class="form-field-container">
+
+            <div *ngIf="!item.isArray && !item.isRef" class="form-field">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>
+                        <span *ngIf="item.required" class="required-field">*</span>
+                        {{item.description}}:
+                    </mat-label>
+                    <input matInput [formControlName]="item.name" >
+                </mat-form-field>
+            </div>
+
+            <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
+                <mat-label class="group-label">
+                    <span *ngIf="item.required" class="required-field">*</span>
+                    {{item.description}}:
+                </mat-label>
+                <app-schema-form 
+                    *ngIf="item.control"
+                    [formGroup]="item.control" 
+                    [fields]="item.fields" 
+                    [context]="item.context"
+                    [private-fields]="hide">
                 </app-schema-form>
+                <div *ngIf="!item.control" class="add-link" (click)="addGroup(item)">+ Add</div>
+                <div *ngIf="item.control && !item.required" class="add-link" (click)="removeGroup(item)">- Remove</div>
+            </div>
+
+            <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
+                <mat-label class="array-label">
+                    <span *ngIf="item.required" class="required-field">*</span>
+                    {{item.description}}:
+                </mat-label>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item" 
+                    [attr.index]="listItem.index"
+                    [attr.required]="item.required"  
+                    [formGroup]="item.control">
+                    <div class="form-field">
+                        <mat-form-field class="example-full-width" appearance="outline">
+                            <mat-label>{{listItem.description}} ({{listItem.index}}):</mat-label>
+                            <input matInput [formControl]="listItem.control">
+                        </mat-form-field>
+                    </div>
+                    <div class="fields-remove" (click)="onRemove(item, listItem)">
+                        <mat-icon>delete</mat-icon>
+                    </div>
+                </div>
+                <div class="add-link" (click)="addItem(item)">+ Add</div>
+            </div>
+
+            <div *ngIf="item.isArray && item.isRef" class="form-field-group">
+                <mat-label class="array-label">
+                    <span *ngIf="item.required" class="required-field">*</span>
+                    {{item.description}}:
+                </mat-label>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item" 
+                    [attr.index]="listItem.index"
+                    [attr.required]="item.required">
+                    <div class="form-field-group">
+                        <mat-label class="group-label">{{item.description}} ({{listItem.index}}):</mat-label>
+                        <app-schema-form 
+                            [formGroup]="listItem.control" 
+                            [fields]="item.fields" 
+                            [context]="item.context" 
+                            [private-fields]="hide">
+                        </app-schema-form>
+                    </div>
+                    <div class="fields-remove" (click)="onRemove(item, listItem)">
+                        <mat-icon>delete</mat-icon>
+                    </div>
+                </div>
+                <div class="add-link" (click)="addItem(item)">+ Add</div>
             </div>
         </div>
-    </ng-container>
 
+    </ng-container>
 </form>

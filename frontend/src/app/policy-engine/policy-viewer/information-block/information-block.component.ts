@@ -1,6 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
+/**
+ * Component for display block of 'informationBlock' types.
+ */
 @Component({
     selector: 'app-information-block',
     templateUrl: './information-block.component.html',
@@ -15,6 +18,10 @@ export class InformationBlockComponent implements OnInit {
     loading: boolean = true;
     socket: any;
     content: string | null = null;
+
+    type: any;
+    title: any;
+    description: any;
 
     constructor(private policyEngineService: PolicyEngineService) {
     }
@@ -60,7 +67,12 @@ export class InformationBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
-            this.content = data.content;
+            const uiMetaData = data.uiMetaData || {};
+
+            this.type = uiMetaData.type;
+            this.title = uiMetaData.title;
+            this.description = uiMetaData.description;
+
             this.isActive = data.isActive;
         } else {
             this.content = null;

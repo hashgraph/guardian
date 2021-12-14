@@ -6,7 +6,7 @@
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.schema" [disabled]="readonly" >
-                <mat-option *ngFor="let schema of schemes" [value]="schema.type">{{schema.type}}</mat-option>
+                <mat-option *ngFor="let schema of schemes" [value]="schema.uuid">{{schema.name}}</mat-option>
             </mat-select>
         </td>
     </tr>
@@ -51,10 +51,6 @@
         </td>
     </tr>
     
-
-
-
-
     <ng-container *ngIf="block.uiMetaData.type == 'page'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>

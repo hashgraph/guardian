@@ -1,8 +1,10 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { SchemaFormComponent } from '../../schema-form/schema-form.component';
+import { Schema } from 'interfaces';
 
+/**
+ * Dialog allowing you to select a file and load schemes.
+ */
 @Component({
     selector: 'import-schema-dialog',
     templateUrl: './import-schema-dialog.component.html',
@@ -15,7 +17,6 @@ export class ImportSchemaDialog {
 
     constructor(
         public dialogRef: MatDialogRef<ImportSchemaDialog>,
-        private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.schemes = data.schemes || [];
@@ -88,12 +89,7 @@ export class ImportSchemaDialog {
     validationSchema(schemes: any[]) {
         for (let i = 0; i < schemes.length; i++) {
             const schema = schemes[i];
-            if (
-                !schema.type ||
-                !schema.entity ||
-                !schema.document ||
-                !schema.document["@id"]
-            ) {
+            if (!Schema.validate(schema)) {
                 return null;
             }
         }
@@ -101,6 +97,6 @@ export class ImportSchemaDialog {
     }
 
     getTitle(schema:any) {
-        return JSON.stringify(schema.document, null, 2);
+        return schema.document;
     }
 }

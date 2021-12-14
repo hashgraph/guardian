@@ -1,7 +1,10 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 
+/**
+ * Dialog for creating policy.
+ */
 @Component({
     selector: 'new-policy-dialog',
     templateUrl: './new-policy-dialog.component.html',
@@ -13,6 +16,7 @@ export class NewPolicyDialog {
         name: ['', Validators.required],
         version: ['', Validators.required],
         description: ['', Validators.required],
+        topicDescription: ['', Validators.required],
         policyTag: ['', Validators.required],
     });
 

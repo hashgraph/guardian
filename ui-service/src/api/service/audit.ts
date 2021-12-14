@@ -5,6 +5,7 @@ import {UserRole} from 'interfaces';
 import {HcsVcDocument, VcSubject} from 'vc-modules';
 import {getMongoRepository} from 'typeorm';
 import {User} from '@entity/user';
+
 /**
  * Audit route
  */

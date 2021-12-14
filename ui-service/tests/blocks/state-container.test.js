@@ -2,7 +2,7 @@ require('module-alias/register');
 const {StateContainer} = require("../../dist/policy-engine/state-container");
 const {assert} = require('chai');
 
-describe('External Data Block', function () {
+describe('State Container', function () {
     it('GenerateNewUUID', async function () {
         const block = new StateContainer();
         assert.equal(StateContainer.GenerateNewUUID().length, 36)

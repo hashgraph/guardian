@@ -73,11 +73,11 @@ export class StateContainer {
      * Run policy block instance action when external data income
      * @param data
      */
-    public static async RecieveExternalData(data: any): Promise<void> {
+    public static async ReceiveExternalData(data: any): Promise<void> {
         for (let block of StateContainer.ExternalDataBlocks.values()) {
             const policy = await getMongoRepository(Policy).findOne({policyTag: data.policyTag});
             if (policy.id.toString() === (block as any).policyId) {
-                await (block as any).recieveData(data);
+                await (block as any).receiveData(data);
             }
         }
     }

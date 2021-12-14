@@ -36,10 +36,6 @@ a {
     margin-top: 12px;
 }
 
-.schemes-table .mat-column-selected {
-    width: 40px;
-}
-
 .actions {
     position: relative;
     z-index: 1;
@@ -55,4 +51,119 @@ a {
     overflow-y: auto;
     position: relative;
     z-index: 0;
+}
+
+.schema-status {
+    font-weight: 500;
+}
+
+.status-DRAFT {
+    color: #2196f3;
+}
+
+.status-PUBLISHED {
+    color: #4caf50;
+}
+
+.status-UNPUBLISHED {
+    color: #f44336;
+}
+
+.btn-approve {
+    background: #4caf50;
+    border-radius: 6px;
+    color: #fff;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100px;
+    text-align: center;
+}
+
+.btn-unpublished {
+    background: #f44336;
+    border-radius: 6px;
+    color: #fff;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100px;
+    text-align: center;
+}
+
+
+.btn-settings {
+    color: #3f51b5;
+    font-weight: 500;
+    cursor: pointer;
+    padding-left: 22px;
+    position: relative;
+    width: 40px;
+    display: inline-block;
+}
+.btn-settings:hover {
+    text-decoration: underline;
+}
+
+.btn-settings mat-icon {
+    position: absolute;
+    left: 0;
+    top: -1px;
+    font-size: 20px;
+}
+
+.btn-settings.btn-publish {
+    color: #4caf50;
+}
+
+.btn-settings.btn-unpublish {
+    color: #f44336;
+}
+
+.btn-settings.btn-delete {
+    color: #f44336;
+}
+
+.schemes-table .mat-column-uuid,
+.schemes-table .mat-column-type,
+.schemes-table .mat-column-entity {
+    padding-left: 10px;
+}
+
+.schemes-table .mat-column-selected {
+    width: 22px;
+    border-right: 1px solid #dddddd;
+    padding-left: 15px;
+}
+
+.schemes-table .mat-column-status {
+    width: 125px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.schemes-table .mat-column-operation {
+    width: 135px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.schemes-table .mat-column-document {
+    width: 125px;
+    padding-left: 10px;
+    border-left: 1px solid #dddddd;
+}
+
+.schemes-table .mat-column-edit {
+    width: 70px;
+    padding-left: 10px;
+}
+
+.schemes-table .mat-column-delete {
+    width: 90px;
+    padding-left: 10px;
 }

@@ -3,6 +3,10 @@ import { HcsDidRootKey } from 'did-sdk-js';
 import { MongoRepository } from 'typeorm';
 import { DocumentLoader, IDocumentFormat } from 'vc-modules';
 
+/**
+ * DID Documents Loader
+ * Used for signatures validation.
+ */
 export class DIDDocumentLoader extends DocumentLoader {
     private didDocumentRepository: MongoRepository<DidDocument>;
 

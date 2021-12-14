@@ -1,5 +1,9 @@
-import { CredentialSubject, HcsVcDocumentBase, HcsVcDocumentJsonProperties, JsonClass } from "did-sdk-js";
+import { CredentialSubject, HcsVcDocumentBase, HcsVcDocumentJsonProperties, JsonClass } from 'did-sdk-js';
 
+/**
+ * The base for a VC document generation in JSON-LD format.
+ * VC documents according to W3C draft specification must be compatible with JSON-LD version 1.1 Up until now there is
+ */
 export class HcsVcDocument<T extends CredentialSubject> extends HcsVcDocumentBase<T> {
     private proof: any;
 

@@ -122,7 +122,7 @@ export class SendToGuardianBlock {
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const addressBook = await this.guardians.getAddressBook({ owner: ref.policyOwner });
+        const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
         const hederaHelper = HederaHelper
             .setOperator(userID, userKey)
             .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);

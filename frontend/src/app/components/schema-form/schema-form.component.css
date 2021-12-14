@@ -12,3 +12,82 @@ form {
     margin-left: 16px;
     margin-top: 10px;
 }
+
+
+
+
+
+
+.form-field {
+    display: block;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    height: 58px;
+    margin-bottom: 10px;
+}
+.form-field mat-form-field {
+    width: 100%;
+}
+
+.form-field-group,
+.form-field-array {
+    display: block;
+    width: 100%;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 6px;
+    padding: 15px 10px 10px 10px;
+    box-sizing: border-box;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.group-label,
+.array-label {
+    color: rgba(0,0,0,.6);
+    position: absolute;
+    background: #fff;
+    top: -10px;
+    left: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.add-link {
+    cursor: pointer;
+    color: #6166ff;
+}
+
+
+.form-field-array-item {
+    padding-right: 50px;
+    position: relative;
+    display: table;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.fields-remove {
+    width: 24px;
+    height: 40px;
+    margin: 10px;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+    display: flex;
+    color: #f00;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.form-field-array-item[index='0'][required='true'] .fields-remove {
+    display: none;
+}
+
+.required-field {
+    color: #f00;
+}

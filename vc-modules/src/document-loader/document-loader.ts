@@ -1,7 +1,10 @@
-import { IDocumentFormat } from "./document-format";
-import { DocumentLoaderFunction } from "./document-loader-function";
+import { IDocumentFormat } from './document-format';
+import { DocumentLoaderFunction } from './document-loader-function';
 
-
+/**
+ * Documents Loader
+ * Used for VC validation.
+ */
 export abstract class DocumentLoader {
     public abstract has(iri: string): Promise<boolean>;
 
@@ -16,7 +19,7 @@ export abstract class DocumentLoader {
                     return await documentLoader.get(iri);
                 }
             }
-            throw new Error("IRI not found: " + iri);
+            throw new Error('IRI not found: ' + iri);
         };
     }
 }
