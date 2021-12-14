@@ -58,19 +58,23 @@ Release sprint contain additional activities:
 - Product Manager prepares ChangeLog document
 - Product Manager prepares Release notes
 - Product Manager tags the release and runs release CI pipeline, following which verifies that it completed successfully and all artefacts got uploaded to the correct repositories
+  - Product Manager tags the Develop branch with the new version
+  - Product Manager or Lead developer creates a PR and squash-merges into the update from the Develop into the Main branch
+  - Product Manager tags the Main branch
+  - Produt Manager makes a release in the Main branch
 - Product Owner posts community announcements in the discord and slack channels
 
 
 #### Artifacts list
 
 - Source code archives (in github)
-- Docker image (in Docker Hub)
-- Npm packages (in NPM registry) 
+- Docker image (TBD: in Docker Hub)
+- Npm packages (TBD: in NPM registry) 
   - Message Broker
   - UI Service
   - Guardian Service
   - MRV Sender Service
-- Changelog and release notes (.md file in github)
+- Changelog and release notes (Notes attached to the release label in github)
 - User guide and demo guide (.md file in github)
 
 
