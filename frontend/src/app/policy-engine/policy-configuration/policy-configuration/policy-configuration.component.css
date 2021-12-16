@@ -273,18 +273,17 @@
 .btn-new-block-menu {
     display: flex;
     overflow: hidden;
-    min-width: 50px;
+    min-width: 60px;
     height: 26px;
     flex-direction: row;
     border: 1px solid transparent;
     margin: 2px;
-    padding: 2px;
+    padding: 4px 8px 2px 2px;
     font-size: 12px;
     align-items: center;
     align-content: center;
     color: #3f51b5;
     cursor: pointer;
-    padding-top: 4px;
 }
 
 .btn-new-block-menu:hover {

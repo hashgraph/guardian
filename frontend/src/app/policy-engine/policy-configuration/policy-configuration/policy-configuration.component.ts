@@ -51,6 +51,7 @@ export class PolicyConfigurationComponent implements OnInit {
     schemes!: Schema[];
     tokens!: Token[];
     policyId!: string;
+    errors: any[] = [];
 
     colGroup1 = false;
     colGroup2 = false;
@@ -95,7 +96,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const tokens = data[1] || [];
             const policy = data[2];
             this.schemes = Schema.mapRef(schemes) || [];
-            this.schemes = this.schemes.filter(s=>s.status == SchemaStatus.PUBLISHED);
+            this.schemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
             this.schemes.unshift({
                 type: ""
             } as any);
@@ -179,11 +180,11 @@ export class PolicyConfigurationComponent implements OnInit {
     removeBlock(blocks: BlockNode[], block: BlockNode) {
         for (let index = 0; index < blocks.length; index++) {
             const element = blocks[index];
-            if(element.id == block.id) {
+            if (element.id == block.id) {
                 blocks.splice(index, 1);
                 return blocks;
             }
-            if(element.children) {
+            if (element.children) {
                 element.children = this.removeBlock(element.children, block);
             }
         }
@@ -233,6 +234,29 @@ export class PolicyConfigurationComponent implements OnInit {
             this.loadPolicy();
         }, (e) => {
             console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    validationPolicy() {
+        this.loading = true;
+        this.policyEngineService.validationPolicy(this.policyId).subscribe((data: any) => {
+            const { blocks } = data;
+            const errors = blocks.filter((block: any) => !block.isValid);
+            this.errors = errors;
+            const map: any = {};
+            for (let i = 0; i < errors.length; i++) {
+                const element = errors[i];
+                map[element.id] = true;
+            }
+            for (let i = 0; i < this.allBlocks.length; i++) {
+                const element = this.allBlocks[i];
+                element.error = !map[element.id];
+            }
+            this.blocks = [this.root];
+            this.currentBlock = this.root;
+            this.loading = false;
+        }, (e) => {
             this.loading = false;
         });
     }

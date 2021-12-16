@@ -158,6 +158,10 @@ export class PolicyEngineService {
     return this.http.post<any>(`/policy/publish/${policyId}`, null);
   }
 
+  public validationPolicy(policyId: string): Observable<any> {
+    return this.http.get<any>(`/policy/${policyId}/validate`);
+  }
+  
   public toYAML(json: any): Observable<any> {
     return this.http.post<any>(`/policy/to-yaml`, { json });
   }
