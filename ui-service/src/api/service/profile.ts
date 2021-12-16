@@ -160,6 +160,8 @@ profileAPI.post('/set-hedera-profile', async (req: Request, res: Response) => {
     const users = new Users();
     const wallet = new Wallet();
 
+    console.log(req);
+
     try {
         const user = await users.currentUser(req);
         if (!(await users.permission(user, [UserRole.INSTALLER, UserRole.ORIGINATOR]))) {

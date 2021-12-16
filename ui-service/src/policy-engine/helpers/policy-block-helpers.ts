@@ -13,7 +13,7 @@ export namespace PolicyBlockHelpers {
      */
     export function ConfigureBlock(policyId: string, blockType: string,
                                    options: Partial<PolicyBlockConstructorParams>,
-                                   skipRegistration?: boolean): any {
+                                   skipRegistration?: boolean, uuid?: string): any {
         console.log('sckipRegistration', skipRegistration);
         if (options.options) {
             options = Object.assign(options, options.options);
