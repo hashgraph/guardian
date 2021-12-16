@@ -4,43 +4,50 @@
         <div *ngIf="!item.hide" class="form-field-container">
 
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>
-                        <span *ngIf="item.required" class="required-field">*</span>
-                        {{item.description}}:
-                    </mat-label>
-                    <input matInput [formControlName]="item.name" >
+                <div *ngIf="item.required" class="required-field">* Required</div>
+                <div class="label-field">{{item.description}}</div>
+                <mat-form-field class="example-full-width required-form-field" appearance="outline">
+                    <input matInput [formControlName]="item.name">
                 </mat-form-field>
             </div>
+            
 
             <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
-                <mat-label class="group-label">
-                    <span *ngIf="item.required" class="required-field">*</span>
-                    {{item.description}}:
-                </mat-label>
+                <div *ngIf="item.required" class="required-field">* Required</div>
+                <div class="label-field">{{item.description}}</div>
                 <app-schema-form 
                     *ngIf="item.control"
                     [formGroup]="item.control" 
                     [fields]="item.fields" 
                     [context]="item.context"
-                    [private-fields]="hide">
+                    [private-fields]="hide"
+                    [delimiter-hide]="true">
                 </app-schema-form>
-                <div *ngIf="!item.control" class="add-link" (click)="addGroup(item)">+ Add</div>
-                <div *ngIf="item.control && !item.required" class="add-link" (click)="removeGroup(item)">- Remove</div>
+                <div *ngIf="!item.control" class="add-btn" (click)="addGroup(item)">
+                    <span>
+                        <mat-icon>add</mat-icon> Add Fields
+                    </span>
+                </div>
+                <div *ngIf="item.control && !item.required" class="remove-btn" (click)="removeGroup(item)">
+                    <span>
+                        <mat-icon>remove</mat-icon> Remove Fields
+                    </span>
+                </div>
             </div>
 
+
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
-                <mat-label class="array-label">
-                    <span *ngIf="item.required" class="required-field">*</span>
-                    {{item.description}}:
-                </mat-label>
+                <div *ngIf="item.required" class="required-field">* Required</div>
+                <div class="label-field">{{item.description}}</div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item" 
                     [attr.index]="listItem.index"
                     [attr.required]="item.required"  
                     [formGroup]="item.control">
                     <div class="form-field">
-                        <mat-form-field class="example-full-width" appearance="outline">
-                            <mat-label>{{listItem.description}} ({{listItem.index}}):</mat-label>
+                        <mat-form-field class="example-full-width required-from-field" appearance="outline">
+                            <mat-label>
+                                {{listItem.description}} ({{listItem.index}})
+                            </mat-label>
                             <input matInput [formControl]="listItem.control">
                         </mat-form-field>
                     </div>
@@ -48,14 +55,17 @@
                         <mat-icon>delete</mat-icon>
                     </div>
                 </div>
-                <div class="add-link" (click)="addItem(item)">+ Add</div>
+                <div class="add-btn" (click)="addItem(item)">
+                    <span>
+                        <mat-icon>add</mat-icon> Add Field
+                    </span>
+                </div>
             </div>
 
+
             <div *ngIf="item.isArray && item.isRef" class="form-field-group">
-                <mat-label class="array-label">
-                    <span *ngIf="item.required" class="required-field">*</span>
-                    {{item.description}}:
-                </mat-label>
+                <div *ngIf="item.required" class="required-field">* Required</div>
+                <div class="label-field">{{item.description}}</div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item" 
                     [attr.index]="listItem.index"
                     [attr.required]="item.required">
@@ -65,16 +75,29 @@
                             [formGroup]="listItem.control" 
                             [fields]="item.fields" 
                             [context]="item.context" 
-                            [private-fields]="hide">
+                            [private-fields]="hide"
+                            [delimiter-hide]="true">
                         </app-schema-form>
+                        <div class="remove-btn" (click)="onRemove(item, listItem)">
+                            <span>
+                                <mat-icon>remove</mat-icon> Remove Entity
+                            </span>
+                        </div>
                     </div>
-                    <div class="fields-remove" (click)="onRemove(item, listItem)">
-                        <mat-icon>delete</mat-icon>
+                    <div class="short-delimiter-container">
+                        <div class="delimiter"></div>
                     </div>
                 </div>
-                <div class="add-link" (click)="addItem(item)">+ Add</div>
+                <div class="add-btn" (click)="addItem(item)">
+                    <span>
+                        <mat-icon>add</mat-icon> Add Entity
+                    </span>
+                </div>
             </div>
+
         </div>
+
+        <div *ngIf="!delimiterHide" class="delimiter"></div>
 
     </ng-container>
 </form>
