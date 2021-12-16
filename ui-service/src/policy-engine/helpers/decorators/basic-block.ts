@@ -5,6 +5,7 @@ import {UserRole} from 'interfaces';
 
 import {IPolicyBlock, ISerializedBlock,} from '../../policy-engine.interface';
 import {StateContainer} from '../../state-container';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 /**
  * Basic block decorator
@@ -92,7 +93,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 );
 
                 if (this.parent) {
-                    this.parent.registerChild(this);
+                    this.parent.registerChild(this as any as IPolicyBlock);
                 }
 
                 this.init();
@@ -115,6 +116,16 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public setPolicyOwner(did: string) {
                 this.policyOwner = did;
+            }
+
+            public validate(resultsContainer: PolicyValidationResultsContainer): void {
+                resultsContainer.registerBlock(this as any as IPolicyBlock)
+                if (Array.isArray(this.children)) {
+                    for (let child of this.children) {
+                        child.validate(resultsContainer);
+                    }
+                }
+                return;
             }
 
             public async updateBlock(state, user, tag) {

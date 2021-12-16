@@ -9,9 +9,12 @@ export namespace PolicyBlockHelpers {
      * @param policyId
      * @param blockType
      * @param options
+     * @param skipRegistration
      */
     export function ConfigureBlock(policyId: string, blockType: string,
-                                   options: Partial<PolicyBlockConstructorParams>): any {
+                                   options: Partial<PolicyBlockConstructorParams>,
+                                   skipRegistration?: boolean): any {
+        console.log('sckipRegistration', skipRegistration);
         if (options.options) {
             options = Object.assign(options, options.options);
         }
@@ -25,7 +28,9 @@ export namespace PolicyBlockHelpers {
             options._parent,
             GetOtherOptions(options as PolicyBlockFullArgumentList)
         );
-        StateContainer.RegisterComponent(policyId, instance);
+        if (!skipRegistration) {
+            StateContainer.RegisterComponent(policyId, instance);
+        }
         return instance;
     }
 
