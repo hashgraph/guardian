@@ -118,11 +118,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.policyOwner = did;
             }
 
-            public validate(resultsContainer: PolicyValidationResultsContainer): void {
-                resultsContainer.registerBlock(this as any as IPolicyBlock)
+            public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+                resultsContainer.registerBlock(this as any as IPolicyBlock);
+                if (typeof super.validate === 'function') {
+                    await super.validate(resultsContainer)
+                }
                 if (Array.isArray(this.children)) {
                     for (let child of this.children) {
-                        child.validate(resultsContainer);
+                        await child.validate(resultsContainer);
                     }
                 }
                 return;
