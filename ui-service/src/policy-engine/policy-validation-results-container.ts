@@ -9,7 +9,8 @@ interface IValidatedInstance<T> {
 interface IInstanceErrors {
     id: string,
     name: string,
-    errors: string[]
+    errors: string[],
+    isValid: boolean
 }
 
 export interface ISerializedErrors {
@@ -17,12 +18,15 @@ export interface ISerializedErrors {
 }
 
 export class PolicyValidationResultsContainer {
+    private tags: string[];
+
     private blocks: Map<string, IValidatedInstance<IPolicyBlock>>;
     private schemas: Map<string, any>;
 
     constructor() {
         this.blocks = new Map();
         this.schemas = new Map();
+        this.tags = [];
     }
 
     /**
@@ -45,6 +49,10 @@ export class PolicyValidationResultsContainer {
         block.errors.push(error);
     }
 
+    public isTagExist(tag: string): boolean {
+        return !![...this.blocks.values()].find(item => item.block.tag === tag);
+    }
+
     public getSerializedErrors(): ISerializedErrors {
         return {
             blocks: [...this.blocks.values()].map(item => {
@@ -52,6 +60,7 @@ export class PolicyValidationResultsContainer {
                     id: item.block.uuid,
                     name: item.block.blockType,
                     errors: item.errors,
+                    isValid: !item.errors.length
                 }
             })
         }

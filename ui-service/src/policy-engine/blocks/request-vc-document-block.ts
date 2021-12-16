@@ -12,6 +12,7 @@ import { Schema } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '../../auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 @EventBlock({
     blockType: 'requestVcDocument',
@@ -139,5 +140,19 @@ export class RequestVcDocumentBlock {
             return user.did;
         }
         return undefined;
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+
+        // Test schema options
+        const schemas = await this.guardians.getSchemes({}) || [];
+        if (!ref.options.schema) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
+        } else if (typeof ref.options.schema !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+        } else if (!schemas.find(s => s.uuid === ref.options.schema)) {
+            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`)
+        }
     }
 }

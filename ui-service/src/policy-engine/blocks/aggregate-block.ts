@@ -8,6 +8,7 @@ import * as mathjs from 'mathjs';
 import {BlockActionError} from '@policy-engine/errors';
 import {getMongoRepository} from 'typeorm';
 import {AggregateVC} from '@entity/aggregateDocuments';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -93,6 +94,24 @@ export class AggregateBlock {
             if (ref.parent.children[currentIndex + 1] && ref.parent.children[currentIndex + 1].runAction) {
                 await ref.parent.children[currentIndex + 1].runAction({data: rawEntities}, null);
             }
+        }
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+
+        // Test rule options
+        if (!ref.options.rule) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+        } else if (typeof ref.options.rule !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+        }
+
+        // Test threshold options
+        if (!ref.options.threshold) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
+        } else if (typeof ref.options.threshold !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a string');
         }
     }
 }

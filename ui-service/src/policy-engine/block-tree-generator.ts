@@ -142,7 +142,7 @@ export class BlockTreeGenerator {
     private async validate(id: string): Promise<ISerializedErrors> {
         const resultsContainer = new PolicyValidationResultsContainer();
         const policy = await this.generate(id, true);
-        policy.validate(resultsContainer);
+        await policy.validate(resultsContainer);
         return resultsContainer.getSerializedErrors();
     }
 
