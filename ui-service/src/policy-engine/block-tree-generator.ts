@@ -235,12 +235,16 @@ export class BlockTreeGenerator {
         });
 
         this.router.post('/create', async (req: AuthenticatedRequest, res: Response) => {
-            const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
-            const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
-            model.owner = user.did;
-            await getMongoRepository(Policy).save(model);
-            const policies = await getMongoRepository(Policy).find({owner: user.did})
-            res.json(policies);
+            try {
+                const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
+                model.owner = user.did;
+                await getMongoRepository(Policy).save(model);
+                const policies = await getMongoRepository(Policy).find({owner: user.did})
+                res.json(policies);
+            } catch(e) {
+                res.status(500).send({ code: 500, message: e.message });
+            }
         });
 
         this.router.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
