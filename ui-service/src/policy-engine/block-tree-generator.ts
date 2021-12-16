@@ -20,6 +20,7 @@ import {HederaHelper} from 'vc-modules';
 import {Guardians} from '@helpers/guardians';
 import {VcHelper} from '@helpers/vcHelper';
 import * as Buffer from 'buffer';
+import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -100,8 +101,9 @@ export class BlockTreeGenerator {
     /**
      * Generate policy instance from db
      * @param id
+     * @param skipRegistration
      */
-    async generate(id: string): Promise<IPolicyBlock> {
+    async generate(id: string, skipRegistration?: boolean): Promise<IPolicyBlock> {
         const policy = await BlockTreeGenerator.getPolicyFromDb(id);
         const policyId = id;
 
@@ -112,7 +114,7 @@ export class BlockTreeGenerator {
             if (parent) {
                 params._parent = parent;
             }
-            const blockInstance = PolicyBlockHelpers.ConfigureBlock(policyId.toString(), blockType, params as any) as any;
+            const blockInstance = PolicyBlockHelpers.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
             blockInstance.setPolicyId(policyId.toString())
             blockInstance.setPolicyOwner(policy.owner);
             if (children && children.length) {
@@ -124,11 +126,24 @@ export class BlockTreeGenerator {
         }
 
         const model = BuildInstances(configObject);
-        this.models.set(policy.id.toString(), model as any);
+        if (!skipRegistration) {
+            this.models.set(policy.id.toString(), model as any);
+        }
 
         StateContainer.InitStateSubscriptions();
 
         return model as IPolicyInterfaceBlock;
+    }
+
+    /**
+     * Validate policy
+     * @param id - policyId
+     */
+    private async validate(id: string): Promise<ISerializedErrors> {
+        const resultsContainer = new PolicyValidationResultsContainer();
+        const policy = await this.generate(id, true);
+        policy.validate(resultsContainer);
+        return resultsContainer.getSerializedErrors();
     }
 
     /**
@@ -309,6 +324,17 @@ export class BlockTreeGenerator {
                 res.send(await model.getData(req.user) as any);
             } catch (e) {
                 res.status(500).send({code: 500, message: 'Unknown error'});
+            }
+
+        });
+
+        this.router.get('/:policyId/validate', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const results = await this.validate(req.params.policyId);
+                res.send(results);
+            } catch (e) {
+                console.log(e);
+                res.status(500).send({code: 500, message: 'Validation error'});
             }
 
         });

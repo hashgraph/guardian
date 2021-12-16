@@ -1,5 +1,6 @@
 import {UserRole} from 'interfaces';
 import {IAuthUser} from '../auth/auth.interface';
+import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 export interface IPolicyRoles {
     [policyId: string]: string;
@@ -41,6 +42,9 @@ export interface IPolicyBlock {
     registerSubscriptions(): void;
 
     destroy();
+
+    validate(resultsContainer: PolicyValidationResultsContainer);
+
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {
