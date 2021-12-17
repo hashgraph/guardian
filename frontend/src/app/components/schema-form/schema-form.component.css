@@ -13,40 +13,38 @@ form {
     margin-top: 10px;
 }
 
-
-
-
-
-
 .form-field {
     display: block;
     width: 100%;
     position: relative;
     overflow: hidden;
-    height: 58px;
     margin-bottom: 10px;
 }
+
 .form-field mat-form-field {
     width: 100%;
 }
 
-.form-field-group,
+.form-field-group, 
 .form-field-array {
     display: block;
     width: 100%;
     position: relative;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 6px;
-    padding: 15px 10px 10px 10px;
     box-sizing: border-box;
-    margin-top: 10px;
-    margin-bottom: 10px;
 }
 
-.group-label,
+.form-field-group .form-field-array-item {
+    padding-top: 20px;
+    padding-right: 0;
+}
+
+.form-field-group .form-field-group {
+    padding-left: 30px;
+}
+
+.group-label, 
 .array-label {
     color: rgba(0,0,0,.6);
-    position: absolute;
     background: #fff;
     top: -10px;
     left: 5px;
@@ -54,11 +52,51 @@ form {
     padding-right: 5px;
 }
 
-.add-link {
-    cursor: pointer;
-    color: #6166ff;
+.add-btn {
+    color: var(--button-primary-color);
 }
 
+.remove-btn {
+    color:red;
+}
+
+.add-btn, 
+.remove-btn {
+    margin-bottom: 16px;
+    height: 56px;
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #dcdcdc;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    position: relative;
+    padding: 15px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.add-btn:hover, 
+.remove-btn:hover {
+    background: #fbfbfb;
+}
+
+.add-btn span, 
+.remove-btn span {
+    display: inline-block;
+    position: relative;
+    padding: 3px 30px;
+    height: 24px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.add-btn span *, 
+.remove-btn span * {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
 
 .form-field-array-item {
     padding-right: 50px;
@@ -84,10 +122,63 @@ form {
     right: 0;
 }
 
+.form-field-array-item[index='0'][required='true'] {
+    padding-right: 0;
+}
+
 .form-field-array-item[index='0'][required='true'] .fields-remove {
     display: none;
 }
 
-.required-field {
-    color: #f00;
+.form-field-array-item[index='0'][required='true'] .remove-btn {
+    display: none;
+}
+
+.required-field, 
+.group-label {
+    color: gray;
+    font-size: 14px;
+}
+
+.label-field {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.delimiter {
+    padding: 30px 50px 50px 50px;
+    width: 100%;
+    height: 80px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.delimiter::after {
+    content: '';
+    position: absolute;
+    height: 2px;
+    top: 30px;
+    left: 0px;
+    right: 0px;
+    border-top: 1px solid #c8c8c8;
+}
+
+.short-delimiter-container {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.required-form-field .mat-input-element {
+    font-size: 18px;
+}
+
+::ng-deep mat-form-field.required-form-field.mat-form-field-invalid.mat-form-field-invalid .mat-form-field-outline-thick {
+    color: #f8c3c3af;
+    background-color: #ffefef;
+    border-radius: 7px;
+}
+
+.form-field-group .form-field-array-item,
+.form-field-container .form-field-container > .form-field-group {
+    border-left: 2px dashed var(--button-primary-color);
 }
