@@ -178,10 +178,7 @@ form {
     border-radius: 7px;
 }
 
-.form-field-group .form-field-array-item {
-    border-left: 2px dashed var(--button-primary-color);
-}
-
+.form-field-group .form-field-array-item,
 .form-field-container .form-field-container > .form-field-group {
-    border-left: 2px dashed red;
+    border-left: 2px dashed var(--button-primary-color);
 }
