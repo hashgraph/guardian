@@ -15,22 +15,25 @@
             <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field">{{item.description}}</div>
-                <app-schema-form 
-                    *ngIf="item.control"
-                    [formGroup]="item.control" 
-                    [fields]="item.fields" 
-                    [context]="item.context"
-                    [private-fields]="hide"
-                    [delimiter-hide]="true">
-                </app-schema-form>
+                <div *ngIf="item.control" class="form-field-array-item" >
+                    <div class="form-field-group">
+                        <app-schema-form    
+                            [formGroup]="item.control" 
+                            [fields]="item.fields" 
+                            [context]="item.context"
+                            [private-fields]="hide"
+                            [delimiter-hide]="true">
+                        </app-schema-form>
+                    </div>
+                </div>
                 <div *ngIf="!item.control" class="add-btn" (click)="addGroup(item)">
                     <span>
-                        <mat-icon>add</mat-icon> Add Fields
+                        <mat-icon>add</mat-icon> Add Entity
                     </span>
                 </div>
                 <div *ngIf="item.control && !item.required" class="remove-btn" (click)="removeGroup(item)">
                     <span>
-                        <mat-icon>remove</mat-icon> Remove Fields
+                        <mat-icon>remove</mat-icon> Remove Entity
                     </span>
                 </div>
             </div>
@@ -45,9 +48,6 @@
                     [formGroup]="item.control">
                     <div class="form-field">
                         <mat-form-field class="example-full-width required-from-field" appearance="outline">
-                            <mat-label>
-                                {{listItem.description}} ({{listItem.index}})
-                            </mat-label>
                             <input matInput [formControl]="listItem.control">
                         </mat-form-field>
                     </div>
@@ -70,7 +70,6 @@
                     [attr.index]="listItem.index"
                     [attr.required]="item.required">
                     <div class="form-field-group">
-                        <mat-label class="group-label">{{item.description}} ({{listItem.index}}):</mat-label>
                         <app-schema-form 
                             [formGroup]="listItem.control" 
                             [fields]="item.fields" 

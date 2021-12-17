@@ -62,7 +62,7 @@ form {
 
 .add-btn, 
 .remove-btn {
-    margin-bottom: 5px;
+    margin-bottom: 16px;
     height: 56px;
     width: 100%;
     border-radius: 6px;
@@ -142,13 +142,13 @@ form {
 
 .label-field {
     font-size: 18px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 }
 
 .delimiter {
-    padding: 50px 50px;
+    padding: 30px 50px 50px 50px;
     width: 100%;
-    height: 100px;
+    height: 80px;
     box-sizing: border-box;
     position: relative;
 }
@@ -157,7 +157,7 @@ form {
     content: '';
     position: absolute;
     height: 2px;
-    top: 50px;
+    top: 30px;
     left: 0px;
     right: 0px;
     border-top: 1px solid #c8c8c8;
