@@ -41,7 +41,7 @@ paths:
         - account
       security:
       - Bearer: []
-      description: Returns the logged in user account
+      description: Returns the logged in user account.
       responses:
         200:
           description: Successful operation
@@ -106,7 +106,7 @@ paths:
     get:
       tags:
         - profile
-      description: Request Hedera account balance
+      description: Request Hedera account balance. Only users with the Installer role are allowed to make request.
       security:
       - Bearer: []
       responses:
@@ -121,7 +121,7 @@ paths:
     get:
       tags:
         - profile
-      description: Request logged in user state
+      description: Request logged in user state. Only users with the Installer role are allowed to make request.
       security:
       - Bearer: []
       responses:
@@ -136,7 +136,7 @@ paths:
     get:
       tags:
         - profile
-      description: Request user account full profile
+      description: Request user account full profile. Only users with the Installer role are allowed to make request.
       security:
       - Bearer: []
       responses:
@@ -151,7 +151,7 @@ paths:
     post:
       tags:
         - profile
-      description: Set Hedera credentials for the user
+      description: Set Hedera credentials for the user. Only users with the Installer role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -189,7 +189,7 @@ paths:
     post:
       tags:
         - schema
-      description: Create new schema
+      description: Create new schema. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -212,7 +212,7 @@ paths:
     get:
       tags:
         - schema
-      description: Get all schemes
+      description: Get all schemes.
       security:
       - Bearer: []
       responses:
@@ -227,7 +227,7 @@ paths:
     post:
       tags:
         - schema
-      description: Import new schemes
+      description: Import new schemes. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -250,7 +250,7 @@ paths:
     post:
       tags:
         - schema
-      description: Export selected schemes
+      description: Export selected schemes. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -273,7 +273,7 @@ paths:
     post:
       tags:
         - token
-      description: Create new token
+      description: Create new token. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -296,7 +296,7 @@ paths:
     get:
       tags:
         - token
-      description: Request all tokens
+      description: Request all tokens. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       responses:
@@ -311,7 +311,7 @@ paths:
     get:
       tags:
         - token
-      description: Request a list of tokens. Only users with the Root Authority role are allowed to make request.
+      description: Request a list of tokens. Only users with the Installer role are allowed to make request.
       security:
       - Bearer: []
       responses:
@@ -326,7 +326,7 @@ paths:
     post:
       tags:
         - token
-      description: Associate the user with the provided Hedera token.
+      description: Associate the user with the provided Hedera token. Only users with the Installer role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -364,7 +364,7 @@ paths:
     get:
       tags:
         - token
-      description: Request user information for selected token
+      description: Request user information for selected token. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -394,7 +394,7 @@ paths:
     post:
       tags:
         - token
-      description: Set or unset KYC flag for the user
+      description: Set or unset KYC flag for the user. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -417,7 +417,7 @@ paths:
     post:
       tags:
         - token
-      description: Freeze or unfreeze transfers of the specified token for the user
+      description: Freeze or unfreeze transfers of the specified token for the user. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -440,7 +440,7 @@ paths:
     get:
       tags:
         - other
-      description: Request authorized root authority balance
+      description: Request authorized root authority balance. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       responses:
@@ -455,7 +455,7 @@ paths:
     get:
       tags:
         - other
-      description: Request authorized root authority address book, vc document and did document
+      description: Request authorized root authority address book, vc document and did document. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       responses:
@@ -470,7 +470,7 @@ paths:
     post:
       tags:
         - other
-      description: Set hedera account for root authority and create address book
+      description: Set hedera account for root authority and create address book. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       parameters:
@@ -493,9 +493,24 @@ paths:
     get:
       tags:
         - other
-      description: Request all vp documents
+      description: Request all vp documents. Only users with the Auditor role are allowed to make request.
       security:
       - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/get-policy-list:
+    get:
+      tags:
+        - other
+      description: Request all policies. Only users with the Root Authority and Installer role are allowed to make request.
+      security:
+        - Bearer: []
       responses:
         200:
           description: Successful operation
@@ -508,7 +523,7 @@ paths:
     get:
       tags:
         - other
-      description: Build chain from vp to root vc document
+      description: Build chain from vp to root vc document. Only users with the Auditor role are allowed to make request.
       parameters:
         -
           in: query
@@ -531,7 +546,7 @@ paths:
     get:
       tags:
         - policy
-      description: Request full policy config
+      description: Request full policy config. Only users with the Root Authority role are allowed to make request.
       parameters:
         -
           in: path
@@ -552,7 +567,7 @@ paths:
     post:
       tags:
         - policy
-      description: Update policy config
+      description: Update policy config. Only users with the Root Authority role are allowed to make request.
       parameters:
         -
           in: path
@@ -582,7 +597,7 @@ paths:
     post:
       tags:
         - policy
-      description: Create new policy
+      description: Create new policy. Only users with the Root Authority role are allowed to make request.
       parameters:
         -
           in: body
@@ -605,7 +620,7 @@ paths:
     post:
       tags:
         - policy
-      description: Publish selected policy
+      description: Publish selected policy. Only users with the Root Authority role are allowed to make request.
       parameters:
         -
           in: path
@@ -628,7 +643,7 @@ paths:
     get:
       tags:
         - policy
-      description: Request data from root policy block
+      description: Request data from root policy block. Only users with the Root Authority and Installer role are allowed to make request.
       parameters:
         -
           in: path
@@ -651,7 +666,7 @@ paths:
     get:
       tags:
         - policy
-      description: Request block id from policy by tag
+      description: Request block id from policy by tag. Only users with the Root Authority and Installer role are allowed to make request.
       parameters:
         -
           in: path
@@ -681,7 +696,7 @@ paths:
     get:
       tags:
         - policy
-      description: Request block data
+      description: Request block data. Only users with a role that described in block are allowed to make request.
       parameters:
         -
           in: path
