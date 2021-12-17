@@ -27,7 +27,7 @@
     "jszip": "^3.7.1",
     "mathjs": "^9.5.0",
     "module-alias": "^2.2.2",
-    "mongodb": "^3.7.3",
+    "mongodb": "^4.2.2",
     "reflect-metadata": "^0.1.13",
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.41",
