@@ -553,7 +553,6 @@ export const schemaAPI = async function (
             const item = await schemaRepository.findOne(id);
             if (item) {
                 item.name = msg.payload.name;
-                item.description = msg.payload.description;
                 item.entity = msg.payload.entity;
                 item.document = msg.payload.document;
                 await schemaRepository.update(item.id, item);

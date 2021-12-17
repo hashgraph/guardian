@@ -5,11 +5,8 @@
                 <mat-icon>close</mat-icon>
             </div>
         </div>
-        <div *ngIf="!scheme" class="g-dialog-title">
+        <div class="g-dialog-title">
             New Schema
-        </div>
-        <div *ngIf="scheme" class="g-dialog-title">
-            Edit Schema
         </div>
         <div class="g-dialog-actions">
             <div *ngIf="!scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(schemaControl?.valid && started)">
