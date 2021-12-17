@@ -179,7 +179,7 @@ form {
 }
 
 .form-field-group .form-field-array-item {
-    border-left: 2px dashed #0c77ff;
+    border-left: 2px dashed var(--button-primary-color);
 }
 
 .form-field-container .form-field-container > .form-field-group {
