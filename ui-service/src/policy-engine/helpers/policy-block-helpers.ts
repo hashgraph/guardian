@@ -13,14 +13,14 @@ export namespace PolicyBlockHelpers {
      */
     export function ConfigureBlock(policyId: string, blockType: string,
                                    options: Partial<PolicyBlockConstructorParams>,
-                                   skipRegistration?: boolean, uuid?: string): any {
+                                   skipRegistration?: boolean): any {
         console.log('sckipRegistration', skipRegistration);
         if (options.options) {
             options = Object.assign(options, options.options);
         }
         const blockConstructor = GetBlockByType(blockType) as any;
         const instance = new blockConstructor(
-            StateContainer.GenerateNewUUID(),
+            options.id || StateContainer.GenerateNewUUID(),
             options.defaultActive,
             options.tag,
             options.permissions,
