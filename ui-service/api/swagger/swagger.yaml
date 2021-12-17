@@ -19,19 +19,19 @@ tags:
   -
     name: account
     description: Account API
-  - 
+  -
     name: profile
     description: Profile API
-  - 
+  -
     name: schema
     description: Schema API
-  - 
+  -
     name: token
     description: Token API
-  - 
+  -
     name: other
     description: Other API
-  - 
+  -
     name: policy
     description: Policy API
 paths:
@@ -40,11 +40,11 @@ paths:
       tags:
         - account
       security:
-      - Bearer: [] 
-      description: Return current logged in user account
+      - Bearer: []
+      description: Returns the logged in user account
       responses:
         200:
-          description: Current user account
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -65,7 +65,7 @@ paths:
             $ref: "#/definitions/Creditnails"
       responses:
         200:
-          description: Return user account
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -86,7 +86,7 @@ paths:
             $ref: "#/definitions/Creditnails"
       responses:
         200:
-          description: Return user account
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -106,12 +106,12 @@ paths:
     get:
       tags:
         - profile
-      description: Request hedera account balance
+      description: Request Hedera account balance
       security:
       - Bearer: []
       responses:
         200:
-          description: Return hedera user balance for INSTALLER
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -121,12 +121,12 @@ paths:
     get:
       tags:
         - profile
-      description: Reqquest logged in user state
+      description: Request logged in user state
       security:
       - Bearer: []
       responses:
         200:
-          description: Return logged in user registaration state for role INSTALLER
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -141,7 +141,7 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return user account prefile
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -151,20 +151,20 @@ paths:
     post:
       tags:
         - profile
-      description: Fill user account hedera creditnails
+      description: Set Hedera credentials for the user
       security:
       - Bearer: []
       parameters:
         -
           in: body
           name: body
-          description: Object that contain user instance
+          description: Object that contains the Hedera account data
           required: true
           schema:
             $ref: "#/definitions/User"
       responses:
         200:
-          description: Return action result
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -174,12 +174,12 @@ paths:
     get:
       tags:
         - profile
-      description: Generate random key
+      description: Generate a new Hedera account with a random private key
       security:
       - Bearer: []
       responses:
         200:
-          description: Return random key for user
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -202,7 +202,7 @@ paths:
             $ref: "#/definitions/Schema"
       responses:
         200:
-          description: Return action result
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -217,7 +217,7 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return all schemes
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -226,7 +226,7 @@ paths:
   /api/schema/import:
     post:
       tags:
-        - schema    
+        - schema
       description: Import new schemes
       security:
       - Bearer: []
@@ -240,7 +240,7 @@ paths:
             $ref: "#/definitions/ImportSchema"
       responses:
         200:
-          description: Return all schemes
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -263,7 +263,7 @@ paths:
             $ref: "#/definitions/ExportSchema"
       responses:
         200:
-          description: Object that contains schemes array
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -286,7 +286,7 @@ paths:
             $ref: "#/definitions/Token"
       responses:
         200:
-          description: Return array of all tokens
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -301,7 +301,7 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return array of all tokens
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -311,12 +311,12 @@ paths:
     get:
       tags:
         - token
-      description: Request tokens for user
+      description: Request a list of tokens. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       responses:
         200:
-          description: Return array of tokens for user
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -326,20 +326,20 @@ paths:
     post:
       tags:
         - token
-      description: Associate token
+      description: Associate the user with the provided Hedera token.
       security:
       - Bearer: []
       parameters:
         -
           in: body
           name: body
-          description: Object that contains tokens ids for associate with users
+          description: Object that contains the token Id to associate with the user
           required: true
           schema:
             $ref: "#/definitions/TokenAssociate"
       responses:
         200:
-          description: Associate token
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -349,12 +349,12 @@ paths:
     get:
       tags:
         - token
-      description: Request all users with role INSTALLER
+      description: Request all users with the INSTALLER role. Only users with the Root Authority role are allowed to make request.
       security:
       - Bearer: []
       responses:
         200:
-          description: Return all users with role INSTALLER
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -368,14 +368,14 @@ paths:
       security:
       - Bearer: []
       parameters:
-        - 
+        -
           in: query
           name: tokenId
           schema:
             type: string
           required: true
           description: Token ID
-        - 
+        -
           in: query
           name: username
           schema:
@@ -384,7 +384,7 @@ paths:
           description: Username
       responses:
         200:
-          description: Return token information
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -394,20 +394,20 @@ paths:
     post:
       tags:
         - token
-      description: Set or unset kyc for selected user
+      description: Set or unset KYC flag for the user
       security:
       - Bearer: []
       parameters:
         -
           in: body
           name: body
-          description: Object that contains actions that was applied to token
+          description: Object that contains action that needs to be applied to the token
           required: true
           schema:
             $ref: "#/definitions/TokenAction"
       responses:
         200:
-          description: Return token information
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -417,20 +417,20 @@ paths:
     post:
       tags:
         - token
-      description: Freeze or unfreeze token for user
+      description: Freeze or unfreeze transfers of the specified token for the user
       security:
       - Bearer: []
       parameters:
         -
           in: body
           name: body
-          description: Object that contains actions for apply to token
+          description: Object that contains action that needs to be applied to the token
           required: true
           schema:
             $ref: "#/definitions/TokenAction"
       responses:
         200:
-          description: Return token information
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -445,7 +445,7 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return authorized root authority balance
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -460,7 +460,7 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return authorized root authority address book, vc document and did document
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -483,7 +483,7 @@ paths:
             $ref: "#/definitions/RootConfig"
       responses:
         200:
-          description: Return operation result
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -498,7 +498,7 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return array of vp documents
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -510,7 +510,7 @@ paths:
         - other
       description: Build chain from vp to root vc document
       parameters:
-        - 
+        -
           in: query
           name: search
           schema:
@@ -521,19 +521,19 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return chain of vc and did documents
+          description: Successful operation
         403:
           description: Access denied
         500:
           description: Internal server error
-          
+
   /policy/edit/{policyId}:
     get:
       tags:
         - policy
       description: Request full policy config
       parameters:
-        - 
+        -
           in: path
           name: policyId
           schema:
@@ -544,7 +544,7 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return selected policy config
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -554,7 +554,7 @@ paths:
         - policy
       description: Update policy config
       parameters:
-        - 
+        -
           in: path
           name: policyId
           schema:
@@ -572,12 +572,12 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return updated policy config
+          description: Successful operation
         403:
           description: Access denied
         500:
           description: Internal server error
-          
+
   /policy/create:
     post:
       tags:
@@ -595,19 +595,19 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return array of all policies
+          description: Successful operation
         403:
           description: Access denied
         500:
           description: Internal server error
-          
+
   /policy/publish/{policyId}:
     post:
       tags:
         - policy
       description: Publish selected policy
       parameters:
-        - 
+        -
           in: path
           name: policyId
           schema:
@@ -618,19 +618,19 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return array of all policies
+          description: Successful operation
         403:
           description: Access denied
         500:
           description: Internal server error
-          
+
   /policy/{policyId}:
     get:
       tags:
         - policy
       description: Request data from root policy block
       parameters:
-        - 
+        -
           in: path
           name: policyId
           schema:
@@ -641,26 +641,26 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return data object from block
+          description: Successful operation
         403:
           description: Access denied
         500:
           description: Internal server error
-          
+
   /policy/block/tag/{policyId}/{tag}:
     get:
       tags:
         - policy
       description: Request block id from policy by tag
       parameters:
-        - 
+        -
           in: path
           name: policyId
           schema:
             type: string
           required: true
           description: Selected policy id
-        - 
+        -
           in: path
           name: tag
           schema:
@@ -671,19 +671,19 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return block uuid
+          description: Successful operation
         403:
           description: Access denied
         500:
           description: Internal server error
-          
+
   /policy/block/{uuid}:
     get:
       tags:
         - policy
       description: Request block data
       parameters:
-        - 
+        -
           in: path
           name: uuid
           schema:
@@ -694,7 +694,7 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return block response
+          description: Successful operation
         403:
           description: Access denied
         500:
@@ -704,7 +704,7 @@ paths:
         - policy
       description: Send data to block
       parameters:
-        - 
+        -
           in: path
           name: uuid
           schema:
@@ -722,12 +722,12 @@ paths:
       - Bearer: []
       responses:
         200:
-          description: Return block response
+          description: Successful operation
         403:
           description: Access denied
         500:
           description: Internal server error
-          
+
 definitions:
   Creditnails:
     type: object
@@ -736,7 +736,7 @@ definitions:
         type: string
       password:
         type: string
-        
+
   User:
     type: object
     properties:
@@ -746,11 +746,11 @@ definitions:
         type: string
       hederaAccountKey:
         type: string
-        
+
   Schema:
     type: object
     properties:
-      document: 
+      document:
         type: string
       entity:
         type: string
@@ -760,7 +760,7 @@ definitions:
         type: string
       uuid:
         type: string
-        
+
   ImportSchema:
     type: object
     properties:
@@ -769,7 +769,7 @@ definitions:
         items:
           type: object
           properties:
-            document: 
+            document:
               type: string
             entity:
               type: string
@@ -779,7 +779,7 @@ definitions:
               type: string
             uuid:
               type: string
-              
+
   ExportSchema:
     type: object
     properties:
@@ -787,7 +787,7 @@ definitions:
         type: array
         items:
           type: string
-          
+
   Token:
     type: object
     properties:
@@ -811,7 +811,7 @@ definitions:
         type: string
       tokenType:
         type: string
-        
+
   TokenAssociate:
     type: object
     properties:
@@ -819,7 +819,7 @@ definitions:
         type: string
       associated:
         type: boolean
-        
+
   TokenAction:
     type: object
     properties:
@@ -829,7 +829,7 @@ definitions:
         type: string
       value:
         type: boolean
-        
+
   RootConfig:
     type: object
     properties:
@@ -854,7 +854,7 @@ definitions:
             type: string
       vcTopicMemo:
         type: string
-        
+
   PolicyConfig:
     type: object
     properties:
@@ -880,4 +880,3 @@ definitions:
         type: string
       policyTag:
         type: string
-    
