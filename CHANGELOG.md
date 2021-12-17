@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.1] - 2021-12-17
+
+### Added
+- Supported lists and required fields in forms, changed the generation of the resulting schema json file [#203](https://github.com/hashgraph/guardian/issues/203)
+
+### Fixed
+
+- Swagger API and Postman Collection have been fixed and now include authentication header, parameters, models, etc. allowing requests to the Guardian API [#204](https://github.com/hashgraph/guardian/issues/204)
+- Fixed typos, expanded API endpoints descriptions  [#204](https://github.com/hashgraph/guardian/issues/204)
+
+
 ## [v1.0.0] - 2021-12-14
 
 ### Added
