@@ -16,6 +16,7 @@ export class SchemaFormComponent implements OnInit {
     @Input('fields') schemaFields!: SchemaField[];
     @Input('context') context!: any;
     @Input('formGroup') group!: FormGroup;
+    @Input('delimiter-hide') delimiterHide: boolean = false;
 
     options: FormGroup | undefined;
     fields: any[] | undefined = [];
