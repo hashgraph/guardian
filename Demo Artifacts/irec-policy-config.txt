@@ -62,6 +62,13 @@
           "defaultActive": true
         },
         {
+          "tag": "update_approve_document_status",
+          "blockType": "sendToGuardian",
+          "dataType": "approve",
+          "entityType": "Installer",
+          "uiMetaData": {}
+        },
+        {
           "tag": "send_installer_vc_to_hedera",
           "blockType": "sendToGuardian",
           "dataType": "hedera",
@@ -390,7 +397,7 @@
                     "name": "Approve",
                     "value": "APPROVED",
                     "uiClass": "btn-approve",
-                    "bindBlock": "send_installer_vc_to_hedera"
+                    "bindBlock": "update_approve_document_status"
                   },
                   {
                     "name": "Reject",
@@ -400,13 +407,6 @@
                   }
                 ]
               }
-            },
-            {
-              "tag": "update_approve_document_status",
-              "blockType": "sendToGuardian",
-              "dataType": "approve",
-              "entityType": "Installer",
-              "uiMetaData": {}
             }
           ]
         }
