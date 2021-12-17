@@ -255,6 +255,7 @@
     color: #3f51b5;
     cursor: pointer;
     padding-top: 4px;
+    position: relative;
 }
 
 .btn-new-block:hover {
@@ -411,4 +412,54 @@ input[readonly] {
     transform: translate(-50%, -50%);
     font-size: 20px;
     color: darkgrey;
+}
+
+.btn-new-block[errors-count] {
+    color: #ff0000;
+}
+.btn-new-block[errors-count="-1"] {
+    color: #3f51b5;
+}
+.btn-new-block[errors-count="0"] {
+    color: #00bd06;
+}
+
+.btn-new-block > .error-count {
+    position: absolute;
+    top: 0;
+    color: white;
+    right: 0;
+    background: #ff0000;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 18px;
+}
+
+.errors-properties {
+    margin: 6px 17px 3px 7px;
+    max-height: 200px;
+    overflow: auto;
+}
+
+.errors-property {
+    border-radius: 3px;
+    border: 1px solid #f90000;
+    padding: 5px;
+    color: #f90000;
+    background: #fff2f2;
+    margin-bottom: 5px;
+    position: relative;
+    padding-left: 20px;
+}
+
+.errors-property span {
+    position: absolute;
+    left: 9px;
+    top: 13px;
+    background: #df0000;
+    width: 6px;
+    height: 3px;
 }

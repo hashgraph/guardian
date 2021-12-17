@@ -22,9 +22,11 @@
 
                     <div class="delimiter"></div>
 
-                    <div class="btn-new-block btn-status-edit" (click)="validationPolicy()" title="Validation Policy">
+                    <div class="btn-new-block btn-status-edit" (click)="validationPolicy()" title="Validation Policy"
+                        [attr.errors-count]="errorsCount">
                         <mat-icon>task_alt</mat-icon>
                         <span>Validation</span>
+                        <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                     </div>
 
                     <div class="delimiter"></div>
@@ -115,6 +117,11 @@
                     </div>
                 </div>
                 <div class="group-body">
+                    <div *ngIf="currentBlock.error" class="errors-properties">
+                        <div *ngFor="let item of currentBlock.errorText" class="errors-property">
+                            <span></span>{{item}}
+                        </div>
+                    </div>
                     <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
                         [permissions]="permissions" [readonly]="readonly" [tokens]="tokens">
                     </common-properties>
