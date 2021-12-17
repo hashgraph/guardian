@@ -52,6 +52,7 @@ export class PolicyConfigurationComponent implements OnInit {
     tokens!: Token[];
     policyId!: string;
     errors: any[] = [];
+    errorsCount: number = -1;
 
     colGroup1 = false;
     colGroup2 = false;
@@ -127,6 +128,8 @@ export class PolicyConfigurationComponent implements OnInit {
         this.permissions = allPermissions;
         this.setBlocks(root);
         this.indexBlock = this.allBlocks.length + 1;
+        this.errors = [];
+        this.errorsCount = -1;
     }
 
     setBlocks(root: BlockNode) {
@@ -136,7 +139,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.allBlocks = this.all(root, []);
         this.allBlocks.forEach((b => {
             if (!b.id) b.id = this.generateUUIDv4();
-        }))
+        }));
     }
 
     all(block: BlockNode, allBlocks: BlockNode[]) {
@@ -244,14 +247,16 @@ export class PolicyConfigurationComponent implements OnInit {
             const { blocks } = data;
             const errors = blocks.filter((block: any) => !block.isValid);
             this.errors = errors;
+            this.errorsCount = errors.length;
             const map: any = {};
             for (let i = 0; i < errors.length; i++) {
                 const element = errors[i];
-                map[element.id] = true;
+                map[element.id] = element.errors;
             }
             for (let i = 0; i < this.allBlocks.length; i++) {
                 const element = this.allBlocks[i];
-                element.error = !map[element.id];
+                element.error = !!map[element.id];
+                element.errorText = map[element.id];
             }
             this.blocks = [this.root];
             this.currentBlock = this.root;
