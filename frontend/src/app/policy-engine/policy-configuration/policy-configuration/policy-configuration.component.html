@@ -22,6 +22,13 @@
 
                     <div class="delimiter"></div>
 
+                    <div class="btn-new-block btn-status-edit" (click)="validationPolicy()" title="Validation Policy">
+                        <mat-icon>task_alt</mat-icon>
+                        <span>Validation</span>
+                    </div>
+
+                    <div class="delimiter"></div>
+
                     <div class="btn-new-block btn-status-edit" (click)="publishPolicy()" title="Publish Policy">
                         <mat-icon>public</mat-icon>
                         <span>Publish</span>
@@ -44,36 +51,18 @@
                         <mat-icon>info</mat-icon>
                         <span>Information</span>
                     </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceDocumentsSource')"
-                        title="Add 'Documents Source' Block">
-                        <mat-icon>table_view</mat-icon>
-                        <span>Documents</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('requestVcDocument')"
-                        title="Add 'Request' Block">
-                        <mat-icon>dynamic_form</mat-icon>
-                        <span>Request</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('sendToGuardian')"
-                        title="Add 'Send' Block">
-                        <mat-icon>send</mat-icon>
-                        <span>Send</span>
-                    </div>
+
                     <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceAction')"
                         title="Add 'Action' Block">
                         <mat-icon>flash_on</mat-icon>
                         <span>Action</span>
                     </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('externalDataBlock')"
-                        title="Add 'Action' Block">
-                        <mat-icon>cloud</mat-icon>
-                        <span>External Data</span>
+
+                    <div class="btn-new-block btn-status-edit" [matMenuTriggerFor]="vcMenu">
+                        <mat-icon>description</mat-icon>
+                        <span>Verifiable Credential</span>
                     </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('aggregateDocument')"
-                        title="Add 'Aggregate' Block">
-                        <mat-icon>merge_type</mat-icon>
-                        <span>Aggregate Data</span>
-                    </div>
+
                     <div class="btn-new-block btn-status-edit" [matMenuTriggerFor]="tokensMenu">
                         <mat-icon>paid</mat-icon>
                         <span>Tokens</span>
@@ -96,15 +85,11 @@
                 </div>
 
                 <div class="tree-container code-container-{{currentView}}">
-                    <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code" [readonly]="readonly">
+                    <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code"
+                        [readonly]="readonly">
                     </textarea>
-                    <tree-flat-overview
-                        *ngIf="currentView == 'blocks'"
-                        [blocks]="blocks"
-                        (delete)="onDelete($event)"
-                        (select)="onSelect($event)"
-                        (reorder)="onReorder($event)"
-                    ></tree-flat-overview>
+                    <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" (delete)="onDelete($event)"
+                        (select)="onSelect($event)" (reorder)="onReorder($event)"></tree-flat-overview>
                 </div>
             </div>
         </div>
@@ -138,6 +123,30 @@
         </div>
     </div>
 </div>
+
+<mat-menu #vcMenu="matMenu">
+    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('interfaceDocumentsSource')"
+        title="Add 'Documents Source' Block">
+        <mat-icon>table_view</mat-icon>
+        <span>Documents</span>
+    </div>
+    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('requestVcDocument')" title="Add 'Request' Block">
+        <mat-icon>dynamic_form</mat-icon>
+        <span>Request</span>
+    </div>
+    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('sendToGuardian')" title="Add 'Send' Block">
+        <mat-icon>send</mat-icon>
+        <span>Send</span>
+    </div>
+    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('externalDataBlock')" title="Add 'Action' Block">
+        <mat-icon>cloud</mat-icon>
+        <span>External Data</span>
+    </div>
+    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('aggregateDocument')" title="Add 'Aggregate' Block">
+        <mat-icon>merge_type</mat-icon>
+        <span>Aggregate Data</span>
+    </div>
+</mat-menu>
 
 <mat-menu #tokensMenu="matMenu">
     <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('mintDocument')" title="Add 'Mint' Block">

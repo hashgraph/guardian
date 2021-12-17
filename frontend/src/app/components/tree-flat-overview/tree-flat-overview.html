@@ -3,7 +3,7 @@
     (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart()"
     (cdkDragReleased)="dragEnd()">
     <button mat-icon-button disabled></button>
-    <div class="block" (click)="onSelect($event, node)" [attr.selected]="isSelect(node)">
+    <div class="block" (click)="onSelect($event, node)" [attr.selected]="isSelect(node)" [attr.error]="isError(node)">
       <div class="block-icon">
         <mat-icon>{{getIcon(node)}}</mat-icon>
       </div>
@@ -20,7 +20,7 @@
       <mat-icon class="mat-icon-rtl-mirror">{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
       </mat-icon>
     </button>
-    <div class="block" (click)="onSelect($event, node)" [attr.selected]="isSelect(node)">
+    <div class="block" (click)="onSelect($event, node)" [attr.selected]="isSelect(node)" [attr.error]="isError(node)">
       <div class="block-icon">
         <mat-icon>{{getIcon(node)}}</mat-icon>
       </div>
