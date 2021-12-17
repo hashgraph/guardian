@@ -245,4 +245,8 @@ export class TreeFlatOverview {
   isSelect(node: FlatBlockNode) {
     return this.currentBlock == node.node;
   }
+
+  isError(node: FlatBlockNode) {
+    return node.node.error;
+  }
 }
