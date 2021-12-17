@@ -14,25 +14,11 @@ export class SchemaService {
   }
 
   public createSchema(schema: Schema): Observable<ISchema[]> {
-    const data = {
-      uuid: schema.uuid,
-      hash: schema.hash,
-      name: schema.name,
-      entity: schema.entity,
-      document: schema.document
-    }
-    return this.http.post<any[]>('/api/schema/create', data);
+    return this.http.post<any[]>('/api/schema/create', schema);
   }
 
   public updateSchema(schema: Schema, id?: string): Observable<ISchema[]> {
-    const data = {
-      id: id || schema.id,
-      uuid: schema.uuid,
-      hash: schema.hash,
-      name: schema.name,
-      entity: schema.entity,
-      document: schema.document
-    }
+    const data = Object.assign({}, schema, { id: id || schema.id });
     return this.http.post<any[]>('/api/schema/update', data);
   }
 
