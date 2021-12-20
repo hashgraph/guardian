@@ -90,6 +90,12 @@
                     <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code"
                         [readonly]="readonly">
                     </textarea>
+                    <div *ngIf="currentView !== 'blocks' && errors" class="json-errors">
+                        <div *ngFor="let item of errors" class="errors-property">
+                            <span></span>{{item}}
+                        </div>
+                    </div>
+
                     <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" [errors]="errorsMap"
                         (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)">
                     </tree-flat-overview>

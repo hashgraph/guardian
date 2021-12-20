@@ -331,8 +331,8 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (this.currentView == 'yaml') {
                     root = await this.yamlToObject(this.code);
                 }
-            } catch (error) {
-                console.error(error)
+            } catch (error: any) {
+                this.errors = [error.message];
                 this.loading = false;
                 return;
             }
@@ -348,8 +348,8 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (this.currentView == 'yaml') {
                     code = await this.yamlToJson(this.code);
                 }
-            } catch (error) {
-                console.error(error)
+            } catch (error: any) {
+                this.errors = [error.message];
                 this.loading = false;
                 return;
             }
@@ -364,8 +364,8 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (this.currentView == 'json') {
                     code = await this.jsonToYaml(this.code);
                 }
-            } catch (error) {
-                console.error(error)
+            } catch (error: any) {
+                this.errors = [error.message];
                 this.loading = false;
                 return;
             }
@@ -388,7 +388,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.policyEngineService.toYAML(root).subscribe((data: any) => {
                 resolve(data.yaml);
             }, (e) => {
-                reject();
+                reject({ message: 'Bad yaml' });
             });
         });
     }
@@ -398,7 +398,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.policyEngineService.fromYAML(yaml).subscribe((data: any) => {
                 resolve(data.json);
             }, (e) => {
-                reject();
+                reject({ message: 'Bad yaml' });
             });
         });
     }
