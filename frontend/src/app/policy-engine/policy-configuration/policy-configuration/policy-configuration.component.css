@@ -197,6 +197,8 @@
     right: 0;
     top: 30px;
     bottom: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .group[hide="true"] .group-body {
@@ -417,11 +419,18 @@ input[readonly] {
 .btn-new-block[errors-count] {
     color: #ff0000;
 }
+
 .btn-new-block[errors-count="-1"] {
     color: #3f51b5;
 }
+
 .btn-new-block[errors-count="0"] {
     color: #00bd06;
+}
+
+.btn-status-edit[readonly="true"] {
+    pointer-events: none;
+    color: #b9b9b9;
 }
 
 .btn-new-block > .error-count {
@@ -438,10 +447,14 @@ input[readonly] {
     line-height: 18px;
 }
 
+.btn-status-edit[readonly="true"] > .error-count {
+    display: none;
+}
+
 .errors-properties {
     margin: 6px 17px 3px 7px;
     max-height: 200px;
-    overflow: auto;
+    flex: 0;
 }
 
 .errors-property {
@@ -462,4 +475,11 @@ input[readonly] {
     background: #df0000;
     width: 6px;
     height: 3px;
+}
+
+.common-properties {
+    flex: 1;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
 }

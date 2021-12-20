@@ -165,11 +165,12 @@ export class BlockTreeGenerator {
 
     private async validate(arg) {
         const resultsContainer = new PolicyValidationResultsContainer();
+
         let policyConfig;
         if (typeof arg === 'string') {
             policyConfig = (await getMongoRepository(Policy).findOne(arg)).config;
         } else {
-            policyConfig = arg;
+            policyConfig = arg.config;
         }
 
         function tagFinder(instance) {
@@ -183,8 +184,6 @@ export class BlockTreeGenerator {
             }
         }
         tagFinder(policyConfig);
-        console.log(resultsContainer);
-
 
         const policy = await this.generate(arg, true);
         await policy.validate(resultsContainer);

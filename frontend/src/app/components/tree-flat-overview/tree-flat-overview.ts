@@ -25,6 +25,8 @@ export class FlatBlockNode {
 })
 export class TreeFlatOverview {
   @Input('blocks') blocks!: BlockNode[];
+  @Input('errors') errors!: any;
+
   @Output('delete') delete = new EventEmitter();
   @Output('select') select = new EventEmitter();
   @Output('reorder') reorder = new EventEmitter();
@@ -51,6 +53,9 @@ export class TreeFlatOverview {
 
   ngOnChanges(changes: SimpleChanges) {
     this.rebuildTreeForData(this.blocks);
+    if (changes.errors && this.errors) {
+      this.setErrors(this.errors);
+    }
   }
 
   transformer = (node: BlockNode, level: number) => {
@@ -141,6 +146,51 @@ export class TreeFlatOverview {
     // rebuild tree with mutated data
     // this.rebuildTreeForData(changedData);
     this.reorder.emit(changedData);
+  }
+
+  setErrors(errors: any) {
+    const keys = Object.keys(errors);
+    for (let i = 0; i < keys.length; i++) {
+      const id = keys[i];
+      const node: any = this.treeControl.dataNodes.find((n) => n.node.id === id);
+      this.expand(node);
+    }
+  }
+
+  expand(node: FlatBlockNode) {
+    const parent = this.getParent(node);
+    if (parent) {
+      this.treeControl.expand(parent);
+      this.expand(parent);
+    }
+  }
+
+  /**
+   * Iterate over each node in reverse order and return the first node that has a lower level than the passed node.
+   */
+  getParent(node: FlatBlockNode): FlatBlockNode | null {
+    if (!node) {
+      return null;
+    }
+
+    const { treeControl } = this;
+    const currentLevel = treeControl.getLevel(node);
+
+    if (currentLevel < 1) {
+      return null;
+    }
+
+    const startIndex = treeControl.dataNodes.indexOf(node) - 1;
+
+    for (let i = startIndex; i >= 0; i--) {
+      const currentNode = treeControl.dataNodes[i];
+
+      if (treeControl.getLevel(currentNode) < currentLevel) {
+        return currentNode;
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -247,6 +297,9 @@ export class TreeFlatOverview {
   }
 
   isError(node: FlatBlockNode) {
-    return node.node.error;
+    if (this.errors && this.errors[node.node.id]) {
+      return true;
+    }
+    return false;
   }
 }
