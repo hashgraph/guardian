@@ -337,7 +337,6 @@ export class BlockTreeGenerator {
                     model.status = 'PUBLISH';
                     model.topicId = topicId;
 
-
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
                         id: `${model.id}`,
@@ -357,9 +356,9 @@ export class BlockTreeGenerator {
                         policyId: `${model.id}`
                     });
 
-                    await this.generate(model.id);
+                    await this.generate(model.id.toString());
                 }
-
+         
                 const policies = await getMongoRepository(Policy).find();
                 res.json({policies, isValid, errors});
             } catch (error) {
