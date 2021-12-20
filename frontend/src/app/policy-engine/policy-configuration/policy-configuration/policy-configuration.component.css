@@ -258,6 +258,7 @@
     cursor: pointer;
     padding-top: 4px;
     position: relative;
+    user-select: none;
 }
 
 .btn-new-block:hover {
@@ -271,6 +272,7 @@
     align-content: center;
     text-align: center;
     line-height: 14px;
+    user-select: none;
 }
 
 .btn-new-block-menu {
@@ -319,6 +321,7 @@
     width: 22px;
     height: 16px;
     line-height: 16px;
+    user-select: none;
 }
 
 
@@ -482,4 +485,12 @@ input[readonly] {
     overflow: hidden;
     width: 100%;
     height: 100%;
+}
+
+
+.json-errors {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
 }
