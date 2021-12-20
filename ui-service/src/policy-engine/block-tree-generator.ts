@@ -317,44 +317,51 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.router.post('/publish/:policyId', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.post('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-                const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
-                if (!model.config) {
-                    res.status(500).send({ code: 500, message: 'The policy is empty' });
-                    return;
-                }
-                const guardians = new Guardians();
-                const root = await guardians.getRootConfig(user.did);
-                const topicId = await HederaHelper
-                    .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-                    .newTopic(root.hederaAccountKey, model.topicDescription);
-                model.status = 'PUBLISH';
-                model.topicId = topicId;
+                const errors = await this.validate(req.params.policyId);
+                const isValid = !errors.blocks.some(block => !block.isValid);
 
-                const vcHelper = new VcHelper();
-                const credentialSubject = {
-                    id: `${model.id}`,
-                    name: model.name,
-                    description: model.description,
-                    topicDescription: model.topicDescription,
-                    version: model.version,
-                    policyTag: model.policyTag
-                }
-                const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, "Policy", credentialSubject);
-                await getMongoRepository(Policy).save(model);
-                await guardians.setVcDocument({
-                    hash: vc.toCredentialHash(),
-                    owner: user.did,
-                    document: vc.toJsonTree(),
-                    type: SchemaEntity.POLICY,
-                    policyId: `${model.id}`
-                });
+                if (isValid) {
+                    const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+                    const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                    if (!model.config) {
+                        res.status(500).send({code: 500, message: 'The policy is empty'});
+                        return;
+                    }
+                    const guardians = new Guardians();
+                    const root = await guardians.getRootConfig(user.did);
+                    const topicId = await HederaHelper
+                        .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+                        .newTopic(root.hederaAccountKey, model.topicDescription);
+                    model.status = 'PUBLISH';
+                    model.topicId = topicId;
 
-                await this.generate(model.id);
-                const policies = await getMongoRepository(Policy).find()
-                res.json(policies);
+
+                    const vcHelper = new VcHelper();
+                    const credentialSubject = {
+                        id: `${model.id}`,
+                        name: model.name,
+                        description: model.description,
+                        topicDescription: model.topicDescription,
+                        version: model.version,
+                        policyTag: model.policyTag
+                    }
+                    const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, "Policy", credentialSubject);
+                    await getMongoRepository(Policy).save(model);
+                    await guardians.setVcDocument({
+                        hash: vc.toCredentialHash(),
+                        owner: user.did,
+                        document: vc.toJsonTree(),
+                        type: SchemaEntity.POLICY,
+                        policyId: `${model.id}`
+                    });
+
+                    await this.generate(model.id);
+                }
+
+                const policies = await getMongoRepository(Policy).find();
+                res.json({policies, isValid, errors});
             } catch (error) {
                 res.status(500).send({ code: 500, message: error.message });
             }
@@ -363,7 +370,6 @@ export class BlockTreeGenerator {
         this.router.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const model = await this.models.get(req.params.policyId) as IPolicyInterfaceBlock as any;
-                // const model = [...await this.models.values()][0] as any;
                 if (!model) {
                     const err = new PolicyOtherError('Unexisting policy', req.params.policyId, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
