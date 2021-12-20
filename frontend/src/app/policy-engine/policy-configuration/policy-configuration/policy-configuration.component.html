@@ -23,7 +23,7 @@
                     <div class="delimiter"></div>
 
                     <div class="btn-new-block btn-status-edit" (click)="validationPolicy()" title="Validation Policy"
-                        [attr.errors-count]="errorsCount">
+                        [attr.errors-count]="errorsCount" [attr.readonly]="currentView != 'blocks'">
                         <mat-icon>task_alt</mat-icon>
                         <span>Validation</span>
                         <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
@@ -90,8 +90,9 @@
                     <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code"
                         [readonly]="readonly">
                     </textarea>
-                    <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" (delete)="onDelete($event)"
-                        (select)="onSelect($event)" (reorder)="onReorder($event)"></tree-flat-overview>
+                    <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" [errors]="errorsMap"
+                        (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)">
+                    </tree-flat-overview>
                 </div>
             </div>
         </div>
@@ -117,14 +118,16 @@
                     </div>
                 </div>
                 <div class="group-body">
-                    <div *ngIf="currentBlock.error" class="errors-properties">
-                        <div *ngFor="let item of currentBlock.errorText" class="errors-property">
+                    <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
+                        <div *ngFor="let item of errorsMap[currentBlock.id]" class="errors-property">
                             <span></span>{{item}}
                         </div>
                     </div>
-                    <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                        [permissions]="permissions" [readonly]="readonly" [tokens]="tokens">
-                    </common-properties>
+                    <div class="common-properties">
+                        <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
+                            [permissions]="permissions" [readonly]="readonly" [tokens]="tokens">
+                        </common-properties>
+                    </div>
                 </div>
             </div>
         </div>

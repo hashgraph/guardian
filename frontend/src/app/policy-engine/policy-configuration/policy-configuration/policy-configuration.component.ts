@@ -53,6 +53,7 @@ export class PolicyConfigurationComponent implements OnInit {
     policyId!: string;
     errors: any[] = [];
     errorsCount: number = -1;
+    errorsMap: any;
 
     colGroup1 = false;
     colGroup2 = false;
@@ -130,6 +131,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.indexBlock = this.allBlocks.length + 1;
         this.errors = [];
         this.errorsCount = -1;
+        this.errorsMap = {};
     }
 
     setBlocks(root: BlockNode) {
@@ -243,20 +245,21 @@ export class PolicyConfigurationComponent implements OnInit {
 
     validationPolicy() {
         this.loading = true;
-        this.policyEngineService.validationPolicy(this.policyId).subscribe((data: any) => {
-            const { blocks } = data;
+        this.policyEngineService.validationPolicy({
+            config: this.root
+        }).subscribe((data: any) => {
+            const { config, results } = data;
+            const root = config.config;
+            this.setBlocks(root);
+            const blocks = results.blocks;
             const errors = blocks.filter((block: any) => !block.isValid);
+
             this.errors = errors;
             this.errorsCount = errors.length;
-            const map: any = {};
+            this.errorsMap = {};
             for (let i = 0; i < errors.length; i++) {
                 const element = errors[i];
-                map[element.id] = element.errors;
-            }
-            for (let i = 0; i < this.allBlocks.length; i++) {
-                const element = this.allBlocks[i];
-                element.error = !!map[element.id];
-                element.errorText = map[element.id];
+                this.errorsMap[element.id] = element.errors;
             }
             this.blocks = [this.root];
             this.currentBlock = this.root;
@@ -301,6 +304,9 @@ export class PolicyConfigurationComponent implements OnInit {
             return;
         }
 
+        this.errors = [];
+        this.errorsCount = -1;
+        this.errorsMap = {};
         this.loading = true;
         if (type == 'blocks') {
             let root = null;
