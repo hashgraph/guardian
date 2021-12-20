@@ -62,6 +62,25 @@ export class PolicyConfigurationComponent implements OnInit {
 
     indexBlock: number = 0;
 
+    codeMirrorOptions: any = {
+        theme: 'default',
+        mode: 'application/ld+json',
+        styleActiveLine: true,
+        lineNumbers: true,
+        lineWrapping: true,
+        foldGutter: true,
+        gutters: [
+            'CodeMirror-linenumbers',
+            'CodeMirror-foldgutter',
+            'CodeMirror-lint-markers'
+        ],
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        lint: true,
+        readOnly: false,
+        viewportMargin: Infinity
+    };
+
     constructor(
         private schemaService: SchemaService,
         private tokenService: TokenService,
@@ -132,6 +151,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.errors = [];
         this.errorsCount = -1;
         this.errorsMap = {};
+        this.codeMirrorOptions.readOnly = this.readonly;
     }
 
     setBlocks(root: BlockNode) {
@@ -354,6 +374,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 return;
             }
             this.code = code;
+            this.codeMirrorOptions.mode = 'application/ld+json';
         }
         if (type == 'yaml') {
             let code = "";
@@ -370,6 +391,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 return;
             }
             this.code = code;
+            this.codeMirrorOptions.mode = 'text/x-yaml';
         }
         this.currentView = type;
         this.loading = false;

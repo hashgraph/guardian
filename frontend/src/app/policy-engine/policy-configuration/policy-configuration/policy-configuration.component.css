@@ -490,7 +490,11 @@ input[readonly] {
 
 .json-errors {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    z-index: 999;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #c9c9c9;
 }
