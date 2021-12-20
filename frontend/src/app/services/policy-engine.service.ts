@@ -154,8 +154,8 @@ export class PolicyEngineService {
     return this.http.post<any>(`/policy/create`, policy);
   }
 
-  public publishPolicy(policyId: string): Observable<void> {
-    return this.http.post<any>(`/policy/publish/${policyId}`, null);
+  public publishPolicy(policyId: string): Observable<any> {
+    return this.http.post<any>(`/policy/${policyId}/publish`, null);
   }
 
   public validation(policyId: string): Observable<any> {

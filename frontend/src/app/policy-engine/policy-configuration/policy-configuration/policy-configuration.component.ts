@@ -235,8 +235,22 @@ export class PolicyConfigurationComponent implements OnInit {
 
     publishPolicy() {
         this.loading = true;
-        this.policyEngineService.publishPolicy(this.policyId).subscribe((policies: any) => {
-            this.loadPolicy();
+        this.policyEngineService.publishPolicy(this.policyId).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (isValid) {
+                this.loadPolicy();
+            } else {
+                const blocks = errors.blocks;
+                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
+                this.errors = invalidBlocks;
+                this.errorsCount = invalidBlocks.length;
+                this.errorsMap = {};
+                for (let i = 0; i < invalidBlocks.length; i++) {
+                    const element = invalidBlocks[i];
+                    this.errorsMap[element.id] = element.errors;
+                }
+                this.loading = false;
+            }
         }, (e) => {
             console.error(e.error);
             this.loading = false;
