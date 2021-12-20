@@ -49,8 +49,12 @@ export class PolicyValidationResultsContainer {
         block.errors.push(error);
     }
 
+    public addTag(tag: string): void {
+        this.tags.push(tag);
+    }
+
     public isTagExist(tag: string): boolean {
-        return !![...this.blocks.values()].find(item => item.block.tag === tag);
+        return !!this.tags.find(item => item === tag);
     }
 
     public getSerializedErrors(): ISerializedErrors {
