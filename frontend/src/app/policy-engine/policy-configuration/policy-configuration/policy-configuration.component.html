@@ -87,10 +87,15 @@
                 </div>
 
                 <div class="tree-container code-container-{{currentView}}">
-                    <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code"
+                    <!-- <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code"
                         [readonly]="readonly">
-                    </textarea>
-                    <div *ngIf="currentView !== 'blocks' && errors" class="json-errors">
+                    </textarea> -->
+
+                    <div *ngIf="currentView !== 'blocks'" class="textarea-code">
+                        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"></ngx-codemirror>
+                    </div>
+
+                    <div *ngIf="currentView !== 'blocks' && errors && errors.length" class="json-errors">
                         <div *ngFor="let item of errors" class="errors-property">
                             <span></span>{{item}}
                         </div>
