@@ -104,7 +104,7 @@ export class InterfaceDocumentsSource {
         if (Array.isArray(ref.options.uiMetaData.fields)) {
             for (let tag of ref.options.uiMetaData.fields.map(i => i.bindBlock).filter(item => item !== undefined)) {
                 if (!resultsContainer.isTagExist(tag)) {
-                    resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does exist`);
+                    resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
                 }
             }
         }

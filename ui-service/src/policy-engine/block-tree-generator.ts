@@ -165,6 +165,27 @@ export class BlockTreeGenerator {
 
     private async validate(arg) {
         const resultsContainer = new PolicyValidationResultsContainer();
+        let policyConfig;
+        if (typeof arg === 'string') {
+            policyConfig = (await getMongoRepository(Policy).findOne(arg)).config;
+        } else {
+            policyConfig = arg;
+        }
+
+        function tagFinder(instance) {
+            if (instance.tag) {
+                resultsContainer.addTag(instance.tag);
+            }
+            if (Array.isArray(instance.children)) {
+                for (let child of instance.children) {
+                    tagFinder(child);
+                }
+            }
+        }
+        tagFinder(policyConfig);
+        console.log(resultsContainer);
+
+
         const policy = await this.generate(arg, true);
         await policy.validate(resultsContainer);
         return resultsContainer.getSerializedErrors();

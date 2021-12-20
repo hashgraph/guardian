@@ -121,7 +121,7 @@ export class InterfaceDocumentActionBlock {
                         if (Array.isArray(ref.options.uiMetaData.options)) {
                             for (let tag of ref.options.uiMetaData.options.map(i => i.bindBlock)) {
                                 if (!resultsContainer.isTagExist(tag)) {
-                                    resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does exist`);
+                                    resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
                                 }
                             }
                         } else {
