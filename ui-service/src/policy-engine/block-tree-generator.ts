@@ -103,9 +103,24 @@ export class BlockTreeGenerator {
      * @param id
      * @param skipRegistration
      */
-    async generate(id: string, skipRegistration?: boolean): Promise<IPolicyBlock> {
-        const policy = await BlockTreeGenerator.getPolicyFromDb(id);
-        const policyId = id;
+    async generate(id: string, skipRegistration?: boolean): Promise<IPolicyBlock>;
+
+    /**
+     * Generate policy instance from config
+     * @param config
+     * @param skipRegistration
+     */
+    async generate(config: Object, skipRegistration?: boolean): Promise<IPolicyBlock>;
+
+    async generate(arg: any, skipRegistration?: boolean): Promise<IPolicyBlock> {
+        let policy, policyId;
+        if (typeof arg === 'string') {
+            policy = await BlockTreeGenerator.getPolicyFromDb(arg);
+            policyId = arg;
+        } else {
+            policy = arg;
+            policyId = StateContainer.GenerateNewUUID();
+        }
 
         const configObject = policy.config as ISerializedBlock;
 
@@ -136,12 +151,21 @@ export class BlockTreeGenerator {
     }
 
     /**
-     * Validate policy
+     * Validate policy by id
      * @param id - policyId
      */
-    private async validate(id: string): Promise<ISerializedErrors> {
+    private async validate(id: string): Promise<ISerializedErrors>
+
+    /**
+     * Validate policy by config
+     * @param config
+     * @private
+     */
+    private async validate(config: Object): Promise<ISerializedErrors>;
+
+    private async validate(arg) {
         const resultsContainer = new PolicyValidationResultsContainer();
-        const policy = await this.generate(id, true);
+        const policy = await this.generate(arg, true);
         await policy.validate(resultsContainer);
         return resultsContainer.getSerializedErrors();
     }
@@ -338,7 +362,22 @@ export class BlockTreeGenerator {
                 res.send(results);
             } catch (e) {
                 console.log(e);
-                res.status(500).send({code: 500, message: 'Validation error'});
+                res.status(500).send({code: 500, message: e.message});
+            }
+
+        });
+
+        this.router.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const config = req.body as Object
+                const results = await this.validate(config);
+                res.send({
+                    results,
+                    config
+                });
+            } catch (e) {
+                console.log(e);
+                res.status(500).send({code: 500, message: e.message});
             }
 
         });
