@@ -80,7 +80,7 @@ Promise.all([
     app.use('/api/profile/', authorizationHelper, profileAPI);
     app.use('/api/schema', authorizationHelper, schemaAPI);
     app.use('/api/tokens', authorizationHelper, tokenAPI);
-    app.use('/api/package', importExportAPI);
+    app.use('/api/package', authorizationHelper, importExportAPI);
     app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
     app.use('/api-docs/', swaggerAPI);
     app.use('/', frontendService);

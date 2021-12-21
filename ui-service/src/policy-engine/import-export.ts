@@ -114,13 +114,14 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
 
         delete policy.id;
         delete policy.status;
+        policy.owner = req.user.did;
         await Promise.all([
             Promise.all(tokens.map(token => guardians.setToken(token))),
             guardians.importSchemes(schemas),
             policyRepository.save(policyRepository.create(policy))
         ]);
 
-        res.json(await policyRepository.find());
+        res.json(await policyRepository.find({owner: req.user.did}));
     } catch (e) {
         res.status(500).send({code: 500, message: e.message});
     }
