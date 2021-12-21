@@ -15,7 +15,7 @@ export interface PolicyBlockConstructorParams {
     _parent: IPolicyBlock;
     dependencies: PolicyBlockDependencies;
     options?: any;
-    id: string;
+    id?: string;
 }
 
 export interface PolicyBlockAdditionalFields {
