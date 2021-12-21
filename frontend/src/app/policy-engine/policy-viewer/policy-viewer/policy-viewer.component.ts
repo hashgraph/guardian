@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IToken } from 'interfaces';
+import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -55,7 +56,8 @@ export class PolicyViewerComponent implements OnInit {
         private tokenService: TokenService,
         private route: ActivatedRoute,
         private router: Router,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private toastr: ToastrService
     ) {
         this.policies = null;
         this.policy = null;
@@ -172,7 +174,26 @@ export class PolicyViewerComponent implements OnInit {
 
     publish(element: any) {
         this.loading = true;
-        this.policyEngineService.publishPolicy(element.id).subscribe((policies: any) => {
+        this.policyEngineService.publishPolicy(element.id).subscribe((data: any) => {   
+            const { policies, isValid, errors } = data;
+            if (!isValid) {
+                let text = [];
+                const blocks = errors.blocks;
+                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
+                for (let i = 0; i < invalidBlocks.length; i++) {
+                    const block = invalidBlocks[i];
+                    for (let j = 0; j < block.errors.length; j++) {
+                        const error = block.errors[j];
+                        text.push(`<div>${block.id}: ${error}</div>`);
+                    }
+                }
+                this.toastr.error(text.join(''), 'The policy is invalid', {
+                    timeOut: 30000,
+                    closeButton: true,
+                    positionClass: 'toast-bottom-right',
+                    enableHtml: true
+                  });
+            }
             this.updatePolicy(policies);
             setTimeout(() => {
                 this.loading = false;

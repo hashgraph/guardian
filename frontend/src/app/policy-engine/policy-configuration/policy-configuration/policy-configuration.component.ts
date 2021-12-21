@@ -51,6 +51,9 @@ export class PolicyConfigurationComponent implements OnInit {
     schemes!: Schema[];
     tokens!: Token[];
     policyId!: string;
+    errors: any[] = [];
+    errorsCount: number = -1;
+    errorsMap: any;
 
     colGroup1 = false;
     colGroup2 = false;
@@ -58,6 +61,25 @@ export class PolicyConfigurationComponent implements OnInit {
     permissions!: any[];
 
     indexBlock: number = 0;
+
+    codeMirrorOptions: any = {
+        theme: 'default',
+        mode: 'application/ld+json',
+        styleActiveLine: true,
+        lineNumbers: true,
+        lineWrapping: true,
+        foldGutter: true,
+        gutters: [
+            'CodeMirror-linenumbers',
+            'CodeMirror-foldgutter',
+            'CodeMirror-lint-markers'
+        ],
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        lint: true,
+        readOnly: false,
+        viewportMargin: Infinity
+    };
 
     constructor(
         private schemaService: SchemaService,
@@ -95,7 +117,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const tokens = data[1] || [];
             const policy = data[2];
             this.schemes = Schema.mapRef(schemes) || [];
-            this.schemes = this.schemes.filter(s=>s.status == SchemaStatus.PUBLISHED);
+            this.schemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
             this.schemes.unshift({
                 type: ""
             } as any);
@@ -126,6 +148,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.permissions = allPermissions;
         this.setBlocks(root);
         this.indexBlock = this.allBlocks.length + 1;
+        this.errors = [];
+        this.errorsCount = -1;
+        this.errorsMap = {};
+        this.codeMirrorOptions.readOnly = this.readonly;
     }
 
     setBlocks(root: BlockNode) {
@@ -135,7 +161,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.allBlocks = this.all(root, []);
         this.allBlocks.forEach((b => {
             if (!b.id) b.id = this.generateUUIDv4();
-        }))
+        }));
     }
 
     all(block: BlockNode, allBlocks: BlockNode[]) {
@@ -179,11 +205,11 @@ export class PolicyConfigurationComponent implements OnInit {
     removeBlock(blocks: BlockNode[], block: BlockNode) {
         for (let index = 0; index < blocks.length; index++) {
             const element = blocks[index];
-            if(element.id == block.id) {
+            if (element.id == block.id) {
                 blocks.splice(index, 1);
                 return blocks;
             }
-            if(element.children) {
+            if (element.children) {
                 element.children = this.removeBlock(element.children, block);
             }
         }
@@ -229,10 +255,50 @@ export class PolicyConfigurationComponent implements OnInit {
 
     publishPolicy() {
         this.loading = true;
-        this.policyEngineService.publishPolicy(this.policyId).subscribe((policies: any) => {
-            this.loadPolicy();
+        this.policyEngineService.publishPolicy(this.policyId).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (isValid) {
+                this.loadPolicy();
+            } else {
+                const blocks = errors.blocks;
+                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
+                this.errors = invalidBlocks;
+                this.errorsCount = invalidBlocks.length;
+                this.errorsMap = {};
+                for (let i = 0; i < invalidBlocks.length; i++) {
+                    const element = invalidBlocks[i];
+                    this.errorsMap[element.id] = element.errors;
+                }
+                this.loading = false;
+            }
         }, (e) => {
             console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    validationPolicy() {
+        this.loading = true;
+        this.policyEngineService.validationPolicy({
+            config: this.root
+        }).subscribe((data: any) => {
+            const { config, results } = data;
+            const root = config.config;
+            this.setBlocks(root);
+            const blocks = results.blocks;
+            const errors = blocks.filter((block: any) => !block.isValid);
+
+            this.errors = errors;
+            this.errorsCount = errors.length;
+            this.errorsMap = {};
+            for (let i = 0; i < errors.length; i++) {
+                const element = errors[i];
+                this.errorsMap[element.id] = element.errors;
+            }
+            this.blocks = [this.root];
+            this.currentBlock = this.root;
+            this.loading = false;
+        }, (e) => {
             this.loading = false;
         });
     }
@@ -272,6 +338,9 @@ export class PolicyConfigurationComponent implements OnInit {
             return;
         }
 
+        this.errors = [];
+        this.errorsCount = -1;
+        this.errorsMap = {};
         this.loading = true;
         if (type == 'blocks') {
             let root = null;
@@ -282,8 +351,8 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (this.currentView == 'yaml') {
                     root = await this.yamlToObject(this.code);
                 }
-            } catch (error) {
-                console.error(error)
+            } catch (error: any) {
+                this.errors = [error.message];
                 this.loading = false;
                 return;
             }
@@ -299,12 +368,13 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (this.currentView == 'yaml') {
                     code = await this.yamlToJson(this.code);
                 }
-            } catch (error) {
-                console.error(error)
+            } catch (error: any) {
+                this.errors = [error.message];
                 this.loading = false;
                 return;
             }
             this.code = code;
+            this.codeMirrorOptions.mode = 'application/ld+json';
         }
         if (type == 'yaml') {
             let code = "";
@@ -315,12 +385,13 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (this.currentView == 'json') {
                     code = await this.jsonToYaml(this.code);
                 }
-            } catch (error) {
-                console.error(error)
+            } catch (error: any) {
+                this.errors = [error.message];
                 this.loading = false;
                 return;
             }
             this.code = code;
+            this.codeMirrorOptions.mode = 'text/x-yaml';
         }
         this.currentView = type;
         this.loading = false;
@@ -339,7 +410,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.policyEngineService.toYAML(root).subscribe((data: any) => {
                 resolve(data.yaml);
             }, (e) => {
-                reject();
+                reject({ message: 'Bad yaml' });
             });
         });
     }
@@ -349,7 +420,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.policyEngineService.fromYAML(yaml).subscribe((data: any) => {
                 resolve(data.json);
             }, (e) => {
-                reject();
+                reject({ message: 'Bad yaml' });
             });
         });
     }

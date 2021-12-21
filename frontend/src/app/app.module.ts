@@ -82,6 +82,7 @@ import { TreeFlatOverview } from './components/tree-flat-overview/tree-flat-over
 import { AggregateConfigComponent } from './policy-engine/policy-configuration/aggregate-config/aggregate-config.component';
 import { InformationConfigComponent } from './policy-engine/policy-configuration/information-config/information-config.component';
 import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-import-dialog.component';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 @NgModule({
     declarations: [
@@ -157,6 +158,7 @@ import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-
         MatTreeModule,
         MatTooltipModule,
         DragDropModule,
+        CodemirrorModule,
         ToastrModule.forRoot()
     ],
     exports: [],

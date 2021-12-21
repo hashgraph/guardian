@@ -9,6 +9,7 @@ import {Policy} from '@entity/policy';
 import {Users} from '@helpers/users';
 import {KeyType, Wallet} from '@helpers/wallet';
 import {User} from '@entity/user';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 /**
  * Document action clock with UI
@@ -98,5 +99,59 @@ export class InterfaceDocumentActionBlock {
         }
         // await StateContainer.SetBlockState(ref.uuid, document, owner, null);
         // block.updateBlock(state, owner, null);
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+
+        if (!ref.options.type) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
+        } else {
+            switch (ref.options.type) {
+                case 'selector':
+                    if (!ref.options.uiMetaData || (typeof ref.options.uiMetaData !== 'object')) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData" does not set');
+                    } else {
+                        if (!ref.options.uiMetaData.field) {
+                            resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.field" does not set');
+                        }
+                        if (!ref.options.uiMetaData.options) {
+                            resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.options" does not set');
+                        }
+                        if (Array.isArray(ref.options.uiMetaData.options)) {
+                            for (let tag of ref.options.uiMetaData.options.map(i => i.bindBlock)) {
+                                if (!resultsContainer.isTagExist(tag)) {
+                                    resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
+                                }
+                            }
+                        } else {
+                            resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.options" must be an array');
+                        }
+                    }
+                    break;
+
+                case 'download':
+                    // if (!ref.options.filename) {
+                    //     resultsContainer.addBlockError(ref.uuid, 'Option "filename" does not set');
+                    // }
+
+                    if (!ref.options.targetUrl) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "targetUrl" does not set');
+                    }
+
+                    const schemas = await this.guardians.getSchemes({}) || [];
+                    if (!ref.options.schema) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
+                    } else if (typeof ref.options.schema !== 'string') {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+                    } else if (!schemas.find(s => s.uuid === ref.options.schema)) {
+                        resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`)
+                    }
+                    break;
+
+                default:
+                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector" or "download"');
+            }
+        }
     }
 }

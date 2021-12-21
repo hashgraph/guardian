@@ -20,6 +20,7 @@ import {HederaHelper} from 'vc-modules';
 import {Guardians} from '@helpers/guardians';
 import {VcHelper} from '@helpers/vcHelper';
 import * as Buffer from 'buffer';
+import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -100,10 +101,26 @@ export class BlockTreeGenerator {
     /**
      * Generate policy instance from db
      * @param id
+     * @param skipRegistration
      */
-    async generate(id: string): Promise<IPolicyBlock> {
-        const policy = await BlockTreeGenerator.getPolicyFromDb(id);
-        const policyId = id;
+    async generate(id: string, skipRegistration?: boolean): Promise<IPolicyBlock>;
+
+    /**
+     * Generate policy instance from config
+     * @param config
+     * @param skipRegistration
+     */
+    async generate(config: Object, skipRegistration?: boolean): Promise<IPolicyBlock>;
+
+    async generate(arg: any, skipRegistration?: boolean): Promise<IPolicyBlock> {
+        let policy, policyId;
+        if (typeof arg === 'string') {
+            policy = await BlockTreeGenerator.getPolicyFromDb(arg);
+            policyId = arg;
+        } else {
+            policy = arg;
+            policyId = StateContainer.GenerateNewUUID();
+        }
 
         const configObject = policy.config as ISerializedBlock;
 
@@ -112,7 +129,7 @@ export class BlockTreeGenerator {
             if (parent) {
                 params._parent = parent;
             }
-            const blockInstance = PolicyBlockHelpers.ConfigureBlock(policyId.toString(), blockType, params as any) as any;
+            const blockInstance = PolicyBlockHelpers.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
             blockInstance.setPolicyId(policyId.toString())
             blockInstance.setPolicyOwner(policy.owner);
             if (children && children.length) {
@@ -124,11 +141,53 @@ export class BlockTreeGenerator {
         }
 
         const model = BuildInstances(configObject);
-        this.models.set(policy.id.toString(), model as any);
+        if (!skipRegistration) {
+            this.models.set(policy.id.toString(), model as any);
+        }
 
         StateContainer.InitStateSubscriptions();
 
         return model as IPolicyInterfaceBlock;
+    }
+
+    /**
+     * Validate policy by id
+     * @param id - policyId
+     */
+    private async validate(id: string): Promise<ISerializedErrors>
+
+    /**
+     * Validate policy by config
+     * @param config
+     * @private
+     */
+    private async validate(config: Object): Promise<ISerializedErrors>;
+
+    private async validate(arg) {
+        const resultsContainer = new PolicyValidationResultsContainer();
+
+        let policyConfig;
+        if (typeof arg === 'string') {
+            policyConfig = (await getMongoRepository(Policy).findOne(arg)).config;
+        } else {
+            policyConfig = arg.config;
+        }
+
+        function tagFinder(instance) {
+            if (instance.tag) {
+                resultsContainer.addTag(instance.tag);
+            }
+            if (Array.isArray(instance.children)) {
+                for (let child of instance.children) {
+                    tagFinder(child);
+                }
+            }
+        }
+        tagFinder(policyConfig);
+
+        const policy = await this.generate(arg, true);
+        await policy.validate(resultsContainer);
+        return resultsContainer.getSerializedErrors();
     }
 
     /**
@@ -220,12 +279,16 @@ export class BlockTreeGenerator {
         });
 
         this.router.post('/create', async (req: AuthenticatedRequest, res: Response) => {
-            const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
-            const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
-            model.owner = user.did;
-            await getMongoRepository(Policy).save(model);
-            const policies = await getMongoRepository(Policy).find({owner: user.did})
-            res.json(policies);
+            try {
+                const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
+                model.owner = user.did;
+                await getMongoRepository(Policy).save(model);
+                const policies = await getMongoRepository(Policy).find({owner: user.did})
+                res.json(policies);
+            } catch(e) {
+                res.status(500).send({ code: 500, message: e.message });
+            }
         });
 
         this.router.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
@@ -254,44 +317,50 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.router.post('/publish/:policyId', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.post('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-                const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
-                if (!model.config) {
-                    res.status(500).send({ code: 500, message: 'The policy is empty' });
-                    return;
-                }
-                const guardians = new Guardians();
-                const root = await guardians.getRootConfig(user.did);
-                const topicId = await HederaHelper
-                    .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-                    .newTopic(root.hederaAccountKey, model.topicDescription);
-                model.status = 'PUBLISH';
-                model.topicId = topicId;
+                const errors = await this.validate(req.params.policyId);
+                const isValid = !errors.blocks.some(block => !block.isValid);
 
-                const vcHelper = new VcHelper();
-                const credentialSubject = {
-                    id: `${model.id}`,
-                    name: model.name,
-                    description: model.description,
-                    topicDescription: model.topicDescription,
-                    version: model.version,
-                    policyTag: model.policyTag
-                }
-                const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, "Policy", credentialSubject);
-                await getMongoRepository(Policy).save(model);
-                await guardians.setVcDocument({
-                    hash: vc.toCredentialHash(),
-                    owner: user.did,
-                    document: vc.toJsonTree(),
-                    type: SchemaEntity.POLICY,
-                    policyId: `${model.id}`
-                });
+                if (isValid) {
+                    const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+                    const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                    if (!model.config) {
+                        res.status(500).send({code: 500, message: 'The policy is empty'});
+                        return;
+                    }
+                    const guardians = new Guardians();
+                    const root = await guardians.getRootConfig(user.did);
+                    const topicId = await HederaHelper
+                        .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+                        .newTopic(root.hederaAccountKey, model.topicDescription);
+                    model.status = 'PUBLISH';
+                    model.topicId = topicId;
 
-                await this.generate(model.id);
-                const policies = await getMongoRepository(Policy).find()
-                res.json(policies);
+                    const vcHelper = new VcHelper();
+                    const credentialSubject = {
+                        id: `${model.id}`,
+                        name: model.name,
+                        description: model.description,
+                        topicDescription: model.topicDescription,
+                        version: model.version,
+                        policyTag: model.policyTag
+                    }
+                    const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, "Policy", credentialSubject);
+                    await getMongoRepository(Policy).save(model);
+                    await guardians.setVcDocument({
+                        hash: vc.toCredentialHash(),
+                        owner: user.did,
+                        document: vc.toJsonTree(),
+                        type: SchemaEntity.POLICY,
+                        policyId: `${model.id}`
+                    });
+
+                    await this.generate(model.id.toString());
+                }
+         
+                const policies = await getMongoRepository(Policy).find();
+                res.json({policies, isValid, errors});
             } catch (error) {
                 res.status(500).send({ code: 500, message: error.message });
             }
@@ -300,7 +369,6 @@ export class BlockTreeGenerator {
         this.router.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const model = await this.models.get(req.params.policyId) as IPolicyInterfaceBlock as any;
-                // const model = [...await this.models.values()][0] as any;
                 if (!model) {
                     const err = new PolicyOtherError('Unexisting policy', req.params.policyId, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
@@ -309,6 +377,32 @@ export class BlockTreeGenerator {
                 res.send(await model.getData(req.user) as any);
             } catch (e) {
                 res.status(500).send({code: 500, message: 'Unknown error'});
+            }
+
+        });
+
+        this.router.get('/:policyId/validate', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const results = await this.validate(req.params.policyId);
+                res.send(results);
+            } catch (e) {
+                console.log(e);
+                res.status(500).send({code: 500, message: e.message});
+            }
+
+        });
+
+        this.router.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const config = req.body as Object
+                const results = await this.validate(config);
+                res.send({
+                    results,
+                    config
+                });
+            } catch (e) {
+                console.log(e);
+                res.status(500).send({code: 500, message: e.message});
             }
 
         });
