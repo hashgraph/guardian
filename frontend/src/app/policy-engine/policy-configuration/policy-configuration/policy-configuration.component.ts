@@ -445,6 +445,9 @@ export class PolicyConfigurationComponent implements OnInit {
         if (blockType == 'informationBlock') {
             return 'info';
         }
+        if (blockType == 'policyRolesBlock') {
+            return 'manage_accounts';
+        }
         if (blockType == 'requestVcDocument') {
             return 'dynamic_form';
         }

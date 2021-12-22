@@ -91,7 +91,7 @@ export class BlockTreeGenerator {
             name: 'test policy',
             status: 'DRAFT',
             config: ConfigPolicyTest,
-            policyPoles: ['INSTALLER'],
+            policyRoles: ['INSTALLER'],
             owner: ra.did,
             policyTag: 'TestPolicy'
         });
@@ -271,7 +271,7 @@ export class BlockTreeGenerator {
             model.version = policy.version;
             model.description = policy.description;
             model.topicDescription = policy.topicDescription;
-            model.policyPoles = policy.policyPoles;
+            model.policyRoles = policy.policyRoles;
 
             const result = await getMongoRepository(Policy).save(model);
 

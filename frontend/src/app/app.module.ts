@@ -83,6 +83,8 @@ import { AggregateConfigComponent } from './policy-engine/policy-configuration/a
 import { InformationConfigComponent } from './policy-engine/policy-configuration/information-config/information-config.component';
 import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-import-dialog.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { RolesConfigComponent } from './policy-engine/policy-configuration/roles-config/roles-config.component';
+import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
 
 @NgModule({
     declarations: [
@@ -129,7 +131,9 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
         TreeFlatOverview,
         AggregateConfigComponent,
         InformationConfigComponent,
-        ExportPolicyDialog
+        ExportPolicyDialog,
+        RolesConfigComponent,
+        RolesBlockComponent
     ],
     imports: [
         BrowserModule,

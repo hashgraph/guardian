@@ -41,7 +41,7 @@
                     <td class="propRowCell">
                         <mat-select *ngIf="allPermissions" [(ngModel)]="block.permissions" multiple
                             [disabled]="readonly">
-                            <mat-option *ngFor="let item of allPermissions" [value]="item.value">{{item.name}}
+                            <mat-option *ngFor="let item of roles" [value]="item">{{item}}
                             </mat-option>
                         </mat-select>
                     </td>
@@ -93,9 +93,12 @@
             <mint-config *ngIf="currentBlock.blockType=='wipeDocument'" [block]="currentBlock" [schemes]="schemes"
                 [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </mint-config>
-            <information-config *ngIf="currentBlock.blockType=='informationBlock'" [block]="currentBlock" [schemes]="schemes"
-                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <information-config *ngIf="currentBlock.blockType=='informationBlock'" [block]="currentBlock"
+                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </information-config>
+            <roles-config *ngIf="currentBlock.blockType=='policyRolesBlock'" [block]="currentBlock" [schemes]="schemes"
+                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens" [roles]="roles">
+            </roles-config>
         </div>
     </div>
 </div>

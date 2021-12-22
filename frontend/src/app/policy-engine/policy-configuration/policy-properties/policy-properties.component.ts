@@ -14,13 +14,14 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 export class PolicyPropertiesComponent implements OnInit {
     @Input('policy') policy!: any;
     @Input('readonly') readonly!: boolean;
-    
+
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
         metaData: false,
         rolesGroup: false,
     };
+    roles: any[] = [];
 
     constructor() {
     }
@@ -30,9 +31,27 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        this.roles = [];
+        if (this.policy.policyRoles) {
+            for (let i = 0; i < this.policy.policyRoles.length; i++) {
+                this.roles.push({
+                    name: this.policy.policyRoles[i]
+                })
+            }
+        }
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    addRoles() {
+        this.roles.push({
+            name: ""
+        })
+    }
+
+    onEditRole(i: number) {
+        this.policy.policyRoles[i] = this.roles[i].name;
     }
 }

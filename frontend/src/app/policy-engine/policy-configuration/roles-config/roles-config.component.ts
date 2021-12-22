@@ -3,25 +3,28 @@ import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../data-source/tree-data-source';
 
 /**
- * Settings for all blocks.
+ * Settings for block of 'policyRolesBlock' type.
  */
 @Component({
-    selector: 'common-properties',
-    templateUrl: './common-properties.component.html',
-    styleUrls: ['./common-properties.component.css']
+    selector: 'roles-config',
+    templateUrl: './roles-config.component.html',
+    styleUrls: [
+        './../common-properties/common-properties.component.css',
+        './roles-config.component.css'
+    ]
 })
-export class CommonPropertiesComponent implements OnInit {
+export class RolesConfigComponent implements OnInit {
     @Input('block') currentBlock!: BlockNode;
     @Input('schemes') schemes!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('all') allBlocks!: BlockNode[];
-    @Input('permissions') allPermissions!: any[];
     @Input('readonly') readonly!: boolean;
     @Input('roles') roles!: string[];
+
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
-        metaData: false,
+        main: false,
     };
 
     block!: BlockNode;
@@ -38,11 +41,12 @@ export class CommonPropertiesComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
-    onHide(item: any, prop: any) {
-        item[prop] = !item[prop];
-    }
-
     load(block: BlockNode) {
         this.block = block;
+        this.block.uiMetaData = this.block.uiMetaData || {}
+    }
+
+    onHide(item: any, prop: any) {
+        item[prop] = !item[prop];
     }
 }

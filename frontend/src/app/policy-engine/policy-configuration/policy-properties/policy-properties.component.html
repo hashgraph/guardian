@@ -72,10 +72,10 @@
                 </tr>
 
                 <!-- Roles  -->
-                <!-- <tr class="propHeader">
+                <tr class="propHeader">
                     <td class="propRowCol" (click)="onHide(propHidden, 'rolesGroup')"
                         [attr.collapse]="propHidden.rolesGroup">
-                        <mat-icon *ngIf="roles && roles.length">expand_more</mat-icon>
+                        <mat-icon *ngIf="policy.policyRoles && policy.policyRoles.length">expand_more</mat-icon>
                     </td>
                     <td class="propHeaderCell cellName">Roles</td>
                     <td class="propHeaderCell">
@@ -90,10 +90,10 @@
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Role {{i}}</td>
                         <td class="propRowCell">
-                            <input [(ngModel)]="item.name" [readonly]="readonly">
+                            <input [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditRole(i)">
                         </td>
                     </tr>
-                </ng-container> -->
+                </ng-container>
             </table>
         </div>
     </div>
