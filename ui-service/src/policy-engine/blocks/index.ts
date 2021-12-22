@@ -1,3 +1,4 @@
+export {PolicyRolesBlock} from '@policy-engine/blocks/policy-roles';
 export {ExternalDataBlock} from '@policy-engine/blocks/external-data-block';
 export {MintBlock} from '@policy-engine/blocks/mint-block';
 export {InterfaceStepBlock} from '@policy-engine/blocks/interface-step-block';
