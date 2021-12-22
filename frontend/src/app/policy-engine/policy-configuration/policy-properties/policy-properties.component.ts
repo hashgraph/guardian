@@ -52,6 +52,14 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     onEditRole(i: number) {
+        if(!this.policy.policyRoles) {
+            this.policy.policyRoles = [];
+        }
         this.policy.policyRoles[i] = this.roles[i].name;
+    }
+
+    onRemoveRole(i: number) {
+        this.policy.policyRoles.splice(i, 1);
+        this.roles.splice(i, 1);
     }
 }

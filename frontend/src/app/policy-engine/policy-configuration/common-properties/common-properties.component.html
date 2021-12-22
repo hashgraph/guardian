@@ -41,6 +41,9 @@
                     <td class="propRowCell">
                         <mat-select *ngIf="allPermissions" [(ngModel)]="block.permissions" multiple
                             [disabled]="readonly">
+                            <mat-option value="OWNER">Owner</mat-option>
+                            <mat-option value="NO_ROLE">No Role</mat-option>
+                            <mat-option value="ANY_ROLE">Any Role</mat-option>
                             <mat-option *ngFor="let item of roles" [value]="item">{{item}}
                             </mat-option>
                         </mat-select>
