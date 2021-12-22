@@ -1,6 +1,5 @@
 import {HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ISession, IUser} from 'interfaces';
 import {Observable, of, Subject, Subscription} from 'rxjs';
 
 /**
@@ -24,20 +23,8 @@ export class AuthService {
     return this.http.get<any>('/api/account/logout');
   }
 
-  public getCurrentUser(force:boolean=false): Observable<ISession | null> {
-    if (localStorage.getItem('accessToken')) {
-      return this.http.get<any>(`/api/account/current-user?force=${{force}}`);
-    } else {
-      return of(null);
-    }
-  }
-
   public createUser(username: string, password: string, role: string): Observable<any> {
     return this.http.post<any>('/api/account/register', {username, password, role})
-  }
-
-  public getCurrentUsers(): Observable<IUser[]> {
-    return this.http.get<any>('/api/account/get-all-users');
   }
 
   public setAccessToken(accessToken: string) {

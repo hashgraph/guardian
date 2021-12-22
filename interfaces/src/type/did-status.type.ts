@@ -3,4 +3,5 @@ export enum DidDocumentStatus {
     CREATE = 'CREATE',
     UPDATE = 'UPDATE',
     DELETE = 'DELETE',
+    FAILED = 'FAILED'
 }

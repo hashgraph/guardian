@@ -5,7 +5,7 @@ import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
 import { TokenDialog } from '../../components/dialogs/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserState, Token } from 'interfaces';
+import { Token } from 'interfaces';
 
 /**
  * Page for creating tokens.
@@ -85,9 +85,8 @@ export class TokenConfigComponent implements OnInit {
 
     loadProfile() {
         this.loading = true;
-        this.profileService.getCurrentState().subscribe((value) => {
-            const profile = value;
-            this.isConfirmed = !!profile && profile.state == UserState.CONFIRMED;
+        this.profileService.getProfile(true).subscribe((profile) => {
+            this.isConfirmed = !!(profile && profile.confirmed);
             if (this.isConfirmed) {
                 this.queryChange();
             } else {
@@ -158,7 +157,6 @@ export class TokenConfigComponent implements OnInit {
     getColor(status: string, reverseLogic: boolean) {
         if (!status) return "na";
         if (status === "n/a") return "na";
-        // if (status === "n/a") return "grey";
         else if (status === "Yes") return reverseLogic ? "red" : "green";
         else return reverseLogic ? "green" : "red";
     }

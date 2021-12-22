@@ -1,9 +1,8 @@
 import { Injectable, NgModule } from '@angular/core';
 import { CanActivate, Router, RouterModule, Routes } from '@angular/router';
-import { ISession, UserRole } from 'interfaces';
+import { ISession, IUser, UserRole } from 'interfaces';
 import { of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { ListenersLogComponent } from './listeners-log/listeners-log.component';
 import { PolicyConfigurationComponent } from './policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
 import { PolicyViewerComponent } from './policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
 import { AuthService } from './services/auth.service';
@@ -16,16 +15,17 @@ import { RootConfigComponent } from './views/root-config/root-config.component';
 import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
+import { ProfileService } from './services/profile.service';
 
 class Guard {
   private router: Router;
-  private auth: AuthService;
+  private auth: ProfileService;
   private role: UserRole;
   private defaultPage: string;
 
   constructor(
     router: Router,
-    auth: AuthService,
+    auth: ProfileService,
     role: UserRole,
     defaultPage: string
   ) {
@@ -36,8 +36,8 @@ class Guard {
   }
 
   canActivate() {
-    return this.auth.getCurrentUser().pipe(
-      map((res: ISession | null) => {
+    return this.auth.getProfile(false).pipe(
+      map((res: IUser | null) => {
         if (res) {
           return res.role == this.role;
         } else {
@@ -55,7 +55,7 @@ class Guard {
   providedIn: 'root'
 })
 export class InstallerGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: AuthService) {
+  constructor(router: Router, auth: ProfileService) {
     super(router, auth, UserRole.INSTALLER, '/login');
   }
 }
@@ -64,7 +64,7 @@ export class InstallerGuard extends Guard implements CanActivate {
   providedIn: 'root'
 })
 export class RootAuthorityGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: AuthService) {
+  constructor(router: Router, auth: ProfileService) {
     super(router, auth, UserRole.ROOT_AUTHORITY, '/login');
   }
 }
@@ -73,7 +73,7 @@ export class RootAuthorityGuard extends Guard implements CanActivate {
   providedIn: 'root'
 })
 export class AuditorGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: AuthService) {
+  constructor(router: Router, auth: ProfileService) {
     super(router, auth, UserRole.AUDITOR, '/login');
   }
 }
@@ -82,7 +82,7 @@ export class AuditorGuard extends Guard implements CanActivate {
   providedIn: 'root'
 })
 export class OriginatorGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: AuthService) {
+  constructor(router: Router, auth: ProfileService) {
     super(router, auth, UserRole.ORIGINATOR, '/login');
   }
 }
@@ -101,7 +101,6 @@ const routes: Routes = [
   { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard] },
   { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard] },
 
-  { path: 'listeners-log', component: ListenersLogComponent },
   { path: 'policy-viewer', component: PolicyViewerComponent },
   { path: 'policy-configuration', component: PolicyConfigurationComponent },
 

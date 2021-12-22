@@ -17,21 +17,6 @@ export interface IRootConfig {
     state: RootState;
 }
 
-export interface IFullConfig {
-    appnetName: string;
-    hederaAccountId: string;
-    hederaAccountKey: string;
-    addressBook: string;
-    didTopic: string;
-    vcTopic: string;
-    didServerUrl: string;
-    didTopicMemo: string;
-    vcTopicMemo: string;
-    did: string;
-    didDocument: IDidDocument,
-    vcDocument: IVCDocument
-}
-
 export interface IAddressBookConfig {
     owner: string;
     addressBook: string;

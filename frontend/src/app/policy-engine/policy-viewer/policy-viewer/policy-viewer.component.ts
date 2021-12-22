@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IToken } from 'interfaces';
+import { IToken, IUser } from 'interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
-import { AuthService } from 'src/app/services/auth.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../export-import-dialog/export-import-dialog.component';
 import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
@@ -44,14 +44,14 @@ export class PolicyViewerComponent implements OnInit {
             'open',
         ]
     };
-    role!: string;
+    role!: any;
     tokens!: IToken[];
 
     loading: boolean = true;
     isConfirmed: boolean = false;
 
     constructor(
-        private auth: AuthService,
+        private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private tokenService: TokenService,
         private route: ActivatedRoute,
@@ -77,10 +77,9 @@ export class PolicyViewerComponent implements OnInit {
         this.policy = null;
         this.isConfirmed = false;
         this.loading = true;
-        this.auth.getCurrentUser(true).subscribe((user: any) => {
-            const isLogin = !!user;
-            this.isConfirmed = isLogin ? user.did : false;
-            this.role = isLogin ? user.role : null;
+        this.profileService.getProfile(true).subscribe((profile: IUser | null) => {
+            this.isConfirmed = !!(profile && profile.confirmed);
+            this.role = profile ? profile.role : null;
             if (this.isConfirmed) {
                 if (this.policyId) {
                     this.loadPolicyById(this.policyId);

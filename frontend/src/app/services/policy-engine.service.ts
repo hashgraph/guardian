@@ -115,7 +115,7 @@ export class PolicyEngineService {
   }
 
   public getAllPolicy(): Observable<any[]> {
-    return this.http.get<any[]>(`/api/get-policy-list`);
+    return this.http.get<any[]>(`/policy/list`);
   }
 
   public getPolicy(policyId: string): Observable<any> {

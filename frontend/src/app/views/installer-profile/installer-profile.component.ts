@@ -6,7 +6,8 @@ import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.compo
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
-import { IUserProfile, ISession, Token, IToken, UserState } from 'interfaces';
+import { IUser, Token, IToken } from 'interfaces';
+import { DemoService } from 'src/app/services/demo.service';
 
 interface IHederaForm {
     id: string,
@@ -22,17 +23,19 @@ interface IHederaForm {
     styleUrls: ['./installer-profile.component.css']
 })
 export class InstallerProfileComponent implements OnInit {
+    loading: boolean = true;
     isConfirmed: boolean = false;
     isNewAccount: boolean = false;
-    profile: any = null;
-    balance: string | null = null;
-    tokens: Token[] | null = null;
-    rootAuthorities: ISession[] = [];
+    profile?: IUser | null;
+    balance?: string | null;
+    tokens?: Token[] | null;
+    didDocument?:string;
+
     hederaForm = this.fb.group({
         id: ['', Validators.required],
         key: ['', Validators.required],
     });
-    loading: boolean = true;
+
 
     displayedColumns: string[] = [
         'name',
@@ -49,6 +52,7 @@ export class InstallerProfileComponent implements OnInit {
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
+        private otherService: DemoService,
         private fb: FormBuilder,
         public dialog: MatDialog) {
     }
@@ -65,11 +69,9 @@ export class InstallerProfileComponent implements OnInit {
 
     update() {
         this.interval = setInterval(() => {
-            this.profileService.getCurrentState().subscribe(user => {
-                if (!this.isConfirmed && !this.isNewAccount) {
-                    this.loadDate();
-                }
-            })
+            if (!this.isConfirmed && !this.isNewAccount) {
+                this.loadDate();
+            }
         }, 10000);
     }
 
@@ -78,28 +80,25 @@ export class InstallerProfileComponent implements OnInit {
         this.tokens = null;
         this.loading = true;
         forkJoin([
-            this.profileService.getRootBalance(),
-            this.profileService.getCurrentProfile(),
-            this.tokenService.getUserTokens(),
-            this.profileService.getRootAuthorities(),
+            this.profileService.getProfile(true),
+            this.profileService.getBalance(),
+            this.tokenService.getUserTokens()
         ]).subscribe((value) => {
-            const balance: string | null = value[0];
-            const profile: IUserProfile = value[1];
-            const tokens: IToken[] = value[2];
-            const rootAuthorities: ISession[] = value[3];
+            this.profile = value[0] as IUser;
+            this.balance = value[1] as string;
+            this.tokens = value[2].map(e => new Token(e));
 
-            this.balance = balance;
-            this.tokens = tokens.map(e => new Token(e));
-            this.rootAuthorities = rootAuthorities || [];
+            this.isConfirmed = !!this.profile.confirmed;
+            this.isNewAccount = !this.profile.didDocument;
 
-            if (profile) {
-                this.isNewAccount = profile.state == UserState.CREATED;
-                this.isConfirmed = (
-                    profile.state != UserState.CREATED &&
-                    profile.state != UserState.HEDERA_FILLED
-                );
-                this.formatJson(profile);
+            this.didDocument= "";
+            if(this.isConfirmed) {
+                const didDocument = this.profile?.didDocument?.document;
+                if(didDocument) {
+                    this.didDocument= JSON.stringify((didDocument), null, 4);
+                }
             }
+
             setTimeout(() => {
                 this.loading = false;
             }, 200)
@@ -107,19 +106,6 @@ export class InstallerProfileComponent implements OnInit {
             this.loading = false;
             console.error(error);
         });
-    }
-
-    formatJson(profile: IUserProfile) {
-        if (this.isConfirmed) {
-            const didDocument = profile.didDocument ? profile.didDocument.document : "";
-            const vcDocuments: any[] = profile.vcDocuments || [];
-            this.profile = {
-                hederaId: profile.hederaAccountId,
-                did: profile.did,
-                didDocument: JSON.stringify((didDocument), null, 4),
-                vcDocuments: vcDocuments.map(e => JSON.stringify((e), null, 4))
-            }
-        }
     }
 
     onHederaSubmit() {
@@ -130,7 +116,11 @@ export class InstallerProfileComponent implements OnInit {
 
     createDID(data: IHederaForm) {
         this.loading = true;
-        this.profileService.updateHederaProfile(data.id, data.key).subscribe(() => {
+        const profile = {
+            hederaAccountId: data.id,
+            hederaAccountKey: data.key,
+        }
+        this.profileService.setProfile(profile).subscribe(() => {
             this.loadDate();
         }, (error) => {
             this.loading = false;
@@ -140,7 +130,7 @@ export class InstallerProfileComponent implements OnInit {
 
     randomKey() {
         this.loading = true;
-        this.profileService.getRandomKey().subscribe((treasury) => {
+        this.otherService.getRandomKey().subscribe((treasury) => {
             this.loading = false;
             this.hederaForm.setValue({
                 id: treasury.id,
@@ -149,7 +139,7 @@ export class InstallerProfileComponent implements OnInit {
         }, (error) => {
             this.loading = false;
             this.hederaForm.setValue({
-                id: '0.0.1548173',
+                id: '',
                 key: ''
             });
         });
