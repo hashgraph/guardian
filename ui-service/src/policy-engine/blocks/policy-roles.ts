@@ -10,7 +10,7 @@ export class PolicyRolesBlock {
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         return {
-            roles: ['INSTALLER', 'ROOT_AUTHORITY', 'AUDITOR'],
+            roles: Array.isArray(ref.options.roles) ? ref.options.roles : [],
             uiMetaData: ref.options.uiMetaData
         }
     }
