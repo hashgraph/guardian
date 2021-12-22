@@ -38,7 +38,7 @@ export class RequestVcDocumentBlock {
         const { options, blockType, uuid } = PolicyBlockHelpers.GetBlockRef(this);
 
         if (!options.schema) {
-            throw new BlockInitError(`Fileld "schema" is required`, blockType, uuid);
+            throw new BlockInitError(`Field "schema" is required`, blockType, uuid);
         }
     }
 

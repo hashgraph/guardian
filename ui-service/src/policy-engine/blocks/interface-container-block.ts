@@ -14,7 +14,7 @@ export class InterfaceContainerBlock {
         const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
 
         if (!options.uiMetaData) {
-            throw new BlockInitError(`Fileld "uiMetaData" is required`, blockType, uuid);
+            throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
         }
     }
 
