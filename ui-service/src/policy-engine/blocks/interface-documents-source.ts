@@ -26,13 +26,13 @@ export class InterfaceDocumentsSource {
         const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
 
         if (!options.dataType) {
-            throw new BlockInitError(`Fileld "dataType" is required`, blockType, uuid);
+            throw new BlockInitError(`Field "dataType" is required`, blockType, uuid);
         }
         if (!options.onlyOwnDocuments) {
             options.onlyOwnDocuments = true;
         }
         if (!options.uiMetaData) {
-            throw new BlockInitError(`Fileld "uiMetaData" is required`, blockType, uuid);
+            throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
         }
     }
 
