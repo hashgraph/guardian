@@ -54,6 +54,10 @@ export class SchemaFormComponent implements OnInit {
         } else {
             let validators = this.getValidators(item);
             listItem.control = new FormControl("", validators);
+
+            if (['date', 'date-time'].includes(item.format)) {
+              this.subscribeFormatDateValue(listItem.control, item.format);
+            }
         }
         item.list.push(listItem);
         item.control.push(listItem.control);
@@ -115,6 +119,11 @@ export class SchemaFormComponent implements OnInit {
             if (!field.isArray && !field.isRef) {
                 let validators = this.getValidators(item);
                 item.control = new FormControl("", validators);
+
+                if (['date', 'date-time'].includes(item.format)) {
+                  this.subscribeFormatDateValue(item.control, item.format);
+                }
+
                 group[field.name] = item.control;
             }
             if (!field.isArray && field.isRef) {
@@ -157,42 +166,39 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    onDateFieldChange(
-      control: FormControl | null,
-      group: FormGroup | null,
-      controlName: string | null,
-      prepareDate: boolean
-    ): void {
-      let groupControl = control;
+    private subscribeFormatDateValue(control: FormControl, format: string) {
+      if (format === 'date') {
+        control.valueChanges
+          .subscribe((val: any) => {
+            let momentDate = moment(val);
+            if (!momentDate.isValid())
+            {
+              return;
+            }
 
-      if (group && controlName)
-      {
-        groupControl = group.get(controlName) as FormControl;
+            control.setValue(momentDate.format("YYYY-MM-DD"),
+            {
+              emitEvent: false,
+              emitModelToViewChange: false
+            });
+          });
       }
 
-      if (!groupControl)
-      {
-        return;
+      if (format === 'date-time') {
+        control.valueChanges
+          .subscribe((val: any) => {
+            if(!val)
+            {
+              return;
+            }
+
+            control.setValue(val.toISOString(),
+            {
+              emitEvent: false,
+              emitModelToViewChange: false
+            });
+          });
       }
-
-      let momentDate = moment(groupControl.value);
-
-      if (!momentDate.isValid())
-      {
-        return;
-      }
-
-      let formatDate =  prepareDate
-       ? momentDate.format("YYYY-MM-DD")
-       : momentDate.toISOString();
-
-      groupControl.setValue(formatDate,
-      {
-        onlySelf: true,
-        emitEvent: false,
-        emitModelToViewChange: false,
-        emitViewToModelChange: false
-      });
     }
 
     private getValidators(item:any): ValidatorFn[] {

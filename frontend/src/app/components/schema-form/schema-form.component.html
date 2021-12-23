@@ -27,7 +27,6 @@
                     appearance="outline"
                   >
                     <input
-                      (dateChange)="onDateFieldChange(null, options, item.name, false)"
                       matInput
                       [ngxMatDatetimePicker]="dateTimePicker"
                       placeholder="Choose a date & time"
@@ -47,7 +46,6 @@
                       [formControlName]="item.name"
                       matInput
                       [matDatepicker]="dateItem"
-                      (dateChange)="onDateFieldChange(null, options,item.name, true)"
                     >
                     <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
                     <mat-datepicker #dateItem></mat-datepicker>
@@ -124,7 +122,6 @@
                           [ngxMatDatetimePicker]="dateTimePicker"
                           placeholder="Choose a date & time"
                           [formControl]="listItem.control"
-                          (dateChange)="onDateFieldChange(listItem.control, null, null, false)"
                         >
                         <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
                         <ngx-mat-datetime-picker #dateTimePicker></ngx-mat-datetime-picker>
@@ -140,7 +137,6 @@
                           [formControl]="listItem.control"
                           matInput
                           [matDatepicker]="dateItem"
-                          (dateChange)="onDateFieldChange(listItem.control, null, null, true)"
                         >
                         <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
                         <mat-datepicker #dateItem></mat-datepicker>
