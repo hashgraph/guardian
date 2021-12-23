@@ -23,7 +23,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTreeModule } from '@angular/material/tree';
+import { MatDatepickerModule } from "@angular/material/datepicker";
+import { MatRadioModule } from '@angular/material/radio';
+import { MatNativeDateModule } from '@angular/material/core';
 import { ToastrModule } from 'ngx-toastr';
+import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
 import { AppRoutingModule, AuditorGuard, InstallerGuard, RootAuthorityGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor, AuthService } from "./services/auth.service";
@@ -143,6 +147,12 @@ import { DemoService } from './services/demo.service';
         MatButtonModule,
         MatTableModule,
         MatDialogModule,
+        MatDatepickerModule,
+        MatRadioModule,
+        NgxMatDatetimePickerModule,
+        NgxMatNativeDateModule,
+        NgxMatTimepickerModule,
+        MatNativeDateModule,
         MatProgressSpinnerModule,
         MatToolbarModule,
         MatMenuModule,
