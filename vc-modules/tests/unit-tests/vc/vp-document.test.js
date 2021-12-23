@@ -3,7 +3,7 @@ const {
 } = require('../../../dist/index');
 
 const { FileId } = require('@hashgraph/sdk');
-const { TimestampUtils } = require('did-sdk-js');
+const { TimestampUtils } = require('@hashgraph/did-sdk-js');
 const { expect, assert } = require('chai');
 const network = 'testnet';
 
@@ -116,7 +116,7 @@ describe('HcsVpDocument', function () {
         assert.deepEqual(vp.getVerifiableCredential(), newVP2.getVerifiableCredential());
     });
 
-    it('Test CredentialHash', async function () { 
+    it('Test CredentialHash', async function () {
         const vp = new HcsVpDocument();
         vp.setId(id);
         vp.addVerifiableCredential(vc);
