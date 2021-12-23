@@ -2,12 +2,12 @@
 <div mat-dialog-content>
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
         <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>NAME:</mat-label>
+            <mat-label>* NAME:</mat-label>
             <input matInput type="text" placeholder="Policy name" formControlName="name">
         </mat-form-field>
 
         <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>TAG:</mat-label>
+            <mat-label>* TAG:</mat-label>
             <input matInput type="text" placeholder="policyTag" formControlName="policyTag">
         </mat-form-field>
 

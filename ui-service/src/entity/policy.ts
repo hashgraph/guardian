@@ -32,7 +32,10 @@ export class Policy {
     owner: string;
 
     @Column()
-    policyPoles: string[];
+    policyRoles: string[];
+
+    @Column()
+    registeredUsers: Object;
 
     @Column()
     topicId: string;
@@ -45,5 +48,6 @@ export class Policy {
     @BeforeInsert()
     setDefaults() {
         this.status = this.status || 'DRAFT';
+        this.policyRoles = this.policyRoles || ['INSTALLER', 'ROOT_AUTHORITY', 'AUDITOR'];
     }
 }

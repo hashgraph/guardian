@@ -48,6 +48,13 @@
                         <mat-icon>vertical_split</mat-icon>
                         <span>Step</span>
                     </div>
+
+                    <div class="btn-new-block btn-status-edit" (click)="onAdd('policyRolesBlock')"
+                        title="Add 'Choice Of Roles' Block">
+                        <mat-icon>manage_accounts</mat-icon>
+                        <span>Roles</span>
+                    </div>
+
                     <div class="btn-new-block btn-status-edit" (click)="onAdd('informationBlock')"
                         title="Add 'Information' Block">
                         <mat-icon>info</mat-icon>
@@ -136,7 +143,7 @@
                     </div>
                     <div class="common-properties">
                         <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                            [permissions]="permissions" [readonly]="readonly" [tokens]="tokens">
+                            [permissions]="permissions" [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles">
                         </common-properties>
                     </div>
                 </div>

@@ -65,17 +65,7 @@ describe('Root Authority service', function () {
             didTopicMemo: 'didTopicMemo',
             vcTopicMemo: 'vcTopicMemo',
             did: 'did',
-            didDocument: {
-                where: {
-                    did: { '$eq': 'did' }
-                }
-            },
-            vcDocument: {
-                where: {
-                    owner: { '$eq': 'did' },
-                    type: { '$eq': 'ROOT_AUTHORITY' }
-                }
-            }
+            state: 0
         });
     });
 

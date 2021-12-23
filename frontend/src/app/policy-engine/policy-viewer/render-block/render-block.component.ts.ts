@@ -6,6 +6,8 @@ import {DocumentsSourceBlockComponent} from '../documents-source-block/documents
 import {InformationBlockComponent} from '../information-block/information-block.component';
 import {RequestDocumentBlockComponent} from '../request-document-block/request-document-block.component';
 import {StepBlockComponent} from '../step-block/step-block.component';
+import {RolesBlockComponent} from '../roles-block/roles-block.component';
+
 
 /**
  * Component for display all blocks.
@@ -70,6 +72,10 @@ export class RenderBlockComponent {
       }
       case 'informationBlock': {
         componentFactory = this.componentFactoryResolver.resolveComponentFactory(InformationBlockComponent);
+        break;
+      }
+      case 'policyRolesBlock': {
+        componentFactory = this.componentFactoryResolver.resolveComponentFactory(RolesBlockComponent);
         break;
       }
     }

@@ -182,13 +182,13 @@
 
 .policy-config {
     min-height: 220px;
-    max-height: 30%;
-    flex: 3;
+    max-height: 35%;
+    flex: 35;
     display: flex;
 }
 
 .properties-config {
-    flex: 7;
+    flex: 65;
 }
 
 .properties-config .group-body {

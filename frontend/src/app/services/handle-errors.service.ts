@@ -16,6 +16,13 @@ export class HandleErrorsService implements HttpInterceptor {
   ) {
   }
 
+  messageToText(message:any) {
+    if(typeof message === 'object') {
+      return JSON.stringify(message, null, 2);
+    }
+    return message;
+  }
+
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       catchError((error) => {
@@ -25,15 +32,15 @@ export class HandleErrorsService implements HttpInterceptor {
         if (typeof error.error === 'string') {
           header = `${error.status} ${error.statusText}`;
           if(error.message) {
-            text = `<div>${error.message}</div><div>${error.error}</div>`;
+            text = `<div>${this.messageToText(error.message)}</div><div>${this.messageToText(error.error)}</div>`;
           } else {
             text = `${error.error}`;
           }
         } else if (typeof error.error === 'object') {
           if (error.error.uuid) {
-            text = `<div>${error.error.message}</div><div>${error.error.uuid}</div>`;
+            text = `<div>${this.messageToText(error.error.message)}</div><div>${error.error.uuid}</div>`;
           } else {
-            text = `${error.error.message}`;
+            text = `${this.messageToText(error.error.message)}`;
           }
           if (error.error.type) {
             header = `${error.error.code} ${error.error.type}`;
@@ -42,7 +49,7 @@ export class HandleErrorsService implements HttpInterceptor {
           }
         } else {
           header = `${error.code || error.status} Other Error`
-          text = `${error.message}`;
+          text = `${this.messageToText(error.message)}`;
         }
         this.toastr.error(text, header, {
           timeOut: 30000,

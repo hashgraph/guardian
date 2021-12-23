@@ -10,7 +10,7 @@
                 <mat-tab label="ACCOUNT">
                     <div class="profile-item">
                         <div class="profile-item-name">HEDERA ID:</div>
-                        <div class="profile-item-value"> {{profile.hederaId}}</div>
+                        <div class="profile-item-value"> {{profile.hederaAccountId}}</div>
                     </div>
                     <div class="profile-item">
                         <div class="profile-item-name"> BALANCE:</div>
@@ -23,7 +23,7 @@
                     <div class="profile-item">
                         <div class="profile-item-name"> DID Document:</div>
                         <div class="profile-item-value">
-                            <a (click)="openDocument(profile.didDocument)">View Document</a>
+                            <a (click)="openDocument(didDocument)">View Document</a>
                         </div>
                     </div>
                 </mat-tab>
@@ -81,8 +81,7 @@
         </div>
     </ng-container>
     <ng-template #elseTemplate>
-
-        <div *ngIf="isNewAccount" class="list">
+        <div *ngIf="isNewAccount && !isFailed" class="list">
             <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR ID:</mat-label>
@@ -92,19 +91,22 @@
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR KEY:</mat-label>
                     <input matInput
-                        placeholder="302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc"
+                        placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
                         formControlName="key">
-                    <!-- <button matSuffix mat-button class="embedded-btn" color="primary" (click)="randomKey()" type="button">Generate</button> -->
-                    <!-- <div (click)="randomKey()" class="random-icon"></div> -->
                 </mat-form-field>
 
                 <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="randomKey()">Generate</button>
                 <button mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
             </form>
         </div>
-        <div *ngIf="!isNewAccount" class="clock-list">
+        <div *ngIf="!isNewAccount && !isFailed" class="clock-list">
             <div class="clock-loader"></div>
             <p>Creating DID ... </p>
+        </div>
+        <div *ngIf="isFailed" class="error-list">
+            <p>An error occurred while creating the document.</p>
+            <p>Please try again later.</p>
+            <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="retry()">Retry</button>
         </div>
     </ng-template>
 </div>

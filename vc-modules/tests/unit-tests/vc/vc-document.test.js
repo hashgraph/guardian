@@ -4,7 +4,7 @@ const {
 } = require('../../../dist/index');
 
 const { FileId } = require('@hashgraph/sdk');
-const { TimestampUtils } = require('did-sdk-js');
+const { TimestampUtils } = require('@hashgraph/did-sdk-js');
 const { expect, assert } = require('chai');
 const network = 'testnet';
 
@@ -118,7 +118,7 @@ describe('HcsVcDocument', function () {
         });
     });
 
-    it('Test CredentialHash', async function () { 
+    it('Test CredentialHash', async function () {
         const vc = new HcsVcDocument();
         vc.setId(id);
         vc.setIssuanceDate(date);
