@@ -59,31 +59,17 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
             const accessToken = sign({
                 username: user.username,
                 did: user.did,
-                state: user.state,
                 role: user.role
             }, process.env.ACCESS_TOKEN_SECRET);
             res.json({
                 username: user.username,
                 did: user.did,
-                state: user.state,
                 role: user.role,
                 accessToken: accessToken
             });
         } else {
             res.status(403).json({code: 403, message: 'Bad user'});
         }
-    } catch (e) {
-        res.status(500).send({code: 500, message: 'Server error'});
-    }
-});
-
-accountAPI.get('/get-all-users', async (req: Request, res: Response) => {
-    try {
-        const users = await getMongoRepository(User).find();
-        res.json(users.map(e => ({
-            username: e.username,
-            role: e.role
-        })));
     } catch (e) {
         res.status(500).send({code: 500, message: 'Server error'});
     }

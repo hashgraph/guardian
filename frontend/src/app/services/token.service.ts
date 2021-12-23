@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ISession, IToken} from 'interfaces';
+import {IToken, IUser} from 'interfaces';
 import {Observable} from 'rxjs';
 
 /**
@@ -33,7 +33,7 @@ export class TokenService {
     return this.http.get<any[]>(`/api/tokens/associate-users?tokenId=${tokenId}&username=${username}`);
   }
 
-  public getUsers(): Observable<ISession[]> {
+  public getUsers(): Observable<IUser[]> {
     return this.http.get<any[]>(`/api/tokens/all-users`);
   }
 

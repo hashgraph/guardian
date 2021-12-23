@@ -1,5 +1,5 @@
 import { Client, Timestamp, TopicId } from '@hashgraph/sdk';
-import { HcsDidTopicListener, HcsVcTopicListener, MessageEnvelope, MessageListener } from 'did-sdk-js';
+import { HcsDidTopicListener, HcsVcTopicListener, MessageEnvelope, MessageListener } from '@hashgraph/did-sdk-js';
 
 export interface IListener<T> {
     on: (topicId: string, message: T) => Promise<boolean>;

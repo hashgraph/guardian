@@ -12,10 +12,11 @@ import {
     HcsDidMessage,
     DidMethodOperation,
     HcsDid
-} from 'did-sdk-js';
+} from '@hashgraph/did-sdk-js';
 import { HcsVcDocument } from '../vc/vc-document';
 import { HcsDidDocument } from '../did-document';
 import { MAX_FEE } from './max-fee';
+import { timeout } from './utils';
 
 /**
  * Methods for send documents from Hedera Network
@@ -23,6 +24,7 @@ import { MAX_FEE } from './max-fee';
 export class HederaDIDHelper {
     public readonly client: Client;
     public readonly network: HcsIdentityNetwork;
+    public static MAX_TIMEOUT: number = 60000;
 
     constructor(client: Client, network: HcsIdentityNetwork) {
         this.client = client;
@@ -37,6 +39,7 @@ export class HederaDIDHelper {
      * 
      * @returns {HcsVcMessage} - result
      */
+    @timeout(HederaDIDHelper.MAX_TIMEOUT)
     public async createVcTransaction<T extends CredentialSubject>(
         vc: HcsVcDocument<T>,
         privateKey: PrivateKey | string
@@ -69,6 +72,7 @@ export class HederaDIDHelper {
      * 
      * @returns {any} - DID, Private Key, DID Document
      */
+    @timeout(HederaDIDHelper.MAX_TIMEOUT)
     public async createDid(privateKey?: string): Promise<{
         hcsDid: HcsDid;
         did: string;
@@ -94,6 +98,7 @@ export class HederaDIDHelper {
      * 
      * @returns {HcsDidMessage} - result
      */
+    @timeout(HederaDIDHelper.MAX_TIMEOUT)
     public async createDidTransaction(hcsDid: HcsDid): Promise<HcsDidMessage> {
         const transaction = new Promise<HcsDidMessage>(async (resolve, reject) => {
             try {

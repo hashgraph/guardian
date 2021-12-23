@@ -11,7 +11,7 @@ import {User} from '@entity/user';
  */
 export const auditAPI = Router();
 
-auditAPI.get('/get-vp-documents', async (req: Request, res: Response) => {
+auditAPI.get('/documents', async (req: Request, res: Response) => {
     const guardians = new Guardians();
     const users = new Users();
 
@@ -28,39 +28,7 @@ auditAPI.get('/get-vp-documents', async (req: Request, res: Response) => {
     res.status(200).json(vp);
 });
 
-auditAPI.post('/search-vc-documents', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const user = await users.currentUser(req);
-    if (!(await users.permission(user, UserRole.AUDITOR))) {
-        res.status(403).send();
-        return;
-    }
-
-    const {filters} = req.body;
-
-    let hash: any = null;
-    if (filters && filters.vp) {
-        const vp = await guardians.getVpDocuments(filters.vp);
-        if (vp && vp[0]) {
-            const items = vp[0].document.verifiableCredential;
-            hash = [];
-            for (let index = 0; index < items.length; index++) {
-                const vc = HcsVcDocument.fromJsonTree<VcSubject>(items[index], null, VcSubject);
-                hash.push(vc.toCredentialHash());
-            }
-        }
-    }
-    if (hash) {
-        filters.hash = hash;
-    }
-
-    const vc = await guardians.getVcDocuments(filters);
-    res.status(200).json(vc);
-});
-
-auditAPI.get('/search-documents', async (req: Request, res: Response) => {
+auditAPI.get('/chain', async (req: Request, res: Response) => {
     const guardians = new Guardians();
     const users = new Users();
 

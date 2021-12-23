@@ -3,9 +3,8 @@ import {
     accountAPI,
     auditAPI,
     frontendService,
-    otherAPI,
+    demoAPI,
     profileAPI,
-    rootAPI,
     schemaAPI,
     tokenAPI
 } from '@api/service';
@@ -81,7 +80,8 @@ Promise.all([
     app.use('/api/schema', authorizationHelper, schemaAPI);
     app.use('/api/tokens', authorizationHelper, tokenAPI);
     app.use('/api/package', authorizationHelper, importExportAPI);
-    app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
+    app.use('/api/audit/', authorizationHelper, auditAPI);
+    app.use('/api/demo/', demoAPI);
     app.use('/api-docs/', swaggerAPI);
     app.use('/', frontendService);
     /////////////////////////////////////////

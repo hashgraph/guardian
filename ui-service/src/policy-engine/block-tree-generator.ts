@@ -366,6 +366,19 @@ export class BlockTreeGenerator {
             }
         });
 
+        this.router.get('/list', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                if (user.role === UserRole.ROOT_AUTHORITY) {
+                    res.json(await getMongoRepository(Policy).find({owner: user.did}));
+                } else {
+                    res.json(await getMongoRepository(Policy).find({status: 'PUBLISH'}));
+                }
+            } catch (e) {
+                res.status(500).send({code: 500, message: 'Server error'});
+            }
+        });
+
         this.router.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const model = await this.models.get(req.params.policyId) as IPolicyInterfaceBlock as any;
@@ -379,7 +392,6 @@ export class BlockTreeGenerator {
                 console.error(e);
                 res.status(500).send({code: 500, message: 'Unknown error'});
             }
-
         });
 
         this.router.get('/:policyId/validate', async (req: AuthenticatedRequest, res: Response) => {

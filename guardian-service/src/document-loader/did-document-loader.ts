@@ -1,5 +1,5 @@
 import { DidDocument } from '@entity/did-document';
-import { HcsDidRootKey } from 'did-sdk-js';
+import { HcsDidRootKey } from '@hashgraph/did-sdk-js';
 import { MongoRepository } from 'typeorm';
 import { DocumentLoader, IDocumentFormat } from 'vc-modules';
 

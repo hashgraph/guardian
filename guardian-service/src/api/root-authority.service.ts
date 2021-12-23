@@ -1,7 +1,7 @@
 import { DidDocument } from '@entity/did-document';
 import { RootConfig } from '@entity/root-config';
 import { VcDocument } from '@entity/vc-document';
-import { IAddressBookConfig, IFullConfig, IRootConfig, MessageAPI, SchemaEntity } from 'interfaces';
+import { IAddressBookConfig, IRootConfig, MessageAPI, SchemaEntity } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 
 /**
@@ -31,29 +31,7 @@ export const rootAuthorityAPI = async function (
             res.send(null);
             return;
         }
-        const didDocument = await didDocumentRepository.findOne({ where: { did: { $eq: msg.payload } } });
-        const vcDocument = await vcDocumentRepository.findOne({
-            where: {
-                owner: { $eq: msg.payload },
-                type: { $eq: SchemaEntity.ROOT_AUTHORITY }
-            }
-        });
-
-        const config: IFullConfig = {
-            appnetName: rootConfig.appnetName,
-            hederaAccountId: rootConfig.hederaAccountId,
-            hederaAccountKey: rootConfig.hederaAccountKey,
-            addressBook: rootConfig.addressBook,
-            vcTopic: rootConfig.vcTopic,
-            didTopic: rootConfig.didTopic,
-            didServerUrl: rootConfig.didServerUrl,
-            didTopicMemo: rootConfig.didTopicMemo,
-            vcTopicMemo: rootConfig.vcTopicMemo,
-            did: rootConfig.did,
-            didDocument: didDocument,
-            vcDocument: vcDocument
-        }
-        res.send(config);
+        res.send(rootConfig);
     })
 
     /**
