@@ -18,11 +18,11 @@ interface IHederaForm {
  * The page with the profile settings of a regular user.
  */
 @Component({
-    selector: 'app-installer-profile',
-    templateUrl: './installer-profile.component.html',
-    styleUrls: ['./installer-profile.component.css']
+    selector: 'app-user-profile',
+    templateUrl: './user-profile.component.html',
+    styleUrls: ['./user-profile.component.css']
 })
-export class InstallerProfileComponent implements OnInit {
+export class UserProfileComponent implements OnInit {
     loading: boolean = true;
     isConfirmed: boolean = false;
     isFailed: boolean = false;

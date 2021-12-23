@@ -20,15 +20,6 @@ function evaluate(formula: string, scope: any) {
     }).call(mathjs, formula, scope);
 }
 
-enum DataTypes {
-    INSTALLER = 'installer',
-    SENSOR = 'sensor',
-    MRV = 'mrv',
-    REPORT = 'report',
-    MINT = 'mint',
-    RETIREMENT = 'retirement'
-}
-
 /**
  * Aggregate block
  */

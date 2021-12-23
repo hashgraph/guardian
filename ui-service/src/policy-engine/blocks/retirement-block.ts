@@ -21,8 +21,6 @@ function evaluate(formula: string, scope: any) {
 }
 
 enum DataTypes {
-    INSTALLER = 'installer',
-    SENSOR = 'sensor',
     MRV = 'mrv',
     REPORT = 'report',
     MINT = 'mint',

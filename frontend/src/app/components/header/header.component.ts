@@ -39,19 +39,10 @@ export class HeaderComponent implements OnInit {
   ) {
     this.testUsers$ = this.otherService.getAllUsers();
 
-    this.linksConfig[UserRole.INSTALLER] = [{
+    this.linksConfig[UserRole.USER] = [{
       name: "Profile",
       disabled: false,
       link: '/installer-profile'
-    }, {
-      name: "Policies",
-      disabled: false,
-      link: '/policy-viewer'
-    }];
-    this.linksConfig[UserRole.ORIGINATOR] = [{
-      name: "Profile",
-      disabled: false,
-      link: '/originator-profile'
     }, {
       name: "Policies",
       disabled: false,
@@ -140,15 +131,10 @@ export class HeaderComponent implements OnInit {
   }
 
   profile() {
-    this.router.navigate(['/installer-profile']);
+    this.router.navigate(['/user-profile']);
   }
 
   logOut() {
-    // this.authorizationHelper.logout().subscribe(() => {
-    //     this.router.navigate(['/login']);
-    // }, () => {
-    //     this.router.navigate(['/login']);
-    // });
     this.auth.removeAccessToken();
     this.authState.updateState(false);
     this.router.navigate(['/login']);

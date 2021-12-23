@@ -27,8 +27,8 @@ export class RegisterComponent implements OnInit {
     loading: boolean = false;
 
     loginForm = this.fb.group({
-        login: ['Installer', Validators.required],
-        role: ['INSTALLER', Validators.required],
+        login: [Math.random().toString(36).substring(2,10), Validators.required],
+        role: ['USER', Validators.required],
         password: ['test', Validators.required],
         confirmPassword: ['test', Validators.required],
     }, { validators: checkPasswords });

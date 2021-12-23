@@ -48,6 +48,6 @@ export class Policy {
     @BeforeInsert()
     setDefaults() {
         this.status = this.status || 'DRAFT';
-        this.policyRoles = this.policyRoles || ['INSTALLER', 'ROOT_AUTHORITY', 'AUDITOR'];
+        this.policyRoles = this.policyRoles;
     }
 }
