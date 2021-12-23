@@ -1,14 +1,30 @@
 {
   "defaultActive": true,
   "permissions": [
-    "ROOT_AUTHORITY",
-    "INSTALLER"
+    "ANY_ROLE"
   ],
   "blockType": "interfaceContainerBlock",
   "uiMetaData": {
     "type": "blank"
   },
   "children": [
+    {
+      "id": "ae8fa708-5c47-4a15-8129-6a4a6125a39a",
+      "tag": "choose_role",
+      "blockType": "policyRolesBlock",
+      "children": [],
+      "uiMetaData": {
+        "title": "registration",
+        "description": "choose a role"
+      },
+      "permissions": [
+        "NO_ROLE"
+      ],
+      "defaultActive": true,
+      "roles": [
+        "INSTALLER"
+      ]
+    },
     {
       "defaultActive": true,
       "tag": "init_installer_steps",
@@ -36,7 +52,8 @@
             "privateFields": [
               "policyId"
             ]
-          }
+          },
+          "id": "246683fd-6d28-4b28-9b07-c0fb9483e9a8"
         },
         {
           "tag": "save_new_approve_document",
@@ -44,7 +61,8 @@
           "dataType": "approve",
           "entityType": "Installer",
           "stopPropagation": false,
-          "uiMetaData": {}
+          "uiMetaData": {},
+          "id": "2c90abd2-e501-406f-8532-0f2c4e769ca3"
         },
         {
           "tag": "wait_fo_approve",
@@ -59,21 +77,24 @@
             "INSTALLER"
           ],
           "stopPropagation": true,
-          "defaultActive": true
+          "defaultActive": true,
+          "id": "74fdc3de-b53e-45ab-99ee-19c79811ec84"
         },
         {
           "tag": "update_approve_document_status",
           "blockType": "sendToGuardian",
           "dataType": "approve",
           "entityType": "Installer",
-          "uiMetaData": {}
+          "uiMetaData": {},
+          "id": "73897aff-b503-451f-93e2-48a74d90dcc7"
         },
         {
           "tag": "send_installer_vc_to_hedera",
           "blockType": "sendToGuardian",
           "dataType": "hedera",
           "entityType": "Installer",
-          "uiMetaData": {}
+          "uiMetaData": {},
+          "id": "76f7dc09-b203-4508-ab0a-4d4beba4792a"
         },
         {
           "tag": "Submission_of_CSD01_Documentation",
@@ -81,7 +102,8 @@
           "dataType": "vc-documents",
           "entityType": "Installer",
           "uiMetaData": {},
-          "stopPropagation": false
+          "stopPropagation": false,
+          "id": "48993a2f-000f-4a9d-9823-d189f0e8a1f1"
         },
         {
           "tag": "installer_header",
@@ -157,7 +179,8 @@
                         "bindBlock": "download_config_btn"
                       }
                     ]
-                  }
+                  },
+                  "id": "a93f1c69-6845-44c1-a934-8d35e0102dbc"
                 },
                 {
                   "tag": "download_config_btn",
@@ -172,7 +195,8 @@
                   "uiMetaData": {
                     "content": "download",
                     "options": []
-                  }
+                  },
+                  "id": "f0637807-05d6-49df-bf3d-d0da82b4114d"
                 },
                 {
                   "defaultActive": true,
@@ -205,14 +229,16 @@
                         "dialogContent": "New Sensors",
                         "dialogClass": "",
                         "dialogType": ""
-                      }
+                      },
+                      "id": "83c2f77a-0d55-4c27-a993-32fcceb041b9"
                     },
                     {
                       "tag": "send_sensor_vc_to_hedera",
                       "blockType": "sendToGuardian",
                       "dataType": "hedera",
                       "entityType": "Inverter",
-                      "uiMetaData": {}
+                      "uiMetaData": {},
+                      "id": "7927c3f9-5833-4be4-8181-e321be60a299"
                     },
                     {
                       "tag": "CSD02_device_registration",
@@ -220,12 +246,15 @@
                       "dataType": "vc-documents",
                       "entityType": "Inverter",
                       "stopPropagation": false,
-                      "uiMetaData": {}
+                      "uiMetaData": {},
+                      "id": "dd138558-542d-416b-8432-2b4ca6ddcfd4"
                     }
                   ],
-                  "cyclic": true
+                  "cyclic": true,
+                  "id": "df3977d7-5f19-4e25-ac61-e7d652e04e89"
                 }
-              ]
+              ],
+              "id": "5e472fdc-5ee1-49a5-a6c0-bf0a0af55f8b"
             },
             {
               "tag": "mrv_page",
@@ -280,11 +309,14 @@
                         "dialogType": "json"
                       }
                     ]
-                  }
+                  },
+                  "id": "7571fcfd-e60d-4298-b9ec-f0144068167f"
                 }
-              ]
+              ],
+              "id": "adaa03a5-8f08-40cc-945e-ab8680183b32"
             }
-          ]
+          ],
+          "id": "456b29b5-c270-43a9-8639-76014f0fa68a"
         },
         {
           "tag": "installer_rejected",
@@ -299,15 +331,17 @@
           "permissions": [
             "INSTALLER"
           ],
-          "defaultActive": true
+          "defaultActive": true,
+          "id": "0910d1c1-b775-4fba-b8f7-7ae71c3d2f13"
         }
-      ]
+      ],
+      "id": "794d3996-81b1-48d3-be5f-ddc1c18f0682"
     },
     {
       "tag": "root_authority_header",
       "defaultActive": true,
       "permissions": [
-        "ROOT_AUTHORITY"
+        "OWNER"
       ],
       "blockType": "interfaceContainerBlock",
       "uiMetaData": {
@@ -318,7 +352,7 @@
           "tag": "approve_page",
           "defaultActive": true,
           "permissions": [
-            "ROOT_AUTHORITY"
+            "OWNER"
           ],
           "blockType": "interfaceContainerBlock",
           "uiMetaData": {
@@ -330,7 +364,7 @@
               "tag": "approve_documents_grid",
               "defaultActive": true,
               "permissions": [
-                "ROOT_AUTHORITY"
+                "OWNER"
               ],
               "blockType": "interfaceDocumentsSource",
               "onlyOwnDocuments": false,
@@ -381,13 +415,14 @@
                 ]
               },
               "children": [],
-              "filters": {}
+              "filters": {},
+              "id": "94e65704-f5d0-49c9-8fea-bc00599669e6"
             },
             {
               "tag": "approve_documents_btn",
               "blockType": "interfaceAction",
               "permissions": [
-                "ROOT_AUTHORITY"
+                "OWNER"
               ],
               "type": "selector",
               "uiMetaData": {
@@ -406,17 +441,20 @@
                     "bindBlock": "installer_rejected"
                   }
                 ]
-              }
+              },
+              "id": "8098aca9-06e2-413f-b35b-53f307b36f0e"
             }
-          ]
+          ],
+          "id": "779782f5-0a47-4ba7-9658-e174ea38b6bb"
         }
-      ]
+      ],
+      "id": "848dfa80-18ed-42ca-b5d8-55f8b7c0be48"
     },
     {
       "tag": "mint_events",
       "defaultActive": true,
       "permissions": [
-        "ROOT_AUTHORITY",
+        "OWNER",
         "INSTALLER"
       ],
       "blockType": "interfaceContainerBlock",
@@ -429,23 +467,28 @@
           "blockType": "externalDataBlock",
           "entityType": "MRV",
           "schema": "c4623dbd-2453-4c12-941f-032792a00727",
-          "uiMetaData": {}
+          "uiMetaData": {},
+          "id": "48def36b-29bf-4de3-9767-f5cf12543fa5"
         },
         {
           "tag": "CSD04_requesting_i_Rec_issuance",
           "blockType": "sendToGuardian",
           "dataType": "vc-documents",
           "entityType": "MRV",
-          "uiMetaData": {}
+          "uiMetaData": {},
+          "id": "612900a5-2113-4dad-b0d9-e7e6f111479e"
         },
         {
           "tag": "mint_token",
           "blockType": "mintDocument",
-          "tokenId": "0.0.2909122",
+          "tokenId": "0.0.26063342",
           "rule": "1",
-          "uiMetaData": {}
+          "uiMetaData": {},
+          "id": "eb1e049f-12c3-489f-8988-51e5588191a3"
         }
-      ]
+      ],
+      "id": "932bce2c-90dd-44c8-93bf-16c0e2e7a7e4"
     }
-  ]
+  ],
+  "id": "208047cc-6c11-4706-82cd-03900261c212"
 }
