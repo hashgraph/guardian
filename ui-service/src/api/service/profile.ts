@@ -228,8 +228,7 @@ profileAPI.get('/balance', async (req: Request, res: Response) => {
 
         const user = await users.currentUser(req);
         if (!user.hederaAccountId) {
-            console.error('Invalid Hedera Account');
-            res.json('null');
+            res.json('Invalid Hedera Account Id');
             return;
         }
 
