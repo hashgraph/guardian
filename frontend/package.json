@@ -1,6 +1,7 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "@angular-material-components/datetime-picker": "^6.0.3",
     "@angular/animations": "~12.1.1",
     "@angular/cdk": "^12.1.1",
     "@angular/common": "~12.1.1",
@@ -21,6 +22,7 @@
     "codemirror": "^5.65.0",
     "crypto-browserify": "^3.12.0",
     "interfaces": "file:../interfaces",
+    "moment": "^2.29.1",
     "ngx-toastr": "^14.1.0",
     "process": "^0.11.10",
     "rxjs": "~6.6.0",
