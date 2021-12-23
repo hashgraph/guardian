@@ -10,7 +10,7 @@ import {IAuthUser} from '../../auth/auth.interface';
  */
 export const accountAPI = Router();
 
-accountAPI.get('/current-user', async (req: Request, res: Response) => {
+accountAPI.get('/', async (req: Request, res: Response) => {
     let authHeader = req.headers.authorization;
     if (authHeader) {
         const token = authHeader.split(' ')[1];

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserRole } from 'interfaces';
-import { ProfileService } from 'src/app/services/profile.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 /**
  * Start page.
@@ -14,7 +14,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 export class HomeComponent implements OnInit {
 
     constructor(
-        private profileService: ProfileService,
+        private auth: AuthService,
         private route: ActivatedRoute,
         private router: Router) { }
 
@@ -23,7 +23,7 @@ export class HomeComponent implements OnInit {
     }
 
     async redirect() {
-        this.profileService.getProfile(false).subscribe((user: any | null) => {
+        this.auth.sessions().subscribe((user: any | null) => {
             if (user) {
                 if (user.role == UserRole.ROOT_AUTHORITY) {
                     this.router.navigate(['/config']);

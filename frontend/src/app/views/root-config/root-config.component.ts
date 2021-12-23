@@ -83,7 +83,7 @@ export class RootConfigComponent implements OnInit {
         this.balance = null;
 
         forkJoin([
-            this.profileService.getProfile(true),
+            this.profileService.getProfile(),
             this.profileService.getBalance(),
             this.schemaService.getSchemes()
         ]).subscribe((value) => {

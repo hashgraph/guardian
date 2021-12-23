@@ -4,7 +4,6 @@ import { IUser, UserRole } from 'interfaces';
 import { Observable } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
-import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -33,7 +32,6 @@ export class HeaderComponent implements OnInit {
     public authState: AuthStateService,
     private auth: AuthService,
     private otherService: DemoService,
-    private profileService: ProfileService,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -99,7 +97,7 @@ export class HeaderComponent implements OnInit {
     }
     this.activeLink = this.router.url;
     this.activeLinkRoot = this.router.url.split('?')[0];
-    this.profileService.getProfile(false).subscribe((user: IUser | null) => {
+    this.auth.sessions().subscribe((user: IUser | null) => {
       const isLogin = !!user;
       const role = user ? user.role : null;
       const username = user ? user.username : null;

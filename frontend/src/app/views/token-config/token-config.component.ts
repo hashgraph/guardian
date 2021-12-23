@@ -85,7 +85,7 @@ export class TokenConfigComponent implements OnInit {
 
     loadProfile() {
         this.loading = true;
-        this.profileService.getProfile(true).subscribe((profile) => {
+        this.profileService.getProfile().subscribe((profile) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             if (this.isConfirmed) {
                 this.queryChange();
