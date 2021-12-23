@@ -81,7 +81,7 @@
         </div>
     </ng-container>
     <ng-template #elseTemplate>
-        <div *ngIf="isNewAccount" class="list">
+        <div *ngIf="isNewAccount && !isFailed" class="list">
             <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR ID:</mat-label>
@@ -99,9 +99,14 @@
                 <button mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
             </form>
         </div>
-        <div *ngIf="!isNewAccount" class="clock-list">
+        <div *ngIf="!isNewAccount && !isFailed" class="clock-list">
             <div class="clock-loader"></div>
             <p>Creating DID ... </p>
+        </div>
+        <div *ngIf="isFailed" class="error-list">
+            <p>An error occurred while creating the document.</p>
+            <p>Please try again later.</p>
+            <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="retry()">Retry</button>
         </div>
     </ng-template>
 </div>

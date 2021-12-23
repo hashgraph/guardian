@@ -25,6 +25,7 @@ interface IHederaForm {
 export class InstallerProfileComponent implements OnInit {
     loading: boolean = true;
     isConfirmed: boolean = false;
+    isFailed: boolean = false;
     isNewAccount: boolean = false;
     profile?: IUser | null;
     balance?: string | null;
@@ -72,7 +73,7 @@ export class InstallerProfileComponent implements OnInit {
             if (!this.isConfirmed && !this.isNewAccount) {
                 this.loadDate();
             }
-        }, 10000);
+        }, 30000);
     }
 
     loadDate() {
@@ -89,8 +90,9 @@ export class InstallerProfileComponent implements OnInit {
             this.tokens = value[2].map(e => new Token(e));
 
             this.isConfirmed = !!this.profile.confirmed;
+            this.isFailed = !!this.profile.failed;
             this.isNewAccount = !this.profile.didDocument;
-
+            
             this.didDocument= "";
             if(this.isConfirmed) {
                 const didDocument = this.profile?.didDocument?.document;
@@ -171,5 +173,12 @@ export class InstallerProfileComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe(async (result) => {
         });
+    }
+
+    retry() {
+        this.isConfirmed = false;
+        this.isFailed = false;
+        this.isNewAccount = true;
+        clearInterval(this.interval)
     }
 }

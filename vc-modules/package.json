@@ -1,6 +1,7 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "@hashgraph/did-sdk-js": "^0.1.1",
     "@hashgraph/sdk": "2.5.0",
     "@transmute/credentials-context": "^0.7.0-unstable.28",
     "@transmute/did-context": "^0.7.0-unstable.28",
@@ -8,8 +9,7 @@
     "@transmute/json-web-signature": "^0.7.0-unstable.28",
     "@transmute/jsonld-schema": "^0.7.0-unstable.28",
     "@transmute/security-context": "^0.7.0-unstable.28",
-    "@transmute/vc.js": "^0.7.0-unstable.28",
-    "did-sdk-js": "git+https://github.com/EnvisionBlockchain/did-sdk-js.git"
+    "@transmute/vc.js": "^0.7.0-unstable.28"
   },
   "description": "",
   "devDependencies": {

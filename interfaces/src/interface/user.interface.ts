@@ -9,6 +9,7 @@ export class ISession {
 
 export interface IUser {
     confirmed?: boolean;
+    failed?: boolean;
     username?: string;
     role?: UserRole;
     hederaAccountId?: string;

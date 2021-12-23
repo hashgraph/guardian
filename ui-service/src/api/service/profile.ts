@@ -31,7 +31,7 @@ async function createUserProfile(profile: IUser) {
         const operation = message.getOperation();
         guardians.setDidDocument({ did, operation });
     }, function (error) {
-        console.error(error);
+        console.error('createDidTransaction:', error);
         guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
     });
 
@@ -97,7 +97,7 @@ async function createRootAuthorityProfile(profile: IUser) {
         const operation = message.getOperation();
         guardians.setVcDocument({ hash, operation });
     }, function (error: any) {
-        console.error(error);
+        console.error("createVcTransaction:", error);
     });
 
     hederaHelper.DID.createDidTransaction(hcsDid).then(function (message: any) {
@@ -105,7 +105,7 @@ async function createRootAuthorityProfile(profile: IUser) {
         const operation = message.getOperation();
         guardians.setDidDocument({ did, operation });
     }, function (error: any) {
-        console.error(error);
+        console.error("createDidTransaction:", error);
     });
 
     return did;
@@ -128,7 +128,7 @@ profileAPI.get('/', async (req: Request, res: Response) => {
             const didDocuments = await guardians.getDidDocuments({
                 did: user.did
             });
-            didDocument = didDocuments[0];
+            didDocument = didDocuments[didDocuments.length-1];
         }
 
         let vcDocument: any = null;
@@ -137,7 +137,7 @@ profileAPI.get('/', async (req: Request, res: Response) => {
                 owner: user.did,
                 type: SchemaEntity.ROOT_AUTHORITY
             });
-            vcDocument = vcDocuments[0];
+            vcDocument = vcDocuments[vcDocuments.length-1];
         }
 
         let addressBook: any = null;
@@ -158,6 +158,7 @@ profileAPI.get('/', async (req: Request, res: Response) => {
 
         const result: IUser = {
             confirmed: !!(didDocument && didDocument.status == DidDocumentStatus.CREATE),
+            failed: !!(didDocument && didDocument.status == DidDocumentStatus.FAILED),
             username: user.username,
             role: user.role,
             hederaAccountId: user.hederaAccountId,
@@ -169,6 +170,7 @@ profileAPI.get('/', async (req: Request, res: Response) => {
         };
         res.json(result);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ code: 500, message: error });
     }
 });
@@ -208,8 +210,9 @@ profileAPI.post('/', async (req: Request, res: Response) => {
 
         await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
 
-        res.sendStatus(200);
+        res.status(200).json(null);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ code: 500, message: error });
     }
 });
@@ -221,6 +224,7 @@ profileAPI.get('/balance', async (req: Request, res: Response) => {
 
         const user = await users.currentUser(req);
         if (!user.hederaAccountId) {
+            console.error('Invalid Hedera Account');
             res.json('null');
             return;
         }
@@ -232,6 +236,8 @@ profileAPI.get('/balance', async (req: Request, res: Response) => {
             .balance(user.hederaAccountId);
         res.json(balance);
     } catch (error) {
+        console.error(error);
         res.json('null');
     }
 });
+

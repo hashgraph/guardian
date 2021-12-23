@@ -24,7 +24,7 @@ demoAPI.get('/random-key', async (req: Request, res: Response) => {
     try {
         const OPERATOR_ID = process.env.OPERATOR_ID;
         const OPERATOR_KEY = process.env.OPERATOR_KEY;
-        const treasury = await HederaHelper.setOperator(OPERATOR_ID, OPERATOR_KEY).SDK.newAccount(40);
+        const treasury = await HederaHelper.setOperator(OPERATOR_ID, OPERATOR_KEY).SDK.newAccount(30);
         res.status(200).json({
             id: treasury.id.toString(),
             key: treasury.key.toString()

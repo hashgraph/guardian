@@ -1,4 +1,4 @@
-import { DidDocumentBase, HcsDidRootKey } from 'did-sdk-js';
+import { DidDocumentBase, HcsDidRootKey } from '@hashgraph/did-sdk-js';
 
 /**
  * The base for a DID document generation in JSON-LD format.
