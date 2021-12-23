@@ -51,7 +51,7 @@ export class SchemaConfigComponent implements OnInit {
 
     loadProfile() {
         this.loading = true;
-        this.profileService.getProfile(true).subscribe((profile: IUser | null) => {
+        this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             if (this.isConfirmed) {
                 this.loadSchemes();

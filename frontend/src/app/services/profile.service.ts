@@ -13,11 +13,8 @@ export class ProfileService {
   ) {
   }
 
-  public getProfile(extended: boolean): Observable<IUser | null> {
-    if (!localStorage.getItem('accessToken')) {
-      return of(null);
-    }
-    return this.http.get<any>(`${this.url}?extended=${extended}`);
+  public getProfile(): Observable<IUser> {
+    return this.http.get<any>(`${this.url}`);
   }
 
   public setProfile(profile: IUser): Observable<void> {
