@@ -108,6 +108,8 @@ async function createRootAuthorityProfile(profile: IUser) {
         console.error("createDidTransaction:", error);
     });
 
+    await wait(15);
+
     return did;
 }
 
