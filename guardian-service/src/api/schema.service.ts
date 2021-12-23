@@ -4,8 +4,6 @@ import { MongoRepository } from 'typeorm';
 import { readJSON, writeJSON, readdirSync } from 'fs-extra';
 import path from 'path';
 
-const localSchema = 'https://localhost/schema';
-
 /**
  * Creation of default schemes.
  * 
@@ -14,17 +12,17 @@ const localSchema = 'https://localhost/schema';
 export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
     let fileName: string;
     const schemes = [];
-    const files = readdirSync(path.join(process.cwd(), 'default-schemes'));
+    const files = readdirSync(path.join(process.cwd(), 'system-schemes'));
 
     try {
         for (let i = 0; i < files.length; i++) {
             fileName = files[i];
-            const schema = await readJSON(path.join(process.cwd(), 'default-schemes', fileName));
+            const schema = await readJSON(path.join(process.cwd(), 'system-schemes', fileName));
             schemes.push(schema);
         }
     } catch (error) {
         console.error(error);
-        throw (`Unable to read the file: default-schemes/${fileName}`);
+        throw (`Unable to read the file: system-schemes/${fileName}`);
     }
 
     const ids = schemes.map(s => s.uuid);
