@@ -52,7 +52,7 @@ export class SchemaConfigComponent implements OnInit {
     loadProfile() {
         this.loading = true;
         this.profileService.getProfile(true).subscribe((profile: IUser | null) => {
-            this.isConfirmed = !!(profile && profile.confirmed);
+            this.isConfirmed = !!!(profile && profile.confirmed);
             if (this.isConfirmed) {
                 this.loadSchemes();
             } else {
@@ -193,6 +193,7 @@ export class SchemaConfigComponent implements OnInit {
 
     setSchema(data: ISchema[]) {
         this.schemes = Schema.mapRef(data) || [];
+        this.schemes =  this.schemes.filter(s=>!s.readonly);
         this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
     }
 
