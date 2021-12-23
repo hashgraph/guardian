@@ -52,7 +52,7 @@ export class BlockTreeGenerator {
      */
     stateChangeCb(uuid: string, user?: IAuthUser) {
         this.wss.clients.forEach((client: AuthenticatedWebSocket) => {
-            if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, client.user.role)) {
+            if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, client.user.role, user)) {
                 client.send(uuid);
             }
 
@@ -358,7 +358,7 @@ export class BlockTreeGenerator {
 
                     await this.generate(model.id.toString());
                 }
-         
+
                 const policies = await getMongoRepository(Policy).find();
                 res.json({policies, isValid, errors});
             } catch (error) {
@@ -376,6 +376,7 @@ export class BlockTreeGenerator {
                 }
                 res.send(await model.getData(req.user) as any);
             } catch (e) {
+                console.error(e);
                 res.status(500).send({code: 500, message: 'Unknown error'});
             }
 

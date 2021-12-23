@@ -4,3 +4,5 @@ export enum UserRole {
     AUDITOR = 'AUDITOR',
     ORIGINATOR = 'ORIGINATOR'
 }
+
+export type PolicyRole = 'NO_ROLE' | 'OWNER' | 'ANY_ROLE' | 'ROOT_AUTHORITY' | string;

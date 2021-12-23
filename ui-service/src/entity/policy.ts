@@ -35,6 +35,9 @@ export class Policy {
     policyRoles: string[];
 
     @Column()
+    registeredUsers: Object;
+
+    @Column()
     topicId: string;
 
     @Column({

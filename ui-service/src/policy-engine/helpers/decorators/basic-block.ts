@@ -1,11 +1,12 @@
 import {PolicyBlockDefaultOptions} from '@policy-engine/helpers/policy-block-default-options';
 import {PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap} from '@policy-engine/interfaces';
 import {PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList} from '@policy-engine/interfaces/block-options';
-import {UserRole} from 'interfaces';
+import {PolicyRole} from 'interfaces';
 
 import {IPolicyBlock, ISerializedBlock,} from '../../policy-engine.interface';
 import {StateContainer} from '../../state-container';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import {IAuthUser} from '../../../auth/auth.interface';
 
 /**
  * Basic block decorator
@@ -19,7 +20,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 public readonly commonBlock: boolean,
                 public readonly tag: string | null,
                 public defaultActive: boolean,
-                protected readonly permissions: UserRole[],
+                protected readonly permissions: PolicyRole[],
                 protected readonly dependencies: PolicyBlockDependencies,
                 private readonly blockMap: PolicyBlockMap,
                 private readonly tagMap: PolicyTagMap,
@@ -73,7 +74,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 _uuid: string,
                 defaultActive: boolean,
                 tag: string,
-                permissions: UserRole[],
+                permissions: PolicyRole[],
                 dependencies: PolicyBlockDependencies,
                 _parent: IPolicyBlock,
                 _options: any
@@ -147,8 +148,26 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.children.push(child);
             }
 
-            public hasPermission(role: UserRole): boolean {
-                return this.permissions.indexOf(role) > -1;
+            public hasPermission(role: PolicyRole | null, user: IAuthUser | null): boolean {
+                let hasAccess = false;
+                if (this.permissions.includes('NO_ROLE')) {
+                    if (!role && user.did !== this.policyOwner) {
+                        hasAccess = true;
+                    }
+                }
+                if(this.permissions.includes('ANY_ROLE')) {
+                    hasAccess = true;
+                }
+                if(this.permissions.includes('OWNER')) {
+                    if (user) {
+                        return user.did === this.policyOwner;
+                    }
+                }
+
+                if(this.permissions.indexOf(role) > -1) {
+                    hasAccess = true;
+                }
+                return hasAccess;
             }
 
             public serialize(withUUID: boolean = false): ISerializedBlock {

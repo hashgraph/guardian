@@ -5,7 +5,7 @@ export {DocumentStatus} from './type/document-status.type';
 export {PolicyType} from './type/policy.type';
 export {RootState} from './type/root-state.type';
 export {SchemaEntity} from './type/schema-entity.type';
-export {UserRole} from './type/user-role.type';
+export {UserRole, PolicyRole} from './type/user-role.type';
 export {UserState} from './type/user-state.type';
 export {MessageAPI} from './type/message-api.type';
 export {IApprovalDocument} from './interface/approval-document.interface';
