@@ -163,7 +163,7 @@
             </div>
 
 
-            <div *ngIf="item.isArray && item.isRef" class="form-field-group">
+            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-group">
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field">{{item.description}}</div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item"
