@@ -64,7 +64,7 @@ async function createRootAuthorityProfile(profile: IUser) {
 
     const { hcsDid, did, document } = await hederaHelper.DID.createDid(profile.hederaAccountKey);
 
-    const vc:any = profile.vcDocument || {};
+    const vc: any = profile.vcDocument || {};
     vc.id = did;
 
     const vcDocument = await vcHelper.createVC(did, profile.hederaAccountKey, null, vc);
@@ -128,7 +128,9 @@ profileAPI.get('/', async (req: Request, res: Response) => {
             const didDocuments = await guardians.getDidDocuments({
                 did: user.did
             });
-            didDocument = didDocuments[didDocuments.length-1];
+            if (didDocuments) {
+                didDocument = didDocuments[didDocuments.length - 1];
+            }
         }
 
         let vcDocument: any = null;
@@ -137,7 +139,9 @@ profileAPI.get('/', async (req: Request, res: Response) => {
                 owner: user.did,
                 type: SchemaEntity.ROOT_AUTHORITY
             });
-            vcDocument = vcDocuments[vcDocuments.length-1];
+            if (vcDocuments) {
+                vcDocument = vcDocuments[vcDocuments.length - 1];
+            }
         }
 
         let addressBook: any = null;
