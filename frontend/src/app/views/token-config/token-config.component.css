@@ -226,3 +226,12 @@ a {
     position: relative;
     z-index: 0;
 }
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+}

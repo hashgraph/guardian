@@ -10,16 +10,6 @@
             <input matInput formControlName="login">
         </mat-form-field>
 
-        <!-- <mat-form-field appearance="outline">
-            <mat-label>ROLE</mat-label>
-            <mat-select formControlName="role">
-                <mat-option value="ROOT_AUTHORITY">Root Authority</mat-option>
-                <mat-option value="INSTALLER">Installer</mat-option>
-                <mat-option value="AUDITOR">Auditor</mat-option>
-                <mat-option value="ORIGINATOR">Originator</mat-option>
-              </mat-select>
-        </mat-form-field> -->
-
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Password:</mat-label>
             <input matInput formControlName="password">
@@ -42,8 +32,8 @@
                 <span class="role-name">Root Authority (offset providers)</span>
                 <span class="role-description">For regulating entities to provide Offset credentials.</span>
             </button>
-            <button mat-button (click)="setRole('INSTALLER')">
-                <span class="role-name">Installer (offset applicants)</span>
+            <button mat-button (click)="setRole('USER')">
+                <span class="role-name">User (offset applicants)</span>
                 <span class="role-description">For those applying to show Offsets (Farmers, Green Energy…)</span>
             </button>
             <button mat-button (click)="setRole('AUDITOR')">

@@ -71,8 +71,8 @@ export class InterfaceDocumentActionBlock {
             const policy = await getMongoRepository(Policy).findOne(ref.policyId);
             const userFull = await this.users.getUserById(document.owner);
             const hederaAccountId = userFull.hederaAccountId;
-            const installerDID = userFull.did;
-            const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, installerDID);
+            const userDID = userFull.did;
+            const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
             return {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
@@ -81,7 +81,7 @@ export class InterfaceDocumentActionBlock {
                     'topic': policy.topicId,
                     'hederaAccountId': hederaAccountId,
                     'hederaAccountKey': hederaAccountKey,
-                    'installer': installerDID,
+                    'installer': userDID,
                     'did': sensorDid,
                     'key': sensorKey,
                     'type': ref.options.schema,

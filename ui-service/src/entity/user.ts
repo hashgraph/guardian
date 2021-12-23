@@ -37,6 +37,6 @@ export class User implements IUser {
 
     @BeforeInsert()
     setInitState() {
-        this.role = this.role || UserRole.INSTALLER;
+        this.role = this.role || UserRole.USER;
     }
 }

@@ -199,7 +199,7 @@ profileAPI.post('/', async (req: Request, res: Response) => {
                 return;
             }
             did = await createRootAuthorityProfile(profile);
-        } else if (user.role === UserRole.INSTALLER) {
+        } else if (user.role === UserRole.USER) {
             did = await createUserProfile(profile);
         }
 

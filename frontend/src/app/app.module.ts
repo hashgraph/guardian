@@ -28,7 +28,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ToastrModule } from 'ngx-toastr';
 import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
-import { AppRoutingModule, AuditorGuard, InstallerGuard, RootAuthorityGuard } from './app-routing.module';
+import { AppRoutingModule, AuditorGuard, UserGuard, RootAuthorityGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor, AuthService } from "./services/auth.service";
 import { ProfileService } from "./services/profile.service";
@@ -37,7 +37,7 @@ import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from "./services/handle-errors.service";
 import { AuditService } from './services/audit.service';
 import { PolicyEngineService } from './services/policy-engine.service';
-import { InstallerProfileComponent } from './views/installer-profile/installer-profile.component';
+import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
 import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './components/header/header.component';
@@ -89,7 +89,7 @@ import { DemoService } from './services/demo.service';
 @NgModule({
     declarations: [
         AppComponent,
-        InstallerProfileComponent,
+        UserProfileComponent,
         LoginComponent,
         HomeComponent,
         HeaderComponent,
@@ -172,7 +172,7 @@ import { DemoService } from './services/demo.service';
     ],
     exports: [],
     providers: [
-        InstallerGuard,
+        UserGuard,
         RootAuthorityGuard,
         AuditorGuard,
         AuthService,

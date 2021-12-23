@@ -27,12 +27,10 @@ export class HomeComponent implements OnInit {
             if (user) {
                 if (user.role == UserRole.ROOT_AUTHORITY) {
                     this.router.navigate(['/config']);
-                } else if (user.role == UserRole.INSTALLER) {
-                    this.router.navigate(['/installer-profile']);
-                } else if (user.role == UserRole.ORIGINATOR) {
-                    this.router.navigate(['/originator-profile']);
-                } else {
+                } else if (user.role == UserRole.AUDITOR) {
                     this.router.navigate(['/audit']);
+                } else {
+                    this.router.navigate(['/user-profile']);
                 }
             } else {
                 this.router.navigate(['/login']);

@@ -88,4 +88,3 @@ Promise.all([
         console.log('guardian service started', PORT);
     });
 });
-
