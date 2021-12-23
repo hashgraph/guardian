@@ -17,7 +17,6 @@ form {
     display: block;
     width: 100%;
     position: relative;
-    overflow: hidden;
     margin-bottom: 10px;
 }
 
@@ -25,7 +24,7 @@ form {
     width: 100%;
 }
 
-.form-field-group, 
+.form-field-group,
 .form-field-array {
     display: block;
     width: 100%;
@@ -42,7 +41,7 @@ form {
     padding-left: 30px;
 }
 
-.group-label, 
+.group-label,
 .array-label {
     color: rgba(0,0,0,.6);
     background: #fff;
@@ -60,7 +59,7 @@ form {
     color:red;
 }
 
-.add-btn, 
+.add-btn,
 .remove-btn {
     margin-bottom: 16px;
     height: 56px;
@@ -76,12 +75,12 @@ form {
     margin-top: 12px;
 }
 
-.add-btn:hover, 
+.add-btn:hover,
 .remove-btn:hover {
     background: #fbfbfb;
 }
 
-.add-btn span, 
+.add-btn span,
 .remove-btn span {
     display: inline-block;
     position: relative;
@@ -91,7 +90,7 @@ form {
     font-size: 16px;
 }
 
-.add-btn span *, 
+.add-btn span *,
 .remove-btn span * {
     position: absolute;
     left: 0;
@@ -104,6 +103,7 @@ form {
     display: table;
     width: 100%;
     box-sizing: border-box;
+    min-height: 50px;
 }
 
 .fields-remove {
@@ -134,7 +134,7 @@ form {
     display: none;
 }
 
-.required-field, 
+.required-field,
 .group-label {
     color: gray;
     font-size: 14px;
@@ -172,13 +172,25 @@ form {
     font-size: 18px;
 }
 
-::ng-deep mat-form-field.required-form-field.mat-form-field-invalid.mat-form-field-invalid .mat-form-field-outline-thick {
+:host ::ng-deep mat-form-field.required-form-field.mat-form-field-invalid.mat-form-field-invalid .mat-form-field-outline-thick {
     color: #f8c3c3af;
     background-color: #ffefef;
     border-radius: 7px;
 }
 
+:host ::ng-deep mat-form-field input[aria-invalid='true'] {
+  color: red;
+}
+
+:host ::ng-deep mat-radio-button {
+  margin-right: 20px;
+}
+
 .form-field-group .form-field-array-item,
 .form-field-container .form-field-container > .form-field-group {
     border-left: 2px dashed var(--button-primary-color);
+}
+
+.boolean-form-field {
+  margin-top: 20px;
 }
