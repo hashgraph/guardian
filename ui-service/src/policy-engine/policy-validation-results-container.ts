@@ -57,6 +57,10 @@ export class PolicyValidationResultsContainer {
         return !!this.tags.find(item => item === tag);
     }
 
+    public countTags(tag: string): number {
+        return this.tags.filter(t => t === tag).length;
+    }
+
     public getSerializedErrors(): ISerializedErrors {
         return {
             blocks: [...this.blocks.values()].map(item => {

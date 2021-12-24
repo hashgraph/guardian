@@ -1,6 +1,8 @@
 import {Response} from 'express';
 import {verify} from 'jsonwebtoken';
 import {AuthenticatedRequest, IAuthUser} from './auth.interface';
+import {getMongoRepository} from 'typeorm';
+import {User} from '@entity/user';
 
 /**
  * Authorization middleware
@@ -12,11 +14,12 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
     const authHeader = req.headers.authorization;
     if (authHeader) {
         const token = authHeader.split(' ')[1];
-        verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user: IAuthUser) => {
+        verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user: IAuthUser) => {
             if (err) {
                 return res.sendStatus(401);
             }
-            req.user = user;
+            const userDB = await getMongoRepository(User).findOne({username: user.username});
+            req.user = userDB;
             next();
         });
     } else {

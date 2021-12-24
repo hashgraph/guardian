@@ -14,17 +14,18 @@ import { RootConfigComponent } from './views/root-config/root-config.component';
 import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
-import { ProfileService } from './services/profile.service';
+import { AuthService } from './services/auth.service';
+
 
 class Guard {
   private router: Router;
-  private auth: ProfileService;
+  private auth: AuthService;
   private role: UserRole;
   private defaultPage: string;
 
   constructor(
     router: Router,
-    auth: ProfileService,
+    auth: AuthService,
     role: UserRole,
     defaultPage: string
   ) {
@@ -35,7 +36,7 @@ class Guard {
   }
 
   canActivate() {
-    return this.auth.getProfile(false).pipe(
+    return this.auth.sessions().pipe(
       map((res: IUser | null) => {
         if (res) {
           return res.role == this.role;
@@ -54,7 +55,7 @@ class Guard {
   providedIn: 'root'
 })
 export class UserGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: ProfileService) {
+  constructor(router: Router, auth: AuthService) {
     super(router, auth, UserRole.USER, '/login');
   }
 }
@@ -63,7 +64,7 @@ export class UserGuard extends Guard implements CanActivate {
   providedIn: 'root'
 })
 export class RootAuthorityGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: ProfileService) {
+  constructor(router: Router, auth: AuthService) {
     super(router, auth, UserRole.ROOT_AUTHORITY, '/login');
   }
 }
@@ -72,7 +73,7 @@ export class RootAuthorityGuard extends Guard implements CanActivate {
   providedIn: 'root'
 })
 export class AuditorGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: ProfileService) {
+  constructor(router: Router, auth: AuthService) {
     super(router, auth, UserRole.AUDITOR, '/login');
   }
 }

@@ -44,7 +44,7 @@ export class SchemaFormComponent implements OnInit {
         this.update();
     }
 
-    addItem(item: any) {
+    addItem(item: any, immediateAddForm: boolean = false) {
         const listItem: any = {
             name: item.name,
             index: String(item.list.length),
@@ -60,9 +60,20 @@ export class SchemaFormComponent implements OnInit {
             }
         }
         item.list.push(listItem);
-        item.control.push(listItem.control);
-        this.options?.updateValueAndValidity();
-        this.change.emit();
+
+        if (immediateAddForm)
+        {
+          item.control.push(listItem.control);
+          this.options?.updateValueAndValidity();
+          this.change.emit();
+          return;
+        }
+
+        setTimeout(() => {
+          item.control.push(listItem.control);
+          this.options?.updateValueAndValidity();
+          this.change.emit();
+        });
     }
 
     addGroup(item: any) {
@@ -138,7 +149,7 @@ export class SchemaFormComponent implements OnInit {
                 group[field.name] = item.control;
                 item.list = [];
                 if (field.required) {
-                    this.addItem(item);
+                    this.addItem(item, true);
                 }
             }
             if (field.isArray && field.isRef) {
@@ -147,7 +158,7 @@ export class SchemaFormComponent implements OnInit {
                 item.list = [];
                 item.fields = field.fields;
                 if (field.required) {
-                    this.addItem(item);
+                    this.addItem(item, true);
                 }
             }
             fields.push(item);
@@ -170,9 +181,12 @@ export class SchemaFormComponent implements OnInit {
       if (format === 'date') {
         control.valueChanges
           .subscribe((val: any) => {
+            if (!val || !(val instanceof Date)) {
+              return;
+            }
+
             let momentDate = moment(val);
-            if (!momentDate.isValid())
-            {
+            if (!momentDate.isValid()) {
               return;
             }
 
@@ -187,8 +201,7 @@ export class SchemaFormComponent implements OnInit {
       if (format === 'date-time') {
         control.valueChanges
           .subscribe((val: any) => {
-            if(!val)
-            {
+            if (!val || !(val instanceof Date)) {
               return;
             }
 

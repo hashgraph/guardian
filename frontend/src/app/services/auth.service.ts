@@ -1,5 +1,6 @@
 import {HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {Injectable} from '@angular/core';
+import { ISession } from 'interfaces';
 import {Observable, of, Subject, Subscription} from 'rxjs';
 
 /**
@@ -25,6 +26,13 @@ export class AuthService {
 
   public createUser(username: string, password: string, role: string): Observable<any> {
     return this.http.post<any>('/api/account/register', {username, password, role})
+  }
+
+  public sessions(): Observable<ISession | null> {
+    if (!localStorage.getItem('accessToken')) {
+      return of(null);
+    }
+    return this.http.get<ISession>('/api/account');
   }
 
   public setAccessToken(accessToken: string) {

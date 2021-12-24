@@ -10,7 +10,7 @@ import {IAuthUser} from '../../auth/auth.interface';
  */
 export const accountAPI = Router();
 
-accountAPI.get('/current-user', async (req: Request, res: Response) => {
+accountAPI.get('/', async (req: Request, res: Response) => {
     let authHeader = req.headers.authorization;
     if (authHeader) {
         const token = authHeader.split(' ')[1];
@@ -35,7 +35,16 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
         const {username, password, role} = req.body;
         const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
-        const user = getMongoRepository(User).create({
+        const rep = getMongoRepository(User);
+        const checkUserName = await rep.findOne({where: {username: {$eq: username}}});
+        if(checkUserName) {
+            res.json({
+                error: 'An account with the same name already exists.'
+            });
+            return;
+        }
+
+        const user = rep.create({
             username: username,
             password: passwordDigest,
             role: role,

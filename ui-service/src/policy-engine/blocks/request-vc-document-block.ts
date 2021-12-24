@@ -71,7 +71,7 @@ export class RequestVcDocumentBlock {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
         if (!userFull.did) {
-            throw new BlockActionError('user have no any did', ref.blockType, ref.uuid);
+            throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
         }
 
         const userHederaAccount = userFull.hederaAccountId;
@@ -84,6 +84,8 @@ export class RequestVcDocumentBlock {
         if (id) {
             credentialSubject.id = id;
         }
+        credentialSubject.policyId = ref.policyId;
+
         const vc = await this.vcHelper.createVC(userFull.did, userHederaKey, schema, credentialSubject);
         const data = {
             hash: vc.toCredentialHash(),

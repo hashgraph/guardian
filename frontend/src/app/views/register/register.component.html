@@ -4,10 +4,11 @@
         <div class="login-header" (click)="setRole('')">
             <mat-icon>chevron_left</mat-icon> Create Account
         </div>
-        
+
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Username:</mat-label>
-            <input matInput formControlName="login">
+            <input matInput formControlName="login" (input)="onInput()">
+            <div *ngIf="error" class="field-error">{{error}}</div>
         </mat-form-field>
 
         <mat-form-field class="example-full-width" appearance="outline">

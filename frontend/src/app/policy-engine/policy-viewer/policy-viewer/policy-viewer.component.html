@@ -19,11 +19,9 @@
         <div class="policy-header">
             <a routerLink="/policy-viewer" class="go-back-link">
                 <mat-icon>chevron_left</mat-icon>
-                ID: {{policy.id}}
+                <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
+                <span *ngIf="policyInfo && policyInfo.description">: {{policyInfo.description}}</span>
             </a>
-            <span *ngIf="policyInfo && policyInfo.name">NAME: {{policyInfo.name}}</span>
-            <span *ngIf="policyInfo && policyInfo.version">VERSION: {{policyInfo.version}}</span>
-            <span *ngIf="policyInfo && policyInfo.description">DESCRIPTION: {{policyInfo.description}}</span>
         </div>
         <div class="policy-container">
             <render-block [block]="policy" [policyId]="policyId"></render-block>

@@ -77,7 +77,7 @@ export class PolicyViewerComponent implements OnInit {
         this.policy = null;
         this.isConfirmed = false;
         this.loading = true;
-        this.profileService.getProfile(true).subscribe((profile: IUser | null) => {
+        this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.role = profile ? profile.role : null;
             if (this.isConfirmed) {

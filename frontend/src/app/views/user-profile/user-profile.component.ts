@@ -73,7 +73,7 @@ export class UserProfileComponent implements OnInit {
             if (!this.isConfirmed && !this.isNewAccount) {
                 this.loadDate();
             }
-        }, 30000);
+        }, 15000);
     }
 
     loadDate() {
@@ -81,7 +81,7 @@ export class UserProfileComponent implements OnInit {
         this.tokens = null;
         this.loading = true;
         forkJoin([
-            this.profileService.getProfile(true),
+            this.profileService.getProfile(),
             this.profileService.getBalance(),
             this.tokenService.getUserTokens()
         ]).subscribe((value) => {

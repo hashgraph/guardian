@@ -32,11 +32,6 @@ form {
     box-sizing: border-box;
 }
 
-.form-field-group .form-field-array-item {
-    padding-top: 20px;
-    padding-right: 0;
-}
-
 .form-field-group .form-field-group {
     padding-left: 30px;
 }
@@ -186,11 +181,20 @@ form {
   margin-right: 20px;
 }
 
-.form-field-group .form-field-array-item,
-.form-field-container .form-field-container > .form-field-group {
-    border-left: 2px dashed var(--button-primary-color);
+.schema-form-field-group > .form-field-array-item,
+.form-field-container .form-field-container > .schema-form-field-group {
+    border-left: 2px dashed #c8c8c8;
+}
+
+.schema-form-field-group > .form-field-array-item {
+  padding-top: 20px;
+}
+
+.form-field-group > .form-field-array-item {
+  padding-right: 0;
 }
 
 .boolean-form-field {
   margin-top: 20px;
+  padding-bottom: 10px;
 }
