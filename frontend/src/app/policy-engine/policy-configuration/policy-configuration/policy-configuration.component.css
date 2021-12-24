@@ -11,7 +11,7 @@
 .loading {
     background: #fff;
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     top: 0;
     left: 0;
     bottom: 0;
@@ -493,7 +493,7 @@ input[readonly] {
     bottom: 0px;
     left: 0px;
     right: 0px;
-    z-index: 999;
+    z-index: 99;
     padding: 10px;
     background: #fff;
     border-top: 1px solid #c9c9c9;
