@@ -55,7 +55,7 @@
                     <mat-radio-group [formControlName]="item.name">
                       <mat-radio-button color="primary" value="true">True</mat-radio-button>
                       <mat-radio-button color="primary" value="false">False</mat-radio-button>
-                      <mat-radio-button color="primary" *ngIf="!item.required" value="">Other</mat-radio-button>
+                      <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
                     </mat-radio-group>
                   </div>
 
@@ -146,7 +146,7 @@
                         <mat-radio-group [formControl]="listItem.control">
                           <mat-radio-button color="primary" value="true">True</mat-radio-button>
                           <mat-radio-button color="primary" value="false">False</mat-radio-button>
-                          <mat-radio-button color="primary" *ngIf="!item.required" value="">Other</mat-radio-button>
+                          <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
                         </mat-radio-group>
                       </div>
 

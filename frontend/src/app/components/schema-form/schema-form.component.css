@@ -183,7 +183,7 @@ form {
 
 .schema-form-field-group > .form-field-array-item,
 .form-field-container .form-field-container > .schema-form-field-group {
-    border-left: 2px dashed var(--button-primary-color);
+    border-left: 2px dashed #c8c8c8;
 }
 
 .schema-form-field-group > .form-field-array-item {

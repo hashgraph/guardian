@@ -5,14 +5,14 @@
             <mat-label>* Schema Name</mat-label>
             <input matInput type="text" placeholder="Schema Name" formControlName="name">
         </mat-form-field>
-    
+
         <mat-form-field appearance="outline">
             <mat-label>For (Entity)</mat-label>
             <mat-select formControlName="entity">
                 <mat-option value="NONE">NONE</mat-option>
                 <mat-option value="INSTALLER">INSTALLER</mat-option>
                 <mat-option value="INVERTER">INVERTER</mat-option>
-                <mat-option value="MRV">MRV</mat-option>            
+                <mat-option value="MRV">MRV</mat-option>
             </mat-select>
         </mat-form-field>
     </div>
@@ -34,10 +34,10 @@
                     </mat-form-field>
                 </div>
                 <div class="custom-field-type">
-                    
+
                     <mat-form-field appearance="outline">
                         <mat-label>Field type</mat-label>
-                        <mat-select [formControl]="field.controlType">
+                        <mat-select [formControl]="field.controlType" #controlType>
                             <mat-optgroup  label="Simple Types">
                                 <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
                             </mat-optgroup>
@@ -52,7 +52,7 @@
                     <mat-checkbox color="primary" [formControl]="field.controlRequired">Required Field</mat-checkbox>
                 </div>
                 <div class="custom-field-isArray">
-                    <mat-checkbox color="primary" [formControl]="field.controlArray">Allow multiple answers</mat-checkbox>
+                    <mat-checkbox color="primary" [formControl]="field.controlArray" [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
                 </div>
                 <div class="custom-field-remove">
                     <div class="custom-fields-remove" (click)="onRemove(field)">
