@@ -181,9 +181,12 @@ export class SchemaFormComponent implements OnInit {
       if (format === 'date') {
         control.valueChanges
           .subscribe((val: any) => {
+            if (!val || !(val instanceof Date)) {
+              return;
+            }
+
             let momentDate = moment(val);
-            if (!momentDate.isValid())
-            {
+            if (!momentDate.isValid()) {
               return;
             }
 
@@ -198,8 +201,7 @@ export class SchemaFormComponent implements OnInit {
       if (format === 'date-time') {
         control.valueChanges
           .subscribe((val: any) => {
-            if(!val)
-            {
+            if (!val || !(val instanceof Date)) {
               return;
             }
 
