@@ -20,7 +20,6 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             }
             const userDB = await getMongoRepository(User).findOne({username: user.username});
             req.user = userDB;
-            console.log(user);
             next();
         });
     } else {
