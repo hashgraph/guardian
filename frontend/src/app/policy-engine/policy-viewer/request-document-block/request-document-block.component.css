@@ -19,7 +19,7 @@
 .loading {
     background: #fff;
     position: fixed;
-    z-index: 999;
+    z-index: 99;
     top: var(--header-height-policy);
     left: 0;
     bottom: 0;
@@ -42,6 +42,7 @@
 
 .body-dialog-template {
     padding-bottom: 25px;
+    max-height: 70vh;
 }
 
 .description {
@@ -51,4 +52,5 @@
 .schema-form {
     max-height: 50vh;
     overflow: auto;
+    margin-bottom: 24px;
 }
