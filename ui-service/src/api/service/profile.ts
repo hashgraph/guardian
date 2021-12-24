@@ -105,7 +105,8 @@ async function createRootAuthorityProfile(profile: IUser) {
         const operation = message.getOperation();
         guardians.setDidDocument({ did, operation });
     }, function (error: any) {
-        console.error("createDidTransaction:", error);
+        console.error('createDidTransaction:', error);
+        guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
     });
 
     await wait(15);

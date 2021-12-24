@@ -19,6 +19,9 @@ import { DemoService } from 'src/app/services/demo.service';
 })
 export class RootConfigComponent implements OnInit {
     isConfirmed: boolean = false;
+    isFailed: boolean = false;
+    isNewAccount: boolean = true;
+    errorLoadSchema: boolean = false;
     loading: boolean = true;
     progress: number = 0;
 
@@ -87,18 +90,26 @@ export class RootConfigComponent implements OnInit {
             this.profileService.getBalance(),
             this.schemaService.getSchemes()
         ]).subscribe((value) => {
-            const profile: IUser | null = value[0];
-            const balance: string | null = value[1];
-            const schemes = Schema.mapRef(value[2]);
+            if(!value[2]) {
+                this.errorLoadSchema = true;
+                this.loading = false;
+                return;
+            }
 
-            this.isConfirmed = !!(profile && profile.confirmed);
+            const profile = value[0];
+            const balance = value[1];
+            const schemes = Schema.mapRef(value[2]);
+            this.schema = schemes
+                .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
+
+            this.isConfirmed = !!(profile.confirmed);
+            this.isFailed = !!(profile.failed);
+            this.isNewAccount = !!(!profile.didDocument);
+
             if (this.isConfirmed) {
                 this.balance = balance;
                 this.profile = profile;
             }
-
-            this.schema = schemes
-                .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
 
             setTimeout(() => {
                 this.loading = false;
@@ -112,7 +123,7 @@ export class RootConfigComponent implements OnInit {
     onHederaSubmit() {
         if (this.hederaForm.valid) {
             const value = this.hederaForm.value;
-            const data:any = {
+            const data: any = {
                 hederaAccountId: value.hederaAccountId,
                 hederaAccountKey: value.hederaAccountKey,
                 vcDocument: value.vc,
@@ -185,5 +196,12 @@ export class RootConfigComponent implements OnInit {
 
     onChangeForm() {
         this.vcForm.updateValueAndValidity();
+    }
+
+    retry() {
+        this.isConfirmed = false;
+        this.isFailed = false;
+        this.isNewAccount = true;
+        clearInterval(this.progressInterval);
     }
 }

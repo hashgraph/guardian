@@ -122,3 +122,10 @@ mat-form-field {
     color: #2F2F2F;
     line-height: 23px;
 }
+
+.field-error {
+    position: absolute;
+    color: #f00;
+    bottom: -28px;
+    left: 0;
+}
