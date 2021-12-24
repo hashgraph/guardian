@@ -51,9 +51,14 @@ export class BlockTreeGenerator {
      * @param uuid {string} - id of block
      * @param user {IAuthUser} - short user object
      */
-    stateChangeCb(uuid: string, user?: IAuthUser) {
-        this.wss.clients.forEach((client: AuthenticatedWebSocket) => {
-            if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, client.user.role, user)) {
+    stateChangeCb(uuid: string, state: any, user?: IAuthUser) {
+        this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
+            const policy = await getMongoRepository(Policy).findOne((StateContainer.GetBlockByUUID(uuid) as any).policyId);
+            const role = policy.registeredUsers[user.did];
+            if (!role) {
+                return
+            }
+            if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, role, user)) {
                 client.send(uuid);
             }
 
@@ -259,6 +264,7 @@ export class BlockTreeGenerator {
     private registerRoutes(): void {
         this.router.get('/edit/:policyId', async (req: AuthenticatedRequest, res: Response) => {
             const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+            delete model.registeredUsers;
             res.send(model);
 
         });
@@ -273,6 +279,7 @@ export class BlockTreeGenerator {
             model.description = policy.description;
             model.topicDescription = policy.topicDescription;
             model.policyRoles = policy.policyRoles;
+            delete model.registeredUsers;
 
             const result = await getMongoRepository(Policy).save(model);
 
@@ -370,8 +377,15 @@ export class BlockTreeGenerator {
                     await this.generate(model.id.toString());
                 }
 
-                const policies = await getMongoRepository(Policy).find();
-                res.json({policies, isValid, errors});
+                const policies = await getMongoRepository(Policy).find() as Policy[];
+                res.json({
+                    policies: policies.map(item => {
+                        delete item.registeredUsers;
+                        return item;
+                    }),
+                    isValid,
+                    errors
+                });
             } catch (error) {
                 res.status(500).send({ code: 500, message: error.message });
             }
@@ -380,11 +394,16 @@ export class BlockTreeGenerator {
         this.router.get('/list', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                let result: Policy[];
                 if (user.role === UserRole.ROOT_AUTHORITY) {
-                    res.json(await getMongoRepository(Policy).find({owner: user.did}));
+                    result = await getMongoRepository(Policy).find({owner: user.did});
                 } else {
-                    res.json(await getMongoRepository(Policy).find({status: 'PUBLISH'}));
+                    result = await getMongoRepository(Policy).find({status: 'PUBLISH'});
                 }
+                res.json(result.map(item => {
+                    delete item.registeredUsers;
+                    return item;
+                }));
             } catch (e) {
                 res.status(500).send({code: 500, message: 'Server error'});
             }
