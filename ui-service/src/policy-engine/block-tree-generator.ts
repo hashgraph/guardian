@@ -21,6 +21,7 @@ import {Guardians} from '@helpers/guardians';
 import {VcHelper} from '@helpers/vcHelper';
 import * as Buffer from 'buffer';
 import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -329,6 +330,16 @@ export class BlockTreeGenerator {
                         res.status(500).send({code: 500, message: 'The policy is empty'});
                         return;
                     }
+
+                    function regenerateIds(block: any) {
+                        block.id = GenerateUUIDv4();
+                        if (Array.isArray(block.children)) {
+                            for (let child of block.children) {
+                                regenerateIds(child);
+                            }
+                        }
+                    }
+                    regenerateIds(model.config);
                     const guardians = new Guardians();
                     const root = await guardians.getRootConfig(user.did);
                     const topicId = await HederaHelper
