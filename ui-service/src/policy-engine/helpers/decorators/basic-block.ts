@@ -121,6 +121,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
                 resultsContainer.registerBlock(this as any as IPolicyBlock);
+                if (resultsContainer.countTags(this.tag) > 1) {
+                    resultsContainer.addBlockError(this.uuid, `Tag ${this.tag} already exist`);
+                }
                 if (typeof super.validate === 'function') {
                     await super.validate(resultsContainer)
                 }
