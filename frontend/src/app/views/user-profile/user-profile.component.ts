@@ -73,7 +73,7 @@ export class UserProfileComponent implements OnInit {
             if (!this.isConfirmed && !this.isNewAccount) {
                 this.loadDate();
             }
-        }, 30000);
+        }, 15000);
     }
 
     loadDate() {
