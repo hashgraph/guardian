@@ -21,7 +21,7 @@ export const fixtures = async function (): Promise<void> {
             username: 'Installer',
             password: crypto.createHash('sha256').update('test').digest('hex'),
             walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            role: UserRole.INSTALLER
+            role: UserRole.USER
         });
         result = await usersRepository.save(user);
         console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
@@ -30,7 +30,7 @@ export const fixtures = async function (): Promise<void> {
             username: 'Installer2',
             password: crypto.createHash('sha256').update('test').digest('hex'),
             walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            role: UserRole.INSTALLER
+            role: UserRole.USER
         });
         result = await usersRepository.save(user);
         console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
@@ -40,15 +40,6 @@ export const fixtures = async function (): Promise<void> {
             password: crypto.createHash('sha256').update('test').digest('hex'),
             walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
             role: UserRole.AUDITOR
-        });
-        result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
-
-        user = usersRepository.create({
-            username: 'Originator',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            role: UserRole.ORIGINATOR
         });
         result = await usersRepository.save(user);
         console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));

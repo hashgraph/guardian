@@ -2,7 +2,9 @@ import { PrivateKey } from '@hashgraph/sdk';
 import {
     TimestampUtils,
     HcsDidRootKey
-} from 'did-sdk-js';
+} from '@hashgraph/did-sdk-js';
+import { check } from '@transmute/jsonld-schema';
+
 import { VcSubject } from '../vc/vc-subject';
 import { HcsVcDocument } from '../vc/vc-document';
 import { VCJS } from '../vc/vcjs';
@@ -10,8 +12,8 @@ import { DocumentLoader } from '../document-loader/document-loader';
 import { DocumentLoaderFunction } from '../document-loader/document-loader-function';
 import { Utils } from './utils';
 import { HcsVpDocument } from '../vc/vp-document';
-import { check } from '@transmute/jsonld-schema';
 import { SchemaLoader } from '../document-loader/schema-loader';
+
 /**
  * Methods for creating and verifying VC and VP documents
  */

@@ -6,8 +6,9 @@ import {
 } from '@hashgraph/sdk';
 import { HederaSDKHelper } from './hedera-sdk-helper';
 import { HederaDIDHelper } from './hedera-did-helper';
-import { AddressBook, HcsIdentityNetwork, HcsIdentityNetworkBuilder } from 'did-sdk-js';
+import { AddressBook, HcsIdentityNetwork, HcsIdentityNetworkBuilder } from '@hashgraph/did-sdk-js';
 import { MAX_FEE } from './max-fee';
+import { timeout } from './utils';
 
 export interface IHederaNetwork {
     network: HcsIdentityNetwork,
@@ -38,6 +39,8 @@ export interface IHederaHelper {
  * SDK - Contains methods to simplify work with hashgraph sdk
  */
 export class HederaHelper {
+    public static MAX_TIMEOUT: number = 60000;
+
     public DID: HederaDIDHelper;
     public SDK: HederaSDKHelper;
 
@@ -102,6 +105,7 @@ export class HederaHelper {
      * @param {string} didTopicMemo - DID Topic memo field.
      * @param {string} vcTopicMemo - VC Topic memo field.
      */
+    @timeout(HederaHelper.MAX_TIMEOUT)
     public static async newNetwork(
         id: string,
         key: string,

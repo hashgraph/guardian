@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { ISession, IUser, UserRole } from 'interfaces';
+import { IUser, UserRole } from 'interfaces';
 import { Observable } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
+import { DemoService } from 'src/app/services/demo.service';
+import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -25,29 +27,22 @@ export class HeaderComponent implements OnInit {
   };
 
   menuIcon: 'expand_more' | 'account_circle' = 'expand_more';
-  testUsers$: Observable<IUser[]>;
+  testUsers$: Observable<any[]>;
 
   constructor(
     public authState: AuthStateService,
     private auth: AuthService,
+    private otherService: DemoService,
+    private profileService: ProfileService,
     private route: ActivatedRoute,
     private router: Router
   ) {
-    this.testUsers$ = this.auth.getCurrentUsers();
+    this.testUsers$ = this.otherService.getAllUsers();
 
-    this.linksConfig[UserRole.INSTALLER] = [{
+    this.linksConfig[UserRole.USER] = [{
       name: "Profile",
       disabled: false,
       link: '/installer-profile'
-    }, {
-      name: "Policies",
-      disabled: false,
-      link: '/policy-viewer'
-    }];
-    this.linksConfig[UserRole.ORIGINATOR] = [{
-      name: "Profile",
-      disabled: false,
-      link: '/originator-profile'
     }, {
       name: "Policies",
       disabled: false,
@@ -104,7 +99,7 @@ export class HeaderComponent implements OnInit {
     }
     this.activeLink = this.router.url;
     this.activeLinkRoot = this.router.url.split('?')[0];
-    this.auth.getCurrentUser().subscribe((user: ISession | null) => {
+    this.profileService.getProfile(false).subscribe((user: IUser | null) => {
       const isLogin = !!user;
       const role = user ? user.role : null;
       const username = user ? user.username : null;
@@ -115,7 +110,7 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  setStatus(isLogin: boolean, role: string | null, username: string | null) {
+  setStatus(isLogin: boolean, role: any, username: any) {
     if (this.isLogin != isLogin || this.role != role) {
       this.isLogin = isLogin;
       this.role = role;
@@ -136,15 +131,10 @@ export class HeaderComponent implements OnInit {
   }
 
   profile() {
-    this.router.navigate(['/installer-profile']);
+    this.router.navigate(['/user-profile']);
   }
 
   logOut() {
-    // this.authorizationHelper.logout().subscribe(() => {
-    //     this.router.navigate(['/login']);
-    // }, () => {
-    //     this.router.navigate(['/login']);
-    // });
     this.auth.removeAccessToken();
     this.authState.updateState(false);
     this.router.navigate(['/login']);

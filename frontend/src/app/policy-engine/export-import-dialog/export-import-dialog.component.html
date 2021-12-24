@@ -20,7 +20,6 @@
                 <mat-spinner></mat-spinner>
             </div>
 
-
             <div *ngIf="policy" class="policy">
                 <div class="policy-header">{{policy.name}}</div>
 
@@ -40,7 +39,7 @@
 
                 <div class="field-last">
                     <div class="field-name">Involved Roles</div>
-                    <div class="field-value">Root Authority, Installer</div>
+                    <div class="field-value">Root Authority, {{policyRoles}}</div>
                 </div>
 
                 <div class="delimiter"></div>
@@ -56,9 +55,7 @@
                     <div class="field-name">Tokens</div>
                     <div class="field-value">{{tokens}}</div>
                 </div>
-
             </div>
-
         </div>
     </div>
 </div>

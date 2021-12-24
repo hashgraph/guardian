@@ -1,7 +1,7 @@
 import { ld as vcjs } from '@transmute/vc.js';
 import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { HcsVcDocument } from './vc-document';
-import { CredentialSubject, Hashing } from 'did-sdk-js';
+import { CredentialSubject, Hashing } from '@hashgraph/did-sdk-js';
 import { DocumentLoaderFunction } from '../document-loader/document-loader-function';
 import { PrivateKey } from '@hashgraph/sdk';
 import { HcsVpDocument } from './vp-document';

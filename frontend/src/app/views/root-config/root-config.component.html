@@ -1,4 +1,4 @@
-<div class="content installer-profile">
+<div class="content user-profile">
 
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
@@ -11,18 +11,18 @@
         </div>
     </div>
 
-    <div class="root-config" *ngIf="root; else elseTemplate">
+    <div class="root-config" *ngIf="profile; else elseTemplate">
         <div class="config-display">
             <div class="list-item">
                 <h4 mat-line>DID Document</h4>
                 <p mat-line class="root-field">
-                    <a (click)="openDocument(root.didDocument)">View Document</a>
+                    <a (click)="openDocument(profile.didDocument)">View Document</a>
                 </p>
             </div>
             <div class="list-item">
                 <h4 mat-line>VC Document</h4>
                 <p mat-line class="root-field">
-                    <a (click)="openDocument(root.vcDocument)">View Document</a>
+                    <a (click)="openDocument(profile.vcDocument)">View Document</a>
                 </p>
             </div>
             <div class="list-item">
@@ -31,42 +31,42 @@
             </div>
             <div class="list-item">
                 <h4 mat-line>Appnet Name</h4>
-                <p mat-line class="root-field"> {{root.appnetName}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.appnetName}} </p>
                 <mat-divider></mat-divider>
             </div>
             <div class="list-item">
                 <h4 mat-line>Address Book</h4>
-                <p mat-line class="root-field"> {{root.addressBook}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.addressBook}} </p>
                 <mat-divider></mat-divider>
             </div>
 
             <div class="list-item">
                 <h4 mat-line>DID Server Url</h4>
-                <p mat-line class="root-field"> {{root.didServerUrl}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.didServerUrl}} </p>
                 <mat-divider></mat-divider>
             </div>
             <div class="list-item">
                 <h4 mat-line>DID Topic Memo</h4>
-                <p mat-line class="root-field"> {{root.didTopicMemo}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.didTopicMemo}} </p>
                 <mat-divider></mat-divider>
             </div>
 
             <div class="list-item">
                 <h4 mat-line>VC Topic Memo</h4>
-                <p mat-line class="root-field"> {{root.vcTopicMemo}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.vcTopicMemo}} </p>
                 <mat-divider></mat-divider>
             </div>
         </div>
         <div class="config-display">
             <div class="list-item">
                 <h4 mat-line>Hedera Account Id</h4>
-                <p mat-line class="root-field"> {{root.hederaAccountId}} </p>
+                <p mat-line class="root-field"> {{profile.hederaAccountId}} </p>
                 <mat-divider></mat-divider>
             </div>
 
             <div class="list-item">
                 <h4 mat-line>DID</h4>
-                <p mat-line class="root-field"> {{root.did}} </p>
+                <p mat-line class="root-field"> {{profile.did}} </p>
                 <mat-divider></mat-divider>
             </div>
             

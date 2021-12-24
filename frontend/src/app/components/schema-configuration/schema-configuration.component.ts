@@ -31,20 +31,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
         this.defaultFieldsMap = {};
         this.defaultFieldsMap["NONE"] = [];
-        this.defaultFieldsMap["INSTALLER"] = [
-            {
-                name: 'policyId',
-                description: '',
-                required: true,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            }
-        ];
-        this.defaultFieldsMap["INVERTER"] = [
+        this.defaultFieldsMap["VC"] = [
             {
                 name: 'policyId',
                 description: '',

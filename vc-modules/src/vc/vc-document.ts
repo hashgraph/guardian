@@ -1,4 +1,4 @@
-import { CredentialSubject, HcsVcDocumentBase, HcsVcDocumentJsonProperties, JsonClass } from 'did-sdk-js';
+import { CredentialSubject, HcsVcDocumentBase, HcsVcDocumentJsonProperties, JsonClass } from '@hashgraph/did-sdk-js';
 
 /**
  * The base for a VC document generation in JSON-LD format.

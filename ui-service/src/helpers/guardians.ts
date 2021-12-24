@@ -4,7 +4,6 @@ import {
     IApprovalDocument,
     IChainItem,
     IDidDocument,
-    IFullConfig,
     IRootConfig,
     ISchema,
     IToken,
@@ -146,7 +145,7 @@ export class Guardians {
      * 
      * @returns {IFullConfig} - Address books, VC Document and DID Document
      */
-    public async getRootConfig(did: string): Promise<IFullConfig> {
+    public async getRootConfig(did: string): Promise<IRootConfig> {
         return (await this.channel.request(this.target, MessageAPI.GET_ROOT_CONFIG, did)).payload;
     }
 

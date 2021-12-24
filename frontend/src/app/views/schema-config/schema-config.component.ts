@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
 import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
 import { SchemaDialog } from '../../components/dialogs/schema-dialog/schema-dialog.component';
-import { ISchema, ISession, Schema, SchemaStatus, UserState } from 'interfaces';
+import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/components/dialogs/import-schema/import-schema-dialog.component';
 
 /**
@@ -51,8 +51,8 @@ export class SchemaConfigComponent implements OnInit {
 
     loadProfile() {
         this.loading = true;
-        this.profileService.getCurrentState().subscribe((profile: ISession) => {
-            this.isConfirmed = !!profile && profile.state == UserState.CONFIRMED;
+        this.profileService.getProfile(true).subscribe((profile: IUser | null) => {
+            this.isConfirmed = !!(profile && profile.confirmed);
             if (this.isConfirmed) {
                 this.loadSchemes();
             } else {
@@ -193,6 +193,7 @@ export class SchemaConfigComponent implements OnInit {
 
     setSchema(data: ISchema[]) {
         this.schemes = Schema.mapRef(data) || [];
+        this.schemes =  this.schemes.filter(s=>!s.readonly);
         this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
     }
 

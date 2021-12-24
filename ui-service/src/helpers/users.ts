@@ -1,7 +1,7 @@
 import {User} from '@entity/user';
 import {Singleton} from '@helpers/decorators/singleton';
 import {Request} from 'express';
-import {UserRole, UserState} from 'interfaces';
+import {UserRole} from 'interfaces';
 import {getMongoRepository} from 'typeorm';
 
 /**
@@ -52,31 +52,6 @@ export class Users {
         } else {
             return user.role == role;
         }
-    }
-
-    /**
-     * User status
-     * @param user
-     * @param state
-     */
-    public async status(user: User, state: UserState): Promise<boolean>
-    /**
-     * User status
-     * @param req
-     * @param state
-     */
-    public async status(req: Request, state: UserState): Promise<boolean>
-    /**
-     * User status
-     * @param target
-     * @param state
-     */
-    public async status(target: User | Request, state: UserState): Promise<boolean> {
-        const user = await this._getUser(target);
-        if (!user || user.state != state) {
-            return false;
-        }
-        return true;
     }
 
     /**

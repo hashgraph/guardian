@@ -52,7 +52,7 @@ export class BlockTreeGenerator {
      */
     stateChangeCb(uuid: string, user?: IAuthUser) {
         this.wss.clients.forEach((client: AuthenticatedWebSocket) => {
-            if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, client.user.role)) {
+            if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, client.user.role, user)) {
                 client.send(uuid);
             }
 
@@ -91,7 +91,7 @@ export class BlockTreeGenerator {
             name: 'test policy',
             status: 'DRAFT',
             config: ConfigPolicyTest,
-            policyPoles: ['INSTALLER'],
+            policyRoles: ['INSTALLER'],
             owner: ra.did,
             policyTag: 'TestPolicy'
         });
@@ -271,7 +271,7 @@ export class BlockTreeGenerator {
             model.version = policy.version;
             model.description = policy.description;
             model.topicDescription = policy.topicDescription;
-            model.policyPoles = policy.policyPoles;
+            model.policyRoles = policy.policyRoles;
 
             const result = await getMongoRepository(Policy).save(model);
 
@@ -358,11 +358,24 @@ export class BlockTreeGenerator {
 
                     await this.generate(model.id.toString());
                 }
-         
+
                 const policies = await getMongoRepository(Policy).find();
                 res.json({policies, isValid, errors});
             } catch (error) {
                 res.status(500).send({ code: 500, message: error.message });
+            }
+        });
+
+        this.router.get('/list', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                if (user.role === UserRole.ROOT_AUTHORITY) {
+                    res.json(await getMongoRepository(Policy).find({owner: user.did}));
+                } else {
+                    res.json(await getMongoRepository(Policy).find({status: 'PUBLISH'}));
+                }
+            } catch (e) {
+                res.status(500).send({code: 500, message: 'Server error'});
             }
         });
 
@@ -376,9 +389,9 @@ export class BlockTreeGenerator {
                 }
                 res.send(await model.getData(req.user) as any);
             } catch (e) {
+                console.error(e);
                 res.status(500).send({code: 500, message: 'Unknown error'});
             }
-
         });
 
         this.router.get('/:policyId/validate', async (req: AuthenticatedRequest, res: Response) => {

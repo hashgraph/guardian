@@ -167,3 +167,13 @@ a {
     width: 90px;
     padding-left: 10px;
 }
+
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+}

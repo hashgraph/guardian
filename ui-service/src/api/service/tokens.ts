@@ -138,7 +138,7 @@ tokenAPI.get('/user-tokens', async (req: Request, res: Response) => {
 
     const user = await users.currentUser(req);
 
-    if (!(await users.permission(user, [UserRole.INSTALLER, UserRole.ORIGINATOR]))) {
+    if (!(await users.permission(user, [UserRole.USER]))) {
         res.status(403).send({code: 403, message: 'Forbidden'});
         return;
     }
@@ -148,9 +148,9 @@ tokenAPI.get('/user-tokens', async (req: Request, res: Response) => {
         return;
     }
 
-    const installerID = user.hederaAccountId;
-    const installerDID = user.did;
-    const installerKey = await wallet.getKey(user.walletToken, KeyType.KEY, installerDID);
+    const userID = user.hederaAccountId;
+    const userDID = user.did;
+    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
 
     const tokens = (await guardians.getTokens(null)) || [];
     const result = tokens.map(e => {
@@ -165,7 +165,7 @@ tokenAPI.get('/user-tokens', async (req: Request, res: Response) => {
     });
     try {
         const info = await HederaHelper
-            .setOperator(installerID, installerKey).SDK
+            .setOperator(userID, userKey).SDK
             .accountInfo(user.hederaAccountId);
         for (let i = 0; i < result.length; i++) {
             const element = result[i];
@@ -183,7 +183,7 @@ tokenAPI.post('/associate', async (req: Request, res: Response) => {
     const users = new Users();
     const wallet = new Wallet();
 
-    if (!(await users.permission(req, [UserRole.INSTALLER, UserRole.ORIGINATOR]))) {
+    if (!(await users.permission(req, [UserRole.USER]))) {
         res.status(403).send({code: 403, message: 'Forbidden'});
         return;
     }
@@ -191,17 +191,17 @@ tokenAPI.post('/associate', async (req: Request, res: Response) => {
     const {tokenId, associated} = req.body;
 
     const user = await users.currentUser(req);
-    const installerDID = user.did;
-    const installerID = user.hederaAccountId;
-    const installerKey = await wallet.getKey(user.walletToken, KeyType.KEY, installerDID);
+    const userDID = user.did;
+    const userID = user.hederaAccountId;
+    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
 
     let result = null;
     try {
         if (associated) {
-            const status = await HederaHelper.setOperator(installerID, installerKey).SDK.associate(tokenId, installerID, installerKey);
+            const status = await HederaHelper.setOperator(userID, userKey).SDK.associate(tokenId, userID, userKey);
             result = status;
         } else {
-            const status = await HederaHelper.setOperator(installerID, installerKey).SDK.dissociate(tokenId, installerID, installerKey);
+            const status = await HederaHelper.setOperator(userID, userKey).SDK.dissociate(tokenId, userID, userKey);
             result = !status;
         }
     } catch (error) {
@@ -220,8 +220,8 @@ tokenAPI.get('/all-users', async (req: Request, res: Response) => {
         return;
     }
 
-    const installers = await users.getUsersByRole(UserRole.INSTALLER);
-    const map = installers.map((e) => ({
+    const allUsers = await users.getUsersByRole(UserRole.USER);
+    const map = allUsers.map((e) => ({
         username: e.username,
         did: e.did
     }))

@@ -9,25 +9,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
 import { TokenService } from 'src/app/services/token.service';
 
-const allPermissions: any = [
-    {
-        value: 'ROOT_AUTHORITY',
-        name: 'Root Authority',
-    },
-    {
-        value: 'INSTALLER',
-        name: 'Installer',
-    },
-    {
-        value: 'AUDITOR',
-        name: 'Auditor',
-    },
-    {
-        value: 'ORIGINATOR',
-        name: 'Originator',
-    },
-];
-
 /**
  * The page for editing the policy and blocks.
  */
@@ -57,8 +38,6 @@ export class PolicyConfigurationComponent implements OnInit {
 
     colGroup1 = false;
     colGroup2 = false;
-
-    permissions!: any[];
 
     indexBlock: number = 0;
 
@@ -145,7 +124,6 @@ export class PolicyConfigurationComponent implements OnInit {
         this.currentView = 'blocks';
         this.readonly = policy.status == 'PUBLISH';
         this.policy = policy;
-        this.permissions = allPermissions;
         this.setBlocks(root);
         this.indexBlock = this.allBlocks.length + 1;
         this.errors = [];
@@ -444,6 +422,9 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         if (blockType == 'informationBlock') {
             return 'info';
+        }
+        if (blockType == 'policyRolesBlock') {
+            return 'manage_accounts';
         }
         if (blockType == 'requestVcDocument') {
             return 'dynamic_form';
