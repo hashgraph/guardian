@@ -42,6 +42,7 @@
 
 .body-dialog-template {
     padding-bottom: 25px;
+    max-height: 70vh;
 }
 
 .description {
@@ -51,4 +52,5 @@
 .schema-form {
     max-height: 50vh;
     overflow: auto;
+    margin-bottom: 24px;
 }
