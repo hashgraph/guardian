@@ -9,7 +9,7 @@ import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
 
 export const importExportAPI = Router();
 
-importExportAPI.get('/export/:policyId', async (req: AuthenticatedRequest, res: Response) => {
+importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
         const guardians = new Guardians();
@@ -47,8 +47,7 @@ importExportAPI.get('/export/:policyId', async (req: AuthenticatedRequest, res: 
     }
 });
 
-
-importExportAPI.post('/export/:policyId/download', async (req: AuthenticatedRequest, res: Response) => {
+importExportAPI.post('/:policyId/export/download', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const zip = new JSZip();

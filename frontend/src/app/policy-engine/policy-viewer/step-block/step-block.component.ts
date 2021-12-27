@@ -61,7 +61,7 @@ export class StepBlockComponent implements OnInit {
       setTimeout(() => {
       }, 500);
     } else {
-      this.policyEngineService.getData(this.id, this.policyId).subscribe((data: any) => {
+      this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
         this.setData(data);
         console.log(data);
       }, (e) => {

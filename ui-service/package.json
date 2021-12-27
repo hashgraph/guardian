@@ -3,6 +3,7 @@
     "@api": "dist/api",
     "@entity": "dist/entity",
     "@helpers": "dist/helpers",
+    "@auth": "dist/auth",
     "@policy-engine": "dist/policy-engine",
     "@subscribers": "dist/subscribers"
   },

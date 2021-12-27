@@ -1,33 +1,44 @@
-import {Guardians} from '@helpers/guardians';
-import {Users} from '@helpers/users';
-import {KeyType, Wallet} from '@helpers/wallet';
-import {Request, Response, Router} from 'express';
-import {ITokenInfo, UserRole} from 'interfaces';
-import {HederaHelper} from 'vc-modules';
+import { Guardians } from '@helpers/guardians';
+import { Users } from '@helpers/users';
+import { KeyType, Wallet } from '@helpers/wallet';
+import { AuthenticatedRequest } from '@auth/auth.interface';
+import { permissionHelper } from '@auth/authorizationHelper';
+import { Request, Response, Router } from 'express';
+import { ITokenInfo, UserRole } from 'interfaces';
+import { HederaHelper } from 'vc-modules';
 
-const getTokenInfo = (info: any, token: any, tokenId: string) => {
+function getTokenInfo(info: any, token: any) {
+    const tokenId = token.tokenId;
+    const result = {
+        id: token.id,
+        tokenId: token.tokenId,
+        tokenName: token.tokenName,
+        tokenSymbol: token.tokenSymbol,
+        tokenType: token.tokenType,
+        decimals: token.decimals,
+        associated: false,
+        balance: null,
+        hBarBalance: null,
+        frozen: null,
+        kyc: null
+    }
     if (info[tokenId]) {
-        token.associated = true;
-        token.balance = info[tokenId].balance;
-        token.hBarBalance = info[tokenId].hBarBalance;
-        token.frozen = !!info[tokenId].frozen;
-        token.kyc = !!info[tokenId].kyc;
+        result.associated = true;
+        result.balance = info[tokenId].balance;
+        result.hBarBalance = info[tokenId].hBarBalance;
+        result.frozen = !!info[tokenId].frozen;
+        result.kyc = !!info[tokenId].kyc;
         try {
-            if (token.decimals) {
-                token.balance = (
-                    token.balance / Math.pow(10, token.decimals)
-                ).toFixed(token.decimals)
+            if (result.decimals) {
+                result.balance = (
+                    result.balance / Math.pow(10, result.decimals)
+                ).toFixed(result.decimals)
             }
         } catch (error) {
-            token.balance = "N/A";
+            result.balance = "N/A";
         }
-    } else {
-        token.associated = false;
-        token.balance = null;
-        token.hBarBalance = null;
-        token.frozen = null;
-        token.kyc = null;
     }
+    return result;
 }
 
 /**
@@ -35,16 +46,10 @@ const getTokenInfo = (info: any, token: any, tokenId: string) => {
  */
 export const tokenAPI = Router();
 
-tokenAPI.post('/create', async (req: Request, res: Response) => {
+tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     const guardians = new Guardians();
-    const users = new Users();
 
-    const user = await users.currentUser(req);
-    if (!(await users.permission(user, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-    }
-
+    const user = req.user;
     const root = await guardians.getRootConfig(user.did);
 
     const {
@@ -55,11 +60,18 @@ tokenAPI.post('/create', async (req: Request, res: Response) => {
         enableKYC,
         enableWipe,
         initialSupply,
-        policies,
         tokenName,
         tokenSymbol,
         tokenType
     } = req.body;
+
+    if (!tokenName) {
+        res.status(400).send({ code: 400, message: 'Invalid Token Name' });
+    }
+
+    if (!tokenSymbol) {
+        res.status(400).send({ code: 400, message: 'Invalid Token Symbol' });
+    }
 
     let treasury: any, tokenId: string, newToken: any;
     try {
@@ -74,7 +86,6 @@ tokenAPI.post('/create', async (req: Request, res: Response) => {
         const freezeKey = enableFreeze ? treasuryKey : null;
         const wipeKey = enableWipe ? treasuryKey : null;
         const supplyKey = changeSupply ? treasuryKey : null;
-
         const nft = tokenType == 'non-fungible';
         const _decimals = nft ? 0 : decimals;
         const _initialSupply = nft ? 0 : initialSupply;
@@ -100,7 +111,6 @@ tokenAPI.post('/create', async (req: Request, res: Response) => {
             tokenType,
             decimals: _decimals,
             initialSupply: _initialSupply,
-            policies,
             adminId: treasuryId ? treasuryId.toString() : null,
             adminKey: adminKey ? adminKey.toString() : null,
             kycKey: kycKey ? kycKey.toString() : null,
@@ -108,221 +118,271 @@ tokenAPI.post('/create', async (req: Request, res: Response) => {
             wipeKey: wipeKey ? wipeKey.toString() : null,
             supplyKey: supplyKey ? supplyKey.toString() : null,
         }
-
     } catch (error) {
-        res.status(500).send({code: 500, message: error.message});
+        res.status(500).send({ code: 500, message: error.message });
         return;
     }
 
     const tokens = (await guardians.setToken(newToken));
 
-    res.status(200).json(tokens);
+    res.status(201).json(tokens);
 });
 
-tokenAPI.get('/', async (req: Request, res: Response) => {
+tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
     const guardians = new Guardians();
-    const users = new Users();
+    const user = req.user;
+    const tokens = (await guardians.getTokens()) as any[];
 
-    if (!(await users.permission(req, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
+    if (user.role === UserRole.ROOT_AUTHORITY) {
+        res.status(200).json(tokens || []);
         return;
+    } else {
+        if (!user.hederaAccountId) {
+            res.status(200).json([]);
+            return;
+        }
+
+        const wallet = new Wallet();
+        const userID = user.hederaAccountId;
+        const userDID = user.did;
+        const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+
+        try {
+            const info = await HederaHelper
+                .setOperator(userID, userKey).SDK
+                .accountInfo(user.hederaAccountId);
+            for (let i = 0; i < tokens.length; i++) {
+                tokens[i] = getTokenInfo(info, tokens[i]);
+            }
+            res.json(tokens as ITokenInfo[]);
+        } catch (error) {
+            res.status(500).send({ code: 500, message: error.message });
+        }
     }
-    const tokens = (await guardians.getTokens(null));
-    res.json(tokens);
 });
 
-tokenAPI.get('/user-tokens', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
+tokenAPI.put('/:tokenId/associate', permissionHelper(UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
     const wallet = new Wallet();
 
-    const user = await users.currentUser(req);
-
-    if (!(await users.permission(user, [UserRole.USER]))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-    }
-
-    if (!user.hederaAccountId) {
-        res.status(200).json([]);
-        return;
-    }
-
-    const userID = user.hederaAccountId;
+    const tokenId = req.params.tokenId;
+    const user = req.user;
     const userDID = user.did;
+    const userID = user.hederaAccountId;
     const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
 
-    const tokens = (await guardians.getTokens(null)) || [];
-    const result = tokens.map(e => {
-        return {
-            id: e.id,
-            tokenId: e.tokenId,
-            tokenName: e.tokenName,
-            tokenSymbol: e.tokenSymbol,
-            tokenType: e.tokenType,
-            decimals: e.decimals,
-        }
-    });
+    try {
+        const status = await HederaHelper.setOperator(userID, userKey).SDK.associate(tokenId, userID, userKey);
+        res.status(200).json(status);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+tokenAPI.put('/:tokenId/dissociate', permissionHelper(UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
+    const wallet = new Wallet();
+
+    const tokenId = req.params.tokenId;
+    const user = req.user;
+    const userDID = user.did;
+    const userID = user.hederaAccountId;
+    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+
+    try {
+        const status = await HederaHelper.setOperator(userID, userKey).SDK.dissociate(tokenId, userID, userKey);
+        res.status(200).json(status);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardians = new Guardians();
+    const users = new Users();
+
+    const tokenId = req.params.tokenId;
+    const username = req.params.username;
+    const rootUser = req.user;
+
+    const root = await guardians.getRootConfig(rootUser.did);
+
+    const token = (await guardians.getTokens({ tokenId }))[0];
+    if (!token) {
+        res.status(400).json({ code: 400, message: 'Token not found' });
+        return
+    }
+    const kycKey = token.kycKey;
+
+    const user = await users.getUser(username);
+    if (!user) {
+        res.status(400).json({ code: 400, message: 'User not found' });
+        return
+    }
+    if (!user.hederaAccountId) {
+        res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
+        return
+    }
+
+    try {
+        const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
+        await hederaHelper.SDK.grantKyc(tokenId, user.hederaAccountId, kycKey);
+        const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
+        const result = getTokenInfo(info, { tokenId });
+        res.status(200).json(result as ITokenInfo);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardians = new Guardians();
+    const users = new Users();
+
+    const tokenId = req.params.tokenId;
+    const username = req.params.username;
+    const rootUser = req.user;
+
+    const root = await guardians.getRootConfig(rootUser.did);
+
+    const token = (await guardians.getTokens({ tokenId }))[0];
+    if (!token) {
+        res.status(400).json({ code: 400, message: 'Token not found' });
+        return
+    }
+    const kycKey = token.kycKey;
+
+    const user = await users.getUser(username);
+    if (!user) {
+        res.status(400).json({ code: 400, message: 'User not found' });
+        return
+    }
+    if (!user.hederaAccountId) {
+        res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
+        return
+    }
+
+    try {
+        const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
+        await hederaHelper.SDK.revokeKyc(tokenId, user.hederaAccountId, kycKey);
+        const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
+        const result = getTokenInfo(info, { tokenId });
+        res.status(200).json(result as ITokenInfo);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardians = new Guardians();
+    const users = new Users();
+
+    const tokenId = req.params.tokenId;
+    const username = req.params.username;
+    const rootUser = req.user;
+
+    const root = await guardians.getRootConfig(rootUser.did);
+
+    const token = (await guardians.getTokens({ tokenId }))[0];
+    if (!token) {
+        res.status(400).json({ code: 400, message: 'Token not found' });
+        return
+    }
+    const kycKey = token.kycKey;
+
+    const user = await users.getUser(username);
+    if (!user) {
+        res.status(400).json({ code: 400, message: 'User not found' });
+        return
+    }
+    if (!user.hederaAccountId) {
+        res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
+        return
+    }
+
+    try {
+        const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
+        await hederaHelper.SDK.freeze(tokenId, user.hederaAccountId, kycKey);
+        const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
+        const result = getTokenInfo(info, { tokenId });
+        res.status(200).json(result as ITokenInfo);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardians = new Guardians();
+    const users = new Users();
+
+    const tokenId = req.params.tokenId;
+    const username = req.params.username;
+    const rootUser = req.user;
+
+    const root = await guardians.getRootConfig(rootUser.did);
+
+    const token = (await guardians.getTokens({ tokenId }))[0];
+    if (!token) {
+        res.status(400).json({ code: 400, message: 'Token not found' });
+        return
+    }
+    const kycKey = token.kycKey;
+
+    const user = await users.getUser(username);
+    if (!user) {
+        res.status(400).json({ code: 400, message: 'User not found' });
+        return
+    }
+    if (!user.hederaAccountId) {
+        res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
+        return
+    }
+
+    try {
+        const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
+        await hederaHelper.SDK.unfreeze(tokenId, user.hederaAccountId, kycKey);
+        const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
+        const result = getTokenInfo(info, { tokenId });
+        res.status(200).json(result as ITokenInfo);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardians = new Guardians();
+    const users = new Users();
+
+    const tokenId = req.params.tokenId;
+    const username = req.params.username;
+
+    const user = await users.getUser(username);
+    if (!user) {
+        res.status(400).json({ code: 400, message: 'User not found' });
+        return
+    }
+    if (!user.hederaAccountId) {
+        res.status(200).json(null);
+        return
+    }
+
+    const rootUser = req.user;
+    const root = await guardians.getRootConfig(rootUser.did);
     try {
         const info = await HederaHelper
-            .setOperator(userID, userKey).SDK
+            .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
             .accountInfo(user.hederaAccountId);
-        for (let i = 0; i < result.length; i++) {
-            const element = result[i];
-            getTokenInfo(info, element, element.tokenId);
-        }
+        const result = getTokenInfo(info, { tokenId });
+        res.status(200).json(result as ITokenInfo);
     } catch (error) {
-        res.status(500).send({code: 500, message: error});
-        return;
+        res.status(500).json({ code: 500, message: error.message });
     }
-
-    res.json(result as ITokenInfo[]);
 });
 
-tokenAPI.post('/associate', async (req: Request, res: Response) => {
+tokenAPI.get('/all-users', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     const users = new Users();
-    const wallet = new Wallet();
-
-    if (!(await users.permission(req, [UserRole.USER]))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-    }
-
-    const {tokenId, associated} = req.body;
-
-    const user = await users.currentUser(req);
-    const userDID = user.did;
-    const userID = user.hederaAccountId;
-    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
-
-    let result = null;
-    try {
-        if (associated) {
-            const status = await HederaHelper.setOperator(userID, userKey).SDK.associate(tokenId, userID, userKey);
-            result = status;
-        } else {
-            const status = await HederaHelper.setOperator(userID, userKey).SDK.dissociate(tokenId, userID, userKey);
-            result = !status;
-        }
-    } catch (error) {
-        res.status(500).json({code: 403, message: error});
-        return;
-    }
-    res.status(200).json(result);
-});
-
-
-tokenAPI.get('/all-users', async (req: Request, res: Response) => {
-    const users = new Users();
-
-    if (!(await users.permission(req, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-    }
-
     const allUsers = await users.getUsersByRole(UserRole.USER);
     const map = allUsers.map((e) => ({
         username: e.username,
         did: e.did
     }))
-
     res.status(200).json(map);
-});
-
-
-tokenAPI.get('/associate-users', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const rootUser = await users.currentUser(req);
-    if (!(await users.permission(rootUser, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-    }
-    const root = await guardians.getRootConfig(rootUser.did);
-
-    const tokenId = req.query.tokenId as string;
-    const username = req.query.username as string;
-
-    const user = await users.getUser(username);
-    if (!user.hederaAccountId) {
-        res.status(200).json(null);
-        return
-    }
-    try {
-        const result: any = {};
-        const info = await HederaHelper
-            .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-            .accountInfo(user.hederaAccountId);
-        getTokenInfo(info, result, tokenId);
-        res.status(200).json(result as ITokenInfo);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({code: 403, message: error});
-    }
-});
-
-tokenAPI.post('/user-kyc', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const rootUser = await users.currentUser(req);
-    if (!(await users.permission(rootUser, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-    }
-    const root = await guardians.getRootConfig(rootUser.did);
-
-    const {tokenId, username, value} = req.body;
-    const token = (await guardians.getTokens({tokenId}))[0];
-    const kycKey = token.kycKey;
-
-    const user = await users.getUser(username);
-    try {
-        const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
-        const result: any = {};
-        if (value) {
-            await hederaHelper.SDK.grantKyc(tokenId, user.hederaAccountId, kycKey);
-        } else {
-            await hederaHelper.SDK.revokeKyc(tokenId, user.hederaAccountId, kycKey);
-        }
-        const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
-        getTokenInfo(info, result, tokenId);
-        res.status(200).json(result as ITokenInfo);
-    } catch (error) {
-        console.log(error)
-        res.status(500).send(error);
-    }
-});
-
-tokenAPI.post('/user-freeze', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const rootUser = await users.currentUser(req);
-    if (!(await users.permission(rootUser, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-    }
-    const root = await guardians.getRootConfig(rootUser.did);
-
-    const {tokenId, username, value} = req.body;
-    const token = (await guardians.getTokens({tokenId}))[0];
-    const freezeKey = token.freezeKey;
-
-    const user = await users.getUser(username);
-    try {
-        const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
-        const result: any = {};
-        if (value) {
-            await hederaHelper.SDK.freeze(tokenId, user.hederaAccountId, freezeKey);
-        } else {
-            await hederaHelper.SDK.unfreeze(tokenId, user.hederaAccountId, freezeKey);
-        }
-        const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
-        getTokenInfo(info, result, tokenId);
-        res.status(200).json(result as ITokenInfo);
-    } catch (error) {
-        res.status(500).send({code: 500, message: error.message});
-    }
 });

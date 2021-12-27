@@ -25,8 +25,8 @@ export class ExportPolicyDialog {
         this.policyId = data.policyId;
 
         if(data.policy) {
-            this.policyRoles = (data.policy.policyRoles||[]).join(', ');
-            this.schemes = data.policy.pol.map((s:any)=>s.name).join(', ');
+            this.policy = data.policy.policy;
+            this.policyRoles = (this.policy.policyRoles||[]).join(', ');
             this.schemes = data.policy.schemas.map((s:any)=>s.name).join(', ');
             this.tokens = data.policy.tokens.map((s:any)=>s.tokenName).join(', ');
         }

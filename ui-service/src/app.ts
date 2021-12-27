@@ -1,7 +1,7 @@
 import {fixtures} from '@api/fixtures';
 import {
     accountAPI,
-    auditAPI,
+    trustchainsAPI,
     frontendService,
     demoAPI,
     profileAPI,
@@ -74,13 +74,13 @@ Promise.all([
     ////////////////////////////////////////
 
     // Config routes
-    app.use('/policy/', authorizationHelper, policyGenerator.getRouter());
-    app.use('/api/account/', accountAPI);
+    app.use('/api/policies', authorizationHelper, policyGenerator.getRouter());
+    app.use('/api/policies', authorizationHelper, importExportAPI);
+    app.use('/api/accounts/', accountAPI);
     app.use('/api/profile/', authorizationHelper, profileAPI);
-    app.use('/api/schema', authorizationHelper, schemaAPI);
+    app.use('/api/schemas', authorizationHelper, schemaAPI);
     app.use('/api/tokens', authorizationHelper, tokenAPI);
-    app.use('/api/package', authorizationHelper, importExportAPI);
-    app.use('/api/audit/', authorizationHelper, auditAPI);
+    app.use('/api/trustchains/', authorizationHelper, trustchainsAPI);
     app.use('/api/demo/', demoAPI);
     app.use('/api-docs/', swaggerAPI);
     app.use('/', frontendService);

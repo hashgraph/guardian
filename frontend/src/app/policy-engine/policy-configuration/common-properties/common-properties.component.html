@@ -39,13 +39,14 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Permissions</td>
                     <td class="propRowCell">
-                        <mat-select *ngIf="roles" [(ngModel)]="block.permissions" multiple
+                        <mat-select [(ngModel)]="block.permissions" multiple
                             [disabled]="readonly">
                             <mat-option value="OWNER">Owner</mat-option>
                             <mat-option value="NO_ROLE">No Role</mat-option>
                             <mat-option value="ANY_ROLE">Any Role</mat-option>
-                            <mat-option *ngFor="let item of roles" [value]="item">{{item}}
-                            </mat-option>
+                            <ng-container *ngIf="roles" >
+                                <mat-option *ngFor="let item of roles" [value]="item">{{item}}</mat-option>
+                            </ng-container>
                         </mat-select>
                     </td>
                 </tr>

@@ -5,41 +5,24 @@ import {UserRole} from 'interfaces';
 import {HcsVcDocument, VcSubject} from 'vc-modules';
 import {getMongoRepository} from 'typeorm';
 import {User} from '@entity/user';
+import { AuthenticatedRequest } from '@auth/auth.interface';
+import { permissionHelper } from '@auth/authorizationHelper';
 
 /**
  * Audit route
  */
-export const auditAPI = Router();
+export const trustchainsAPI = Router();
 
-auditAPI.get('/documents', async (req: Request, res: Response) => {
+trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: AuthenticatedRequest, res: Response) => {
     const guardians = new Guardians();
-    const users = new Users();
-
-    const user = await users.currentUser(req);
-    if (!(await users.permission(user, UserRole.AUDITOR))) {
-        res.status(403).send();
-        return;
-    }
-
-    const vp = await guardians.getVpDocuments(null);
-
-    console.log(vp);
-
+    const vp = await guardians.getVpDocuments();
     res.status(200).json(vp);
 });
 
-auditAPI.get('/chain', async (req: Request, res: Response) => {
+trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: AuthenticatedRequest, res: Response) => {
     const guardians = new Guardians();
-    const users = new Users();
-
-    const user = await users.currentUser(req);
-    if (!(await users.permission(user, UserRole.AUDITOR))) {
-        res.status(403).send();
-        return;
-    }
-    const search = req.query.search as string;
-    const chain = await guardians.getChain(search);
-
+    const hash = req.params.hash;
+    const chain = await guardians.getChain(hash);
     const DIDs = chain.map( (item) => {
         if(item.type === 'VC' && item.document) {
             return item.document.issuer;

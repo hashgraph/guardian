@@ -109,7 +109,7 @@ export class Guardians {
      * 
      * @returns {IVPDocument[]} - VP Documents
      */
-    public async getVpDocuments(params: IFilter): Promise<IVPDocument[]> {
+    public async getVpDocuments(params?: IFilter): Promise<IVPDocument[]> {
         return (await this.channel.request(this.target, MessageAPI.GET_VP_DOCUMENTS, params)).payload;
     }
 
@@ -122,7 +122,7 @@ export class Guardians {
      * 
      * @returns {ISchema[]} - all schemes
      */
-    public async getSchemes(params: IFilter): Promise<ISchema[]> {
+    public async getSchemes(params?: IFilter): Promise<ISchema[]> {
         return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, params)).payload;
     }
 
@@ -134,7 +134,7 @@ export class Guardians {
      * 
      * @returns {IToken[]} - tokens
      */
-    public async getTokens(params: IFilter): Promise<IToken[]> {
+    public async getTokens(params?: IFilter): Promise<IToken[]> {
         return (await this.channel.request(this.target, MessageAPI.GET_TOKENS, params)).payload;
     }
 

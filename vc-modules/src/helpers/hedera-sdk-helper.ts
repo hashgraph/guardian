@@ -282,7 +282,7 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async grantKyc(tokenId: TokenId, accountId: string, kycKey: string) {
+    public async grantKyc(tokenId: string | TokenId, accountId: string, kycKey: string) {
         const client = this.client;
         const _kycKey = PrivateKey.fromString(kycKey);
         const transaction = new TokenGrantKycTransaction()
@@ -306,7 +306,7 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async revokeKyc(tokenId: TokenId, accountId: string, kycKey: string) {
+    public async revokeKyc(tokenId: string | TokenId, accountId: string, kycKey: string) {
         const client = this.client;
         const _kycKey = PrivateKey.fromString(kycKey);
         const transaction = new TokenRevokeKycTransaction()

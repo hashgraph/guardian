@@ -1,4 +1,4 @@
-export {auditAPI} from '@api/service/audit';
+export {trustchainsAPI} from '@api/service/trustchains';
 export {profileAPI} from '@api/service/profile';
 export {schemaAPI} from '@api/service/schema';
 export {tokenAPI} from '@api/service/tokens';

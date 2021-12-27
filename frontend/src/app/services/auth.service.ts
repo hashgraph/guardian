@@ -17,22 +17,18 @@ export class AuthService {
   }
 
   public login(username: string, password: string): Observable<any> {
-    return this.http.post<string>('/api/account/login', {username, password});
-  }
-
-  public logout(): Observable<any> {
-    return this.http.get<any>('/api/account/logout');
+    return this.http.post<string>('/api/accounts/login', {username, password});
   }
 
   public createUser(username: string, password: string, role: string): Observable<any> {
-    return this.http.post<any>('/api/account/register', {username, password, role})
+    return this.http.post<any>('/api/accounts/register', {username, password, role})
   }
 
   public sessions(): Observable<ISession | null> {
     if (!localStorage.getItem('accessToken')) {
       return of(null);
     }
-    return this.http.get<ISession>('/api/account');
+    return this.http.get<ISession>('/api/accounts');
   }
 
   public setAccessToken(accessToken: string) {
