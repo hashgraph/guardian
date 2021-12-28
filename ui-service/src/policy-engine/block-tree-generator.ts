@@ -416,13 +416,18 @@ export class BlockTreeGenerator {
                 res.send(await model.getData(req.user) as any);
             } catch (e) {
                 console.error(e);
-                res.status(500).send({ code: 500, message: 'Unknown error' });
+                res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
             }
         });
 
         this.router.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+                if(!block) {
+                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+                    res.status(err.errorObject.code).send(err.errorObject);
+                    return;
+                }
                 const data = await block.getData(req.user, req.params.uuid);
                 res.send(data);
             } catch (e) {
@@ -430,7 +435,7 @@ export class BlockTreeGenerator {
                     const err = e as BlockError;
                     res.status(err.errorObject.code).send(err.errorObject);
                 } catch (e) {
-                    res.status(500).send({ code: 500, message: 'Unknown error' });
+                    res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
                 }
                 console.error(e);
             }
@@ -438,7 +443,12 @@ export class BlockTreeGenerator {
 
         this.router.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid)
+                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+                if(!block) {
+                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+                    res.status(err.errorObject.code).send(err.errorObject);
+                    return;
+                }
                 const data = await block.setData(req.user, req.body);
                 res.status(200).send(data || {});
             } catch (e) {
@@ -453,9 +463,24 @@ export class BlockTreeGenerator {
         });
 
         this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
-            res.send({ id: StateContainer.GetBlockByTag(req.params.policyId, req.params.tagName).uuid });
+            try {
+                const block = StateContainer.GetBlockByTag(req.params.policyId, req.params.tagName);
+                if(!block) {
+                    const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
+                    res.status(err.errorObject.code).send(err.errorObject);
+                    return;
+                }
+                res.send({ id: block.uuid });
+            } catch (e) {
+                try {
+                    const err = e as BlockError;
+                    res.status(err.errorObject.code).send(err.errorObject);
+                } catch (_e) {
+                    res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+                }
+                console.error(e);
+            }
         });
-
 
         this.router.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
             if (!req.body || !req.body.json) {
