@@ -82,7 +82,7 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
             policyRepository.save(policyRepository.create(policy))
         ]);
 
-        res.json(await policyRepository.find({owner: req.user.did}));
+        res.status(201).json(await policyRepository.find({owner: req.user.did}));
     } catch (e) {
         res.status(500).send({code: 500, message: e.message});
     }

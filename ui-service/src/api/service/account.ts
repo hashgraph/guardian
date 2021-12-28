@@ -56,7 +56,7 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
         });
 
         const result = await getMongoRepository(User).save(user);
-        res.json(result);
+        res.status(201).json(result);
     } catch (e) {
         res.status(500).send({code: 500, message: 'Server error'});
     }
@@ -74,7 +74,7 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
                 did: user.did,
                 role: user.role
             }, process.env.ACCESS_TOKEN_SECRET);
-            res.json({
+            res.status(200).json({
                 username: user.username,
                 did: user.did,
                 role: user.role,

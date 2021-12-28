@@ -33,7 +33,7 @@ export class SchemaService {
   }
 
   public unpublished(id: string): Observable<ISchema[]> {
-    return this.http.put<any[]>(`${this.url}/${id}/unpublished`, null);
+    return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
   }
 
   public delete(id: string): Observable<ISchema[]> {

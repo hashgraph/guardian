@@ -182,7 +182,7 @@ profileAPI.get('/', async (req: Request, res: Response) => {
     }
 });
 
-profileAPI.post('/', async (req: Request, res: Response) => {
+profileAPI.put('/', async (req: Request, res: Response) => {
     try {
         const users = new Users();
         const wallet = new Wallet();

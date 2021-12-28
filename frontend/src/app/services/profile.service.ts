@@ -18,7 +18,7 @@ export class ProfileService {
   }
 
   public setProfile(profile: IUser): Observable<void> {
-    return this.http.post<void>(`${this.url}`, profile);
+    return this.http.put<void>(`${this.url}`, profile);
   }
 
   public getBalance(): Observable<string | null> {

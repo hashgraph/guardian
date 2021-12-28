@@ -53,7 +53,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
     }
 });
 
-schemaAPI.put('/:schemaId/unpublished', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+schemaAPI.put('/:schemaId/unpublish', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
     try {
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;

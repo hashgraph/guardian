@@ -6,7 +6,8 @@ import {
     demoAPI,
     profileAPI,
     schemaAPI,
-    tokenAPI
+    tokenAPI,
+    externalAPI
 } from '@api/service';
 import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
@@ -81,6 +82,7 @@ Promise.all([
     app.use('/api/schemas', authorizationHelper, schemaAPI);
     app.use('/api/tokens', authorizationHelper, tokenAPI);
     app.use('/api/trustchains/', authorizationHelper, trustchainsAPI);
+    app.use('/api/external/', externalAPI);
     app.use('/api/demo/', demoAPI);
     app.use('/api-docs/', swaggerAPI);
     app.use('/', frontendService);
