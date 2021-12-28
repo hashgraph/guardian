@@ -212,7 +212,7 @@ export class RetirementBlock {
         } else if (typeof ref.options.tokenId !== 'string') {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
         } else if (!(await this.guardians.getTokens({ tokenId: ref.options.tokenId }))[0]) {
-            resultsContainer.addBlockError(ref.uuid, `Token with id "ref.options.tokenId" does not exist`);
+            resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
         }
 
         if (!ref.options.rule) {
