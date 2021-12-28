@@ -124,6 +124,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (resultsContainer.countTags(this.tag) > 1) {
                     resultsContainer.addBlockError(this.uuid, `Tag ${this.tag} already exist`);
                 }
+                const permission = resultsContainer.permissionsNotExist(this.permissions);
+                if (permission) {
+                    resultsContainer.addBlockError(this.uuid, `Permission ${permission} not exist`);
+                }
                 if (typeof super.validate === 'function') {
                     await super.validate(resultsContainer)
                 }

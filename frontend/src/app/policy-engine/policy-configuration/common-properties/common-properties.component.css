@@ -36,6 +36,7 @@
     color: #6166ff;
     margin-bottom: 5px;
     position: relative;
+    user-select: none;
 }
 
 .add-btn span {
@@ -190,6 +191,7 @@
     padding-left: 23px;
     position: relative;
     font-weight: 500;
+    user-select: none;
 }
 
 .propAdd mat-icon {
@@ -229,6 +231,7 @@
     width: 18px;
     position: relative;
     top: 4px;
+    user-select: none;
 }
 
 .cellName span {

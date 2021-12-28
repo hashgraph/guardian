@@ -165,11 +165,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 id: this.generateUUIDv4(),
                 tag: `Block${this.indexBlock}`,
                 blockType: type,
+                defaultActive: true,
                 children: []
             };
             this.currentBlock.children.push(newBlock);
             this.setBlocks(this.blocks[0]);
-            this.currentBlock = newBlock;
             this.indexBlock++;
         }
     }
@@ -258,10 +258,11 @@ export class PolicyConfigurationComponent implements OnInit {
     validationPolicy() {
         this.loading = true;
         this.policyEngineService.validate({
+            policyRoles: this.policy?.policyRoles,
             config: this.root
         }).subscribe((data: any) => {
-            const { config, results } = data;
-            const root = config.config;
+            const { policy, results } = data;
+            const root = policy.config;
             this.setBlocks(root);
             const blocks = results.blocks;
             const errors = blocks.filter((block: any) => !block.isValid);

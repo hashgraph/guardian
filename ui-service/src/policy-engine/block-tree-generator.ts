@@ -116,7 +116,7 @@ export class BlockTreeGenerator {
      * @param config
      * @param skipRegistration
      */
-    async generate(config: Object, skipRegistration?: boolean): Promise<IPolicyBlock>;
+    async generate(policy: Policy, skipRegistration?: boolean): Promise<IPolicyBlock>;
 
     async generate(arg: any, skipRegistration?: boolean): Promise<IPolicyBlock> {
         let policy, policyId;
@@ -156,6 +156,17 @@ export class BlockTreeGenerator {
         return model as IPolicyInterfaceBlock;
     }
 
+    private async tagFinder(instance: any, resultsContainer:PolicyValidationResultsContainer) {
+        if (instance.tag) {
+            resultsContainer.addTag(instance.tag);
+        }
+        if (Array.isArray(instance.children)) {
+            for (let child of instance.children) {
+                this.tagFinder(child, resultsContainer);
+            }
+        }
+    }
+
     /**
      * Validate policy by id
      * @param id - policyId
@@ -167,32 +178,25 @@ export class BlockTreeGenerator {
      * @param config
      * @private
      */
-    private async validate(config: Object): Promise<ISerializedErrors>;
+    private async validate(policy: Policy): Promise<ISerializedErrors>;
 
     private async validate(arg) {
         const resultsContainer = new PolicyValidationResultsContainer();
 
-        let policyConfig;
+        let policy: Policy;
+        let policyConfig: any;
         if (typeof arg === 'string') {
-            policyConfig = (await getMongoRepository(Policy).findOne(arg)).config;
+            policy = (await getMongoRepository(Policy).findOne(arg));
+            policyConfig = policy.config;
         } else {
-            policyConfig = arg.config;
+            policy = arg;
+            policyConfig = policy.config;
         }
 
-        function tagFinder(instance) {
-            if (instance.tag) {
-                resultsContainer.addTag(instance.tag);
-            }
-            if (Array.isArray(instance.children)) {
-                for (let child of instance.children) {
-                    tagFinder(child);
-                }
-            }
-        }
-        tagFinder(policyConfig);
-
-        const policy = await this.generate(arg, true);
-        await policy.validate(resultsContainer);
+        const policyInstance = await this.generate(arg, true);
+        this.tagFinder(policyConfig, resultsContainer);
+        resultsContainer.addPermissions(policy.policyRoles);
+        await policyInstance.validate(resultsContainer);
         return resultsContainer.getSerializedErrors();
     }
 
@@ -389,11 +393,11 @@ export class BlockTreeGenerator {
 
         this.router.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const config = req.body as Object
-                const results = await this.validate(config);
+                const policy = req.body as Policy;
+                const results = await this.validate(policy);
                 res.send({
                     results,
-                    config
+                    policy
                 });
             } catch (e) {
                 console.log(e);

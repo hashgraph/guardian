@@ -1,4 +1,4 @@
-import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 
 interface IValidatedInstance<T> {
     isValid: boolean;
@@ -19,6 +19,7 @@ export interface ISerializedErrors {
 
 export class PolicyValidationResultsContainer {
     private tags: string[];
+    private permissions: string[];
 
     private blocks: Map<string, IValidatedInstance<IPolicyBlock>>;
     private schemas: Map<string, any>;
@@ -27,6 +28,7 @@ export class PolicyValidationResultsContainer {
         this.blocks = new Map();
         this.schemas = new Map();
         this.tags = [];
+        this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
     }
 
     /**
@@ -53,8 +55,37 @@ export class PolicyValidationResultsContainer {
         this.tags.push(tag);
     }
 
+    public addPermission(permission: string): void {
+        this.permissions.push(permission);
+    }
+
+    public addPermissions(permissions: string[]): void {
+        if (permissions) {
+            for (let i = 0; i < permissions.length; i++) {
+                const permission = permissions[i];
+                this.permissions.push(permission);
+            }
+        }
+    }
+
     public isTagExist(tag: string): boolean {
         return !!this.tags.find(item => item === tag);
+    }
+
+    public isPermissionExist(permission: string): boolean {
+        return !!this.permissions.find(item => item === permission);
+    }
+
+    public permissionsNotExist(permissions: string[]): string | null {
+        if (permissions) {
+            for (let i = 0; i < permissions.length; i++) {
+                const permission = permissions[i];
+                if (this.permissions.indexOf(permission) == -1) {
+                    return permission;
+                }
+            }
+        }
+        return null;
     }
 
     public countTags(tag: string): number {

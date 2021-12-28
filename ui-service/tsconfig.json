@@ -29,6 +29,9 @@
       ],
       "@subscribers/*": [
         "subscribers/*"
+      ],
+      "@auth/*": [
+        "auth/*"
       ]
     },
     "target": "es6"

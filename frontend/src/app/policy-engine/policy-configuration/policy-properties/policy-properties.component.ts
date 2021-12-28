@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 
 /**
  * Settings for policy.
@@ -16,6 +16,8 @@ export class PolicyPropertiesComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
 
     @Output() onInit = new EventEmitter();
+
+    @ViewChild('body') body?: ElementRef;
 
     propHidden: any = {
         metaData: false,
@@ -46,13 +48,24 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     addRoles() {
+        if (!this.policy.policyRoles) {
+            this.policy.policyRoles = [];
+        }
         this.roles.push({
             name: ""
-        })
+        });
+        for (let i = 0; i < this.roles.length; i++) {
+            this.policy.policyRoles[i] = this.roles[i].name;
+        }
+        setTimeout(() => {
+            if (this.body) {
+                this.body.nativeElement.scrollTop = 10000;
+            }
+        });
     }
 
     onEditRole(i: number) {
-        if(!this.policy.policyRoles) {
+        if (!this.policy.policyRoles) {
             this.policy.policyRoles = [];
         }
         this.policy.policyRoles[i] = this.roles[i].name;

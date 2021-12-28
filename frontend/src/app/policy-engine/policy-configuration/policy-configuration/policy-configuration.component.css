@@ -181,7 +181,7 @@
 }
 
 .policy-config {
-    min-height: 220px;
+    min-height: 300px;
     max-height: 35%;
     flex: 35;
     display: flex;
