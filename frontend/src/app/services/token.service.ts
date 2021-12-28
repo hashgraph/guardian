@@ -50,8 +50,4 @@ export class TokenService {
   public info(tokenId: string, username: string): Observable<ITokenInfo> {
     return this.http.get<ITokenInfo>(`${this.url}/${tokenId}/${username}/info`);
   }
-
-  public getUsers(): Observable<IUser[]> {
-    return this.http.get<any[]>(`${this.url}/all-users`);
-  }
 }

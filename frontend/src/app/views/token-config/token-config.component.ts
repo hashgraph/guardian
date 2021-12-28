@@ -62,7 +62,7 @@ export class TokenConfigComponent implements OnInit {
             this.tokenId = "";
         }
         if (this.tokenId) {
-            this.tokenService.getUsers().subscribe((users) => {
+            this.auth.getUsers().subscribe((users) => {
                 this.users = users;
                 this.refreshAll(this.users);
                 setTimeout(() => {

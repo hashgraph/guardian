@@ -376,13 +376,3 @@ tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.ROOT_AUTHORIT
         res.status(500).json({ code: 500, message: error.message });
     }
 });
-
-tokenAPI.get('/all-users', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    const users = new Users();
-    const allUsers = await users.getUsersByRole(UserRole.USER);
-    const map = allUsers.map((e) => ({
-        username: e.username,
-        did: e.did
-    }))
-    res.status(200).json(map);
-});

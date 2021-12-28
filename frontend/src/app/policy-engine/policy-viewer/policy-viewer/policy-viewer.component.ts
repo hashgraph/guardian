@@ -173,7 +173,7 @@ export class PolicyViewerComponent implements OnInit {
 
     publish(element: any) {
         this.loading = true;
-        this.policyEngineService.publish(element.id).subscribe((data: any) => {   
+        this.policyEngineService.publish(element.id).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (!isValid) {
                 let text = [];
@@ -191,7 +191,7 @@ export class PolicyViewerComponent implements OnInit {
                     closeButton: true,
                     positionClass: 'toast-bottom-right',
                     enableHtml: true
-                  });
+                });
             }
             this.updatePolicy(policies);
             setTimeout(() => {
@@ -212,21 +212,15 @@ export class PolicyViewerComponent implements OnInit {
 
     exportPolicy(element: any) {
         this.loading = true;
-        this.policyEngineService.exportPolicy(element.id).subscribe((data: any) => {
-            data.schemas.forEach((s: any) => { s.selected = true });
-            data.tokens.forEach((s: any) => { s.selected = true });
-            this.policyEngineService.exportPolicyDownload(element.id, data).subscribe((result: any) => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(result);
-                downloadLink.setAttribute('download', 'policy.zip');
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
+        this.policyEngineService.exportPolicy(element.id).subscribe((result: any) => {
+            let downloadLink = document.createElement('a');
+            downloadLink.href = window.URL.createObjectURL(result);
+            downloadLink.setAttribute('download', 'policy.zip');
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            setTimeout(() => {
                 this.loading = false;
-            });
+            }, 500);
         }, (e) => {
             this.loading = false;
         });

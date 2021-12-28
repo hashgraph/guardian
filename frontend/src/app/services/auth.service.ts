@@ -1,6 +1,6 @@
 import {HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import { ISession } from 'interfaces';
+import { ISession, IUser } from 'interfaces';
 import {Observable, of, Subject, Subscription} from 'rxjs';
 
 /**
@@ -9,7 +9,8 @@ import {Observable, of, Subject, Subscription} from 'rxjs';
 @Injectable()
 export class AuthService {
   private accessTokenSubject: Subject<string | null>;
-  
+  private readonly url: string = '/api/accounts';
+
   constructor(
     private http: HttpClient
   ) {
@@ -17,18 +18,22 @@ export class AuthService {
   }
 
   public login(username: string, password: string): Observable<any> {
-    return this.http.post<string>('/api/accounts/login', {username, password});
+    return this.http.post<string>(`${this.url}/login`, {username, password});
   }
 
   public createUser(username: string, password: string, role: string): Observable<any> {
-    return this.http.post<any>('/api/accounts/register', {username, password, role})
+    return this.http.post<any>(`${this.url}/register`, {username, password, role})
   }
 
   public sessions(): Observable<ISession | null> {
     if (!localStorage.getItem('accessToken')) {
       return of(null);
     }
-    return this.http.get<ISession>('/api/accounts');
+    return this.http.get<ISession>(`${this.url}/session`);
+  }
+
+  public getUsers(): Observable<IUser[]> {
+    return this.http.get<any[]>(`${this.url}/`);
   }
 
   public setAccessToken(accessToken: string) {

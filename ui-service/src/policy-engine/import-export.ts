@@ -22,45 +22,9 @@ importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: 
             guardians.getTokens({ids: tokenIds})
         ]);
 
-        const schemaObjects: any[] = schemas.filter(s => uuid.indexOf(s.uuid) != -1).map(s => {
-            return {
-                uuid: s.uuid,
-                name: s.name,
-                relationships: s.relationships
-            }
-        });
-        const tokenObjects: any[] = tokens.map(s => {
-            return {
-                tokenId: s.tokenId,
-                tokenName: s.tokenName,
-                tokenSymbol: s.tokenSymbol,
-            }
-        });
-
-        res.json({
-            schemas: schemaObjects,
-            tokens: tokenObjects,
-            policy
-        })
-    } catch(e) {
-        res.status(500).send({code: 500, message: e.message});
-    }
-});
-
-importExportAPI.post('/:policyId/export/download', async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const guardians = new Guardians();
         const zip = new JSZip();
-        const {schemas, tokens} = req.body;
-        const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
-
-        const [readySchemas, readyTokens] = await Promise.all([
-            guardians.exportSchemes(schemas.filter(item => item.selected).map(item => item.uuid)),
-            guardians.getTokens({ids: tokens.filter(item => item.selected).map(item => item.tokenId)})
-        ]);
-
         zip.folder('schemas')
-        for (let schema of readySchemas) {
+        for (let schema of schemas) {
             zip.file(`schemas/${schema.name}.json`, JSON.stringify(schema));
         }
 
@@ -69,9 +33,7 @@ importExportAPI.post('/:policyId/export/download', async (req: AuthenticatedRequ
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
         }
         zip.file(`policy.json`, JSON.stringify(policy));
-
         const arcStream = zip.generateNodeStream();
-
         res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
         res.setHeader('Content-type', 'application/zip');
         arcStream.pipe(res);
@@ -126,7 +88,7 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
     }
 });
 
-importExportAPI.put('/import/upload', async (req: AuthenticatedRequest, res: Response) => {
+importExportAPI.post('/import/preview', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const zip = new JSZip();
 

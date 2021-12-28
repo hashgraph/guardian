@@ -165,12 +165,8 @@ export class PolicyEngineService {
     return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}`);
   }
 
-  public exportPolicy(policyId: string): Observable<void> {
-    return this.http.get<any>(`${this.url}/${policyId}/export`);
-  }
-
-  public exportPolicyDownload(policyId: string, data: any): Observable<Blob> {
-    return this.http.post(`${this.url}/${policyId}/export/download`, data, {
+  public exportPolicy(policyId: string): Observable<Blob> {
+    return this.http.get(`${this.url}/${policyId}/export`, {
       responseType: 'blob'
     });
   }
@@ -180,7 +176,7 @@ export class PolicyEngineService {
   }
 
   public importFileUpload(policyFile: any): Observable<any> {
-    return this.http.put(`${this.url}/import/upload`, policyFile, {
+    return this.http.post(`${this.url}/import/preview`, policyFile, {
       headers: {
         'Content-Type': 'binary/octet-stream'
       }
