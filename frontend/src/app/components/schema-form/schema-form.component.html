@@ -2,7 +2,6 @@
     <ng-container *ngFor="let item of fields">
 
         <div *ngIf="!item.hide" class="form-field-container">
-
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field">{{item.description}}</div>
@@ -33,7 +32,7 @@
                       [formControlName]="item.name"
                     >
                     <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
-                    <ngx-mat-datetime-picker #dateTimePicker></ngx-mat-datetime-picker>
+                    <ngx-mat-datetime-picker #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
                   </mat-form-field>
 
                   <mat-form-field
@@ -63,10 +62,16 @@
 
 
             <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
+                <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
+                  <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+                  <span>
+                    <b>Please make sure all fields contain a valid value</b>
+                  </span>
+                </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field">{{item.description}}</div>
                 <div *ngIf="item.control" class="form-field-array-item" >
-                    <div class="form-field-group">
+                    <div class="form-field-group" [ngClass]="{'schema-form-field-group' : !item.required}">
                         <app-schema-form
                             [formGroup]="item.control"
                             [fields]="item.fields"
@@ -90,6 +95,12 @@
 
 
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
+                <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
+                  <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+                  <span>
+                    <b>Please make sure all fields contain a valid value</b>
+                  </span>
+                </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field">{{item.description}}</div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item"
@@ -124,7 +135,7 @@
                           [formControl]="listItem.control"
                         >
                         <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
-                        <ngx-mat-datetime-picker #dateTimePicker></ngx-mat-datetime-picker>
+                        <ngx-mat-datetime-picker #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
                       </mat-form-field>
 
                       <mat-form-field
@@ -163,7 +174,13 @@
             </div>
 
 
-            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-group">
+            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
+                <div class="invalid-field-label" *ngIf="!options.controls[item.name].valid">
+                  <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+                  <span>
+                    <b>Please make sure all fields contain a valid value</b>
+                  </span>
+                </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field">{{item.description}}</div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item"

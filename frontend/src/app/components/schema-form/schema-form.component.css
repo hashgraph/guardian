@@ -32,10 +32,6 @@ form {
     box-sizing: border-box;
 }
 
-.form-field-group .form-field-group {
-    padding-left: 30px;
-}
-
 .group-label,
 .array-label {
     color: rgba(0,0,0,.6);
@@ -174,27 +170,37 @@ form {
 }
 
 :host ::ng-deep mat-form-field input[aria-invalid='true'] {
-  color: red;
+    color: red;
 }
 
 :host ::ng-deep mat-radio-button {
-  margin-right: 20px;
+    margin-right: 20px;
 }
 
-.schema-form-field-group > .form-field-array-item,
-.form-field-container .form-field-container > .schema-form-field-group {
+.form-field-array-item > .form-field-group {
+    padding-left: 40px;
+}
+
+.schema-form-field-array-group > .form-field-array-item ,
+.form-field-array-item > .schema-form-field-group {
     border-left: 2px dashed #c8c8c8;
 }
 
-.schema-form-field-group > .form-field-array-item {
-  padding-top: 20px;
-}
-
 .form-field-group > .form-field-array-item {
-  padding-right: 0;
+    padding-right: 0;
 }
 
 .boolean-form-field {
-  margin-top: 20px;
-  padding-bottom: 10px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.invalid-field-label {
+    color: red;
+}
+
+.invalid-arrow-circle{
+    position: absolute;
+    left: -35px;
+    font-size: 30px;
 }

@@ -1,7 +1,21 @@
+import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
+import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaField } from 'interfaces';
 import * as moment from 'moment';
+
+const DATETIME_FORMATS = {
+  parse: {
+    dateInput: 'l, LT',
+  },
+  display: {
+    dateInput: 'l, LT',
+    monthYearLabel: 'MM yyyy',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  }
+};
 
 /**
  * Form built by schema
@@ -9,7 +23,11 @@ import * as moment from 'moment';
 @Component({
     selector: 'app-schema-form',
     templateUrl: './schema-form.component.html',
-    styleUrls: ['./schema-form.component.css']
+    styleUrls: ['./schema-form.component.css'],
+    providers: [
+      { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
+      { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
+    ]
 })
 export class SchemaFormComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
@@ -201,7 +219,7 @@ export class SchemaFormComponent implements OnInit {
       if (format === 'date-time') {
         control.valueChanges
           .subscribe((val: any) => {
-            if (!val || !(val instanceof Date)) {
+            if (!val) {
               return;
             }
 
