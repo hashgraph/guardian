@@ -50,7 +50,11 @@
                     <mat-datepicker #dateItem></mat-datepicker>
                   </mat-form-field>
 
-                  <div *ngIf="item.type === 'boolean'" class="boolean-form-field">
+                  <div
+                    *ngIf="item.type === 'boolean'"
+                    class="boolean-form-field"
+                    [ngClass]="{'required-boolean-field': item.required && !options.controls[item.name].valid}"
+                  >
                     <mat-radio-group [formControlName]="item.name">
                       <mat-radio-button color="primary" value="true">True</mat-radio-button>
                       <mat-radio-button color="primary" value="false">False</mat-radio-button>
@@ -65,7 +69,7 @@
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
                   <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                   <span>
-                    <b>Please make sure all fields contain a valid value</b>
+                    <b>Please make sure all fields in schema contain a valid value</b>
                   </span>
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
@@ -98,7 +102,7 @@
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
                   <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                   <span>
-                    <b>Please make sure all fields contain a valid value</b>
+                    <b>{{GetInvalidMessageByType(item.format || item.type)}}</b>
                   </span>
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
@@ -153,7 +157,11 @@
                         <mat-datepicker #dateItem></mat-datepicker>
                       </mat-form-field>
 
-                      <div *ngIf="item.type === 'boolean'" class="boolean-form-field">
+                      <div
+                        *ngIf="item.type === 'boolean'"
+                        class="boolean-form-field"
+                        [ngClass]="{'required-boolean-field': item.required && !listItem.control.valid}"
+                      >
                         <mat-radio-group [formControl]="listItem.control">
                           <mat-radio-button color="primary" value="true">True</mat-radio-button>
                           <mat-radio-button color="primary" value="false">False</mat-radio-button>
@@ -178,7 +186,7 @@
                 <div class="invalid-field-label" *ngIf="!options.controls[item.name].valid">
                   <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                   <span>
-                    <b>Please make sure all fields contain a valid value</b>
+                    <b>Please make sure all fields in schemas contain a valid value</b>
                   </span>
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>

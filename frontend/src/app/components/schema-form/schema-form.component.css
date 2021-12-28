@@ -195,6 +195,11 @@ form {
     padding-bottom: 10px;
 }
 
+.boolean-form-field.required-boolean-field ::ng-deep .mat-radio-outer-circle {
+    background-color: #ffefef;
+    border-color: #f8c3c3af;
+}
+
 .invalid-field-label {
     color: red;
 }

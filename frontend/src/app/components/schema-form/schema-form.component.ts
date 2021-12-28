@@ -17,6 +17,17 @@ const DATETIME_FORMATS = {
   }
 };
 
+const enum ErrorMessageByFieldType {
+  Email = "Please make sure all fields contain a valid email address",
+  Number = "Please make sure all fields contain a valid number value",
+  Duration = "Please make sure all fields contain a valid duration value",
+  Integer = "Please make sure all fields contain a valid integer value",
+  URL = "Please make sure all fields contain a valid URL value",
+  DateTime = "Please make sure all fields contain a valid datetime value",
+  Date = "Please make sure all fields contain a valid date value",
+  Other = "Please make sure all fields contain a valid value"
+};
+
 /**
  * Form built by schema
  */
@@ -193,6 +204,32 @@ export class SchemaFormComponent implements OnInit {
             this.options.addControl("type", new FormControl(this.context.type));
             this.options.addControl("@context", new FormControl(this.context.context));
         }
+    }
+
+    GetInvalidMessageByType(type: string): string {
+      if (!type)
+      {
+        return "";
+      }
+
+      switch (type) {
+        case 'email':
+          return ErrorMessageByFieldType.Email;
+        case 'number':
+          return ErrorMessageByFieldType.Number;
+        case 'duration':
+          return ErrorMessageByFieldType.Duration;
+        case 'integer':
+          return ErrorMessageByFieldType.Integer;
+        case 'url':
+          return ErrorMessageByFieldType.URL;
+        case 'date-time':
+          return ErrorMessageByFieldType.DateTime;
+        case 'date':
+          return ErrorMessageByFieldType.Date;
+        default:
+          return ErrorMessageByFieldType.Other;
+      }
     }
 
     private subscribeFormatDateValue(control: FormControl, format: string) {
