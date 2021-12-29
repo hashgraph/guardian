@@ -15,10 +15,10 @@ export class DemoService {
   }
 
   public getRandomKey(): Observable<any> {
-    return this.http.get<any>(`${this.url}/random-key`);
+    return this.http.get<any>(`${this.url}/randomKey`);
   }
 
   public getAllUsers(): Observable<ISession[]> {
-    return this.http.get<any>(`${this.url}/all-users`);
+    return this.http.get<any>(`${this.url}/registeredUsers`);
   }
 }
