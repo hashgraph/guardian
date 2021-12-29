@@ -236,16 +236,13 @@ export class SchemaFormComponent implements OnInit {
       if (format === 'date') {
         control.valueChanges
           .subscribe((val: any) => {
-            if (!val || !(val instanceof Date)) {
-              return;
-            }
-
             let momentDate = moment(val);
-            if (!momentDate.isValid()) {
-              return;
+            let valueToSet = "";
+            if (momentDate.isValid()) {
+              valueToSet = momentDate.format("YYYY-MM-DD");
             }
 
-            control.setValue(momentDate.format("YYYY-MM-DD"),
+            control.setValue(valueToSet,
             {
               emitEvent: false,
               emitModelToViewChange: false
@@ -256,11 +253,13 @@ export class SchemaFormComponent implements OnInit {
       if (format === 'date-time') {
         control.valueChanges
           .subscribe((val: any) => {
-            if (!val) {
-              return;
+            let momentDate = moment(val);
+            let valueToSet = "";
+            if (momentDate.isValid()) {
+              valueToSet = momentDate.toISOString();
             }
 
-            control.setValue(val.toISOString(),
+            control.setValue(valueToSet,
             {
               emitEvent: false,
               emitModelToViewChange: false
