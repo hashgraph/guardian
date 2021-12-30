@@ -138,10 +138,10 @@
                         class="example-full-width required-form-field"
                         appearance="outline"
                       >
+                        <mat-label>Choose a date & time</mat-label>
                         <input
                           matInput
                           [ngxMatDatetimePicker]="dateTimePicker"
-                          placeholder="Choose a date & time"
                           [formControl]="listItem.control"
                         >
                         <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
