@@ -1211,9 +1211,10 @@ paths:
     get:
       tags:
         - trustchains
-      description: Request all vp documents. Only users with the Auditor role are allowed to make request.
+      description: Request all VP documents. Only users with the Auditor role are allowed to make request.
       security:
       - bearerAuth: []
+      summary: Returns a list of VP documents
       responses:
         200:
           description: Successful operation
@@ -1238,7 +1239,7 @@ paths:
     get:
       tags:
         - trustchains
-      description: Build chain from VP to root VC document. Only users with the Auditor role are allowed to make request.
+      description: Build and return trustchain starting from VP to root VC document. Only users with the Auditor role are allowed to make request.
       parameters:
         - in: path
           name: hash
@@ -1248,6 +1249,7 @@ paths:
           description: Hash or Id of a VP document
       security:
       - bearerAuth: []
+      summary: Returns a trustchain for a VP document
       responses:
         200:
           description: Successful operation
