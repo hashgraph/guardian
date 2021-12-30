@@ -23,6 +23,7 @@ import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
 
 const PORT = process.env.PORT || 3002;
+const API_VERSION = 'v1';
 
 Promise.all([
     createConnection({
@@ -75,16 +76,16 @@ Promise.all([
     ////////////////////////////////////////
 
     // Config routes
-    app.use('/api/policies', authorizationHelper, policyGenerator.getRouter());
-    app.use('/api/policies', authorizationHelper, importExportAPI);
-    app.use('/api/accounts/', accountAPI);
-    app.use('/api/profile/', authorizationHelper, profileAPI);
-    app.use('/api/schemas', authorizationHelper, schemaAPI);
-    app.use('/api/tokens', authorizationHelper, tokenAPI);
-    app.use('/api/trustchains/', authorizationHelper, trustchainsAPI);
-    app.use('/api/external/', externalAPI);
-    app.use('/api/demo/', demoAPI);
-    app.use('/api-docs/', swaggerAPI);
+    app.use(`/api/${API_VERSION}/policies`, authorizationHelper, policyGenerator.getRouter());
+    app.use(`/api/${API_VERSION}/policies`, authorizationHelper, importExportAPI);
+    app.use(`/api/${API_VERSION}/accounts/`, accountAPI);
+    app.use(`/api/${API_VERSION}/profile/`, authorizationHelper, profileAPI);
+    app.use(`/api/${API_VERSION}/schemas`, authorizationHelper, schemaAPI);
+    app.use(`/api/${API_VERSION}/tokens`, authorizationHelper, tokenAPI);
+    app.use(`/api/${API_VERSION}/trustchains/`, authorizationHelper, trustchainsAPI);
+    app.use(`/api/${API_VERSION}/external/`, externalAPI);
+    app.use(`/api/${API_VERSION}/demo/`, demoAPI);
+    app.use(`/api-docs/${API_VERSION}`, swaggerAPI);
     app.use('/', frontendService);
     /////////////////////////////////////////
 

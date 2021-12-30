@@ -6,8 +6,8 @@ import { Observable, ReplaySubject, Subject } from "rxjs";
 })
 export class AuthStateService {
     private readonly _value = new ReplaySubject<boolean>(1);
-    private readonly _loginRequests = new Subject<{login: string, password: string}>();
-    private readonly _credentialRequests = new Subject<{login: string, password: string}>();
+    private readonly _loginRequests = new Subject<{ login: string, password: string }>();
+    private readonly _credentialRequests = new Subject<{ login: string, password: string }>();
 
     constructor() {
         this.updateState(false);
@@ -17,11 +17,11 @@ export class AuthStateService {
         return this._value;
     }
 
-    public get login(): Observable<{login: string, password: string}> {
+    public get login(): Observable<{ login: string, password: string }> {
         return this._loginRequests;
     }
 
-    public get credentials(): Observable<{login: string, password: string}> {
+    public get credentials(): Observable<{ login: string, password: string }> {
         return this._credentialRequests;
     }
 
@@ -30,10 +30,10 @@ export class AuthStateService {
     }
 
     public doLogin(login: string, password: string): void {
-        this._loginRequests.next({login, password});
+        this._loginRequests.next({ login, password });
     }
 
     public setCredentials(login: string, password: string): void {
-        this._credentialRequests.next({login, password});
+        this._credentialRequests.next({ login, password });
     }
 }

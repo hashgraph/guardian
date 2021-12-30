@@ -4,6 +4,7 @@ import { Observable, Subject, Subscription, of } from 'rxjs';
 import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from policy and separate blocks.
@@ -20,7 +21,7 @@ export class PolicyEngineService {
   private reconnectInterval: number = 5000;  /// pause between connections
   private reconnectAttempts: number = 10;  /// number of connection attempts
 
-  private readonly url: string = '/api/policies';
+  private readonly url: string = `${API_BASE_URL}/policies`;
 
   constructor(
     private http: HttpClient,

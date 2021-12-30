@@ -1,7 +1,8 @@
-import {HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { ISession, IUser } from 'interfaces';
-import {Observable, of, Subject, Subscription} from 'rxjs';
+import { Observable, of, Subject, Subscription } from 'rxjs';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from accounts.
@@ -9,7 +10,7 @@ import {Observable, of, Subject, Subscription} from 'rxjs';
 @Injectable()
 export class AuthService {
   private accessTokenSubject: Subject<string | null>;
-  private readonly url: string = '/api/accounts';
+  private readonly url: string = `${API_BASE_URL}/accounts`;
 
   constructor(
     private http: HttpClient
@@ -18,11 +19,11 @@ export class AuthService {
   }
 
   public login(username: string, password: string): Observable<any> {
-    return this.http.post<string>(`${this.url}/login`, {username, password});
+    return this.http.post<string>(`${this.url}/login`, { username, password });
   }
 
   public createUser(username: string, password: string, role: string): Observable<any> {
-    return this.http.post<any>(`${this.url}/register`, {username, password, role})
+    return this.http.post<any>(`${this.url}/register`, { username, password, role })
   }
 
   public sessions(): Observable<ISession | null> {

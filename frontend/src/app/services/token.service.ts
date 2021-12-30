@@ -2,13 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IToken, ITokenInfo, IUser } from 'interfaces';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from Tokens.
  */
 @Injectable()
 export class TokenService {
-  private readonly url: string = '/api/tokens';
+  private readonly url: string = `${API_BASE_URL}/tokens`;
 
   constructor(
     private http: HttpClient

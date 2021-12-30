@@ -2,13 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, Schema, SchemaEntity } from 'interfaces';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from Schemes.
  */
 @Injectable()
 export class SchemaService {
-  private readonly url: string = '/api/schemas';
+  private readonly url: string = `${API_BASE_URL}/schemas`;
 
   constructor(
     private http: HttpClient
