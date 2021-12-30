@@ -32,13 +32,18 @@
 }
 
 .form-page {
-    width: 600px;
+    width: 650px;
     margin: 40px auto;
-    padding: 40px;
+    padding: 10px;
     border: 1px solid #c3c3c3;
     border-radius: 4px;
 }
 
+.form-dialog {
+    padding: 10px;
+    max-height: 65vh;
+    overflow: auto;
+}
 
 .body-dialog-template {
     padding-bottom: 25px;
@@ -53,4 +58,17 @@
     max-height: 50vh;
     overflow: auto;
     margin-bottom: 24px;
+    padding: 40px 40px 0px 40px;
+}
+
+.form-page h1 {
+    padding: 40px 40px 0px 40px;
+}
+
+.form-page .description {
+    padding: 0 40px;
+}
+
+.form-page  .page-btns {
+    padding: 0px 40px 40px 40px;
 }
