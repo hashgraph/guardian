@@ -289,6 +289,7 @@ export class BlockTreeGenerator {
                 const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
                 model.owner = user.did;
+                delete model.topicId;
                 await getMongoRepository(Policy).save(model);
                 const policies = await getMongoRepository(Policy).find({ owner: user.did })
                 res.json(policies);
