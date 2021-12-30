@@ -17,7 +17,25 @@ const DATETIME_FORMATS = {
   }
 };
 
-const enum ErrorMessageByFieldType {
+enum PlaceholderByFieldType {
+  Email = "example@email.com",
+  Number = "123",
+  URL = "example.com",
+  String = "example string"
+}
+
+enum ErrorFieldMessageByFieldType {
+  Email = "Please make sure the field contain a valid email address",
+  Number = "Please make sure the field contain a valid number value",
+  Duration = "Please make sure the field contain a valid duration value",
+  Integer = "Please make sure the field contain a valid integer value",
+  URL = "Please make sure the field contain a valid URL value",
+  DateTime = "Please make sure the field contain a valid datetime value",
+  Date = "Please make sure the field contain a valid date value",
+  Other = "Please make sure the field contain a valid value"
+};
+
+enum ErrorArrayMessageByFieldType {
   Email = "Please make sure all fields contain a valid email address",
   Number = "Please make sure all fields contain a valid number value",
   Duration = "Please make sure all fields contain a valid duration value",
@@ -206,29 +224,52 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    GetInvalidMessageByType(type: string): string {
+    GetInvalidMessageByFieldType(type: string, isArray: boolean = false): string {
       if (!type)
       {
         return "";
       }
 
+      const messages = isArray
+        ? ErrorArrayMessageByFieldType
+        : ErrorFieldMessageByFieldType;
+
       switch (type) {
         case 'email':
-          return ErrorMessageByFieldType.Email;
+          return messages.Email;
         case 'number':
-          return ErrorMessageByFieldType.Number;
+          return messages.Number;
         case 'duration':
-          return ErrorMessageByFieldType.Duration;
+          return messages.Duration;
         case 'integer':
-          return ErrorMessageByFieldType.Integer;
+          return messages.Integer;
         case 'url':
-          return ErrorMessageByFieldType.URL;
+          return messages.URL;
         case 'date-time':
-          return ErrorMessageByFieldType.DateTime;
+          return messages.DateTime;
         case 'date':
-          return ErrorMessageByFieldType.Date;
+          return messages.Date;
         default:
-          return ErrorMessageByFieldType.Other;
+          return messages.Other;
+      }
+    }
+
+    GetPlaceholderByFieldType(type: string): string {
+      switch (type) {
+        case 'email':
+          return PlaceholderByFieldType.Email;
+        case 'number':
+          return PlaceholderByFieldType.Number;
+        case 'duration':
+          return PlaceholderByFieldType.Number;
+        case 'integer':
+          return PlaceholderByFieldType.Number;
+        case 'url':
+          return PlaceholderByFieldType.URL;
+        case 'string':
+          return PlaceholderByFieldType.String;
+        default:
+          return "";
       }
     }
 
