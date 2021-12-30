@@ -23,6 +23,22 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             next();
         });
     } else {
-        res.sendStatus(403);
+        res.sendStatus(401);
+    }
+}
+
+export function permissionHelper(...roles: string[]) {
+    return async function (req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
+        if (req.user) { 
+            if(req.user.role) {
+                if(roles.indexOf(req.user.role) !== -1) {
+                    next();
+                    return;
+                }
+            }
+            res.sendStatus(403);
+        } else {
+            res.sendStatus(401);
+        }
     }
 }

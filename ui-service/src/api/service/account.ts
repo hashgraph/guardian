@@ -4,13 +4,17 @@ import {Request, Response, Router} from 'express';
 import {sign, verify} from 'jsonwebtoken';
 import {getMongoRepository} from 'typeorm';
 import {IAuthUser} from '../../auth/auth.interface';
+import { AuthenticatedRequest } from '@auth/auth.interface';
+import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
+import { UserRole } from 'interfaces';
+import { Users } from '@helpers/users';
 
 /**
  * User account route
  */
 export const accountAPI = Router();
 
-accountAPI.get('/', async (req: Request, res: Response) => {
+accountAPI.get('/session', async (req: Request, res: Response) => {
     let authHeader = req.headers.authorization;
     if (authHeader) {
         const token = authHeader.split(' ')[1];
@@ -52,7 +56,7 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
         });
 
         const result = await getMongoRepository(User).save(user);
-        res.json(result);
+        res.status(201).json(result);
     } catch (e) {
         res.status(500).send({code: 500, message: 'Server error'});
     }
@@ -70,7 +74,7 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
                 did: user.did,
                 role: user.role
             }, process.env.ACCESS_TOKEN_SECRET);
-            res.json({
+            res.status(200).json({
                 username: user.username,
                 did: user.did,
                 role: user.role,
@@ -82,4 +86,15 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     } catch (e) {
         res.status(500).send({code: 500, message: 'Server error'});
     }
+});
+
+
+accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    const users = new Users();
+    const allUsers = await users.getUsersByRole(UserRole.USER);
+    const map = allUsers.map((e) => ({
+        username: e.username,
+        did: e.did
+    }))
+    res.status(200).json(map);
 });

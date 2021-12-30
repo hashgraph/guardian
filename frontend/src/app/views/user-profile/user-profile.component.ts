@@ -41,7 +41,6 @@ export class UserProfileComponent implements OnInit {
     displayedColumns: string[] = [
         'name',
         'associated',
-        'hBarBalance',
         'tokenBalance',
         'frozen',
         'kyc'
@@ -83,7 +82,7 @@ export class UserProfileComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.tokenService.getUserTokens()
+            this.tokenService.getTokens()
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
             this.balance = value[1] as string;

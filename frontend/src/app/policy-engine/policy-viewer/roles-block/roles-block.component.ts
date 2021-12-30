@@ -62,7 +62,7 @@ export class RolesBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getData(this.id, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
                 this.setData(data);
                 this.loading = false;
                 console.log(data);
@@ -91,7 +91,7 @@ export class RolesBlockComponent implements OnInit {
     onSubmit() {
         if (this.roleForm.valid) {
             const data = this.roleForm.value;
-            this.policyEngineService.setData(this.id, this.policyId, data).subscribe(() => {
+            this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
                 this.loading = false;
             }, (e) => {
                 console.error(e.error);

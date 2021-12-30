@@ -98,8 +98,8 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicyById(policyId: string) {
         forkJoin([
-            this.policyEngineService.getPolicy(policyId),
-            this.policyEngineService.getAllPolicy()
+            this.policyEngineService.policyBlock(policyId),
+            this.policyEngineService.all()
         ]).subscribe((value) => {
             this.policy = value[0];
             if (value[1]) {
@@ -119,7 +119,7 @@ export class PolicyViewerComponent implements OnInit {
         if (this.role == 'ROOT_AUTHORITY') {
             this.columns = this.columnsRole['ROOT_AUTHORITY'];
             forkJoin([
-                this.policyEngineService.getAllPolicy(),
+                this.policyEngineService.all(),
                 this.tokenService.getTokens()
             ]).subscribe((value) => {
                 const policies: any[] = value[0];
@@ -135,7 +135,7 @@ export class PolicyViewerComponent implements OnInit {
         } else {
             this.columns = this.columnsRole['USER'];
             forkJoin([
-                this.policyEngineService.getAllPolicy(),
+                this.policyEngineService.all(),
             ]).subscribe((value) => {
                 const policies: any[] = value[0];
                 this.updatePolicy(policies);
@@ -159,7 +159,7 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.createPolicy(result).subscribe((policies: any) => {
+                this.policyEngineService.create(result).subscribe((policies: any) => {
                     this.updatePolicy(policies);
                     setTimeout(() => {
                         this.loading = false;
@@ -173,7 +173,7 @@ export class PolicyViewerComponent implements OnInit {
 
     publish(element: any) {
         this.loading = true;
-        this.policyEngineService.publishPolicy(element.id).subscribe((data: any) => {   
+        this.policyEngineService.publish(element.id).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (!isValid) {
                 let text = [];
@@ -191,7 +191,7 @@ export class PolicyViewerComponent implements OnInit {
                     closeButton: true,
                     positionClass: 'toast-bottom-right',
                     enableHtml: true
-                  });
+                });
             }
             this.updatePolicy(policies);
             setTimeout(() => {
@@ -212,21 +212,15 @@ export class PolicyViewerComponent implements OnInit {
 
     exportPolicy(element: any) {
         this.loading = true;
-        this.policyEngineService.exportPolicy(element.id).subscribe((data: any) => {
-            data.schemas.forEach((s: any) => { s.selected = true });
-            data.tokens.forEach((s: any) => { s.selected = true });
-            this.policyEngineService.exportPolicyDownload(element.id, data).subscribe((result: any) => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(result);
-                downloadLink.setAttribute('download', 'policy.zip');
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
+        this.policyEngineService.exportPolicy(element.id).subscribe((result: any) => {
+            let downloadLink = document.createElement('a');
+            downloadLink.href = window.URL.createObjectURL(result);
+            downloadLink.setAttribute('download', 'policy.zip');
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            setTimeout(() => {
                 this.loading = false;
-            });
+            }, 500);
         }, (e) => {
             this.loading = false;
         });

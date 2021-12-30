@@ -4,8 +4,10 @@ import { UserRole } from "interfaces";
 
 export interface IAuthUser {
     username: string;
-    did: string;
-    role: UserRole
+    role: UserRole;
+    did?: string;
+    hederaAccountId?: string;
+    walletToken?: string;
 }
 
 interface AdditionalFields {

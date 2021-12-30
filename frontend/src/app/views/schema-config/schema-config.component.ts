@@ -87,7 +87,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.createSchema(schema).subscribe((data) => {
+                this.schemaService.create(schema).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
@@ -123,7 +123,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.updateSchema(schema, element.id).subscribe((data) => {
+                this.schemaService.update(schema, element.id).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
@@ -138,7 +138,7 @@ export class SchemaConfigComponent implements OnInit {
 
     publish(element: any) {
         this.loading = true;
-        this.schemaService.publishSchema(element.id).subscribe((data: any) => {
+        this.schemaService.publish(element.id).subscribe((data: any) => {
             this.setSchema(data);
             setTimeout(() => {
                 this.loading = false;
@@ -150,7 +150,7 @@ export class SchemaConfigComponent implements OnInit {
 
     unpublished(element: any) {
         this.loading = true;
-        this.schemaService.unpublishedSchema(element.id).subscribe((data: any) => {
+        this.schemaService.unpublished(element.id).subscribe((data: any) => {
             this.setSchema(data);
             setTimeout(() => {
                 this.loading = false;
@@ -162,7 +162,7 @@ export class SchemaConfigComponent implements OnInit {
 
     deleteSchema(element: any) {
         this.loading = true;
-        this.schemaService.deleteSchema(element.id).subscribe((data: any) => {
+        this.schemaService.delete(element.id).subscribe((data: any) => {
             this.setSchema(data);
             setTimeout(() => {
                 this.loading = false;
@@ -181,7 +181,7 @@ export class SchemaConfigComponent implements OnInit {
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result && result.schemes) {
-                this.schemaService.importSchemes(result.schemes).subscribe((data) => {
+                this.schemaService.import(result.schemes).subscribe((data) => {
                     this.setSchema(data);
                     this.loading = false;
                 }, (e) => {
@@ -199,7 +199,7 @@ export class SchemaConfigComponent implements OnInit {
 
     exportSchemes() {
         const ids = this.schemes.filter((s: any) => s._selected).map(s => s.uuid);
-        this.schemaService.exportSchemes(ids).subscribe((data) => {
+        this.schemaService.export(ids).subscribe((data) => {
             this.downloadObjectAsJson(data.schemes, 'schema');
             this.loading = false;
         }, (e) => {

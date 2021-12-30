@@ -62,7 +62,7 @@ export class TokenConfigComponent implements OnInit {
             this.tokenId = "";
         }
         if (this.tokenId) {
-            this.tokenService.getUsers().subscribe((users) => {
+            this.auth.getUsers().subscribe((users) => {
                 this.users = users;
                 this.refreshAll(this.users);
                 setTimeout(() => {
@@ -106,7 +106,7 @@ export class TokenConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.tokenService.createToken(result).subscribe((data) => {
+                this.tokenService.create(result).subscribe((data) => {
                     this.tokens = data.map(e => new Token(e));
                     this.loading = false;
                 }, (e) => {
@@ -137,7 +137,7 @@ export class TokenConfigComponent implements OnInit {
 
     refresh(user: any) {
         user.loading = true;
-        this.tokenService.getAssociatedUsers(this.tokenId, user.username).subscribe((res) => {
+        this.tokenService.info(this.tokenId, user.username).subscribe((res) => {
             this.refreshUser(user, res);
             user.loading = false;
         }, (e) => {
@@ -163,7 +163,7 @@ export class TokenConfigComponent implements OnInit {
 
     freeze(user: any, freeze: boolean) {
         this.loading = true;
-        this.tokenService.getFreezeUser(this.tokenId, user.username, freeze).subscribe((res) => {
+        this.tokenService.freeze(this.tokenId, user.username, freeze).subscribe((res) => {
             this.refreshUser(user, res);
             this.loading = false;
         }, (e) => {
@@ -174,7 +174,7 @@ export class TokenConfigComponent implements OnInit {
 
     kyc(user: any, grantKYC: boolean) {
         this.loading = true;
-        this.tokenService.grantKYC(this.tokenId, user.username, grantKYC).subscribe((res) => {
+        this.tokenService.kyc(this.tokenId, user.username, grantKYC).subscribe((res) => {
             this.refreshUser(user, res);
             this.loading = false;
         }, (e) => {

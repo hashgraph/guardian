@@ -90,7 +90,7 @@ export class PolicyConfigurationComponent implements OnInit {
         forkJoin([
             this.schemaService.getSchemes(),
             this.tokenService.getTokens(),
-            this.policyEngineService.loadPolicy(policyId)
+            this.policyEngineService.policy(policyId)
         ]).subscribe((data: any) => {
             const schemes = data[0] || [];
             const tokens = data[1] || [];
@@ -165,11 +165,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 id: this.generateUUIDv4(),
                 tag: `Block${this.indexBlock}`,
                 blockType: type,
+                defaultActive: true,
                 children: []
             };
             this.currentBlock.children.push(newBlock);
             this.setBlocks(this.blocks[0]);
-            this.currentBlock = newBlock;
             this.indexBlock++;
         }
     }
@@ -221,7 +221,7 @@ export class PolicyConfigurationComponent implements OnInit {
         if (root) {
             this.loading = true;
             this.policy.config = root;
-            this.policyEngineService.savePolicy(this.policyId, this.policy).subscribe((policy) => {
+            this.policyEngineService.update(this.policyId, this.policy).subscribe((policy) => {
                 this.setPolicy(policy);
                 this.loading = false;
             }, (e) => {
@@ -233,7 +233,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     publishPolicy() {
         this.loading = true;
-        this.policyEngineService.publishPolicy(this.policyId).subscribe((data: any) => {
+        this.policyEngineService.publish(this.policyId).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (isValid) {
                 this.loadPolicy();
@@ -257,11 +257,12 @@ export class PolicyConfigurationComponent implements OnInit {
 
     validationPolicy() {
         this.loading = true;
-        this.policyEngineService.validationPolicy({
+        this.policyEngineService.validate({
+            policyRoles: this.policy?.policyRoles,
             config: this.root
         }).subscribe((data: any) => {
-            const { config, results } = data;
-            const root = config.config;
+            const { policy, results } = data;
+            const root = policy.config;
             this.setBlocks(root);
             const blocks = results.blocks;
             const errors = blocks.filter((block: any) => !block.isValid);
@@ -292,7 +293,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 delete policy.id;
                 delete policy.status;
                 delete policy.owner;
-                this.policyEngineService.createPolicy(policy).subscribe((policies: any) => {
+                this.policyEngineService.create(policy).subscribe((policies: any) => {
                     const last = policies[policies.length - 1];
                     this.router.navigate(['/policy-configuration'], { queryParams: { policyId: last.id } });
                 }, (e) => {

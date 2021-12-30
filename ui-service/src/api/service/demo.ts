@@ -8,7 +8,7 @@ import { HederaHelper } from 'vc-modules';
  */
 export const demoAPI = Router();
 
-demoAPI.get('/all-users', async (req: Request, res: Response) => {
+demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
     try {
         const users = await getMongoRepository(User).find();
         res.json(users.map(e => ({
@@ -20,7 +20,7 @@ demoAPI.get('/all-users', async (req: Request, res: Response) => {
     }
 });
 
-demoAPI.get('/random-key', async (req: Request, res: Response) => {
+demoAPI.get('/randomKey', async (req: Request, res: Response) => {
     try {
         const OPERATOR_ID = process.env.OPERATOR_ID;
         const OPERATOR_KEY = process.env.OPERATOR_KEY;

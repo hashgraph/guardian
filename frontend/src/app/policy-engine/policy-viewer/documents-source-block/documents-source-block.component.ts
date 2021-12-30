@@ -65,7 +65,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getData(this.id, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
                 this.setData(data).then(() => {
                     setTimeout(() => {
                         this.loading = false;
@@ -108,7 +108,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     async getBindBlock(element: any) {
         return new Promise<any>(async (resolve, reject) => {
             this.policyEngineService.getGetIdByName(element.bindBlock, this.policyId).subscribe(({ id }: any) => {
-                this.policyEngineService.getData(id, this.policyId).subscribe((data: any) => {
+                this.policyEngineService.getBlockData(id, this.policyId).subscribe((data: any) => {
                     data.id = id;
                     console.log(data);
                     resolve(data);

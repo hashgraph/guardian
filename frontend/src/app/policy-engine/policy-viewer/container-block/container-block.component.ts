@@ -53,7 +53,7 @@ export class ContainerBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getData(this.id, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
                 this.setData(data);
                 setTimeout(() => {
                     this.loading = false;

@@ -68,7 +68,7 @@ export class RequestDocumentBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getData(this.id, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
                 this.setData(data);
                 setTimeout(() => {
                     this.loading = false;
@@ -114,7 +114,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     onSubmit() {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
-            this.policyEngineService.setData(this.id, this.policyId, data).subscribe(() => {
+            this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
                 this.loading = false;
             }, (e) => {
                 console.error(e.error);

@@ -1,27 +1,27 @@
-import {Policy} from '@entity/policy';
-import {PolicyOtherError} from '@policy-engine/errors';
-import {BlockError} from '@policy-engine/interfaces';
-import {Response, Router} from 'express';
-import {IncomingMessage} from 'http';
+import { Policy } from '@entity/policy';
+import { PolicyOtherError } from '@policy-engine/errors';
+import { BlockError } from '@policy-engine/interfaces';
+import { Response, Router } from 'express';
+import { IncomingMessage } from 'http';
 import yaml, { JSON_SCHEMA } from 'js-yaml';
-import {verify} from 'jsonwebtoken';
-import {getConnection, getMongoRepository} from 'typeorm';
+import { verify } from 'jsonwebtoken';
+import { getConnection, getMongoRepository } from 'typeorm';
 import WebSocket from 'ws';
-import {AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser} from '../auth/auth.interface';
-import {PolicyBlockHelpers} from './helpers/policy-block-helpers';
-import {IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend} from './policy-engine.interface';
-import {StateContainer} from './state-container';
-import {Singleton} from '@helpers/decorators/singleton';
-import {ConfigPolicyTest} from '@policy-engine/helpers/mockConfig/configPolicy';
-import {DeepPartial} from 'typeorm/common/DeepPartial';
-import {User} from '@entity/user';
-import {SchemaEntity, UserRole} from 'interfaces';
-import {HederaHelper} from 'vc-modules';
-import {Guardians} from '@helpers/guardians';
-import {VcHelper} from '@helpers/vcHelper';
+import { AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser } from '../auth/auth.interface';
+import { PolicyBlockHelpers } from './helpers/policy-block-helpers';
+import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import { StateContainer } from './state-container';
+import { Singleton } from '@helpers/decorators/singleton';
+import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
+import { DeepPartial } from 'typeorm/common/DeepPartial';
+import { User } from '@entity/user';
+import { SchemaEntity, UserRole } from 'interfaces';
+import { HederaHelper } from 'vc-modules';
+import { Guardians } from '@helpers/guardians';
+import { VcHelper } from '@helpers/vcHelper';
 import * as Buffer from 'buffer';
-import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
-import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
+import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -88,7 +88,7 @@ export class BlockTreeGenerator {
      */
     static async GenerateMock(): Promise<void> {
         const policyRepository = getMongoRepository(Policy);
-        const ra = await getMongoRepository(User).findOne({role: UserRole.ROOT_AUTHORITY});
+        const ra = await getMongoRepository(User).findOne({ role: UserRole.ROOT_AUTHORITY });
 
         const existing = await policyRepository.find();
 
@@ -116,7 +116,7 @@ export class BlockTreeGenerator {
      * @param config
      * @param skipRegistration
      */
-    async generate(config: Object, skipRegistration?: boolean): Promise<IPolicyBlock>;
+    async generate(policy: Policy, skipRegistration?: boolean): Promise<IPolicyBlock>;
 
     async generate(arg: any, skipRegistration?: boolean): Promise<IPolicyBlock> {
         let policy, policyId;
@@ -131,7 +131,7 @@ export class BlockTreeGenerator {
         const configObject = policy.config as ISerializedBlock;
 
         function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): IPolicyBlock {
-            const {blockType, children, ...params}: ISerializedBlockExtend = block;
+            const { blockType, children, ...params }: ISerializedBlockExtend = block;
             if (parent) {
                 params._parent = parent;
             }
@@ -156,6 +156,17 @@ export class BlockTreeGenerator {
         return model as IPolicyInterfaceBlock;
     }
 
+    private async tagFinder(instance: any, resultsContainer:PolicyValidationResultsContainer) {
+        if (instance.tag) {
+            resultsContainer.addTag(instance.tag);
+        }
+        if (Array.isArray(instance.children)) {
+            for (let child of instance.children) {
+                this.tagFinder(child, resultsContainer);
+            }
+        }
+    }
+
     /**
      * Validate policy by id
      * @param id - policyId
@@ -167,32 +178,25 @@ export class BlockTreeGenerator {
      * @param config
      * @private
      */
-    private async validate(config: Object): Promise<ISerializedErrors>;
+    private async validate(policy: Policy): Promise<ISerializedErrors>;
 
     private async validate(arg) {
         const resultsContainer = new PolicyValidationResultsContainer();
 
-        let policyConfig;
+        let policy: Policy;
+        let policyConfig: any;
         if (typeof arg === 'string') {
-            policyConfig = (await getMongoRepository(Policy).findOne(arg)).config;
+            policy = (await getMongoRepository(Policy).findOne(arg));
+            policyConfig = policy.config;
         } else {
-            policyConfig = arg.config;
+            policy = arg;
+            policyConfig = policy.config;
         }
 
-        function tagFinder(instance) {
-            if (instance.tag) {
-                resultsContainer.addTag(instance.tag);
-            }
-            if (Array.isArray(instance.children)) {
-                for (let child of instance.children) {
-                    tagFinder(child);
-                }
-            }
-        }
-        tagFinder(policyConfig);
-
-        const policy = await this.generate(arg, true);
-        await policy.validate(resultsContainer);
+        const policyInstance = await this.generate(arg, true);
+        this.tagFinder(policyConfig, resultsContainer);
+        resultsContainer.addPermissions(policy.policyRoles);
+        await policyInstance.validate(resultsContainer);
         return resultsContainer.getSerializedErrors();
     }
 
@@ -262,79 +266,75 @@ export class BlockTreeGenerator {
      * @private
      */
     private registerRoutes(): void {
-        this.router.get('/edit/:policyId', async (req: AuthenticatedRequest, res: Response) => {
-            const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-            delete model.registeredUsers;
-            res.send(model);
-
-        });
-
-        this.router.post('/edit/:policyId', async (req: AuthenticatedRequest, res: Response) => {
-            const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-            const policy = req.body;
-
-            model.config = policy.config;
-            model.name = policy.name;
-            model.version = policy.version;
-            model.description = policy.description;
-            model.topicDescription = policy.topicDescription;
-            model.policyRoles = policy.policyRoles;
-            delete model.registeredUsers;
-
-            const result = await getMongoRepository(Policy).save(model);
-
-            res.json(result);
-        });
-
-        this.router.post('/create', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.get('/', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
+                let result: Policy[];
+                if (user.role === UserRole.ROOT_AUTHORITY) {
+                    result = await getMongoRepository(Policy).find({ owner: user.did });
+                } else {
+                    result = await getMongoRepository(Policy).find({ status: 'PUBLISH' });
+                }
+                res.json(result.map(item => {
+                    delete item.registeredUsers;
+                    return item;
+                }));
+            } catch (e) {
+                res.status(500).send({ code: 500, message: 'Server error' });
+            }
+        });
+
+        this.router.post('/', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
                 model.owner = user.did;
                 await getMongoRepository(Policy).save(model);
-                const policies = await getMongoRepository(Policy).find({owner: user.did})
+                const policies = await getMongoRepository(Policy).find({ owner: user.did })
                 res.json(policies);
-            } catch(e) {
+            } catch (e) {
                 res.status(500).send({ code: 500, message: e.message });
             }
         });
 
-        this.router.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
-            if (!req.body || !req.body.json) {
-                res.status(500).send({ code: 500, message: 'Bad json' });
-            }
+        this.router.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
+            const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+            delete model.registeredUsers;
+            res.send(model);
+        });
+
+        this.router.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const json = req.body.json;
-                const yaml = BlockTreeGenerator.ToYAML(json);
-                res.json({ yaml });
-            } catch (error) {
-                res.status(500).send({ code: 500, message: 'Bad json' });
+                const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+                const policy = req.body;
+
+                model.config = policy.config;
+                model.name = policy.name;
+                model.version = policy.version;
+                model.description = policy.description;
+                model.topicDescription = policy.topicDescription;
+                model.policyRoles = policy.policyRoles;
+                delete model.registeredUsers;
+
+                const result = await getMongoRepository(Policy).save(model);
+
+                res.json(result);
+            } catch (e) {
+                console.error(e);
+                res.status(500).send({ code: 500, message: 'Unknown error' });
             }
         });
 
-        this.router.post('/from-yaml', async (req: AuthenticatedRequest, res: Response) => {
-            if (!req.body || !req.body.yaml) {
-                res.status(500).send({ code: 500, message: 'Bad yaml' });
-            }
-            try {
-                const yaml = req.body.yaml;
-                const json = BlockTreeGenerator.FromYAML(yaml);
-                res.json({ json });
-            } catch (error) {
-                res.status(500).send({ code: 500, message: 'Bad yaml' });
-            }
-        });
-
-        this.router.post('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const errors = await this.validate(req.params.policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
                     const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-                    const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
+                    const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                     if (!model.config) {
-                        res.status(500).send({code: 500, message: 'The policy is empty'});
+                        res.status(500).send({ code: 500, message: 'The policy is empty' });
                         return;
                     }
 
@@ -391,27 +391,23 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.router.get('/list', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const user = await getMongoRepository(User).findOne({where: {username: {$eq: req.user.username}}});
-                let result: Policy[];
-                if (user.role === UserRole.ROOT_AUTHORITY) {
-                    result = await getMongoRepository(Policy).find({owner: user.did});
-                } else {
-                    result = await getMongoRepository(Policy).find({status: 'PUBLISH'});
-                }
-                res.json(result.map(item => {
-                    delete item.registeredUsers;
-                    return item;
-                }));
+                const policy = req.body as Policy;
+                const results = await this.validate(policy);
+                res.send({
+                    results,
+                    policy
+                });
             } catch (e) {
-                res.status(500).send({code: 500, message: 'Server error'});
+                console.log(e);
+                res.status(500).send({ code: 500, message: e.message });
             }
         });
 
-        this.router.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.get('/:policyId/blocks', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const model = await this.models.get(req.params.policyId) as IPolicyInterfaceBlock as any;
+                const model = this.models.get(req.params.policyId) as IPolicyInterfaceBlock as any;
                 if (!model) {
                     const err = new PolicyOtherError('Unexisting policy', req.params.policyId, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
@@ -420,63 +416,39 @@ export class BlockTreeGenerator {
                 res.send(await model.getData(req.user) as any);
             } catch (e) {
                 console.error(e);
-                res.status(500).send({code: 500, message: 'Unknown error'});
+                res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
             }
         });
 
-        this.router.get('/:policyId/validate', async (req: AuthenticatedRequest, res: Response) => {
-            try {
-                const results = await this.validate(req.params.policyId);
-                res.send(results);
-            } catch (e) {
-                console.log(e);
-                res.status(500).send({code: 500, message: e.message});
-            }
-
-        });
-
-        this.router.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
-            try {
-                const config = req.body as Object
-                const results = await this.validate(config);
-                res.send({
-                    results,
-                    config
-                });
-            } catch (e) {
-                console.log(e);
-                res.status(500).send({code: 500, message: e.message});
-            }
-
-        });
-
-        this.router.get('/:policyId/download', async (req: AuthenticatedRequest, res: Response) => {
-            res.send(ConfigPolicyTest);
-        });
-        this.router.get('/block/tag/:policyId/:tag', async (req: AuthenticatedRequest, res: Response) => {
-            res.send({id: StateContainer.GetBlockByTag(req.params.policyId, req.params.tag).uuid});
-        });
-
-        this.router.get('/block/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                const content = await block.getData(req.user, req.params.uuid);
-                res.send(content);
+                if(!block) {
+                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+                    res.status(err.errorObject.code).send(err.errorObject);
+                    return;
+                }
+                const data = await block.getData(req.user, req.params.uuid);
+                res.send(data);
             } catch (e) {
                 try {
                     const err = e as BlockError;
                     res.status(err.errorObject.code).send(err.errorObject);
                 } catch (e) {
-                    res.status(500).send({code: 500, message: 'Unknown error'});
+                    res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
                 }
                 console.error(e);
-                // throw e;
             }
         });
 
-        this.router.post('/block/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid)
+                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+                if(!block) {
+                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+                    res.status(err.errorObject.code).send(err.errorObject);
+                    return;
+                }
                 const data = await block.setData(req.user, req.body);
                 res.status(200).send(data || {});
             } catch (e) {
@@ -484,11 +456,55 @@ export class BlockTreeGenerator {
                     const err = e as BlockError;
                     res.status(err.errorObject.code).send(err.errorObject);
                 } catch (_e) {
-                    res.status(500).send({code: 500, message: 'Unknown error: ' + e.message});
+                    res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
                 }
                 console.error(e);
+            }
+        });
 
-                // throw e;
+        this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const block = StateContainer.GetBlockByTag(req.params.policyId, req.params.tagName);
+                if(!block) {
+                    const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
+                    res.status(err.errorObject.code).send(err.errorObject);
+                    return;
+                }
+                res.send({ id: block.uuid });
+            } catch (e) {
+                try {
+                    const err = e as BlockError;
+                    res.status(err.errorObject.code).send(err.errorObject);
+                } catch (_e) {
+                    res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+                }
+                console.error(e);
+            }
+        });
+
+        this.router.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
+            if (!req.body || !req.body.json) {
+                res.status(500).send({ code: 500, message: 'Bad json' });
+            }
+            try {
+                const json = req.body.json;
+                const yaml = BlockTreeGenerator.ToYAML(json);
+                res.json({ yaml });
+            } catch (error) {
+                res.status(500).send({ code: 500, message: 'Bad json' });
+            }
+        });
+
+        this.router.post('/from-yaml', async (req: AuthenticatedRequest, res: Response) => {
+            if (!req.body || !req.body.yaml) {
+                res.status(500).send({ code: 500, message: 'Bad yaml' });
+            }
+            try {
+                const yaml = req.body.yaml;
+                const json = BlockTreeGenerator.FromYAML(yaml);
+                res.json({ json });
+            } catch (error) {
+                res.status(500).send({ code: 500, message: 'Bad yaml' });
             }
         });
     }
