@@ -3,6 +3,12 @@
 
         <div *ngIf="!item.hide" class="form-field-container">
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
+                <div class="invalid-field-label" *ngIf="options.controls[item.name] && !options.controls[item.name].valid">
+                  <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+                  <span>
+                    <b>{{GetInvalidMessageByFieldType(item.format || item.type)}}</b>
+                  </span>
+                </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field">{{item.description}}</div>
 
@@ -11,24 +17,24 @@
                     class="example-full-width required-form-field"
                     appearance="outline"
                   >
-                    <input matInput [formControlName]="item.name">
+                    <input matInput [formControlName]="item.name" [placeholder]="GetPlaceholderByFieldType(item.format || item.type)">
                   </mat-form-field>
 
                   <mat-form-field *ngIf="item.type ==='string' && item.format === 'time'"
                     class="example-full-width required-form-field"
                     appearance="outline"
                   >
-                    <input matInput type="time" step="1" [formControlName]="item.name">
+                    <input matInput type="time" step="1" [formControlName]="item.name" [placeholder]="GetPlaceholderByFieldType(item.format || item.type)">
                   </mat-form-field>
 
                   <mat-form-field *ngIf="item.type ==='string' && item.format === 'date-time'"
                     class="example-full-width required-form-field"
                     appearance="outline"
                   >
+                    <mat-label>Choose a date & time</mat-label>
                     <input
                       matInput
                       [ngxMatDatetimePicker]="dateTimePicker"
-                      placeholder="Choose a date & time"
                       [formControlName]="item.name"
                     >
                     <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
@@ -102,7 +108,7 @@
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
                   <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                   <span>
-                    <b>{{GetInvalidMessageByType(item.format || item.type)}}</b>
+                    <b>{{GetInvalidMessageByFieldType(item.format || item.type, true)}}</b>
                   </span>
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
@@ -118,14 +124,14 @@
                         class="example-full-width required-form-field"
                         appearance="outline"
                       >
-                        <input matInput [formControl]="listItem.control">
+                        <input matInput [formControl]="listItem.control" [placeholder]="GetPlaceholderByFieldType(item.format || item.type)">
                       </mat-form-field>
 
                       <mat-form-field *ngIf="item.type ==='string' && item.format === 'time'"
                         class="example-full-width required-form-field"
                         appearance="outline"
                       >
-                        <input matInput type="time" step="1" [formControl]="listItem.control">
+                        <input matInput type="time" step="1" [formControl]="listItem.control" [placeholder]="GetPlaceholderByFieldType(item.format || item.type)">
                       </mat-form-field>
 
                       <mat-form-field *ngIf="item.type ==='string' && item.format === 'date-time'"

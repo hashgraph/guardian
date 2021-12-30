@@ -23,9 +23,9 @@
 
 .loading {
     background: #fff;
-    position: absolute;
+    position: fixed;
     z-index: 99;
-    top: 0;
+    top: 125px;
     left: 0;
     bottom: 0;
     right: 0;

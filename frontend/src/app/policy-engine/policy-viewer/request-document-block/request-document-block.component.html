@@ -4,18 +4,13 @@
     </div>
     <ng-container *ngIf="type=='page'">
         <form *ngIf="schema" [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-{{type}}">
-            <h1 mat-dialog-title>{{title}}</h1>
-            <div class="description">
-                {{description}}
-            </div>
+            <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
+            <div *ngIf="description" class="description">{{description}}</div>
             <div class="schema-form">
-                <app-schema-form
-                    [formGroup]="dataForm" 
-                    [schema]="schema" 
-                    [private-fields]="hideFields">
+                <app-schema-form [formGroup]="dataForm" [schema]="schema" [private-fields]="hideFields">
                 </app-schema-form>
             </div>
-            <div>
+            <div class="page-btns">
                 <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
             </div>
         </form>
@@ -25,7 +20,6 @@
     </ng-container>
 </div>
 
-
 <ng-template #dialogTemplate let-data>
     <div>
         <h1 mat-dialog-title>{{data.dialogContent}}</h1>
@@ -33,12 +27,12 @@
             {{description}}
         </div>
         <div *ngIf="data.schema" mat-dialog-content class="body-dialog-template">
-            <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit()" class="form-{{data.type}}">
-                <app-schema-form
-                    [formGroup]="data.dataForm" 
-                    [schema]="data.schema" 
-                    [private-fields]="data.hideFields">
-                </app-schema-form>
+            <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit()">
+                <div class="form-{{data.type}}">
+                    <app-schema-form [formGroup]="data.dataForm" [schema]="data.schema"
+                        [private-fields]="data.hideFields">
+                    </app-schema-form>
+                </div>
                 <div mat-dialog-actions>
                     <button mat-raised-button color="primary" type="submit"
                         [disabled]="!data.dataForm.valid">Ok</button>
