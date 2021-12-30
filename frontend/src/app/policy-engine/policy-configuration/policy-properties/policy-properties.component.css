@@ -39,3 +39,7 @@ textarea[readonly] {
 .remove-prop mat-icon {
     font-size: 20px;
 }
+
+.remove-prop[readonly="true"] {
+    display: none;
+}

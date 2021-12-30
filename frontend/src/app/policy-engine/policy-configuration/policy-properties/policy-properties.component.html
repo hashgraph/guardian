@@ -91,7 +91,7 @@
                         <td class="propRowCell cellName">Role {{i}}</td>
                         <td class="propRowCell remove-cell">
                             <input [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditRole(i)">
-                            <span class="remove-prop" (click)="onRemoveRole(i)">
+                            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveRole(i)">
                                 <mat-icon>delete</mat-icon>
                             </span>
                         </td>
