@@ -2,6 +2,9 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../data-source/tree-data-source';
 
+/**
+ * Settings for block of 'interfaceDocumentsSource' type.
+ */
 @Component({
     selector: 'document-source',
     templateUrl: './document-source.component.html',

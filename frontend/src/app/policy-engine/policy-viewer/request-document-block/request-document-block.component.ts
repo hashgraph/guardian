@@ -3,6 +3,9 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
+/**
+ * Component for display block of 'requestVcDocument' types.
+ */
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',
@@ -19,7 +22,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     socket: any;
 
     dataForm: FormGroup;
-    contextDocument: any;
+    schema: any;
     hideFields: any;
     type!: string;
     content: any;
@@ -82,7 +85,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             const uiMetaData = data.uiMetaData;
             const schema = data.data;
             this.type = uiMetaData.type;
-            this.contextDocument = schema.document;
+            this.schema = schema;
             this.hideFields = {};
             if (uiMetaData.privateFields) {
                 for (let index = 0; index < uiMetaData.privateFields.length; index++) {
@@ -102,7 +105,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             }
             this.isActive = data.isActive;
         } else {
-            this.contextDocument = null;
+            this.schema = null;
             this.hideFields = null;
             this.isActive = false;
         }

@@ -1,7 +1,12 @@
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DocumentLoader, IDocumentFormat } from 'vc-modules';
+import { schemasToContext } from '@transmute/jsonld-schema';
 
+/**
+ * Schema Documents Loader.
+ * Used for schema validation.
+ */
 export class SchemaDocumentLoader extends DocumentLoader {
     private schemaRepository: MongoRepository<Schema>;
     private readonly context: string;
@@ -30,24 +35,10 @@ export class SchemaDocumentLoader extends DocumentLoader {
         throw new Error('IRI not found: ' + iri);
     }
 
-    public async getDocument(type?: string): Promise<any> {
-        const schema = await this.schemaRepository.find();
-        const document = {
-            '@context': {
-                '@version': 1.1,
-                'id': '@id',
-                'type': '@type',
-                'name': 'https://schema.org/name',
-                'description': 'https://schema.org/description',
-                'identifier': 'https://schema.org/identifier'
-            }
-        }
-
-        for (let i = 0; i < schema.length; i++) {
-            const element = schema[i];
-            document['@context'][element.type] = element.document;
-        }
-
-        return document;
+    public async getDocument(uuid?: string): Promise<any> {
+        const schemes = await this.schemaRepository.find();
+        const documents = schemes.map(s=>JSON.parse(s.document))
+        const context = schemasToContext(documents);
+        return context;
     }
 }

@@ -3,9 +3,13 @@ import {IBlock} from '../../data-source/block';
 import {ActionBlockComponent} from '../action-block/action-block.component';
 import {ContainerBlockComponent} from '../container-block/container-block.component';
 import {DocumentsSourceBlockComponent} from '../documents-source-block/documents-source-block.component';
+import {InformationBlockComponent} from '../information-block/information-block.component';
 import {RequestDocumentBlockComponent} from '../request-document-block/request-document-block.component';
 import {StepBlockComponent} from '../step-block/step-block.component';
 
+/**
+ * Component for display all blocks.
+ */
 @Component({
   selector: 'render-block',
   templateUrl: './render-block.component.html',
@@ -62,6 +66,10 @@ export class RenderBlockComponent {
       }
       case 'interfaceStepBlock': {
         componentFactory = this.componentFactoryResolver.resolveComponentFactory(StepBlockComponent);
+        break;
+      }
+      case 'informationBlock': {
+        componentFactory = this.componentFactoryResolver.resolveComponentFactory(InformationBlockComponent);
         break;
       }
     }

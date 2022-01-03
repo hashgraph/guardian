@@ -20,7 +20,7 @@
     background: #fff;
     position: fixed;
     z-index: 999;
-    top: var(--header-height);
+    top: var(--header-height-policy);
     left: 0;
     bottom: 0;
     right: 0;

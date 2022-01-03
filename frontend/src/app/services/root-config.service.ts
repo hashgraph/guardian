@@ -3,6 +3,9 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { IFullConfig } from "interfaces";
 
+/**
+ * Services for working from RootAuthority profile.
+ */
 @Injectable()
 export class RootConfigService {
     constructor(
@@ -21,5 +24,4 @@ export class RootConfigService {
     public getRootBalance(): Observable<string | null> {
         return this.http.get<string | null>('/api/root-balance');
     }
-
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { RootConfigService } from '../../services/root-config.service';
 import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
@@ -10,6 +10,9 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { SchemaFormComponent } from 'src/app/components/schema-form/schema-form.component';
 import { IFullConfig, Schema, SchemaEntity } from 'interfaces';
 
+/**
+ * RootAuthority profile settings page.
+ */
 @Component({
     selector: 'app-root-config',
     templateUrl: './root-config.component.html',
@@ -33,8 +36,9 @@ export class RootConfigComponent implements OnInit {
     progressInterval: any;
 
     vcForm: FormGroup;
-    vcContextDocument: any;
+    schema: any;
     hideVC: any;
+    formValid: boolean = false;
 
     constructor(
         private auth: AuthService,
@@ -50,6 +54,13 @@ export class RootConfigComponent implements OnInit {
         this.hideVC = {
             id: true
         }
+        this.hederaForm.statusChanges.subscribe(
+            (result) => {
+                setTimeout(() => {
+                    this.formValid = result == 'VALID';
+                });  
+            }
+        );
     }
 
     ngOnInit() {
@@ -74,11 +85,11 @@ export class RootConfigComponent implements OnInit {
         forkJoin([
             this.rootConfigService.getRootBalance(),
             this.rootConfigService.getRootConfig(),
-            this.schemaService.getSchemesByEntity()
+            this.schemaService.getSchemes()
         ]).subscribe((value) => {
             const balance: string | null = value[0];
             const root: IFullConfig | null = value[1];
-            const schemes = Schema.map(value[2]);
+            const schemes = Schema.mapRef(value[2]);
 
             this.isConfirmed = !!root;
             if (this.isConfirmed) {
@@ -86,9 +97,8 @@ export class RootConfigComponent implements OnInit {
                 this.root = root;
             }
 
-            const rootAuthority = schemes
+            this.schema = schemes
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
-            this.vcContextDocument = rootAuthority.fullDocument;
 
             setTimeout(() => {
                 this.loading = false;
@@ -103,7 +113,7 @@ export class RootConfigComponent implements OnInit {
         if (this.hederaForm.valid) {
             const value = this.hederaForm.value;
             const data = {
-                vc: SchemaFormComponent.getOptions(value.vc),
+                vc: value.vc,
                 hederaAccountId: value.hederaAccountId,
                 hederaAccountKey: value.hederaAccountKey,
                 appnetName: value.appnetName,
@@ -169,5 +179,9 @@ export class RootConfigComponent implements OnInit {
         }, (error) => {
             this.loading = false;
         });
+    }
+
+    onChangeForm() {
+        this.vcForm.updateValueAndValidity();
     }
 }

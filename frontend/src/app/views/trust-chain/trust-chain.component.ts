@@ -9,12 +9,14 @@ import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.compo
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
 
+/**
+ * Page to find VP Documents and display Trust Chain.
+ */
 @Component({
     selector: 'app-trust-chain',
     templateUrl: './trust-chain.component.html',
     styleUrls: ['./trust-chain.component.css']
 })
-
 export class TrustChainComponent implements OnInit {
     loading: boolean = true;
     searchForm = this.fb.group({
@@ -51,7 +53,6 @@ export class TrustChainComponent implements OnInit {
         </svg>
         `));
     }
-
 
     ngOnInit() {
         this.loading = true;

@@ -88,11 +88,3 @@ accountAPI.get('/get-all-users', async (req: Request, res: Response) => {
         res.status(500).send({code: 500, message: 'Server error'});
     }
 });
-
-// accountAPI.get('//logout', async (req: Request, res: Response) => {
-//     try {
-//         res.status(200).send({ code: 200, message: 'OK' });
-//     } catch (e) {
-//         res.status(500).send({ code: 500, message: 'Server error' });
-//     }
-// });

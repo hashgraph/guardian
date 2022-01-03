@@ -1,8 +1,11 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {IApprovalDocument, IPolicy, ISession, IUser, IUserProfile} from 'interfaces';
+import {ISession, IUser, IUserProfile} from 'interfaces';
 import {Observable} from 'rxjs';
 
+/**
+ * Services for working from user profile.
+ */
 @Injectable()
 export class ProfileService {
   constructor(

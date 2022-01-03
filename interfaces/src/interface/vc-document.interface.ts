@@ -1,15 +1,16 @@
 import {DocumentStatus} from '../type/document-status.type';
-import {SchemaEntity} from '../type/schema-entity.type';
 import {IVC} from './vc.interface';
 
 export interface IVCDocument {
-    id: string;
+    id?: string;
     owner: string;
     hash: string;
     document: IVC;
-    createDate: Date;
-    updateDate: Date;
-    status: DocumentStatus;
-    type: SchemaEntity;
-    signature: number
+    createDate?: Date;
+    updateDate?: Date;
+    status?: DocumentStatus;
+    type: string;
+    signature?: number;
+    policyId: string;
+    tag: string;
 }

@@ -8,6 +8,9 @@ export interface BlockNode {
     [x: string]: any
 }
 
+/**
+ * DataSource for Tree
+ */
 export class TreeDataSource extends MatTreeNestedDataSource<BlockNode> {
     constructor(
         private treeControl: NestedTreeControl<BlockNode>,

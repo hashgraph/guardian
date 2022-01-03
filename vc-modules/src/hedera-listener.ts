@@ -1,5 +1,5 @@
-import { Client, Timestamp, TopicId, TopicMessage, TopicMessageQuery } from "@hashgraph/sdk";
-import { HcsDidMessage, HcsDidTopicListener, HcsVcMessage, HcsVcTopicListener, Message, MessageEnvelope, MessageListener } from "did-sdk-js";
+import { Client, Timestamp, TopicId } from '@hashgraph/sdk';
+import { HcsDidTopicListener, HcsVcTopicListener, MessageEnvelope, MessageListener } from 'did-sdk-js';
 
 export interface IListener<T> {
     on: (topicId: string, message: T) => Promise<boolean>;
@@ -7,12 +7,15 @@ export interface IListener<T> {
 }
 
 export enum ListenerType {
-    VC = "VC",
-    MRV = "MRV",
-    DID = "DID"
+    VC = 'VC',
+    MRV = 'MRV',
+    DID = 'DID'
 }
 
-
+/**
+ * A listener of confirmed {@link HcsVcMessage} messages from a VC topic.
+ * Messages are received from a given mirror node, parsed and validated.
+ */
 class Listener {
     public readonly type: ListenerType;
     public readonly topicId: string;
@@ -35,7 +38,7 @@ class Listener {
     constructor(type: ListenerType, topicId: string) {
         this.startDate = new Date();
 
-        console.log("Create Listener", type, topicId, this.startDate);
+        console.log('Create Listener', type, topicId, this.startDate);
 
         this.type = type;
         this.topicId = topicId;
@@ -50,6 +53,12 @@ class Listener {
         this.subscribed = false;
     }
 
+    /**
+     * Wait and start listener
+     * 
+     * @param {Client} client - network client
+     * @param {boolean | number} wait - need wait (ms)
+     */
     public waitAndSubscribe(client: Client, wait: boolean | number): void {
         const timeout = Number.isFinite(wait) ? Number(wait) : 30000;
         this._timeoutId = setTimeout(() => {
@@ -57,6 +66,11 @@ class Listener {
         }, timeout);
     }
 
+    /**
+     * Start listener
+     * 
+     * @param {Client} client - network client
+     */
     public subscribe(client: Client): void {
         if (this._listener) {
             this.startDate = new Date(0);
@@ -64,10 +78,13 @@ class Listener {
             this._listener.onError(this._error);
             this._listener.subscribe(client, this._response);
             this.subscribed = true;
-            console.log("Subscribe", this.type, this.topicId);
+            console.log('Subscribe', this.type, this.topicId);
         }
     }
 
+    /**
+     * End listener
+     */
     public unsubscribe(): void {
         clearTimeout(this._timeoutId);
         if (this.subscribed && this._listener) {
@@ -85,18 +102,26 @@ class Listener {
     }
 }
 
+/**
+ * Creates a subscriber for a specific type of document
+ */
 class Subscriber {
     public readonly type: ListenerType[];
     public readonly topicId: string | null;
     public readonly callback: IListener<any>;
 
     constructor(type: ListenerType[], topicId: string | null, callback: IListener<any>) {
-        console.log("Subscriber", type, topicId)
+        console.log('Subscriber', type, topicId)
         this.type = type || [];
         this.topicId = topicId;
         this.callback = callback;
     }
 
+    /**
+     * Check topic id and document type
+     * 
+     * @param {Listener} listener - listener
+     */
     public filter(listener: Listener): boolean {
         if (this.type.indexOf(listener.type) == -1) {
             return false;
@@ -108,6 +133,9 @@ class Subscriber {
     }
 }
 
+/**
+ * Allows manage multiple listeners and subscribers
+ */
 export class HederaListener {
     private listeners: Listener[];
     private subscribers: Subscriber[];
@@ -119,6 +147,13 @@ export class HederaListener {
         this.subscribers = [];
     }
 
+    /**
+     * Create new listener
+     * 
+     * @param {ListenerType} type - Document type
+     * @param {string} topicId - Topic Id
+     * @param {boolean | number} wait - need wait (ms)
+     */
     public addListener(type: ListenerType, topicId: string, wait?: boolean | number): void {
         if (this.listeners.findIndex(e => e.topicId == topicId) > -1) {
             return;
@@ -138,6 +173,9 @@ export class HederaListener {
         }
     }
 
+    /**
+     * Remove all listeners
+     */
     public removeListeners(): void {
         for (let i = 0; i < this.listeners.length; i++) {
             const element = this.listeners[i];
@@ -146,11 +184,21 @@ export class HederaListener {
         this.listeners.length = 0;
     }
 
+    /**
+     * Create new subscriber
+     * 
+     * @param {ListenerType[]} type - Document types
+     * @param {string} topicId - Topic Id
+     * @param {IListener<any>} callback - callback
+     */
     public subscribe(type: ListenerType[], topicId: string | null, callback: IListener<any>): void {
         const subscriber = new Subscriber(type, topicId, callback);
         this.subscribers.push(subscriber);
     }
 
+    /**
+     * Remove All subscribers
+     */
     public unsubscribe(): void {
         this.subscribers.length = 0;
     }
@@ -181,7 +229,7 @@ export class HederaListener {
 
     private buildResponse(listener: Listener): (env: MessageEnvelope<any>) => void {
         return ((env: MessageEnvelope<any>) => {
-            console.log("onResponse", listener.topicId);
+            console.log('onResponse', listener.topicId);
             const message = env.open();
             this._response(listener, message);
         }).bind(this);
@@ -189,11 +237,14 @@ export class HederaListener {
 
     private buildError(listener: Listener): (error: Error) => void {
         return ((error: Error) => {
-            console.log("onError", listener.topicId, error);
+            console.log('onError', listener.topicId, error);
             this._error(listener, error);
         }).bind(this);
     }
 
+    /**
+     * Get all listeners
+     */
     public getListeners(): Listener[] {
         return this.listeners;
     }

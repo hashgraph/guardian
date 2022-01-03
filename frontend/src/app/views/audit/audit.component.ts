@@ -5,12 +5,14 @@ import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.compo
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
 
+/**
+ * Page with the list of VP Documents.
+ */
 @Component({
     selector: 'app-audit',
     templateUrl: './audit.component.html',
     styleUrls: ['./audit.component.css']
 })
-
 export class AuditComponent implements OnInit {
     loading: boolean = true;
     displayedColumns: string[] = [

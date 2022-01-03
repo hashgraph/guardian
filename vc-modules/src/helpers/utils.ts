@@ -1,4 +1,4 @@
-import { PrivateKey } from "@hashgraph/sdk";
+import { PrivateKey } from '@hashgraph/sdk';
 
 export class Utils {
     public static randomUUID(): string {

@@ -31,14 +31,7 @@ export class RequestVcDocumentBlock {
     @Inject()
     private users: Users;
 
-    private _schema: any;
-    private get schema(): any {
-        if (!this._schema) {
-            const ref = PolicyBlockHelpers.GetBlockRef(this);
-            throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
-        }
-        return this._schema;
-    }
+    private schema: any;
 
     private init(): void {
         const { options, blockType, uuid } = PolicyBlockHelpers.GetBlockRef(this);
@@ -49,14 +42,18 @@ export class RequestVcDocumentBlock {
     }
 
     constructor() {
-        this.guardians.getSchemes({}).then(schemas => {
-            this._schema = Schema.map(schemas).find(s => s.type === PolicyBlockHelpers.GetBlockUniqueOptionsObject(this).schema);
-        });
-
     }
 
     async getData(user: IAuthUser): Promise<any> {
         const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
+        if(!this.schema) {
+            const schemas = await this.guardians.getSchemes({}) || [];
+            this.schema = Schema.mapRef(schemas).find(s => s.uuid === options.schema);
+        }
+        if (!this.schema) {
+            const ref = PolicyBlockHelpers.GetBlockRef(this);
+            throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
+        }
         return {
             data: this.schema,
             uiMetaData: options.uiMetaData || {},
@@ -79,7 +76,7 @@ export class RequestVcDocumentBlock {
         const userHederaAccount = userFull.hederaAccountId;
         const userHederaKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userFull.did);
 
-        const credentialSubject = document._options;
+        const credentialSubject = document;
         const schema = ref.options.schema;
         const idType = ref.options.idType;
         const id = await this.generateId(idType, userFull, userHederaAccount, userHederaKey);
@@ -115,7 +112,7 @@ export class RequestVcDocumentBlock {
         }
         if (idType == 'DID') {
             const ref = PolicyBlockHelpers.GetBlockRef(this);
-            const addressBook = await this.guardians.getAddressBook({ owner: ref.policyOwner });
+            const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
             const hederaHelper = HederaHelper
                 .setOperator(userHederaAccount, userHederaKey)
                 .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);

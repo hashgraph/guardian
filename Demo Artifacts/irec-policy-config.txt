@@ -27,7 +27,7 @@
             "INSTALLER"
           ],
           "blockType": "requestVcDocument",
-          "schema": "iRec_Application_Details",
+          "schema": "1a5347ba-5e5f-49a7-8734-3dcc953a03ed",
           "idType": "OWNER",
           "uiMetaData": {
             "type": "page",
@@ -36,33 +36,44 @@
             "privateFields": [
               "policyId"
             ]
-          },
-          "id": "644984c0-2b04-445e-9a67-d8e23a421744"
+          }
         },
         {
           "tag": "save_new_approve_document",
           "blockType": "sendToGuardian",
           "dataType": "approve",
           "entityType": "Installer",
+          "stopPropagation": false,
+          "uiMetaData": {}
+        },
+        {
+          "tag": "wait_fo_approve",
+          "blockType": "informationBlock",
+          "children": [],
+          "uiMetaData": {
+            "type": "text",
+            "title": "Waiting for approval",
+            "description": "Waiting for approval"
+          },
+          "permissions": [
+            "INSTALLER"
+          ],
           "stopPropagation": true,
-          "uiMetaData": {},
-          "id": "7f2176d5-0c74-4998-b922-f2d2109a0a4e"
+          "defaultActive": true
         },
         {
           "tag": "update_approve_document_status",
           "blockType": "sendToGuardian",
           "dataType": "approve",
           "entityType": "Installer",
-          "uiMetaData": {},
-          "id": "8991fbb7-5b2e-4028-8a18-7a3de455d49b"
+          "uiMetaData": {}
         },
         {
           "tag": "send_installer_vc_to_hedera",
           "blockType": "sendToGuardian",
           "dataType": "hedera",
           "entityType": "Installer",
-          "uiMetaData": {},
-          "id": "2f291cb3-9a04-4c0c-955d-82fb8697de6b"
+          "uiMetaData": {}
         },
         {
           "tag": "Submission_of_CSD01_Documentation",
@@ -70,8 +81,7 @@
           "dataType": "vc-documents",
           "entityType": "Installer",
           "uiMetaData": {},
-          "stopPropagation": false,
-          "id": "afead08a-cb8e-4705-b3d3-ff828d535c13"
+          "stopPropagation": false
         },
         {
           "tag": "installer_header",
@@ -109,7 +119,7 @@
                   "onlyOwnDocuments": true,
                   "dataType": "vc-documents",
                   "filters": {
-                    "schema": "Inverter",
+                    "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802",
                     "type": "Inverter"
                   },
                   "uiMetaData": {
@@ -147,8 +157,7 @@
                         "bindBlock": "download_config_btn"
                       }
                     ]
-                  },
-                  "id": "df49da83-f03a-47c0-9c6b-246d0651f64c"
+                  }
                 },
                 {
                   "tag": "download_config_btn",
@@ -157,14 +166,13 @@
                     "INSTALLER"
                   ],
                   "type": "download",
-                  "schema": "MRV",
+                  "schema": "c4623dbd-2453-4c12-941f-032792a00727",
                   "stopPropagation": true,
                   "targetUrl": "http://message-broker:3003/mrv",
                   "uiMetaData": {
                     "content": "download",
                     "options": []
-                  },
-                  "id": "87f6712f-4e1f-4d65-9871-5a2421a2fb04"
+                  }
                 },
                 {
                   "defaultActive": true,
@@ -184,7 +192,7 @@
                         "INSTALLER"
                       ],
                       "blockType": "requestVcDocument",
-                      "schema": "Inverter",
+                      "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802",
                       "idType": "DID",
                       "uiMetaData": {
                         "type": "dialog",
@@ -197,16 +205,14 @@
                         "dialogContent": "New Sensors",
                         "dialogClass": "",
                         "dialogType": ""
-                      },
-                      "id": "4f0408bd-6548-48b3-822f-e3e2c363da2f"
+                      }
                     },
                     {
                       "tag": "send_sensor_vc_to_hedera",
                       "blockType": "sendToGuardian",
                       "dataType": "hedera",
                       "entityType": "Inverter",
-                      "uiMetaData": {},
-                      "id": "387b1ab7-6e20-4164-9869-c4e7534be879"
+                      "uiMetaData": {}
                     },
                     {
                       "tag": "CSD02_device_registration",
@@ -214,15 +220,12 @@
                       "dataType": "vc-documents",
                       "entityType": "Inverter",
                       "stopPropagation": false,
-                      "uiMetaData": {},
-                      "id": "eadd87c7-6dae-4de2-9fd8-a945071f2406"
+                      "uiMetaData": {}
                     }
                   ],
-                  "cyclic": true,
-                  "id": "2916b697-0559-4940-8eb1-e2c6cb2bff68"
+                  "cyclic": true
                 }
-              ],
-              "id": "091118b9-6674-4f8b-8385-13141fb00be8"
+              ]
             },
             {
               "tag": "mrv_page",
@@ -249,7 +252,7 @@
                   "onlyOwnDocuments": true,
                   "dataType": "vc-documents",
                   "filters": {
-                    "schema": "MRV",
+                    "schema": "c4623dbd-2453-4c12-941f-032792a00727",
                     "type": "MRV"
                   },
                   "uiMetaData": {
@@ -277,17 +280,28 @@
                         "dialogType": "json"
                       }
                     ]
-                  },
-                  "id": "f18af27b-4ea7-40cc-a16d-f27cb72f0e7f"
+                  }
                 }
-              ],
-              "id": "066283a5-19d9-476b-b28f-dfbaff5f6276"
+              ]
             }
+          ]
+        },
+        {
+          "tag": "installer_rejected",
+          "blockType": "informationBlock",
+          "children": [],
+          "uiMetaData": {
+            "type": "text",
+            "description": "Your application was rejected",
+            "title": "Rejected"
+          },
+          "stopPropagation": true,
+          "permissions": [
+            "INSTALLER"
           ],
-          "id": "4ce2f7ca-c1ff-4763-9fca-99186c85d3fc"
+          "defaultActive": true
         }
-      ],
-      "id": "56eca007-3c7f-473d-a2c4-e50b6fca2ee0"
+      ]
     },
     {
       "tag": "root_authority_header",
@@ -367,7 +381,7 @@
                 ]
               },
               "children": [],
-              "id": "77c64bb1-2548-4d65-8fb4-d8125d9ed47f"
+              "filters": {}
             },
             {
               "tag": "approve_documents_btn",
@@ -389,17 +403,14 @@
                     "name": "Reject",
                     "value": "REJECTED",
                     "uiClass": "btn-reject",
-                    "bindBlock": "add_new_installer_request"
+                    "bindBlock": "installer_rejected"
                   }
                 ]
-              },
-              "id": "2da3d43a-b2e4-4a78-a1f4-8aa6e2c2d2fb"
+              }
             }
-          ],
-          "id": "fd7f8862-4155-4659-84a2-a094aaa1bf08"
+          ]
         }
-      ],
-      "id": "2be464b1-84b9-423f-ac57-28590b7b3d08"
+      ]
     },
     {
       "tag": "mint_events",
@@ -417,26 +428,24 @@
           "tag": "mrv_source",
           "blockType": "externalDataBlock",
           "entityType": "MRV",
-          "schema": "MRV",
-          "id": "d0fd54aa-deff-468e-a20a-219bd5e3f272"
+          "schema": "c4623dbd-2453-4c12-941f-032792a00727",
+          "uiMetaData": {}
         },
         {
           "tag": "CSD04_requesting_i_Rec_issuance",
           "blockType": "sendToGuardian",
           "dataType": "vc-documents",
           "entityType": "MRV",
-          "id": "ff7601e1-f9ba-429d-932a-8efb545902da"
+          "uiMetaData": {}
         },
         {
           "tag": "mint_token",
           "blockType": "mintDocument",
-          "tokenId": "0.0.2880732",
+          "tokenId": "0.0.2909122",
           "rule": "1",
-          "id": "5b64f3b3-d3a0-4026-8bf5-ac6a37c5a316"
+          "uiMetaData": {}
         }
-      ],
-      "id": "aaa11c02-21af-4609-a98b-fdd8e9934265"
+      ]
     }
-  ],
-  "id": "de4b3c4c-393d-4b89-9926-42a6c762ef09"
+  ]
 }

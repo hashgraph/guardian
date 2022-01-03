@@ -55,6 +55,13 @@
                     <td class="propRowCell">
                         <input [(ngModel)]="policy.version" [readonly]="readonly">
                     </td>
+                </tr>  
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Topic Description</td>
+                    <td class="propRowCell">
+                        <input [(ngModel)]="policy.topicDescription" [readonly]="readonly" maxlength="50">
+                    </td>
                 </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
@@ -90,7 +97,4 @@
             </table>
         </div>
     </div>
-    <!-- <div class="fields" style="padding: 5px;">
-        <button mat-raised-button color="primary" (click)="save()">Save Policy Property</button>
-    </div> -->
 </div>

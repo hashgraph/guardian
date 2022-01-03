@@ -33,7 +33,7 @@ export class VcDocument implements IVCDocument {
     processingStatus: string;
 
     @Column()
-    type: SchemaEntity;
+    type: string;
 
     @Column()
     policyId: string;

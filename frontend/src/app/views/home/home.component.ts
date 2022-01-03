@@ -3,6 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { UserRole, ISession } from 'interfaces';
 
+/**
+ * Start page.
+ */
 @Component({
     selector: 'app-home',
     templateUrl: './home.component.html',

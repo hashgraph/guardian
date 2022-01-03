@@ -1,41 +1,897 @@
 swagger: "2.0"
 info:
   title: Guardian API
-  version: 1.0.0
-host: localhost:3050
+  version: "1.0.0"
 basePath: /
 schemes:
   - http
+  - https
 consumes:
   - application/json
 produces:
   - application/json
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+tags:
+  -
+    name: account
+    description: Account API
+  -
+    name: profile
+    description: Profile API
+  -
+    name: schema
+    description: Schema API
+  -
+    name: token
+    description: Token API
+  -
+    name: other
+    description: Other API
+  -
+    name: policy
+    description: Policy API
 paths:
   /api/account/current-user:
     get:
-      description: Get current user
+      tags:
+        - account
+      security:
+      - Bearer: []
+      description: Returns the logged in user account.
       responses:
         200:
-          description: Current user  
-  
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
   /api/account/register:
     post:
-      description: Register user
+      tags:
+        - account
+      description: Register a new user account
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contain username and password fields
+          required: true
+          schema:
+            $ref: "#/definitions/Creditnails"
       responses:
         200:
-          description: Register user 
-          
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
   /api/account/login:
     post:
-      description: Login user
+      tags:
+        - account
+      description: Sign in user
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains username and password fields
+          required: true
+          schema:
+            $ref: "#/definitions/Creditnails"
       responses:
         200:
-          description: Login user
-          
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
   /api/account/get-all-users:
     get:
-      description: Return all users
+      tags:
+        - account
+      deprecated: true
+      description: Return all registered user accounts
       responses:
         200:
-          description: Return all users
-          
+          description: Return all registered user accounts
+
+  /api/profile/user-balance:
+    get:
+      tags:
+        - profile
+      description: Request Hedera account balance. Only users with the Installer role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/profile/user-state:
+    get:
+      tags:
+        - profile
+      description: Request logged in user state. Only users with the Installer role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/profile:
+    get:
+      tags:
+        - profile
+      description: Request user account full profile. Only users with the Installer role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/profile/set-hedera-profile:
+    post:
+      tags:
+        - profile
+      description: Set Hedera credentials for the user. Only users with the Installer role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains the Hedera account data
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/profile/random-key:
+    get:
+      tags:
+        - profile
+      description: Generate a new Hedera account with a random private key
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/schema/create:
+    post:
+      tags:
+        - schema
+      description: Create new schema. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains valid schema
+          required: true
+          schema:
+            $ref: "#/definitions/Schema"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/schema:
+    get:
+      tags:
+        - schema
+      description: Get all schemes.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/schema/import:
+    post:
+      tags:
+        - schema
+      description: Import new schemes. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains schemes array
+          required: true
+          schema:
+            $ref: "#/definitions/ImportSchema"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/schema/export:
+    post:
+      tags:
+        - schema
+      description: Export selected schemes. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains schemes ids
+          required: true
+          schema:
+            $ref: "#/definitions/ExportSchema"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/tokens/create:
+    post:
+      tags:
+        - token
+      description: Create new token. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains token information
+          required: true
+          schema:
+            $ref: "#/definitions/Token"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/tokens:
+    get:
+      tags:
+        - token
+      description: Request all tokens. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/tokens/user-tokens:
+    get:
+      tags:
+        - token
+      description: Request a list of tokens. Only users with the Installer role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/tokens/associate:
+    post:
+      tags:
+        - token
+      description: Associate the user with the provided Hedera token. Only users with the Installer role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains the token Id to associate with the user
+          required: true
+          schema:
+            $ref: "#/definitions/TokenAssociate"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/tokens/all-users:
+    get:
+      tags:
+        - token
+      description: Request all users with the INSTALLER role. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/tokens/associate-users:
+    get:
+      tags:
+        - token
+      description: Request user information for selected token. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: query
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID
+        -
+          in: query
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/tokens/user-kyc:
+    post:
+      tags:
+        - token
+      description: Set or unset KYC flag for the user. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains action that needs to be applied to the token
+          required: true
+          schema:
+            $ref: "#/definitions/TokenAction"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/tokens/user-freeze:
+    post:
+      tags:
+        - token
+      description: Freeze or unfreeze transfers of the specified token for the user. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains action that needs to be applied to the token
+          required: true
+          schema:
+            $ref: "#/definitions/TokenAction"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/root-balance:
+    get:
+      tags:
+        - other
+      description: Request authorized root authority balance. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/root-config:
+    get:
+      tags:
+        - other
+      description: Request authorized root authority address book, vc document and did document. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/set-root-config:
+    post:
+      tags:
+        - other
+      description: Set hedera account for root authority and create address book. Only users with the Root Authority role are allowed to make request.
+      security:
+      - Bearer: []
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains actions for apply to token
+          required: true
+          schema:
+            $ref: "#/definitions/RootConfig"
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/get-vp-documents:
+    get:
+      tags:
+        - other
+      description: Request all vp documents. Only users with the Auditor role are allowed to make request.
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/get-policy-list:
+    get:
+      tags:
+        - other
+      description: Request all policies. Only users with the Root Authority and Installer role are allowed to make request.
+      security:
+        - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /api/search-documents:
+    get:
+      tags:
+        - other
+      description: Build chain from vp to root vc document. Only users with the Auditor role are allowed to make request.
+      parameters:
+        -
+          in: query
+          name: search
+          schema:
+            type: string
+          required: true
+          description: Hash or Id of vp document
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /policy/edit/{policyId}:
+    get:
+      tags:
+        - policy
+      description: Request full policy config. Only users with the Root Authority role are allowed to make request.
+      parameters:
+        -
+          in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Selected policy id
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - policy
+      description: Update policy config. Only users with the Root Authority role are allowed to make request.
+      parameters:
+        -
+          in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Selected policy id
+        -
+          in: body
+          name: body
+          description: Object that contains policy config
+          required: true
+          schema:
+            $ref: "#/definitions/PolicyConfig"
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /policy/create:
+    post:
+      tags:
+        - policy
+      description: Create new policy. Only users with the Root Authority role are allowed to make request.
+      parameters:
+        -
+          in: body
+          name: body
+          description: Object that contains policy config
+          required: true
+          schema:
+            $ref: "#/definitions/PolicyConfig"
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /policy/publish/{policyId}:
+    post:
+      tags:
+        - policy
+      description: Publish selected policy. Only users with the Root Authority role are allowed to make request.
+      parameters:
+        -
+          in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Selected policy id
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /policy/{policyId}:
+    get:
+      tags:
+        - policy
+      description: Request data from root policy block. Only users with the Root Authority and Installer role are allowed to make request.
+      parameters:
+        -
+          in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Selected policy id
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /policy/block/tag/{policyId}/{tag}:
+    get:
+      tags:
+        - policy
+      description: Request block id from policy by tag. Only users with the Root Authority and Installer role are allowed to make request.
+      parameters:
+        -
+          in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Selected policy id
+        -
+          in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+          description: Tag from selected policy
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+  /policy/block/{uuid}:
+    get:
+      tags:
+        - policy
+      description: Request block data. Only users with a role that described in block are allowed to make request.
+      parameters:
+        -
+          in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: Selected block uuid
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - policy
+      description: Send data to block
+      parameters:
+        -
+          in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: Selected block uuid
+        -
+          in: body
+          name: body
+          description: Object with data that block need to recieve
+          required: true
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful operation
+        403:
+          description: Access denied
+        500:
+          description: Internal server error
+
+definitions:
+  Creditnails:
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+
+  User:
+    type: object
+    properties:
+      username:
+        type: string
+      hederaAccountId:
+        type: string
+      hederaAccountKey:
+        type: string
+
+  Schema:
+    type: object
+    properties:
+      document:
+        type: string
+      entity:
+        type: string
+      hash:
+        type: string
+      name:
+        type: string
+      uuid:
+        type: string
+
+  ImportSchema:
+    type: object
+    properties:
+      schemes:
+        type: array
+        items:
+          type: object
+          properties:
+            document:
+              type: string
+            entity:
+              type: string
+            hash:
+              type: string
+            name:
+              type: string
+            uuid:
+              type: string
+
+  ExportSchema:
+    type: object
+    properties:
+      ids:
+        type: array
+        items:
+          type: string
+
+  Token:
+    type: object
+    properties:
+      changeSupply:
+        type: boolean
+      decimals:
+        type: string
+      enableAdmin:
+        type: boolean
+      enableFreeze:
+        type: boolean
+      enableKYC:
+        type: boolean
+      enableWipe:
+        type: boolean
+      initialSupply:
+        type: string
+      tokenName:
+        type: string
+      tokenSymbol:
+        type: string
+      tokenType:
+        type: string
+
+  TokenAssociate:
+    type: object
+    properties:
+      tokenId:
+        type: string
+      associated:
+        type: boolean
+
+  TokenAction:
+    type: object
+    properties:
+      tokenId:
+        type: string
+      username:
+        type: string
+      value:
+        type: boolean
+
+  RootConfig:
+    type: object
+    properties:
+      appnetName:
+        type: string
+      didServerUrl:
+        type: string
+      didTopicMemo:
+        type: string
+      hederaAccountId:
+        type: string
+      hederaAccountKey:
+        type: string
+      vc:
+        type: object
+        properties:
+          name:
+            type: string
+          "type":
+            type: string
+          "@context":
+            type: string
+      vcTopicMemo:
+        type: string
+
+  PolicyConfig:
+    type: object
+    properties:
+      name:
+        type: string
+      version:
+        type: string
+      description:
+        type: string
+      topicDescription:
+        type: string
+      config:
+        type: object
+      status:
+        type: string
+      owner:
+        type: string
+      policyPoles:
+        type: array
+        items:
+          type: string
+      topicId:
+        type: string
+      policyTag:
+        type: string

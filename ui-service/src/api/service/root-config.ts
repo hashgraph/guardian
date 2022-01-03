@@ -3,7 +3,7 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import { Request, Response, Router } from 'express';
 import { SchemaEntity, UserRole, UserState } from 'interfaces';
-import { HcsVcDocument, HederaHelper, IHederaHelper, VcSubject } from 'vc-modules';
+import { HcsVcDocument, HederaHelper, VcSubject } from 'vc-modules';
 
 async function wait(s: number): Promise<void> {
     return new Promise((resolve, reject) => {

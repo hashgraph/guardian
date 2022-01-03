@@ -3,15 +3,28 @@ import { RootConfig } from '@entity/root-config';
 import { VcDocument } from '@entity/vc-document';
 import { IAddressBookConfig, IFullConfig, IRootConfig, MessageAPI, SchemaEntity } from 'interfaces';
 import { MongoRepository } from 'typeorm';
-import { HederaListener, ListenerType } from 'vc-modules';
 
+/**
+ * Connect to the message broker methods of working with Address books.
+ * 
+ * @param channel - channel
+ * @param configRepository - table with Address books
+ * @param didDocumentRepository - table with DID Documents
+ * @param vcDocumentRepository - table with VC Documents
+ */
 export const rootAuthorityAPI = async function (
     channel: any,
     configRepository: MongoRepository<RootConfig>,
     didDocumentRepository: MongoRepository<DidDocument>,
-    vcDocumentRepository: MongoRepository<VcDocument>/*,
-    hederaListener: HederaListener*/
+    vcDocumentRepository: MongoRepository<VcDocument>
 ) {
+    /**
+     * Return Address books, VC Document and DID Document
+     * 
+     * @param {string} payload - DID
+     * 
+     * @returns {IFullConfig} - approve documents
+     */
     channel.response(MessageAPI.GET_ROOT_CONFIG, async (msg, res) => {
         const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload } } });
         if (!rootConfig) {
@@ -43,25 +56,33 @@ export const rootAuthorityAPI = async function (
         res.send(config);
     })
 
+    /**
+     * Create Address book
+     * 
+     * @param {Object} payload - Address book config
+     * 
+     * @returns {IRootConfig} - Address book config
+     */
     channel.response(MessageAPI.SET_ROOT_CONFIG, async (msg, res) => {
         const rootObject = configRepository.create(msg.payload as RootConfig);
         const result: IRootConfig = await configRepository.save(rootObject);
-        // hederaListener.addListener(ListenerType.VC, result.vcTopic, true);
-        // hederaListener.addListener(ListenerType.DID, result.didTopic, true);
         res.send(result);
     });
-
+    
+    /**
+     * Return Address book
+     * 
+     * @param {Object} payload - filters
+     * @param {string} payload.owner - owner DID
+     * 
+     * @returns {IAddressBookConfig} - Address book
+     */
     channel.response(MessageAPI.GET_ADDRESS_BOOK, async (msg, res) => {
-        const reqObj: any = { where: {} };
-
-        if (msg.payload.owner) {
-            reqObj.where['did'] = { $eq: msg.payload.owner }
+        if(!msg.payload) {
+            res.send(null);
+            return;
         }
-
-        if (msg.payload.owners) {
-            reqObj.where['did'] = { $in: msg.payload.owners }
-        }
-
+        
         const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload.owner } } });
         if (!rootConfig) {
             res.send(null);

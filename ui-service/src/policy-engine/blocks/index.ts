@@ -8,3 +8,4 @@ export {RequestVcDocumentBlock} from './request-vc-document-block';
 export {InterfaceContainerBlock} from './interface-container-block';
 export {AggregateBlock} from '@policy-engine/blocks/aggregate-block';
 export {RetirementBlock} from '@policy-engine/blocks/retirement-block';
+export {InformationBlock} from './information-block';

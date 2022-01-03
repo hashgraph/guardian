@@ -1,14 +1,19 @@
 import {HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ISession, IUser} from 'interfaces';
-import {Observable, of} from 'rxjs';
+import {Observable, of, Subject, Subscription} from 'rxjs';
 
-
+/**
+ * Services for working from accounts.
+ */
 @Injectable()
 export class AuthService {
+  private accessTokenSubject: Subject<string | null>;
+  
   constructor(
     private http: HttpClient
   ) {
+    this.accessTokenSubject = new Subject();
   }
 
   public login(username: string, password: string): Observable<any> {
@@ -33,6 +38,28 @@ export class AuthService {
 
   public getCurrentUsers(): Observable<IUser[]> {
     return this.http.get<any>('/api/account/get-all-users');
+  }
+
+  public setAccessToken(accessToken: string) {
+    localStorage.setItem('accessToken', accessToken);
+    this.accessTokenSubject.next(accessToken);
+  }
+
+  public removeAccessToken() {
+    localStorage.removeItem('accessToken');
+    this.accessTokenSubject.next(null);
+  }
+
+  public getAccessToken() {
+    return localStorage.getItem('accessToken');
+  }
+
+  public subscribe(
+    next?: ((accessToken: string | null) => void),
+    error?: ((error: any) => void),
+    complete?: (() => void)
+  ): Subscription {
+    return this.accessTokenSubject.subscribe(next, error, complete);
   }
 }
 

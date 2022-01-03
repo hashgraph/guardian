@@ -4,6 +4,9 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { DialogBlock } from '../dialog-block/dialog-block.component';
 import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
 
+/**
+ * Component for display block of 'interfaceDocumentsSource' types.
+ */
 @Component({
     selector: 'documents-source-block',
     templateUrl: './documents-source-block.component.html',

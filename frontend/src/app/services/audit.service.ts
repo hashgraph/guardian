@@ -3,6 +3,9 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { IChainItem, IVCDocument, IVPDocument } from "interfaces";
 
+/**
+ * Service to find VP Documents and Trust Chain.
+ */
 @Injectable()
 export class AuditService {
     constructor(
