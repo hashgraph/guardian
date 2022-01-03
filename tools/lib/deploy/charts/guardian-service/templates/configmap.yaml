@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "guardian-service.fullname" . }}-{{ .Release.Revision }}
+data:
+  {{- toYaml .Values.configmap.data | nindent 2 }}
+  MQ_ADDRESS: {{ .Release.Name }}-guardian-message-broker
+  DB_HOST: {{ .Release.Name }}-mongodb
+  
+

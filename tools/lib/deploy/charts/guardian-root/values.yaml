@@ -1,0 +1,10 @@
+# Default values for guardian-root.
+
+mongodb:
+  persistence:
+    size: 50Gi
+  useStatefulSet: true
+  auth:
+    enabled: true
+    rootUser: root
+    rootPassword: ""

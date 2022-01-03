@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "guardian-message-broker.fullname" . }}
+  labels:
+    {{- include "guardian-message-broker.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    {{- toYaml .Values.service.ports | nindent 4 }}
+  selector:
+    {{- include "guardian-message-broker.selectorLabels" . | nindent 4 }}

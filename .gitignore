@@ -22,3 +22,5 @@ interfaces/dist/
 interfaces/node_modules/
 www-data/
 ui-service/.vs/
+/node_modules/
+tools/**/*.tgz

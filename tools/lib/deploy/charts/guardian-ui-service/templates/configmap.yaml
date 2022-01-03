@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "guardian-ui-service.fullname" . }}-{{ .Release.Revision }}
+data:
+  {{- toYaml .Values.configmap.data | nindent 2 }}
+  MQ_ADDRESS: {{ .Release.Name }}-guardian-message-broker
+  DB_HOST: {{ .Release.Name }}-mongodb
+  MRV_ADDRESS: http://{{ .Release.Name }}-guardian-message-broker:3003/mrv
+
+
