@@ -1,4 +1,4 @@
-name: CI
+name: Tymlez CI
 
 on:
   push:
@@ -56,9 +56,9 @@ jobs:
           npm run lint
 
 #          Paul Debug
-      # - name: Deploy
-      #   run: |
-      #     npm run deploy
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+# - name: Deploy
+#   run: |
+#     npm run deploy
+#   env:
+#     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -28,10 +28,10 @@ RUN npm run build:deploy
 
 WORKDIR /usr/ui-service
 COPY ./ui-service/package*.json ./
+RUN npm install
 COPY ./ui-service/tsconfig.json ./
 COPY ./ui-service/.env.docker ./.env
 ADD ./ui-service/api ./api/.
-RUN npm install
 ADD ./ui-service/src ./src/.
 RUN npm run build
 
