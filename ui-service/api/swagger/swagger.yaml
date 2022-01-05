@@ -367,7 +367,7 @@ components:
           type: string
 tags:
   - name: "accounts"
-    description: "Operations about Guardian user"
+    description: "Operations related to Guardian users"
   - name: "profiles"
     description: "Hedera profile related operations"
   - name: "schemas"
@@ -387,13 +387,13 @@ paths:
     get:
       tags:
         - accounts
-      description: Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make request.
+      description: Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Return a list of users
+      summary: Returns a list of users, excluding Root Authority and Auditors.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -401,11 +401,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Account'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -415,21 +415,21 @@ paths:
     get:
       tags:
         - accounts
-      description: Current user session
+      description: Returns current user session.
       security:
       - bearerAuth: []
-      summary: Returns current session of the user
+      summary: Returns current session of the user.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -439,9 +439,9 @@ paths:
     post:
       tags:
         - accounts
-      summary: Register a new user account
+      summary: Registers a new user account.
       requestBody:
-        description: Object that contain username, password and role (optional) fields
+        description: Object that contain username, password and role (optional) fields.
         required: true
         content:
           application/json:
@@ -449,13 +449,13 @@ paths:
               $ref: "#/components/schemas/Credentials"
       responses:
         201:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Account'
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -465,9 +465,9 @@ paths:
     post:
       tags:
         - accounts
-      summary: Logs user into the system
+      summary: Logs user into the system.
       requestBody:
-        description: Object that contains username and password fields
+        description: Object that contains username and password fields.
         required: true
         content:
           application/json:
@@ -475,13 +475,13 @@ paths:
               $ref: "#/components/schemas/Credentials"
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -491,30 +491,30 @@ paths:
     get:
       tags:
         - profiles
-      description: Request Hedera account balance. Only users with the Installer role are allowed to make request.
+      description: Requests Hedera account balance. Only users with the Installer role are allowed to make the request.
       parameters:
         - in: path
           name: username
           schema:
             type: string
           required: true
-          description: The name that balance needs to be fetched
+          description: The name of the user for whom to fetch the balance.
       security:
       - bearerAuth: []
-      summary: Returns user's Hedera account balance
+      summary: Returns user's Hedera account balance.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 type: string
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -524,30 +524,30 @@ paths:
     get:
       tags:
         - profiles
-      description: Returns user account info. For a Root Authority it also returns address book and VC document information.
+      description: Returns user account information. For users with the Root Authority role it also returns address book and VC document information.
       parameters:
         - in: path
           name: username
           schema:
             type: string
           required: true
-          description: The name that needs to be fetched
+          description: The name of the user for whom to fetch the information.
       security:
       - bearerAuth: []
-      summary: Returns user account info
+      summary: Returns user account info.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -555,19 +555,19 @@ paths:
     put:
       tags:
         - profiles
-      description: Set Hedera credentials for the user. For the RootAutority role it is also creates an address book.
+      description: Sets Hedera credentials for the user. For users with the Root Autority role it also creates an address book.
       parameters:
         - in: path
           name: username
           schema:
             type: string
           required: true
-          description: The name that needs to be updated
+          description: The name of the user for whom to update the information.
       security:
       - bearerAuth: []
-      summary: Set Hedera credentials for the user
+      summary: Sets Hedera credentials for the user.
       requestBody:
-        description: Object that contains the Hedera account data
+        description: Object that contains the Hedera account data.
         required: true
         content:
           application/json:
@@ -575,13 +575,13 @@ paths:
               $ref: "#/components/schemas/User"
       responses:
         201:
-          description: Successful operation
+          description: Successful operation.
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -591,12 +591,12 @@ paths:
     post:
       tags:
         - schemas
-      description: Create new schema. Only users with the Root Authority role are allowed to make request.
+      description: Creates new schema. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Create new schema
+      summary: Create new schema.
       requestBody:
-        description: Object that contains valid schema
+        description: Object that contains a valid schema.
         required: true
         content:
           application/json:
@@ -604,13 +604,13 @@ paths:
               $ref: "#/components/schemas/Schema"
       responses:
         201:
-          description: Successful operation
+          description: Successful operation.
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -619,13 +619,13 @@ paths:
     get:
       tags:
         - schemas
-      description: Returns all schemas
+      description: Returns all schemas.
       security:
       - bearerAuth: []
-      summary: Returns all schemas
+      summary: Returns all schemas.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -633,11 +633,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Schema'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -647,20 +647,20 @@ paths:
     put:
       tags:
         - schemas
-      description: Publish schema with provided schemaId
+      description: Publishes the schema with the provided schema ID.
       parameters:
         - in: path
           name: schemaId
           schema:
             type: string
           required: true
-          description: Schema Id
+          description: Schema ID.
       security:
       - bearerAuth: []
-      summary: Publish schema
+      summary: Publishes the schema.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -668,11 +668,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Schema'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -682,20 +682,20 @@ paths:
     put:
       tags:
         - schemas
-      description: Unpublish schema with provided schemaId.
+      description: Unpublishes the schema with the provided schema ID.
       parameters:
         - in: path
           name: schemaId
           schema:
             type: string
           required: true
-          description: Schema Id
+          description: Schema ID.
       security:
       - bearerAuth: []
-      summary: Unpublish schema
+      summary: Unpublishes the schema.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -703,11 +703,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Schema'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -717,19 +717,19 @@ paths:
     put:
       tags:
         - schemas
-      description: Updates schema with provided Id
+      description: Updates the schema with the provided schema ID.
       parameters:
         - in: path
           name: schemaId
           schema:
             type: string
           required: true
-          description: Schema Id
+          description: Schema ID.
       security:
       - bearerAuth: []
-      summary: Update schema
+      summary: Updates the schema.
       requestBody:
-        description: Object that contains valid schema
+        description: Object that contains a valid schema.
         required: true
         content:
           application/json:
@@ -737,7 +737,7 @@ paths:
               $ref: "#/components/schemas/Schema"
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -745,11 +745,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Schema'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -758,20 +758,20 @@ paths:
     delete:
       tags:
         - schemas
-      description: Deletes schema with provided Id
+      description: Deletes the schema with the provided schema ID.
       parameters:
         - in: path
           name: schemaId
           schema:
             type: string
           required: true
-          description: Schema Id
+          description: Schema ID.
       security:
       - bearerAuth: []
-      summary: Delete schema
+      summary: Deletes the schema.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -779,11 +779,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Schema'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -793,12 +793,12 @@ paths:
     post:
       tags:
         - schemas
-      description: Import new schemas. Only users with the Root Authority role are allowed to make request.
+      description: Imports new schemas. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Import new schemas
+      summary: Imports new schemas.
       requestBody:
-        description: Object that contains schemas array
+        description: Object that contains the array of schemas.
         required: true
         content:
           application/json:
@@ -806,7 +806,7 @@ paths:
               $ref: "#/components/schemas/ImportSchema"
       responses:
         201:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -814,11 +814,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Schema'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -828,12 +828,12 @@ paths:
     post:
       tags:
         - schemas
-      description: Export selected schemas. Only users with the Root Authority role are allowed to make request.
+      description: Exports selected schemas. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Export selected schemas
+      summary: Exports selected schemas.
       requestBody:
-        description: Object that contains schemas ids
+        description: Object that contains IDs of schemas.
         required: true
         content:
           application/json:
@@ -841,17 +841,17 @@ paths:
               $ref: "#/components/schemas/ExportSchema"
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImportSchema"
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -861,13 +861,13 @@ paths:
     get:
       tags:
         - tokens
-      description: Returns all tokens. For the Root Authority role it returns only the list of tokens, for other users it also returns tokens balance as well as KYC, Freeze, Association statuses. Not allowed for the Auditor role.
+      description: Returns all tokens. For the Root Authority role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role.
       security:
       - bearerAuth: []
-      summary: Return a list of tokens
+      summary: Return a list of tokens.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -875,11 +875,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/TokenInfo'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -888,12 +888,12 @@ paths:
     post:
       tags:
         - tokens
-      description: Create new token. Only users with the Root Authority role are allowed to make request.
+      description: Creates a new token. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Create new token
+      summary: Creates a new token.
       requestBody:
-        description: Object that contains token information
+        description: Object that contains token information.
         required: true
         content:
           application/json:
@@ -901,7 +901,7 @@ paths:
               $ref: "#/components/schemas/Token"
       responses:
         201:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -909,17 +909,17 @@ paths:
                 items:
                   $ref: '#/components/schemas/TokenInfo'
         400:
-          description: Bad Request
+          description: Bad Request.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -929,7 +929,7 @@ paths:
     get:
       tags:
         - tokens
-      description: Returns user information for selected token. Only users with the Root Authority role are allowed to make request.
+      description: Returns user information for the selected token. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
       parameters:
@@ -938,32 +938,32 @@ paths:
           schema:
             type: string
           required: true
-          description: Token Id
+          description: Token ID.
         - in: path
           name: username
           schema:
             type: string
           required: true
-          description: Username
+          description: Username.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenInfo'
         400:
-          description: Bad Request
+          description: Bad Request.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -973,26 +973,26 @@ paths:
     put:
       tags:
         - tokens
-      description: Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make request.
+      description: Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
           schema:
             type: string
           required: true
-          description: Token Id
+          description: Token ID.
       security:
       - bearerAuth: []
-      summary: Associates the user with the provided Hedera token
+      summary: Associates the user with the provided Hedera token.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1002,26 +1002,26 @@ paths:
     put:
       tags:
         - tokens
-      description: Disassociates the user with the provided Hedera token. Only users with the Installer role are allowed to make request.
+      description: Disassociates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
           schema:
             type: string
           required: true
-          description: Token Id
+          description: Token ID.
       security:
       - bearerAuth: []
-      summary: Associate the user with the provided Hedera token
+      summary: Associate the user with the provided Hedera token.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1031,42 +1031,42 @@ paths:
     put:
       tags:
         - tokens
-      description: Set KYC flag for the user. Only users with the Root Authority role are allowed to make request.
+      description: Sets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
           schema:
             type: string
           required: true
-          description: Token Id
+          description: Token ID.
         - in: path
           name: username
           schema:
             type: string
           required: true
-          description: Username
+          description: Username.
       security:
       - bearerAuth: []
-      summary: Set KYC flag for the user
+      summary: Sets the KYC flag for the user.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenInfo'
         400:
-          description: Bad Request
+          description: Bad Request.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1076,42 +1076,42 @@ paths:
     put:
       tags:
         - tokens
-      description: Unset KYC flag for the user. Only users with the Root Authority role are allowed to make request.
+      description: Unsets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
           schema:
             type: string
           required: true
-          description: Token Id
+          description: Token ID.
         - in: path
           name: username
           schema:
             type: string
           required: true
-          description: Username
+          description: Username.
       security:
       - bearerAuth: []
-      summary: Unset KYC flag for the user
+      summary: Unsets the KYC flag for the user.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenInfo'
         400:
-          description: Bad Request
+          description: Bad Request.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1121,42 +1121,42 @@ paths:
     put:
       tags:
         - tokens
-      description: Freeze transfers of the specified token for the user. Only users with the Root Authority role are allowed to make request.
+      description: Freezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
           schema:
             type: string
           required: true
-          description: Token Id
+          description: Token ID.
         - in: path
           name: username
           schema:
             type: string
           required: true
-          description: Username
+          description: Username.
       security:
       - bearerAuth: []
-      summary: Freeze transfers of the specified token for the user
+      summary: Freeze transfers of the specified token for the user.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenInfo'
         400:
-          description: Bad Request
+          description: Bad Request.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1166,42 +1166,42 @@ paths:
     put:
       tags:
         - tokens
-      description: Unfreeze transfers of the specified token for the user. Only users with the Root Authority role are allowed to make request.
+      description: Unfreezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
           schema:
             type: string
           required: true
-          description: Token Id
+          description: Token ID.
         - in: path
           name: username
           schema:
             type: string
           required: true
-          description: Username
+          description: Username.
       security:
       - bearerAuth: []
-      summary: Unfreeze transfers of the specified token for the user
+      summary: Unfreezes transfers of the specified token for the user.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenInfo'
         400:
-          description: Bad Request
+          description: Bad Request.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1211,13 +1211,13 @@ paths:
     get:
       tags:
         - trustchains
-      description: Request all VP documents. Only users with the Auditor role are allowed to make request.
+      description: Requests all VP documents. Only users with the Auditor role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Returns a list of VP documents
+      summary: Returns a list of all VP documents.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -1225,11 +1225,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/VerifiablePresentation'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1239,30 +1239,30 @@ paths:
     get:
       tags:
         - trustchains
-      description: Build and return trustchain starting from VP to root VC document. Only users with the Auditor role are allowed to make request.
+      description: Builds and returns a trustchain, from the VP to the root VC document. Only users with the Auditor role are allowed to make the request.
       parameters:
         - in: path
           name: hash
           schema:
             type: string
           required: true
-          description: Hash or Id of a VP document
+          description: Hash or ID of a VP document.
       security:
       - bearerAuth: []
-      summary: Returns a trustchain for a VP document
+      summary: Returns a trustchain for a VP document.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrustChains'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1272,13 +1272,13 @@ paths:
     get:
       tags:
         - policies
-      description: Returns all policies. Only users with the Root Authority and Installer role are allowed to make request.
+      description: Returns all policies. Only users with the Root Authority and Installer role are allowed to make the request.
       security:
         - bearerAuth: []
-      summary: Return a list of policies
+      summary: Return a list of all policies.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -1286,11 +1286,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyConfig'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1299,12 +1299,12 @@ paths:
     post:
       tags:
         - policies
-      description: Creates new policy. Only users with the Root Authority role are allowed to make request.
+      description: Creates a new policy. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Create new policy
+      summary: Creates a new policy.
       requestBody:
-        description: Object that contains policy config
+        description: Object that contains policy configuration.
         required: true
         content:
           application/json:
@@ -1312,13 +1312,13 @@ paths:
               $ref: "#/components/schemas/PolicyConfig"
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1328,30 +1328,30 @@ paths:
     get:
       tags:
         - policies
-      description: Get policy config. Only users with the Root Authority role are allowed to make request.
+      description: Retrieves policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
           schema:
             type: string
           required: true
-          description: Selected policy Id
-      summary: Get policy config
+          description: Selected policy ID.
+      summary: Retrieves policy configuration.
       security:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyConfig'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1359,17 +1359,17 @@ paths:
     put:
       tags:
         - policies
-      description: Update policy config. Only users with the Root Authority role are allowed to make request.
-      summary: Update policy config
+      description: Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+      summary: Updates policy configuration.
       parameters:
         - in: path
           name: policyId
-          description: Selected policy id
+          description: Selected policy ID.
           required: true
           schema:
             type: string
       requestBody:
-        description: Object that contains policy config
+        description: Object that contains policy configuration.
         required: true
         content:
           application/json:
@@ -1379,17 +1379,17 @@ paths:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyConfig'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1399,30 +1399,30 @@ paths:
     put:
       tags:
         - policies
-      description: Publish selected policy. Only users with the Root Authority role are allowed to make request.
+      description: Publishes selected policy. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
           schema:
             type: string
           required: true
-          description: Selected policy id
-      summary: Publish policy
+          description: Selected policy ID.
+      summary: Publishes policy.
       security:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublishPolicy'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1432,12 +1432,12 @@ paths:
     post:
       tags:
         - policies
-      description: Validate selected policy. Only users with the Root Authority role are allowed to make request.
+      description: Validates selected policy. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Validate policy
+      summary: Validates policy.
       requestBody:
-        description: Object that contains policy config
+        description: Object that contains policy configuration.
         required: true
         content:
           application/json:
@@ -1445,17 +1445,17 @@ paths:
               $ref: "#/components/schemas/PolicyConfig"
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidatePolicy'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1465,30 +1465,30 @@ paths:
     get:
       tags:
         - policies
-      description: Returns data from a root policy block. Only users with the Root Authority and Installer role are allowed to make request.
+      description: Returns data from the root policy block. Only users with the Root Authority and Installer role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
           schema:
             type: string
           required: true
-          description: Selected policy Id
-      summary: Data of a policy root block
+          description: Selected policy ID.
+      summary: Retrieves data for the policy root block.
       security:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyBlock'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1498,36 +1498,36 @@ paths:
     get:
       tags:
         - policies
-      description: Request block data. Only users with a role that described in block are allowed to make request.
+      description: Requests block data. Only users with a role that described in block are allowed to make the request.
       parameters:
         - in: path
           name: policyId
           schema:
             type: string
           required: true
-          description: Selected policy Id
+          description: Selected policy ID.
         - in: path
           name: uuid
           schema:
             type: string
           required: true
-          description: Selected block uuid
-      summary: Request block data
+          description: Selected block UUID.
+      summary: Requests block data.
       security:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyBlockData'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1535,23 +1535,23 @@ paths:
     post:
       tags:
         - policies
-      description: Send data to block
+      description: Sends data to the specified block.
       parameters:
         - in: path
           name: policyId
           schema:
             type: string
           required: true
-          description: Selected policy Id
+          description: Selected policy ID.
         - in: path
           name: uuid
           schema:
             type: string
           required: true
-          description: Selected block uuid
-      summary: Send data to block
+          description: Selected block UUID.
+      summary: Sends data to the specified block.
       requestBody:
-        description: Object with data that block need to receive
+        description: Object with the data to be sent to the block.
         required: true
         content:
           application/json:
@@ -1561,13 +1561,13 @@ paths:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1577,26 +1577,26 @@ paths:
     get:
       tags:
         - policies
-      description: Request block Id from a policy by tag. Only users with the Root Authority and Installer roles are allowed to make request.
+      description: Requests block ID from a policy by tag. Only users with the Root Authority and Installer roles are allowed to make the request.
       parameters:
         - in: path
           name: policyId
           schema:
             type: string
           required: true
-          description: Selected policy Id
+          description: Selected policy ID.
         - in: path
           name: tag
           schema:
             type: string
           required: true
-          description: Tag from selected policy
-      summary: Request block Id from a policy by tag
+          description: Tag from the selected policy.
+      summary: Requests block ID from a policy by tag.
       security:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -1605,11 +1605,11 @@ paths:
                   id:
                     type: string
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1626,19 +1626,19 @@ paths:
           schema:
             type: string
           required: true
-          description: Selected policy id
+          description: Selected policy ID.
       security:
       - bearerAuth: []
-      summary: Policy export
+      summary: Policy export.
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1651,9 +1651,9 @@ paths:
       description: Imports policy from a policy config JSON.
       security:
       - bearerAuth: []
-      summary: Policy import
+      summary: Policy import.
       requestBody:
-        description: Object that contains policy config
+        description: Object that contains policy config.
         required: true
         content:
           application/json:
@@ -1661,7 +1661,7 @@ paths:
               $ref: "#/components/schemas/ExportPolicy"
       responses:
         201:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -1669,11 +1669,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyConfig'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error  
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1683,23 +1683,23 @@ paths:
     post:
       tags:
         - policies
-      description: Returns content of uploaded policy.
-      summary:  Preview policy content.
+      description: Returns content of the uploaded policy.
+      summary: Preview policy content.
       security:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExportPolicy'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error  
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1709,10 +1709,10 @@ paths:
     post:
       tags:
         - external 
-      description: Send data from external source
-      summary: Send data from external source
+      description: Sends data from an external source.
+      summary: Sends data from an external source.
       requestBody:
-        description: Object that contains VC Document
+        description: Object that contains a VC Document.
         required: true
         content:
           application/json:
@@ -1720,9 +1720,9 @@ paths:
               $ref: "#/components/schemas/ExternalData"
       responses:
         201:
-          description: Successful operation
+          description: Successful operation.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1733,10 +1733,10 @@ paths:
       tags:
         - demo
       deprecated: true
-      description: Return all registered user accounts
+      description: Returns all registered user accounts.
       responses:
         200:
-          description: Return all registered user accounts
+          description: All registered user accounts.
           content:
             application/json:
               schema:
@@ -1744,7 +1744,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Account'
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -1755,22 +1755,22 @@ paths:
       tags:
         - demo
       deprecated: true
-      description: Generate a new Hedera account with a random private key
+      description: Generates a new Hedera account with a random private key.
       security:
       - bearerAuth: []
       responses:
         200:
-          description: Successful operation
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HederaAccount'
         401:
-          description: Unauthorized
+          description: Unauthorized.
         403:
-          description: Forbidden
+          description: Forbidden.
         500:
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
