@@ -1,14 +1,24 @@
 import FastMQ from 'fastmq'
-import express, {Request, Response} from 'express'
+import express, { Request, Response } from 'express'
 
 const server = FastMQ.Server.create('master', 7500, '0.0.0.0');
 
 const PORT = process.env.PORT || 3003;
 
+console.log('Starting message-broker', {
+    now: new Date().toString(),
+    PORT,
+    BUILD_VERSION: process.env.BUILD_VERSION,
+    DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+});
+
+
 // start server
 Promise.all([
     server.start()
 ]).then(async () => {
+
+
 
     const app = express();
     app.use(express.json());
@@ -24,6 +34,16 @@ Promise.all([
         } catch (e) {
             res.status(500).send(e.message);
         }
+    });
+
+    app.get('/info', async (req: Request, res: Response) => {
+        console.log(req.body);
+
+        res.status(200).json({
+            NAME: 'message-broker',
+            BUILD_VERSION: process.env.BUILD_VERSION,
+            DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+        });
     });
 
     app.listen(PORT, () => {

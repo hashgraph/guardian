@@ -9,6 +9,7 @@ services:
     build:
       context: .
       dockerfile: ./message-broker/Dockerfile
+    image: guardian-message-broker
     ports:
       - 3003:3003
     expose:
@@ -17,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: ./ui-service/Dockerfile
+    image: guardian-ui-service
     ports:
       - 3002:3002
     depends_on:
@@ -27,6 +29,7 @@ services:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
+    image: guardian-service
     #    ports:
     #      - 3004:3004
     depends_on:
@@ -36,6 +39,7 @@ services:
     build:
       context: .
       dockerfile: ./mrv-sender/Dockerfile
+    image: guardian-mrv-sender
     ports:
       - 3005:3005
 volumes:

@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: asia.gcr.io/tymlez-platform-328903/guardian-ui-service
+  repository: ''
   pullPolicy: IfNotPresent
   tag: ''
 
@@ -32,7 +32,7 @@ service:
   type: LoadBalancer
   ports:
     - port: 3002
-      targetPort: 'p3002'  # named port from deployment
+      targetPort: 'p3002' # named port from deployment
       protocol: TCP
       name: 'p3002'
 
@@ -55,5 +55,5 @@ tolerations: []
 
 affinity: {}
 
-configmap: 
+configmap:
   data: {}

@@ -25,3 +25,6 @@ ui-service/.vs/
 /test_results/
 /node_modules/
 tools/**/*.tgz
+guardian-service/config.json
+ui-service/.env
+ui-service/.env.docker

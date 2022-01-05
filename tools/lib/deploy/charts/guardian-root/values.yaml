@@ -5,6 +5,4 @@ mongodb:
     size: 50Gi
   useStatefulSet: true
   auth:
-    enabled: true
-    rootUser: root
-    rootPassword: ""
+    enabled: false

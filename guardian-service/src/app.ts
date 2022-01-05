@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import FastMQ from 'fastmq'
 import { createConnection } from 'typeorm';
 import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
@@ -22,6 +22,15 @@ import { SchemaDocumentLoader } from './document-loader/vc-document-loader';
 import { SchemaObjectLoader } from './document-loader/schema-loader';
 
 const PORT = process.env.PORT || 3001;
+
+console.log('Starting guardian-service', {
+    now: new Date().toString(),
+    PORT,
+    DB_HOST: process.env.DB_HOST,
+    DB_DATABASE: process.env.DB_DATABASE,
+    BUILD_VERSION: process.env.BUILD_VERSION,
+    DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+});
 
 Promise.all([
     createConnection({
@@ -58,7 +67,7 @@ Promise.all([
     const schemaDocumentLoader = new SchemaDocumentLoader('https://localhost/schema', schemaRepository);
     const didDocumentLoader = new DIDDocumentLoader(didDocumentRepository);
     const schemaObjectLoader = new SchemaObjectLoader(schemaRepository);
-    
+
     vcHelper.addContext('https://localhost/schema');
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(schemaDocumentLoader);
@@ -83,6 +92,17 @@ Promise.all([
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
+
+    app.get('/info', async (req: Request, res: Response) => {
+        console.log(req.body);
+
+        res.status(200).json({
+            NAME: 'guardian-service',
+            BUILD_VERSION: process.env.BUILD_VERSION,
+            DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+            OPERATOR_ID: fileConfig.OPERATOR_ID,
+        });
+    });
 
     app.listen(PORT, () => {
         console.log('guardian service started', PORT);

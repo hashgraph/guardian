@@ -10,13 +10,7 @@ export const loadEnv = async (): Promise<void> => {
 
   console.log(`--- Loading ENV for ${process.env.ENV}`);
 
-  const {
-    GUARDIAN_OPERATOR_ID,
-    GUARDIAN_OPERATOR_KEY,
-    GUARDIAN_ADDRESS_BOOK,
-    GUARDIAN_VC_TOPIC_ID,
-    GUARDIAN_DID_TOPIC_ID,
-  } = await getConfig({
+  const { GUARDIAN_OPERATOR_ID, GUARDIAN_OPERATOR_KEY } = await getConfig({
     env: process.env.ENV,
   });
 
@@ -41,9 +35,6 @@ export const loadEnv = async (): Promise<void> => {
       {
         OPERATOR_ID: GUARDIAN_OPERATOR_ID,
         OPERATOR_KEY: GUARDIAN_OPERATOR_KEY,
-        ADDRESS_BOOK: GUARDIAN_ADDRESS_BOOK,
-        VC_TOPIC_ID: GUARDIAN_VC_TOPIC_ID,
-        DID_TOPIC_ID: GUARDIAN_DID_TOPIC_ID,
       },
       undefined,
       2,

@@ -2,18 +2,35 @@ import { promise as exec } from 'exec-sh';
 import { resolve } from 'path';
 
 export async function deployToGke({
+  clientName,
+  env,
+  gcpProjectId,
   gkeCluster,
-  gkeRegion,
-  guardianMongoUsername,
-  guardianMongoPassword,
+  region,
   imageTag,
 }: {
+  clientName: string;
+  env: string;
+  gcpProjectId: string;
   gkeCluster: string;
-  gkeRegion: string;
-  guardianMongoUsername: string;
-  guardianMongoPassword: string;
+  region: string;
   imageTag: string;
 }) {
+  const fullEnv = `${clientName}-${env}`;
+  await exec(
+    [
+      'gcloud',
+      'config',
+      'get-value',
+      'project',
+      '|',
+      'grep',
+      fullEnv,
+      '||',
+      `{ echo Invalid GCP project, expect ${fullEnv}; false; }`,
+    ].join(' '),
+  );
+
   await exec(
     [
       'gcloud',
@@ -22,7 +39,7 @@ export async function deployToGke({
       'get-credentials',
       gkeCluster,
       '--region',
-      gkeRegion,
+      region,
     ].join(' '),
   );
 
@@ -39,20 +56,16 @@ export async function deployToGke({
       `tymlez-guardian-${process.env.ENV}`,
       '.',
 
-      `--set-string mongodb.auth.rootUser="${guardianMongoUsername}"`,
-      `--set-string mongodb.auth.rootPassword="${guardianMongoPassword}"`,
-
+      `--set-string guardian-message-broker.image.repository="asia.gcr.io/${gcpProjectId}/guardian-message-broker"`,
       `--set-string guardian-message-broker.image.tag="${imageTag}"`,
       `--set-string guardian-message-broker.configmap.data.DEPLOY_VERSION="${imageTag}"`,
 
+      `--set-string guardian-service.image.repository="asia.gcr.io/${gcpProjectId}/guardian-service"`,
       `--set-string guardian-service.image.tag="${imageTag}"`,
-      `--set-string guardian-service.configmap.data.DB_USER="${guardianMongoUsername}"`,
-      `--set-string guardian-service.configmap.data.DB_PASSWORD="${guardianMongoPassword}"`,
       `--set-string guardian-service.configmap.data.DEPLOY_VERSION="${imageTag}"`,
 
+      `--set-string guardian-ui-service.image.repository="asia.gcr.io/${gcpProjectId}/guardian-ui-service"`,
       `--set-string guardian-ui-service.image.tag="${imageTag}"`,
-      `--set-string guardian-ui-service.configmap.data.DB_USER="${guardianMongoUsername}"`,
-      `--set-string guardian-ui-service.configmap.data.DB_PASSWORD="${guardianMongoPassword}"`,
       `--set-string guardian-ui-service.configmap.data.DEPLOY_VERSION="${imageTag}"`,
 
       // '--dry-run',

@@ -7,9 +7,8 @@
     "clean": "lerna run clean --stream && lerna clean --no-private --yes",
     "lint": "tsc --noEmit",
     "dev:docker": "docker-compose up -d --build",
-    "build": "npm run load-env && docker-compose build",
-    "deploy": "npm run build && npm run tools deploy",
-    "tools": "npm run load-env && node -r esbuild-register ./tools/bin/index.ts",
+    "deploy:manual": "npm run load-env && npm run tools deploy",
+    "tools": "node -r esbuild-register ./tools/bin/index.ts",
     "load-env": "node -r esbuild-register ./tools/bin/index.ts load-env"
   },
   "repository": {
