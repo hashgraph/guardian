@@ -4,5 +4,6 @@ export {schemaAPI} from '@api/service/schema';
 export {tokenAPI} from '@api/service/tokens';
 export {frontendService} from '@api/service/frontend';
 export {accountAPI} from '@api/service/account';
+export {infoAPI} from '@api/service/info';
 export {otherAPI} from '@api/service/other';
 export {rootAPI} from '@api/service/root-config';

@@ -3,6 +3,7 @@ import {
     accountAPI,
     auditAPI,
     frontendService,
+    infoAPI,
     otherAPI,
     profileAPI,
     rootAPI,
@@ -23,6 +24,19 @@ import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
 
 const PORT = process.env.PORT || 3002;
+
+console.log('Starting ui-service', {
+    now: new Date().toString(),
+    PORT,
+    DB_HOST: process.env.DB_HOST,
+    DB_DATABASE: process.env.DB_DATABASE,
+    BUILD_VERSION: process.env.BUILD_VERSION,
+    DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+    OPERATOR_ID: process.env.OPERATOR_ID,
+    MRV_ADDRESS: process.env.MRV_ADDRESS,
+});
+  
+  
 
 Promise.all([
     createConnection({
@@ -80,6 +94,7 @@ Promise.all([
     app.use('/api/profile/', authorizationHelper, profileAPI);
     app.use('/api/schema', authorizationHelper, schemaAPI);
     app.use('/api/tokens', authorizationHelper, tokenAPI);
+    app.use('/api/info', infoAPI);
     app.use('/api/package', importExportAPI);
     app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
     app.use('/api-docs/', swaggerAPI);
