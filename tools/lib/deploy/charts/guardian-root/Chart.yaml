@@ -39,3 +39,7 @@ dependencies:
   - name: guardian-ui-service
     version: '0.1.0'
     repository: 'file://../guardian-ui-service'
+
+  - name: guardian-tymlez-service
+    version: '0.1.0'
+    repository: 'file://../guardian-tymlez-service'

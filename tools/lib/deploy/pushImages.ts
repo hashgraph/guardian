@@ -32,6 +32,12 @@ export async function pushImages({
     imageName: 'guardian-mrv-sender',
     imageTag,
   });
+
+  await pushImage({
+    gcpProjectId,
+    imageName: 'guardian-tymlez-service',
+    imageTag,
+  });
 }
 
 async function pushImage({

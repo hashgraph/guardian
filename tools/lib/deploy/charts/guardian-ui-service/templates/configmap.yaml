@@ -4,8 +4,8 @@ metadata:
   name: {{ include "guardian-ui-service.fullname" . }}-{{ .Release.Revision }}
 data:
   {{- toYaml .Values.configmap.data | nindent 2 }}
-  MQ_ADDRESS: {{ .Release.Name }}-guardian-message-broker
+  MQ_ADDRESS: {{ .Release.Name }}-guardian-message-broker-{{ .Release.Revision }}
   DB_HOST: {{ .Release.Name }}-mongodb
-  MRV_ADDRESS: http://{{ .Release.Name }}-guardian-message-broker:3003/mrv
+  MRV_ADDRESS: http://{{ .Release.Name }}-guardian-message-broker-{{ .Release.Revision }}:3003/mrv
 
 

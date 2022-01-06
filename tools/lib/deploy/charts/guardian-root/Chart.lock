@@ -11,5 +11,8 @@ dependencies:
 - name: guardian-ui-service
   repository: file://../guardian-ui-service
   version: 0.1.0
-digest: sha256:67974fba2d52e395d88156752e86a87d31190f7e3b9c174f93a28d004439b75e
-generated: "2021-11-07T18:43:53.717664+11:00"
+- name: guardian-tymlez-service
+  repository: file://../guardian-tymlez-service
+  version: 0.1.0
+digest: sha256:877536e0edb14ba3efcc1307b097bb2d0c2d5b151c1c36f3c65a86dd444bf4c8
+generated: "2022-01-06T17:58:03.68994+11:00"

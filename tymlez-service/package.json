@@ -14,6 +14,7 @@
     "@transmute/jsonld-schema": "^0.7.0-unstable.28",
     "@transmute/security-context": "^0.7.0-unstable.28",
     "@transmute/vc.js": "^0.7.0-unstable.28",
+    "axios": "^0.24.0",
     "cors": "^2.8.5",
     "did-sdk-js": "git+https://github.com/EnvisionBlockchain/did-sdk-js.git",
     "dotenv": "^10.0.0",

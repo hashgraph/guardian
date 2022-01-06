@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "tymlez-service.fullname" . }}
+  name: {{ include "guardian-tymlez-service.fullname" . }}
   labels:
-    {{- include "tymlez-service.labels" . | nindent 4 }}
+    {{- include "guardian-tymlez-service.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "tymlez-service.selectorLabels" . | nindent 6 }}
+      {{- include "guardian-tymlez-service.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,7 +16,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "tymlez-service.selectorLabels" . | nindent 8 }}
+        {{- include "guardian-tymlez-service.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -46,7 +46,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:
             - configMapRef:
-                name: {{ include "tymlez-service.fullname" . }}-{{ .Release.Revision }}
+                name: {{ include "guardian-tymlez-service.fullname" . }}-{{ .Release.Revision }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

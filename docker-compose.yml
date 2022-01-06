@@ -46,7 +46,7 @@ services:
     build:
       context: .
       dockerfile: ./tymlez-service/Dockerfile
-    image: tymlez-service
+    image: guardian-tymlez-service
     ports:
       - 3010:3010
     depends_on:

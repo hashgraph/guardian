@@ -6,6 +6,8 @@ import passport from 'passport';
 import { HeaderAPIKeyStrategy } from 'passport-headerapikey';
 import createError from 'http-errors';
 import { VCDocumentLoader } from './document-loader/vc-document-loader';
+import { infoApi } from '@api/info';
+import { debugApi } from '@api/debug';
 
 const PORT = process.env.PORT || 3010;
 
@@ -63,14 +65,7 @@ Promise.all([
   // Document Loader -->
 
   // No not protect /info
-  app.get('/info', async (req: Request, res: Response) => {
-    res.status(200).json({
-      NAME: 'tymlez-service',
-      BUILD_VERSION: process.env.BUILD_VERSION,
-      DEPLOY_VERSION: process.env.DEPLOY_VERSION,
-      OPERATOR_ID: process.env.OPERATOR_ID,
-    });
-  });
+  app.use('/info', infoApi);
 
   // Add all protected routes below
   app.use(
@@ -79,11 +74,7 @@ Promise.all([
     }),
   );
 
-  app.get('/debug-protected', async (req: Request, res: Response) => {
-    res.status(200).json({
-      NAME: 'tymlez-service',
-    });
-  });
+  app.use('/debug/', debugApi);
 
   app.listen(PORT, () => {
     console.log('tymlez service started', PORT);

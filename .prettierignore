@@ -6,4 +6,6 @@
 /interfaces/
 /mrv-sender/
 /node_modules/
+*.yaml
+*.yml
 *.md
