@@ -1,4 +1,4 @@
-# Default values for guardian-ui-service.
+# Default values for tymlez-service.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -29,12 +29,12 @@ securityContext:
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
-    - port: 3002
-      targetPort: 'p3002' # named port from deployment
+    - port: 3010
+      targetPort: 'p3010' # named port from deployment
       protocol: TCP
-      name: 'p3002'
+      name: 'p3010'
 
 resources:
   {}

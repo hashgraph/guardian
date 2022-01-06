@@ -10,22 +10,50 @@ export const loadEnv = async (): Promise<void> => {
 
   console.log(`--- Loading ENV for ${process.env.ENV}`);
 
-  const { GUARDIAN_OPERATOR_ID, GUARDIAN_OPERATOR_KEY } = await getConfig({
+  const {
+    GUARDIAN_OPERATOR_ID,
+    GUARDIAN_OPERATOR_KEY,
+    GUARDIAN_TYMLEZ_API_KEY,
+  } = await getConfig({
     env: process.env.ENV,
   });
 
   console.log('Updating ./ui-service/.env.docker');
   await updateTemplate({
     templateFile: './ui-service/.env.docker.template',
-    GUARDIAN_OPERATOR_ID,
-    GUARDIAN_OPERATOR_KEY,
+    data: {
+      GUARDIAN_OPERATOR_ID,
+      GUARDIAN_OPERATOR_KEY,
+    },
   });
 
   console.log('Updating ./ui-service/.env');
   await updateTemplate({
     templateFile: './ui-service/.env.template',
-    GUARDIAN_OPERATOR_ID,
-    GUARDIAN_OPERATOR_KEY,
+    data: {
+      GUARDIAN_OPERATOR_ID,
+      GUARDIAN_OPERATOR_KEY,
+    },
+  });
+
+  console.log('Updating ./tymlez-service/.env.docker');
+  await updateTemplate({
+    templateFile: './tymlez-service/.env.docker.template',
+    data: {
+      GUARDIAN_OPERATOR_ID,
+      GUARDIAN_OPERATOR_KEY,
+      GUARDIAN_TYMLEZ_API_KEY,
+    },
+  });
+
+  console.log('Updating ./tymlez-service/.env');
+  await updateTemplate({
+    templateFile: './tymlez-service/.env.template',
+    data: {
+      GUARDIAN_OPERATOR_ID,
+      GUARDIAN_OPERATOR_KEY,
+      GUARDIAN_TYMLEZ_API_KEY,
+    },
   });
 
   console.log('Updating ./guardian-service/config.json');
@@ -44,19 +72,14 @@ export const loadEnv = async (): Promise<void> => {
 
 async function updateTemplate({
   templateFile,
-  GUARDIAN_OPERATOR_ID,
-  GUARDIAN_OPERATOR_KEY,
+  data,
 }: {
   templateFile: string;
-  GUARDIAN_OPERATOR_ID: string;
-  GUARDIAN_OPERATOR_KEY: string;
+  data: object;
 }) {
   const templateContent = await readFile(templateFile, 'utf-8');
   await writeFile(
     templateFile.replace('.template', ''),
-    template(templateContent)({
-      GUARDIAN_OPERATOR_ID,
-      GUARDIAN_OPERATOR_KEY,
-    }),
+    template(templateContent)(data),
   );
 }

@@ -15,6 +15,7 @@ message-broker/package-lock.json
 mrv-sender/package-lock.json
 ui-service/package-lock.json
 ui-service/public/package-lock.json
+tymlez-service/public/package-lock.json
 vc-modules/node_modules/
 vc-modules/dist/
 config.keys
@@ -29,3 +30,5 @@ tools/**/*.tgz
 guardian-service/config.json
 ui-service/.env
 ui-service/.env.docker
+tymlez-service/.env
+tymlez-service/.env.docker

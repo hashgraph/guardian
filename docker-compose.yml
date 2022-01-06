@@ -42,6 +42,16 @@ services:
     image: guardian-mrv-sender
     ports:
       - 3005:3005
+  tymlez-service:
+    build:
+      context: .
+      dockerfile: ./tymlez-service/Dockerfile
+    image: tymlez-service
+    ports:
+      - 3010:3010
+    depends_on:
+      - mongo
+      - message-broker
 volumes:
   mongo:
   # volume-guardian-service:

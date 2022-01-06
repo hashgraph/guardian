@@ -5,9 +5,10 @@
     "install": "lerna clean --no-private --yes && npm run bootstrap",
     "bootstrap": "./tools/bin/bootstrap.sh",
     "clean": "lerna run clean --stream && lerna clean --no-private --yes",
-    "lint": "tsc --noEmit",
+    "lint": "npm run npm7:check && tsc --noEmit",
+    "npm7:check": "./tools/bin/ensure-npm7.sh",
     "dev:docker": "docker-compose up -d --build",
-    "dev": "docker-compose up -d mongo && lerna run watch --parallel",
+    "dev:watch": "./tools/bin/dev-watch.sh",
     "deploy:manual": "npm run load-env && npm run tools deploy",
     "tools": "node -r esbuild-register ./tools/bin/index.ts",
     "load-env": "node -r esbuild-register ./tools/bin/index.ts load-env"

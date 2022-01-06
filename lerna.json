@@ -6,7 +6,8 @@
     "guardian-service",
     "vc-modules",
     "interfaces",
-    "mrv-sender"
+    "mrv-sender",
+    "tymlez-service"
   ],
   "version": "0.0.0"
 }
