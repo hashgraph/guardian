@@ -24,6 +24,7 @@ www-data/
 ui-service/.vs/
 /test_results/
 /node_modules/
+/.tmp/
 tools/**/*.tgz
 guardian-service/config.json
 ui-service/.env

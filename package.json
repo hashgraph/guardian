@@ -7,6 +7,7 @@
     "clean": "lerna run clean --stream && lerna clean --no-private --yes",
     "lint": "tsc --noEmit",
     "dev:docker": "docker-compose up -d --build",
+    "dev": "docker-compose up -d mongo && lerna run watch --parallel",
     "deploy:manual": "npm run load-env && npm run tools deploy",
     "tools": "node -r esbuild-register ./tools/bin/index.ts",
     "load-env": "node -r esbuild-register ./tools/bin/index.ts load-env"

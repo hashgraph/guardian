@@ -47,4 +47,6 @@ Promise.all([
     app.listen(PORT, () => {
         console.log('Message Broker server started', PORT);
     });
+}, (err) => {
+    console.error("Failed to FastMQ server", err)
 });

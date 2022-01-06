@@ -5,9 +5,9 @@ nvm use
 
 npm i
 
-# with docker
-npm run dev:docker
-
-# without docker
+# without docker, watch for file changes
 npm run dev
+
+# with docker, does not watch for file changes
+npm run dev:docker
 ```
