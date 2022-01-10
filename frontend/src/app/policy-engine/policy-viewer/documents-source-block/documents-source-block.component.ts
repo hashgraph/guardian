@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ProfileHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../dialog-block/dialog-block.component';
 import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
 
@@ -30,6 +31,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private profileHelper: ProfileHelper,
         private dialog: MatDialog
     ) {
         this.fields = [];

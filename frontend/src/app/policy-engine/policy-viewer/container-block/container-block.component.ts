@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ProfileHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'interfaceContainerBlock' type.
@@ -22,8 +23,12 @@ export class ContainerBlockComponent implements OnInit {
     activeBlock: any;
     isActive = false;
     type!: string | null;
+    selectedIndex: number = 0;
 
-    constructor(private policyEngineService: PolicyEngineService) {
+    constructor(
+        private policyEngineService: PolicyEngineService,
+        private profileHelper: ProfileHelper
+    ) {
     }
 
     ngOnInit(): void {
@@ -72,7 +77,10 @@ export class ContainerBlockComponent implements OnInit {
             this.type = uiMetaData.type;
             this.blocks = data.blocks || [];
             this.blocks = this.blocks.filter((b: any) => (b && b.isActive));
-            this.activeBlock = this.blocks.find((b: any) => b.id == this.activeBlock);
+
+            this.activeBlockId = this.profileHelper.getParams(this.id);
+            this.selectedIndex = this.blocks.findIndex((b: any) => b.id == this.activeBlockId);
+            this.activeBlock = this.blocks[this.selectedIndex];
             if (!this.activeBlock) {
                 this.onBlockChange(0);
             }
@@ -86,8 +94,10 @@ export class ContainerBlockComponent implements OnInit {
     }
 
     onBlockChange(event: any) {
-        this.activeBlock = this.blocks[event];
+        this.selectedIndex = event;
+        this.activeBlock = this.blocks[this.selectedIndex];
         this.activeBlockId = this.activeBlock ? this.activeBlock.id : null;
+        this.profileHelper.setParams(this.id, this.activeBlockId);
     }
 
     getTitle(block: any) {

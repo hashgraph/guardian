@@ -72,6 +72,10 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicy() {
         const policyId = this.route.snapshot.queryParams['policyId'];
+        if(this.policyId == policyId) {
+            return;
+        }
+
         this.policyId = policyId;
         this.policies = null;
         this.policy = null;

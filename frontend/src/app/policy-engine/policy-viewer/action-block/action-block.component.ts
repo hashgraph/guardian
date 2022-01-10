@@ -1,5 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import { ProfileHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'requestVcDocument' type.
@@ -26,9 +27,9 @@ export class ActionBlockComponent implements OnInit {
   content: any;
 
   constructor(
-    private policyEngineService: PolicyEngineService
+    private policyEngineService: PolicyEngineService,
+    private profileHelper: ProfileHelper
   ) {
-
   }
 
   ngOnInit(): void {

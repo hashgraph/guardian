@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ProfileHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'informationBlock' types.
@@ -13,7 +14,7 @@ export class InformationBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    
+
     isActive = false;
     loading: boolean = true;
     socket: any;
@@ -23,11 +24,14 @@ export class InformationBlockComponent implements OnInit {
     title: any;
     description: any;
 
-    constructor(private policyEngineService: PolicyEngineService) {
+    constructor(
+        private policyEngineService: PolicyEngineService,
+        private profileHelper: ProfileHelper,
+    ) {
     }
 
     ngOnInit(): void {
-        if (!this.static) { 
+        if (!this.static) {
             this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
         }
         this.loadData();

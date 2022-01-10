@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ProfileHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'policyRolesBlock' types.
@@ -26,7 +27,8 @@ export class RolesBlockComponent implements OnInit {
     roleForm: FormGroup;
 
     constructor(
-        private policyEngineService: PolicyEngineService,    
+        private policyEngineService: PolicyEngineService,   
+        private profileHelper: ProfileHelper, 
         private fb: FormBuilder
         ) {
         this.roleForm = fb.group({

@@ -85,6 +85,7 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { RolesConfigComponent } from './policy-engine/policy-configuration/roles-config/roles-config.component';
 import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
 import { DemoService } from './services/demo.service';
+import { ProfileHelper } from './services/policy-helper.service';
 
 @NgModule({
     declarations: [
@@ -181,6 +182,7 @@ import { DemoService } from './services/demo.service';
         SchemaService,
         AuditService,
         PolicyEngineService,
+        ProfileHelper,
         DemoService,
         {
             provide: HTTP_INTERCEPTORS,
