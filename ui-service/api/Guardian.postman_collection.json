@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "85e96668-ba4d-419b-a247-47c012506059",
+		"_postman_id": "cf988b27-46b6-4994-9a09-ad86cf64a46a",
 		"name": "Guardian",
 		"description": "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation.\n\nContact Support:\n Name: API developer\n Email: info@envisionblockchain.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -10,7 +10,7 @@
 			"name": "accounts",
 			"item": [
 				{
-					"name": "Return a list of users",
+					"name": "Returns a list of users, excluding Root Authority and Auditors.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -33,11 +33,11 @@
 								"accounts"
 							]
 						},
-						"description": "Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make request."
+						"description": "Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -67,10 +67,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "[\n {\n  \"username\": \"in reprehenderit anim\",\n  \"role\": \"eu sed eiusmod cillum\",\n  \"did\": \"sunt deserunt\"\n },\n {\n  \"username\": \"laboris dolor\",\n  \"role\": \"Lorem ad nostrud\",\n  \"did\": \"est\"\n }\n]"
+							"body": "[\n {\n  \"username\": \"dolore cillum aliqua\",\n  \"role\": \"eiusmod exercitation\",\n  \"did\": \"aliquip mag\"\n },\n {\n  \"username\": \"cupidatat commodo dolore pariatur\",\n  \"role\": \"ut eiusmod anim Excepteur\",\n  \"did\": \"nostrud consectetur\"\n }\n]"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -103,7 +103,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -136,7 +136,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -166,12 +166,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Returns current session of the user",
+					"name": "Returns current session of the user.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -195,11 +195,11 @@
 								"session"
 							]
 						},
-						"description": "Current user session"
+						"description": "Returns current user session."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -230,10 +230,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"username\": \"ullamco cupidatat minim deserunt\",\n \"role\": \"dolor enim\",\n \"accessToken\": \"magna enim\"\n}"
+							"body": "{\n \"username\": \"occa\",\n \"role\": \"occaecat incididunt\",\n \"accessToken\": \"cillum Excepteur minim Lorem\"\n}"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -267,7 +267,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -298,12 +298,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Register a new user account",
+					"name": "Registers a new user account.",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -314,7 +314,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"fugiat ad\",\n    \"password\": \"consequat officia ut fugiat id\"\n}",
+							"raw": "{\n    \"username\": \"ex incididunt\",\n    \"password\": \"ipsum sed deserunt\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -334,13 +334,13 @@
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"fugiat ad\",\n    \"password\": \"consequat officia ut fugiat id\"\n}",
+									"raw": "{\n    \"username\": \"ex incididunt\",\n    \"password\": \"ipsum sed deserunt\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -368,16 +368,16 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"username\": \"aliquip Ut in\",\n \"role\": \"ad labore adipisicing nisi\",\n \"did\": \"laborum officia magna ex cillum\"\n}"
+							"body": "{\n \"username\": \"nostrud aliquip\",\n \"role\": \"aute esse dolor anim\",\n \"did\": \"et dolore\"\n}"
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"fugiat ad\",\n    \"password\": \"consequat officia ut fugiat id\"\n}",
+									"raw": "{\n    \"username\": \"ex incididunt\",\n    \"password\": \"ipsum sed deserunt\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -405,12 +405,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Logs user into the system",
+					"name": "Logs user into the system.",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -421,7 +421,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"fugiat ad\",\n    \"password\": \"consequat officia ut fugiat id\"\n}",
+							"raw": "{\n    \"username\": \"ex incididunt\",\n    \"password\": \"ipsum sed deserunt\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -441,13 +441,13 @@
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"fugiat ad\",\n    \"password\": \"consequat officia ut fugiat id\"\n}",
+									"raw": "{\n    \"username\": \"ex incididunt\",\n    \"password\": \"ipsum sed deserunt\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -475,16 +475,16 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"username\": \"ullamco cupidatat minim deserunt\",\n \"role\": \"dolor enim\",\n \"accessToken\": \"magna enim\"\n}"
+							"body": "{\n \"username\": \"occa\",\n \"role\": \"occaecat incididunt\",\n \"accessToken\": \"cillum Excepteur minim Lorem\"\n}"
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"fugiat ad\",\n    \"password\": \"consequat officia ut fugiat id\"\n}",
+									"raw": "{\n    \"username\": \"ex incididunt\",\n    \"password\": \"ipsum sed deserunt\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -512,7 +512,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				}
@@ -522,7 +522,7 @@
 			"name": "profiles",
 			"item": [
 				{
-					"name": "Returns user account info",
+					"name": "Returns user account info.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -548,16 +548,16 @@
 							"variable": [
 								{
 									"key": "username",
-									"value": "cupidatat ut",
-									"description": "(Required) The name that needs to be fetched"
+									"value": "qui cillum dolore dolor",
+									"description": "(Required) The name of the user for whom to fetch the information."
 								}
 							]
 						},
-						"description": "Returns user account info. For a Root Authority it also returns address book and VC document information."
+						"description": "Returns user account information. For users with the Root Authority role it also returns address book and VC document information."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -579,8 +579,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that needs to be fetched"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to fetch the information."
 										}
 									]
 								}
@@ -595,10 +595,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"username\": \"Lorem Duis eiusmod\",\n \"role\": \"voluptate mollit elit\",\n \"confirmed\": \"non sed velit\",\n \"failed\": \"Lorem ad nulla anim\",\n \"hederaAccountId\": \"culpa magna aute tempor sit\",\n \"hederaAccountKey\": \"sunt consequat nulla nostrud\",\n \"did\": \"e\",\n \"didDocument\": {},\n \"vcDocument\": {},\n \"addressBook\": {\n  \"appnetName\": \"exercitation id anim quis ut\",\n  \"addressBook\": \"eu Ut\",\n  \"didTopic\": \"esse fugiat\",\n  \"vcTopic\": \"in\",\n  \"didServerUrl\": \"mollit\",\n  \"didTopicMemo\": \"aute sint\",\n  \"vcTopicMemo\": \"dolore sunt\"\n }\n}"
+							"body": "{\n \"username\": \"nulla sunt elit dolore\",\n \"role\": \"fugiat\",\n \"confirmed\": \"irure fugiat elit\",\n \"failed\": \"minim Duis\",\n \"hederaAccountId\": \"nostrud\",\n \"hederaAccountKey\": \"dolor exercitation nostrud\",\n \"did\": \"in\",\n \"didDocument\": {},\n \"vcDocument\": {},\n \"addressBook\": {\n  \"appnetName\": \"Excepteur exercitation\",\n  \"addressBook\": \"et ea\",\n  \"didTopic\": \"pariatur tempor consectetur Lorem\",\n  \"vcTopic\": \"non ipsum ex velit irure\",\n  \"didServerUrl\": \"e\",\n  \"didTopicMemo\": \"ut\",\n  \"vcTopicMemo\": \"officia lab\"\n }\n}"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -620,8 +620,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that needs to be fetched"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to fetch the information."
 										}
 									]
 								}
@@ -639,7 +639,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -661,8 +661,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that needs to be fetched"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to fetch the information."
 										}
 									]
 								}
@@ -680,7 +680,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -702,8 +702,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that needs to be fetched"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to fetch the information."
 										}
 									]
 								}
@@ -718,12 +718,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Set Hedera credentials for the user",
+					"name": "Sets Hedera credentials for the user.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -744,7 +744,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"Lorem Duis eiusmod\",\n    \"role\": \"voluptate mollit elit\",\n    \"confirmed\": \"non sed velit\",\n    \"failed\": \"Lorem ad nulla anim\",\n    \"hederaAccountId\": \"culpa magna aute tempor sit\",\n    \"hederaAccountKey\": \"sunt consequat nulla nostrud\",\n    \"did\": \"e\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"exercitation id anim quis ut\",\n        \"addressBook\": \"eu Ut\",\n        \"didTopic\": \"esse fugiat\",\n        \"vcTopic\": \"in\",\n        \"didServerUrl\": \"mollit\",\n        \"didTopicMemo\": \"aute sint\",\n        \"vcTopicMemo\": \"dolore sunt\"\n    }\n}",
+							"raw": "{\n    \"username\": \"nulla sunt elit dolore\",\n    \"role\": \"fugiat\",\n    \"confirmed\": \"irure fugiat elit\",\n    \"failed\": \"minim Duis\",\n    \"hederaAccountId\": \"nostrud\",\n    \"hederaAccountKey\": \"dolor exercitation nostrud\",\n    \"did\": \"in\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"Excepteur exercitation\",\n        \"addressBook\": \"et ea\",\n        \"didTopic\": \"pariatur tempor consectetur Lorem\",\n        \"vcTopic\": \"non ipsum ex velit irure\",\n        \"didServerUrl\": \"e\",\n        \"didTopicMemo\": \"ut\",\n        \"vcTopicMemo\": \"officia lab\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -763,16 +763,16 @@
 							"variable": [
 								{
 									"key": "username",
-									"value": "cupidatat ut",
-									"description": "(Required) The name that needs to be updated"
+									"value": "qui cillum dolore dolor",
+									"description": "(Required) The name of the user for whom to update the information."
 								}
 							]
 						},
-						"description": "Set Hedera credentials for the user. For the RootAutority role it is also creates an address book."
+						"description": "Sets Hedera credentials for the user. For users with the Root Autority role it also creates an address book."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "PUT",
 								"header": [
@@ -784,7 +784,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"Lorem Duis eiusmod\",\n    \"role\": \"voluptate mollit elit\",\n    \"confirmed\": \"non sed velit\",\n    \"failed\": \"Lorem ad nulla anim\",\n    \"hederaAccountId\": \"culpa magna aute tempor sit\",\n    \"hederaAccountKey\": \"sunt consequat nulla nostrud\",\n    \"did\": \"e\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"exercitation id anim quis ut\",\n        \"addressBook\": \"eu Ut\",\n        \"didTopic\": \"esse fugiat\",\n        \"vcTopic\": \"in\",\n        \"didServerUrl\": \"mollit\",\n        \"didTopicMemo\": \"aute sint\",\n        \"vcTopicMemo\": \"dolore sunt\"\n    }\n}",
+									"raw": "{\n    \"username\": \"nulla sunt elit dolore\",\n    \"role\": \"fugiat\",\n    \"confirmed\": \"irure fugiat elit\",\n    \"failed\": \"minim Duis\",\n    \"hederaAccountId\": \"nostrud\",\n    \"hederaAccountKey\": \"dolor exercitation nostrud\",\n    \"did\": \"in\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"Excepteur exercitation\",\n        \"addressBook\": \"et ea\",\n        \"didTopic\": \"pariatur tempor consectetur Lorem\",\n        \"vcTopic\": \"non ipsum ex velit irure\",\n        \"didServerUrl\": \"e\",\n        \"didTopicMemo\": \"ut\",\n        \"vcTopicMemo\": \"officia lab\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -803,8 +803,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that needs to be updated"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to update the information."
 										}
 									]
 								}
@@ -822,7 +822,7 @@
 							"body": ""
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "PUT",
 								"header": [
@@ -834,7 +834,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"Lorem Duis eiusmod\",\n    \"role\": \"voluptate mollit elit\",\n    \"confirmed\": \"non sed velit\",\n    \"failed\": \"Lorem ad nulla anim\",\n    \"hederaAccountId\": \"culpa magna aute tempor sit\",\n    \"hederaAccountKey\": \"sunt consequat nulla nostrud\",\n    \"did\": \"e\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"exercitation id anim quis ut\",\n        \"addressBook\": \"eu Ut\",\n        \"didTopic\": \"esse fugiat\",\n        \"vcTopic\": \"in\",\n        \"didServerUrl\": \"mollit\",\n        \"didTopicMemo\": \"aute sint\",\n        \"vcTopicMemo\": \"dolore sunt\"\n    }\n}",
+									"raw": "{\n    \"username\": \"nulla sunt elit dolore\",\n    \"role\": \"fugiat\",\n    \"confirmed\": \"irure fugiat elit\",\n    \"failed\": \"minim Duis\",\n    \"hederaAccountId\": \"nostrud\",\n    \"hederaAccountKey\": \"dolor exercitation nostrud\",\n    \"did\": \"in\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"Excepteur exercitation\",\n        \"addressBook\": \"et ea\",\n        \"didTopic\": \"pariatur tempor consectetur Lorem\",\n        \"vcTopic\": \"non ipsum ex velit irure\",\n        \"didServerUrl\": \"e\",\n        \"didTopicMemo\": \"ut\",\n        \"vcTopicMemo\": \"officia lab\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -853,8 +853,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that needs to be updated"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to update the information."
 										}
 									]
 								}
@@ -872,7 +872,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "PUT",
 								"header": [
@@ -884,7 +884,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"Lorem Duis eiusmod\",\n    \"role\": \"voluptate mollit elit\",\n    \"confirmed\": \"non sed velit\",\n    \"failed\": \"Lorem ad nulla anim\",\n    \"hederaAccountId\": \"culpa magna aute tempor sit\",\n    \"hederaAccountKey\": \"sunt consequat nulla nostrud\",\n    \"did\": \"e\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"exercitation id anim quis ut\",\n        \"addressBook\": \"eu Ut\",\n        \"didTopic\": \"esse fugiat\",\n        \"vcTopic\": \"in\",\n        \"didServerUrl\": \"mollit\",\n        \"didTopicMemo\": \"aute sint\",\n        \"vcTopicMemo\": \"dolore sunt\"\n    }\n}",
+									"raw": "{\n    \"username\": \"nulla sunt elit dolore\",\n    \"role\": \"fugiat\",\n    \"confirmed\": \"irure fugiat elit\",\n    \"failed\": \"minim Duis\",\n    \"hederaAccountId\": \"nostrud\",\n    \"hederaAccountKey\": \"dolor exercitation nostrud\",\n    \"did\": \"in\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"Excepteur exercitation\",\n        \"addressBook\": \"et ea\",\n        \"didTopic\": \"pariatur tempor consectetur Lorem\",\n        \"vcTopic\": \"non ipsum ex velit irure\",\n        \"didServerUrl\": \"e\",\n        \"didTopicMemo\": \"ut\",\n        \"vcTopicMemo\": \"officia lab\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -903,8 +903,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that needs to be updated"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to update the information."
 										}
 									]
 								}
@@ -922,7 +922,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "PUT",
 								"header": [
@@ -934,7 +934,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"Lorem Duis eiusmod\",\n    \"role\": \"voluptate mollit elit\",\n    \"confirmed\": \"non sed velit\",\n    \"failed\": \"Lorem ad nulla anim\",\n    \"hederaAccountId\": \"culpa magna aute tempor sit\",\n    \"hederaAccountKey\": \"sunt consequat nulla nostrud\",\n    \"did\": \"e\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"exercitation id anim quis ut\",\n        \"addressBook\": \"eu Ut\",\n        \"didTopic\": \"esse fugiat\",\n        \"vcTopic\": \"in\",\n        \"didServerUrl\": \"mollit\",\n        \"didTopicMemo\": \"aute sint\",\n        \"vcTopicMemo\": \"dolore sunt\"\n    }\n}",
+									"raw": "{\n    \"username\": \"nulla sunt elit dolore\",\n    \"role\": \"fugiat\",\n    \"confirmed\": \"irure fugiat elit\",\n    \"failed\": \"minim Duis\",\n    \"hederaAccountId\": \"nostrud\",\n    \"hederaAccountKey\": \"dolor exercitation nostrud\",\n    \"did\": \"in\",\n    \"didDocument\": {},\n    \"vcDocument\": {},\n    \"addressBook\": {\n        \"appnetName\": \"Excepteur exercitation\",\n        \"addressBook\": \"et ea\",\n        \"didTopic\": \"pariatur tempor consectetur Lorem\",\n        \"vcTopic\": \"non ipsum ex velit irure\",\n        \"didServerUrl\": \"e\",\n        \"didTopicMemo\": \"ut\",\n        \"vcTopicMemo\": \"officia lab\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -953,8 +953,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that needs to be updated"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to update the information."
 										}
 									]
 								}
@@ -969,12 +969,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Returns user's Hedera account balance",
+					"name": "Returns user's Hedera account balance.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1001,16 +1001,16 @@
 							"variable": [
 								{
 									"key": "username",
-									"value": "cupidatat ut",
-									"description": "(Required) The name that balance needs to be fetched"
+									"value": "qui cillum dolore dolor",
+									"description": "(Required) The name of the user for whom to fetch the balance."
 								}
 							]
 						},
-						"description": "Request Hedera account balance. Only users with the Installer role are allowed to make request."
+						"description": "Requests Hedera account balance. Only users with the Installer role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -1033,8 +1033,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that balance needs to be fetched"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to fetch the balance."
 										}
 									]
 								}
@@ -1049,10 +1049,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "\"cupidatat ut\""
+							"body": "\"qui cillum dolore dolor\""
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -1075,8 +1075,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that balance needs to be fetched"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to fetch the balance."
 										}
 									]
 								}
@@ -1094,7 +1094,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -1117,8 +1117,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that balance needs to be fetched"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to fetch the balance."
 										}
 									]
 								}
@@ -1136,7 +1136,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -1159,8 +1159,8 @@
 									"variable": [
 										{
 											"key": "username",
-											"value": "cupidatat ut",
-											"description": "(Required) The name that balance needs to be fetched"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) The name of the user for whom to fetch the balance."
 										}
 									]
 								}
@@ -1175,7 +1175,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				}
@@ -1188,7 +1188,7 @@
 					"name": "{schema Id}",
 					"item": [
 						{
-							"name": "Update schema",
+							"name": "Updates the schema.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -1209,7 +1209,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+									"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1228,16 +1228,16 @@
 									"variable": [
 										{
 											"key": "schemaId",
-											"value": "cupidatat ut",
-											"description": "(Required) Schema Id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Schema ID."
 										}
 									]
 								},
-								"description": "Updates schema with provided Id"
+								"description": "Updates the schema with the provided schema ID."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1249,7 +1249,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+											"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1268,8 +1268,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1284,10 +1284,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "[\n {\n  \"id\": \"ut consequat Ut\",\n  \"uuid\": \"ut veniam ex\",\n  \"name\": \"adipisicing in consequat\",\n  \"description\": \"mollit in labore voluptate\",\n  \"entity\": \"quis fugiat anim\",\n  \"hash\": \"dolor sit quis\",\n  \"status\": \"ut quis\",\n  \"document\": \"officia Lorem irure quis deserunt\"\n },\n {\n  \"id\": \"enim proident est minim\",\n  \"uuid\": \"ut Duis irure occaecat\",\n  \"name\": \"ut\",\n  \"description\": \"eu eiusmod laborum consequat\",\n  \"entity\": \"incididunt\",\n  \"hash\": \"irure cupidatat\",\n  \"status\": \"sint Excepteur amet et\",\n  \"document\": \"qui dolore\"\n }\n]"
+									"body": "[\n {\n  \"id\": \"commodo cillum veniam minim sed\",\n  \"uuid\": \"cupidatat ut aute\",\n  \"name\": \"mollit\",\n  \"description\": \"aliquip eiusmod ul\",\n  \"entity\": \"ad exercitation consequat\",\n  \"hash\": \"laborum Duis\",\n  \"status\": \"deserunt esse fugiat\",\n  \"document\": \"aliquip eu\"\n },\n {\n  \"id\": \"commodo\",\n  \"uuid\": \"exercitation\",\n  \"name\": \"non sint qui ex\",\n  \"description\": \"adipisicing est magna aliqua reprehenderit\",\n  \"entity\": \"pariatur\",\n  \"hash\": \"mollit \",\n  \"status\": \"nulla fugiat sunt reprehenderit\",\n  \"document\": \"ut sunt sint\"\n }\n]"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1299,7 +1299,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+											"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1318,8 +1318,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1337,7 +1337,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1349,7 +1349,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+											"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1368,8 +1368,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1387,7 +1387,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1399,7 +1399,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+											"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1418,8 +1418,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1434,12 +1434,12 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
 						{
-							"name": "Delete schema",
+							"name": "Deletes the schema.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -1465,16 +1465,16 @@
 									"variable": [
 										{
 											"key": "schemaId",
-											"value": "cupidatat ut",
-											"description": "(Required) Schema Id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Schema ID."
 										}
 									]
 								},
-								"description": "Deletes schema with provided Id"
+								"description": "Deletes the schema with the provided schema ID."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "DELETE",
 										"header": [
@@ -1496,8 +1496,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1512,10 +1512,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "[\n {\n  \"id\": \"ut consequat Ut\",\n  \"uuid\": \"ut veniam ex\",\n  \"name\": \"adipisicing in consequat\",\n  \"description\": \"mollit in labore voluptate\",\n  \"entity\": \"quis fugiat anim\",\n  \"hash\": \"dolor sit quis\",\n  \"status\": \"ut quis\",\n  \"document\": \"officia Lorem irure quis deserunt\"\n },\n {\n  \"id\": \"enim proident est minim\",\n  \"uuid\": \"ut Duis irure occaecat\",\n  \"name\": \"ut\",\n  \"description\": \"eu eiusmod laborum consequat\",\n  \"entity\": \"incididunt\",\n  \"hash\": \"irure cupidatat\",\n  \"status\": \"sint Excepteur amet et\",\n  \"document\": \"qui dolore\"\n }\n]"
+									"body": "[\n {\n  \"id\": \"commodo cillum veniam minim sed\",\n  \"uuid\": \"cupidatat ut aute\",\n  \"name\": \"mollit\",\n  \"description\": \"aliquip eiusmod ul\",\n  \"entity\": \"ad exercitation consequat\",\n  \"hash\": \"laborum Duis\",\n  \"status\": \"deserunt esse fugiat\",\n  \"document\": \"aliquip eu\"\n },\n {\n  \"id\": \"commodo\",\n  \"uuid\": \"exercitation\",\n  \"name\": \"non sint qui ex\",\n  \"description\": \"adipisicing est magna aliqua reprehenderit\",\n  \"entity\": \"pariatur\",\n  \"hash\": \"mollit \",\n  \"status\": \"nulla fugiat sunt reprehenderit\",\n  \"document\": \"ut sunt sint\"\n }\n]"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "DELETE",
 										"header": [
@@ -1537,8 +1537,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1556,7 +1556,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "DELETE",
 										"header": [
@@ -1578,8 +1578,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1597,7 +1597,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "DELETE",
 										"header": [
@@ -1619,8 +1619,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1635,12 +1635,12 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
 						{
-							"name": "Publish schema",
+							"name": "Publishes the schema.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -1667,16 +1667,16 @@
 									"variable": [
 										{
 											"key": "schemaId",
-											"value": "cupidatat ut",
-											"description": "(Required) Schema Id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Schema ID."
 										}
 									]
 								},
-								"description": "Publish schema with provided schemaId"
+								"description": "Publishes the schema with the provided schema ID."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1699,8 +1699,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1715,10 +1715,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "[\n {\n  \"id\": \"ut consequat Ut\",\n  \"uuid\": \"ut veniam ex\",\n  \"name\": \"adipisicing in consequat\",\n  \"description\": \"mollit in labore voluptate\",\n  \"entity\": \"quis fugiat anim\",\n  \"hash\": \"dolor sit quis\",\n  \"status\": \"ut quis\",\n  \"document\": \"officia Lorem irure quis deserunt\"\n },\n {\n  \"id\": \"enim proident est minim\",\n  \"uuid\": \"ut Duis irure occaecat\",\n  \"name\": \"ut\",\n  \"description\": \"eu eiusmod laborum consequat\",\n  \"entity\": \"incididunt\",\n  \"hash\": \"irure cupidatat\",\n  \"status\": \"sint Excepteur amet et\",\n  \"document\": \"qui dolore\"\n }\n]"
+									"body": "[\n {\n  \"id\": \"commodo cillum veniam minim sed\",\n  \"uuid\": \"cupidatat ut aute\",\n  \"name\": \"mollit\",\n  \"description\": \"aliquip eiusmod ul\",\n  \"entity\": \"ad exercitation consequat\",\n  \"hash\": \"laborum Duis\",\n  \"status\": \"deserunt esse fugiat\",\n  \"document\": \"aliquip eu\"\n },\n {\n  \"id\": \"commodo\",\n  \"uuid\": \"exercitation\",\n  \"name\": \"non sint qui ex\",\n  \"description\": \"adipisicing est magna aliqua reprehenderit\",\n  \"entity\": \"pariatur\",\n  \"hash\": \"mollit \",\n  \"status\": \"nulla fugiat sunt reprehenderit\",\n  \"document\": \"ut sunt sint\"\n }\n]"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1741,8 +1741,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1760,7 +1760,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1783,8 +1783,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1802,7 +1802,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1825,8 +1825,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1841,12 +1841,12 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
 						{
-							"name": "Unpublish schema",
+							"name": "Unpublishes the schema.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -1873,16 +1873,16 @@
 									"variable": [
 										{
 											"key": "schemaId",
-											"value": "cupidatat ut",
-											"description": "(Required) Schema Id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Schema ID."
 										}
 									]
 								},
-								"description": "Unpublish schema with provided schemaId."
+								"description": "Unpublishes the schema with the provided schema ID."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1905,8 +1905,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1921,10 +1921,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "[\n {\n  \"id\": \"ut consequat Ut\",\n  \"uuid\": \"ut veniam ex\",\n  \"name\": \"adipisicing in consequat\",\n  \"description\": \"mollit in labore voluptate\",\n  \"entity\": \"quis fugiat anim\",\n  \"hash\": \"dolor sit quis\",\n  \"status\": \"ut quis\",\n  \"document\": \"officia Lorem irure quis deserunt\"\n },\n {\n  \"id\": \"enim proident est minim\",\n  \"uuid\": \"ut Duis irure occaecat\",\n  \"name\": \"ut\",\n  \"description\": \"eu eiusmod laborum consequat\",\n  \"entity\": \"incididunt\",\n  \"hash\": \"irure cupidatat\",\n  \"status\": \"sint Excepteur amet et\",\n  \"document\": \"qui dolore\"\n }\n]"
+									"body": "[\n {\n  \"id\": \"commodo cillum veniam minim sed\",\n  \"uuid\": \"cupidatat ut aute\",\n  \"name\": \"mollit\",\n  \"description\": \"aliquip eiusmod ul\",\n  \"entity\": \"ad exercitation consequat\",\n  \"hash\": \"laborum Duis\",\n  \"status\": \"deserunt esse fugiat\",\n  \"document\": \"aliquip eu\"\n },\n {\n  \"id\": \"commodo\",\n  \"uuid\": \"exercitation\",\n  \"name\": \"non sint qui ex\",\n  \"description\": \"adipisicing est magna aliqua reprehenderit\",\n  \"entity\": \"pariatur\",\n  \"hash\": \"mollit \",\n  \"status\": \"nulla fugiat sunt reprehenderit\",\n  \"document\": \"ut sunt sint\"\n }\n]"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1947,8 +1947,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -1966,7 +1966,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -1989,8 +1989,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -2008,7 +2008,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -2031,8 +2031,8 @@
 											"variable": [
 												{
 													"key": "schemaId",
-													"value": "cupidatat ut",
-													"description": "(Required) Schema Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Schema ID."
 												}
 											]
 										}
@@ -2047,14 +2047,14 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						}
 					]
 				},
 				{
-					"name": "Create new schema",
+					"name": "Create new schema.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2075,7 +2075,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+							"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2091,11 +2091,11 @@
 								"schemas"
 							]
 						},
-						"description": "Create new schema. Only users with the Root Authority role are allowed to make request."
+						"description": "Creates new schema. Only users with the Root Authority role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2107,7 +2107,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+									"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2137,7 +2137,7 @@
 							"body": ""
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2149,7 +2149,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+									"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2179,7 +2179,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2191,7 +2191,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+									"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2221,7 +2221,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2233,7 +2233,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": \"enim do\",\n    \"uuid\": \"aliqua\",\n    \"name\": \"laborum amet velit tempor nisi\",\n    \"description\": \"enim mollit officia\",\n    \"entity\": \"commodo do officia dolor\",\n    \"hash\": \"culpa\",\n    \"status\": \"ullamco nisi nulla\",\n    \"document\": \"fugiat sit sunt\"\n}",
+									"raw": "{\n    \"id\": \"ex\",\n    \"uuid\": \"nulla esse amet culpa\",\n    \"name\": \"labore elit\",\n    \"description\": \"ex Duis commodo ipsum\",\n    \"entity\": \"dolore ut est\",\n    \"hash\": \"culpa qui\",\n    \"status\": \"dolor aute exercitation\",\n    \"document\": \"laboris in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2260,12 +2260,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Returns all schemas",
+					"name": "Returns all schemas.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2288,11 +2288,11 @@
 								"schemas"
 							]
 						},
-						"description": "Returns all schemas"
+						"description": "Returns all schemas."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -2322,10 +2322,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "[\n {\n  \"id\": \"ut consequat Ut\",\n  \"uuid\": \"ut veniam ex\",\n  \"name\": \"adipisicing in consequat\",\n  \"description\": \"mollit in labore voluptate\",\n  \"entity\": \"quis fugiat anim\",\n  \"hash\": \"dolor sit quis\",\n  \"status\": \"ut quis\",\n  \"document\": \"officia Lorem irure quis deserunt\"\n },\n {\n  \"id\": \"enim proident est minim\",\n  \"uuid\": \"ut Duis irure occaecat\",\n  \"name\": \"ut\",\n  \"description\": \"eu eiusmod laborum consequat\",\n  \"entity\": \"incididunt\",\n  \"hash\": \"irure cupidatat\",\n  \"status\": \"sint Excepteur amet et\",\n  \"document\": \"qui dolore\"\n }\n]"
+							"body": "[\n {\n  \"id\": \"commodo cillum veniam minim sed\",\n  \"uuid\": \"cupidatat ut aute\",\n  \"name\": \"mollit\",\n  \"description\": \"aliquip eiusmod ul\",\n  \"entity\": \"ad exercitation consequat\",\n  \"hash\": \"laborum Duis\",\n  \"status\": \"deserunt esse fugiat\",\n  \"document\": \"aliquip eu\"\n },\n {\n  \"id\": \"commodo\",\n  \"uuid\": \"exercitation\",\n  \"name\": \"non sint qui ex\",\n  \"description\": \"adipisicing est magna aliqua reprehenderit\",\n  \"entity\": \"pariatur\",\n  \"hash\": \"mollit \",\n  \"status\": \"nulla fugiat sunt reprehenderit\",\n  \"document\": \"ut sunt sint\"\n }\n]"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -2358,7 +2358,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -2391,7 +2391,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -2421,12 +2421,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Import new schemas",
+					"name": "Imports new schemas.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2447,7 +2447,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"proident reprehenderit ut tempor\",\n            \"entity\": \"magna irure Duis\",\n            \"hash\": \"Excepteur ad eiusmod\",\n            \"name\": \"aliquip Ut ut id\",\n            \"uuid\": \"dolor Duis in\"\n        },\n        {\n            \"document\": \"voluptate ut\",\n            \"entity\": \"mollit exercitation volup\",\n            \"hash\": \"cillum incididunt tempor et\",\n            \"name\": \"officia\",\n            \"uuid\": \"esse elit cillum irure\"\n        }\n    ]\n}",
+							"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"in sit ipsum dolor\",\n            \"entity\": \"dolore in dolor\",\n            \"hash\": \"ad Excepteur officia\",\n            \"name\": \"consectetur exercitation esse\",\n            \"uuid\": \"cillum ipsum esse aute\"\n        },\n        {\n            \"document\": \"esse ad consequat\",\n            \"entity\": \"culpa voluptate in\",\n            \"hash\": \"officia deserunt id aliquip\",\n            \"name\": \"laboris ipsum\",\n            \"uuid\": \"ex nostrud ad\"\n        }\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2464,11 +2464,11 @@
 								"import"
 							]
 						},
-						"description": "Import new schemas. Only users with the Root Authority role are allowed to make request."
+						"description": "Imports new schemas. Only users with the Root Authority role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2480,7 +2480,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"ut aute labore\",\n            \"entity\": \"est nisi sed t\",\n            \"hash\": \"mollit exercitation eiusm\",\n            \"name\": \"anim\",\n            \"uuid\": \"veniam Duis ut culpa eiusmod\"\n        },\n        {\n            \"document\": \"esse\",\n            \"entity\": \"in dolor et Lorem\",\n            \"hash\": \"consequat adipisicing\",\n            \"name\": \"eu in nisi consectetur\",\n            \"uuid\": \"irure aliqua ut ea\"\n        }\n    ]\n}",
+									"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"amet exercitat\",\n            \"entity\": \"ullamco\",\n            \"hash\": \"consectetur ipsum adipisicing eli\",\n            \"name\": \"est officia aliquip consequat\",\n            \"uuid\": \"proident Lorem fugiat cupidatat sed\"\n        },\n        {\n            \"document\": \"ipsum officia\",\n            \"entity\": \"est fugiat consequat\",\n            \"hash\": \"deserunt enim minim occaecat consequat\",\n            \"name\": \"Lorem in ea\",\n            \"uuid\": \"laborum cupidatat\"\n        }\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2508,10 +2508,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "[\n {\n  \"id\": \"ut consequat Ut\",\n  \"uuid\": \"ut veniam ex\",\n  \"name\": \"adipisicing in consequat\",\n  \"description\": \"mollit in labore voluptate\",\n  \"entity\": \"quis fugiat anim\",\n  \"hash\": \"dolor sit quis\",\n  \"status\": \"ut quis\",\n  \"document\": \"officia Lorem irure quis deserunt\"\n },\n {\n  \"id\": \"enim proident est minim\",\n  \"uuid\": \"ut Duis irure occaecat\",\n  \"name\": \"ut\",\n  \"description\": \"eu eiusmod laborum consequat\",\n  \"entity\": \"incididunt\",\n  \"hash\": \"irure cupidatat\",\n  \"status\": \"sint Excepteur amet et\",\n  \"document\": \"qui dolore\"\n }\n]"
+							"body": "[\n {\n  \"id\": \"commodo cillum veniam minim sed\",\n  \"uuid\": \"cupidatat ut aute\",\n  \"name\": \"mollit\",\n  \"description\": \"aliquip eiusmod ul\",\n  \"entity\": \"ad exercitation consequat\",\n  \"hash\": \"laborum Duis\",\n  \"status\": \"deserunt esse fugiat\",\n  \"document\": \"aliquip eu\"\n },\n {\n  \"id\": \"commodo\",\n  \"uuid\": \"exercitation\",\n  \"name\": \"non sint qui ex\",\n  \"description\": \"adipisicing est magna aliqua reprehenderit\",\n  \"entity\": \"pariatur\",\n  \"hash\": \"mollit \",\n  \"status\": \"nulla fugiat sunt reprehenderit\",\n  \"document\": \"ut sunt sint\"\n }\n]"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2523,7 +2523,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"ut aute labore\",\n            \"entity\": \"est nisi sed t\",\n            \"hash\": \"mollit exercitation eiusm\",\n            \"name\": \"anim\",\n            \"uuid\": \"veniam Duis ut culpa eiusmod\"\n        },\n        {\n            \"document\": \"esse\",\n            \"entity\": \"in dolor et Lorem\",\n            \"hash\": \"consequat adipisicing\",\n            \"name\": \"eu in nisi consectetur\",\n            \"uuid\": \"irure aliqua ut ea\"\n        }\n    ]\n}",
+									"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"amet exercitat\",\n            \"entity\": \"ullamco\",\n            \"hash\": \"consectetur ipsum adipisicing eli\",\n            \"name\": \"est officia aliquip consequat\",\n            \"uuid\": \"proident Lorem fugiat cupidatat sed\"\n        },\n        {\n            \"document\": \"ipsum officia\",\n            \"entity\": \"est fugiat consequat\",\n            \"hash\": \"deserunt enim minim occaecat consequat\",\n            \"name\": \"Lorem in ea\",\n            \"uuid\": \"laborum cupidatat\"\n        }\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2554,7 +2554,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2566,7 +2566,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"ut aute labore\",\n            \"entity\": \"est nisi sed t\",\n            \"hash\": \"mollit exercitation eiusm\",\n            \"name\": \"anim\",\n            \"uuid\": \"veniam Duis ut culpa eiusmod\"\n        },\n        {\n            \"document\": \"esse\",\n            \"entity\": \"in dolor et Lorem\",\n            \"hash\": \"consequat adipisicing\",\n            \"name\": \"eu in nisi consectetur\",\n            \"uuid\": \"irure aliqua ut ea\"\n        }\n    ]\n}",
+									"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"amet exercitat\",\n            \"entity\": \"ullamco\",\n            \"hash\": \"consectetur ipsum adipisicing eli\",\n            \"name\": \"est officia aliquip consequat\",\n            \"uuid\": \"proident Lorem fugiat cupidatat sed\"\n        },\n        {\n            \"document\": \"ipsum officia\",\n            \"entity\": \"est fugiat consequat\",\n            \"hash\": \"deserunt enim minim occaecat consequat\",\n            \"name\": \"Lorem in ea\",\n            \"uuid\": \"laborum cupidatat\"\n        }\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2597,7 +2597,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2609,7 +2609,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"ut aute labore\",\n            \"entity\": \"est nisi sed t\",\n            \"hash\": \"mollit exercitation eiusm\",\n            \"name\": \"anim\",\n            \"uuid\": \"veniam Duis ut culpa eiusmod\"\n        },\n        {\n            \"document\": \"esse\",\n            \"entity\": \"in dolor et Lorem\",\n            \"hash\": \"consequat adipisicing\",\n            \"name\": \"eu in nisi consectetur\",\n            \"uuid\": \"irure aliqua ut ea\"\n        }\n    ]\n}",
+									"raw": "{\n    \"schemes\": [\n        {\n            \"document\": \"amet exercitat\",\n            \"entity\": \"ullamco\",\n            \"hash\": \"consectetur ipsum adipisicing eli\",\n            \"name\": \"est officia aliquip consequat\",\n            \"uuid\": \"proident Lorem fugiat cupidatat sed\"\n        },\n        {\n            \"document\": \"ipsum officia\",\n            \"entity\": \"est fugiat consequat\",\n            \"hash\": \"deserunt enim minim occaecat consequat\",\n            \"name\": \"Lorem in ea\",\n            \"uuid\": \"laborum cupidatat\"\n        }\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2637,12 +2637,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Export selected schemas",
+					"name": "Exports selected schemas.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2663,7 +2663,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"ids\": [\n        \"ullamco dolor culpa\",\n        \"ea ipsum cupidatat mollit\"\n    ]\n}",
+							"raw": "{\n    \"ids\": [\n        \"sit labore deserunt eu\",\n        \"Ut voluptate est\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2680,11 +2680,11 @@
 								"export"
 							]
 						},
-						"description": "Export selected schemas. Only users with the Root Authority role are allowed to make request."
+						"description": "Exports selected schemas. Only users with the Root Authority role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2696,7 +2696,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"ids\": [\n        \"dolore anim in quis cupidatat\",\n        \"dolor in ea\"\n    ]\n}",
+									"raw": "{\n    \"ids\": [\n        \"in laboris sunt in dolore\",\n        \"aute exercita\"\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2724,10 +2724,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"schemes\": [\n  {\n   \"document\": \"ut aute labore\",\n   \"entity\": \"est nisi sed t\",\n   \"hash\": \"mollit exercitation eiusm\",\n   \"name\": \"anim\",\n   \"uuid\": \"veniam Duis ut culpa eiusmod\"\n  },\n  {\n   \"document\": \"esse\",\n   \"entity\": \"in dolor et Lorem\",\n   \"hash\": \"consequat adipisicing\",\n   \"name\": \"eu in nisi consectetur\",\n   \"uuid\": \"irure aliqua ut ea\"\n  }\n ]\n}"
+							"body": "{\n \"schemes\": [\n  {\n   \"document\": \"amet exercitat\",\n   \"entity\": \"ullamco\",\n   \"hash\": \"consectetur ipsum adipisicing eli\",\n   \"name\": \"est officia aliquip consequat\",\n   \"uuid\": \"proident Lorem fugiat cupidatat sed\"\n  },\n  {\n   \"document\": \"ipsum officia\",\n   \"entity\": \"est fugiat consequat\",\n   \"hash\": \"deserunt enim minim occaecat consequat\",\n   \"name\": \"Lorem in ea\",\n   \"uuid\": \"laborum cupidatat\"\n  }\n ]\n}"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2739,7 +2739,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"ids\": [\n        \"dolore anim in quis cupidatat\",\n        \"dolor in ea\"\n    ]\n}",
+									"raw": "{\n    \"ids\": [\n        \"in laboris sunt in dolore\",\n        \"aute exercita\"\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2770,7 +2770,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2782,7 +2782,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"ids\": [\n        \"dolore anim in quis cupidatat\",\n        \"dolor in ea\"\n    ]\n}",
+									"raw": "{\n    \"ids\": [\n        \"in laboris sunt in dolore\",\n        \"aute exercita\"\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2813,7 +2813,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -2825,7 +2825,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"ids\": [\n        \"dolore anim in quis cupidatat\",\n        \"dolor in ea\"\n    ]\n}",
+									"raw": "{\n    \"ids\": [\n        \"in laboris sunt in dolore\",\n        \"aute exercita\"\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2853,7 +2853,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				}
@@ -2897,21 +2897,21 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												},
 												{
 													"key": "username",
-													"value": "cupidatat ut",
-													"description": "(Required) Username"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Username."
 												}
 											]
 										},
-										"description": "Returns user information for selected token. Only users with the Root Authority role are allowed to make request."
+										"description": "Returns user information for the selected token. Only users with the Root Authority role are allowed to make the request."
 									},
 									"response": [
 										{
-											"name": "Successful operation",
+											"name": "Successful operation.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -2935,13 +2935,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -2956,10 +2956,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"id\": \"ipsum\",\n \"tokenId\": \"dolor\",\n \"tokenName\": \"Ut labore\",\n \"tokenSymbol\": \"occaecat\",\n \"tokenType\": \"quis laborum proident dolor\",\n \"decimals\": \"est tempor magna\",\n \"associated\": false,\n \"balance\": \"qui\",\n \"frozen\": false,\n \"kyc\": false\n}"
+											"body": "{\n \"id\": \"ullamco nostrud magna\",\n \"tokenId\": \"ullamco magna aliqua nulla\",\n \"tokenName\": \"irure aute consequat cupidatat\",\n \"tokenSymbol\": \"voluptate mollit eiusmod qui\",\n \"tokenType\": \"dolor enim irure quis\",\n \"decimals\": \"eiusmod Duis exercitation ut\",\n \"associated\": false,\n \"balance\": \"commodo Ut in ut\",\n \"frozen\": true,\n \"kyc\": true\n}"
 										},
 										{
-											"name": "Bad Request",
+											"name": "Bad Request.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -2983,13 +2983,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3004,10 +3004,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										},
 										{
-											"name": "Unauthorized",
+											"name": "Unauthorized.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -3031,13 +3031,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3055,7 +3055,7 @@
 											"body": ""
 										},
 										{
-											"name": "Forbidden",
+											"name": "Forbidden.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -3079,13 +3079,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3103,7 +3103,7 @@
 											"body": ""
 										},
 										{
-											"name": "Internal server error",
+											"name": "Internal server error.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -3127,13 +3127,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3148,12 +3148,12 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										}
 									]
 								},
 								{
-									"name": "Set KYC flag for the user",
+									"name": "Sets the KYC flag for the user.",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -3181,21 +3181,21 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												},
 												{
 													"key": "username",
-													"value": "cupidatat ut",
-													"description": "(Required) Username"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Username."
 												}
 											]
 										},
-										"description": "Set KYC flag for the user. Only users with the Root Authority role are allowed to make request."
+										"description": "Sets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request."
 									},
 									"response": [
 										{
-											"name": "Successful operation",
+											"name": "Successful operation.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3219,13 +3219,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3240,10 +3240,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"id\": \"ipsum\",\n \"tokenId\": \"dolor\",\n \"tokenName\": \"Ut labore\",\n \"tokenSymbol\": \"occaecat\",\n \"tokenType\": \"quis laborum proident dolor\",\n \"decimals\": \"est tempor magna\",\n \"associated\": false,\n \"balance\": \"qui\",\n \"frozen\": false,\n \"kyc\": false\n}"
+											"body": "{\n \"id\": \"ullamco nostrud magna\",\n \"tokenId\": \"ullamco magna aliqua nulla\",\n \"tokenName\": \"irure aute consequat cupidatat\",\n \"tokenSymbol\": \"voluptate mollit eiusmod qui\",\n \"tokenType\": \"dolor enim irure quis\",\n \"decimals\": \"eiusmod Duis exercitation ut\",\n \"associated\": false,\n \"balance\": \"commodo Ut in ut\",\n \"frozen\": true,\n \"kyc\": true\n}"
 										},
 										{
-											"name": "Bad Request",
+											"name": "Bad Request.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3267,13 +3267,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3288,10 +3288,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										},
 										{
-											"name": "Unauthorized",
+											"name": "Unauthorized.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3315,13 +3315,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3339,7 +3339,7 @@
 											"body": ""
 										},
 										{
-											"name": "Forbidden",
+											"name": "Forbidden.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3363,13 +3363,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3387,7 +3387,7 @@
 											"body": ""
 										},
 										{
-											"name": "Internal server error",
+											"name": "Internal server error.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3411,13 +3411,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3432,12 +3432,12 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										}
 									]
 								},
 								{
-									"name": "Unset KYC flag for the user",
+									"name": "Unsets the KYC flag for the user.",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -3465,21 +3465,21 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												},
 												{
 													"key": "username",
-													"value": "cupidatat ut",
-													"description": "(Required) Username"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Username."
 												}
 											]
 										},
-										"description": "Unset KYC flag for the user. Only users with the Root Authority role are allowed to make request."
+										"description": "Unsets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request."
 									},
 									"response": [
 										{
-											"name": "Successful operation",
+											"name": "Successful operation.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3503,13 +3503,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3524,10 +3524,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"id\": \"ipsum\",\n \"tokenId\": \"dolor\",\n \"tokenName\": \"Ut labore\",\n \"tokenSymbol\": \"occaecat\",\n \"tokenType\": \"quis laborum proident dolor\",\n \"decimals\": \"est tempor magna\",\n \"associated\": false,\n \"balance\": \"qui\",\n \"frozen\": false,\n \"kyc\": false\n}"
+											"body": "{\n \"id\": \"ullamco nostrud magna\",\n \"tokenId\": \"ullamco magna aliqua nulla\",\n \"tokenName\": \"irure aute consequat cupidatat\",\n \"tokenSymbol\": \"voluptate mollit eiusmod qui\",\n \"tokenType\": \"dolor enim irure quis\",\n \"decimals\": \"eiusmod Duis exercitation ut\",\n \"associated\": false,\n \"balance\": \"commodo Ut in ut\",\n \"frozen\": true,\n \"kyc\": true\n}"
 										},
 										{
-											"name": "Bad Request",
+											"name": "Bad Request.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3551,13 +3551,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3572,10 +3572,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										},
 										{
-											"name": "Unauthorized",
+											"name": "Unauthorized.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3599,13 +3599,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3623,7 +3623,7 @@
 											"body": ""
 										},
 										{
-											"name": "Forbidden",
+											"name": "Forbidden.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3647,13 +3647,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3671,7 +3671,7 @@
 											"body": ""
 										},
 										{
-											"name": "Internal server error",
+											"name": "Internal server error.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3695,13 +3695,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3716,12 +3716,12 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										}
 									]
 								},
 								{
-									"name": "Freeze transfers of the specified token for the user",
+									"name": "Freeze transfers of the specified token for the user.",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -3749,21 +3749,21 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												},
 												{
 													"key": "username",
-													"value": "cupidatat ut",
-													"description": "(Required) Username"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Username."
 												}
 											]
 										},
-										"description": "Freeze transfers of the specified token for the user. Only users with the Root Authority role are allowed to make request."
+										"description": "Freezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request."
 									},
 									"response": [
 										{
-											"name": "Successful operation",
+											"name": "Successful operation.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3787,13 +3787,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3808,10 +3808,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"id\": \"ipsum\",\n \"tokenId\": \"dolor\",\n \"tokenName\": \"Ut labore\",\n \"tokenSymbol\": \"occaecat\",\n \"tokenType\": \"quis laborum proident dolor\",\n \"decimals\": \"est tempor magna\",\n \"associated\": false,\n \"balance\": \"qui\",\n \"frozen\": false,\n \"kyc\": false\n}"
+											"body": "{\n \"id\": \"ullamco nostrud magna\",\n \"tokenId\": \"ullamco magna aliqua nulla\",\n \"tokenName\": \"irure aute consequat cupidatat\",\n \"tokenSymbol\": \"voluptate mollit eiusmod qui\",\n \"tokenType\": \"dolor enim irure quis\",\n \"decimals\": \"eiusmod Duis exercitation ut\",\n \"associated\": false,\n \"balance\": \"commodo Ut in ut\",\n \"frozen\": true,\n \"kyc\": true\n}"
 										},
 										{
-											"name": "Bad Request",
+											"name": "Bad Request.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3835,13 +3835,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3856,10 +3856,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										},
 										{
-											"name": "Unauthorized",
+											"name": "Unauthorized.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3883,13 +3883,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3907,7 +3907,7 @@
 											"body": ""
 										},
 										{
-											"name": "Forbidden",
+											"name": "Forbidden.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3931,13 +3931,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -3955,7 +3955,7 @@
 											"body": ""
 										},
 										{
-											"name": "Internal server error",
+											"name": "Internal server error.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -3979,13 +3979,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -4000,12 +4000,12 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										}
 									]
 								},
 								{
-									"name": "Unfreeze transfers of the specified token for the user",
+									"name": "Unfreezes transfers of the specified token for the user.",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -4033,21 +4033,21 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												},
 												{
 													"key": "username",
-													"value": "cupidatat ut",
-													"description": "(Required) Username"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Username."
 												}
 											]
 										},
-										"description": "Unfreeze transfers of the specified token for the user. Only users with the Root Authority role are allowed to make request."
+										"description": "Unfreezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request."
 									},
 									"response": [
 										{
-											"name": "Successful operation",
+											"name": "Successful operation.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -4071,13 +4071,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -4092,10 +4092,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"id\": \"ipsum\",\n \"tokenId\": \"dolor\",\n \"tokenName\": \"Ut labore\",\n \"tokenSymbol\": \"occaecat\",\n \"tokenType\": \"quis laborum proident dolor\",\n \"decimals\": \"est tempor magna\",\n \"associated\": false,\n \"balance\": \"qui\",\n \"frozen\": false,\n \"kyc\": false\n}"
+											"body": "{\n \"id\": \"ullamco nostrud magna\",\n \"tokenId\": \"ullamco magna aliqua nulla\",\n \"tokenName\": \"irure aute consequat cupidatat\",\n \"tokenSymbol\": \"voluptate mollit eiusmod qui\",\n \"tokenType\": \"dolor enim irure quis\",\n \"decimals\": \"eiusmod Duis exercitation ut\",\n \"associated\": false,\n \"balance\": \"commodo Ut in ut\",\n \"frozen\": true,\n \"kyc\": true\n}"
 										},
 										{
-											"name": "Bad Request",
+											"name": "Bad Request.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -4119,13 +4119,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -4140,10 +4140,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										},
 										{
-											"name": "Unauthorized",
+											"name": "Unauthorized.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -4167,13 +4167,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -4191,7 +4191,7 @@
 											"body": ""
 										},
 										{
-											"name": "Forbidden",
+											"name": "Forbidden.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -4215,13 +4215,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -4239,7 +4239,7 @@
 											"body": ""
 										},
 										{
-											"name": "Internal server error",
+											"name": "Internal server error.",
 											"originalRequest": {
 												"method": "PUT",
 												"header": [
@@ -4263,13 +4263,13 @@
 													"variable": [
 														{
 															"key": "tokenId",
-															"value": "cupidatat ut",
-															"description": "(Required) Token Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Token ID."
 														},
 														{
 															"key": "username",
-															"value": "cupidatat ut",
-															"description": "(Required) Username"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Username."
 														}
 													]
 												}
@@ -4284,14 +4284,14 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										}
 									]
 								}
 							]
 						},
 						{
-							"name": "Associates the user with the provided Hedera token",
+							"name": "Associates the user with the provided Hedera token.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -4318,16 +4318,16 @@
 									"variable": [
 										{
 											"key": "tokenId",
-											"value": "cupidatat ut",
-											"description": "(Required) Token Id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Token ID."
 										}
 									]
 								},
-								"description": "Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make request."
+								"description": "Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -4350,8 +4350,8 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												}
 											]
 										}
@@ -4369,7 +4369,7 @@
 									"body": ""
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -4392,8 +4392,8 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												}
 											]
 										}
@@ -4411,7 +4411,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -4434,8 +4434,8 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												}
 											]
 										}
@@ -4453,7 +4453,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -4476,8 +4476,8 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												}
 											]
 										}
@@ -4492,12 +4492,12 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
 						{
-							"name": "Associate the user with the provided Hedera token",
+							"name": "Associate the user with the provided Hedera token.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -4524,16 +4524,16 @@
 									"variable": [
 										{
 											"key": "tokenId",
-											"value": "cupidatat ut",
-											"description": "(Required) Token Id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Token ID."
 										}
 									]
 								},
-								"description": "Disassociates the user with the provided Hedera token. Only users with the Installer role are allowed to make request."
+								"description": "Disassociates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -4556,8 +4556,8 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												}
 											]
 										}
@@ -4575,7 +4575,7 @@
 									"body": ""
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -4598,8 +4598,8 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												}
 											]
 										}
@@ -4617,7 +4617,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -4640,8 +4640,8 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												}
 											]
 										}
@@ -4659,7 +4659,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -4682,8 +4682,8 @@
 											"variable": [
 												{
 													"key": "tokenId",
-													"value": "cupidatat ut",
-													"description": "(Required) Token Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Token ID."
 												}
 											]
 										}
@@ -4698,14 +4698,14 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						}
 					]
 				},
 				{
-					"name": "Return a list of tokens",
+					"name": "Return a list of tokens.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -4728,11 +4728,11 @@
 								"tokens"
 							]
 						},
-						"description": "Returns all tokens. For the Root Authority role it returns only the list of tokens, for other users it also returns tokens balance as well as KYC, Freeze, Association statuses. Not allowed for the Auditor role."
+						"description": "Returns all tokens. For the Root Authority role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -4762,10 +4762,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "[\n {\n  \"id\": \"ani\",\n  \"tokenId\": \"reprehenderit in elit incididunt qui\",\n  \"tokenName\": \"et\",\n  \"tokenSymbol\": \"aliqua\",\n  \"tokenType\": \"qui sint do sed\",\n  \"decimals\": \"Duis anim est\",\n  \"associated\": true,\n  \"balance\": \"ve\",\n  \"frozen\": true,\n  \"kyc\": false\n },\n {\n  \"id\": \"in sunt\",\n  \"tokenId\": \"sed\",\n  \"tokenName\": \"laboris sunt\",\n  \"tokenSymbol\": \"ex dolore\",\n  \"tokenType\": \"sunt irure\",\n  \"decimals\": \"reprehe\",\n  \"associated\": true,\n  \"balance\": \"adipisicing aliqua ea\",\n  \"frozen\": false,\n  \"kyc\": true\n }\n]"
+							"body": "[\n {\n  \"id\": \"occaecat\",\n  \"tokenId\": \"dolore culpa Ut\",\n  \"tokenName\": \"occaecat nisi\",\n  \"tokenSymbol\": \"pariatur nostrud velit offi\",\n  \"tokenType\": \"Lorem minim\",\n  \"decimals\": \"proident Duis ex occaecat labore\",\n  \"associated\": true,\n  \"balance\": \"elit ut \",\n  \"frozen\": true,\n  \"kyc\": true\n },\n {\n  \"id\": \"consequat pariatur adipisicing\",\n  \"tokenId\": \"pariatur \",\n  \"tokenName\": \"ut eu\",\n  \"tokenSymbol\": \"exercitatio\",\n  \"tokenType\": \"reprehenderit\",\n  \"decimals\": \"exercitation deserunt\",\n  \"associated\": true,\n  \"balance\": \"Lorem aute e\",\n  \"frozen\": false,\n  \"kyc\": true\n }\n]"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -4798,7 +4798,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -4831,7 +4831,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -4861,12 +4861,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Create new token",
+					"name": "Creates a new token.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -4887,7 +4887,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"et magna ut do\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": false,\n    \"enableWipe\": true,\n    \"initialSupply\": \"nostrud veniam\",\n    \"tokenName\": \"labore laboris tempor\",\n    \"tokenSymbol\": \"magna aliqua sunt deserunt\",\n    \"tokenType\": \"voluptate ex\"\n}",
+							"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"amet dolore\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": true,\n    \"enableWipe\": false,\n    \"initialSupply\": \"cillum\",\n    \"tokenName\": \"velit Ut id incididunt\",\n    \"tokenSymbol\": \"cupidatat Duis est ea\",\n    \"tokenType\": \"culpa\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4903,11 +4903,11 @@
 								"tokens"
 							]
 						},
-						"description": "Create new token. Only users with the Root Authority role are allowed to make request."
+						"description": "Creates a new token. Only users with the Root Authority role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -4919,7 +4919,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"et magna ut do\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": false,\n    \"enableWipe\": true,\n    \"initialSupply\": \"nostrud veniam\",\n    \"tokenName\": \"labore laboris tempor\",\n    \"tokenSymbol\": \"magna aliqua sunt deserunt\",\n    \"tokenType\": \"voluptate ex\"\n}",
+									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"amet dolore\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": true,\n    \"enableWipe\": false,\n    \"initialSupply\": \"cillum\",\n    \"tokenName\": \"velit Ut id incididunt\",\n    \"tokenSymbol\": \"cupidatat Duis est ea\",\n    \"tokenType\": \"culpa\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4946,10 +4946,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "[\n {\n  \"id\": \"ani\",\n  \"tokenId\": \"reprehenderit in elit incididunt qui\",\n  \"tokenName\": \"et\",\n  \"tokenSymbol\": \"aliqua\",\n  \"tokenType\": \"qui sint do sed\",\n  \"decimals\": \"Duis anim est\",\n  \"associated\": true,\n  \"balance\": \"ve\",\n  \"frozen\": true,\n  \"kyc\": false\n },\n {\n  \"id\": \"in sunt\",\n  \"tokenId\": \"sed\",\n  \"tokenName\": \"laboris sunt\",\n  \"tokenSymbol\": \"ex dolore\",\n  \"tokenType\": \"sunt irure\",\n  \"decimals\": \"reprehe\",\n  \"associated\": true,\n  \"balance\": \"adipisicing aliqua ea\",\n  \"frozen\": false,\n  \"kyc\": true\n }\n]"
+							"body": "[\n {\n  \"id\": \"occaecat\",\n  \"tokenId\": \"dolore culpa Ut\",\n  \"tokenName\": \"occaecat nisi\",\n  \"tokenSymbol\": \"pariatur nostrud velit offi\",\n  \"tokenType\": \"Lorem minim\",\n  \"decimals\": \"proident Duis ex occaecat labore\",\n  \"associated\": true,\n  \"balance\": \"elit ut \",\n  \"frozen\": true,\n  \"kyc\": true\n },\n {\n  \"id\": \"consequat pariatur adipisicing\",\n  \"tokenId\": \"pariatur \",\n  \"tokenName\": \"ut eu\",\n  \"tokenSymbol\": \"exercitatio\",\n  \"tokenType\": \"reprehenderit\",\n  \"decimals\": \"exercitation deserunt\",\n  \"associated\": true,\n  \"balance\": \"Lorem aute e\",\n  \"frozen\": false,\n  \"kyc\": true\n }\n]"
 						},
 						{
-							"name": "Bad Request",
+							"name": "Bad Request.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -4961,7 +4961,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"et magna ut do\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": false,\n    \"enableWipe\": true,\n    \"initialSupply\": \"nostrud veniam\",\n    \"tokenName\": \"labore laboris tempor\",\n    \"tokenSymbol\": \"magna aliqua sunt deserunt\",\n    \"tokenType\": \"voluptate ex\"\n}",
+									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"amet dolore\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": true,\n    \"enableWipe\": false,\n    \"initialSupply\": \"cillum\",\n    \"tokenName\": \"velit Ut id incididunt\",\n    \"tokenSymbol\": \"cupidatat Duis est ea\",\n    \"tokenType\": \"culpa\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4988,10 +4988,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -5003,7 +5003,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"et magna ut do\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": false,\n    \"enableWipe\": true,\n    \"initialSupply\": \"nostrud veniam\",\n    \"tokenName\": \"labore laboris tempor\",\n    \"tokenSymbol\": \"magna aliqua sunt deserunt\",\n    \"tokenType\": \"voluptate ex\"\n}",
+									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"amet dolore\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": true,\n    \"enableWipe\": false,\n    \"initialSupply\": \"cillum\",\n    \"tokenName\": \"velit Ut id incididunt\",\n    \"tokenSymbol\": \"cupidatat Duis est ea\",\n    \"tokenType\": \"culpa\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5033,7 +5033,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -5045,7 +5045,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"et magna ut do\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": false,\n    \"enableWipe\": true,\n    \"initialSupply\": \"nostrud veniam\",\n    \"tokenName\": \"labore laboris tempor\",\n    \"tokenSymbol\": \"magna aliqua sunt deserunt\",\n    \"tokenType\": \"voluptate ex\"\n}",
+									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"amet dolore\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": true,\n    \"enableWipe\": false,\n    \"initialSupply\": \"cillum\",\n    \"tokenName\": \"velit Ut id incididunt\",\n    \"tokenSymbol\": \"cupidatat Duis est ea\",\n    \"tokenType\": \"culpa\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5075,7 +5075,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -5087,7 +5087,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"et magna ut do\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": false,\n    \"enableWipe\": true,\n    \"initialSupply\": \"nostrud veniam\",\n    \"tokenName\": \"labore laboris tempor\",\n    \"tokenSymbol\": \"magna aliqua sunt deserunt\",\n    \"tokenType\": \"voluptate ex\"\n}",
+									"raw": "{\n    \"changeSupply\": true,\n    \"decimals\": \"amet dolore\",\n    \"enableAdmin\": false,\n    \"enableFreeze\": true,\n    \"enableKYC\": true,\n    \"enableWipe\": false,\n    \"initialSupply\": \"cillum\",\n    \"tokenName\": \"velit Ut id incididunt\",\n    \"tokenSymbol\": \"cupidatat Duis est ea\",\n    \"tokenType\": \"culpa\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5114,7 +5114,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				}
@@ -5124,7 +5124,7 @@
 			"name": "trustchains",
 			"item": [
 				{
-					"name": "/trustchains",
+					"name": "Returns a list of all VP documents.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -5147,11 +5147,11 @@
 								"trustchains"
 							]
 						},
-						"description": "Request all vp documents. Only users with the Auditor role are allowed to make request."
+						"description": "Requests all VP documents. Only users with the Auditor role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -5181,10 +5181,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "[\n {\n  \"hash\": \"et irure dolor ad ut\",\n  \"id\": \"nisi adipisicing non sunt\",\n  \"policyId\": \"laborum et\",\n  \"signature\": \"pariatur veniam\",\n  \"status\": \"fugiat laboris Excepteur nulla ad\",\n  \"tag\": \"labore laborum\",\n  \"type\": \"sint nostrud in consectetur tempor\",\n  \"updateDate\": \"laborum voluptate sed ex\",\n  \"createDate\": \"laboris id reprehenderit\",\n  \"owner\": \"veniam officia labore\",\n  \"document\": {}\n },\n {\n  \"hash\": \"ea ipsum anim\",\n  \"id\": \"officia sunt ipsum\",\n  \"policyId\": \"cillum labore\",\n  \"signature\": \"tempor\",\n  \"status\": \"quis \",\n  \"tag\": \"id minim\",\n  \"type\": \"labore\",\n  \"updateDate\": \"Excepteur ipsum sunt\",\n  \"createDate\": \"non deserunt do\",\n  \"owner\": \"in officia ullamco elit\",\n  \"document\": {}\n }\n]"
+							"body": "[\n {\n  \"hash\": \"elit tempor ullamco esse\",\n  \"id\": \"sint dolor Ut\",\n  \"policyId\": \"esse in dolor\",\n  \"signature\": \"dolore qui laborum nisi\",\n  \"status\": \"qui sint adipisicing sed\",\n  \"tag\": \"aliqua id ipsum dolor\",\n  \"type\": \"Lorem fugiat adipisicing irure\",\n  \"updateDate\": \"aliqua dolor minim\",\n  \"createDate\": \"pariatur veniam\",\n  \"owner\": \"fugiat amet voluptate\",\n  \"document\": {}\n },\n {\n  \"hash\": \"in est ut\",\n  \"id\": \"minim amet exercitation aliqua\",\n  \"policyId\": \"amet\",\n  \"signature\": \"eu in\",\n  \"status\": \"quis exercitation tempor officia\",\n  \"tag\": \"quis dolore irure\",\n  \"type\": \"amet deserunt eiusmod\",\n  \"updateDate\": \"in officia d\",\n  \"createDate\": \"sed in\",\n  \"owner\": \"enim ut\",\n  \"document\": {}\n }\n]"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -5217,7 +5217,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -5250,7 +5250,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -5280,12 +5280,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "/trustchains/:hash",
+					"name": "Returns a trustchain for a VP document.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -5311,16 +5311,16 @@
 							"variable": [
 								{
 									"key": "hash",
-									"value": "cupidatat ut",
-									"description": "(Required) Hash or Id of a VP document"
+									"value": "qui cillum dolore dolor",
+									"description": "(Required) Hash or ID of a VP document."
 								}
 							]
 						},
-						"description": "Build chain from VP to root VC document. Only users with the Auditor role are allowed to make request."
+						"description": "Builds and returns a trustchain, from the VP to the root VC document. Only users with the Auditor role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -5342,8 +5342,8 @@
 									"variable": [
 										{
 											"key": "hash",
-											"value": "cupidatat ut",
-											"description": "(Required) Hash or Id of a VP document"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Hash or ID of a VP document."
 										}
 									]
 								}
@@ -5358,10 +5358,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"chain\": [\n  {\n   \"id\": \"nostrud et aliquip dolore\",\n   \"type\": \"ut elit irure\",\n   \"tag\": \"amet et qui\",\n   \"label\": \"in consequat\",\n   \"schema\": \"enim\",\n   \"owner\": \"id culpa irure\",\n   \"document\": {}\n  },\n  {\n   \"id\": \"Lorem irure\",\n   \"type\": \"des\",\n   \"tag\": \"exercitation\",\n   \"label\": \"m\",\n   \"schema\": \"Excepteur reprehenderit in\",\n   \"owner\": \"dolor esse est eu enim\",\n   \"document\": {}\n  }\n ],\n \"userMap\": [\n  {\n   \"did\": \"nostrud Ut est\",\n   \"username\": \"culpa velit enim\"\n  },\n  {\n   \"did\": \"labore esse dolore non\",\n   \"username\": \"cillum nulla amet\"\n  }\n ]\n}"
+							"body": "{\n \"chain\": [\n  {\n   \"id\": \"officia minim anim do aute\",\n   \"type\": \"dolore proident cupidatat esse ullamco\",\n   \"tag\": \"aliqua irure\",\n   \"label\": \"dolore eiusmod\",\n   \"schema\": \"eu\",\n   \"owner\": \"reprehenderit\",\n   \"document\": {}\n  },\n  {\n   \"id\": \"minim\",\n   \"type\": \"laboris voluptate esse consequat\",\n   \"tag\": \"proident\",\n   \"label\": \"laborum occaecat\",\n   \"schema\": \"laborum est\",\n   \"owner\": \"ad cillum est dolor\",\n   \"document\": {}\n  }\n ],\n \"userMap\": [\n  {\n   \"did\": \"non consequat officia repre\",\n   \"username\": \"aliquip\"\n  },\n  {\n   \"did\": \"deserunt quis exercitation Lorem reprehenderit\",\n   \"username\": \"reprehenderit deserunt\"\n  }\n ]\n}"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -5383,8 +5383,8 @@
 									"variable": [
 										{
 											"key": "hash",
-											"value": "cupidatat ut",
-											"description": "(Required) Hash or Id of a VP document"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Hash or ID of a VP document."
 										}
 									]
 								}
@@ -5402,7 +5402,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -5424,8 +5424,8 @@
 									"variable": [
 										{
 											"key": "hash",
-											"value": "cupidatat ut",
-											"description": "(Required) Hash or Id of a VP document"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Hash or ID of a VP document."
 										}
 									]
 								}
@@ -5443,7 +5443,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -5465,8 +5465,8 @@
 									"variable": [
 										{
 											"key": "hash",
-											"value": "cupidatat ut",
-											"description": "(Required) Hash or Id of a VP document"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Hash or ID of a VP document."
 										}
 									]
 								}
@@ -5481,7 +5481,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				}
@@ -5500,7 +5500,7 @@
 									"name": "{uuid}",
 									"item": [
 										{
-											"name": "Request block data",
+											"name": "Requests block data.",
 											"request": {
 												"auth": {
 													"type": "bearer",
@@ -5528,21 +5528,21 @@
 													"variable": [
 														{
 															"key": "policyId",
-															"value": "cupidatat ut",
-															"description": "(Required) Selected policy Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Selected policy ID."
 														},
 														{
 															"key": "uuid",
-															"value": "cupidatat ut",
-															"description": "(Required) Selected block uuid"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Selected block UUID."
 														}
 													]
 												},
-												"description": "Request block data. Only users with a role that described in block are allowed to make request."
+												"description": "Requests block data. Only users with a role that described in block are allowed to make the request."
 											},
 											"response": [
 												{
-													"name": "Successful operation",
+													"name": "Successful operation.",
 													"originalRequest": {
 														"method": "GET",
 														"header": [
@@ -5566,13 +5566,13 @@
 															"variable": [
 																{
 																	"key": "policyId",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected policy Id"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected policy ID."
 																},
 																{
 																	"key": "uuid",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected block uuid"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected block UUID."
 																}
 															]
 														}
@@ -5587,10 +5587,10 @@
 														}
 													],
 													"cookie": [],
-													"body": "{\n \"id\": \"Duis incididunt in exercitation\",\n \"blockType\": \"dolore laborum officia mollit\",\n \"isActive\": false,\n \"uiMetaData\": {},\n \"data\": {},\n \"index\": 7876784.773331508,\n \"roles\": [\n  \"sit dolore in\",\n  \"proident\"\n ],\n \"blocks\": [\n  {\n   \"id\": \"sit ullamco nostrud eu\",\n   \"blockType\": \"\",\n   \"isActive\": false,\n   \"uiMetaData\": {}\n  },\n  {\n   \"id\": \"aliquip cupidatat ut\",\n   \"blockType\": \"laboris cillum\",\n   \"isActive\": true,\n   \"uiMetaData\": {}\n  }\n ]\n}"
+													"body": "{\n \"id\": \"eu Lorem sit\",\n \"blockType\": \"consequat in ipsum\",\n \"isActive\": true,\n \"uiMetaData\": {},\n \"data\": {},\n \"index\": -39451236.84620677,\n \"roles\": [\n  \"dolor dolore deserunt reprehenderit\",\n  \"anim sit consequat elit labore\"\n ],\n \"blocks\": [\n  {\n   \"id\": \"pariatur\",\n   \"blockType\": \"consectetur ad Ut\",\n   \"isActive\": true,\n   \"uiMetaData\": {}\n  },\n  {\n   \"id\": \"dolore ut\",\n   \"blockType\": \"id minim est aute quis\",\n   \"isActive\": true,\n   \"uiMetaData\": {}\n  }\n ]\n}"
 												},
 												{
-													"name": "Unauthorized",
+													"name": "Unauthorized.",
 													"originalRequest": {
 														"method": "GET",
 														"header": [
@@ -5614,13 +5614,13 @@
 															"variable": [
 																{
 																	"key": "policyId",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected policy Id"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected policy ID."
 																},
 																{
 																	"key": "uuid",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected block uuid"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected block UUID."
 																}
 															]
 														}
@@ -5638,7 +5638,7 @@
 													"body": ""
 												},
 												{
-													"name": "Forbidden",
+													"name": "Forbidden.",
 													"originalRequest": {
 														"method": "GET",
 														"header": [
@@ -5662,13 +5662,13 @@
 															"variable": [
 																{
 																	"key": "policyId",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected policy Id"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected policy ID."
 																},
 																{
 																	"key": "uuid",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected block uuid"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected block UUID."
 																}
 															]
 														}
@@ -5686,7 +5686,7 @@
 													"body": ""
 												},
 												{
-													"name": "Internal server error",
+													"name": "Internal server error.",
 													"originalRequest": {
 														"method": "GET",
 														"header": [
@@ -5710,13 +5710,13 @@
 															"variable": [
 																{
 																	"key": "policyId",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected policy Id"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected policy ID."
 																},
 																{
 																	"key": "uuid",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected block uuid"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected block UUID."
 																}
 															]
 														}
@@ -5731,12 +5731,12 @@
 														}
 													],
 													"cookie": [],
-													"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+													"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 												}
 											]
 										},
 										{
-											"name": "Send data to block",
+											"name": "Sends data to the specified block.",
 											"request": {
 												"auth": {
 													"type": "bearer",
@@ -5778,21 +5778,21 @@
 													"variable": [
 														{
 															"key": "policyId",
-															"value": "cupidatat ut",
-															"description": "(Required) Selected policy Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Selected policy ID."
 														},
 														{
 															"key": "uuid",
-															"value": "cupidatat ut",
-															"description": "(Required) Selected block uuid"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Selected block UUID."
 														}
 													]
 												},
-												"description": "Send data to block"
+												"description": "Sends data to the specified block."
 											},
 											"response": [
 												{
-													"name": "Successful operation",
+													"name": "Successful operation.",
 													"originalRequest": {
 														"method": "POST",
 														"header": [
@@ -5825,13 +5825,13 @@
 															"variable": [
 																{
 																	"key": "policyId",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected policy Id"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected policy ID."
 																},
 																{
 																	"key": "uuid",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected block uuid"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected block UUID."
 																}
 															]
 														}
@@ -5849,7 +5849,7 @@
 													"body": ""
 												},
 												{
-													"name": "Unauthorized",
+													"name": "Unauthorized.",
 													"originalRequest": {
 														"method": "POST",
 														"header": [
@@ -5882,13 +5882,13 @@
 															"variable": [
 																{
 																	"key": "policyId",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected policy Id"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected policy ID."
 																},
 																{
 																	"key": "uuid",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected block uuid"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected block UUID."
 																}
 															]
 														}
@@ -5906,7 +5906,7 @@
 													"body": ""
 												},
 												{
-													"name": "Forbidden",
+													"name": "Forbidden.",
 													"originalRequest": {
 														"method": "POST",
 														"header": [
@@ -5939,13 +5939,13 @@
 															"variable": [
 																{
 																	"key": "policyId",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected policy Id"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected policy ID."
 																},
 																{
 																	"key": "uuid",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected block uuid"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected block UUID."
 																}
 															]
 														}
@@ -5963,7 +5963,7 @@
 													"body": ""
 												},
 												{
-													"name": "Internal server error",
+													"name": "Internal server error.",
 													"originalRequest": {
 														"method": "POST",
 														"header": [
@@ -5996,13 +5996,13 @@
 															"variable": [
 																{
 																	"key": "policyId",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected policy Id"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected policy ID."
 																},
 																{
 																	"key": "uuid",
-																	"value": "cupidatat ut",
-																	"description": "(Required) Selected block uuid"
+																	"value": "qui cillum dolore dolor",
+																	"description": "(Required) Selected block UUID."
 																}
 															]
 														}
@@ -6017,14 +6017,14 @@
 														}
 													],
 													"cookie": [],
-													"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+													"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 												}
 											]
 										}
 									]
 								},
 								{
-									"name": "Data of a policy root block",
+									"name": "Retrieves data for the policy root block.",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -6051,16 +6051,16 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										},
-										"description": "Returns data from a root policy block. Only users with the Root Authority and Installer role are allowed to make request."
+										"description": "Returns data from the root policy block. Only users with the Root Authority and Installer role are allowed to make the request."
 									},
 									"response": [
 										{
-											"name": "Successful operation",
+											"name": "Successful operation.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -6083,8 +6083,8 @@
 													"variable": [
 														{
 															"key": "policyId",
-															"value": "cupidatat ut",
-															"description": "(Required) Selected policy Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Selected policy ID."
 														}
 													]
 												}
@@ -6099,10 +6099,10 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"id\": \"occaecat dolor\",\n \"blockType\": \"sit ut ipsum consequat labore\",\n \"isActive\": true,\n \"uiMetaData\": {}\n}"
+											"body": "{\n \"id\": \"est\",\n \"blockType\": \"sint non laboris\",\n \"isActive\": false,\n \"uiMetaData\": {}\n}"
 										},
 										{
-											"name": "Unauthorized",
+											"name": "Unauthorized.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -6125,8 +6125,8 @@
 													"variable": [
 														{
 															"key": "policyId",
-															"value": "cupidatat ut",
-															"description": "(Required) Selected policy Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Selected policy ID."
 														}
 													]
 												}
@@ -6144,7 +6144,7 @@
 											"body": ""
 										},
 										{
-											"name": "Forbidden",
+											"name": "Forbidden.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -6167,8 +6167,8 @@
 													"variable": [
 														{
 															"key": "policyId",
-															"value": "cupidatat ut",
-															"description": "(Required) Selected policy Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Selected policy ID."
 														}
 													]
 												}
@@ -6186,7 +6186,7 @@
 											"body": ""
 										},
 										{
-											"name": "Internal server error",
+											"name": "Internal server error.",
 											"originalRequest": {
 												"method": "GET",
 												"header": [
@@ -6209,8 +6209,8 @@
 													"variable": [
 														{
 															"key": "policyId",
-															"value": "cupidatat ut",
-															"description": "(Required) Selected policy Id"
+															"value": "qui cillum dolore dolor",
+															"description": "(Required) Selected policy ID."
 														}
 													]
 												}
@@ -6225,14 +6225,14 @@
 												}
 											],
 											"cookie": [],
-											"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+											"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 										}
 									]
 								}
 							]
 						},
 						{
-							"name": "Get policy config",
+							"name": "Retrieves policy configuration.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -6258,16 +6258,16 @@
 									"variable": [
 										{
 											"key": "policyId",
-											"value": "cupidatat ut",
-											"description": "(Required) Selected policy Id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Selected policy ID."
 										}
 									]
 								},
-								"description": "Get policy config. Only users with the Root Authority role are allowed to make request."
+								"description": "Retrieves policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -6289,8 +6289,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6305,10 +6305,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"name\": \"irure voluptate\",\n \"version\": \"non Duis\",\n \"description\": \"Lorem\",\n \"topicDescription\": \"irure ex dolore \",\n \"config\": {},\n \"status\": \"pariatur ipsum eu\",\n \"owner\": \"dolor m\",\n \"policyRoles\": [\n  \"in laboris Excepteur\",\n  \"ut dolore mollit\"\n ],\n \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}"
+									"body": "{\n \"name\": \"sed aliquip\",\n \"version\": \"do ipsum\",\n \"description\": \"Lorem esse laborum in Excepteur\",\n \"topicDescription\": \"exercitation minim labore ut\",\n \"config\": {},\n \"status\": \"reprehenderit anim commodo\",\n \"owner\": \"labore cupidatat ipsum\",\n \"policyRoles\": [\n  \"velit Duis Lorem officia consequat\",\n  \"ut non\"\n ],\n \"topicId\": \"dolor ut occaecat\",\n \"policyTag\": \"laborum officia in\"\n}"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -6330,8 +6330,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6349,7 +6349,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -6371,8 +6371,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6390,7 +6390,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -6412,8 +6412,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6428,12 +6428,12 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
 						{
-							"name": "Update policy config",
+							"name": "Updates policy configuration.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -6454,7 +6454,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -6473,16 +6473,16 @@
 									"variable": [
 										{
 											"key": "policyId",
-											"value": "cupidatat ut",
-											"description": "(Required) Selected policy id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Selected policy ID."
 										}
 									]
 								},
-								"description": "Update policy config. Only users with the Root Authority role are allowed to make request."
+								"description": "Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -6494,7 +6494,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+											"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -6513,8 +6513,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6529,10 +6529,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"name\": \"irure voluptate\",\n \"version\": \"non Duis\",\n \"description\": \"Lorem\",\n \"topicDescription\": \"irure ex dolore \",\n \"config\": {},\n \"status\": \"pariatur ipsum eu\",\n \"owner\": \"dolor m\",\n \"policyRoles\": [\n  \"in laboris Excepteur\",\n  \"ut dolore mollit\"\n ],\n \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}"
+									"body": "{\n \"name\": \"sed aliquip\",\n \"version\": \"do ipsum\",\n \"description\": \"Lorem esse laborum in Excepteur\",\n \"topicDescription\": \"exercitation minim labore ut\",\n \"config\": {},\n \"status\": \"reprehenderit anim commodo\",\n \"owner\": \"labore cupidatat ipsum\",\n \"policyRoles\": [\n  \"velit Duis Lorem officia consequat\",\n  \"ut non\"\n ],\n \"topicId\": \"dolor ut occaecat\",\n \"policyTag\": \"laborum officia in\"\n}"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -6544,7 +6544,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+											"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -6563,8 +6563,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6582,7 +6582,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -6594,7 +6594,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+											"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -6613,8 +6613,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6632,7 +6632,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -6644,7 +6644,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+											"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -6663,8 +6663,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6679,12 +6679,12 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
 						{
-							"name": "Publish policy",
+							"name": "Publishes policy.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -6711,16 +6711,16 @@
 									"variable": [
 										{
 											"key": "policyId",
-											"value": "cupidatat ut",
-											"description": "(Required) Selected policy id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Selected policy ID."
 										}
 									]
 								},
-								"description": "Publish selected policy. Only users with the Root Authority role are allowed to make request."
+								"description": "Publishes selected policy. Only users with the Root Authority role are allowed to make the request."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -6743,8 +6743,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6759,10 +6759,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"isValid\": true\n}"
+									"body": "{\n \"isValid\": false\n}"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -6785,8 +6785,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6804,7 +6804,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -6827,8 +6827,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6846,7 +6846,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "PUT",
 										"header": [
@@ -6869,8 +6869,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -6885,12 +6885,12 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
 						{
-							"name": "Request block Id from a policy by tag",
+							"name": "Requests block ID from a policy by tag.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -6918,21 +6918,21 @@
 									"variable": [
 										{
 											"key": "policyId",
-											"value": "cupidatat ut",
-											"description": "(Required) Selected policy Id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Selected policy ID."
 										},
 										{
 											"key": "tag",
-											"value": "cupidatat ut",
-											"description": "(Required) Tag from selected policy"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Tag from the selected policy."
 										}
 									]
 								},
-								"description": "Request block Id from a policy by tag. Only users with the Root Authority and Installer roles are allowed to make request."
+								"description": "Requests block ID from a policy by tag. Only users with the Root Authority and Installer roles are allowed to make the request."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -6956,13 +6956,13 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												},
 												{
 													"key": "tag",
-													"value": "cupidatat ut",
-													"description": "(Required) Tag from selected policy"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Tag from the selected policy."
 												}
 											]
 										}
@@ -6977,10 +6977,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"id\": \"ea qui\"\n}"
+									"body": "{\n \"id\": \"nostrud magna est exercitation\"\n}"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -7004,13 +7004,13 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												},
 												{
 													"key": "tag",
-													"value": "cupidatat ut",
-													"description": "(Required) Tag from selected policy"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Tag from the selected policy."
 												}
 											]
 										}
@@ -7028,7 +7028,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -7052,13 +7052,13 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												},
 												{
 													"key": "tag",
-													"value": "cupidatat ut",
-													"description": "(Required) Tag from selected policy"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Tag from the selected policy."
 												}
 											]
 										}
@@ -7076,7 +7076,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -7100,13 +7100,13 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy Id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												},
 												{
 													"key": "tag",
-													"value": "cupidatat ut",
-													"description": "(Required) Tag from selected policy"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Tag from the selected policy."
 												}
 											]
 										}
@@ -7121,12 +7121,12 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
 						{
-							"name": "Policy export",
+							"name": "Policy export.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -7153,8 +7153,8 @@
 									"variable": [
 										{
 											"key": "policyId",
-											"value": "cupidatat ut",
-											"description": "(Required) Selected policy id"
+											"value": "qui cillum dolore dolor",
+											"description": "(Required) Selected policy ID."
 										}
 									]
 								},
@@ -7162,7 +7162,7 @@
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -7185,8 +7185,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -7204,7 +7204,7 @@
 									"body": ""
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -7227,8 +7227,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -7246,7 +7246,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -7269,8 +7269,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -7288,7 +7288,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "GET",
 										"header": [
@@ -7311,8 +7311,8 @@
 											"variable": [
 												{
 													"key": "policyId",
-													"value": "cupidatat ut",
-													"description": "(Required) Selected policy id"
+													"value": "qui cillum dolore dolor",
+													"description": "(Required) Selected policy ID."
 												}
 											]
 										}
@@ -7327,7 +7327,7 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						}
@@ -7337,7 +7337,7 @@
 					"name": "import",
 					"item": [
 						{
-							"name": "Policy import",
+							"name": "Policy import.",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -7379,7 +7379,7 @@
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -7419,10 +7419,10 @@
 										}
 									],
 									"cookie": [],
-									"body": "[\n {\n  \"name\": \"id tempor\",\n  \"version\": \"sit\",\n  \"description\": \"dolore sint eiusmod\",\n  \"topicDescription\": \"dolore sint id in\",\n  \"config\": {},\n  \"status\": \"dolore\",\n  \"owner\": \"aute qui sed\",\n  \"policyRoles\": [\n   \"eiusmod in pariatur commodo\",\n   \"ex sunt ad ea\"\n  ],\n  \"topicId\": \"non commodo do voluptate consectetur\",\n  \"policyTag\": \"elit aliqua pariatur sunt\"\n },\n {\n  \"name\": \"ullamco cillum nulla\",\n  \"version\": \"officia elit Excepteur sed ulla\",\n  \"description\": \"velit quis ipsum aliqua eu\",\n  \"topicDescription\": \"aute ad cupidatat\",\n  \"config\": {},\n  \"status\": \"irure magna\",\n  \"owner\": \"qui\",\n  \"policyRoles\": [\n   \"exercitation labore\",\n   \"quis i\"\n  ],\n  \"topicId\": \"in aute dolor\",\n  \"policyTag\": \"amet voluptate aliqua\"\n }\n]"
+									"body": "[\n {\n  \"name\": \"ipsum consectetur reprehenderit\",\n  \"version\": \"in sunt sed voluptate ullamco\",\n  \"description\": \"officia reprehenderit Excepteur non\",\n  \"topicDescription\": \"aliquip mollit\",\n  \"config\": {},\n  \"status\": \"tempor qui\",\n  \"owner\": \"dolore\",\n  \"policyRoles\": [\n   \"veniam esse sunt\",\n   \"in commodo ea occaecat eiusmod\"\n  ],\n  \"topicId\": \"consectetur laborum\",\n  \"policyTag\": \"anim dolore et commodo\"\n },\n {\n  \"name\": \"quis anim ullamco laborum\",\n  \"version\": \"in nostrud deserunt et minim\",\n  \"description\": \"quis velit id Ut\",\n  \"topicDescription\": \"eiusmod ea dolor ullamco labore\",\n  \"config\": {},\n  \"status\": \"deserunt mollit quis aliquip\",\n  \"owner\": \"aute\",\n  \"policyRoles\": [\n   \"laboris ut\",\n   \"ullamco anim\"\n  ],\n  \"topicId\": \"dolore consequat cillum\",\n  \"policyTag\": \"adipisicing\"\n }\n]"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -7465,7 +7465,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -7508,7 +7508,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -7548,7 +7548,7 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						},
@@ -7578,11 +7578,11 @@
 										"preview"
 									]
 								},
-								"description": "Returns content of uploaded policy."
+								"description": "Returns content of the uploaded policy."
 							},
 							"response": [
 								{
-									"name": "Successful operation",
+									"name": "Successful operation.",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -7617,7 +7617,7 @@
 									"body": "{\n \"policy\": {}\n}"
 								},
 								{
-									"name": "Unauthorized",
+									"name": "Unauthorized.",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -7652,7 +7652,7 @@
 									"body": ""
 								},
 								{
-									"name": "Forbidden",
+									"name": "Forbidden.",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -7687,7 +7687,7 @@
 									"body": ""
 								},
 								{
-									"name": "Internal server error",
+									"name": "Internal server error.",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -7719,14 +7719,14 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+									"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 								}
 							]
 						}
 					]
 				},
 				{
-					"name": "Return a list of policies",
+					"name": "Return a list of all policies.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -7749,11 +7749,11 @@
 								"policies"
 							]
 						},
-						"description": "Returns all policies. Only users with the Root Authority and Installer role are allowed to make request."
+						"description": "Returns all policies. Only users with the Root Authority and Installer role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -7783,10 +7783,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "[\n {\n  \"name\": \"id tempor\",\n  \"version\": \"sit\",\n  \"description\": \"dolore sint eiusmod\",\n  \"topicDescription\": \"dolore sint id in\",\n  \"config\": {},\n  \"status\": \"dolore\",\n  \"owner\": \"aute qui sed\",\n  \"policyRoles\": [\n   \"eiusmod in pariatur commodo\",\n   \"ex sunt ad ea\"\n  ],\n  \"topicId\": \"non commodo do voluptate consectetur\",\n  \"policyTag\": \"elit aliqua pariatur sunt\"\n },\n {\n  \"name\": \"ullamco cillum nulla\",\n  \"version\": \"officia elit Excepteur sed ulla\",\n  \"description\": \"velit quis ipsum aliqua eu\",\n  \"topicDescription\": \"aute ad cupidatat\",\n  \"config\": {},\n  \"status\": \"irure magna\",\n  \"owner\": \"qui\",\n  \"policyRoles\": [\n   \"exercitation labore\",\n   \"quis i\"\n  ],\n  \"topicId\": \"in aute dolor\",\n  \"policyTag\": \"amet voluptate aliqua\"\n }\n]"
+							"body": "[\n {\n  \"name\": \"ipsum consectetur reprehenderit\",\n  \"version\": \"in sunt sed voluptate ullamco\",\n  \"description\": \"officia reprehenderit Excepteur non\",\n  \"topicDescription\": \"aliquip mollit\",\n  \"config\": {},\n  \"status\": \"tempor qui\",\n  \"owner\": \"dolore\",\n  \"policyRoles\": [\n   \"veniam esse sunt\",\n   \"in commodo ea occaecat eiusmod\"\n  ],\n  \"topicId\": \"consectetur laborum\",\n  \"policyTag\": \"anim dolore et commodo\"\n },\n {\n  \"name\": \"quis anim ullamco laborum\",\n  \"version\": \"in nostrud deserunt et minim\",\n  \"description\": \"quis velit id Ut\",\n  \"topicDescription\": \"eiusmod ea dolor ullamco labore\",\n  \"config\": {},\n  \"status\": \"deserunt mollit quis aliquip\",\n  \"owner\": \"aute\",\n  \"policyRoles\": [\n   \"laboris ut\",\n   \"ullamco anim\"\n  ],\n  \"topicId\": \"dolore consequat cillum\",\n  \"policyTag\": \"adipisicing\"\n }\n]"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -7819,7 +7819,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -7852,7 +7852,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -7882,12 +7882,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Create new policy",
+					"name": "Creates a new policy.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -7908,7 +7908,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+							"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -7924,11 +7924,11 @@
 								"policies"
 							]
 						},
-						"description": "Creates new policy. Only users with the Root Authority role are allowed to make request."
+						"description": "Creates a new policy. Only users with the Root Authority role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -7940,7 +7940,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -7970,7 +7970,7 @@
 							"body": ""
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -7982,7 +7982,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8012,7 +8012,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -8024,7 +8024,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8054,7 +8054,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -8066,7 +8066,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8093,12 +8093,12 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
 				{
-					"name": "Validate policy",
+					"name": "Validates policy.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -8119,7 +8119,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+							"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -8136,11 +8136,11 @@
 								"validate"
 							]
 						},
-						"description": "Validate selected policy. Only users with the Root Authority role are allowed to make request."
+						"description": "Validates selected policy. Only users with the Root Authority role are allowed to make the request."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -8152,7 +8152,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8183,7 +8183,7 @@
 							"body": "{\n \"config\": {},\n \"results\": {}\n}"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -8195,7 +8195,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8226,7 +8226,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -8238,7 +8238,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8269,7 +8269,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [
@@ -8281,7 +8281,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"irure voluptate\",\n    \"version\": \"non Duis\",\n    \"description\": \"Lorem\",\n    \"topicDescription\": \"irure ex dolore \",\n    \"config\": {},\n    \"status\": \"pariatur ipsum eu\",\n    \"owner\": \"dolor m\",\n    \"policyRoles\": [\n        \"in laboris Excepteur\",\n        \"ut dolore mollit\"\n    ],\n    \"topicId\": \"consectetur sit nisi dolor eiusmod\",\n    \"policyTag\": \"ad veniam cupidatat Ut labore\"\n}",
+									"raw": "{\n    \"name\": \"sed aliquip\",\n    \"version\": \"do ipsum\",\n    \"description\": \"Lorem esse laborum in Excepteur\",\n    \"topicDescription\": \"exercitation minim labore ut\",\n    \"config\": {},\n    \"status\": \"reprehenderit anim commodo\",\n    \"owner\": \"labore cupidatat ipsum\",\n    \"policyRoles\": [\n        \"velit Duis Lorem officia consequat\",\n        \"ut non\"\n    ],\n    \"topicId\": \"dolor ut occaecat\",\n    \"policyTag\": \"laborum officia in\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8309,7 +8309,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				}
@@ -8333,11 +8333,11 @@
 								"registeredUsers"
 							]
 						},
-						"description": "Return all registered user accounts"
+						"description": "Returns all registered user accounts."
 					},
 					"response": [
 						{
-							"name": "Return all registered user accounts",
+							"name": "All registered user accounts.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [],
@@ -8362,10 +8362,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "[\n {\n  \"username\": \"in reprehenderit anim\",\n  \"role\": \"eu sed eiusmod cillum\",\n  \"did\": \"sunt deserunt\"\n },\n {\n  \"username\": \"laboris dolor\",\n  \"role\": \"Lorem ad nostrud\",\n  \"did\": \"est\"\n }\n]"
+							"body": "[\n {\n  \"username\": \"dolore cillum aliqua\",\n  \"role\": \"eiusmod exercitation\",\n  \"did\": \"aliquip mag\"\n },\n {\n  \"username\": \"cupidatat commodo dolore pariatur\",\n  \"role\": \"ut eiusmod anim Excepteur\",\n  \"did\": \"nostrud consectetur\"\n }\n]"
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [],
@@ -8390,7 +8390,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				},
@@ -8419,11 +8419,11 @@
 								"randomKey"
 							]
 						},
-						"description": "Generate a new Hedera account with a random private key"
+						"description": "Generates a new Hedera account with a random private key."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -8454,10 +8454,10 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"id\": \"amet sit Lorem pariatur mollit\",\n \"key\": \"cillum minim et\"\n}"
+							"body": "{\n \"id\": \"laboris incididunt\",\n \"key\": \"ut dolor\"\n}"
 						},
 						{
-							"name": "Unauthorized",
+							"name": "Unauthorized.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -8491,7 +8491,7 @@
 							"body": ""
 						},
 						{
-							"name": "Forbidden",
+							"name": "Forbidden.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -8525,7 +8525,7 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -8556,7 +8556,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				}
@@ -8566,7 +8566,7 @@
 			"name": "external",
 			"item": [
 				{
-					"name": "Send data from external source",
+					"name": "Sends data from an external source.",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -8577,7 +8577,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"owner\": \"consequat\",\n    \"policyTag\": \"laborum ullamc\",\n    \"document\": {}\n}",
+							"raw": "{\n    \"owner\": \"irure amet esse\",\n    \"policyTag\": \"dolore cillum ullamco dolore ut\",\n    \"document\": {}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -8593,17 +8593,17 @@
 								"external"
 							]
 						},
-						"description": "Send data from external source"
+						"description": "Sends data from an external source."
 					},
 					"response": [
 						{
-							"name": "Successful operation",
+							"name": "Successful operation.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"owner\": \"consequat\",\n    \"policyTag\": \"laborum ullamc\",\n    \"document\": {}\n}",
+									"raw": "{\n    \"owner\": \"irure amet esse\",\n    \"policyTag\": \"dolore cillum ullamco dolore ut\",\n    \"document\": {}\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8633,13 +8633,13 @@
 							"body": ""
 						},
 						{
-							"name": "Internal server error",
+							"name": "Internal server error.",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"owner\": \"consequat\",\n    \"policyTag\": \"laborum ullamc\",\n    \"document\": {}\n}",
+									"raw": "{\n    \"owner\": \"irure amet esse\",\n    \"policyTag\": \"dolore cillum ullamco dolore ut\",\n    \"document\": {}\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8666,7 +8666,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n \"code\": 91694679.38238513,\n \"message\": \"eni\"\n}"
+							"body": "{\n \"code\": -60918187.15208341,\n \"message\": \"proident\"\n}"
 						}
 					]
 				}
