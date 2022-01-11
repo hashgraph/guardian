@@ -8,13 +8,14 @@ This folder contains sample files that are referenced in the Demo Usage Guide
 
 ## Demo Usage Guide
 
-1. The Guardian reference implementation comes with three predefined users:
+1. The Guardian reference implementation comes with two predefined users:
 
 - **Root Authority**: A standard registry, or a Root Authority in our scenario, is an organization that establishes science-based standards for measuring, reporting, and verifying (MRV) ecological benefit claims and issues value in the form of credit for claims that meet the standard set. A standard registry also authorizes validation and verification bodies (VVBs) to collect and process claims based on the established standard. The creation of scientific-based standards for MRV is a rigorous discipline that requires independence from commercial influence in the pursuit of accurate accounting of benefit or emissions claims. A standard registry organization can also maintain a central registry of credits they have issued that can be sold directly via the registry itself or established as reference value on networks, exchanges, or marketplaces.
-- **Installer**: In our scenario, it can be either the project owner or developer. This is the entity (person or company) that owns the project whose activities will be the source of benefit claims in a process generically called measurement or monitoring, reporting and verification (MRV) to create a credit.
 - **Auditor**: This is a 3rd part who will need to view/audit the entire chain of events; from the establishment of the science-based standards through creation of the credit.
 
-![Guardian step 1](https://user-images.githubusercontent.com/40637665/137935335-1c1cf58e-9b83-4080-9c76-125d2ec9af34.png)
+There is also a *Custom Role* which is called *User*. This role can be used to create any role which is neccessary in a specific policy. For the reference implement below, we created a custom role called *Installer*. 
+
+![1234](https://user-images.githubusercontent.com/40637665/148966434-b35f04eb-e14d-4bd1-a574-5a50aa3b181e.png)
 
 2. After running the installation commands, open a tab on your browser and navigate to http://localhost:3002/. Typically the way we start the reference implementation demonstration is by logging in as the Root Authority. Click the **Demo Admin Panel** drop-down located in the upper right-hand corner of the login screen and select the **Root Authority** user.
 
@@ -23,6 +24,13 @@ This folder contains sample files that are referenced in the Demo Usage Guide
 3. You'll now be prompted to configure your Root Authority account. Press the **Generate** button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
 ![Guardian step 3](https://user-images.githubusercontent.com/40637665/137956842-d9b3d0a3-7021-4304-9d1b-83d06ac115e2.png)
+
+---
+**NOTE**
+
+There is a new feature as of version 1.0.2 which allows for the *Importing of Policies* from the Rooth Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch.
+
+---
 
 4. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Download the `iRec_Application_Details.json` file found within this folder. Then click on the **Import** button and upload the `iRec_Application_Details.json` file.
 
@@ -40,6 +48,7 @@ Created or imported schema needs to be published via the **Publish** button afte
 ![Guardian step 5](https://user-images.githubusercontent.com/40637665/137963264-09779e4a-2127-4e4b-949f-f9c510350634.png)
 
 6. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. In our case, we will mimic the iRec Policy. Click **Create Policy** and fill the required information in the dialog box. Please note that you will need to create new **Tag** and **Version** numbers for each policy. identical Tags and Versions will cause an error. Once the Policy is complete, we have just **_created our first Policy Workflow and Policy Action Execution instance!_**
+
 
 ![Guardian step 6](https://user-images.githubusercontent.com/40637665/137963683-cd49e1a6-c372-4165-b150-7441da3a2818.png)
 
@@ -61,7 +70,13 @@ Created or imported schema needs to be published via the **Publish** button afte
 
    ![Guardian step 7](https://user-images.githubusercontent.com/40637665/137964384-6e05ee6e-1e5a-41c3-801b-ec94a50de916.png)
    
-   Click on the "block" icon that is just to the right of the "code" icon. You'll notice that the Policy configuration editor now visually shows the Policy Workflow with all of the necessary Workgroups, Actions, State Objects, and Transactions. Click through on several blocks, and you'll notice that you can edit some elements on the right-hand side. Depending on what you are clicking on, different properties will display on the right-bottom box. You can edit properties from permissions, dependencies, tags, UI elements, etc. Moving along with our flow. Click on the **mint_token** block and select the token we created from the properties box in the right hand side. 
+   Click on the "block" icon that is just to the right of the "code" icon. You'll notice that the Policy configuration editor now visually shows the Policy Workflow with all of the necessary Workgroups, Actions, State Objects, and Transactions. Click through on several blocks, and you'll notice that you can edit some elements on the right-hand side. Depending on what you are clicking on, different properties will display on the right-bottom box. You can edit properties from permissions, dependencies, tags, UI elements, etc. 
+   
+   In step 1 we discussed creating a custom role called installer. There is a default Policy Property box in the upper right corner of the UI. Here we will be able to add the name of our custom role. Click on add role and you can add the customer role of *Installer*
+   
+![Guardian step 7 3](https://user-images.githubusercontent.com/40637665/148967965-8c633248-c16f-4fe8-9d0a-8855849de23f.png)
+
+   To demonstrate how you can edit other workflow actions, you will need to click on the **mint_token** block and select the token we created.
    
    ![image](https://user-images.githubusercontent.com/40637665/142920856-cfdaa439-2ca0-4c49-a696-87882d317a2b.png)
    
@@ -73,11 +88,11 @@ Created or imported schema needs to be published via the **Publish** button afte
 
 ![Guardian step 8](https://user-images.githubusercontent.com/40637665/137965200-bc63668e-cd94-4451-a495-ef0f32cd2b7c.png)
 
-9. When signing into the Installer profile, you must follow similar configuration steps as the Root Authority. Click the **Generate** button, then select **Submit**. After generating the Hedera Operating ID and Key, the Installer profile will be configured, test HBAR will be credited to the account, and a DID will be created.
+9. When signing into the User profile (soon to be the Installer Role), follow similar configuration steps as the Root Authority. Click the **Generate** button, then select **Submit**. After generating the Hedera Operating ID and Key, the Installer profile will be configured, test HBAR will be credited to the account, and a DID will be created.
 
 ![Guardian step 9](https://user-images.githubusercontent.com/40637665/137965583-00d980fd-aa27-4dd4-b62e-2adc96b116ed.png)
 
-10. Next, navigate to the **Token** tab and click the **link** icon to associate the Installer to the token we created as the Root Authority.
+10. Next, navigate to the **Token** tab and click the **link** icon to associate the user to the token we created as the Root Authority.
 
 ![Guardian step 10](https://user-images.githubusercontent.com/40637665/137965789-6e5b888d-88a2-4a6d-917e-fd797b060b2d.png)
 
@@ -85,7 +100,11 @@ Created or imported schema needs to be published via the **Publish** button afte
 
 ![Guardian step 11](https://user-images.githubusercontent.com/40637665/137966063-7add24f7-319b-472e-a93d-418075a74999.png)
 
-   Here we will see the form that is based on the imported schema in step 4. This form is one of the Policy Workflow State Objects. Once you fill out the required information, press the **OK** button. Note: There is a known issue that no dialogue box comes up to let you know the form is completed. That's ok for now, we are working to provide a UI update. Everything works, so just move onto the next step :)
+   This is where the custom user will be able to assign the role that was created by the Root Authority during the workflow creation process. In our case, we created the custom role of *Installer* so the user will need to select the *Installer* role from the drop down.
+   
+![Guardian step 11 3(1)](https://user-images.githubusercontent.com/40637665/148971343-b288ccb8-6138-4fa7-8e57-3a10176f6c22.png)
+
+   After selecting the Installer role, we will see the form that is based on the imported schema in step 4. This form is one of the Policy Workflow State Objects. Once you fill out the required information, press the **OK** button. Note: There is a known issue that no dialogue box comes up to let you know the form is completed. That's ok for now, we are working to provide a UI update. Everything works, so just move onto the next step :)
    
 ![Guardian step 11 2](https://user-images.githubusercontent.com/40637665/137966739-1872360d-a7bd-45a3-8fe5-7fd7d59af66d.png)
 
