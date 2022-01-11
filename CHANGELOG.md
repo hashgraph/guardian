@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.2] - 2022-1-11
+
+### Added
+- Forms data validation [#43](https://github.com/hashgraph/guardian/issues/43)
+- Custom roles/actors mapping [#51](https://github.com/hashgraph/guardian/issues/51)
+- Policy validation [#56](https://github.com/hashgraph/guardian/issues/56)
+- Support lists in forms [#120](https://github.com/hashgraph/guardian/issues/120)
+- Support required fields in forms [#123](https://github.com/hashgraph/guardian/issues/123)
+- New API development [#197](https://github.com/hashgraph/guardian/issues/197)
+- Re-Factor FE to use the new API [#198](https://github.com/hashgraph/guardian/issues/198)
+- Revised API documentation [#200](https://github.com/hashgraph/guardian/issues/200)
+
+### Fixed:
+- Timeout related error handling [#226](https://github.com/hashgraph/guardian/issues/226)
+- Hardcode schemes deletion [#236](https://github.com/hashgraph/guardian/issues/236)
+- Creating a new Installer user with already existing username causes 500 error [#238](https://github.com/hashgraph/guardian/issues/238)
+
+
 ## [v1.0.1] - 2021-12-17
 
 ### Added
