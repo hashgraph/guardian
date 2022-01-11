@@ -19,7 +19,7 @@ There is also a *Custom Role* which is called *User*. This role can be used to c
 
 2. After running the installation commands, open a tab on your browser and navigate to http://localhost:3002/. Typically the way we start the reference implementation demonstration is by logging in as the Root Authority. Click the **Demo Admin Panel** drop-down located in the upper right-hand corner of the login screen and select the **Root Authority** user.
 
-![guardian step 2](https://user-images.githubusercontent.com/40637665/137934753-e51db424-6142-42f8-8016-40cf9f38401e.png)
+![image](https://user-images.githubusercontent.com/40637665/148996412-61e1b2eb-80b2-4bbd-8317-fcdbcf3d24f6.png)
 
 3. You'll now be prompted to configure your Root Authority account. Press the **Generate** button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
@@ -49,8 +49,7 @@ Created or imported schema needs to be published via the **Publish** button afte
 
 6. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. In our case, we will mimic the iRec Policy. Click **Create Policy** and fill the required information in the dialog box. Please note that you will need to create new **Tag** and **Version** numbers for each policy. identical Tags and Versions will cause an error. Once the Policy is complete, we have just **_created our first Policy Workflow and Policy Action Execution instance!_**
 
-
-![Guardian step 6](https://user-images.githubusercontent.com/40637665/137963683-cd49e1a6-c372-4165-b150-7441da3a2818.png)
+![image](https://user-images.githubusercontent.com/40637665/148996500-7760ee19-872f-4e10-a549-376e05949fd9.png)
 
 7. On the right-hand side of the Policies tab, click the **Edit** button. This will open the Guardian's Policy workflow editor. As described in the Hedera Improvement Proposal 28 (HIP-28), a Policy Workflow contains:
 
