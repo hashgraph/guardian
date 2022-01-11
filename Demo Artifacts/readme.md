@@ -25,14 +25,14 @@ There is also a *Custom Role* which is called *User*. This role can be used to c
 
 ![Guardian step 3](https://user-images.githubusercontent.com/40637665/137956842-d9b3d0a3-7021-4304-9d1b-83d06ac115e2.png)
 
+4. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Download the `iRec_Application_Details.json` file found within this folder. Then click on the **Import** button and upload the `iRec_Application_Details.json` file.
+
 ---
 **NOTE**
 
-There is a new feature as of version 1.0.2 which allows for the *Importing of Policies* from the Rooth Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch.
+There is a new feature as of version 1.0.2 which allows for the *Importing of Policies* from the Root Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch.
 
 ---
-
-4. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Download the `iRec_Application_Details.json` file found within this folder. Then click on the **Import** button and upload the `iRec_Application_Details.json` file.
 
 ---
 **NOTE**
