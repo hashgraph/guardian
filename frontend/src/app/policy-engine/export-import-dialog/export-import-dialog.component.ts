@@ -16,6 +16,7 @@ export class ExportPolicyDialog {
     policy!: any;
     schemes!: string;
     tokens!: string;
+    policyRoles!: string;
 
     constructor(
         public dialogRef: MatDialogRef<ExportPolicyDialog>,
@@ -25,6 +26,7 @@ export class ExportPolicyDialog {
 
         if(data.policy) {
             this.policy = data.policy.policy;
+            this.policyRoles = (this.policy.policyRoles||[]).join(', ');
             this.schemes = data.policy.schemas.map((s:any)=>s.name).join(', ');
             this.tokens = data.policy.tokens.map((s:any)=>s.tokenName).join(', ');
         }

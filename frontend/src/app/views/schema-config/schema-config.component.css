@@ -9,7 +9,7 @@
 .loading {
     background: #fff;
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     top: 0;
     left: 0;
     bottom: 0;
@@ -166,4 +166,14 @@ a {
 .schemes-table .mat-column-delete {
     width: 90px;
     padding-left: 10px;
+}
+
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
 }

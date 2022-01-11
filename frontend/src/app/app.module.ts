@@ -23,21 +23,21 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTreeModule } from '@angular/material/tree';
+import { MatDatepickerModule } from "@angular/material/datepicker";
+import { MatRadioModule } from '@angular/material/radio';
+import { MatNativeDateModule } from '@angular/material/core';
 import { ToastrModule } from 'ngx-toastr';
-
-import { AppRoutingModule, AuditorGuard, InstallerGuard, RootAuthorityGuard } from './app-routing.module';
+import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
+import { AppRoutingModule, AuditorGuard, UserGuard, RootAuthorityGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
-
 import { AuthInterceptor, AuthService } from "./services/auth.service";
 import { ProfileService } from "./services/profile.service";
-import { RootConfigService } from './services/root-config.service';
 import { TokenService } from './services/token.service';
 import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from "./services/handle-errors.service";
 import { AuditService } from './services/audit.service';
 import { PolicyEngineService } from './services/policy-engine.service';
-
-import { InstallerProfileComponent } from './views/installer-profile/installer-profile.component';
+import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
 import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './components/header/header.component';
@@ -52,7 +52,6 @@ import { SchemaFormComponent } from './components/schema-form/schema-form.compon
 import { SchemaConfigurationComponent } from './components/schema-configuration/schema-configuration.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
-import { ListenersLogComponent } from './listeners-log/listeners-log.component';
 import { PolicyViewerComponent } from './policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
 import { CommonPropertiesComponent } from './policy-engine/policy-configuration/common-properties/common-properties.component';
 import { DocumentSourceComponent } from './policy-engine/policy-configuration/document-source/document-source.component';
@@ -82,11 +81,15 @@ import { TreeFlatOverview } from './components/tree-flat-overview/tree-flat-over
 import { AggregateConfigComponent } from './policy-engine/policy-configuration/aggregate-config/aggregate-config.component';
 import { InformationConfigComponent } from './policy-engine/policy-configuration/information-config/information-config.component';
 import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-import-dialog.component';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { RolesConfigComponent } from './policy-engine/policy-configuration/roles-config/roles-config.component';
+import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
+import { DemoService } from './services/demo.service';
 
 @NgModule({
     declarations: [
         AppComponent,
-        InstallerProfileComponent,
+        UserProfileComponent,
         LoginComponent,
         HomeComponent,
         HeaderComponent,
@@ -101,7 +104,6 @@ import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-
         SchemaConfigurationComponent,
         AuditComponent,
         TrustChainComponent,
-        ListenersLogComponent,
         ActionBlockComponent,
         RequestDocumentBlockComponent,
         ContainerBlockComponent,
@@ -128,7 +130,9 @@ import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-
         TreeFlatOverview,
         AggregateConfigComponent,
         InformationConfigComponent,
-        ExportPolicyDialog
+        ExportPolicyDialog,
+        RolesConfigComponent,
+        RolesBlockComponent
     ],
     imports: [
         BrowserModule,
@@ -143,6 +147,12 @@ import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-
         MatButtonModule,
         MatTableModule,
         MatDialogModule,
+        MatDatepickerModule,
+        MatRadioModule,
+        NgxMatDatetimePickerModule,
+        NgxMatNativeDateModule,
+        NgxMatTimepickerModule,
+        MatNativeDateModule,
         MatProgressSpinnerModule,
         MatToolbarModule,
         MatMenuModule,
@@ -157,20 +167,21 @@ import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-
         MatTreeModule,
         MatTooltipModule,
         DragDropModule,
+        CodemirrorModule,
         ToastrModule.forRoot()
     ],
     exports: [],
     providers: [
-        InstallerGuard,
+        UserGuard,
         RootAuthorityGuard,
         AuditorGuard,
         AuthService,
         ProfileService,
-        RootConfigService,
         TokenService,
         SchemaService,
         AuditService,
         PolicyEngineService,
+        DemoService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

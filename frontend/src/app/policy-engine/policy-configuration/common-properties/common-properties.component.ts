@@ -15,8 +15,8 @@ export class CommonPropertiesComponent implements OnInit {
     @Input('schemes') schemes!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('all') allBlocks!: BlockNode[];
-    @Input('permissions') allPermissions!: any[];
     @Input('readonly') readonly!: boolean;
+    @Input('roles') roles!: string[];
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {

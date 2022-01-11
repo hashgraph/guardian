@@ -1,13 +1,13 @@
 import {fixtures} from '@api/fixtures';
 import {
     accountAPI,
-    auditAPI,
+    trustchainsAPI,
     frontendService,
-    otherAPI,
+    demoAPI,
     profileAPI,
-    rootAPI,
     schemaAPI,
-    tokenAPI
+    tokenAPI,
+    externalAPI
 } from '@api/service';
 import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
@@ -23,6 +23,7 @@ import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
 
 const PORT = process.env.PORT || 3002;
+const API_VERSION = 'v1';
 
 Promise.all([
     createConnection({
@@ -70,19 +71,21 @@ Promise.all([
     for (let policy of await getMongoRepository(Policy).find(
         {where: {status: {$eq: 'PUBLISH'}}}
     )) {
-        await policyGenerator.generate(policy.id);
+        await policyGenerator.generate(policy.id.toString());
     }
     ////////////////////////////////////////
 
     // Config routes
-    app.use('/policy/', authorizationHelper, policyGenerator.getRouter());
-    app.use('/api/account/', accountAPI);
-    app.use('/api/profile/', authorizationHelper, profileAPI);
-    app.use('/api/schema', authorizationHelper, schemaAPI);
-    app.use('/api/tokens', authorizationHelper, tokenAPI);
-    app.use('/api/package', importExportAPI);
-    app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
-    app.use('/api-docs/', swaggerAPI);
+    app.use(`/api/${API_VERSION}/policies`, authorizationHelper, policyGenerator.getRouter());
+    app.use(`/api/${API_VERSION}/policies`, authorizationHelper, importExportAPI);
+    app.use(`/api/${API_VERSION}/accounts/`, accountAPI);
+    app.use(`/api/${API_VERSION}/profile/`, authorizationHelper, profileAPI);
+    app.use(`/api/${API_VERSION}/schemas`, authorizationHelper, schemaAPI);
+    app.use(`/api/${API_VERSION}/tokens`, authorizationHelper, tokenAPI);
+    app.use(`/api/${API_VERSION}/trustchains/`, authorizationHelper, trustchainsAPI);
+    app.use(`/api/${API_VERSION}/external/`, externalAPI);
+    app.use(`/api/${API_VERSION}/demo/`, demoAPI);
+    app.use(`/api-docs/${API_VERSION}`, swaggerAPI);
     app.use('/', frontendService);
     /////////////////////////////////////////
 
@@ -90,3 +93,4 @@ Promise.all([
         console.log('UI service started on', PORT);
     });
 });
+

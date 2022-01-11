@@ -1,47 +1,54 @@
-import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {ISession, IToken} from 'interfaces';
-import {Observable} from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { IToken, ITokenInfo, IUser } from 'interfaces';
+import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from Tokens.
  */
 @Injectable()
 export class TokenService {
+  private readonly url: string = `${API_BASE_URL}/tokens`;
+
   constructor(
     private http: HttpClient
   ) {
   }
 
-  public createToken(data: any): Observable<IToken[]> {
-    return this.http.post<IToken[]>('/api/tokens/create', data);
+  public create(data: any): Observable<IToken[]> {
+    return this.http.post<IToken[]>(`${this.url}`, data);
   }
 
-  public getTokens(): Observable<IToken[]> {
-    return this.http.get<IToken[]>('/api/tokens');
+  public getTokens(): Observable<ITokenInfo[]> {
+    return this.http.get<ITokenInfo[]>(`${this.url}`);
   }
 
-  public getUserTokens(): Observable<IToken[]> {
-    return this.http.get<IToken[]>('/api/tokens/user-tokens');
+  public associate(tokenId: string, associate: boolean): Observable<void> {
+    if (associate) {
+      return this.http.put<void>(`${this.url}/${tokenId}/associate`, null);
+    } else {
+      return this.http.put<void>(`${this.url}/${tokenId}/dissociate`, null);
+    }
   }
 
-  public associate(tokenId: string, associated: boolean): Observable<IToken> {
-    return this.http.post<IToken>('/api/tokens/associate', {tokenId, associated});
+  public kyc(tokenId: string, username: string, kyc: boolean): Observable<void> {
+    if (kyc) {
+      return this.http.put<void>(`${this.url}/${tokenId}/${username}/grantKyc`, null);
+    } else {
+      return this.http.put<void>(`${this.url}/${tokenId}/${username}/revokeKyc`, null);
+    }
   }
 
-  public getAssociatedUsers(tokenId: string, username: string): Observable<any> {
-    return this.http.get<any[]>(`/api/tokens/associate-users?tokenId=${tokenId}&username=${username}`);
+  public freeze(tokenId: string, username: string, freeze: boolean): Observable<void> {
+    if (freeze) {
+      return this.http.put<void>(`${this.url}/${tokenId}/${username}/freeze`, null);
+    } else {
+      return this.http.put<void>(`${this.url}/${tokenId}/${username}/unfreeze`, null);
+    }
   }
 
-  public getUsers(): Observable<ISession[]> {
-    return this.http.get<any[]>(`/api/tokens/all-users`);
-  }
-
-  public grantKYC(tokenId: string, username: any, grantKYC: boolean) {
-    return this.http.post<any>(`/api/tokens/user-kyc`, {tokenId, username, value: grantKYC});
-  }
-
-  public getFreezeUser(tokenId: string, username: any, freeze: boolean) {
-    return this.http.post<any>(`/api/tokens/user-freeze`, {tokenId, username, value: freeze});
+  public info(tokenId: string, username: string): Observable<ITokenInfo> {
+    return this.http.get<ITokenInfo>(`${this.url}/${tokenId}/${username}/info`);
   }
 }

@@ -1,0 +1,24 @@
+<div class="content" [hidden]="!isActive">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div>
+        <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+            <div class="title">{{title}}</div>
+            <div class="description">
+                {{description}}
+            </div>
+            <div class="roles-form">
+                <mat-form-field appearance="outline">
+                    <mat-label>Roles</mat-label>
+                    <mat-select formControlName="role">
+                        <mat-option *ngFor="let role of roles" [value]="role">{{role}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div  class="btn-form">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!roleForm.valid">Ok</button>
+            </div>
+        </form>
+    </div>
+</div>

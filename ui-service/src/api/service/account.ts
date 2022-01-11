@@ -4,13 +4,17 @@ import {Request, Response, Router} from 'express';
 import {sign, verify} from 'jsonwebtoken';
 import {getMongoRepository} from 'typeorm';
 import {IAuthUser} from '../../auth/auth.interface';
+import { AuthenticatedRequest } from '@auth/auth.interface';
+import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
+import { UserRole } from 'interfaces';
+import { Users } from '@helpers/users';
 
 /**
  * User account route
  */
 export const accountAPI = Router();
 
-accountAPI.get('/current-user', async (req: Request, res: Response) => {
+accountAPI.get('/session', async (req: Request, res: Response) => {
     let authHeader = req.headers.authorization;
     if (authHeader) {
         const token = authHeader.split(' ')[1];
@@ -35,7 +39,16 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
         const {username, password, role} = req.body;
         const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
-        const user = getMongoRepository(User).create({
+        const rep = getMongoRepository(User);
+        const checkUserName = await rep.findOne({where: {username: {$eq: username}}});
+        if(checkUserName) {
+            res.json({
+                error: 'An account with the same name already exists.'
+            });
+            return;
+        }
+
+        const user = rep.create({
             username: username,
             password: passwordDigest,
             role: role,
@@ -43,7 +56,7 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
         });
 
         const result = await getMongoRepository(User).save(user);
-        res.json(result);
+        res.status(201).json(result);
     } catch (e) {
         res.status(500).send({code: 500, message: 'Server error'});
     }
@@ -59,13 +72,11 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
             const accessToken = sign({
                 username: user.username,
                 did: user.did,
-                state: user.state,
                 role: user.role
             }, process.env.ACCESS_TOKEN_SECRET);
-            res.json({
+            res.status(200).json({
                 username: user.username,
                 did: user.did,
-                state: user.state,
                 role: user.role,
                 accessToken: accessToken
             });
@@ -77,14 +88,13 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-accountAPI.get('/get-all-users', async (req: Request, res: Response) => {
-    try {
-        const users = await getMongoRepository(User).find();
-        res.json(users.map(e => ({
-            username: e.username,
-            role: e.role
-        })));
-    } catch (e) {
-        res.status(500).send({code: 500, message: 'Server error'});
-    }
+
+accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    const users = new Users();
+    const allUsers = await users.getUsersByRole(UserRole.USER);
+    const map = allUsers.map((e) => ({
+        username: e.username,
+        did: e.did
+    }))
+    res.status(200).json(map);
 });

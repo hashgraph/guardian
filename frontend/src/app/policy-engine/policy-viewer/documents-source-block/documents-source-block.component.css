@@ -8,7 +8,7 @@
 .loading {
     background: #fff;
     position: fixed;
-    z-index: 999;
+    z-index: 99;
     top: var(--header-height-policy);
     left: 0;
     bottom: 0;
@@ -81,4 +81,14 @@
 
 .btn-field:hover {
     text-decoration: underline;
+}
+
+.table tr.mat-row td {
+    max-width: 50vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.col-btn {
+    white-space: nowrap;
 }

@@ -15,7 +15,7 @@ form {
 .loading {
     background: #fff;
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     left: 0;
     bottom: 0;
     right: 0;

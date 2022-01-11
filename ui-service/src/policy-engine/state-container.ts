@@ -1,5 +1,5 @@
 import {PolicyBlockMap, PolicyTagMap} from '@policy-engine/interfaces';
-import {UserRole} from 'interfaces';
+import {PolicyRole, UserRole} from 'interfaces';
 import {IAuthUser} from '../auth/auth.interface';
 import {GenerateUUIDv4} from './helpers/uuidv4';
 import {IPolicyBlock, IPolicyInterfaceBlock} from './policy-engine.interface';
@@ -94,9 +94,10 @@ export class StateContainer {
      * Check if user role has permission for block
      * @param uuid
      * @param role
+     * @param user
      */
-    public static IfHasPermission(uuid: string, role: UserRole): boolean {
-        return StateContainer.PolicyBlockMapObject.get(uuid).hasPermission(role);
+    public static IfHasPermission(uuid: string, role: PolicyRole, user: IAuthUser | null): boolean {
+        return StateContainer.PolicyBlockMapObject.get(uuid).hasPermission(role, user);
     }
 
     /**

@@ -10,7 +10,7 @@
 .loading {
     background: #fff;
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     top: 0;
     left: 0;
     bottom: 0;
@@ -121,4 +121,11 @@ mat-form-field {
     font-weight: normal;
     color: #2F2F2F;
     line-height: 23px;
+}
+
+.field-error {
+    position: absolute;
+    color: #f00;
+    bottom: -28px;
+    left: 0;
 }

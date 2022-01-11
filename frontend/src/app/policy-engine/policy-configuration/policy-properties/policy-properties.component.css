@@ -19,3 +19,27 @@ textarea[readonly] {
 .readonly-prop {
     padding-left: 4px;
 }
+
+.propRowCell {
+    position: relative;
+}
+
+.remove-cell input {
+    width: 300px;
+}
+
+.remove-prop {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    color: #f00;
+    cursor: pointer;
+}
+
+.remove-prop mat-icon {
+    font-size: 20px;
+}
+
+.remove-prop[readonly="true"] {
+    display: none;
+}

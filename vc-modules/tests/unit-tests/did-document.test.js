@@ -2,7 +2,7 @@ const {
     HcsDidDocument
 } = require('../../dist/did-document');
 const {FileId} = require('@hashgraph/sdk');
-const {HcsDidRootKey, HcsDid, AddressBook} = require('did-sdk-js');
+const {HcsDidRootKey, HcsDid, AddressBook} = require('@hashgraph/did-sdk-js');
 const {expect, assert} = require('chai');
 const network = 'testnet';
 

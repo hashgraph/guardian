@@ -19,13 +19,13 @@ export class Wallet {
      * @param key
      */
     public async getKey(token: string, type: KeyType, key: string): Promise<string> {
-        const walletInstaller = await getMongoRepository(WalletAccount).findOne({
+        const wallet = await getMongoRepository(WalletAccount).findOne({
             where: {
                 token: {$eq: token},
                 type: {$eq: type + '|' + key}
             }
         });
-        return walletInstaller.key;
+        return wallet.key;
     }
 
     /**

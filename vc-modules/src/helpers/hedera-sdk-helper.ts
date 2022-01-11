@@ -23,12 +23,15 @@ import {
     TransferTransaction
 } from '@hashgraph/sdk';
 import { MAX_FEE } from './max-fee';
+import { timeout } from './utils';
 
 /**
  * Contains methods to simplify work with hashgraph sdk
  */
 export class HederaSDKHelper {
     public readonly client: Client;
+
+    public static MAX_TIMEOUT: number = 60000;
 
     constructor(client: Client) {
         this.client = client
@@ -71,6 +74,7 @@ export class HederaSDKHelper {
      * 
      * @returns {string} - Token id
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async newToken(
         name: string,
         symbol: string,
@@ -132,6 +136,7 @@ export class HederaSDKHelper {
      * 
      * @returns {string} - balance
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async balance(accountId: string | AccountId): Promise<string> {
         const client = this.client;
         const query = new AccountBalanceQuery()
@@ -147,6 +152,7 @@ export class HederaSDKHelper {
      * 
      * @returns {any} - associate tokens and balance
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async accountInfo(accountId?: string | AccountId): Promise<any> {
         const client = this.client;
         const info = await new AccountInfoQuery()
@@ -177,6 +183,7 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async associate(tokenId: string | TokenId, id: string, key: string) {
         const client = this.client;
         const accountId = AccountId.fromString(id);
@@ -201,6 +208,7 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async dissociate(tokenId: string | TokenId, id: string, key: string) {
         const client = this.client;
         const accountId = AccountId.fromString(id);
@@ -225,6 +233,7 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async freeze(tokenId: string | TokenId, accountId: string, freezeKey: string) {
         const client = this.client;
         const _freezeKey = PrivateKey.fromString(freezeKey);
@@ -248,6 +257,7 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async unfreeze(tokenId: string | TokenId, accountId: string, freezeKey: string) {
         const client = this.client;
         const _freezeKey = PrivateKey.fromString(freezeKey);
@@ -271,7 +281,8 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
-    public async grantKyc(tokenId: TokenId, accountId: string, kycKey: string) {
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async grantKyc(tokenId: string | TokenId, accountId: string, kycKey: string) {
         const client = this.client;
         const _kycKey = PrivateKey.fromString(kycKey);
         const transaction = new TokenGrantKycTransaction()
@@ -294,7 +305,8 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
-    public async revokeKyc(tokenId: TokenId, accountId: string, kycKey: string) {
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async revokeKyc(tokenId: string | TokenId, accountId: string, kycKey: string) {
         const client = this.client;
         const _kycKey = PrivateKey.fromString(kycKey);
         const transaction = new TokenRevokeKycTransaction()
@@ -319,6 +331,7 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async mint(
         tokenId: string | TokenId,
         supplyKey: string | PrivateKey,
@@ -350,6 +363,7 @@ export class HederaSDKHelper {
      * 
      * @returns {number[]} - serials
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async mintNFT(
         tokenId: string | TokenId,
         supplyKey: string | PrivateKey,
@@ -385,6 +399,7 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async wipe(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -419,6 +434,7 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async transfer(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -453,6 +469,7 @@ export class HederaSDKHelper {
      * 
      * @returns {boolean} - Status
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async transferNFT(
         tokenId: string | TokenId,
         targetId: string | AccountId,
@@ -487,6 +504,7 @@ export class HederaSDKHelper {
      * 
      * @returns {any} - Account Id and Account Private Key
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async newAccount(initialBalance: number): Promise<{ id: AccountId; key: PrivateKey; }> {
         const client = this.client;
         const newPrivateKey = PrivateKey.generate();
@@ -509,6 +527,7 @@ export class HederaSDKHelper {
      * 
      * @returns {string} - Topic Id
      */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async newTopic(key: PrivateKey | string | null, topicMemo?: string): Promise<string> {
         const client = this.client;
 

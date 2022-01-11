@@ -1,15 +1,15 @@
 import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { DidMethodOperation, HcsVcOperation } from 'did-sdk-js';
-import { 
-    DidDocumentStatus, 
-    DocumentSignature, 
-    DocumentStatus, 
-    IDidDocument, 
-    IVCDocument, 
-    IVPDocument, 
-    MessageAPI 
+import { DidMethodOperation, HcsVcOperation } from '@hashgraph/did-sdk-js';
+import {
+    DidDocumentStatus,
+    DocumentSignature,
+    DocumentStatus,
+    IDidDocument,
+    IVCDocument,
+    IVPDocument,
+    MessageAPI
 } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { VCHelper } from 'vc-modules';
@@ -30,7 +30,7 @@ export const documentsAPI = async function (
     vpDocumentRepository: MongoRepository<VpDocument>,
     vc: VCHelper
 ): Promise<void> {
-    const getDIDOperation = function (operation: DidMethodOperation) {
+    const getDIDOperation = function (operation: DidMethodOperation | DidDocumentStatus) {
         switch (operation) {
             case DidMethodOperation.CREATE:
                 return DidDocumentStatus.CREATE;
@@ -38,11 +38,19 @@ export const documentsAPI = async function (
                 return DidDocumentStatus.DELETE;
             case DidMethodOperation.UPDATE:
                 return DidDocumentStatus.UPDATE;
+            case DidDocumentStatus.CREATE:
+                return DidDocumentStatus.CREATE;
+            case DidDocumentStatus.DELETE:
+                return DidDocumentStatus.DELETE;
+            case DidDocumentStatus.FAILED:
+                return DidDocumentStatus.FAILED;
+            case DidDocumentStatus.UPDATE:
+                return DidDocumentStatus.UPDATE;
             default:
                 return DidDocumentStatus.NEW;
         }
     }
-    
+
     const getVCOperation = function (operation: HcsVcOperation) {
         switch (operation) {
             case HcsVcOperation.ISSUE:
@@ -57,7 +65,7 @@ export const documentsAPI = async function (
                 return DocumentStatus.NEW;
         }
     }
-    
+
     /**
      * Return DID Documents by DID
      * 
@@ -169,7 +177,7 @@ export const documentsAPI = async function (
         let verify: boolean;
         try {
             verify = await vc.verifySchema(result.document);
-            if(verify) {
+            if (verify) {
                 verify = await vc.verifyVC(result.document);
             }
         } catch (error) {

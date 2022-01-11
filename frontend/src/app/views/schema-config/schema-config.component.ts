@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
 import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
 import { SchemaDialog } from '../../components/dialogs/schema-dialog/schema-dialog.component';
-import { ISchema, ISession, Schema, SchemaStatus, UserState } from 'interfaces';
+import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/components/dialogs/import-schema/import-schema-dialog.component';
 
 /**
@@ -51,8 +51,8 @@ export class SchemaConfigComponent implements OnInit {
 
     loadProfile() {
         this.loading = true;
-        this.profileService.getCurrentState().subscribe((profile: ISession) => {
-            this.isConfirmed = !!profile && profile.state == UserState.CONFIRMED;
+        this.profileService.getProfile().subscribe((profile: IUser | null) => {
+            this.isConfirmed = !!(profile && profile.confirmed);
             if (this.isConfirmed) {
                 this.loadSchemes();
             } else {
@@ -87,7 +87,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.createSchema(schema).subscribe((data) => {
+                this.schemaService.create(schema).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
@@ -123,7 +123,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.updateSchema(schema, element.id).subscribe((data) => {
+                this.schemaService.update(schema, element.id).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
@@ -138,7 +138,7 @@ export class SchemaConfigComponent implements OnInit {
 
     publish(element: any) {
         this.loading = true;
-        this.schemaService.publishSchema(element.id).subscribe((data: any) => {
+        this.schemaService.publish(element.id).subscribe((data: any) => {
             this.setSchema(data);
             setTimeout(() => {
                 this.loading = false;
@@ -150,7 +150,7 @@ export class SchemaConfigComponent implements OnInit {
 
     unpublished(element: any) {
         this.loading = true;
-        this.schemaService.unpublishedSchema(element.id).subscribe((data: any) => {
+        this.schemaService.unpublished(element.id).subscribe((data: any) => {
             this.setSchema(data);
             setTimeout(() => {
                 this.loading = false;
@@ -162,7 +162,7 @@ export class SchemaConfigComponent implements OnInit {
 
     deleteSchema(element: any) {
         this.loading = true;
-        this.schemaService.deleteSchema(element.id).subscribe((data: any) => {
+        this.schemaService.delete(element.id).subscribe((data: any) => {
             this.setSchema(data);
             setTimeout(() => {
                 this.loading = false;
@@ -181,7 +181,7 @@ export class SchemaConfigComponent implements OnInit {
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result && result.schemes) {
-                this.schemaService.importSchemes(result.schemes).subscribe((data) => {
+                this.schemaService.import(result.schemes).subscribe((data) => {
                     this.setSchema(data);
                     this.loading = false;
                 }, (e) => {
@@ -193,12 +193,13 @@ export class SchemaConfigComponent implements OnInit {
 
     setSchema(data: ISchema[]) {
         this.schemes = Schema.mapRef(data) || [];
+        this.schemes =  this.schemes.filter(s=>!s.readonly);
         this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
     }
 
     exportSchemes() {
         const ids = this.schemes.filter((s: any) => s._selected).map(s => s.uuid);
-        this.schemaService.exportSchemes(ids).subscribe((data) => {
+        this.schemaService.export(ids).subscribe((data) => {
             this.downloadObjectAsJson(data.schemes, 'schema');
             this.loading = false;
         }, (e) => {

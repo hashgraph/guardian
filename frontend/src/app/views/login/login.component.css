@@ -55,7 +55,7 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
 .loading {
     background: #fff;
     position: fixed;
-    z-index: 999;
+    z-index: 99;
     top: 0;
     left: 0;
     bottom: 0;

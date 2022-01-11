@@ -28,7 +28,7 @@ form {
 .loading {
     background: #fff;
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     top: 0;
     left: 0;
     bottom: 0;
@@ -174,14 +174,6 @@ a[disabled="true"]{
     position: relative;
 }
 
-.clock-list {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-
 .clock-loader {
     position: relative;
     display: flex;
@@ -221,7 +213,13 @@ a[disabled="true"]{
         transform: rotate(1turn);
     }
 }
+
+.error-list,
 .clock-list {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     width: 800px;
     padding: 20px 20px 20px 20px;
     margin: 20px;
@@ -238,7 +236,17 @@ a[disabled="true"]{
     align-items: center;
 }
 .clock-list p {
-    margin: 18px 0 0 0;
+    margin: 18px 0 18px 0;
+}
+
+.error-list p {
+    font-size: 20px;
+    margin: 0 0 16px 0;
+    color: #000000;
+}
+
+.error-list button {
+    margin: 30px 0 0 0;
 }
 
 .generate-btn {

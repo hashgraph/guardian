@@ -1,4 +1,4 @@
-<div class="content installer">
+<div class="content">
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="!tokenId">
             <div class="actions">
@@ -98,7 +98,9 @@
         </div>
     </ng-container>
     <ng-template #elseTemplate>
-        <div>Before starting work you need to get DID <a [routerLink]="['/config']">here</a></div>
+        <div class="not-exist">
+            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+        </div>
     </ng-template>
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>

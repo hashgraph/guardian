@@ -1,5 +1,6 @@
-import {UserRole} from 'interfaces';
+import {PolicyRole, UserRole} from 'interfaces';
 import {IAuthUser} from '../auth/auth.interface';
+import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 export interface IPolicyRoles {
     [policyId: string]: string;
@@ -34,13 +35,16 @@ export interface IPolicyBlock {
 
     updateBlock(state: any, user: IAuthUser, tag: string): any;
 
-    hasPermission(role: UserRole);
+    hasPermission(role: PolicyRole | null, user: IAuthUser | null);
 
     registerChild(child: IPolicyBlock): void;
 
     registerSubscriptions(): void;
 
     destroy();
+
+    validate(resultsContainer: PolicyValidationResultsContainer);
+
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {

@@ -8,6 +8,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { StateContainer } from '@policy-engine/state-container';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 @BasicBlock({
     blockType: 'sendToGuardian',
@@ -25,12 +26,12 @@ export class SendToGuardianBlock {
 
     async documentSender(state, user): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
-       
+
         let document = state.data;
         document.policyId = ref.policyId;
         document.tag = ref.tag;
 
-        if (ref.options.forceNew) { 
+        if (ref.options.forceNew) {
             document = { ...document };
             document.id = undefined;
             state.data = document;
@@ -77,7 +78,7 @@ export class SendToGuardianBlock {
                 const target = ref.parent;
                 const _state = StateContainer.GetBlockState(target.uuid, user);
                 _state.index = currentIndex + 1;
-                await StateContainer.SetBlockState(target.uuid, _state, user, null); 
+                await StateContainer.SetBlockState(target.uuid, _state, user, null);
             }
             if (nextBlock.runAction) {
                 await nextBlock.runAction(state, user);
@@ -132,5 +133,13 @@ export class SendToGuardianBlock {
         document.status = result.getOperation();
         console.log("status", document.status, result.getCredentialHash());
         return document;
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+
+        if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+        }
     }
 }

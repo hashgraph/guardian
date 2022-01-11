@@ -8,6 +8,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature } from 'interfaces';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -20,8 +21,6 @@ function evaluate(formula: string, scope: any) {
 }
 
 enum DataTypes {
-    INSTALLER = 'installer',
-    SENSOR = 'sensor',
     MRV = 'mrv',
     REPORT = 'report',
     MINT = 'mint',
@@ -219,6 +218,25 @@ export class MintBlock {
             await this.mintProcessing(token, vcs, rule, root, curUser, ref);
         } catch (e) {
             throw e;
+        }
+    }
+
+    
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+
+        if (!ref.options.tokenId) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+        } else if (typeof ref.options.tokenId !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+        } else if (!(await this.guardians.getTokens({ tokenId: ref.options.tokenId }))[0]) {
+            resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+        }
+
+        if (!ref.options.rule) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+        } else if (typeof ref.options.rule !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
         }
     }
 }

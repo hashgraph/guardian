@@ -58,7 +58,7 @@ export class ActionBlockComponent implements OnInit {
         this.loading = false;
       }, 500);
     } else {
-      this.policyEngineService.getData(this.id, this.policyId).subscribe((data: any) => {
+      this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
         this.setData(data);
         setTimeout(() => {
           this.loading = false;
@@ -93,7 +93,7 @@ export class ActionBlockComponent implements OnInit {
     this.data[this.field] = value;
     this.value = this.data[this.field];
     this.visible = this.options.findIndex((o: any) => o.value == this.value) == -1;
-    this.policyEngineService.setData(this.id, this.policyId, this.data).subscribe(() => {
+    this.policyEngineService.setBlockData(this.id, this.policyId, this.data).subscribe(() => {
       this.loadData();
     }, (e) => {
       console.error(e.error);
@@ -105,7 +105,7 @@ export class ActionBlockComponent implements OnInit {
     this.loading = true;
     const data = {...row};
     data.status = status;
-    this.policyEngineService.setData(this.id, this.policyId, data).subscribe(() => {
+    this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
       this.loadData();
     }, (e) => {
       console.error(e.error);
@@ -114,7 +114,7 @@ export class ActionBlockComponent implements OnInit {
   }
 
   onDownload() {
-    this.policyEngineService.setData(this.id, this.policyId, this.data).subscribe((data) => {
+    this.policyEngineService.setBlockData(this.id, this.policyId, this.data).subscribe((data) => {
       if (data) {
         this.downloadObjectAsJson(data.body, data.fileName);
       }

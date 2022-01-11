@@ -11,7 +11,7 @@
 .loading {
     background: #fff;
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     top: 0;
     left: 0;
     bottom: 0;
@@ -181,14 +181,14 @@
 }
 
 .policy-config {
-    min-height: 220px;
-    max-height: 30%;
-    flex: 3;
+    min-height: 300px;
+    max-height: 35%;
+    flex: 35;
     display: flex;
 }
 
 .properties-config {
-    flex: 7;
+    flex: 65;
 }
 
 .properties-config .group-body {
@@ -197,6 +197,8 @@
     right: 0;
     top: 30px;
     bottom: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .group[hide="true"] .group-body {
@@ -255,6 +257,8 @@
     color: #3f51b5;
     cursor: pointer;
     padding-top: 4px;
+    position: relative;
+    user-select: none;
 }
 
 .btn-new-block:hover {
@@ -268,23 +272,23 @@
     align-content: center;
     text-align: center;
     line-height: 14px;
+    user-select: none;
 }
 
 .btn-new-block-menu {
     display: flex;
     overflow: hidden;
-    min-width: 50px;
+    min-width: 60px;
     height: 26px;
     flex-direction: row;
     border: 1px solid transparent;
     margin: 2px;
-    padding: 2px;
+    padding: 4px 8px 2px 2px;
     font-size: 12px;
     align-items: center;
     align-content: center;
     color: #3f51b5;
     cursor: pointer;
-    padding-top: 4px;
 }
 
 .btn-new-block-menu:hover {
@@ -317,6 +321,7 @@
     width: 22px;
     height: 16px;
     line-height: 16px;
+    user-select: none;
 }
 
 
@@ -412,4 +417,84 @@ input[readonly] {
     transform: translate(-50%, -50%);
     font-size: 20px;
     color: darkgrey;
+}
+
+.btn-new-block[errors-count] {
+    color: #ff0000;
+}
+
+.btn-new-block[errors-count="-1"] {
+    color: #3f51b5;
+}
+
+.btn-new-block[errors-count="0"] {
+    color: #00bd06;
+}
+
+.btn-status-edit[readonly="true"] {
+    pointer-events: none;
+    color: #b9b9b9;
+}
+
+.btn-new-block > .error-count {
+    position: absolute;
+    top: 0;
+    color: white;
+    right: 0;
+    background: #ff0000;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 18px;
+}
+
+.btn-status-edit[readonly="true"] > .error-count {
+    display: none;
+}
+
+.errors-properties {
+    margin: 6px 17px 3px 7px;
+    max-height: 200px;
+    flex: 0;
+}
+
+.errors-property {
+    border-radius: 3px;
+    border: 1px solid #f90000;
+    padding: 5px;
+    color: #f90000;
+    background: #fff2f2;
+    margin-bottom: 5px;
+    position: relative;
+    padding-left: 20px;
+}
+
+.errors-property span {
+    position: absolute;
+    left: 9px;
+    top: 13px;
+    background: #df0000;
+    width: 6px;
+    height: 3px;
+}
+
+.common-properties {
+    flex: 1;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+
+.json-errors {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    z-index: 99;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #c9c9c9;
 }

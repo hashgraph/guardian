@@ -1,5 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
 @import './variables.scss';
+@import '~codemirror/lib/codemirror';
+@import '~codemirror/theme/material';
+@import '~codemirror/addon/fold/foldgutter.css';
+@import '~codemirror/addon/lint/lint.css';
 
 html,
 body {
@@ -45,7 +49,7 @@ body {
     top: -6px;
 }
 
-.installer-profile .list {
+.user-profile .list {
     margin: 20px auto !important;
 }
 

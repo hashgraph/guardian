@@ -25,10 +25,11 @@ const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors |
 })
 export class RegisterComponent implements OnInit {
     loading: boolean = false;
+    error?: string;
 
     loginForm = this.fb.group({
-        login: ['Installer', Validators.required],
-        role: ['INSTALLER', Validators.required],
+        login: [Math.random().toString(36).substring(2,10), Validators.required],
+        role: ['USER', Validators.required],
         password: ['test', Validators.required],
         confirmPassword: ['test', Validators.required],
     }, { validators: checkPasswords });
@@ -57,6 +58,11 @@ export class RegisterComponent implements OnInit {
             const d = this.loginForm.value;
             this.loading = true;
             this.auth.createUser(d.login, d.password, d.role).subscribe((result) => {
+                if(result.error) {
+                    this.error = result.error;
+                    this.loading = false;
+                    return;
+                }
                 this.auth.login(d.login, d.password).subscribe((result) => {
                     this.loading = false;
                     this.auth.setAccessToken(result.accessToken);
@@ -82,5 +88,9 @@ export class RegisterComponent implements OnInit {
 
     goBack(): void {
         this.router.navigate(['/login']);
+    }
+
+    onInput() {
+        this.error = "";
     }
 }

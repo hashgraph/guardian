@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
-import { UserRole, ISession } from 'interfaces';
+import { UserRole } from 'interfaces';
+import { AuthService } from 'src/app/services/auth.service';
 
 /**
  * Start page.
@@ -23,16 +23,14 @@ export class HomeComponent implements OnInit {
     }
 
     async redirect() {
-        this.auth.getCurrentUser().subscribe((user: ISession | null) => {
+        this.auth.sessions().subscribe((user: any | null) => {
             if (user) {
                 if (user.role == UserRole.ROOT_AUTHORITY) {
                     this.router.navigate(['/config']);
-                } else if (user.role == UserRole.INSTALLER) {
-                    this.router.navigate(['/installer-profile']);
-                } else if (user.role == UserRole.ORIGINATOR) {
-                    this.router.navigate(['/originator-profile']);
-                } else {
+                } else if (user.role == UserRole.AUDITOR) {
                     this.router.navigate(['/audit']);
+                } else {
+                    this.router.navigate(['/user-profile']);
                 }
             } else {
                 this.router.navigate(['/login']);

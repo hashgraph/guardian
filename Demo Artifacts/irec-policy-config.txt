@@ -1,14 +1,30 @@
 {
   "defaultActive": true,
   "permissions": [
-    "ROOT_AUTHORITY",
-    "INSTALLER"
+    "ANY_ROLE"
   ],
   "blockType": "interfaceContainerBlock",
   "uiMetaData": {
     "type": "blank"
   },
   "children": [
+    {
+      "id": "ae8fa708-5c47-4a15-8129-6a4a6125a39a",
+      "tag": "choose_role",
+      "blockType": "policyRolesBlock",
+      "children": [],
+      "uiMetaData": {
+        "title": "registration",
+        "description": "choose a role"
+      },
+      "permissions": [
+        "NO_ROLE"
+      ],
+      "defaultActive": true,
+      "roles": [
+        "INSTALLER"
+      ]
+    },
     {
       "defaultActive": true,
       "tag": "init_installer_steps",
@@ -287,6 +303,13 @@
           ]
         },
         {
+          "tag": "rejected_approve_document_status",
+          "blockType": "sendToGuardian",
+          "dataType": "approve",
+          "entityType": "Installer",
+          "uiMetaData": {}
+        },
+		{
           "tag": "installer_rejected",
           "blockType": "informationBlock",
           "children": [],
@@ -307,7 +330,7 @@
       "tag": "root_authority_header",
       "defaultActive": true,
       "permissions": [
-        "ROOT_AUTHORITY"
+        "OWNER"
       ],
       "blockType": "interfaceContainerBlock",
       "uiMetaData": {
@@ -318,7 +341,7 @@
           "tag": "approve_page",
           "defaultActive": true,
           "permissions": [
-            "ROOT_AUTHORITY"
+            "OWNER"
           ],
           "blockType": "interfaceContainerBlock",
           "uiMetaData": {
@@ -330,7 +353,7 @@
               "tag": "approve_documents_grid",
               "defaultActive": true,
               "permissions": [
-                "ROOT_AUTHORITY"
+                "OWNER"
               ],
               "blockType": "interfaceDocumentsSource",
               "onlyOwnDocuments": false,
@@ -387,7 +410,7 @@
               "tag": "approve_documents_btn",
               "blockType": "interfaceAction",
               "permissions": [
-                "ROOT_AUTHORITY"
+                "OWNER"
               ],
               "type": "selector",
               "uiMetaData": {
@@ -403,7 +426,7 @@
                     "name": "Reject",
                     "value": "REJECTED",
                     "uiClass": "btn-reject",
-                    "bindBlock": "installer_rejected"
+                    "bindBlock": "rejected_approve_document_status"
                   }
                 ]
               }
@@ -416,7 +439,7 @@
       "tag": "mint_events",
       "defaultActive": true,
       "permissions": [
-        "ROOT_AUTHORITY",
+        "OWNER",
         "INSTALLER"
       ],
       "blockType": "interfaceContainerBlock",
@@ -441,7 +464,7 @@
         {
           "tag": "mint_token",
           "blockType": "mintDocument",
-          "tokenId": "0.0.2909122",
+          "tokenId": "0.0.26063342",
           "rule": "1",
           "uiMetaData": {}
         }

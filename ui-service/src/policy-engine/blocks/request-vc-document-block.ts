@@ -12,6 +12,7 @@ import { Schema } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '../../auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 @EventBlock({
     blockType: 'requestVcDocument',
@@ -37,7 +38,7 @@ export class RequestVcDocumentBlock {
         const { options, blockType, uuid } = PolicyBlockHelpers.GetBlockRef(this);
 
         if (!options.schema) {
-            throw new BlockInitError(`Fileld "schema" is required`, blockType, uuid);
+            throw new BlockInitError(`Field "schema" is required`, blockType, uuid);
         }
     }
 
@@ -70,7 +71,7 @@ export class RequestVcDocumentBlock {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
         if (!userFull.did) {
-            throw new BlockActionError('user have no any did', ref.blockType, ref.uuid);
+            throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
         }
 
         const userHederaAccount = userFull.hederaAccountId;
@@ -83,6 +84,8 @@ export class RequestVcDocumentBlock {
         if (id) {
             credentialSubject.id = id;
         }
+        credentialSubject.policyId = ref.policyId;
+
         const vc = await this.vcHelper.createVC(userFull.did, userHederaKey, schema, credentialSubject);
         const data = {
             hash: vc.toCredentialHash(),
@@ -139,5 +142,19 @@ export class RequestVcDocumentBlock {
             return user.did;
         }
         return undefined;
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+
+        // Test schema options
+        const schemas = await this.guardians.getSchemes({}) || [];
+        if (!ref.options.schema) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
+        } else if (typeof ref.options.schema !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+        } else if (!schemas.find(s => s.uuid === ref.options.schema)) {
+            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`)
+        }
     }
 }

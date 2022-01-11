@@ -1,6 +1,8 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "@angular-material-components/datetime-picker": "^6.0.3",
+    "@angular-material-components/moment-adapter": "^6.0.0",
     "@angular/animations": "~12.1.1",
     "@angular/cdk": "^12.1.1",
     "@angular/common": "~12.1.1",
@@ -11,14 +13,17 @@
     "@angular/platform-browser": "~12.1.1",
     "@angular/platform-browser-dynamic": "~12.1.1",
     "@angular/router": "~12.1.1",
+    "@ctrl/ngx-codemirror": "^5.1.1",
     "@enonic/global-polyfill": "^1.0.0",
     "@transmute/credentials-context": "^0.7.0-unstable.5",
     "@transmute/did-context": "^0.7.0-unstable.5",
     "@transmute/ed25519-signature-2018": "^0.7.0-unstable.5",
     "@transmute/security-context": "^0.7.0-unstable.5",
     "@transmute/vc.js": "^0.7.0-unstable.5",
+    "codemirror": "^5.65.0",
     "crypto-browserify": "^3.12.0",
     "interfaces": "file:../interfaces",
+    "moment": "^2.29.1",
     "ngx-toastr": "^14.1.0",
     "process": "^0.11.10",
     "rxjs": "~6.6.0",
@@ -51,5 +56,5 @@
     "test": "ng test",
     "watch": "ng build --watch --configuration development --output-path ../www-data"
   },
-  "version": "1.0.0"
+  "version": "1.0.2"
 }

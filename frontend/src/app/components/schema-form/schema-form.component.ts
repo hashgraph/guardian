@@ -1,6 +1,50 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
+import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaField } from 'interfaces';
+import * as moment from 'moment';
+
+const DATETIME_FORMATS = {
+  parse: {
+    dateInput: 'l, LT',
+  },
+  display: {
+    dateInput: 'l, LT',
+    monthYearLabel: 'MM yyyy',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  }
+};
+
+enum PlaceholderByFieldType {
+  Email = "example@email.com",
+  Number = "123",
+  URL = "example.com",
+  String = "example string"
+}
+
+enum ErrorFieldMessageByFieldType {
+  Email = "Please make sure the field contain a valid email address",
+  Number = "Please make sure the field contain a valid number value",
+  Duration = "Please make sure the field contain a valid duration value",
+  Integer = "Please make sure the field contain a valid integer value",
+  URL = "Please make sure the field contain a valid URL value",
+  DateTime = "Please make sure the field contain a valid datetime value",
+  Date = "Please make sure the field contain a valid date value",
+  Other = "Please make sure the field contain a valid value"
+};
+
+enum ErrorArrayMessageByFieldType {
+  Email = "Please make sure all fields contain a valid email address",
+  Number = "Please make sure all fields contain a valid number value",
+  Duration = "Please make sure all fields contain a valid duration value",
+  Integer = "Please make sure all fields contain a valid integer value",
+  URL = "Please make sure all fields contain a valid URL value",
+  DateTime = "Please make sure all fields contain a valid datetime value",
+  Date = "Please make sure all fields contain a valid date value",
+  Other = "Please make sure all fields contain a valid value"
+};
 
 /**
  * Form built by schema
@@ -8,7 +52,11 @@ import { Schema, SchemaField } from 'interfaces';
 @Component({
     selector: 'app-schema-form',
     templateUrl: './schema-form.component.html',
-    styleUrls: ['./schema-form.component.css']
+    styleUrls: ['./schema-form.component.css'],
+    providers: [
+      { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
+      { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
+    ]
 })
 export class SchemaFormComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
@@ -43,7 +91,7 @@ export class SchemaFormComponent implements OnInit {
         this.update();
     }
 
-    addItem(item: any) {
+    addItem(item: any, immediateAddForm: boolean = false) {
         const listItem: any = {
             name: item.name,
             index: String(item.list.length),
@@ -51,12 +99,28 @@ export class SchemaFormComponent implements OnInit {
         if (item.isRef) {
             listItem.control = new FormGroup({});
         } else {
-            listItem.control = new FormControl("", item.required ? Validators.required : null);
+            let validators = this.getValidators(item);
+            listItem.control = new FormControl("", validators);
+
+            if (['date', 'date-time'].includes(item.format)) {
+              this.subscribeFormatDateValue(listItem.control, item.format);
+            }
         }
         item.list.push(listItem);
-        item.control.push(listItem.control);
-        this.options?.updateValueAndValidity();
-        this.change.emit();
+
+        if (immediateAddForm)
+        {
+          item.control.push(listItem.control);
+          this.options?.updateValueAndValidity();
+          this.change.emit();
+          return;
+        }
+
+        setTimeout(() => {
+          item.control.push(listItem.control);
+          this.options?.updateValueAndValidity();
+          this.change.emit();
+        });
     }
 
     addGroup(item: any) {
@@ -105,10 +169,19 @@ export class SchemaFormComponent implements OnInit {
                 isArray: field.isArray,
                 isRef: field.isRef,
                 hide: false,
-                context: field.context
+                context: field.context,
+                type: field.type,
+                format: field.format,
+                pattern: field.pattern
             }
             if (!field.isArray && !field.isRef) {
-                item.control = new FormControl("", field.required ? Validators.required : null);
+                let validators = this.getValidators(item);
+                item.control = new FormControl("", validators);
+
+                if (['date', 'date-time'].includes(item.format)) {
+                  this.subscribeFormatDateValue(item.control, item.format);
+                }
+
                 group[field.name] = item.control;
             }
             if (!field.isArray && field.isRef) {
@@ -123,7 +196,7 @@ export class SchemaFormComponent implements OnInit {
                 group[field.name] = item.control;
                 item.list = [];
                 if (field.required) {
-                    this.addItem(item);
+                    this.addItem(item, true);
                 }
             }
             if (field.isArray && field.isRef) {
@@ -132,7 +205,7 @@ export class SchemaFormComponent implements OnInit {
                 item.list = [];
                 item.fields = field.fields;
                 if (field.required) {
-                    this.addItem(item);
+                    this.addItem(item, true);
                 }
             }
             fields.push(item);
@@ -149,5 +222,132 @@ export class SchemaFormComponent implements OnInit {
             this.options.addControl("type", new FormControl(this.context.type));
             this.options.addControl("@context", new FormControl(this.context.context));
         }
+    }
+
+    GetInvalidMessageByFieldType(type: string, isArray: boolean = false): string {
+      if (!type)
+      {
+        return "";
+      }
+
+      const messages = isArray
+        ? ErrorArrayMessageByFieldType
+        : ErrorFieldMessageByFieldType;
+
+      switch (type) {
+        case 'email':
+          return messages.Email;
+        case 'number':
+          return messages.Number;
+        case 'duration':
+          return messages.Duration;
+        case 'integer':
+          return messages.Integer;
+        case 'url':
+          return messages.URL;
+        case 'date-time':
+          return messages.DateTime;
+        case 'date':
+          return messages.Date;
+        default:
+          return messages.Other;
+      }
+    }
+
+    GetPlaceholderByFieldType(type: string): string {
+      switch (type) {
+        case 'email':
+          return PlaceholderByFieldType.Email;
+        case 'number':
+          return PlaceholderByFieldType.Number;
+        case 'duration':
+          return PlaceholderByFieldType.Number;
+        case 'integer':
+          return PlaceholderByFieldType.Number;
+        case 'url':
+          return PlaceholderByFieldType.URL;
+        case 'string':
+          return PlaceholderByFieldType.String;
+        default:
+          return "";
+      }
+    }
+
+    private subscribeFormatDateValue(control: FormControl, format: string) {
+      if (format === 'date') {
+        control.valueChanges
+          .subscribe((val: any) => {
+            let momentDate = moment(val);
+            let valueToSet = "";
+            if (momentDate.isValid()) {
+              valueToSet = momentDate.format("YYYY-MM-DD");
+            }
+
+            control.setValue(valueToSet,
+            {
+              emitEvent: false,
+              emitModelToViewChange: false
+            });
+          });
+      }
+
+      if (format === 'date-time') {
+        control.valueChanges
+          .subscribe((val: any) => {
+            let momentDate = moment(val);
+            let valueToSet = "";
+            if (momentDate.isValid()) {
+              valueToSet = momentDate.toISOString();
+            }
+
+            control.setValue(valueToSet,
+            {
+              emitEvent: false,
+              emitModelToViewChange: false
+            });
+          });
+      }
+    }
+
+    private getValidators(item:any): ValidatorFn[] {
+      const validators = [];
+
+      if (item.required)
+      {
+        validators.push(Validators.required);
+      }
+
+      if (item.pattern)
+      {
+        validators.push(Validators.pattern(item.pattern));
+        return validators;
+      }
+
+      if (item.format === 'email')
+      {
+        validators.push(Validators.pattern(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/));
+      }
+
+      if (item.type === 'number')
+      {
+        validators.push(Validators.pattern(/^-?\d*(\.\d+)?$/));
+      }
+
+      if (item.format === 'duration')
+      {
+        validators.push(Validators.pattern(/^[0-9]+$/));
+      }
+
+      if (item.type === 'integer')
+      {
+        validators.push(Validators.pattern(/^-?\d*$/));
+      }
+
+      if (item.format === 'url')
+      {
+        validators.push(Validators.pattern(/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/));
+      }
+
+      return validators;
     }
 }
