@@ -30,7 +30,7 @@ There is also a *Custom Role* which is called *User*. This role can be used to c
 ---
 **NOTE**
 
-There is a new feature as of version 1.0.2 which allows for the *Importing of Policies* from the Root Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch.
+There is a new feature as of version 1.0.2 which allows for the *Importing of Policies* from the Root Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch. We have added a .zip folder with the iRec policy for you to import in the Demo Artifacts folder.
 
 ---
 
