@@ -13,6 +13,8 @@ import assert from 'assert';
 import { makeMrvApi } from '@api/mrv';
 import { MeterConfig } from '@entity/meter-config';
 import morgan from 'morgan';
+import { makeSchemaApi } from '@api/schema';
+import { makeTokenApi } from '@api/token';
 
 const {
   SERVICE_CHANNEL,
@@ -21,6 +23,7 @@ const {
   DB_HOST,
   DB_DATABASE,
   GUARDIAN_TYMLEZ_API_KEY,
+  UI_SERVICE_BASE_URL,
 } = process.env;
 
 const PORT = process.env.PORT || 3010;
@@ -41,6 +44,7 @@ assert(DB_DATABASE, `DB_DATABASE is missing`);
 assert(SERVICE_CHANNEL, `SERVICE_CHANNEL is missing`);
 assert(MQ_ADDRESS, `MQ_ADDRESS is missing`);
 assert(MRV_RECEIVER_URL, `MRV_RECEIVER_URL is missing`);
+assert(UI_SERVICE_BASE_URL, `UI_SERVICE_BASE_URL is missing`);
 assert(GUARDIAN_TYMLEZ_API_KEY, `GUARDIAN_TYMLEZ_API_KEY is missing`);
 
 passport.use(
@@ -116,6 +120,18 @@ Promise.all([
       vcHelper,
       meterConfigRepository,
       mrvReceiverUrl: MRV_RECEIVER_URL,
+    }),
+  );
+  app.use(
+    '/schema/',
+    makeSchemaApi({
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
+    }),
+  );
+  app.use(
+    '/tokens/',
+    makeTokenApi({
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
     }),
   );
 

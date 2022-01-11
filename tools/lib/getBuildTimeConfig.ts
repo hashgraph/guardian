@@ -34,7 +34,7 @@ export const getBuildTimeConfig = async ({
           undefined,
           process.env.GUARDIAN_OPERATOR_ID,
           process.env.GUARDIAN_OPERATOR_KEY,
-          'apiKey1',
+          'tymlezApiKey1',
         ];
 
   assert(GUARDIAN_OPERATOR_ID, `GUARDIAN_OPERATOR_ID is missing`);
