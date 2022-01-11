@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hardcode schemes deletion [#236](https://github.com/hashgraph/guardian/issues/236)
 - Creating a new Installer user with already existing username causes 500 error [#238](https://github.com/hashgraph/guardian/issues/238)
 
+
 ## [v1.0.1] - 2021-12-17
 
 ### Added
