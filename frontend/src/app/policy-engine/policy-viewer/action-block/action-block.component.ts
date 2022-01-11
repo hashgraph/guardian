@@ -1,6 +1,6 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {PolicyEngineService} from 'src/app/services/policy-engine.service';
-import { ProfileHelper } from 'src/app/services/policy-helper.service';
+import { Component, Input, OnInit } from '@angular/core';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'requestVcDocument' type.
@@ -25,10 +25,12 @@ export class ActionBlockComponent implements OnInit {
   value: any;
   visible: any;
   content: any;
+  target: any;
+  filters: any;
 
   constructor(
     private policyEngineService: PolicyEngineService,
-    private profileHelper: ProfileHelper
+    private policyHelper: PolicyHelper
   ) {
   }
 
@@ -85,6 +87,21 @@ export class ActionBlockComponent implements OnInit {
       if (this.type == 'download') {
         this.content = this.uiMetaData.content;
       }
+      if (this.type == 'filters') {
+        this.content = this.uiMetaData.content;
+        this.target = data.targetBlock;
+        this.filters = {};
+        if (data.filters) {
+          for (let i = 0; i < data.filters.length; i++) {
+            const filter = data.filters[i];
+            if (filter.type == 'object') {
+              this.filters[filter.name] = this.data[filter.value];
+            } else {
+              this.filters[filter.name] = filter.value;
+            }
+          }
+        }
+      }
     } else {
       this.data = null;
     }
@@ -104,7 +121,7 @@ export class ActionBlockComponent implements OnInit {
 
   setStatus(row: any, status: string) {
     this.loading = true;
-    const data = {...row};
+    const data = { ...row };
     data.status = status;
     this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
       this.loadData();
@@ -134,5 +151,23 @@ export class ActionBlockComponent implements OnInit {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+  }
+
+  onFilters() {
+    this.loading = true;
+    this.policyEngineService.getGetIdByName(this.target, this.policyId).subscribe(({ id }: any) => {
+      this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {
+        this.loading = false;
+        const filters: any = {};
+        for (let index = parents.length - 1; index > 0; index--) {
+          filters[parents[index]] = parents[index - 1];
+        }
+        filters[parents[0]] = this.filters;
+        this.policyHelper.setParams(filters)
+      }, (e) => {
+        console.error(e.error);
+        this.loading = false;
+      });
+    });
   }
 }

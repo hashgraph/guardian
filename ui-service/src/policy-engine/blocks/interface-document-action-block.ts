@@ -1,15 +1,15 @@
-import {EventBlock} from '@policy-engine/helpers/decorators';
-import {IAuthUser} from '../../auth/auth.interface';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {Inject} from '@helpers/decorators/inject';
-import {Guardians} from '@helpers/guardians';
-import {StateContainer} from '@policy-engine/state-container';
-import {getMongoRepository, getRepository} from 'typeorm';
-import {Policy} from '@entity/policy';
-import {Users} from '@helpers/users';
-import {KeyType, Wallet} from '@helpers/wallet';
-import {User} from '@entity/user';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { EventBlock } from '@policy-engine/helpers/decorators';
+import { IAuthUser } from '../../auth/auth.interface';
+import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
+import { Inject } from '@helpers/decorators/inject';
+import { Guardians } from '@helpers/guardians';
+import { StateContainer } from '@policy-engine/state-container';
+import { getMongoRepository, getRepository } from 'typeorm';
+import { Policy } from '@entity/policy';
+import { Users } from '@helpers/users';
+import { KeyType, Wallet } from '@helpers/wallet';
+import { User } from '@entity/user';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 /**
  * Document action clock with UI
@@ -31,19 +31,29 @@ export class InterfaceDocumentActionBlock {
 
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
-        return {
-            type: ref.options.type,
+        const data : any = {
+            id: ref.uuid,
             blockType: 'interfaceAction',
-            uiMetaData: ref.options.uiMetaData,
-            id: ref.uuid
+            type: ref.options.type,
+            uiMetaData: ref.options.uiMetaData
         }
+        if (ref.options.type == 'filters') {
+            data.targetBlock = ref.options.targetBlock;
+            data.filters = ref.options.filters || [];
+        }
+        return data;
     }
 
     async setData(user: IAuthUser, document: any): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const uiMetaData = ref.options.uiMetaData;
 
-        let state: any = {data: document};
+        let state: any = { data: document };
+
+        if (ref.options.type == 'filters') {
+            return;
+        }
+
         if (ref.options.type == 'selector') {
             //?
             const value = document[uiMetaData.field];
@@ -55,7 +65,7 @@ export class InterfaceDocumentActionBlock {
                 state = StateContainer.GetBlockState(target.uuid, user);
                 state.index = index;
                 state.data = document;
-                const owner = await getRepository(User).findOne({did: document.owner});
+                const owner = await getRepository(User).findOne({ did: document.owner });
                 if (block.runAction) {
                     await block.runAction(state, owner);
                 } else {
@@ -146,6 +156,12 @@ export class InterfaceDocumentActionBlock {
                         resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                     } else if (!schemas.find(s => s.uuid === ref.options.schema)) {
                         resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`)
+                    }
+                    break;
+
+                case 'filters':
+                    if (!ref.options.targetBlock) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "targetBlock" does not set');
                     }
                     break;
 

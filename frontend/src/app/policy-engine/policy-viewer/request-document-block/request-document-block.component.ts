@@ -2,7 +2,7 @@ import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core'
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ProfileHelper } from 'src/app/services/policy-helper.service';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -36,7 +36,7 @@ export class RequestDocumentBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
-        private profileHelper: ProfileHelper,
+        private policyHelper: PolicyHelper,
         private fb: FormBuilder,
         private dialog: MatDialog
     ) {

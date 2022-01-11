@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ProfileHelper } from 'src/app/services/policy-helper.service';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../dialog-block/dialog-block.component';
 import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
 
@@ -21,6 +21,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     isActive = false;
     loading: boolean = true;
     socket: any;
+    params: any;
 
     fields: any[];
     columns: any[];
@@ -28,10 +29,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
     children: any[] | null;
     insert: any;
 
-
     constructor(
         private policyEngineService: PolicyEngineService,
-        private profileHelper: ProfileHelper,
+        private policyHelper: PolicyHelper,
         private dialog: MatDialog
     ) {
         this.fields = [];
@@ -44,6 +44,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (!this.static) {
             this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
         }
+        this.params = this.policyHelper.subscribe(this.onUpdateParams.bind(this));
         this.loadData();
     }
 
@@ -51,12 +52,19 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (this.socket) {
             this.socket.unsubscribe();
         }
+        if (this.params) {
+            this.params.unsubscribe();
+        }
     }
 
     onUpdate(id: string): void {
         if (this.id == id) {
             this.loadData();
         }
+    }
+
+    onUpdateParams() {
+        this.loadData();
     }
 
     loadData() {
@@ -67,7 +75,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
+            const filters = this.policyHelper.getParams(this.id);
+            this.policyEngineService.getBlockData(this.id, this.policyId, filters).subscribe((data: any) => {
                 this.setData(data).then(() => {
                     setTimeout(() => {
                         this.loading = false;
@@ -118,7 +127,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     reject();
                 });
             });
-
         });
     }
 

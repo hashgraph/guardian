@@ -72,7 +72,7 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicy() {
         const policyId = this.route.snapshot.queryParams['policyId'];
-        if(this.policyId == policyId) {
+        if(policyId && this.policyId == policyId) {
             return;
         }
 

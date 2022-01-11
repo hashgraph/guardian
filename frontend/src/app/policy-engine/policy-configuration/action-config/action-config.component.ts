@@ -26,7 +26,9 @@ export class ActionConfigComponent implements OnInit {
         main: false,
         optionsGroup: false,
         fileGroup: false,
-        options: {}
+        options: {},
+        filterGroup: false,
+        filters: {}
     };
 
     block!: BlockNode;
@@ -55,6 +57,18 @@ export class ActionConfigComponent implements OnInit {
 
     addOptions() {
         this.block.uiMetaData.options.push({
+            title: '',
+            name: '',
+            tooltip: '',
+            type: 'text',
+        })
+    }
+
+    addFilters() {
+        if(!this.block.filters) {
+            this.block.filters = [];
+        }
+        this.block.filters.push({
             title: '',
             name: '',
             tooltip: '',

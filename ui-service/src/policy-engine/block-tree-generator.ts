@@ -492,7 +492,7 @@ export class BlockTreeGenerator {
                     return;
                 }
                 let tmpBlock: IPolicyBlock = block;
-                const parents = [];
+                const parents = [block.uuid];
                 while (tmpBlock.parent) {
                     parents.push(tmpBlock.parent.uuid);
                     tmpBlock = tmpBlock.parent;

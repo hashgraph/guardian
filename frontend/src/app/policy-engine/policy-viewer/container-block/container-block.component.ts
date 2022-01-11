@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ProfileHelper } from 'src/app/services/policy-helper.service';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'interfaceContainerBlock' type.
@@ -17,6 +17,7 @@ export class ContainerBlockComponent implements OnInit {
 
     loading: boolean = true;
     socket: any;
+    params: any;
 
     blocks: any;
     activeBlockId: any;
@@ -27,7 +28,7 @@ export class ContainerBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
-        private profileHelper: ProfileHelper
+        private policyHelper: PolicyHelper
     ) {
     }
 
@@ -35,6 +36,7 @@ export class ContainerBlockComponent implements OnInit {
         if (!this.static) {
             this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
         }
+        this.params = this.policyHelper.subscribe(this.onUpdateParams.bind(this));
         this.loadData();
     }
 
@@ -42,11 +44,26 @@ export class ContainerBlockComponent implements OnInit {
         if (this.socket) {
             this.socket.unsubscribe();
         }
+        if (this.params) {
+            this.params.unsubscribe();
+        }
     }
 
     onUpdate(id: string): void {
         if (this.id == id) {
             this.loadData();
+        }
+    }
+
+    onUpdateParams() {
+        const id = this.policyHelper.getParams(this.id);
+        if (this.activeBlockId != id) {
+            this.activeBlockId = id;
+            this.selectedIndex = this.blocks.findIndex((b: any) => b.id == this.activeBlockId);
+            this.activeBlock = this.blocks[this.selectedIndex];
+            if (!this.activeBlock) {
+                this.onBlockChange(0);
+            }
         }
     }
 
@@ -78,7 +95,7 @@ export class ContainerBlockComponent implements OnInit {
             this.blocks = data.blocks || [];
             this.blocks = this.blocks.filter((b: any) => (b && b.isActive));
 
-            this.activeBlockId = this.profileHelper.getParams(this.id);
+            this.activeBlockId = this.policyHelper.getParams(this.id);
             this.selectedIndex = this.blocks.findIndex((b: any) => b.id == this.activeBlockId);
             this.activeBlock = this.blocks[this.selectedIndex];
             if (!this.activeBlock) {
@@ -97,7 +114,7 @@ export class ContainerBlockComponent implements OnInit {
         this.selectedIndex = event;
         this.activeBlock = this.blocks[this.selectedIndex];
         this.activeBlockId = this.activeBlock ? this.activeBlock.id : null;
-        this.profileHelper.setParams(this.id, this.activeBlockId);
+        this.policyHelper.setParams(this.id, this.activeBlockId);
     }
 
     getTitle(block: any) {

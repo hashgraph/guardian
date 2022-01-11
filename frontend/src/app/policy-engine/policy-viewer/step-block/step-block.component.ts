@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { Subscription } from 'rxjs';
-import { ProfileHelper } from 'src/app/services/policy-helper.service';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'interfaceStepBlock' types.
@@ -34,7 +34,7 @@ export class StepBlockComponent implements OnInit {
 
   constructor(
     private policyEngineService: PolicyEngineService,
-    private profileHelper: ProfileHelper,
+    private policyHelper: PolicyHelper,
   ) {
     this.socket = null;
     console.log(this);

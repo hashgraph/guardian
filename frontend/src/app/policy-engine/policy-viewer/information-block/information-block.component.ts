@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ProfileHelper } from 'src/app/services/policy-helper.service';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
 
 /**
  * Component for display block of 'informationBlock' types.
@@ -26,7 +26,7 @@ export class InformationBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
-        private profileHelper: ProfileHelper,
+        private policyHelper: PolicyHelper,
     ) {
     }
 
