@@ -7,8 +7,8 @@
     "clean": "lerna run clean --stream && lerna clean --no-private --yes",
     "lint": "npm run npm7:check && tsc --noEmit",
     "npm7:check": "./tools/bin/ensure-npm7.sh",
-    "dev:docker": "docker-compose up -d --build",
-    "dev:watch": "./tools/bin/dev-watch.sh",
+    "dev:docker": "npm run load-env && docker-compose up -d --build",
+    "dev:watch": "npm run load-env && ./tools/bin/dev-watch.sh",
     "deploy:manual": "npm run load-env && npm run tools deploy",
     "tools": "node -r esbuild-register ./tools/bin/index.ts",
     "load-env": "node -r esbuild-register ./tools/bin/index.ts load-env"
@@ -28,6 +28,7 @@
     "@types/node": "^14.17.32",
     "@types/yargs": "^17.0.5",
     "aws-sdk": "^2.1021.0",
+    "axios": "^0.24.0",
     "esbuild": "^0.13.12",
     "esbuild-register": "^3.0.0",
     "exec-sh": "^0.4.0",

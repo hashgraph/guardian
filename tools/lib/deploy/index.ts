@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { promise as exec } from 'exec-sh';
 import { STS } from 'aws-sdk';
-import { getConfig } from '../getConfig';
+import { getBuildTimeConfig } from '../getBuildTimeConfig';
 import { deployToGke } from './deployToGke';
 import { pushImages } from './pushImages';
 
@@ -21,7 +21,7 @@ export async function deploy() {
     `AWS caller: ${callerArn} not allow to deploy to ${fullEnv}`,
   );
 
-  const { GCP_PROJECT_ID, GCP_REGION, GKE_CLUSTER } = await getConfig({
+  const { GCP_PROJECT_ID, GCP_REGION, GKE_CLUSTER } = await getBuildTimeConfig({
     env: ENV,
   });
 

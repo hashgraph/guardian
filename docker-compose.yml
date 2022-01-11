@@ -30,8 +30,8 @@ services:
       context: .
       dockerfile: ./guardian-service/Dockerfile
     image: guardian-service
-    #    ports:
-    #      - 3004:3004
+    ports:
+      - 3001:3001
     depends_on:
       - mongo
       - message-broker

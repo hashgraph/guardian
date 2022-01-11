@@ -1,7 +1,7 @@
 import assert from 'assert';
 import fs from 'fs';
 import { template } from 'lodash';
-import { getConfig } from './getConfig';
+import { getBuildTimeConfig } from './getBuildTimeConfig';
 
 const { readFile, writeFile } = fs.promises;
 
@@ -14,7 +14,7 @@ export const loadEnv = async (): Promise<void> => {
     GUARDIAN_OPERATOR_ID,
     GUARDIAN_OPERATOR_KEY,
     GUARDIAN_TYMLEZ_API_KEY,
-  } = await getConfig({
+  } = await getBuildTimeConfig({
     env: process.env.ENV,
   });
 

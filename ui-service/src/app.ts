@@ -34,6 +34,7 @@ console.log('Starting ui-service', {
     DEPLOY_VERSION: process.env.DEPLOY_VERSION,
     OPERATOR_ID: process.env.OPERATOR_ID,
     MRV_ADDRESS: process.env.MRV_ADDRESS,
+    SERVICE_CHANNEL: process.env.SERVICE_CHANNEL
 });
   
   

@@ -1,7 +1,11 @@
 import assert from 'assert';
 import { getParameters } from './getParameters';
 
-export const getConfig = async ({ env }: { env: string }): Promise<IConfig> => {
+export const getBuildTimeConfig = async ({
+  env,
+}: {
+  env: string;
+}): Promise<IConfig> => {
   assert(
     env === 'local' || env === 'dev' || env === 'preprod' || env === 'prod',
     `Unsupported env: '${env}'.`,
