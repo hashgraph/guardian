@@ -86,19 +86,20 @@ Created or imported schema needs to be published via the **Publish** button afte
 
 8. Click on the Root Authority's profile icon and select "Log Out." We will now go back into the **Admin Panel**. This time we will select **Installer**
 
-![Guardian step 8](https://user-images.githubusercontent.com/40637665/137965200-bc63668e-cd94-4451-a495-ef0f32cd2b7c.png)
+![image](https://user-images.githubusercontent.com/40637665/148989256-2ea4baae-e326-4a99-ab4d-dfafaf76a261.png)
 
 9. When signing into the User profile (soon to be the Installer Role), follow similar configuration steps as the Root Authority. Click the **Generate** button, then select **Submit**. After generating the Hedera Operating ID and Key, the Installer profile will be configured, test HBAR will be credited to the account, and a DID will be created.
 
-![Guardian step 9](https://user-images.githubusercontent.com/40637665/137965583-00d980fd-aa27-4dd4-b62e-2adc96b116ed.png)
+![image](https://user-images.githubusercontent.com/40637665/148988675-b4f6afff-d82b-44df-a788-0cb1fc24e83c.png)
+
 
 10. Next, navigate to the **Token** tab and click the **link** icon to associate the user to the token we created as the Root Authority.
 
-![Guardian step 10](https://user-images.githubusercontent.com/40637665/137965789-6e5b888d-88a2-4a6d-917e-fd797b060b2d.png)
+![image](https://user-images.githubusercontent.com/40637665/148988822-4ad72ee4-2393-46b4-aa8c-23d07cb47030.png)
 
 11. Now, we can click on the **Policies** tab. This is where the specific actions required by the Policy Workflow will be found. We can click the **Open** button to the right of the iRec Policy the Root Authority created. 
 
-![Guardian step 11](https://user-images.githubusercontent.com/40637665/137966063-7add24f7-319b-472e-a93d-418075a74999.png)
+![image](https://user-images.githubusercontent.com/40637665/148988907-54b1c049-67bd-4b73-b8fc-f9357a1e4484.png)
 
    This is where the custom user will be able to assign the role that was created by the Root Authority during the workflow creation process. In our case, we created the custom role of *Installer* so the user will need to select the *Installer* role from the drop down.
    
@@ -106,7 +107,7 @@ Created or imported schema needs to be published via the **Publish** button afte
 
    After selecting the Installer role, we will see the form that is based on the imported schema in step 4. This form is one of the Policy Workflow State Objects. Once you fill out the required information, press the **OK** button. Note: There is a known issue that no dialogue box comes up to let you know the form is completed. That's ok for now, we are working to provide a UI update. Everything works, so just move onto the next step :)
    
-![Guardian step 11 2](https://user-images.githubusercontent.com/40637665/137966739-1872360d-a7bd-45a3-8fe5-7fd7d59af66d.png)
+![image](https://user-images.githubusercontent.com/40637665/148989000-29d657a3-d91d-40db-8808-653696a8b27f.png)
 
 12. The next step of our flow is to log out and sign back in as the Root Authority. Navigate to the **Policies** tab and click the **Open** button on the far right. Here you will find the approval actions based on our Policy Workflow required by the Root Authority. You will be able to view the Verifiable Credential prior to approval by selecting the **View Document** link. Once you are ready to approve the document, you can click on the **Approve** button.
 
@@ -118,11 +119,11 @@ Created or imported schema needs to be published via the **Publish** button afte
 
 14. We can now log out of the Root Authority account and back in as the Installer. Navigate to the **Policies** tab and click the **Open** button on the far right. The next Policy Workflow Action required by the Installer is to register their sensors. Click the **New Sensors** button, fill out the required information in the dialog box, and select **OK**.
 
-![Guardian step 14](https://user-images.githubusercontent.com/40637665/137967290-51ae0339-4272-4fbc-b628-eb39bf5e4e74.png)
+![image](https://user-images.githubusercontent.com/40637665/148989077-e4f044ff-625d-41df-94d1-45b88a52fdaf.png)
 
 15. You'll notice that you just created a sensor (refreshing the page may be needed), and that sensor has been assigned a Decentralized Identifier and a Verifiable Credential. Click the **Configuration** button. This will begin the download of the Sensor configuration file. Save that in a handy place because we will need it.
 
-![Guardian step 15](https://user-images.githubusercontent.com/40637665/137970980-19ba060d-0686-4718-8e4e-2aede5db693e.png)
+![image](https://user-images.githubusercontent.com/40637665/148989161-d9ced7c4-8e9e-4987-b6a0-cb9719a92e1d.png)
 
 16. Open another tab on your browser and enter http://localhost:3005/. We now see our IoT simulator. You can either drag and drop the sensor configuration file to the big `+` sign in the upper left, or you click the button to browse your computer. For simplicity's sake, click the button next to **Random Value** for the IoT simulator to generate random Measurement, Reporting, and Validation (MRV) data. Click **OK**.
 
@@ -134,7 +135,7 @@ Created or imported schema needs to be published via the **Publish** button afte
 
 17. The last step is to log out of the Installer account and log into the Auditor account. 
 
-![Guardian step 17](https://user-images.githubusercontent.com/40637665/137971921-041a209a-fec2-4f0a-854b-d46c7b26eaf7.png)
+![image](https://user-images.githubusercontent.com/40637665/148989347-49bfb6fb-6753-4167-aeac-1dd6602cb1a4.png)
 
   There are two tabs in this view: **Audit** and **Trust Chain**. Clicking into the Audit tab offers high-level public information from our reference implementation such as the Verifiable Presentation ID, the Hash of the Verifiable Presentation, the DID of the sensor, the date information the Verifiable Presentation was created, the type of activity, and the ability to view the Verifiable Presentation.
   
