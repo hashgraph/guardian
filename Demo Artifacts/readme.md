@@ -13,7 +13,7 @@ This folder contains sample files that are referenced in the Demo Usage Guide
 - **Root Authority**: A standard registry, or a Root Authority in our scenario, is an organization that establishes science-based standards for measuring, reporting, and verifying (MRV) ecological benefit claims and issues value in the form of credit for claims that meet the standard set. A standard registry also authorizes validation and verification bodies (VVBs) to collect and process claims based on the established standard. The creation of scientific-based standards for MRV is a rigorous discipline that requires independence from commercial influence in the pursuit of accurate accounting of benefit or emissions claims. A standard registry organization can also maintain a central registry of credits they have issued that can be sold directly via the registry itself or established as reference value on networks, exchanges, or marketplaces.
 - **Auditor**: This is a 3rd part who will need to view/audit the entire chain of events; from the establishment of the science-based standards through creation of the credit.
 
-There is also a *Custom Role* which is called *User*. This role can be used to create any role which is neccessary in a specific policy. For the reference implement below, we created a custom role called *Installer*. 
+There is also a *Custom Role* which is called *User*. This role can be used to create any role which is neccessary in a specific policy. For the reference implement below, we created a custom role called *Installer* (later explained when we create a policy down below). 
 
 ![1234](https://user-images.githubusercontent.com/40637665/148966434-b35f04eb-e14d-4bd1-a574-5a50aa3b181e.png)
 
