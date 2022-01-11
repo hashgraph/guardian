@@ -82,3 +82,13 @@
 .btn-field:hover {
     text-decoration: underline;
 }
+
+.table tr.mat-row td {
+    max-width: 50vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.col-btn {
+    white-space: nowrap;
+}
