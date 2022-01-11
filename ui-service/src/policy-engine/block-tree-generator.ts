@@ -483,6 +483,32 @@ export class BlockTreeGenerator {
             }
         });
 
+        this.router.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+                if(!block) {
+                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+                    res.status(err.errorObject.code).send(err.errorObject);
+                    return;
+                }
+                let tmpBlock: IPolicyBlock = block;
+                const parents = [];
+                while (tmpBlock.parent) {
+                    parents.push(tmpBlock.parent.uuid);
+                    tmpBlock = tmpBlock.parent;
+                }
+                res.send(parents);
+            } catch (e) {
+                try {
+                    const err = e as BlockError;
+                    res.status(err.errorObject.code).send(err.errorObject);
+                } catch (_e) {
+                    res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+                }
+                console.error(e);
+            }
+        });
+
         this.router.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
             if (!req.body || !req.body.json) {
                 res.status(500).send({ code: 500, message: 'Bad json' });
