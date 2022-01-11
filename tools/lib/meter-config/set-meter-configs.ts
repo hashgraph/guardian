@@ -10,7 +10,8 @@ export async function setMeterConfigs() {
 
   assert(ENV, `ENV is missing`);
 
-  const { GUARDIAN_TYMLEZ_API_KEY } = await getBuildTimeConfig({ env: ENV });
+  const { GUARDIAN_TYMLEZ_API_KEY, GUARDIAN_TYMLEZ_SERVICE_BASE_URL } =
+    await getBuildTimeConfig({ env: ENV });
   const configFiles = await getConfigFilesSortedByDate();
 
   const meterConfigs = (
@@ -23,11 +24,15 @@ export async function setMeterConfigs() {
 
   for (const config of meterConfigs) {
     console.log('Setting meter config for', config.did);
-    await axios.post('http://localhost:3010/mrv/set-config', config, {
-      headers: {
-        Authorization: `Api-Key ${GUARDIAN_TYMLEZ_API_KEY}`,
+    await axios.post(
+      `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/mrv/set-config`,
+      config,
+      {
+        headers: {
+          Authorization: `Api-Key ${GUARDIAN_TYMLEZ_API_KEY}`,
+        },
       },
-    });
+    );
   }
 }
 

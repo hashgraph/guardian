@@ -1,20 +1,37 @@
 # For local development
 
+## Bootstrap (run once only)
+
 ```sh
-# 1. Use latest Node.js
+# Use node version in .nvmrc
 nvm use
 
-# 2a. First time
+# Run this once the first time (slow)
 npm i
 
-# 2b. Other times
+# Prevent race condition when trying to install `concurrently`
+npx -y concurrently --help
+
+# Create logs folder
+mkdir -p .tmp/logs
+
+# Run build once to prevent initial errors from `npm run dev:watch`
+npm run build
+```
+
+## Get Started
+
+```sh
+# 1. Use node version in .nvmrc
+nvm use
+
+# 2. Run this afterward instead of `npm install` (faster)
 npm run bootstrap
 
-# 3a. start dev servers without docker, watch for file changes
-mkdir -p .tmp/logs
+# 3a. Start dev servers without docker, watch for file changes
 npm run dev:watch 2>&1 | tee .tmp/logs/$(date "+%Y-%m-%dT%H-%M-%S").out
 
-# 3b. start dev servers with docker, does not watch for file changes
+# 3b. Start dev servers with docker, does not watch for file changes
 npm run dev:docker
 
 # 4. Initialize Guardian (manual)
@@ -23,11 +40,8 @@ npm run dev:docker
 # - Login as RootAuthority
 # - Complete the configuration
 
-# 5. Initialize schemas
-npm run tools init-schemas
-
-# 6. Initialize tokens
-npm run tools init-tokens
+# 5. Initialize tokens, schemas and policies
+npm run tools init-policies
 ```
 
 # For production
