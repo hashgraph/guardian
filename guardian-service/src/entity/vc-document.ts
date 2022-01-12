@@ -41,6 +41,9 @@ export class VcDocument implements IVCDocument {
     @Column()
     tag: string;
 
+    @Column()
+    cid?: string;
+
     @BeforeInsert()
     setDefaults() {
         this.status = this.status || DocumentStatus.NEW;

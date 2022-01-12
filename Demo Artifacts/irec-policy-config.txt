@@ -168,7 +168,7 @@
                   "type": "download",
                   "schema": "c4623dbd-2453-4c12-941f-032792a00727",
                   "stopPropagation": true,
-                  "targetUrl": "http://message-broker:3003/mrv",
+                  "targetUrl": "http://localhost:3003/mrv",
                   "uiMetaData": {
                     "content": "download",
                     "options": []
@@ -441,7 +441,7 @@
         {
           "tag": "mint_token",
           "blockType": "mintDocument",
-          "tokenId": "0.0.2909122",
+          "tokenId": "0.0.26571091",
           "rule": "1",
           "uiMetaData": {}
         }
