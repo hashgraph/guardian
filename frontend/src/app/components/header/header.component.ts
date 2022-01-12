@@ -40,7 +40,7 @@ export class HeaderComponent implements OnInit {
     this.linksConfig[UserRole.USER] = [{
       name: "Profile",
       disabled: false,
-      link: '/installer-profile'
+      link: '/user-profile'
     }, {
       name: "Policies",
       disabled: false,
