@@ -161,12 +161,17 @@ export class PolicyConfigurationComponent implements OnInit {
     onAdd(type: string) {
         if (this.currentBlock) {
             this.currentBlock.children = this.currentBlock.children || [];
+            let permissions = undefined;
+            if(this.currentBlock.permissions) {
+                permissions = this.currentBlock.permissions.slice();
+            }
             const newBlock: BlockNode = {
                 id: this.generateUUIDv4(),
                 tag: `Block${this.indexBlock}`,
                 blockType: type,
                 defaultActive: true,
-                children: []
+                children: [],
+                permissions: permissions
             };
             this.currentBlock.children.push(newBlock);
             this.setBlocks(this.blocks[0]);
