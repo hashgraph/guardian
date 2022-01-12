@@ -8,11 +8,11 @@ import { BlockStateUpdate } from '@policy-engine/helpers/decorators';
 import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { PolicyBlockStateData } from '@policy-engine/interfaces';
 import { StateContainer } from '@policy-engine/state-container';
-import { Schema } from 'interfaces';
+import { Schema, SchemaStatus } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '../../auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 @EventBlock({
     blockType: 'requestVcDocument',
@@ -47,7 +47,7 @@ export class RequestVcDocumentBlock {
 
     async getData(user: IAuthUser): Promise<any> {
         const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
-        if(!this.schema) {
+        if (!this.schema) {
             const schemas = await this.guardians.getSchemes({}) || [];
             this.schema = Schema.mapRef(schemas).find(s => s.uuid === options.schema);
         }
@@ -96,7 +96,7 @@ export class RequestVcDocumentBlock {
 
         await this.update(Object.assign(StateContainer.GetBlockState((this as any).uuid, user), { data }), user);
 
-        if(ref.options.stopPropagation) {
+        if (ref.options.stopPropagation) {
             return {};
         }
 
@@ -148,13 +148,23 @@ export class RequestVcDocumentBlock {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
 
         // Test schema options
-        const schemas = await this.guardians.getSchemes({}) || [];
+        const schemas = await this.guardians.getSchemes() || [];
         if (!ref.options.schema) {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
-        } else if (typeof ref.options.schema !== 'string') {
+            return;
+        }
+        if (typeof ref.options.schema !== 'string') {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-        } else if (!schemas.find(s => s.uuid === ref.options.schema)) {
-            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`)
+            return;
+        }
+        const schema = schemas.find(s => s.uuid === ref.options.schema)
+        if (!schema) {
+            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+            return;
+        }
+        if (schema.status != SchemaStatus.PUBLISHED) {
+            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not published`);
+            return;
         }
     }
 }
