@@ -2,7 +2,7 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
     "@hashgraph/sdk": "2.5.0",
-    "@transmute/credentials-context": "0.7.0-unstable.8",
+    "@transmute/credentials-context": "0.7.0-unstable.34",
     "@transmute/did-context": "0.7.0-unstable.8",
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.8",
     "@transmute/security-context": "0.7.0-unstable.8",
