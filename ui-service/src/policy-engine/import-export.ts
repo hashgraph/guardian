@@ -52,11 +52,13 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
         const existingTokens = await guardians.getTokens();
         const existingSchemas = await guardians.getSchemes();
 
+        const existingTokensMap = {};
+        existingTokens.forEach(token => existingTokensMap[token.tokenId] = true);
+        tokens = tokens.filter((token:any) => !existingTokensMap[token.tokenId]);
         for (let token of tokens) {
             delete token.id;
             delete token.selected;
         }
-        tokens = tokens.filter((token:any) => !existingTokens.includes(token.tokenId));
 
         for (let schema of schemas) {
             const oldUUID = schema.uuid;
