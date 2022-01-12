@@ -95,7 +95,7 @@ export class ActionBlockComponent implements OnInit {
           for (let i = 0; i < data.filters.length; i++) {
             const filter = data.filters[i];
             if (filter.type == 'object') {
-              this.filters[filter.name] = this.data[filter.value];
+              this.filters[filter.name] = this.getObjectValue(this.data, filter.value);
             } else {
               this.filters[filter.name] = filter.value;
             }
@@ -105,6 +105,19 @@ export class ActionBlockComponent implements OnInit {
     } else {
       this.data = null;
     }
+  }
+
+  getObjectValue(data: any, value: any) {
+    let result: any = null;
+    if (data && value) {
+      const keys = value.split('.');
+      result = data;
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        result = result[key];
+      }
+    }
+    return result;
   }
 
   onSelect(value: any) {

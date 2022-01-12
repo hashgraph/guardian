@@ -82,3 +82,42 @@
 .btn-field:hover {
     text-decoration: underline;
 }
+
+.grid-filter {
+    box-shadow: 0px 3px 6px #00000020;
+    border-radius: 24px;
+    background: #e5e5e5;
+    display: inline-block;
+    margin: 7px;
+    padding: 0px 10px;
+    height: 30px;
+}
+
+.filter-name {
+    display: table-cell;
+    height: 30px;
+    padding: 7px 5px;
+    box-sizing: border-box;
+}
+
+.filter-value {
+    display: table-cell;
+    height: 30px;
+    padding: 5px 5px;
+    box-sizing: border-box;
+}
+
+.filter-delete {
+    display: table-cell;
+    height: 30px;
+    padding: 5px;
+    box-sizing: border-box;
+    width: 30px;
+    position: relative;
+}
+
+.filter-delete mat-icon {
+    position: absolute;
+    cursor: pointer;
+    color: #f90000;
+}

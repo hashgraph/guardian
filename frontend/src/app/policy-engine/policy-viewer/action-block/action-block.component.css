@@ -44,28 +44,19 @@
 .status-REJECTED {
     color: #f44336;
 }
+
 .btn-link {
     cursor: pointer;
+    width: auto;
+    font-size: 20px;
+    color: #0B73F8;
+    text-decoration: none;
+    display: inline-block;
+    border-bottom: 3px solid #0C77FF;
+    padding-bottom: 3px;
+    font-weight: normal;
+    text-transform: capitalize;
 }
-.btn-link:hover {
-    text-decoration: underline;
-}
-/* .btn-link {
-    height: 20px;
-    width: 250px;
-    overflow: hidden;
-    cursor: pointer;
-    font-size: 12px;
-    color: #6166ff;
-    position: relative;
-    font-weight: 500;
-} */
-
-/*
-.content {
-    white-space: nowrap;
-}
-*/
 
 .content .btn-option {
     height: 26px;
