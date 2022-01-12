@@ -65,6 +65,7 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
             }
             schema.uuid = newUUID;
             policy = JSON.parse(JSON.stringify(policy).replace(new RegExp(oldUUID, 'g'), newUUID));
+            schema.document = schema.document.replace(new RegExp(oldUUID, 'g'), newUUID);
         }
 
         const policyRepository = getMongoRepository(Policy);
