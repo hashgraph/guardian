@@ -16,7 +16,7 @@ import { VCHelper } from 'vc-modules';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
- * 
+ *
  * @param channel - channel
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
@@ -68,10 +68,10 @@ export const documentsAPI = async function (
 
     /**
      * Return DID Documents by DID
-     * 
+     *
      * @param {Object} payload - filters
      * @param {string} payload.did - DID
-     * 
+     *
      * @returns {IDidDocument[]} - DID Documents
      */
     channel.response(MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
@@ -82,37 +82,44 @@ export const documentsAPI = async function (
 
     /**
      * Return VC Documents
-     * 
+     *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.id] - filter by id 
-     * @param {string} [payload.type] - filter by type 
-     * @param {string} [payload.owner] - filter by owner 
-     * @param {string} [payload.issuer] - filter by issuer 
-     * @param {string} [payload.hash] - filter by hash 
-     * @param {string} [payload.policyId] - filter by policy id 
-     * 
+     * @param {string} [payload.id] - filter by id
+     * @param {string} [payload.type] - filter by type
+     * @param {string} [payload.owner] - filter by owner
+     * @param {string} [payload.issuer] - filter by issuer
+     * @param {string} [payload.hash] - filter by hash
+     * @param {string} [payload.policyId] - filter by policy id
+     *
      * @returns {IVCDocument[]} - VC Documents
      */
     channel.response(MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
         if (msg.payload) {
             const reqObj: any = { where: {} };
-            if (msg.payload.type) {
-                reqObj.where['type'] = { $eq: msg.payload.type }
+            const {type, owner, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
+            if (type) {
+                reqObj.where['type'] = { $eq: type }
             }
-            if (msg.payload.owner) {
-                reqObj.where['owner'] = { $eq: msg.payload.owner }
+            if (owner) {
+                reqObj.where['owner'] = { $eq: owner }
             }
-            if (msg.payload.issuer) {
-                reqObj.where['document.issuer'] = { $eq: msg.payload.issuer }
+            if (issuer) {
+                reqObj.where['document.issuer'] = { $eq: issuer }
             }
-            if (msg.payload.id) {
-                reqObj.where['document.id'] = { $eq: msg.payload.id }
+            if (id) {
+                reqObj.where['document.id'] = { $eq: id }
             }
-            if (msg.payload.hash) {
-                reqObj.where['hash'] = { $in: msg.payload.hash }
+            if (hash) {
+                reqObj.where['hash'] = { $in: hash }
             }
-            if (msg.payload.policyId) {
-                reqObj.where['policyId'] = { $eq: msg.payload.policyId }
+            if (policyId) {
+                reqObj.where['policyId'] = { $eq: policyId }
+            }
+            if (schema) {
+                reqObj.where['document.credentialSubject.type'] = { $eq: schema }
+            }
+            for (let [key, value] of Object.entries(otherArgs)) {
+                reqObj.where[key] = { $eq: value };
             }
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
             res.send(vcDocuments);
@@ -124,11 +131,11 @@ export const documentsAPI = async function (
 
     /**
      * Create or update DID Documents
-     * 
+     *
      * @param {IDidDocument} payload - document
      * @param {string} [payload.did] - did
      * @param {string} [payload.operation] - document status
-     * 
+     *
      * @returns {IDidDocument} - new DID Document
      */
     channel.response(MessageAPI.SET_DID_DOCUMENT, async (msg, res) => {
@@ -152,11 +159,11 @@ export const documentsAPI = async function (
 
     /**
      * Create or update VC Documents
-     * 
+     *
      * @param {IVCDocument} payload - document
      * @param {string} [payload.hash] - hash
      * @param {string} [payload.operation] - document status
-     * 
+     *
      * @returns {IVCDocument} - new VC Document
      */
     channel.response(MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
@@ -190,9 +197,9 @@ export const documentsAPI = async function (
 
     /**
      * Create new VP Document
-     * 
+     *
      * @param {IVPDocument} payload - document
-     * 
+     *
      * @returns {IVPDocument} - new VP Document
      */
     channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
@@ -203,9 +210,9 @@ export const documentsAPI = async function (
 
     /**
      * Return VP Documents
-     * 
+     *
      * @param {Object} [payload] - filters
-     * 
+     *
      * @returns {IVPDocument[]} - VP Documents
      */
     channel.response(MessageAPI.GET_VP_DOCUMENTS, async (msg, res) => {

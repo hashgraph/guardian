@@ -14,9 +14,9 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public readonly blockClassName = 'DataSourceBlock';
 
-            async getData(user: IAuthUser | null): Promise<any> {
+            async getData(...args: any[]): Promise<any> {
                 if (typeof super.getData === 'function') {
-                    return super.getData(user);
+                    return super.getData(...args);
                 }
                 return {}
             }

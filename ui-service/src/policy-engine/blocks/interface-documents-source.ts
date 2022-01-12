@@ -45,7 +45,7 @@ export class InterfaceDocumentsSource {
         console.log(state, state.isActive);
     }
 
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
         const guardians = new Guardians();
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
@@ -58,6 +58,12 @@ export class InterfaceDocumentsSource {
             filters.owner = userFull.did;
         }
         let data;
+
+        if (typeof queryParams === 'object') {
+            for (let [key, value] of Object.entries(queryParams)) {
+                filters[key] = value;
+            }
+        }
 
         switch (ref.options.dataType) {
             case 'vc-documents':
