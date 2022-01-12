@@ -52,5 +52,5 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
 
     setData(user: IAuthUser | null, data: any): Promise<any>;
 
-    getData(user: IAuthUser | null, uuid: string): Promise<any>;
+    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
 }
