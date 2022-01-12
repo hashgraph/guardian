@@ -53,13 +53,17 @@ export class BlockTreeGenerator {
      */
     stateChangeCb(uuid: string, state: any, user?: IAuthUser) {
         this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
-            const policy = await getMongoRepository(Policy).findOne((StateContainer.GetBlockByUUID(uuid) as any).policyId);
-            const role = policy.registeredUsers[user.did];
-            if (!role) {
-                return
-            }
-            if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, role, user)) {
-                client.send(uuid);
+            try {
+                const policy = await getMongoRepository(Policy).findOne((StateContainer.GetBlockByUUID(uuid) as any).policyId);
+                const role = policy.registeredUsers[user.did];
+                if (!role) {
+                    return
+                }
+                if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, role, user)) {
+                    client.send(uuid);
+                }
+            } catch (e) {
+                console.error('WS Error', e);
             }
 
         });
@@ -429,7 +433,7 @@ export class BlockTreeGenerator {
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
                 }
-                const data = await block.getData(req.user, req.params.uuid);
+                const data = await block.getData(req.user, req.params.uuid, req.query);
                 res.send(data);
             } catch (e) {
                 try {
