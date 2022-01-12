@@ -108,18 +108,20 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
         tokens = tokens.filter(token => existingTokens.includes(token.tokenId));
         tokens = tokens.map(t => existingTokens.find(_t => t.tokenId === _t.tokenId));
 
-        for (let schema of schemas) {
+        for (let i = 0; i < schemas.length; ++i) {
+            const schema = schemas[i]
             const oldUUID = schema.uuid;
             const newUUID = GenerateUUIDv4();
             if (existingSchemas.map(schema => schema.uuid).includes(oldUUID)) {
                 schema.name = schema.name + dateNow;
             }
             schema.uuid = newUUID;
+            schemas[i] = JSON.parse(JSON.stringify(schema).replace(new RegExp(oldUUID, 'g'), newUUID));
             policy = JSON.parse(JSON.stringify(policy).replace(new RegExp(oldUUID, 'g'), newUUID));
         }
 
         const policyRepository = getMongoRepository(Policy);
-        policy.policyTag = policy.tag + dateNow;
+        policy.policyTag = policy.policyTag + dateNow;
         if (await policyRepository.findOne({name: policy.name})) {
             policy.name = policy.name + dateNow;
         }
@@ -134,6 +136,7 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
 
         res.json(await policyRepository.find());
     } catch (e) {
+        console.error("Failed to import package", e)
         res.status(500).send(e);
     }
 });

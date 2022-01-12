@@ -1,16 +1,13 @@
-import assert from 'assert';
 import axios from 'axios';
-import { getBuildTimeConfig } from '../getBuildTimeConfig';
 
-export async function initTokens() {
-  const { ENV } = process.env;
-
-  assert(ENV, `ENV is missing`);
-
-  const { GUARDIAN_TYMLEZ_API_KEY, GUARDIAN_TYMLEZ_SERVICE_BASE_URL } =
-    await getBuildTimeConfig({ env: ENV });
-
-  const existingTokens = await getExistingToken({
+export async function createTokens({
+  GUARDIAN_TYMLEZ_API_KEY,
+  GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+}: {
+  GUARDIAN_TYMLEZ_API_KEY: string;
+  GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
+}) {
+  const existingTokens = await getExistingTokens({
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
   });
@@ -39,13 +36,13 @@ export async function initTokens() {
     );
   }
 
-  return await getExistingToken({
+  return await getExistingTokens({
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
   });
 }
 
-async function getExistingToken({
+async function getExistingTokens({
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
   GUARDIAN_TYMLEZ_API_KEY,
 }: {
@@ -101,7 +98,7 @@ interface ITokenRequest {
   enableWipe: boolean;
 }
 
-interface ITokenResponse {
+export interface ITokenResponse {
   tokenId: string;
   tokenSymbol: string;
 }

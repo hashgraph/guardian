@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import 'express-async-errors';
 import FastMQ from 'fastmq';
 import { createConnection } from 'typeorm';
 import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
@@ -15,6 +16,21 @@ import { MeterConfig } from '@entity/meter-config';
 import morgan from 'morgan';
 import { makeSchemaApi } from '@api/schema';
 import { makeTokenApi } from '@api/token';
+import { makePolicyApi } from '@api/policy';
+import { makeUserApi } from '@api/user';
+import axios from 'axios';
+
+axios.interceptors.request.use((request) => {
+  if (request.url?.includes('login')) {
+    console.log('Starting Request', request.url);
+  } else {
+    console.log(
+      'Starting Request',
+      JSON.stringify({ url: request.url, data: request.data }, null, 2),
+    );
+  }
+  return request;
+});
 
 const {
   SERVICE_CHANNEL,
@@ -131,6 +147,18 @@ Promise.all([
   app.use(
     '/tokens/',
     makeTokenApi({
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
+    }),
+  );
+  app.use(
+    '/policy/',
+    makePolicyApi({
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
+    }),
+  );
+  app.use(
+    '/user/',
+    makeUserApi({
       uiServiceBaseUrl: UI_SERVICE_BASE_URL,
     }),
   );

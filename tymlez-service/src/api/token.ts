@@ -2,7 +2,7 @@ import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import type { IToken } from 'interfaces';
-import { loginToRootAuthority } from '../modules/ui-service/loginToRootAuthority';
+import { loginToUiService } from '../modules/ui-service';
 
 export const makeTokenApi = ({
   uiServiceBaseUrl,
@@ -12,15 +12,16 @@ export const makeTokenApi = ({
   const tokenApi = Router();
 
   tokenApi.get('/', async (req: Request, res: Response) => {
-    const user = await loginToRootAuthority({
+    const rootAuthority = await loginToUiService({
       uiServiceBaseUrl,
+      username: 'RootAuthority',
     });
 
     const { data: tokens } = (await axios.get(
       `${uiServiceBaseUrl}/api/tokens`,
       {
         headers: {
-          authorization: `Bearer ${user.accessToken}`,
+          authorization: `Bearer ${rootAuthority.accessToken}`,
         },
       },
     )) as { data: IToken[] };
@@ -33,8 +34,9 @@ export const makeTokenApi = ({
 
     assert(inputToken, `token is missing`);
 
-    const user = await loginToRootAuthority({
+    const rootAuthority = await loginToUiService({
       uiServiceBaseUrl,
+      username: 'RootAuthority',
     });
 
     const { data: allTokens } = (await axios.post(
@@ -42,7 +44,7 @@ export const makeTokenApi = ({
       inputToken,
       {
         headers: {
-          authorization: `Bearer ${user.accessToken}`,
+          authorization: `Bearer ${rootAuthority.accessToken}`,
         },
       },
     )) as { data: IToken[] };

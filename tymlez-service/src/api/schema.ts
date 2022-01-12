@@ -2,7 +2,7 @@ import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import type { ISchema } from 'interfaces';
-import { loginToRootAuthority } from '../modules/ui-service/loginToRootAuthority';
+import { loginToUiService } from '../modules/ui-service';
 
 export const makeSchemaApi = ({
   uiServiceBaseUrl,
@@ -17,8 +17,9 @@ export const makeSchemaApi = ({
     assert(inputSchema, `schema is missing`);
     assert(inputSchema.uuid, `schema.uuid is missing`);
 
-    const user = await loginToRootAuthority({
+    const rootAuthority = await loginToUiService({
       uiServiceBaseUrl,
+      username: 'RootAuthority',
     });
 
     const { data: allSchemas } = (await axios.post(
@@ -26,7 +27,7 @@ export const makeSchemaApi = ({
       { schemes: [inputSchema] },
       {
         headers: {
-          authorization: `Bearer ${user.accessToken}`,
+          authorization: `Bearer ${rootAuthority.accessToken}`,
           'content-type': 'application/json',
         },
       },
@@ -44,7 +45,7 @@ export const makeSchemaApi = ({
         { id: importedSchema.id },
         {
           headers: {
-            authorization: `Bearer ${user.accessToken}`,
+            authorization: `Bearer ${rootAuthority.accessToken}`,
           },
         },
       );

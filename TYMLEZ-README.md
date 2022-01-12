@@ -41,7 +41,7 @@ npm run dev:docker
 # - Complete the configuration
 
 # 5. Initialize tokens, schemas and policies
-npm run tools init-policies
+npm run tools init
 ```
 
 # For production

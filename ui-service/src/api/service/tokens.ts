@@ -110,6 +110,7 @@ tokenAPI.post('/create', async (req: Request, res: Response) => {
         }
 
     } catch (error) {
+        console.error("Failed to create token", error)
         res.status(500).send({code: 500, message: error.message});
         return;
     }

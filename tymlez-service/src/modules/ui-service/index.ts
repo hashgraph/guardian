@@ -1,1 +1,1 @@
-export * from './loginToRootAuthority';
+export * from './loginToUiService';
