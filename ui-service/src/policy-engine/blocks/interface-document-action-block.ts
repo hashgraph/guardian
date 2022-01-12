@@ -10,6 +10,7 @@ import {Users} from '@helpers/users';
 import {KeyType, Wallet} from '@helpers/wallet';
 import {User} from '@entity/user';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import {SchemaStatus} from 'interfaces';
 
 /**
  * Document action clock with UI
@@ -139,13 +140,23 @@ export class InterfaceDocumentActionBlock {
                         resultsContainer.addBlockError(ref.uuid, 'Option "targetUrl" does not set');
                     }
 
-                    const schemas = await this.guardians.getSchemes({}) || [];
+                    const schemas = await this.guardians.getSchemes() || [];
                     if (!ref.options.schema) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
-                    } else if (typeof ref.options.schema !== 'string') {
+                        break;
+                    }
+                    if (typeof ref.options.schema !== 'string') {
                         resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                    } else if (!schemas.find(s => s.uuid === ref.options.schema)) {
-                        resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`)
+                        break;
+                    }
+                    const schema = schemas.find(s => s.uuid === ref.options.schema)
+                    if (!schema) {
+                        resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+                        break;
+                    }
+                    if (schema.status != SchemaStatus.PUBLISHED) {
+                        resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not published`);
+                        break;
                     }
                     break;
 
