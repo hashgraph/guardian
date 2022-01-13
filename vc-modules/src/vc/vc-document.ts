@@ -1,3 +1,4 @@
+import { Timestamp } from '@hashgraph/sdk';
 import { CredentialSubject, HcsVcDocumentBase, HcsVcDocumentJsonProperties, JsonClass } from 'did-sdk-js';
 
 /**
@@ -6,6 +7,7 @@ import { CredentialSubject, HcsVcDocumentBase, HcsVcDocumentJsonProperties, Json
  */
 export class HcsVcDocument<T extends CredentialSubject> extends HcsVcDocumentBase<T> {
     private proof: any;
+    protected cid?: string;
 
     /**
      * Adds an additional type to `type` field of the VC document.
@@ -16,6 +18,14 @@ export class HcsVcDocument<T extends CredentialSubject> extends HcsVcDocumentBas
         this.type.push(type);
     }
 
+    public getCid(): string {
+        return this.cid;
+    }
+
+    public setCid(cid:string) {
+        this.cid = cid;
+    }
+    
     public getProof(): any {
         return this.proof;
     }

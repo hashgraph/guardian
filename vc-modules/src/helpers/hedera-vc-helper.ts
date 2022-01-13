@@ -199,6 +199,7 @@ export class VCHelper {
         key: string | PrivateKey,
         vcs: HcsVcDocument<VcSubject>[],
         uuid?: string,
+        cid?:string
     ): Promise<HcsVpDocument> {
         uuid = uuid || Utils.randomUUID();
         const privateKey = (typeof key == 'string') ? PrivateKey.fromString(key) : key;
@@ -209,7 +210,9 @@ export class VCHelper {
 
         let vp = new HcsVpDocument();
         vp.setId(uuid);
+        vp.setCid(cid);
         vp.addVerifiableCredential(vcs);
+
         vp = await VCJS.issuePresentation(vp, suite, this.loader);
         return vp;
     }

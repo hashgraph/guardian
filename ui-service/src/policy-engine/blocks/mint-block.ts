@@ -131,14 +131,15 @@ export class MintBlock {
         return mintVC;
     }
 
-    private async createVP(root, uuid: string, vcs: HcsVcDocument<VcSubject>[]) {
+    private async createVP(root, uuid: string, vcs: HcsVcDocument<VcSubject>[], cid?:string) {
         const vcHelper = new VcHelper();
 
         const vp = await vcHelper.createVP(
             root.did,
             root.hederaAccountKey,
             vcs,
-            uuid
+            uuid,
+            cid
         );
         return vp;
     }
@@ -157,19 +158,24 @@ export class MintBlock {
         );
 
         let mintVC: HcsVcDocument<VcSubject>;
-        if (token.tokenType == 'non-fungible') {
-            const data: any = HederaUtils.decode(tokenValue.toString());
-            const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], uuid);
-            await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials, uuid);
-            mintVC = await this.createMintVC(root, token, serials);
-        } else {
-            await hederaHelper.SDK.mint(tokenId, supplyKey, tokenValue, uuid);
-            await hederaHelper.SDK.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
-            mintVC = await this.createMintVC(root, token, tokenValue);
-        }
+        mintVC = await this.createMintVC(root, token, tokenValue);
 
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
+
+        if (token.tokenType == 'non-fungible') {
+            const data: any = HederaUtils.decode(tokenValue.toString());
+            const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], vp.getCid());// uuid);
+            //mintVC = await this.createMintVC(root, token, serials);
+            await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials);
+        } else {
+            await hederaHelper.SDK.mint(tokenId, supplyKey, tokenValue, uuid);
+            //mintVC = await this.createMintVC(root, token, tokenValue);
+            await hederaHelper.SDK.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, vp.getCid());
+        }
+
+        //const vcs = [].concat(document, mintVC);
+        //const vp = await this.createVP(root, uuid, vcs);
 
         let status = false;
         status = await this.saveVC(mintVC, user.did, ref);

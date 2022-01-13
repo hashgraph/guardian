@@ -17,6 +17,7 @@ export class AuditComponent implements OnInit {
     loading: boolean = true;
     displayedColumns: string[] = [
         'id',
+        'cid',
         'hash',
         'owner',
         'createDate',

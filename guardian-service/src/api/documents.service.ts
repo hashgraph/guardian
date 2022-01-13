@@ -181,7 +181,7 @@ export const documentsAPI = async function (
         }
         result.signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
         const storage = new Web3Storage({token: web3storageToken});
-        const cid = (await storage.put([new File([JSON.stringify(result)], `${result.id}.json`, {type:'application/json'})]));
+        const cid = (await storage.put([new File([JSON.stringify(result)], `${result.document.id}.json`, {type:'application/json'})]));
         result = await vcDocumentRepository.save({...result, cid});
         console.log(cid);
         res.send(result);
@@ -198,8 +198,8 @@ export const documentsAPI = async function (
         let vpDocumentObject = vpDocumentRepository.create(msg.payload as IVPDocument);
 
         const storage = new Web3Storage({token: web3storageToken});
-        const cid = (await storage.put([new File([JSON.stringify(vpDocumentObject)], `${vpDocumentObject.id}.json`, {type:'application/json'})]));
-        vpDocumentObject = await vcDocumentRepository.save({...vpDocumentObject, cid});
+        vpDocumentObject.cid = (await storage.put([new File([JSON.stringify(vpDocumentObject)], `${vpDocumentObject.document.id}.json`, {type:'application/json'})]));
+        vpDocumentObject = await vcDocumentRepository.save(vpDocumentObject);
         
         const result: any = await vpDocumentRepository.save(vpDocumentObject);
         res.send(result);
