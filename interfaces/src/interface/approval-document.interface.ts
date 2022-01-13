@@ -10,5 +10,5 @@ export interface IApprovalDocument {
     type: SchemaEntity;
     createDate: Date;
     updateDate: Date;
-    status: ApproveStatus;
+    option: any;
 }

@@ -10,6 +10,7 @@ import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { User } from '@entity/user';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 
 /**
  * Document action clock with UI
@@ -31,22 +32,79 @@ export class InterfaceDocumentActionBlock {
 
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
-        const data : any = {
+        const userFull = await this.users.getUser(user.username);
+
+        const data: any = {
             id: ref.uuid,
             blockType: 'interfaceAction',
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData
         }
+
+        if (ref.options.type == 'selector') {
+            data.field = ref.options.field;
+        }
+
         if (ref.options.type == 'filters') {
             data.targetBlock = ref.options.targetBlock;
             data.filters = ref.options.filters || [];
+        }
+
+        if (ref.options.type == 'dropdown') {
+            const guardians = new Guardians();
+
+            data.name = ref.options.name;
+            data.value = ref.options.value;
+            data.field = ref.options.field;
+
+            let filters: any = {};
+            if (ref.options.onlyOwnDocuments) {
+                filters.owner = userFull.did;
+            }
+            if (ref.options.documentSchema) {
+                filters.schema = ref.options.documentSchema;
+            }
+            if (ref.options.documentType) {
+                filters.type = ref.options.documentType;
+            }
+
+            let documents;
+            switch (ref.options.documentSource) {
+                case 'vc-documents':
+                    filters.policyId = ref.policyId;
+                    documents = await guardians.getVcDocuments(filters);
+                    break;
+
+                case 'did-documents':
+                    documents = await guardians.getDidDocuments(filters);
+                    break;
+
+                case 'vp-documents':
+                    filters.policyId = ref.policyId;
+                    documents = await guardians.getVpDocuments(filters);
+                    break;
+
+                case 'approve':
+                    filters.policyId = ref.policyId;
+                    documents = await guardians.getApproveDocuments(filters);
+                    break;
+
+                case 'source':
+                    documents = [];
+                    break;
+
+                default:
+                    throw new BlockActionError(`dataType "${ref.options.documentType}" is unknown`, ref.blockType, ref.uuid)
+            }
+
+            data.options = documents;
         }
         return data;
     }
 
     async setData(user: IAuthUser, document: any): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
-        const uiMetaData = ref.options.uiMetaData;
+        console.log("setData", ref.options);
 
         let state: any = { data: document };
 
@@ -55,9 +113,7 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type == 'selector') {
-            //?
-            const value = document[uiMetaData.field];
-            const option = uiMetaData.options.find(e => e.value == value);
+            const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
                 const block = StateContainer.GetBlockByTag(ref.policyId, option.bindBlock) as any;
                 const target = block.parent;
@@ -102,6 +158,25 @@ export class InterfaceDocumentActionBlock {
             }
         }
 
+        if (ref.options.type == 'dropdown') {
+            if (ref.options.bindBlock) {
+                const block = StateContainer.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
+                const parent = block.parent;
+                const index = parent.children.findIndex(e => e.uuid == block.uuid);
+                state = StateContainer.GetBlockState(parent.uuid, user);
+                state.index = index;
+                state.data = document;
+                const owner = await getRepository(User).findOne({ did: document.owner });
+                console.log(parent.uuid, block.uuid);
+                if (block.runAction) {
+                    await block.runAction(state, owner);
+                } else {
+                    await StateContainer.SetBlockState(parent.uuid, state, owner, null);
+                }
+                return;
+            }
+        }
+
         const currentIndex = ref.parent.children.findIndex(el => this === el);
         const nextBlock = ref.parent.children[currentIndex + 1];
         if (nextBlock && nextBlock.runAction) {
@@ -109,6 +184,19 @@ export class InterfaceDocumentActionBlock {
         }
         // await StateContainer.SetBlockState(ref.uuid, document, owner, null);
         // block.updateBlock(state, owner, null);
+    }
+
+    private findOptions(document: any, field: any, options: any[]) {
+        let value: any = null;
+        if (document && field) {
+            const keys = field.split('.');
+            value = document;
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                value = value[key];
+            }
+        }
+        return options.find(e => e.value == value);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
@@ -122,8 +210,8 @@ export class InterfaceDocumentActionBlock {
                     if (!ref.options.uiMetaData || (typeof ref.options.uiMetaData !== 'object')) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData" does not set');
                     } else {
-                        if (!ref.options.uiMetaData.field) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.field" does not set');
+                        if (!ref.options.field) {
+                            resultsContainer.addBlockError(ref.uuid, 'Option "field" does not set');
                         }
                         if (!ref.options.uiMetaData.options) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.options" does not set');
@@ -165,8 +253,23 @@ export class InterfaceDocumentActionBlock {
                     }
                     break;
 
+                case 'dropdown':
+                    if (!ref.options.documentSource) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "documentSource" does not set');
+                        break;
+                    }
+                    if (!ref.options.name) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "name" does not set');
+                        break;
+                    }
+                    if (!ref.options.value) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "value" does not set');
+                        break;
+                    }
+                    break;
+
                 default:
-                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector" or "download"');
+                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector|download|filters|dropdown"');
             }
         }
     }

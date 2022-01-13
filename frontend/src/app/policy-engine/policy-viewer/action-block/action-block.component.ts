@@ -27,6 +27,7 @@ export class ActionBlockComponent implements OnInit {
   content: any;
   target: any;
   filters: any;
+  currentValue: any;
 
   constructor(
     private policyEngineService: PolicyEngineService,
@@ -79,9 +80,9 @@ export class ActionBlockComponent implements OnInit {
       this.type = data.type;
       this.uiMetaData = data.uiMetaData;
       if (this.type == 'selector') {
+        this.field = data.field;
         this.options = this.uiMetaData.options || [];
-        this.field = this.uiMetaData.field;
-        this.value = this.data[this.field];
+        this.value = this.getObjectValue(this.data, this.field);
         this.visible = this.options.findIndex((o: any) => o.value == this.value) == -1;
       }
       if (this.type == 'download') {
@@ -102,6 +103,21 @@ export class ActionBlockComponent implements OnInit {
           }
         }
       }
+      if (this.type == 'dropdown') {
+        this.field = data.field;
+        const options = data.options;
+        this.options = [];
+        if (options) {
+          for (let i = 0; i < options.length; i++) {
+            const item = options[i];
+            this.options.push({
+              name: this.getObjectValue(item, data.name),
+              value: this.getObjectValue(item, data.value)
+            })
+          }
+        }
+        this.currentValue = this.getObjectValue(this.data, this.field);
+      }
     } else {
       this.data = null;
     }
@@ -120,9 +136,23 @@ export class ActionBlockComponent implements OnInit {
     return result;
   }
 
+  setObjectValue(data: any, field: any, value: any) {
+    let result: any = null;
+    if (data && field) {
+      const keys = field.split('.');
+      result = data;
+      for (let i = 0; i < keys.length - 1; i++) {
+        const key = keys[i];
+        result = result[key];
+      }
+      result[keys[keys.length - 1]] = value;
+    }
+    return result;
+  }
+
   onSelect(value: any) {
-    this.data[this.field] = value;
-    this.value = this.data[this.field];
+    this.setObjectValue(this.data, this.field, value);
+    this.value = this.getObjectValue(this.data, this.field);
     this.visible = this.options.findIndex((o: any) => o.value == this.value) == -1;
     this.policyEngineService.setBlockData(this.id, this.policyId, this.data).subscribe(() => {
       this.loadData();
@@ -181,6 +211,19 @@ export class ActionBlockComponent implements OnInit {
         console.error(e.error);
         this.loading = false;
       });
+    });
+  }
+
+  onDropdown() {
+    if (this.getObjectValue(this.data, this.field) == this.currentValue) {
+      return;
+    }
+    this.setObjectValue(this.data, this.field, this.currentValue);
+    this.policyEngineService.setBlockData(this.id, this.policyId, this.data).subscribe(() => {
+      this.loadData();
+    }, (e) => {
+      console.error(e.error);
+      this.loading = false;
     });
   }
 }

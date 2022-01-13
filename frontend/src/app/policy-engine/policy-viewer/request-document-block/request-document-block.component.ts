@@ -85,7 +85,8 @@ export class RequestDocumentBlockComponent implements OnInit {
     setData(data: any) {
         if (data) {
             const uiMetaData = data.uiMetaData;
-            const schema = data.data;
+            const row = data.data;
+            const schema = data.schema;
             this.type = uiMetaData.type;
             this.schema = schema;
             this.hideFields = {};

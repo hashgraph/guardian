@@ -3,7 +3,9 @@
 </div>
 
 <div *ngIf="type == 'selector' && visible" class="content">
-    <div *ngFor="let option of options" class="btn-option {{option.uiClass}}" (click)="onSelect(option.value)">{{option.name}}</div>
+    <div *ngFor="let option of options" class="btn-option {{option.uiClass}}" (click)="onSelect(option.value)">
+        {{option.name}}
+    </div>
 </div>
 
 <div *ngIf="type == 'download'" class="content">
@@ -12,4 +14,10 @@
 
 <div *ngIf="type == 'filters'" class="content">
     <div class="btn-link" (click)="onFilters()">{{content}}</div>
+</div>
+
+<div *ngIf="type == 'dropdown'" class="content">
+    <mat-select [(value)]="currentValue" (selectionChange)="onDropdown()">
+        <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>
+    </mat-select>
 </div>

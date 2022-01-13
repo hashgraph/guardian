@@ -28,7 +28,8 @@ export class ActionConfigComponent implements OnInit {
         fileGroup: false,
         options: {},
         filterGroup: false,
-        filters: {}
+        filters: {},
+        dropdownGroup: false
     };
 
     block!: BlockNode;

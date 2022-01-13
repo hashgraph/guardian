@@ -47,16 +47,19 @@ export class RequestVcDocumentBlock {
 
     async getData(user: IAuthUser): Promise<any> {
         const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+
         if(!this.schema) {
             const schemas = await this.guardians.getSchemes({}) || [];
             this.schema = Schema.mapRef(schemas).find(s => s.uuid === options.schema);
         }
         if (!this.schema) {
-            const ref = PolicyBlockHelpers.GetBlockRef(this);
             throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
         }
         return {
-            data: this.schema,
+            id: ref.uuid,
+            blockType: 'requestVcDocument',
+            schema: this.schema,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || []
         };

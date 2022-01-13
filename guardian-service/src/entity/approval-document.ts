@@ -28,13 +28,14 @@ export class ApprovalDocument implements IApprovalDocument {
     updateDate: Date;
 
     @Column()
-    status: ApproveStatus;
+    tag: string;
 
     @Column()
-    tag: string;
+    option: any;
 
     @BeforeInsert()
     setDefaults() {
-        this.status = this.status || ApproveStatus.NEW;
+        this.option = this.option || {};
+        this.option.status = this.option.status || ApproveStatus.NEW;
     }
 }

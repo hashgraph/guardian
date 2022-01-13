@@ -31,6 +31,9 @@ export class InterfaceDocumentsSource {
         if (!options.onlyOwnDocuments) {
             options.onlyOwnDocuments = true;
         }
+        if (!options.onlyAssignDocuments) {
+            options.onlyAssignDocuments = false;
+        }
         if (!options.uiMetaData) {
             throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
         }
@@ -56,6 +59,9 @@ export class InterfaceDocumentsSource {
         }
         if (ref.options.onlyOwnDocuments) {
             filters.owner = userFull.did;
+        }
+        if (ref.options.onlyAssignDocuments) {
+            filters.assign = userFull.did;
         }
         let data;
 

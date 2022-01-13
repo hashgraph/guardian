@@ -36,11 +36,12 @@ export class SendToGuardianBlock {
             document.id = undefined;
             state.data = document;
         }
-
+        console.log("documentSender 1", ref.options, document);
         let result;
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const doc = this.convertDocument(document, 'vc-documents', ref)
+                console.log("documentSender 2", doc);
                 result = await this.guardians.setVcDocument(doc);
                 break;
             }
@@ -64,10 +65,11 @@ export class SendToGuardianBlock {
     }
 
     async runAction(state, user) {
+        console.log("runAction");
         const ref = PolicyBlockHelpers.GetBlockRef(this);
-
+        console.log("runAction 2");
         await this.documentSender(state, user);
-
+        console.log("runAction 3");
         if (ref.options.stopPropagation) {
             return;
         }
@@ -102,12 +104,14 @@ export class SendToGuardianBlock {
                 return {
                     hash: vc.toCredentialHash(),
                     owner: document.owner,
+                    assign: document.assign,
                     document: vc.toJsonTree(),
-                    status: document.status || DocumentStatus.NEW,
+                    hederaStatus: document.status || DocumentStatus.NEW,
                     signature: document.signature || DocumentSignature.NEW,
                     type: ref.options.entityType,
                     policyId: ref.policyId,
-                    tag: ref.tag
+                    tag: ref.tag,
+                    option: document.option
                 };
             }
             case 'approve': {
@@ -130,8 +134,8 @@ export class SendToGuardianBlock {
         const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
         console.log("vcTopic", addressBook.vcTopic, vc.toCredentialHash());
         const result = await hederaHelper.DID.createVcTransaction(vc, userKey);
-        document.status = result.getOperation();
-        console.log("status", document.status, result.getCredentialHash());
+        document.hederaStatus = result.getOperation();
+        console.log("status", document.hederaStatus, result.getCredentialHash());
         return document;
     }
 
