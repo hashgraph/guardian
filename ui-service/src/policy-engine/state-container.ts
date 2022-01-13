@@ -112,8 +112,8 @@ export class StateContainer {
      * @param policyId
      * @param tag
      */
-    public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
-        return StateContainer.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag));
+    public static GetBlockByTag<T extends (IPolicyInterfaceBlock | IPolicyBlock) = IPolicyBlock>(policyId: string, tag: string): T {
+        return StateContainer.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag)) as T;
     }
 
     /**

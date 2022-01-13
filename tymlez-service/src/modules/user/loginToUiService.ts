@@ -7,7 +7,7 @@ export async function loginToUiService({
   username,
 }: {
   uiServiceBaseUrl: string;
-  username: LoginType;
+  username: UserName;
 }) {
   const loginDetail = LOGIN_DETAILS[username];
   assert(loginDetail, `Cannot find login detail for ${username}`);
@@ -28,4 +28,4 @@ const LOGIN_DETAILS = {
   Installer2: { password: 'test' },
 };
 
-export type LoginType = keyof typeof LOGIN_DETAILS;
+export type UserName = keyof typeof LOGIN_DETAILS;

@@ -12,6 +12,7 @@ export async function initInstallers({
   for (const installer of installers) {
     console.log('Initializing installer', installer);
 
+    // It will initialize installer and associate tokens
     await axios.post(
       `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/user/init-installer/${installer}`,
       {},

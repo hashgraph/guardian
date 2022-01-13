@@ -19,6 +19,7 @@ import { makeTokenApi } from '@api/token';
 import { makePolicyApi } from '@api/policy';
 import { makeUserApi } from '@api/user';
 import axios from 'axios';
+import { PolicyPackage } from '@entity/policy-package';
 
 axios.interceptors.request.use((request) => {
   if (request.url?.includes('login')) {
@@ -105,6 +106,7 @@ Promise.all([
   app.use(express.json());
 
   const meterConfigRepository = db.getMongoRepository(MeterConfig);
+  const policyPackageRepository = db.getMongoRepository(PolicyPackage);
 
   // <-- Document Loader
 
@@ -154,6 +156,7 @@ Promise.all([
     '/policy/',
     makePolicyApi({
       uiServiceBaseUrl: UI_SERVICE_BASE_URL,
+      policyPackageRepository,
     }),
   );
   app.use(

@@ -10,4 +10,5 @@ if [ "$CLEAN" = "true" ]; then
 fi
 
 docker-compose up -d mongo
-lerna run watch --parallel
+
+lerna run watch --parallel "$@"

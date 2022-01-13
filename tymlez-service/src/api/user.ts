@@ -2,7 +2,7 @@ import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import { IUserProfile, UserState } from 'interfaces';
-import { loginToUiService, LoginType, IUser } from '../modules/user';
+import { loginToUiService, UserName, IUser } from '../modules/user';
 import { getUserProfileFromUiService } from '../modules/user';
 
 export const makeUserApi = ({
@@ -15,7 +15,7 @@ export const makeUserApi = ({
   userApi.post(
     '/init-installer/:username',
     async (req: Request, res: Response) => {
-      const { username } = req.params as { username: LoginType };
+      const { username } = req.params as { username: UserName };
 
       assert(
         username === 'Installer' || username === 'Installer2',
@@ -29,7 +29,7 @@ export const makeUserApi = ({
   );
 
   userApi.post('/state/:username', async (req: Request, res: Response) => {
-    const { username } = req.params as { username: LoginType };
+    const { username } = req.params as { username: UserName };
 
     const user = await loginToUiService({
       uiServiceBaseUrl,
@@ -56,7 +56,7 @@ async function initInstaller({
   username,
 }: {
   uiServiceBaseUrl: string;
-  username: LoginType;
+  username: UserName;
 }) {
   const user = await loginToUiService({
     uiServiceBaseUrl,

@@ -16,6 +16,11 @@ export class MeterConfig implements IMeterConfig {
   })
   did!: string;
 
+  @Column({
+    unique: true,
+  })
+  name!: string;
+
   @Column()
   url!: string;
 

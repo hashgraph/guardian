@@ -354,5 +354,25 @@ export class BlockTreeGenerator {
                 // throw e;
             }
         });
+
+
+        // Copied from `post('/block/:uuid')`, but use `StateContainer.GetBlockByTag()` 
+        // instead of `StateContainer.GetBlockByUUID()`
+        this.router.post('/block/tag/:policyId/:tag', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const block = StateContainer.GetBlockByTag<IPolicyInterfaceBlock>(req.params.policyId, req.params.tag)
+                const data = await block.setData(req.user, req.body);
+                res.status(200).send(data || {});
+            } catch (e) {
+                try {
+                    const err = e as BlockError;
+                    res.status(err.errorObject.code).send(err.errorObject);
+                } catch (_e) {
+                    res.status(500).send({code: 500, message: 'Unknown error: ' + e.message});
+                }
+                console.error(e);
+            }
+        });
+
     }
 }

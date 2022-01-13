@@ -6,13 +6,15 @@ import { ITokenResponse } from './ITokenResponse';
 import { promisify } from 'util';
 import glob from 'glob';
 import { template } from 'lodash';
+import pLimit from 'p-limit';
 import { IPolicy } from './IPolicy';
+import type { IPolicyPackage } from '../../../tymlez-service/src/entity/policy-package';
 
 const globAsync = promisify(glob);
 
 const { readdir, readFile } = fs.promises;
 
-export async function createPolicies({
+export async function createPolicyPackages({
   GUARDIAN_TYMLEZ_API_KEY,
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
   tokens,
@@ -21,11 +23,6 @@ export async function createPolicies({
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
   tokens: ITokenResponse[];
 }) {
-  const existingPolicies = await getExistingPolicies({
-    GUARDIAN_TYMLEZ_API_KEY,
-    GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-  });
-
   const templateData = {
     CET_TOKEN_ID: findToken(tokens, 'TYM_CET').tokenId,
     CRU_TOKEN_ID: findToken(tokens, 'TYM_CRU').tokenId,
@@ -66,48 +63,26 @@ export async function createPolicies({
     }),
   );
 
-  const pendingPolicyPackages = policyPackages.filter(
-    (policyPackage) =>
-      !existingPolicies.some((existingPolicy) =>
-        existingPolicy.policyTag.startsWith(policyPackage.policy.policyTag),
-      ),
-  );
+  const limit = pLimit(1);
 
-  console.log(
-    'Creating policies',
-    pendingPolicyPackages.map(
-      (policyPackage) => policyPackage.policy.policyTag,
+  return await Promise.all(
+    policyPackages.map((policyPackage) =>
+      limit(async () => {
+        console.log('Importing policy', policyPackage.policy.name);
+        const { data: importedPackage } = await axios.post(
+          `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/policy/import-package`,
+          { package: policyPackage, publish: true },
+          {
+            headers: {
+              Authorization: `Api-Key ${GUARDIAN_TYMLEZ_API_KEY}`,
+            },
+          },
+        );
+
+        return importedPackage as IPolicyPackage;
+      }),
     ),
   );
-
-  for (const policyPackage of pendingPolicyPackages) {
-    console.log('Importing policy', policyPackage.policy.name);
-    await axios.post(
-      `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/policy/import-package`,
-      { package: policyPackage, publish: true },
-      {
-        headers: {
-          Authorization: `Api-Key ${GUARDIAN_TYMLEZ_API_KEY}`,
-        },
-      },
-    );
-  }
-}
-
-async function getExistingPolicies({
-  GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-  GUARDIAN_TYMLEZ_API_KEY,
-}: {
-  GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
-  GUARDIAN_TYMLEZ_API_KEY: string;
-}) {
-  return (
-    (await axios.get(`${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/policy/list`, {
-      headers: {
-        Authorization: `Api-Key ${GUARDIAN_TYMLEZ_API_KEY}`,
-      },
-    })) as { data: IPolicy[] }
-  ).data;
 }
 
 function findToken(tokens: ITokenResponse[], tokenSymbol: string) {

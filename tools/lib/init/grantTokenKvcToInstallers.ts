@@ -15,6 +15,7 @@ export async function grantTokenKvcToInstallers({
   for (let token of tokens) {
     for (let installer of installers) {
       console.log('Granting KYC', { tokenId: token.tokenId, installer });
+      // Paul Debug: need to skip if already KYC, because this operation cost HBAR
       await axios.post(
         `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/tokens/user-kyc`,
         {

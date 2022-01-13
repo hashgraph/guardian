@@ -7,18 +7,22 @@ import {
   publishSchemasToUiService,
 } from '../modules/schema';
 import { v4 as uuidv4 } from 'uuid';
-import { loginToUiService, IUser } from '../modules/user';
+import { loginToUiService, IUser, UserName } from '../modules/user';
 import {
   getAllPoliciesFromUiService,
   IPolicy,
   publishPolicyToUiService,
 } from '../modules/policy';
 import type { ISchema } from 'interfaces';
+import type { MongoRepository } from 'typeorm';
+import type { PolicyPackage } from '@entity/policy-package';
 
 export const makePolicyApi = ({
   uiServiceBaseUrl,
+  policyPackageRepository,
 }: {
   uiServiceBaseUrl: string;
+  policyPackageRepository: MongoRepository<PolicyPackage>;
 }) => {
   const policyApi = Router();
 
@@ -27,6 +31,20 @@ export const makePolicyApi = ({
       req.body as IImportPolicyPackageRequestBody;
 
     assert(inputPackage, `package is missing`);
+
+    const policyPackage = await policyPackageRepository.findOne({
+      where: {
+        'policy.inputPolicyTag': { $eq: inputPackage.policy.policyTag },
+      },
+    });
+
+    if (policyPackage) {
+      console.log(
+        `Policy package '${inputPackage.policy.policyTag}' was imported before.`,
+      );
+      res.status(200).json(policyPackage);
+      return;
+    }
 
     const rootAuthority = await loginToUiService({
       uiServiceBaseUrl,
@@ -44,7 +62,11 @@ export const makePolicyApi = ({
       uiServiceBaseUrl,
     });
 
-    await publishSchemas(uiServiceBaseUrl, rootAuthority, preImportSchemas);
+    const newSchemas = await publishSchemas(
+      uiServiceBaseUrl,
+      rootAuthority,
+      preImportSchemas,
+    );
 
     if (publish && importedPolicy.status !== 'PUBLISHED') {
       console.log(`Publishing policy`, {
@@ -62,7 +84,22 @@ export const makePolicyApi = ({
       });
     }
 
-    res.status(200).json(importedPolicy);
+    const newPolicyPackage = policyPackageRepository.create({
+      policy: {
+        ...importedPolicy,
+        inputPolicyTag: inputPackage.policy.policyTag,
+      },
+      schemas: newSchemas.map((schema) => ({
+        ...schema,
+        inputName: inputPackage.schemas.find((inputSchema) =>
+          schema.name.startsWith(inputSchema.name),
+        )!.name,
+      })),
+    });
+
+    await policyPackageRepository.save(newPolicyPackage);
+
+    res.status(200).json(newPolicyPackage);
   });
 
   policyApi.get('/list', async (req: Request, res: Response) => {
@@ -80,6 +117,39 @@ export const makePolicyApi = ({
 
     res.status(200).json(allPolicies);
   });
+
+  policyApi.post(
+    '/block/tag/:policyId/:tag',
+    async (req: Request, res: Response) => {
+      const { policyId, tag } = req.params;
+      const { block, username } = req.body as {
+        block: any;
+        username: UserName | undefined;
+      };
+
+      assert(block, `block is missing`);
+      assert(username, `username is missing`);
+      assert(policyId, `policyId is missing`);
+      assert(tag, `tag is missing`);
+
+      const user = await loginToUiService({
+        uiServiceBaseUrl,
+        username,
+      });
+
+      axios.post(
+        `${uiServiceBaseUrl}/policy/block/tag/${policyId}/${tag}`,
+        block,
+        {
+          headers: {
+            authorization: `Bearer ${user.accessToken}`,
+          },
+        },
+      );
+
+      res.status(200).json(block);
+    },
+  );
 
   return policyApi;
 };
@@ -114,6 +184,8 @@ async function publishSchemas(
     rootAuthority,
     schemaIds: newSchemas.map((schema) => schema.id),
   });
+
+  return newSchemas;
 }
 
 async function importPolicyPackage({
@@ -180,4 +252,7 @@ interface IImportPolicyPackage {
       id: string;
     };
   };
+  schemas: {
+    name: string;
+  }[];
 }

@@ -42,41 +42,6 @@
             "schema": "1a5347ba-5e5f-49a7-8734-3dcc953a03ed"
           },
           {
-            "id": "b3748f82-4d5e-4403-a7fc-ab5a16cd92a0",
-            "tag": "save_new_approve_document",
-            "blockType": "sendToGuardian",
-            "children": [],
-            "uiMetaData": {},
-            "dataType": "approve",
-            "entityType": "Installer",
-            "stopPropagation": false
-          },
-          {
-            "id": "8b499f36-aa9d-40a6-81df-7d063230761e",
-            "tag": "wait_fo_approve",
-            "blockType": "informationBlock",
-            "children": [],
-            "uiMetaData": {
-              "type": "text",
-              "title": "Waiting for approval",
-              "description": "Waiting for approval"
-            },
-            "permissions": [
-              "INSTALLER"
-            ],
-            "stopPropagation": true,
-            "defaultActive": true
-          },
-          {
-            "id": "885690ea-e46c-43fb-ae20-37370397215b",
-            "tag": "update_approve_document_status",
-            "blockType": "sendToGuardian",
-            "children": [],
-            "uiMetaData": {},
-            "dataType": "approve",
-            "entityType": "Installer"
-          },
-          {
             "id": "50591156-d878-4f3d-b4a7-091a2a4ddbfe",
             "tag": "send_installer_vc_to_hedera",
             "blockType": "sendToGuardian",
@@ -325,22 +290,6 @@
               "INSTALLER"
             ],
             "defaultActive": true
-          },
-          {
-            "id": "05fcb028-4cc7-4e77-81e4-e43c49e44032",
-            "tag": "installer_rejected",
-            "blockType": "informationBlock",
-            "children": [],
-            "uiMetaData": {
-              "title": "Rejected",
-              "description": "Your application was rejected",
-              "type": "text"
-            },
-            "stopPropagation": true,
-            "permissions": [
-              "INSTALLER"
-            ],
-            "defaultActive": true
           }
         ],
         "uiMetaData": {
@@ -350,134 +299,6 @@
           "INSTALLER"
         ],
         "defaultActive": true
-      },
-      {
-        "id": "155e9708-473d-440a-b2ab-f949c57f3a29",
-        "tag": "root_authority_header",
-        "blockType": "interfaceContainerBlock",
-        "children": [
-          {
-            "id": "0d2d976f-5e7b-45e8-8d8b-96121377844c",
-            "tag": "approve_page",
-            "blockType": "interfaceContainerBlock",
-            "children": [
-              {
-                "id": "520193b3-f39c-4e65-91b5-9fb05c6c0853",
-                "tag": "approve_documents_grid",
-                "blockType": "interfaceDocumentsSource",
-                "children": [],
-                "uiMetaData": {
-                  "fields": [
-                    {
-                      "title": "Owner",
-                      "name": "document.issuer",
-                      "tooltip": "Installer did",
-                      "type": "text"
-                    },
-                    {
-                      "title": "Create Date",
-                      "name": "createDate",
-                      "tooltip": "",
-                      "type": "text"
-                    },
-                    {
-                      "title": "Document",
-                      "name": "document",
-                      "tooltip": "",
-                      "type": "button",
-                      "action": "dialog",
-                      "url": "",
-                      "dialogContent": "VC",
-                      "dialogClass": "",
-                      "dialogType": "json",
-                      "bindBlock": "",
-                      "content": "View Document",
-                      "uiClass": "link"
-                    },
-                    {
-                      "title": "Status",
-                      "name": "status",
-                      "tooltip": "",
-                      "type": "text"
-                    },
-                    {
-                      "title": "Operation",
-                      "name": "status",
-                      "tooltip": "",
-                      "type": "block",
-                      "action": "",
-                      "url": "",
-                      "dialogContent": "",
-                      "dialogClass": "",
-                      "dialogType": "",
-                      "bindBlock": "approve_documents_btn",
-                      "uiClass": "",
-                      "content": ""
-                    }
-                  ]
-                },
-                "filters": {},
-                "defaultActive": true,
-                "permissions": [
-                  "ROOT_AUTHORITY"
-                ],
-                "dataType": "approve",
-                "dependencies": [
-                  "save_new_approve_document"
-                ],
-                "onlyOwnDocuments": false
-              },
-              {
-                "id": "858a9e5d-091b-44ac-a1e8-3f48b7e2f2ec",
-                "tag": "approve_documents_btn",
-                "blockType": "interfaceAction",
-                "children": [],
-                "uiMetaData": {
-                  "options": [
-                    {
-                      "title": "",
-                      "name": "Approve",
-                      "tooltip": "",
-                      "type": "text",
-                      "value": "APPROVED",
-                      "uiClass": "btn-approve",
-                      "bindBlock": "update_approve_document_status"
-                    },
-                    {
-                      "title": "",
-                      "name": "Reject",
-                      "tooltip": "",
-                      "type": "text",
-                      "value": "REJECTED",
-                      "uiClass": "btn-reject",
-                      "bindBlock": "installer_rejected"
-                    }
-                  ],
-                  "field": "status"
-                },
-                "permissions": [
-                  "ROOT_AUTHORITY"
-                ],
-                "type": "selector"
-              }
-            ],
-            "uiMetaData": {
-              "title": "Approve Documents",
-              "type": "blank"
-            },
-            "defaultActive": true,
-            "permissions": [
-              "ROOT_AUTHORITY"
-            ]
-          }
-        ],
-        "uiMetaData": {
-          "type": "tabs"
-        },
-        "defaultActive": true,
-        "permissions": [
-          "ROOT_AUTHORITY"
-        ]
       },
       {
         "id": "0e2d3f60-98a2-4e12-9bb6-4b2ba4bacec5",
