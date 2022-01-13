@@ -229,6 +229,7 @@ export class PolicyViewerComponent implements OnInit {
     importPolicy() {
         const input = document.createElement('input');
         input.type = 'file';
+        input.accept = '.zip';
         input.click();
         input.onchange = (e: any) => {
             const file = e.target.files[0];
@@ -239,26 +240,32 @@ export class PolicyViewerComponent implements OnInit {
                 this.loading = true;
                 this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
                     this.loading = false;
-                    const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
-                        width: '950px',
-                        panelClass: 'g-dialog',
-                        data: {
-                            policy: data
-                        }
-                    });
-                    dialogRef.afterClosed().subscribe(async (result) => {
-                        if (result) {
-                            this.loading = true;
-                            this.policyEngineService.importUpload(data).subscribe((policies) => {
-                                this.updatePolicy(policies);
-                                setTimeout(() => {
-                                    this.loading = false;
-                                }, 500);
-                            });
-                        }
-                    });
+                    this.importPolicyDetails(data);
+                }, (e) => {
+                    this.loading = false;
                 });
             });
         }
+    }
+
+    importPolicyDetails(policy: any) {
+        const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                policy: policy
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.loading = true;
+                this.policyEngineService.importUpload(policy).subscribe((policies) => {
+                    this.updatePolicy(policies);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                });
+            }
+        });
     }
 }
