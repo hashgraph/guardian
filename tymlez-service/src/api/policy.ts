@@ -1,8 +1,19 @@
 import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
+import { differenceBy } from 'lodash';
+import {
+  getAllSchemasFromUiService,
+  publishSchemasToUiService,
+} from '../modules/schema';
 import { v4 as uuidv4 } from 'uuid';
-import { loginToUiService } from '../modules/ui-service';
+import { loginToUiService, IUser } from '../modules/user';
+import {
+  getAllPoliciesFromUiService,
+  IPolicy,
+  publishPolicyToUiService,
+} from '../modules/policy';
+import type { ISchema } from 'interfaces';
 
 export const makePolicyApi = ({
   uiServiceBaseUrl,
@@ -22,44 +33,18 @@ export const makePolicyApi = ({
       username: 'RootAuthority',
     });
 
-    assert(rootAuthority.did, `rootAuthority.did is missing`);
+    const preImportSchemas = await getAllSchemasFromUiService({
+      uiServiceBaseUrl,
+      rootAuthority,
+    });
 
-    const newPolicyConfigId = uuidv4();
+    const importedPolicy = await importPolicyPackage({
+      rootAuthority,
+      inputPackage,
+      uiServiceBaseUrl,
+    });
 
-    const packageImportData = {
-      ...inputPackage,
-      policy: {
-        ...inputPackage.policy,
-        config: {
-          ...inputPackage.policy.config,
-          id: newPolicyConfigId,
-        },
-        owner: rootAuthority.did,
-        status: undefined,
-        topicId: undefined,
-      },
-    };
-
-    const { data: allPolicies } = (await axios.post(
-      `${uiServiceBaseUrl}/api/package/import`,
-      packageImportData,
-      {
-        headers: {
-          authorization: `Bearer ${rootAuthority.accessToken}`,
-        },
-      },
-    )) as {
-      data: IUiServiceImportPolicyPackageResponse[];
-    };
-
-    const importedPolicy = allPolicies.find(
-      (policy) => policy.config.id === newPolicyConfigId,
-    );
-
-    assert(
-      importedPolicy,
-      `Failed to import policy package ${inputPackage.policy.config.id} ${inputPackage.policy.name}`,
-    );
+    await publishSchemas(uiServiceBaseUrl, rootAuthority, preImportSchemas);
 
     if (publish && importedPolicy.status !== 'PUBLISHED') {
       console.log(`Publishing policy`, {
@@ -70,15 +55,11 @@ export const makePolicyApi = ({
           id: importedPolicy.config.id,
         },
       });
-      await axios.post(
-        `${uiServiceBaseUrl}/policy/publish/${importedPolicy.id}`,
-        {},
-        {
-          headers: {
-            authorization: `Bearer ${rootAuthority.accessToken}`,
-          },
-        },
-      );
+      await publishPolicyToUiService({
+        policyId: importedPolicy.id,
+        uiServiceBaseUrl,
+        rootAuthority,
+      });
     }
 
     res.status(200).json(importedPolicy);
@@ -92,16 +73,10 @@ export const makePolicyApi = ({
 
     assert(rootAuthority.did, `rootAuthority.did is missing`);
 
-    const { data: allPolicies } = (await axios.get(
-      `${uiServiceBaseUrl}/api/get-policy-list`,
-      {
-        headers: {
-          authorization: `Bearer ${rootAuthority.accessToken}`,
-        },
-      },
-    )) as {
-      data: IUiServiceImportPolicyPackageResponse[];
-    };
+    const allPolicies = await getAllPoliciesFromUiService(
+      uiServiceBaseUrl,
+      rootAuthority,
+    );
 
     res.status(200).json(allPolicies);
   });
@@ -109,26 +84,100 @@ export const makePolicyApi = ({
   return policyApi;
 };
 
-interface IUiServiceImportPolicyPackageResponse {
-  id: string;
-  status: string;
-  name: string;
-  policyTag: string;
-  config: {
-    id: string;
+async function publishSchemas(
+  uiServiceBaseUrl: string,
+  rootAuthority: IUser,
+  preImportSchemas: ISchema[],
+) {
+  const postImportSchemas = await getAllSchemasFromUiService({
+    uiServiceBaseUrl,
+    rootAuthority,
+  });
+
+  const newSchemas = differenceBy(
+    postImportSchemas,
+    preImportSchemas,
+    (obj) => obj.uuid,
+  );
+
+  console.log(
+    `Publishing schemas`,
+    newSchemas.map((schema) => ({
+      id: schema.id,
+      uuid: schema.uuid,
+      name: schema.name,
+    })),
+  );
+
+  await publishSchemasToUiService({
+    uiServiceBaseUrl,
+    rootAuthority,
+    schemaIds: newSchemas.map((schema) => schema.id),
+  });
+}
+
+async function importPolicyPackage({
+  inputPackage,
+  rootAuthority,
+  uiServiceBaseUrl,
+}: {
+  rootAuthority: IUser;
+  inputPackage: IImportPolicyPackage;
+  uiServiceBaseUrl: string;
+}) {
+  assert(rootAuthority.did, `rootAuthority.did is missing`);
+
+  const newPolicyConfigId = uuidv4();
+
+  const packageImportData = {
+    ...inputPackage,
+    policy: {
+      ...inputPackage.policy,
+      config: {
+        ...inputPackage.policy.config,
+        id: newPolicyConfigId,
+      },
+      owner: rootAuthority.did,
+      status: undefined,
+      topicId: undefined,
+    },
   };
+
+  const { data: allPolicies } = (await axios.post(
+    `${uiServiceBaseUrl}/api/package/import`,
+    packageImportData,
+    {
+      headers: {
+        authorization: `Bearer ${rootAuthority.accessToken}`,
+      },
+    },
+  )) as {
+    data: IPolicy[];
+  };
+
+  const importedPolicy = allPolicies.find(
+    (policy) => policy.config.id === newPolicyConfigId,
+  );
+
+  assert(
+    importedPolicy,
+    `Failed to import policy package ${inputPackage.policy.config.id} ${inputPackage.policy.name}`,
+  );
+  return importedPolicy;
 }
 
 interface IImportPolicyPackageRequestBody {
-  package: {
-    policy: {
+  package: IImportPolicyPackage;
+  publish: boolean;
+}
+
+interface IImportPolicyPackage {
+  policy: {
+    id: string;
+    name: string;
+    policyTag: string;
+    config: {
       id: string;
-      name: string;
-      policyTag: string;
-      config: {
-        id: string;
-      };
     };
   };
-  publish: boolean;
 }

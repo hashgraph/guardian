@@ -22,10 +22,10 @@ import axios from 'axios';
 
 axios.interceptors.request.use((request) => {
   if (request.url?.includes('login')) {
-    console.log('Starting Request', request.url);
+    console.log('Axios: Starting Request', request.url);
   } else {
     console.log(
-      'Starting Request',
+      'Axios: Starting Request',
       JSON.stringify({ url: request.url, data: request.data }, null, 2),
     );
   }

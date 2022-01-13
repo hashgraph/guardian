@@ -2,7 +2,7 @@ import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import type { IToken } from 'interfaces';
-import { loginToUiService } from '../modules/ui-service';
+import { loginToUiService } from '../modules/user';
 
 export const makeTokenApi = ({
   uiServiceBaseUrl,
@@ -58,5 +58,30 @@ export const makeTokenApi = ({
     res.status(200).json(createdToken);
   });
 
+  tokenApi.post('/user-kyc', async (req: Request, res: Response) => {
+    const inputGrantKyc: IGrantKycInput = req.body;
+
+    assert(inputGrantKyc, `input is missing`);
+
+    const rootAuthority = await loginToUiService({
+      uiServiceBaseUrl,
+      username: 'RootAuthority',
+    });
+
+    axios.post(`${uiServiceBaseUrl}/api/tokens/user-kyc`, inputGrantKyc, {
+      headers: {
+        authorization: `Bearer ${rootAuthority.accessToken}`,
+      },
+    });
+
+    res.status(200).json(inputGrantKyc);
+  });
+
   return tokenApi;
 };
+
+interface IGrantKycInput {
+  tokenId: string;
+  username: string;
+  value: boolean;
+}

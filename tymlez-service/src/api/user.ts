@@ -2,9 +2,8 @@ import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import { IUserProfile, UserState } from 'interfaces';
-import type { IUser } from 'modules/ui-service/IUser';
-import { resolve } from 'path/posix';
-import { loginToUiService, LoginType } from '../modules/ui-service';
+import { loginToUiService, LoginType, IUser } from '../modules/user';
+import { getUserProfileFromUiService } from '../modules/user';
 
 export const makeUserApi = ({
   uiServiceBaseUrl,
@@ -23,7 +22,7 @@ export const makeUserApi = ({
         `Unexpected username: ${username}`,
       );
 
-      const user = await initUser({ uiServiceBaseUrl, username });
+      const user = await initInstaller({ uiServiceBaseUrl, username });
 
       res.status(200).json(user);
     },
@@ -52,7 +51,7 @@ export const makeUserApi = ({
   return userApi;
 };
 
-async function initUser({
+async function initInstaller({
   uiServiceBaseUrl,
   username,
 }: {
@@ -70,7 +69,7 @@ async function initUser({
 
   await associateTokens({ uiServiceBaseUrl, user });
 
-  return await getUserProfile({ uiServiceBaseUrl, user });
+  return await getUserProfileFromUiService({ uiServiceBaseUrl, user });
 }
 
 async function initHederaProfile({
@@ -107,7 +106,7 @@ async function initHederaProfile({
   while (!userProfile || userProfile.state < UserState.HEDERA_CONFIRMED) {
     console.log('Waiting for user to be initialized', userProfile);
 
-    userProfile = await getUserProfile({ uiServiceBaseUrl, user });
+    userProfile = await getUserProfileFromUiService({ uiServiceBaseUrl, user });
 
     if (userProfile && userProfile.state >= UserState.HEDERA_CONFIRMED) {
       break;
@@ -151,22 +150,6 @@ async function associateTokens({
         );
       }),
   );
-}
-
-async function getUserProfile({
-  uiServiceBaseUrl,
-  user,
-}: {
-  uiServiceBaseUrl: string;
-  user: IUser;
-}): Promise<IUserProfile | undefined> {
-  return (
-    await axios.get(`${uiServiceBaseUrl}/api/profile/user-state`, {
-      headers: {
-        authorization: `Bearer ${user.accessToken}`,
-      },
-    })
-  ).data;
 }
 
 interface IUserTokenResponse {

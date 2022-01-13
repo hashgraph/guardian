@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ITokenResponse } from './ITokenResponse';
 
 export async function createTokens({
   GUARDIAN_TYMLEZ_API_KEY,
@@ -36,10 +37,16 @@ export async function createTokens({
     );
   }
 
-  return await getExistingTokens({
-    GUARDIAN_TYMLEZ_API_KEY,
-    GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-  });
+  return (
+    await getExistingTokens({
+      GUARDIAN_TYMLEZ_API_KEY,
+      GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+    })
+  ).filter((token) =>
+    INIT_TOKENS.some(
+      (initToken) => initToken.tokenSymbol === token.tokenSymbol,
+    ),
+  );
 }
 
 async function getExistingTokens({
@@ -96,9 +103,4 @@ interface ITokenRequest {
   enableFreeze: boolean;
   enableKYC: boolean;
   enableWipe: boolean;
-}
-
-export interface ITokenResponse {
-  tokenId: string;
-  tokenSymbol: string;
 }

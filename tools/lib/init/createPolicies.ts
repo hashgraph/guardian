@@ -2,10 +2,11 @@ import assert from 'assert';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import { ITokenResponse } from './createTokens';
+import { ITokenResponse } from './ITokenResponse';
 import { promisify } from 'util';
 import glob from 'glob';
 import { template } from 'lodash';
+import { IPolicy } from './IPolicy';
 
 const globAsync = promisify(glob);
 
@@ -73,7 +74,7 @@ export async function createPolicies({
   );
 
   console.log(
-    'Creating policy',
+    'Creating policies',
     pendingPolicyPackages.map(
       (policyPackage) => policyPackage.policy.policyTag,
     ),
@@ -134,10 +135,4 @@ async function getPolicyFolders() {
   return (await readdir(policiesDir, { withFileTypes: true }))
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => path.join(policiesDir, dirent.name));
-}
-
-interface IPolicy {
-  id: string;
-  name: string;
-  policyTag: string;
 }

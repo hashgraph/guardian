@@ -2,7 +2,8 @@ import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import type { ISchema } from 'interfaces';
-import { loginToUiService } from '../modules/ui-service';
+import { publishSchemasToUiService } from '../modules/schema';
+import { loginToUiService } from '../modules/user';
 
 export const makeSchemaApi = ({
   uiServiceBaseUrl,
@@ -40,15 +41,11 @@ export const makeSchemaApi = ({
     assert(importedSchema, `Failed to import schema ${inputSchema.uuid}`);
 
     if (publish && importedSchema.status !== 'PUBLISHED') {
-      await axios.post(
-        `${uiServiceBaseUrl}/api/schema/publish`,
-        { id: importedSchema.id },
-        {
-          headers: {
-            authorization: `Bearer ${rootAuthority.accessToken}`,
-          },
-        },
-      );
+      await publishSchemasToUiService({
+        uiServiceBaseUrl,
+        rootAuthority,
+        schemaIds: [importedSchema.id],
+      });
     } else {
       console.log(`Schema: ${importedSchema.uuid} already published`);
     }
