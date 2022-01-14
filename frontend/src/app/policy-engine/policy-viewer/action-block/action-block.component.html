@@ -12,10 +12,6 @@
     <div class="btn-link" (click)="onDownload()">{{content}}</div>
 </div>
 
-<div *ngIf="type == 'filters'" class="content">
-    <div class="btn-link" (click)="onFilters()">{{content}}</div>
-</div>
-
 <div *ngIf="type == 'dropdown'" class="content">
     <mat-select [(value)]="currentValue" (selectionChange)="onDropdown()">
         <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>

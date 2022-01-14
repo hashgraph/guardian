@@ -70,7 +70,7 @@ export class RequestVcDocumentBlock {
         return state;
     }
 
-    async setData(user: IAuthUser, document: any): Promise<any> {
+    async setData(user: IAuthUser, _data: any): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
         if (!userFull.did) {
@@ -80,6 +80,8 @@ export class RequestVcDocumentBlock {
         const userHederaAccount = userFull.hederaAccountId;
         const userHederaKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userFull.did);
 
+        const document = _data.document;
+        const documentRef = _data.ref;
         const credentialSubject = document;
         const schema = ref.options.schema;
         const idType = ref.options.idType;
@@ -87,17 +89,22 @@ export class RequestVcDocumentBlock {
         if (id) {
             credentialSubject.id = id;
         }
+        if (documentRef) {
+            credentialSubject.ref = documentRef;
+        }
         credentialSubject.policyId = ref.policyId;
 
         const vc = await this.vcHelper.createVC(userFull.did, userHederaKey, schema, credentialSubject);
-        const data = {
+        const item = {
             hash: vc.toCredentialHash(),
             owner: userFull.did,
             document: vc.toJsonTree(),
             type: schema
         };
+        const state = StateContainer.GetBlockState((this as any).uuid, user);
+        const newState = Object.assign(state, { data: item });
 
-        await this.update(Object.assign(StateContainer.GetBlockState((this as any).uuid, user), { data }), user);
+        await this.update(newState, user);
 
         if(ref.options.stopPropagation) {
             return {};
@@ -106,7 +113,7 @@ export class RequestVcDocumentBlock {
         const currentIndex = ref.parent.children.findIndex(el => this === el);
         const nextBlock = ref.parent.children[currentIndex + 1];
         if (nextBlock && nextBlock.runAction) {
-            await nextBlock.runAction({ data }, user);
+            await nextBlock.runAction({ data: item }, user);
         }
 
         return {};

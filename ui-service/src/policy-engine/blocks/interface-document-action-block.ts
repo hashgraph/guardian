@@ -45,11 +45,6 @@ export class InterfaceDocumentActionBlock {
             data.field = ref.options.field;
         }
 
-        if (ref.options.type == 'filters') {
-            data.targetBlock = ref.options.targetBlock;
-            data.filters = ref.options.filters || [];
-        }
-
         if (ref.options.type == 'dropdown') {
             const guardians = new Guardians();
 
@@ -107,10 +102,6 @@ export class InterfaceDocumentActionBlock {
         console.log("setData", ref.options);
 
         let state: any = { data: document };
-
-        if (ref.options.type == 'filters') {
-            return;
-        }
 
         if (ref.options.type == 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
@@ -247,12 +238,6 @@ export class InterfaceDocumentActionBlock {
                     }
                     break;
 
-                case 'filters':
-                    if (!ref.options.targetBlock) {
-                        resultsContainer.addBlockError(ref.uuid, 'Option "targetBlock" does not set');
-                    }
-                    break;
-
                 case 'dropdown':
                     if (!ref.options.documentSource) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "documentSource" does not set');
@@ -269,7 +254,7 @@ export class InterfaceDocumentActionBlock {
                     break;
 
                 default:
-                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector|download|filters|dropdown"');
+                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector|download|dropdown"');
             }
         }
     }

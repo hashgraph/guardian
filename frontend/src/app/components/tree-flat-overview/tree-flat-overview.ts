@@ -277,6 +277,9 @@ export class TreeFlatOverview {
     if (blockType == 'wipeDocument') {
       return 'delete';
     }
+    if (blockType == 'interfaceSelector') {
+      return 'filter_alt';
+    }
     return 'code'
   }
 

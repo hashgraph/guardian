@@ -86,6 +86,8 @@ import { RolesConfigComponent } from './policy-engine/policy-configuration/roles
 import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
+import { SelectorConfigComponent } from './policy-engine/policy-configuration/selector-config/selector-config.component';
+import { SelectorBlockComponent } from './policy-engine/policy-viewer/selector-block/selector-block.component';
 
 @NgModule({
     declarations: [
@@ -133,7 +135,9 @@ import { PolicyHelper } from './services/policy-helper.service';
         InformationConfigComponent,
         ExportPolicyDialog,
         RolesConfigComponent,
-        RolesBlockComponent
+        RolesBlockComponent,
+        SelectorConfigComponent,
+        SelectorBlockComponent
     ],
     imports: [
         BrowserModule,

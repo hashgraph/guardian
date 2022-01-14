@@ -450,6 +450,9 @@ export class PolicyConfigurationComponent implements OnInit {
         if (blockType == 'externalDataBlock') {
             return 'cloud';
         }
+        if (blockType == 'interfaceSelector') {
+            return 'filter_alt';
+        }
         return 'code'
     }
 }

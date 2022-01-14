@@ -30,6 +30,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     dialogContent: any;
     dialogClass: any;
     dialogRef: any;
+    ref: any;
 
     title: any;
     description: any;
@@ -82,11 +83,27 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
+    getId(data: any) {
+        try {
+            if (data) {
+                if (Array.isArray(data.document.credentialSubject)) {
+                    return data.document.credentialSubject[0].id;
+                } else {
+                    return data.document.credentialSubject.id;
+                }
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
     setData(data: any) {
         if (data) {
             const uiMetaData = data.uiMetaData;
             const row = data.data;
             const schema = data.schema;
+            this.ref = this.getId(row);
             this.type = uiMetaData.type;
             this.schema = schema;
             this.hideFields = {};
@@ -102,12 +119,13 @@ export class RequestDocumentBlockComponent implements OnInit {
                 this.dialogClass = uiMetaData.dialogClass;
                 this.description = uiMetaData.description;
             }
-            if(this.type == 'page') {
+            if (this.type == 'page') {
                 this.title = uiMetaData.title;
                 this.description = uiMetaData.description;
             }
             this.isActive = data.isActive;
         } else {
+            this.ref = null;
             this.schema = null;
             this.hideFields = null;
             this.isActive = false;
@@ -117,7 +135,10 @@ export class RequestDocumentBlockComponent implements OnInit {
     onSubmit() {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
-            this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
+            this.policyEngineService.setBlockData(this.id, this.policyId, {
+                document: data,
+                ref: this.ref
+            }).subscribe(() => {
                 this.loading = false;
             }, (e) => {
                 console.error(e.error);

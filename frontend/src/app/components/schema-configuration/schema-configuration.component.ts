@@ -42,6 +42,17 @@ export class SchemaConfigurationComponent implements OnInit {
                 format: undefined,
                 pattern: undefined,
                 readOnly: true
+            },
+            {
+                name: 'ref',
+                description: '',
+                required: true,
+                isArray: true,
+                isRef: false,
+                type: 'string',
+                format: undefined,
+                pattern: undefined,
+                readOnly: true
             }
         ];
         this.defaultFieldsMap["MRV"] = [
@@ -286,7 +297,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
     public getSchema() {
         const value = this.dataForm.value;
-        const schema = new Schema();
+        const schema = new Schema(this.value);
         schema.name = value.name;
         schema.description = value.description;
         schema.entity = value.entity;

@@ -3,17 +3,17 @@ import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../data-source/tree-data-source';
 
 /**
- * Settings for block of 'interfaceAction' type.
+ * Settings for block of 'interfaceSelector' type.
  */
 @Component({
-    selector: 'action-config',
-    templateUrl: './action-config.component.html',
+    selector: 'selector-config',
+    templateUrl: './selector-config.component.html',
     styleUrls: [
         './../common-properties/common-properties.component.css',
-        './action-config.component.css'
+        './selector-config.component.css'
     ]
 })
-export class ActionConfigComponent implements OnInit {
+export class SelectorConfigComponent implements OnInit {
     @Input('block') currentBlock!: BlockNode;
     @Input('schemes') schemes!: Schema[];
     @Input('tokens') tokens!: Token[];
@@ -27,6 +27,8 @@ export class ActionConfigComponent implements OnInit {
         optionsGroup: false,
         fileGroup: false,
         options: {},
+        filterGroup: false,
+        filters: {},
         dropdownGroup: false
     };
 
