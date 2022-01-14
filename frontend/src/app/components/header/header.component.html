@@ -45,7 +45,7 @@
         </div>
         <div class="debug-user">
           <div class="current-user" *ngFor="let user of testUsers$ | async"
-            (click)="authState.setCredentials(user.username, 'test')">
+            (click)="authState.doLogin(user.username, 'test')">
             <div class="current-user-name">{{user.username}}</div>
             <div class="current-user-role">{{user.role}}</div>
           </div>
