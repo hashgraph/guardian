@@ -4,8 +4,8 @@ ENV PLATFORM="docker"
 
 WORKDIR /usr/message-broker
 COPY ./message-broker/package*.json ./
-COPY ./message-broker/tsconfig.json ./
 RUN npm install
+COPY ./message-broker/tsconfig.json ./
 ADD ./message-broker/src ./src/.
 RUN npm run build
 

@@ -4,25 +4,25 @@ ENV PLATFORM="docker"
 
 WORKDIR /usr/vc-modules
 COPY ./vc-modules/package*.json ./
-COPY ./vc-modules/tsconfig.json ./
 RUN npm install
+COPY ./vc-modules/tsconfig.json ./
 ADD ./vc-modules/src ./src/.
 RUN npm run build
 
 WORKDIR /usr/interfaces
 COPY ./interfaces/package*.json ./
-COPY ./interfaces/tsconfig.json ./
 RUN npm install
+COPY ./interfaces/tsconfig.json ./
 ADD ./interfaces/src ./src/.
 RUN npm run build
 
 WORKDIR /usr/guardian-service
 COPY ./guardian-service/package*.json ./
+RUN npm install
 COPY ./guardian-service/tsconfig.json ./
 COPY ./guardian-service/config.json ./
 COPY ./guardian-service/.env.docker ./.env
 COPY ./guardian-service/system-schemes ./system-schemes/.
-RUN npm install
 ADD ./guardian-service/src ./src/.
 RUN npm run build
 
