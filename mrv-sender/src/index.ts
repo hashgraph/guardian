@@ -72,8 +72,6 @@ console.log('Starting mrv-sender', {
             vc = await vcHelper.createVC(did, key, type, vcSubject);
             document = vc.toJsonTree();
 
-            console.log("created vc");
-            console.log(document);
         } catch (e) {
             console.error(e);
             res.status(500).json(e);

@@ -183,7 +183,6 @@ export const documentsAPI = async function (
         const storage = new Web3Storage({token: web3storageToken});
         const cid = (await storage.put([new File([JSON.stringify(result)], `${result.document.id}.json`, {type:'application/json'})]));
         result = await vcDocumentRepository.save({...result, cid});
-        console.log(cid);
         res.send(result);
     });
 
@@ -197,12 +196,19 @@ export const documentsAPI = async function (
     channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
         let vpDocumentObject = vpDocumentRepository.create(msg.payload as IVPDocument);
 
-        const storage = new Web3Storage({token: web3storageToken});
-        vpDocumentObject.cid = (await storage.put([new File([JSON.stringify(vpDocumentObject)], `${vpDocumentObject.document.id}.json`, {type:'application/json'})]));
+        if (!vpDocumentObject.cid)
+        {
+            console.log('No cid in VP. Putting VP into ipfs ')
+            const storage = new Web3Storage({token: web3storageToken});
+        
+            vpDocumentObject.cid = (await storage.put([new File([JSON.stringify(vpDocumentObject)], `${vpDocumentObject.document.id}.json`, {type:'application/json'})]));
+        
+        }    
         vpDocumentObject = await vcDocumentRepository.save(vpDocumentObject);
         
         const result: any = await vpDocumentRepository.save(vpDocumentObject);
         res.send(result);
+
     });
 
     /**

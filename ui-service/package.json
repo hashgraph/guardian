@@ -32,7 +32,8 @@
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.41",
     "vc-modules": "file:../vc-modules",
-    "ws": "^8.2.1"
+    "ws": "^8.2.1",
+    "web3.storage":"^3.5.3"
   },
   "description": "",
   "devDependencies": {

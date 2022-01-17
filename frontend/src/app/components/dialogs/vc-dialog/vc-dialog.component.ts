@@ -22,7 +22,6 @@ export class JsonDialog {
         const { document, title} = this.data;
         this.title = title;
         this.json = JSON.stringify((document), null, 4);
-        console.log(this.data)
     }
 
     onClick(): void {

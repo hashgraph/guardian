@@ -8,7 +8,10 @@ import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature } from 'interfaces';
+import { File, Web3Storage } from 'web3.storage';
 
+const web3storageToken =  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDdEQjhlMzgzNTExNTBEOTRGRmM3OGM0NjNEYmU4NGU5REY4MERlRUYiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NDE4MTI1NjMzNjksIm5hbWUiOiJsaWxAdHltbGV6In0.VHbF9lBNRlB3FcQlGe1BpKrNAv4aP1wKvX-95VSBYvg";
+    
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
         try {
@@ -87,13 +90,15 @@ export class MintBlock {
             if (!vp) {
                 return false;
             }
+            
             await this.guardians.setVpDocument({
                 hash: vp.toCredentialHash(),
                 document: vp.toJsonTree(),
                 owner: sensorDid,
                 type: type as any,
                 policyId: ref.policyId,
-                tag: ref.tag
+                tag: ref.tag,
+                cid: vp.getCid()
             })
             return true;
         } catch (error) {
@@ -140,6 +145,13 @@ export class MintBlock {
             vcs,
             uuid
         );
+
+        const storage = new Web3Storage({token: web3storageToken});
+        const cid = (await storage.put([new File([JSON.stringify(vp)], `${vp.getId()}.json`, {type:'application/json'})]));
+        vp.setCid(cid);
+
+        console.log('Created VP in mint Block');
+        console.log(vp);
         return vp;
     }
 
@@ -161,8 +173,8 @@ export class MintBlock {
 
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
-
-        console.log(`vp.getCid() = ${(vp as HcsVpDocument).cid}`)
+        console.log(vp)
+        console.log(`vp.getCid() = ${(vp as HcsVpDocument).getCid()}`)
         if (token.tokenType == 'non-fungible') {
             const data: any = HederaUtils.decode(tokenValue.toString());
             const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], vp.getCid()||uuid);// uuid);
