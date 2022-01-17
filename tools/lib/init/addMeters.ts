@@ -57,7 +57,7 @@ async function addMeter({
   assert(cetPolicyPackage, `Cannot find ${policyTag} Package`);
 
   await axios.post(
-    `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/mrv/add-meter`,
+    `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/track-and-trace/add-meter`,
     {
       username,
       policyId: cetPolicyPackage.policy.id,

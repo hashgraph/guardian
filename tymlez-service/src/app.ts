@@ -11,7 +11,7 @@ import { infoApi } from '@api/info';
 import { debugApi } from '@api/debug';
 import { makeAuditApi } from '@api/audit';
 import assert from 'assert';
-import { makeMrvApi } from '@api/mrv';
+import { makeTrackAndTraceApi } from '@api/track-and-trace';
 import { MeterConfig } from '@entity/meter-config';
 import morgan from 'morgan';
 import { makeSchemaApi } from '@api/schema';
@@ -132,8 +132,8 @@ Promise.all([
   app.use('/debug/', debugApi);
   app.use('/audit/', makeAuditApi(channel));
   app.use(
-    '/mrv/',
-    makeMrvApi({
+    '/track-and-trace/',
+    makeTrackAndTraceApi({
       vcDocumentLoader,
       vcHelper,
       meterConfigRepository,

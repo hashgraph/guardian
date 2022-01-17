@@ -76,17 +76,21 @@ export const makeTokenApi = ({
       rootAuthority,
     });
 
-    if (userKyc.kyc != userKycInput.value) {
-      await axios.post(
-        `${uiServiceBaseUrl}/api/tokens/user-kyc`,
+    if (userKyc.kyc == userKycInput.value) {
+      console.log(
+        `Skip because no change user ${userKycInput.username} and token '${userKycInput.tokenId}' KYC.`,
         userKycInput,
-        {
-          headers: {
-            authorization: `Bearer ${rootAuthority.accessToken}`,
-          },
-        },
+        userKyc,
       );
+      res.status(200).json({});
+      return;
     }
+
+    await axios.post(`${uiServiceBaseUrl}/api/tokens/user-kyc`, userKycInput, {
+      headers: {
+        authorization: `Bearer ${rootAuthority.accessToken}`,
+      },
+    });
 
     res.status(200).json(userKycInput);
   });

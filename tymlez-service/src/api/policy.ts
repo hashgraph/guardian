@@ -131,40 +131,6 @@ export const makePolicyApi = ({
     res.status(200).json(allPolicies);
   });
 
-  // Paul Debug: hide this and expose specific steps
-  policyApi.post(
-    '/block/tag/:policyId/:tag',
-    async (req: Request, res: Response) => {
-      const { policyId, tag } = req.params;
-      const { block, username } = req.body as {
-        block: any;
-        username: UserName | undefined;
-      };
-
-      assert(block, `block is missing`);
-      assert(username, `username is missing`);
-      assert(policyId, `policyId is missing`);
-      assert(tag, `tag is missing`);
-
-      const user = await loginToUiService({
-        uiServiceBaseUrl,
-        username,
-      });
-
-      const { data: blockOutput } = await axios.post(
-        `${uiServiceBaseUrl}/policy/block/tag2/${policyId}/${tag}`,
-        block,
-        {
-          headers: {
-            authorization: `Bearer ${user.accessToken}`,
-          },
-        },
-      );
-
-      res.status(200).json(blockOutput);
-    },
-  );
-
   return policyApi;
 };
 

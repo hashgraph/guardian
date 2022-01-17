@@ -5,6 +5,7 @@ import { createPolicyPackages } from './createPolicyPackages';
 import { createTokens } from './createTokens';
 import { grantTokenKvcToInstallers } from './grantTokenKvcToInstallers';
 import { initInstallers } from './initInstallers';
+import { initRootAuthority } from './initRootAuthority';
 import { registerNewInstallers } from './registerNewInstallers';
 
 export async function init() {
@@ -19,8 +20,10 @@ export async function init() {
     METER_INFOS,
   } = await getBuildTimeConfig({ env: ENV, clientName: CLIENT_NAME });
 
-  // Paul Debug: TODO
-  // Initialize RootAuthority
+  await initRootAuthority({
+    GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+    GUARDIAN_TYMLEZ_API_KEY,
+  });
 
   const tokens = await createTokens({
     GUARDIAN_TYMLEZ_API_KEY,
@@ -45,7 +48,6 @@ export async function init() {
     GUARDIAN_TYMLEZ_API_KEY,
   });
 
-  // Paul Debug: need to be idempotent
   await registerNewInstallers(
     policyPackages,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,

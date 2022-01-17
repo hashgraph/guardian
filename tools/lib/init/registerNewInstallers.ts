@@ -36,27 +36,18 @@ async function registerNewInstaller({
   installerOptions: any;
 }) {
   console.log('Registering new installer', { username, policyTag });
+
   const cetPolicyPackage = policyPackages.find(
     (pkg) => pkg.policy.inputPolicyTag === policyTag,
   );
   assert(cetPolicyPackage, `Cannot find ${policyTag} Package`);
 
-  const installerSchema = cetPolicyPackage.schemas.find(
-    (schema) => schema.inputName === 'iRec_Application_Details',
-  );
-
-  assert(installerSchema, `Cannot find installer schema`);
-
-  // Paul Debug: Change to /block/tag2/ when moved to tymlez-service
   await axios.post(
-    `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/policy/block/tag/${cetPolicyPackage.policy.id}/add_new_installer_request`,
+    `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/track-and-trace/register-installer`,
     {
-      block: {
-        type: installerSchema.uuid,
-        '@context': ['https://localhost/schema'],
-        ...installerOptions,
-      },
       username,
+      policyId: cetPolicyPackage.policy.id,
+      installerOptions,
     },
     {
       headers: {
