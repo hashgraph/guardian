@@ -36,7 +36,7 @@
         <ng-container matColumnDef="vp">
             <th mat-header-cell *matHeaderCellDef> Document</th>
             <td mat-cell *matCellDef="let element">
-                <a (click)="openVC(element.document)">View Document</a>
+                <a (click)="openVC(element.document, element.cid)">View Document</a>
             </td>
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

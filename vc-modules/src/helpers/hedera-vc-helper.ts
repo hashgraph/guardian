@@ -214,6 +214,7 @@ export class VCHelper {
         vp.addVerifiableCredential(vcs);
 
         vp = await VCJS.issuePresentation(vp, suite, this.loader);
+        console.log(vp)
         return vp;
     }
 

@@ -80,6 +80,7 @@ export const trustChainAPI = async function (
             cid:vc.cid
         });
 
+        
         const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
 
         chain.push({
@@ -161,7 +162,8 @@ export const trustChainAPI = async function (
                         owner: rootAuthority.owner,
                         schema: getField(rootAuthority, 'type'),
                         label: 'HASH',
-                        tag: "Account Creation"
+                        tag: "Account Creation",
+                        cid: rootAuthority.cid
                     });
                 }
             }

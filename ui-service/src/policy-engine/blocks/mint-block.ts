@@ -131,15 +131,14 @@ export class MintBlock {
         return mintVC;
     }
 
-    private async createVP(root, uuid: string, vcs: HcsVcDocument<VcSubject>[], cid?:string) {
+    private async createVP(root, uuid: string, vcs: HcsVcDocument<VcSubject>[]) {
         const vcHelper = new VcHelper();
 
         const vp = await vcHelper.createVP(
             root.did,
             root.hederaAccountKey,
             vcs,
-            uuid,
-            cid
+            uuid
         );
         return vp;
     }
@@ -163,14 +162,15 @@ export class MintBlock {
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
+        console.log(`vp.getCid() = ${(vp as HcsVpDocument).cid}`)
         if (token.tokenType == 'non-fungible') {
             const data: any = HederaUtils.decode(tokenValue.toString());
-            const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], vp.getCid());// uuid);
+            const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], vp.getCid()||uuid);// uuid);
             //mintVC = await this.createMintVC(root, token, serials);
-            await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials);
+            console.log(await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials,vp.getCid()|| uuid));
         } else {
-            await hederaHelper.SDK.mint(tokenId, supplyKey, tokenValue, uuid);
-            //mintVC = await this.createMintVC(root, token, tokenValue);
+            await hederaHelper.SDK.mint(tokenId, supplyKey, tokenValue, vp.getCid());//uuid);
+            //mintVC = await this.createMintVC(root, token, tokenValue)
             await hederaHelper.SDK.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, vp.getCid());
         }
 

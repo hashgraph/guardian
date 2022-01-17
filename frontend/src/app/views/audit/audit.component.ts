@@ -44,6 +44,7 @@ export class AuditComponent implements OnInit {
     loadData() {
         this.loading = true;
         this.auditService.getVpDocuments().subscribe((data: any[]) => {
+            
             console.log(data)
             this.loading = false;
             this.dataSource = data;
@@ -53,12 +54,15 @@ export class AuditComponent implements OnInit {
         });;
     }
 
-    openVC(document: any) {
+    openVC(document: any, cid: string) {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
-                document: document,
-                title: "VP"
+                document: {
+                    cid,
+                    document,
+                },
+                title: "VP", 
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => { });

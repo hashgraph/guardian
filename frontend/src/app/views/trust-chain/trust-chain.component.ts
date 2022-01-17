@@ -98,7 +98,8 @@ export class TrustChainComponent implements OnInit {
                             issuer: vcMint.issuer,
                             document: vcMint,
                             schema: vcMint.type.includes('MintToken') ? 'MintToken' : 'MintNFToken',
-                            tag: 'Mint Token'
+                            tag: 'Mint Token',
+                            cid: vcMint.cid
                         };
                         this.chain.push(this.vpMint);
                     } else {
@@ -113,7 +114,8 @@ export class TrustChainComponent implements OnInit {
                     this.vpPolicy = {
                         ...vcPolicy.document.credentialSubject[0],
                         issuer: vcPolicy.document.issuer,
-                        document: vcPolicy.document
+                        document: vcPolicy.document,
+                        cid:vcPolicy.cid
                     };
                 } else {
                     this.vpPolicy = null;
@@ -133,7 +135,10 @@ export class TrustChainComponent implements OnInit {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
-                document: item.document,
+                document: {
+                    cid:item.cid,
+                    document:item.document
+                },
                 title: item.type
             }
         });
