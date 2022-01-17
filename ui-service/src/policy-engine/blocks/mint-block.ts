@@ -150,8 +150,6 @@ export class MintBlock {
         const cid = (await storage.put([new File([JSON.stringify(vp)], `${vp.getId()}.json`, {type:'application/json'})]));
         vp.setCid(cid);
 
-        console.log('Created VP in mint Block');
-        console.log(vp);
         return vp;
     }
 
@@ -173,13 +171,11 @@ export class MintBlock {
 
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
-        console.log(vp)
-        console.log(`vp.getCid() = ${(vp as HcsVpDocument).getCid()}`)
         if (token.tokenType == 'non-fungible') {
             const data: any = HederaUtils.decode(tokenValue.toString());
             const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], vp.getCid()||uuid);// uuid);
             //mintVC = await this.createMintVC(root, token, serials);
-            console.log(await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials,vp.getCid()|| uuid));
+            await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials,vp.getCid()|| uuid);
         } else {
             await hederaHelper.SDK.mint(tokenId, supplyKey, tokenValue, vp.getCid());//uuid);
             //mintVC = await this.createMintVC(root, token, tokenValue)
