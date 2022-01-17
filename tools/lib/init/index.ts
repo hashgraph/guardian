@@ -8,12 +8,16 @@ import { initInstallers } from './initInstallers';
 import { registerNewInstallers } from './registerNewInstallers';
 
 export async function init() {
-  const { ENV } = process.env;
+  const { ENV, CLIENT_NAME } = process.env;
 
   assert(ENV, `ENV is missing`);
+  assert(CLIENT_NAME, `CLIENT_NAME is missing`);
 
-  const { GUARDIAN_TYMLEZ_API_KEY, GUARDIAN_TYMLEZ_SERVICE_BASE_URL } =
-    await getBuildTimeConfig({ env: ENV });
+  const {
+    GUARDIAN_TYMLEZ_API_KEY,
+    GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+    METER_INFOS,
+  } = await getBuildTimeConfig({ env: ENV, clientName: CLIENT_NAME });
 
   // Paul Debug: TODO
   // Initialize RootAuthority
@@ -41,18 +45,18 @@ export async function init() {
     GUARDIAN_TYMLEZ_API_KEY,
   });
 
+  // Paul Debug: need to be idempotent
   await registerNewInstallers(
     policyPackages,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     GUARDIAN_TYMLEZ_API_KEY,
   );
 
-  await addMeters(
+  assert(METER_INFOS && METER_INFOS.length > 0, `METER_INFOS is missing`);
+  await addMeters({
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     policyPackages,
-  );
-
-  // Paul Debug: TODO
-  // Save Download Meter Config to MongDB > tymlez_db, and allow tymlez-platform to send MRV
+    meterInfos: METER_INFOS,
+  });
 }

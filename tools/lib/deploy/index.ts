@@ -23,6 +23,7 @@ export async function deploy() {
 
   const { GCP_PROJECT_ID, GCP_REGION, GKE_CLUSTER } = await getBuildTimeConfig({
     env: ENV,
+    clientName: CLIENT_NAME,
   });
 
   assert(GCP_PROJECT_ID, `GCP_PROJECT_ID is missing`);

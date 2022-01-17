@@ -1,9 +1,9 @@
 import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
-import { differenceBy } from 'lodash';
 import {
   getAllSchemasFromUiService,
+  getNewSchemas,
   publishSchemasToUiService,
 } from '../modules/schema';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,7 +13,6 @@ import {
   IPolicy,
   publishPolicyToUiService,
 } from '../modules/policy';
-import type { ISchema } from 'interfaces';
 import type { MongoRepository } from 'typeorm';
 import type { PolicyPackage } from '@entity/policy-package';
 
@@ -40,7 +39,7 @@ export const makePolicyApi = ({
 
     if (policyPackage) {
       console.log(
-        `Policy package '${inputPackage.policy.policyTag}' was imported before.`,
+        `Skip because policy package '${inputPackage.policy.policyTag}' was imported before.`,
       );
       res.status(200).json(policyPackage);
       return;
@@ -62,11 +61,25 @@ export const makePolicyApi = ({
       uiServiceBaseUrl,
     });
 
-    const newSchemas = await publishSchemas(
+    const newSchemas = await getNewSchemas({
       uiServiceBaseUrl,
       rootAuthority,
       preImportSchemas,
+    });
+
+    console.log(
+      `Publishing schemas`,
+      newSchemas.map((schema) => ({
+        id: schema.id,
+        uuid: schema.uuid,
+        name: schema.name,
+      })),
     );
+    await publishSchemasToUiService({
+      uiServiceBaseUrl,
+      rootAuthority,
+      schemaIds: newSchemas.map((schema) => schema.id),
+    });
 
     if (publish && importedPolicy.status !== 'PUBLISHED') {
       console.log(`Publishing policy`, {
@@ -118,6 +131,7 @@ export const makePolicyApi = ({
     res.status(200).json(allPolicies);
   });
 
+  // Paul Debug: hide this and expose specific steps
   policyApi.post(
     '/block/tag/:policyId/:tag',
     async (req: Request, res: Response) => {
@@ -137,8 +151,8 @@ export const makePolicyApi = ({
         username,
       });
 
-      axios.post(
-        `${uiServiceBaseUrl}/policy/block/tag/${policyId}/${tag}`,
+      const { data: blockOutput } = await axios.post(
+        `${uiServiceBaseUrl}/policy/block/tag2/${policyId}/${tag}`,
         block,
         {
           headers: {
@@ -147,46 +161,12 @@ export const makePolicyApi = ({
         },
       );
 
-      res.status(200).json(block);
+      res.status(200).json(blockOutput);
     },
   );
 
   return policyApi;
 };
-
-async function publishSchemas(
-  uiServiceBaseUrl: string,
-  rootAuthority: IUser,
-  preImportSchemas: ISchema[],
-) {
-  const postImportSchemas = await getAllSchemasFromUiService({
-    uiServiceBaseUrl,
-    rootAuthority,
-  });
-
-  const newSchemas = differenceBy(
-    postImportSchemas,
-    preImportSchemas,
-    (obj) => obj.uuid,
-  );
-
-  console.log(
-    `Publishing schemas`,
-    newSchemas.map((schema) => ({
-      id: schema.id,
-      uuid: schema.uuid,
-      name: schema.name,
-    })),
-  );
-
-  await publishSchemasToUiService({
-    uiServiceBaseUrl,
-    rootAuthority,
-    schemaIds: newSchemas.map((schema) => schema.id),
-  });
-
-  return newSchemas;
-}
 
 async function importPolicyPackage({
   inputPackage,

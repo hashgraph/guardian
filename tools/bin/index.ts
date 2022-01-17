@@ -1,7 +1,6 @@
 import Yargs from 'yargs/yargs';
 import { deploy } from '../lib/deploy';
 import { loadEnv } from '../lib/loadEnv';
-import { setMeterConfigs } from '../lib/meter-config';
 import { init } from '../lib/init';
 
 async function main(): Promise<void> {
@@ -10,7 +9,6 @@ async function main(): Promise<void> {
   await rootYargs
     .command('deploy', 'Deploy', {}, deploy)
     .command('load-env', 'Load environment variables', {}, loadEnv)
-    .command('set-meter-configs', 'Set meter configs', {}, setMeterConfigs)
     .command('init', 'Initialize Guardian', {}, init)
 
     .demandCommand()

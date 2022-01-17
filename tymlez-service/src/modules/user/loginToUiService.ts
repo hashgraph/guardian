@@ -29,3 +29,4 @@ const LOGIN_DETAILS = {
 };
 
 export type UserName = keyof typeof LOGIN_DETAILS;
+export type InstallerUserName = Extract<UserName, 'Installer' | 'Installer2'>;

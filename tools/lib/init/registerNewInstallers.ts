@@ -47,6 +47,7 @@ async function registerNewInstaller({
 
   assert(installerSchema, `Cannot find installer schema`);
 
+  // Paul Debug: Change to /block/tag2/ when moved to tymlez-service
   await axios.post(
     `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/policy/block/tag/${cetPolicyPackage.policy.id}/add_new_installer_request`,
     {

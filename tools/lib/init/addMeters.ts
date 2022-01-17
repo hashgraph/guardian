@@ -2,26 +2,24 @@ import assert from 'assert';
 import axios from 'axios';
 import pLimit from 'p-limit';
 import { IPolicyPackage } from '../../../tymlez-service/src/entity/policy-package';
-import { UserName } from '../../../tymlez-service/src/modules/user';
+import { InstallerUserName } from '../../../tymlez-service/src/modules/user';
+import { IMeterInfo } from '../getBuildTimeConfig';
 
-export async function addMeters(
-  GUARDIAN_TYMLEZ_API_KEY: string,
-  GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string,
-  policyPackages: IPolicyPackage[],
-) {
-  const meterIds = [
-    'paul debug 1',
-    'paul debug 2',
-    'paul debug 3',
-    'paul debug 4',
-    'paul debug 5',
-    'paul debug 6',
-  ];
-
+export async function addMeters({
+  GUARDIAN_TYMLEZ_API_KEY,
+  GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+  meterInfos,
+  policyPackages,
+}: {
+  GUARDIAN_TYMLEZ_API_KEY: string;
+  GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
+  policyPackages: IPolicyPackage[];
+  meterInfos: IMeterInfo[];
+}) {
   const limit = pLimit(1);
 
   await Promise.all(
-    meterIds.map((meterId) =>
+    meterInfos.map((meterInfo) =>
       limit(() =>
         addMeter({
           GUARDIAN_TYMLEZ_API_KEY,
@@ -29,12 +27,7 @@ export async function addMeters(
           policyPackages,
           username: 'Installer',
           policyTag: 'TymlezCET',
-          meterOptions: {
-            projectId: meterId,
-            projectName: '1',
-            sensorType: '1',
-            capacity: '1',
-          },
+          meterInfo,
         }),
       ),
     ),
@@ -47,37 +40,28 @@ async function addMeter({
   policyPackages,
   username,
   policyTag,
-  meterOptions,
+  meterInfo,
 }: {
   policyPackages: IPolicyPackage[];
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
   GUARDIAN_TYMLEZ_API_KEY: string;
-  username: UserName;
+  username: InstallerUserName;
   policyTag: string;
-  meterOptions: any;
+  meterInfo: IMeterInfo;
 }) {
-  console.log('Adding meter', { username, policyTag, meterOptions });
+  console.log('Adding meter', { username, policyTag, meterInfo });
 
   const cetPolicyPackage = policyPackages.find(
     (pkg) => pkg.policy.inputPolicyTag === policyTag,
   );
   assert(cetPolicyPackage, `Cannot find ${policyTag} Package`);
 
-  const sensorSchema = cetPolicyPackage.schemas.find(
-    (schema) => schema.inputName === 'Inverter',
-  );
-
-  assert(sensorSchema, `Cannot find sensor schema`);
-
   await axios.post(
-    `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/policy/block/tag/${cetPolicyPackage.policy.id}/add_sensor_bnt`,
+    `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/mrv/add-meter`,
     {
-      block: {
-        type: sensorSchema.uuid,
-        '@context': ['https://localhost/schema'],
-        ...meterOptions,
-      },
       username,
+      policyId: cetPolicyPackage.policy.id,
+      meterId: meterInfo.meterId,
     },
     {
       headers: {

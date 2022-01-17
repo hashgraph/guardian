@@ -3,13 +3,21 @@ import { getParameters } from './getParameters';
 
 export const getBuildTimeConfig = async ({
   env,
+  clientName,
 }: {
   env: string;
+  clientName: string;
 }): Promise<IConfig> => {
   assert(
     env === 'local' || env === 'dev' || env === 'preprod' || env === 'prod',
     `Unsupported env: '${env}'.`,
   );
+
+  assert(clientName, `clientName is missing`);
+
+  const fullEnv = `${clientName}-${env}`;
+
+  const staticConfig = STATIC_CONFIGS[fullEnv];
 
   const [
     GCP_PROJECT_ID,
@@ -49,6 +57,8 @@ export const getBuildTimeConfig = async ({
   );
 
   return {
+    ...staticConfig,
+
     GCP_PROJECT_ID,
     GCP_REGION,
     GKE_CLUSTER,
@@ -57,6 +67,48 @@ export const getBuildTimeConfig = async ({
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
   };
+};
+
+const COHORT_METER_INFOS = [
+  {
+    meterId: 'DD54108399431',
+    type: 'ww',
+  },
+  {
+    meterId: 'DDA4108813784',
+    type: 'ww',
+  },
+  {
+    meterId: 'DDE4108813923',
+    type: 'ww',
+  },
+  {
+    meterId: 'DDA4108814035',
+    type: 'ww',
+  },
+  {
+    meterId: 'DDC4108814545',
+    type: 'ww',
+  },
+  {
+    meterId: 'DDF4108813619',
+    type: 'ww',
+  },
+];
+
+const STATIC_CONFIGS: Record<string, Partial<IConfig> | undefined> = {
+  'cohort-local': {
+    METER_INFOS: COHORT_METER_INFOS,
+  },
+  'cohort-dev': {
+    METER_INFOS: COHORT_METER_INFOS,
+  },
+  'cohort-preprod': {
+    METER_INFOS: COHORT_METER_INFOS,
+  },
+  'cohort-prod': {
+    METER_INFOS: COHORT_METER_INFOS,
+  },
 };
 
 interface IConfig {
@@ -68,4 +120,11 @@ interface IConfig {
   GCP_PROJECT_ID?: string;
   GCP_REGION?: string;
   GKE_CLUSTER?: string;
+
+  METER_INFOS?: IMeterInfo[];
+}
+
+export interface IMeterInfo {
+  meterId: string;
+  type: string;
 }

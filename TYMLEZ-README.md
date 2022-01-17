@@ -29,10 +29,10 @@ nvm use
 npm run bootstrap
 
 # 3a. Start dev servers without docker, watch for file changes
-npm run dev:watch 2>&1 | tee .tmp/logs/$(date "+%Y-%m-%dT%H-%M-%S").out
+CLIENT_NAME=cohort npm run dev:watch 2>&1 | tee .tmp/logs/$(date "+%Y-%m-%dT%H-%M-%S").out
 
 # 3b. Start dev servers with docker, does not watch for file changes
-npm run dev:docker
+CLIENT_NAME=cohort npm run dev:docker
 
 # 4. Initialize Guardian (manual)
 #

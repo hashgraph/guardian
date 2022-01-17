@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import type { IToken } from 'interfaces';
 import { loginToUiService } from '../modules/user';
+import { getUserKycFromUiService } from '../modules/token';
 
 export const makeTokenApi = ({
   uiServiceBaseUrl,
@@ -59,28 +60,41 @@ export const makeTokenApi = ({
   });
 
   tokenApi.post('/user-kyc', async (req: Request, res: Response) => {
-    const inputGrantKyc: IGrantKycInput = req.body;
+    const userKycInput: IUserKycInput = req.body;
 
-    assert(inputGrantKyc, `input is missing`);
+    assert(userKycInput, `input is missing`);
 
     const rootAuthority = await loginToUiService({
       uiServiceBaseUrl,
       username: 'RootAuthority',
     });
 
-    axios.post(`${uiServiceBaseUrl}/api/tokens/user-kyc`, inputGrantKyc, {
-      headers: {
-        authorization: `Bearer ${rootAuthority.accessToken}`,
-      },
+    const userKyc = await getUserKycFromUiService({
+      uiServiceBaseUrl,
+      tokenId: userKycInput.tokenId,
+      username: userKycInput.username,
+      rootAuthority,
     });
 
-    res.status(200).json(inputGrantKyc);
+    if (userKyc.kyc != userKycInput.value) {
+      await axios.post(
+        `${uiServiceBaseUrl}/api/tokens/user-kyc`,
+        userKycInput,
+        {
+          headers: {
+            authorization: `Bearer ${rootAuthority.accessToken}`,
+          },
+        },
+      );
+    }
+
+    res.status(200).json(userKycInput);
   });
 
   return tokenApi;
 };
 
-interface IGrantKycInput {
+interface IUserKycInput {
   tokenId: string;
   username: string;
   value: boolean;

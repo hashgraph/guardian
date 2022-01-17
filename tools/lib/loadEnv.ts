@@ -7,6 +7,7 @@ const { readFile, writeFile } = fs.promises;
 
 export const loadEnv = async (): Promise<void> => {
   assert(process.env.ENV, 'ENV is missing');
+  assert(process.env.CLIENT_NAME, 'CLIENT_NAME is missing');
 
   console.log(`--- Loading ENV for ${process.env.ENV}`);
 
@@ -16,6 +17,7 @@ export const loadEnv = async (): Promise<void> => {
     GUARDIAN_TYMLEZ_API_KEY,
   } = await getBuildTimeConfig({
     env: process.env.ENV,
+    clientName: process.env.CLIENT_NAME,
   });
 
   console.log('Updating ./ui-service/.env.docker');

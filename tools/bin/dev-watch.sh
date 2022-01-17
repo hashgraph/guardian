@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 node --version | grep 16 || { echo "Please use node 16"; false; }
 

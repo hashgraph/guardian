@@ -1,26 +1,38 @@
+import assert from 'assert';
 import { Request, Response, Router } from 'express';
 import { HederaHelper } from 'vc-modules';
 import axios from 'axios';
 import type { VCDocumentLoader } from '../document-loader/vc-document-loader';
 import type { VCHelper } from 'vc-modules';
 import type { MongoRepository } from 'typeorm/repository/MongoRepository';
-import type { IMeterConfig, MeterConfig } from '@entity/meter-config';
-import { omit } from 'lodash';
+import type { MeterConfig } from '@entity/meter-config';
+import { InstallerUserName, loginToUiService, UserName } from '../modules/user';
+import type { PolicyPackage } from '@entity/policy-package';
+import {
+  addMeterToUiService,
+  getMeterConfigFromUiService,
+  getMetersFromUiService,
+  getNewMeters,
+} from '../modules/meter';
 
 export const makeMrvApi = ({
   vcDocumentLoader,
   vcHelper,
   meterConfigRepository,
+  policyPackageRepository,
   mrvReceiverUrl,
+  uiServiceBaseUrl,
 }: {
   vcDocumentLoader: VCDocumentLoader;
   vcHelper: VCHelper;
   meterConfigRepository: MongoRepository<MeterConfig>;
+  policyPackageRepository: MongoRepository<PolicyPackage>;
   mrvReceiverUrl: string;
+  uiServiceBaseUrl: string;
 }) => {
   const mrvApi = Router();
 
-  mrvApi.get('/list-configs', async (req: Request, res: Response) => {
+  mrvApi.get('/list-meters', async (req: Request, res: Response) => {
     const meterConfigs = await meterConfigRepository.find();
     if (!meterConfigs) {
       res.send(null);
@@ -30,44 +42,96 @@ export const makeMrvApi = ({
     res.status(200).json(meterConfigs);
   });
 
-  mrvApi.get('/get-config/:did', async (req: Request, res: Response) => {
-    const did = req.params.did;
+  mrvApi.post('/add-meter', async (req: Request, res: Response) => {
+    const { username, meterId, policyId } = req.body as {
+      policyId: string;
+      username: InstallerUserName | undefined;
+      meterId: string;
+    };
 
-    const meterConfig = await meterConfigRepository.findOne({
-      where: { did: { $eq: did } },
+    assert(username, `username is missing`);
+    assert(
+      username === 'Installer' || username === 'Installer2',
+      `Unexpected username '${username}', expect one of the installers`,
+    );
+    assert(policyId, `policyId is missing`);
+    assert(meterId, `meterId is missing`);
+
+    const existingMeterConfig = await meterConfigRepository.findOne({
+      where: { meterId: { $eq: meterId } },
     });
 
-    if (!meterConfig) {
-      res.status(404).send(`Cannot find config for ${did}`);
+    if (existingMeterConfig) {
+      console.log(`Skip because meter '${meterId}' was added before.`);
+      res.status(200).json(existingMeterConfig);
       return;
     }
+
+    const installer = await loginToUiService({
+      uiServiceBaseUrl,
+      username,
+    });
+
+    const policyPackage = await policyPackageRepository.findOne({
+      where: {
+        'policy.id': policyId,
+      },
+    });
+    assert(policyPackage, `Cannot find ${policyId} package`);
+
+    const preAddMeters = await getMetersFromUiService({
+      uiServiceBaseUrl,
+      policyId,
+      installer,
+    });
+
+    await addMeterToUiService({
+      policyPackage,
+      uiServiceBaseUrl,
+      policyId,
+      meterId,
+      installer,
+    });
+
+    const newMeters = await getNewMeters(
+      uiServiceBaseUrl,
+      policyId,
+      installer,
+      preAddMeters,
+    );
+
+    assert(
+      newMeters.length === 1,
+      `Number of new meters is ${newMeters.length}, expect 1`,
+    );
+
+    console.log(`Getting meter config for ${meterId}`);
+    const meterConfig = await getMeterConfigFromUiService({
+      uiServiceBaseUrl,
+      policyId,
+      meter: newMeters[0],
+      installer,
+    });
+
+    const newMeterConfig = meterConfigRepository.create({
+      meterId,
+      config: meterConfig,
+    } as MeterConfig);
+    await meterConfigRepository.save(newMeterConfig);
 
     res.status(200).json(meterConfig);
   });
 
-  mrvApi.post('/set-config', async (req: Request, res: Response) => {
-    const config: IMeterConfig = req.body;
-
-    try {
-      const meterConfig = await setMeterConfig(meterConfigRepository, config);
-
-      res.status(200).json(meterConfig);
-    } catch (err) {
-      console.error('Failed to add config', err);
-      res.status(500).json({ message: 'Failed to add config' });
-    }
-  });
-
-  mrvApi.post('/generate/:did', async (req: Request, res: Response) => {
+  mrvApi.post('/generate/:meterId', async (req: Request, res: Response) => {
     const setting = req.body;
-    const did = req.params.did;
+    const meterId = req.params.meterId;
 
     const meterConfig = await meterConfigRepository.findOne({
-      where: { did: { $eq: did } },
+      where: { meterId: { $eq: meterId } },
     });
 
     if (!meterConfig) {
-      res.status(404).send(`Cannot find config for ${did}`);
+      res.status(404).send(`Cannot find meter config for ${meterId}`);
       return;
     }
 
@@ -76,12 +140,13 @@ export const makeMrvApi = ({
       hederaAccountId,
       hederaAccountKey,
       installer,
+      did,
       key,
       policyId,
       type,
       schema,
       policyTag,
-    } = meterConfig;
+    } = meterConfig.config;
 
     vcDocumentLoader.setDocument(schema);
 
@@ -151,30 +216,3 @@ export const makeMrvApi = ({
 
   return mrvApi;
 };
-
-async function setMeterConfig(
-  meterConfigRepository: MongoRepository<MeterConfig>,
-  config: IMeterConfig,
-): Promise<MeterConfig> {
-  const existingMeterConfig = await meterConfigRepository.findOne({
-    where: { did: { $eq: config.did } },
-  });
-
-  if (!existingMeterConfig) {
-    const newMeterConfig = meterConfigRepository.create(config as MeterConfig);
-    return await meterConfigRepository.save(newMeterConfig);
-  }
-
-  const updatedMeterConfig = meterConfigRepository.create({
-    ...omit(existingMeterConfig, 'id'),
-    ...config,
-    updateDate: new Date(),
-  });
-
-  await meterConfigRepository.replaceOne(
-    { _id: existingMeterConfig.id },
-    updatedMeterConfig,
-  );
-
-  return { ...updatedMeterConfig, id: existingMeterConfig.id };
-}

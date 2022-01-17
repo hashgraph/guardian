@@ -137,7 +137,9 @@ Promise.all([
       vcDocumentLoader,
       vcHelper,
       meterConfigRepository,
+      policyPackageRepository,
       mrvReceiverUrl: MRV_RECEIVER_URL,
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
     }),
   );
   app.use(
