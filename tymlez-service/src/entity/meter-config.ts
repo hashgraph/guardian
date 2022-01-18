@@ -14,37 +14,16 @@ export class MeterConfig implements IMeterConfig {
   @Column({
     unique: true,
   })
-  did!: string;
-
-  @Column()
-  url!: string;
-
-  @Column()
-  topic!: string;
-
-  @Column()
-  hederaAccountId!: string;
-
-  @Column()
-  hederaAccountKey!: string;
-
-  @Column()
-  installer!: string;
-
-  @Column()
   key!: string;
 
   @Column()
-  type!: string;
-
-  @Column()
-  schema: any;
-
-  @Column()
-  policyId!: string;
+  meterId!: string;
 
   @Column()
   policyTag!: string;
+
+  @Column()
+  config!: IUIServiceMeterConfig;
 
   @CreateDateColumn()
   createDate!: Date;
@@ -54,12 +33,17 @@ export class MeterConfig implements IMeterConfig {
 }
 
 export interface IMeterConfig {
-  did: string;
+  meterId: string;
+  config: IUIServiceMeterConfig;
+}
+
+export interface IUIServiceMeterConfig {
   url: string;
   topic: string;
   hederaAccountId: string;
   hederaAccountKey: string;
   installer: string;
+  did: string;
   key: string;
   type: string;
   schema: any;

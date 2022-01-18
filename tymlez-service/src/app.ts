@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import 'express-async-errors';
 import FastMQ from 'fastmq';
 import { createConnection } from 'typeorm';
 import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
@@ -10,11 +11,27 @@ import { infoApi } from '@api/info';
 import { debugApi } from '@api/debug';
 import { makeAuditApi } from '@api/audit';
 import assert from 'assert';
-import { makeMrvApi } from '@api/mrv';
+import { makeTrackAndTraceApi } from '@api/track-and-trace';
 import { MeterConfig } from '@entity/meter-config';
 import morgan from 'morgan';
 import { makeSchemaApi } from '@api/schema';
 import { makeTokenApi } from '@api/token';
+import { makePolicyApi } from '@api/policy';
+import { makeUserApi } from '@api/user';
+import axios from 'axios';
+import { PolicyPackage } from '@entity/policy-package';
+
+axios.interceptors.request.use((request) => {
+  if (request.url?.includes('login')) {
+    console.log('Axios: Starting Request', request.url);
+  } else {
+    console.log(
+      'Axios: Starting Request',
+      JSON.stringify({ url: request.url, data: request.data }, null, 2),
+    );
+  }
+  return request;
+});
 
 const {
   SERVICE_CHANNEL,
@@ -89,6 +106,7 @@ Promise.all([
   app.use(express.json());
 
   const meterConfigRepository = db.getMongoRepository(MeterConfig);
+  const policyPackageRepository = db.getMongoRepository(PolicyPackage);
 
   // <-- Document Loader
 
@@ -114,12 +132,14 @@ Promise.all([
   app.use('/debug/', debugApi);
   app.use('/audit/', makeAuditApi(channel));
   app.use(
-    '/mrv/',
-    makeMrvApi({
+    '/track-and-trace/',
+    makeTrackAndTraceApi({
       vcDocumentLoader,
       vcHelper,
       meterConfigRepository,
+      policyPackageRepository,
       mrvReceiverUrl: MRV_RECEIVER_URL,
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
     }),
   );
   app.use(
@@ -131,6 +151,19 @@ Promise.all([
   app.use(
     '/tokens/',
     makeTokenApi({
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
+    }),
+  );
+  app.use(
+    '/policy/',
+    makePolicyApi({
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
+      policyPackageRepository,
+    }),
+  );
+  app.use(
+    '/user/',
+    makeUserApi({
       uiServiceBaseUrl: UI_SERVICE_BASE_URL,
     }),
   );

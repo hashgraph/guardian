@@ -3,13 +3,21 @@ import { getParameters } from './getParameters';
 
 export const getBuildTimeConfig = async ({
   env,
+  clientName,
 }: {
   env: string;
+  clientName: string;
 }): Promise<IConfig> => {
   assert(
     env === 'local' || env === 'dev' || env === 'preprod' || env === 'prod',
     `Unsupported env: '${env}'.`,
   );
+
+  assert(clientName, `clientName is missing`);
+
+  const fullEnv = `${clientName}-${env}`;
+
+  const staticConfig = STATIC_CONFIGS[fullEnv];
 
   const [
     GCP_PROJECT_ID,
@@ -57,6 +65,8 @@ export const getBuildTimeConfig = async ({
   );
 
   return {
+    ...staticConfig,
+
     GCP_PROJECT_ID,
     GCP_REGION,
     GKE_CLUSTER,
@@ -66,6 +76,48 @@ export const getBuildTimeConfig = async ({
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     WEB3_STORAGE_TOKEN
   };
+};
+
+const COHORT_METER_INFOS = [
+  {
+    meterId: 'DD54108399431',
+    meterLabel: 'Main'
+  },
+  {
+    meterId: 'DDA4108813784',
+    meterLabel: 'T8 and T1'
+  },
+  {
+    meterId: 'DDE4108813923',
+    meterLabel: 'T2 and T3'
+  },
+  {
+    meterId: 'DDA4108814035',
+    meterLabel: 'T4 and T5'
+  },
+  {
+    meterId: 'DDC4108814545',
+    meterLabel: 'T6 and T7'
+  },
+  {
+    meterId: 'DDF4108813619',
+    meterLabel: 'Communal'
+  },
+];
+
+const STATIC_CONFIGS: Record<string, Partial<IConfig> | undefined> = {
+  'cohort-local': {
+    METER_INFOS: COHORT_METER_INFOS,
+  },
+  'cohort-dev': {
+    METER_INFOS: COHORT_METER_INFOS,
+  },
+  'cohort-preprod': {
+    METER_INFOS: COHORT_METER_INFOS,
+  },
+  'cohort-prod': {
+    METER_INFOS: COHORT_METER_INFOS,
+  },
 };
 
 interface IConfig {
@@ -78,4 +130,11 @@ interface IConfig {
   GCP_REGION?: string;
   GKE_CLUSTER?: string;
   WEB3_STORAGE_TOKEN?: string;
+
+  METER_INFOS?: IMeterInfo[];
+}
+
+export interface IMeterInfo {
+  meterId: string;
+  meterLabel: string;
 }

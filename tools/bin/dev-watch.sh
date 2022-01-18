@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 node --version | grep 16 || { echo "Please use node 16"; false; }
 
@@ -10,4 +10,5 @@ if [ "$CLEAN" = "true" ]; then
 fi
 
 docker-compose up -d mongo
-lerna run watch --parallel
+
+lerna run watch --parallel "$@"

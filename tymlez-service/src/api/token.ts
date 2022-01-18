@@ -2,7 +2,8 @@ import assert from 'assert';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import type { IToken } from 'interfaces';
-import { loginToRootAuthority } from '../modules/ui-service/loginToRootAuthority';
+import { loginToUiService } from '../modules/user';
+import { getUserKycFromUiService } from '../modules/token';
 
 export const makeTokenApi = ({
   uiServiceBaseUrl,
@@ -12,15 +13,16 @@ export const makeTokenApi = ({
   const tokenApi = Router();
 
   tokenApi.get('/', async (req: Request, res: Response) => {
-    const user = await loginToRootAuthority({
+    const rootAuthority = await loginToUiService({
       uiServiceBaseUrl,
+      username: 'RootAuthority',
     });
 
     const { data: tokens } = (await axios.get(
       `${uiServiceBaseUrl}/api/tokens`,
       {
         headers: {
-          authorization: `Bearer ${user.accessToken}`,
+          authorization: `Bearer ${rootAuthority.accessToken}`,
         },
       },
     )) as { data: IToken[] };
@@ -33,8 +35,9 @@ export const makeTokenApi = ({
 
     assert(inputToken, `token is missing`);
 
-    const user = await loginToRootAuthority({
+    const rootAuthority = await loginToUiService({
       uiServiceBaseUrl,
+      username: 'RootAuthority',
     });
 
     const { data: allTokens } = (await axios.post(
@@ -42,7 +45,7 @@ export const makeTokenApi = ({
       inputToken,
       {
         headers: {
-          authorization: `Bearer ${user.accessToken}`,
+          authorization: `Bearer ${rootAuthority.accessToken}`,
         },
       },
     )) as { data: IToken[] };
@@ -56,5 +59,47 @@ export const makeTokenApi = ({
     res.status(200).json(createdToken);
   });
 
+  tokenApi.post('/user-kyc', async (req: Request, res: Response) => {
+    const userKycInput: IUserKycInput = req.body;
+
+    assert(userKycInput, `input is missing`);
+
+    const rootAuthority = await loginToUiService({
+      uiServiceBaseUrl,
+      username: 'RootAuthority',
+    });
+
+    const userKyc = await getUserKycFromUiService({
+      uiServiceBaseUrl,
+      tokenId: userKycInput.tokenId,
+      username: userKycInput.username,
+      rootAuthority,
+    });
+
+    if (userKyc.kyc == userKycInput.value) {
+      console.log(
+        `Skip because no change user ${userKycInput.username} and token '${userKycInput.tokenId}' KYC.`,
+        userKycInput,
+        userKyc,
+      );
+      res.status(200).json({});
+      return;
+    }
+
+    await axios.post(`${uiServiceBaseUrl}/api/tokens/user-kyc`, userKycInput, {
+      headers: {
+        authorization: `Bearer ${rootAuthority.accessToken}`,
+      },
+    });
+
+    res.status(200).json(userKycInput);
+  });
+
   return tokenApi;
 };
+
+interface IUserKycInput {
+  tokenId: string;
+  username: string;
+  value: boolean;
+}
