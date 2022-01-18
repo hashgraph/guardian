@@ -119,10 +119,11 @@ export const makeTrackAndTraceApi = ({
   );
 
   trackAndTraceApi.post('/add-meter', async (req: Request, res: Response) => {
-    const { username, meterId, policyTag } = req.body as {
+    const { username, meterId, meterLabel, policyTag } = req.body as {
       username: InstallerUserName | undefined;
       policyTag: string | undefined;
       meterId: string | undefined;
+      meterLabel: string | undefined;
     };
     policyTag;
 
@@ -169,6 +170,7 @@ export const makeTrackAndTraceApi = ({
       uiServiceBaseUrl,
       policyId: policyPackage.policy.id,
       meterId,
+      meterLabel,
       installer,
     });
 

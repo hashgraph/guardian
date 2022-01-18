@@ -1,352 +1,284 @@
 {
-  "id": "61dd01dad79e3f12e6669037",
+  "id": "61e653f82bca0a3173f741a7",
   "name": "Tymlez CET",
-  "version": "1",
+  "version": "1.0",
   "description": "Tymlez Policy to track Carbon Emission",
   "topicDescription": "Tymlez Policy to track Carbon Emission",
   "config": {
-    "id": "d6b6664d-4393-4831-b311-29f66923ce3a",
     "defaultActive": true,
-    "permissions": [
-      "ROOT_AUTHORITY",
-      "INSTALLER"
-    ],
+    "permissions": ["ROOT_AUTHORITY", "INSTALLER"],
     "blockType": "interfaceContainerBlock",
-    "uiMetaData": {
-      "type": "blank"
-    },
+    "uiMetaData": { "type": "blank" },
     "children": [
       {
-        "id": "73084dd8-f1ff-4e1b-98c9-e6c8c15c783e",
+        "defaultActive": true,
         "tag": "init_installer_steps",
+        "permissions": ["INSTALLER"],
         "blockType": "interfaceStepBlock",
+        "uiMetaData": { "type": "blank" },
         "children": [
           {
-            "id": "593ae3b5-5d4e-4be6-b345-ce7470890a70",
             "tag": "add_new_installer_request",
+            "defaultActive": true,
+            "permissions": ["INSTALLER"],
             "blockType": "requestVcDocument",
-            "children": [],
+            "schema": "91bf250b-d809-40b2-b492-97240a746bbb",
+            "idType": "OWNER",
             "uiMetaData": {
               "type": "page",
               "title": "New Installer",
               "description": "Description",
-              "privateFields": [
-                "policyId"
-              ]
+              "privateFields": ["policyId"]
             },
-            "idType": "OWNER",
-            "defaultActive": true,
-            "permissions": [
-              "INSTALLER"
-            ],
-            "schema": "1a5347ba-5e5f-49a7-8734-3dcc953a03ed"
+            "id": "7511d80c-b938-412e-a0eb-4b9e737d6b5d"
           },
           {
-            "id": "50591156-d878-4f3d-b4a7-091a2a4ddbfe",
             "tag": "send_installer_vc_to_hedera",
             "blockType": "sendToGuardian",
-            "children": [],
-            "uiMetaData": {},
             "dataType": "hedera",
-            "entityType": "Installer"
+            "entityType": "Installer",
+            "uiMetaData": {},
+            "id": "f9a1fc08-98e8-4fd1-8ebd-ff9cfe4e5345"
           },
           {
-            "id": "eb0f1bb6-0f56-4756-b698-874b94da68ac",
-            "tag": "Submission_of_CSD01_Documentation",
+            "tag": "Submission_of_Installer_Information",
             "blockType": "sendToGuardian",
-            "children": [],
-            "uiMetaData": {},
             "dataType": "vc-documents",
             "entityType": "Installer",
-            "stopPropagation": false
+            "uiMetaData": {},
+            "stopPropagation": false,
+            "id": "5d860fb1-e838-482b-814d-e555b93eeaa7"
           },
           {
-            "id": "c27d7e50-d7a0-4f08-9381-a22da9c93d25",
             "tag": "installer_header",
+            "defaultActive": true,
+            "permissions": ["INSTALLER"],
             "blockType": "interfaceContainerBlock",
+            "uiMetaData": { "type": "tabs" },
             "children": [
               {
-                "id": "298afedd-29ad-4dd8-a340-8fa2bd3ab1e1",
                 "tag": "sensors_page",
+                "defaultActive": true,
+                "permissions": ["INSTALLER"],
                 "blockType": "interfaceContainerBlock",
+                "uiMetaData": { "type": "blank", "title": "Sensors" },
                 "children": [
                   {
-                    "id": "f1696145-3180-4605-a1cf-990c829612e0",
                     "tag": "sensors_grid",
+                    "defaultActive": true,
+                    "permissions": ["INSTALLER"],
                     "blockType": "interfaceDocumentsSource",
-                    "children": [],
-                    "uiMetaData": {
-                      "fields": [
-                        {
-                          "title": "ID",
-                          "name": "document.id",
-                          "tooltip": "",
-                          "type": "text"
-                        },
-                        {
-                          "title": "DID",
-                          "name": "document.credentialSubject.0.id",
-                          "tooltip": "",
-                          "type": "text"
-                        },
-                        {
-                          "title": "Document",
-                          "name": "document",
-                          "tooltip": "",
-                          "type": "button",
-                          "action": "dialog",
-                          "url": "",
-                          "dialogContent": "VC",
-                          "dialogClass": "",
-                          "dialogType": "json",
-                          "bindBlock": "",
-                          "content": "View Document",
-                          "uiClass": "link"
-                        },
-                        {
-                          "title": "Config",
-                          "name": "document.id",
-                          "tooltip": "",
-                          "type": "block",
-                          "action": "",
-                          "url": "",
-                          "dialogContent": "",
-                          "dialogClass": "",
-                          "dialogType": "",
-                          "bindBlock": "download_config_btn",
-                          "content": "download",
-                          "uiClass": ""
-                        }
-                      ]
-                    },
+                    "dependencies": ["SendVCtoGuardian"],
+                    "onlyOwnDocuments": true,
+                    "dataType": "vc-documents",
                     "filters": {
-                      "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802",
+                      "schema": "b578cb95-8530-46cc-9dc4-f31980744bf7",
                       "type": "Inverter"
                     },
-                    "defaultActive": true,
-                    "permissions": [
-                      "INSTALLER"
-                    ],
-                    "dependencies": [
-                      null
-                    ],
-                    "onlyOwnDocuments": true,
-                    "dataType": "vc-documents"
-                  },
-                  {
-                    "id": "4763507d-e6cd-4af7-a854-b66a08c2fde8",
-                    "tag": "download_config_btn",
-                    "blockType": "interfaceAction",
-                    "children": [],
-                    "uiMetaData": {
-                      "options": [],
-                      "content": "download"
-                    },
-                    "permissions": [
-                      "INSTALLER"
-                    ],
-                    "type": "download",
-                    "stopPropagation": true,
-                    "schema": "c4623dbd-2453-4c12-941f-032792a00727"
-                  },
-                  {
-                    "id": "305b66db-7236-4228-808c-d0bfc3ed27c0",
-                    "tag": "create_new_sensor_steps",
-                    "blockType": "interfaceStepBlock",
-                    "children": [
-                      {
-                        "id": "67dc0427-0904-4a7d-91af-45e3738b43c3",
-                        "tag": "add_sensor_bnt",
-                        "blockType": "requestVcDocument",
-                        "children": [],
-                        "uiMetaData": {
-                          "privateFields": [
-                            "policyId"
-                          ],
-                          "type": "dialog",
-                          "content": "New Sensors",
-                          "title": "",
-                          "dialogClass": "",
-                          "description": "Description"
-                        },
-                        "defaultActive": true,
-                        "permissions": [
-                          "INSTALLER"
-                        ],
-                        "idType": "DID",
-                        "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802"
-                      },
-                      {
-                        "id": "75831ac5-e120-47a8-b317-de1c7e92caf9",
-                        "tag": "send_sensor_vc_to_hedera",
-                        "blockType": "sendToGuardian",
-                        "children": [],
-                        "uiMetaData": {},
-                        "dataType": "hedera",
-                        "entityType": "Inverter"
-                      },
-                      {
-                        "id": "b050cd15-fb39-49b4-a40c-65435985e81b",
-                        "tag": "CSD02_device_registration",
-                        "blockType": "sendToGuardian",
-                        "children": [],
-                        "uiMetaData": {},
-                        "dataType": "vc-documents",
-                        "entityType": "Inverter",
-                        "stopPropagation": false
-                      }
-                    ],
-                    "uiMetaData": {
-                      "type": "blank"
-                    },
-                    "permissions": [
-                      "INSTALLER"
-                    ],
-                    "cyclic": true,
-                    "defaultActive": true
-                  }
-                ],
-                "uiMetaData": {
-                  "type": "blank",
-                  "title": "Sensors"
-                },
-                "defaultActive": true,
-                "permissions": [
-                  "INSTALLER"
-                ]
-              },
-              {
-                "id": "e262418d-41f4-4c67-bf0a-8a322b61e2c1",
-                "tag": "mrv_page",
-                "blockType": "interfaceContainerBlock",
-                "children": [
-                  {
-                    "id": "fc82f222-1cf9-4200-a485-5a6642e2d299",
-                    "tag": "mrv_grid",
-                    "blockType": "interfaceDocumentsSource",
-                    "children": [],
                     "uiMetaData": {
                       "fields": [
                         {
-                          "title": "ID",
                           "name": "document.id",
-                          "tooltip": "",
-                          "type": "button",
-                          "action": "",
-                          "url": "",
-                          "dialogContent": "",
-                          "dialogClass": "",
-                          "dialogType": "",
-                          "bindBlock": ""
+                          "title": "ID",
+                          "type": "test"
                         },
                         {
-                          "title": "Sensor DID",
-                          "name": "document.issuer",
-                          "tooltip": "",
+                          "name": "document.credentialSubject.0.id",
+                          "title": "DID",
                           "type": "text"
                         },
                         {
-                          "title": "Document",
                           "name": "document",
+                          "title": "Document",
                           "tooltip": "",
                           "type": "button",
                           "action": "dialog",
-                          "url": "",
+                          "content": "View Document",
+                          "uiClass": "link",
                           "dialogContent": "VC",
                           "dialogClass": "",
-                          "dialogType": "json",
-                          "bindBlock": "",
-                          "content": "View Document",
-                          "uiClass": "link"
+                          "dialogType": "json"
+                        },
+                        {
+                          "name": "document.id",
+                          "title": "Config",
+                          "tooltip": "",
+                          "type": "block",
+                          "action": "block",
+                          "content": "download",
+                          "uiClass": "",
+                          "bindBlock": "download_config_btn"
                         }
                       ]
                     },
-                    "filters": {
-                      "schema": "c4623dbd-2453-4c12-941f-032792a00727",
-                      "type": "MRV"
-                    },
+                    "id": "7cef934b-f8e9-40ae-aa51-3d587c4e1311"
+                  },
+                  {
+                    "tag": "download_config_btn",
+                    "blockType": "interfaceAction",
+                    "permissions": ["INSTALLER"],
+                    "type": "download",
+                    "schema": "7aeb0cec-d277-456e-a943-21d742d63816",
+                    "stopPropagation": true,
+                    "targetUrl": "http://localhost:3003/mrv",
+                    "uiMetaData": { "content": "download", "options": [] },
+                    "id": "a16ad25f-783d-4793-bb5e-016eac44341d"
+                  },
+                  {
                     "defaultActive": true,
-                    "permissions": [
-                      "INSTALLER"
+                    "tag": "create_new_sensor_steps",
+                    "permissions": ["INSTALLER"],
+                    "blockType": "interfaceStepBlock",
+                    "uiMetaData": { "type": "blank" },
+                    "children": [
+                      {
+                        "tag": "add_sensor_bnt",
+                        "defaultActive": true,
+                        "permissions": ["INSTALLER"],
+                        "blockType": "requestVcDocument",
+                        "schema": "b578cb95-8530-46cc-9dc4-f31980744bf7",
+                        "idType": "DID",
+                        "uiMetaData": {
+                          "type": "dialog",
+                          "description": "Description",
+                          "privateFields": ["policyId"],
+                          "content": "New Sensors",
+                          "uiClass": "btn",
+                          "dialogContent": "New Sensors",
+                          "dialogClass": "",
+                          "dialogType": ""
+                        },
+                        "id": "2c239e42-87ed-4aeb-8c18-897602670aa5"
+                      },
+                      {
+                        "tag": "send_sensor_vc_to_hedera",
+                        "blockType": "sendToGuardian",
+                        "dataType": "hedera",
+                        "entityType": "Inverter",
+                        "uiMetaData": {},
+                        "id": "f24f352f-0303-415f-a98f-b7f613a32b91"
+                      },
+                      {
+                        "tag": "device_registration",
+                        "blockType": "sendToGuardian",
+                        "dataType": "vc-documents",
+                        "entityType": "Inverter",
+                        "stopPropagation": false,
+                        "uiMetaData": {},
+                        "id": "4928cb2b-6dc8-4fe5-bf39-d74a1bf95575"
+                      }
                     ],
-                    "onlyOwnDocuments": true,
-                    "dataType": "vc-documents"
+                    "cyclic": true,
+                    "id": "91e8427b-accb-4008-9adb-8e89907da94a"
                   }
                 ],
-                "uiMetaData": {
-                  "type": "blank",
-                  "title": "MRV"
-                },
+                "id": "6ce3be24-0b3b-4bc4-bc60-f2cb3cb47545"
+              },
+              {
+                "tag": "mrv_page",
                 "defaultActive": true,
-                "permissions": [
-                  "INSTALLER"
-                ]
+                "permissions": ["INSTALLER"],
+                "blockType": "interfaceContainerBlock",
+                "uiMetaData": { "type": "blank", "title": "MRV" },
+                "children": [
+                  {
+                    "tag": "mrv_grid",
+                    "defaultActive": true,
+                    "permissions": ["INSTALLER"],
+                    "blockType": "interfaceDocumentsSource",
+                    "dependencies": ["SendVCtoGuardian"],
+                    "onlyOwnDocuments": true,
+                    "dataType": "vc-documents",
+                    "filters": {
+                      "schema": "7aeb0cec-d277-456e-a943-21d742d63816",
+                      "type": "MRV"
+                    },
+                    "uiMetaData": {
+                      "fields": [
+                        {
+                          "name": "document.id",
+                          "title": "ID",
+                          "type": "button"
+                        },
+                        {
+                          "name": "document.issuer",
+                          "title": "Sensor DID",
+                          "type": "text"
+                        },
+                        {
+                          "name": "document",
+                          "title": "Document",
+                          "tooltip": "",
+                          "type": "button",
+                          "action": "dialog",
+                          "content": "View Document",
+                          "uiClass": "link",
+                          "dialogContent": "VC",
+                          "dialogClass": "",
+                          "dialogType": "json"
+                        }
+                      ]
+                    },
+                    "id": "2acc083f-4af1-46af-b403-61bd31e80807"
+                  }
+                ],
+                "id": "4e532869-5f92-405b-80da-1958d5372816"
               }
             ],
-            "uiMetaData": {
-              "type": "tabs"
-            },
-            "permissions": [
-              "INSTALLER"
-            ],
-            "defaultActive": true
+            "id": "03ece660-86bd-4fcb-a2c7-c23950b357f0"
           }
         ],
-        "uiMetaData": {
-          "type": "blank"
-        },
-        "permissions": [
-          "INSTALLER"
-        ],
-        "defaultActive": true
+        "id": "f239e690-3933-4456-8412-3b685506ed9e"
       },
       {
-        "id": "0e2d3f60-98a2-4e12-9bb6-4b2ba4bacec5",
         "tag": "mint_events",
+        "defaultActive": true,
+        "permissions": ["ROOT_AUTHORITY", "INSTALLER"],
         "blockType": "interfaceContainerBlock",
+        "uiMetaData": { "type": "blank" },
         "children": [
           {
-            "id": "98791e43-6b3d-4dc4-8f15-dd92beceb07c",
             "tag": "mrv_source",
             "blockType": "externalDataBlock",
-            "children": [],
-            "uiMetaData": {},
             "entityType": "MRV",
-            "schema": "c4623dbd-2453-4c12-941f-032792a00727"
+            "schema": "7aeb0cec-d277-456e-a943-21d742d63816",
+            "uiMetaData": {},
+            "id": "c89748cb-a5b1-48d7-bab1-2734bef1d828"
           },
           {
-            "id": "f0ee05e2-3949-4536-a0ae-461631029fa2",
-            "tag": "CSD04_requesting_i_Rec_issuance",
+            "tag": "Requesting_CET_issuance",
             "blockType": "sendToGuardian",
+            "dataType": "vc-documents",
+            "entityType": "MRV",
+            "uiMetaData": {},
+            "id": "b77c9fb5-08d7-4737-bfd6-cf6df1cd03d2"
+          },
+          {
+            "id": "b68dfae8-54dc-410b-a475-2d5808284b3c",
+            "tag": "aggregate_co2Emission",
+            "blockType": "aggregateDocument",
             "children": [],
             "uiMetaData": {},
-            "dataType": "vc-documents",
-            "entityType": "MRV"
+            "rule": "field1",
+            "threshold": "1"
           },
           {
-            "id": "18775ecb-57c3-4f23-990e-2ccf62e62b4a",
             "tag": "mint_token",
             "blockType": "mintDocument",
-            "children": [],
-            "uiMetaData": {},
+            "tokenId": "<%= CET_TOKEN_ID %>",
             "rule": "1",
-            "tokenId": "<%= CET_TOKEN_ID %>"
+            "uiMetaData": {},
+            "id": "ba03572c-f8ea-4e1b-a2d1-d2969378f222"
           }
         ],
-        "uiMetaData": {
-          "type": "blank"
-        },
-        "defaultActive": true,
-        "permissions": [
-          "ROOT_AUTHORITY",
-          "INSTALLER"
-        ]
+        "id": "68a87d47-8a8e-491f-8b2d-4022ee706b4d"
       }
-    ]
+    ],
+    "id": "4a599a67-658f-4f16-b8c9-d354e1a5f1dc"
   },
   "status": "PUBLISH",
-  "owner": "did:hedera:testnet:681LRcc15hq1h2EMcK4gstPJFPAFr9QBLm8RPKd3mfBH;hedera:testnet:fid=0.0.26314666",
+  "owner": "did:hedera:testnet:AGuispD3wvsHwxii5KktNVuQXNjaGPLmNek4D9Nv9MGS;hedera:testnet:fid=0.0.28523277",
   "policyPoles": [],
-  "topicId": "0.0.26563956",
+  "topicId": "0.0.28523540",
   "policyTag": "TymlezCET"
 }

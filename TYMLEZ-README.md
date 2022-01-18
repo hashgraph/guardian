@@ -41,7 +41,7 @@ CLIENT_NAME=cohort npm run dev:docker
 # - Complete the configuration
 
 # 5. Initialize tokens, schemas and policies
-npm run tools init
+CLIENT_NAME=cohort npm run tools init
 ```
 
 # For production

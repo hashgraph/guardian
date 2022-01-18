@@ -50,6 +50,7 @@ async function addMeter({
       username,
       policyTag,
       meterId: meterInfo.meterId,
+      meterLabel: meterInfo.meterLabel
     },
     {
       headers: {

@@ -7,6 +7,7 @@ export async function addMeterToUiService({
   policyPackage,
   installer,
   meterId,
+  meterLabel,
   policyId,
   uiServiceBaseUrl,
 }: {
@@ -14,10 +15,11 @@ export async function addMeterToUiService({
   uiServiceBaseUrl: string;
   policyId: string;
   meterId: string;
+  meterLabel: string;
   installer: IUser;
 }): Promise<void> {
   const inverterSchema = policyPackage.schemas.find(
-    (schema) => schema.inputName === 'Inverter',
+    (schema) => schema.inputName === 'TymlezMeter',
   );
 
   assert(inverterSchema, `Cannot find inverter schema`);
@@ -27,11 +29,8 @@ export async function addMeterToUiService({
     {
       type: inverterSchema.uuid,
       '@context': ['https://localhost/schema'],
-      // Paul Debug: need to use new schema
-      projectId: meterId,
-      projectName: '1',
-      sensorType: '1',
-      capacity: '1',
+      field0: meterId,
+      field1: meterLabel,
     },
     {
       headers: {

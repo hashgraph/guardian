@@ -17,7 +17,7 @@ export async function registerInstallerInUiService({
   installer: IUser;
 }) {
   const installerSchema = policyPackage.schemas.find(
-    (schema) => schema.inputName === 'iRec_Application_Details',
+    (schema) => schema.inputName === 'TymlezInstaller',
   );
 
   assert(installerSchema, `Cannot find installer schema`);

@@ -14,7 +14,9 @@ export async function registerNewInstallers({
     username: 'Installer',
     policyTag: 'TymlezCET',
     installerOptions: {
-      field0: 'paul debug',
+      field0: 'CohortInstaller1',
+      field1: 'Lic1',
+      field2: 'Cohort' // Paul ToDo
     },
   });
 }
