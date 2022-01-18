@@ -14,7 +14,13 @@ export class MeterConfig implements IMeterConfig {
   @Column({
     unique: true,
   })
+  key!: string;
+
+  @Column()
   meterId!: string;
+
+  @Column()
+  policyTag!: string;
 
   @Column()
   config!: IUIServiceMeterConfig;

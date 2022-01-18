@@ -36,8 +36,8 @@ export const makeTrackAndTraceApi = ({
   trackAndTraceApi.post(
     '/register-installer',
     async (req: Request, res: Response) => {
-      const { username, policyId, installerOptions } = req.body as {
-        policyId: string;
+      const { username, policyTag, installerOptions } = req.body as {
+        policyTag: string | undefined;
         username: InstallerUserName | undefined;
         installerOptions: any;
       };
@@ -47,7 +47,8 @@ export const makeTrackAndTraceApi = ({
         username === 'Installer' || username === 'Installer2',
         `Unexpected username '${username}', expect one of the installers`,
       );
-      assert(policyId, `policyId is missing`);
+      assert(policyTag, `policyTag is missing`);
+      assert(installerOptions, `installerOptions is missing`);
 
       const installer = await loginToUiService({
         uiServiceBaseUrl,
@@ -55,14 +56,12 @@ export const makeTrackAndTraceApi = ({
       });
 
       const policyPackage = await policyPackageRepository.findOne({
-        where: {
-          'policy.id': policyId,
-        },
+        where: { 'policy.inputPolicyTag': policyTag },
       });
-      assert(policyPackage, `Cannot find ${policyId} package`);
+      assert(policyPackage, `Cannot find ${policyTag} package`);
 
       const { data: installerBlock } = await axios.get(
-        `${uiServiceBaseUrl}/policy/block/tag2/${policyId}/init_installer_steps`,
+        `${uiServiceBaseUrl}/policy/block/tag2/${policyPackage.policy.id}/init_installer_steps`,
         {
           headers: {
             Authorization: `Api-Key ${installer.accessToken}`,
@@ -92,7 +91,7 @@ export const makeTrackAndTraceApi = ({
       await registerInstallerInUiService({
         policyPackage,
         uiServiceBaseUrl,
-        policyId,
+        policyId: policyPackage.policy.id,
         installerOptions,
         installer,
       });
@@ -101,37 +100,50 @@ export const makeTrackAndTraceApi = ({
     },
   );
 
-  trackAndTraceApi.get('/list-meters', async (req: Request, res: Response) => {
-    const meterConfigs = await meterConfigRepository.find();
-    if (!meterConfigs) {
-      res.send(null);
-      return;
-    }
+  trackAndTraceApi.get(
+    '/list-meters/:policyTag',
+    async (req: Request, res: Response) => {
+      const { policyTag } = req.params as { policyTag: string | undefined };
+      assert(policyTag, `policyTag is missing`);
 
-    res.status(200).json(meterConfigs);
-  });
+      const meterConfigs = await meterConfigRepository.find({
+        where: { policyTag: req.params.policyTag },
+      });
+      if (!meterConfigs) {
+        res.send(null);
+        return;
+      }
+
+      res.status(200).json(meterConfigs);
+    },
+  );
 
   trackAndTraceApi.post('/add-meter', async (req: Request, res: Response) => {
-    const { username, meterId, policyId } = req.body as {
-      policyId: string;
+    const { username, meterId, policyTag } = req.body as {
       username: InstallerUserName | undefined;
-      meterId: string;
+      policyTag: string | undefined;
+      meterId: string | undefined;
     };
+    policyTag;
 
     assert(username, `username is missing`);
     assert(
       username === 'Installer' || username === 'Installer2',
       `Unexpected username '${username}', expect one of the installers`,
     );
-    assert(policyId, `policyId is missing`);
+    assert(policyTag, `policyTag is missing`);
     assert(meterId, `meterId is missing`);
 
+    const meterConfigKey = `${policyTag}-${meterId}`;
+
     const existingMeterConfig = await meterConfigRepository.findOne({
-      where: { meterId: { $eq: meterId } },
+      where: { key: meterConfigKey },
     });
 
     if (existingMeterConfig) {
-      console.log(`Skip because meter '${meterId}' was added before.`);
+      console.log(
+        `Skip because meter '${meterId}' with policy '${policyTag}' was added before.`,
+      );
       res.status(200).json(existingMeterConfig);
       return;
     }
@@ -142,48 +154,48 @@ export const makeTrackAndTraceApi = ({
     });
 
     const policyPackage = await policyPackageRepository.findOne({
-      where: {
-        'policy.id': policyId,
-      },
+      where: { 'policy.inputPolicyTag': policyTag },
     });
-    assert(policyPackage, `Cannot find ${policyId} package`);
+    assert(policyPackage, `Cannot find ${policyTag} package`);
 
     const preAddMeters = await getMetersFromUiService({
       uiServiceBaseUrl,
-      policyId,
+      policyId: policyPackage.policy.id,
       installer,
     });
 
     await addMeterToUiService({
       policyPackage,
       uiServiceBaseUrl,
-      policyId,
+      policyId: policyPackage.policy.id,
       meterId,
       installer,
     });
 
-    const newMeters = await getNewMeters(
+    const newMeters = await getNewMeters({
       uiServiceBaseUrl,
-      policyId,
+      policyId: policyPackage.policy.id,
       installer,
       preAddMeters,
-    );
+    });
 
     assert(
       newMeters.length === 1,
       `Number of new meters is ${newMeters.length}, expect 1`,
     );
 
-    console.log(`Getting meter config for ${meterId}`);
+    console.log(`Getting meter config for ${meterId} with policy ${policyTag}`);
     const meterConfig = await getMeterConfigFromUiService({
       uiServiceBaseUrl,
-      policyId,
+      policyId: policyPackage.policy.id,
       meter: newMeters[0],
       installer,
     });
 
     const newMeterConfig = meterConfigRepository.create({
+      key: meterConfigKey,
       meterId,
+      policyTag,
       config: meterConfig,
     } as MeterConfig);
     await meterConfigRepository.save(newMeterConfig);
@@ -192,13 +204,25 @@ export const makeTrackAndTraceApi = ({
   });
 
   trackAndTraceApi.post(
-    '/generate-mrv/:meterId',
+    '/generate-mrv',
     async (req: Request, res: Response) => {
-      const setting = req.body;
-      const meterId = req.params.meterId;
+      const {
+        setting,
+        meterId,
+        policyTag: inputPolicyTag,
+      } = req.body as {
+        setting: Record<string, any> | undefined;
+        policyTag: string | undefined;
+        meterId: string | undefined;
+      };
 
+      assert(setting, `setting is missing`);
+      assert(meterId, `meterId is missing`);
+      assert(inputPolicyTag, `inputPolicyTag is missing`);
+
+      const meterConfigKey = `${inputPolicyTag}-${meterId}`;
       const meterConfig = await meterConfigRepository.findOne({
-        where: { meterId: { $eq: meterId } },
+        where: { key: meterConfigKey },
       });
 
       if (!meterConfig) {
@@ -234,13 +258,8 @@ export const makeTrackAndTraceApi = ({
           const keys = Object.keys(setting);
           for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
-            const item = setting[key];
-            if (item.random) {
-              const _decimal = Math.pow(10, item.decimal + 1);
-              vcSubject[key] = String(Math.round(Math.random() * _decimal));
-            } else {
-              vcSubject[key] = String(item.value);
-            }
+            const value = setting[key];
+            vcSubject[key] = String(value);
           }
         }
         vcSubject.policyId = policyId;

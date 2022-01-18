@@ -30,7 +30,7 @@ export async function init() {
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
   });
 
-  const policyPackages = await createPolicyPackages({
+  await createPolicyPackages({
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     tokens,
@@ -48,17 +48,15 @@ export async function init() {
     GUARDIAN_TYMLEZ_API_KEY,
   });
 
-  await registerNewInstallers(
-    policyPackages,
+  await registerNewInstallers({
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     GUARDIAN_TYMLEZ_API_KEY,
-  );
+  });
 
   assert(METER_INFOS && METER_INFOS.length > 0, `METER_INFOS is missing`);
   await addMeters({
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-    policyPackages,
     meterInfos: METER_INFOS,
   });
 }

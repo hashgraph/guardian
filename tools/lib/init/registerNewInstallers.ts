@@ -1,15 +1,14 @@
-import assert from 'assert';
 import axios from 'axios';
-import { IPolicyPackage } from '../../../tymlez-service/src/entity/policy-package';
 import { UserName } from '../../../tymlez-service/src/modules/user';
 
-export async function registerNewInstallers(
-  policyPackages: IPolicyPackage[],
-  GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string,
-  GUARDIAN_TYMLEZ_API_KEY: string,
-) {
+export async function registerNewInstallers({
+  GUARDIAN_TYMLEZ_API_KEY,
+  GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+}: {
+  GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
+  GUARDIAN_TYMLEZ_API_KEY: string;
+}) {
   await registerNewInstaller({
-    policyPackages,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     GUARDIAN_TYMLEZ_API_KEY,
     username: 'Installer',
@@ -23,12 +22,10 @@ export async function registerNewInstallers(
 async function registerNewInstaller({
   GUARDIAN_TYMLEZ_API_KEY,
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-  policyPackages,
   username,
   policyTag,
   installerOptions,
 }: {
-  policyPackages: IPolicyPackage[];
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
   GUARDIAN_TYMLEZ_API_KEY: string;
   username: UserName;
@@ -37,16 +34,11 @@ async function registerNewInstaller({
 }) {
   console.log('Registering new installer', { username, policyTag });
 
-  const cetPolicyPackage = policyPackages.find(
-    (pkg) => pkg.policy.inputPolicyTag === policyTag,
-  );
-  assert(cetPolicyPackage, `Cannot find ${policyTag} Package`);
-
   await axios.post(
     `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/track-and-trace/register-installer`,
     {
       username,
-      policyId: cetPolicyPackage.policy.id,
+      policyTag,
       installerOptions,
     },
     {
