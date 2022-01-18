@@ -33,7 +33,7 @@ export const documentsAPI = async function (
 ): Promise<void> {
 
     //add to config
-    const web3storageToken =  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDdEQjhlMzgzNTExNTBEOTRGRmM3OGM0NjNEYmU4NGU5REY4MERlRUYiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NDE4MTI1NjMzNjksIm5hbWUiOiJsaWxAdHltbGV6In0.VHbF9lBNRlB3FcQlGe1BpKrNAv4aP1wKvX-95VSBYvg";
+    const web3storageToken = process.env.WEB3_STORAGE_TOKEN;
     const getDIDOperation = function (operation: DidMethodOperation) {
         switch (operation) {
             case DidMethodOperation.CREATE:
@@ -198,12 +198,10 @@ export const documentsAPI = async function (
 
         if (!vpDocumentObject.cid)
         {
-            console.log('No cid in VP. Putting VP into ipfs ')
             const storage = new Web3Storage({token: web3storageToken});
-        
             vpDocumentObject.cid = (await storage.put([new File([JSON.stringify(vpDocumentObject)], `${vpDocumentObject.document.id}.json`, {type:'application/json'})]));
-        
         }    
+        // do we need to store the VP also in the VC table?
         vpDocumentObject = await vcDocumentRepository.save(vpDocumentObject);
         
         const result: any = await vpDocumentRepository.save(vpDocumentObject);

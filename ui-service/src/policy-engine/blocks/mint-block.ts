@@ -10,7 +10,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature } from 'interfaces';
 import { File, Web3Storage } from 'web3.storage';
 
-const web3storageToken =  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDdEQjhlMzgzNTExNTBEOTRGRmM3OGM0NjNEYmU4NGU5REY4MERlRUYiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NDE4MTI1NjMzNjksIm5hbWUiOiJsaWxAdHltbGV6In0.VHbF9lBNRlB3FcQlGe1BpKrNAv4aP1wKvX-95VSBYvg";
+const web3storageToken =  process.env.WEB3_STORAGE_TOKEN;
     
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {

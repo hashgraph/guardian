@@ -1,5 +1,23 @@
 # For local development
 
+## Set up WEB_STORAGE_TOKEN
+
+- Go to https://web3.storage/ and login/signup
+
+- Follow instructions to create a new API token and copy to the clipboard
+
+### locally
+
+- add following line to your ~/.zshrc
+
+```sh
+export WEB3_STORAGE_TOKEN=<your-copy-paste-api-token-here>
+```
+- start a new terminal and go on.
+### AWS 
+
+? 
+
 ## Bootstrap (run once only)
 
 ```sh

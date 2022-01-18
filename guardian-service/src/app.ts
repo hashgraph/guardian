@@ -99,6 +99,7 @@ Promise.all([
             BUILD_VERSION: process.env.BUILD_VERSION,
             DEPLOY_VERSION: process.env.DEPLOY_VERSION,
             OPERATOR_ID: fileConfig.OPERATOR_ID,
+            WEB3_STORAGE_TOKEN: process.env.WEB3_STORAGE_TOKEN
         });
     });
 

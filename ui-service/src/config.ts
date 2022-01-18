@@ -11,6 +11,9 @@ if(!process.env.OPERATOR_KEY || process.env.OPERATOR_KEY.length<5) {
     throw ('You need to fill OPERATOR_KEY field in .env file');
 }
 
+if(!process.env.WEB3_STORAGE_TOKEN || process.env.WEB3_STORAGE_TOKEN.length<5) {
+    throw ('You need to fill WEB3_STORAGE_TOKEN field in .env file');
+}
 try {
     const accountId = AccountId.fromString(process.env.OPERATOR_ID);
 } catch (error) {
