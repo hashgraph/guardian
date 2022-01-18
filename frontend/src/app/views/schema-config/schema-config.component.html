@@ -27,6 +27,10 @@
                     <th mat-header-cell *matHeaderCellDef> Name </th>
                     <td mat-cell *matCellDef="let element">{{element.name}}</td>
                 </ng-container>
+                <ng-container matColumnDef="version">
+                    <th mat-header-cell *matHeaderCellDef> Version </th>
+                    <td mat-cell *matCellDef="let element">{{element.version}}</td>
+                </ng-container>
                 <ng-container matColumnDef="entity">
                     <th mat-header-cell *matHeaderCellDef> Entity </th>
                     <td mat-cell *matCellDef="let element">{{element.entity}}</td>
@@ -73,6 +77,10 @@
                         <div *ngIf="element.status =='DRAFT'" class="btn-settings" (click)="editDocument(element)">
                             <mat-icon>edit</mat-icon>
                             <span>Edit</span>
+                        </div>
+                        <div *ngIf="element.status !='DRAFT' && element.isOwner" class="btn-settings" (click)="newVersionDocument(element)">
+                            <mat-icon>add</mat-icon>
+                            <span>New</span>
                         </div>
                     </td>
                 </ng-container>

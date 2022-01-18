@@ -1,14 +1,12 @@
 import { ISchema, SchemaEntity, SchemaStatus, Schema as SchemaModel } from 'interfaces';
-import { BeforeInsert, Column, Entity, ObjectIdColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
 export class Schema implements ISchema {
     @ObjectIdColumn()
     id: string;
 
-    @Column({
-        unique: true
-    })
+    @Column()
     uuid: string;
 
     @Column()
@@ -31,6 +29,12 @@ export class Schema implements ISchema {
 
     @Column()
     document: string;
+
+    @Column()
+    owner: string;
+
+    @Column()
+    version: string;
 
     @BeforeInsert()
     setDefaults() {

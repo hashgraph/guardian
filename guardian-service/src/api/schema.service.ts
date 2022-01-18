@@ -143,10 +143,13 @@ export const schemaAPI = async function (
                 item.description = msg.payload.description;
                 item.entity = msg.payload.entity;
                 item.document = msg.payload.document;
+                item.version = msg.payload.version;
+                item.status = SchemaStatus.DRAFT;
                 await schemaRepository.update(item.id, item);
             }
         } else {
-            const schemaObject = schemaRepository.create(msg.payload);
+            const schemaObject = schemaRepository.create(msg.payload as ISchema);
+            schemaObject.status = SchemaStatus.DRAFT;
             await schemaRepository.save(schemaObject);
         }
         const schemes = await schemaRepository.find();
@@ -163,21 +166,55 @@ export const schemaAPI = async function (
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
-        let schemes: ISchema[] = null;
         if (msg.payload) {
-            const { type, entity } = msg.payload;
-            const reqObj: any = { where: {} };
-            if (type !== undefined) {
-                reqObj.where['type'] = { $eq: type }
-            } else if (entity !== undefined) {
-                reqObj.where['entity'] = { $eq: entity }
+            if (msg.payload.id) {
+                const schema = await schemaRepository.findOne(msg.payload.id);
+                res.send(schema);
+                return;
             }
-            schemes = await schemaRepository.find(reqObj);
+            if (msg.payload.uuid) {
+                const schemes = await schemaRepository.find({ 
+                    where: { uuid: { $eq: msg.payload.uuid } } 
+                });
+                res.send(schemes);
+                return;
+            }
+            const { type, entity, owner } = msg.payload;
+            const filter: any = {};
+            if (type !== undefined) {
+                filter.type = { $eq: type };
+            }
+            if (entity !== undefined) {
+                filter.entity = { $eq: entity };
+            }
+            const reqObj: any = {};
+            if (owner) {
+                reqObj.where = {
+                    $or: [
+                        {
+                            ...filter,
+                            status: { $eq: SchemaStatus.PUBLISHED },
+                        },
+                        {
+                            ...filter,
+                            owner: { $eq: owner }
+                        },
+                    ]
+                }
+            } else {
+                filter.status = { $eq: SchemaStatus.PUBLISHED };
+                reqObj.where = filter;
+            }
+            // reqObj.order = {
+            //     name: "uuid",
+            //     id: "DESC",
+            // }
+            const schemes = await schemaRepository.find(reqObj);
+            res.send(schemes);
         } else {
-            schemes = await schemaRepository.find();
+            const schemes = await schemaRepository.find();
+            res.send(schemes);
         }
-        schemes = schemes || [];
-        res.send(schemes);
     });
 
     /**

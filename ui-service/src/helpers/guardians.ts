@@ -126,6 +126,18 @@ export class Guardians {
         return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, params)).payload;
     }
 
+
+    /**
+     * Return schema by id
+     * 
+     * @param {string} [id] - schema id 
+     * 
+     * @returns {ISchema} - schema
+     */
+    public async getSchema(id: string): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, { id: id })).payload;
+    }
+
     /**
      * Return tokens
      * 
