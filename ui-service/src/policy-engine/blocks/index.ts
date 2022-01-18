@@ -1,3 +1,4 @@
+export {FiltersAddonBlock} from './filters-addon-block';
 export {PolicyRolesBlock} from './policy-roles';
 export {ExternalDataBlock} from './external-data-block';
 export {MintBlock} from './mint-block';

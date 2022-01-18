@@ -1,7 +1,7 @@
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
 import {StateContainer} from '@policy-engine/state-container';
 import {Response} from 'express';
-import {AuthenticatedRequest} from '../../../auth/auth.interface';
+import {AuthenticatedRequest} from '@auth/auth.interface';
 
 /**
  * Block access middleware
@@ -15,13 +15,13 @@ export function BlockAccess(req: AuthenticatedRequest, res: Response, next: Func
     let noAccsess = true;
     switch (req.method) {
         case 'GET':
-            if (['EventBlock', 'DataSourceBlock', 'ContainerBlock'].includes(type)) {
+            if (['EventBlock', 'DataSourceBlock', 'ContainerBlock', 'DataSourceAddon'].includes(type)) {
                 noAccsess = false;
             }
             break;
 
         case 'POST':
-            if (['EventBlock'].includes(type)) {
+            if (['EventBlock', 'DataSourceAddon'].includes(type)) {
                 noAccsess = false;
             }
             break;

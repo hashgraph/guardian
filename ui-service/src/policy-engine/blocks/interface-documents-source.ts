@@ -65,11 +65,13 @@ export class InterfaceDocumentsSource {
         }
         let data;
 
-        if (typeof queryParams === 'object') {
-            for (let [key, value] of Object.entries(queryParams)) {
-                filters[key] = value;
-            }
-        }
+        Object.assign(filters, ref.getFilters())
+
+        // if (typeof queryParams === 'object') {
+        //     for (let [key, value] of Object.entries(queryParams)) {
+        //         filters[key] = value;
+        //     }
+        // }
 
         switch (ref.options.dataType) {
             case 'vc-documents':
@@ -103,7 +105,15 @@ export class InterfaceDocumentsSource {
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
-        return Object.assign({data}, ref.options.uiMetaData);
+        const blocks = ref.getAddons().map(addon => {
+            return {
+                id: addon.uuid,
+                uiMetaData: addon.options.uiMetaData,
+                blockType: addon.blockType
+            }
+        });
+
+        return Object.assign({data, blocks}, ref.options.uiMetaData);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
