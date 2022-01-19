@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 /**
@@ -12,6 +12,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 export class JsonDialog {
     title: string = "";
     json: string = "";
+    viewVcDocument: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<JsonDialog>,

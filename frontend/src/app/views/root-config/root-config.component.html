@@ -22,7 +22,7 @@
             <div class="list-item">
                 <h4 mat-line>VC Document</h4>
                 <p mat-line class="root-field">
-                    <a (click)="openDocument(profile.vcDocument)">View Document</a>
+                    <a (click)="openDocument(profile.vcDocument, true)">View Document</a>
                 </p>
             </div>
             <div class="list-item">
@@ -79,7 +79,7 @@
             <div class="list-item">
                 <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
                     (change)="onChangeForm()">
-                </app-schema-form>
+                </app-schema-form> 
                 <mat-divider></mat-divider>
             </div>
 
@@ -143,5 +143,5 @@
     <div *ngIf="errorLoadSchema" class="error-schema">
         <p>Failed to load system schemes.</p>
     </div>
-    
+
 </div>
