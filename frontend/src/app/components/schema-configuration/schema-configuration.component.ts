@@ -13,6 +13,7 @@ import { Schema, SchemaField } from 'interfaces';
 export class SchemaConfigurationComponent implements OnInit {
     @Input('schemes') schemes!: Schema[];
     @Input('value') value!: Schema;
+    @Input('type') type!: string;
 
     started = false;
     fieldsForm!: FormGroup;

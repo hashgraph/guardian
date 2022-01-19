@@ -83,6 +83,7 @@ export class SchemaConfigComponent implements OnInit {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
+                type: 'new',
                 schemes: this.publishSchemes
             }
         });
@@ -118,6 +119,7 @@ export class SchemaConfigComponent implements OnInit {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
+                type: 'edit',
                 schemes: this.publishSchemes,
                 scheme: element
             }
@@ -143,6 +145,7 @@ export class SchemaConfigComponent implements OnInit {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
+                type: 'version',
                 schemes: this.publishSchemes,
                 scheme: element
             }

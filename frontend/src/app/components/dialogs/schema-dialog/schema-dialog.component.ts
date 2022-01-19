@@ -18,13 +18,15 @@ export class SchemaDialog {
     schemes: Schema[];
     scheme: Schema;
     started: boolean = false;
-
+    type: 'new' | 'edit' | 'version' = 'new';
+    
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.schemes = data.schemes || [];
         this.scheme = data.scheme || null;
+        this.type = data.type || null;
     }
 
     ngOnInit(): void {
