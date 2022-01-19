@@ -43,9 +43,9 @@ jobs:
         run: |
           npm install
 
-      - name: Check
-        run: |
-          npm run lint
+      # - name: Check
+      #   run: |
+      #     npm run lint
 
   # Paul Debug
   # deploy-dev:
