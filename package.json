@@ -6,7 +6,7 @@
     "install": "lerna clean --no-private --yes && npm run bootstrap",
     "bootstrap": "./tools/bin/bootstrap.sh",
     "clean": "lerna run clean --stream && lerna clean --no-private --yes",
-    "lint": "npm run npm7:check && tsc --noEmit",
+    "lint": "npm run npm7:check && tsc --noEmit && lerna run lint --stream",
     "npm7:check": "./tools/bin/ensure-npm7.sh",
     "build": "lerna run build --stream --ignore guardian && lerna run build:deploy --stream",
     "dev:docker": "npm run load-env && docker-compose up -d --build",

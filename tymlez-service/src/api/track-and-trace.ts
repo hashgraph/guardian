@@ -132,7 +132,6 @@ export const makeTrackAndTraceApi = ({
       meterId: string | undefined;
       meterInfo: any;
     };
-    policyTag;
 
     assert(username, `username is missing`);
     assert(
@@ -313,7 +312,7 @@ export const makeTrackAndTraceApi = ({
       try {
         console.error('start post');
         const resp = await axios.post(mrvReceiverUrl, body);
-        console.error('end post');
+        console.error('end post', resp);
       } catch (e) {
         console.error(e);
         res.status(500).json(e);

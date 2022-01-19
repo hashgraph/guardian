@@ -6,7 +6,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import type { IIsoDate } from './IIsoDate';
-import type { ITimeSpanMsec } from './ITimeSpanMsec';
 
 @Entity()
 export class ProcessedMrv implements IProcessedMrv {

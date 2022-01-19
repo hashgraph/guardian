@@ -7,7 +7,7 @@ import {
   publishSchemasToUiService,
 } from '../modules/schema';
 import { v4 as uuidv4 } from 'uuid';
-import { loginToUiService, IUser, UserName } from '../modules/user';
+import { loginToUiService, IUser } from '../modules/user';
 import {
   getAllPoliciesFromUiService,
   IPolicy,

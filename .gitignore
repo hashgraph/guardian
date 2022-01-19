@@ -32,3 +32,4 @@ ui-service/.env
 ui-service/.env.docker
 tymlez-service/.env
 tymlez-service/.env.docker
+*.tsbuildinfo

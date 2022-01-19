@@ -1,7 +1,6 @@
 import { Request, Response, Router } from 'express';
 import type { IFastMqChannel } from 'fastmq';
 import { MessageAPI } from 'interfaces';
-import { take, takeRight } from 'lodash';
 
 export const makeAuditApi = (channel: IFastMqChannel) => {
   const auditApi = Router();

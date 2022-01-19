@@ -19,7 +19,7 @@ export interface IUIServiceMeterDocument {
   credentialSubject: IUIServiceMeterCredentialSubject[];
   issuer: string;
   issuanceDate: string;
-  proof: Object;
+  proof: any;
 }
 
 export interface IUIServiceMeterCredentialSubject {

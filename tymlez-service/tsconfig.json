@@ -7,6 +7,7 @@
     "sourceMap": true,
     "outDir": "dist/",
     "strict": true,
+    "noUnusedLocals": true,
     "importsNotUsedAsValues": "error",
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
