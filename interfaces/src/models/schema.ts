@@ -95,69 +95,6 @@ export class Schema {
         }
     }
 
-    private static buildComment(type: string, url: string, version?: string) {
-        if (version) {
-            return `{ "term": "${type}", "@id": "${url}", "previousVersion": "${version}" }`;
-        }
-        return `{ "term": "${type}", "@id": "${url}" }`;
-    }
-
-    private static buildUrl(ref: string) {
-        return `${Schema.LOCAL_SCHEMA}${ref}`
-    }
-
-    private static buildType(owner: string, uuid: string, version?: string) {
-        let type = uuid;
-        if (owner) {
-            type = `${owner}/${type}`;
-        }
-        if (version) {
-            return `${type}/${version}`;
-        }
-        return type;
-    }
-
-    private static buildRef(type: string) {
-        return `#${type}`;
-    }
-
-    private static parsRef(ref: string) {
-        try {
-            if (ref) {
-                const id = ref.split("#");
-                const keys = id[id.length - 1].split("/");
-                return {
-                    type: id[id.length - 1],
-                    owner: keys[0],
-                    uuid: keys[1],
-                    version: keys[2]
-                }
-            }
-            return {
-                type: null,
-                owner: null,
-                uuid: null,
-                version: null
-            }
-        } catch (error) {
-            return {
-                type: null,
-                owner: null,
-                uuid: null,
-                version: null
-            }
-        }
-    }
-
-    private static parsComment(comment: string): any {
-        try {
-            const item = JSON.parse(comment);
-            return item || {};
-        } catch (error) {
-            return {};
-        }
-    }
-
     private getFields() {
         this.fields = [];
         this.ref = null;
@@ -479,5 +416,78 @@ export class Schema {
         document.$comment = Schema.buildComment(type, Schema.buildUrl(ref), previousVersion);
         data.document = JSON.stringify(document);
         return data;
+    }
+
+    public static buildComment(type: string, url: string, version?: string) {
+        if (version) {
+            return `{ "term": "${type}", "@id": "${url}", "previousVersion": "${version}" }`;
+        }
+        return `{ "term": "${type}", "@id": "${url}" }`;
+    }
+
+    public static buildUrl(ref: string) {
+        return `${Schema.LOCAL_SCHEMA}${ref}`
+    }
+
+    public static buildType(owner: string, uuid: string, version?: string) {
+        let type = uuid;
+        if (owner) {
+            type = `${owner}/${type}`;
+        }
+        if (version) {
+            return `${type}/${version}`;
+        }
+        return type;
+    }
+
+    public static buildRef(type: string) {
+        return `#${type}`;
+    }
+
+    public static parsRef(data: string | ISchema) {
+        try {
+            let ref: string;
+            if (typeof data == "string") {
+                ref = data;
+            } else {
+                const document = JSON.parse(data.document);
+                ref = document.$id;
+            }
+            if (ref) {
+                const id = ref.split("#");
+                const keys = id[id.length - 1].split("/");
+                return {
+                    iri: ref,
+                    type: id[id.length - 1],
+                    owner: keys[0],
+                    uuid: keys[1],
+                    version: keys[2]
+                }
+            }
+            return {
+                iri: null,
+                type: null,
+                owner: null,
+                uuid: null,
+                version: null
+            }
+        } catch (error) {
+            return {
+                iri: null,
+                type: null,
+                owner: null,
+                uuid: null,
+                version: null
+            }
+        }
+    }
+
+    public static parsComment(comment: string): any {
+        try {
+            const item = JSON.parse(comment);
+            return item || {};
+        } catch (error) {
+            return {};
+        }
     }
 }

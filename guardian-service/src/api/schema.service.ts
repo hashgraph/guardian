@@ -55,6 +55,28 @@ const getRelationships = function (schema: SchemaModel) {
     return result;
 }
 
+const updateIRI = function (schema: ISchema) {
+    try {
+        if (schema.status != SchemaStatus.DRAFT && schema.document) {
+            const document = JSON.parse(schema.document);
+            schema.iri = document.$id || null;
+        } else {
+            schema.iri = null;
+        }
+    } catch (error) {
+        schema.iri = null;
+    }
+}
+
+const updateIRIs = function (schemes: ISchema[]) {
+    if (schemes) {
+        for (let i = 0; i < schemes.length; i++) {
+            const schema = schemes[i];
+            updateIRI(schema);
+        }
+    }
+}
+
 /**
  * Connect to the message broker methods of working with schemes.
  * 
@@ -79,6 +101,7 @@ export const schemaAPI = async function (
             const item = await schemaRepository.findOne(id);
             if (item) {
                 item.status = SchemaStatus.PUBLISHED;
+                updateIRI(item);
                 await schemaRepository.update(item.id, item);
             }
         }
@@ -100,6 +123,7 @@ export const schemaAPI = async function (
             const item = await schemaRepository.findOne(id);
             if (item) {
                 item.status = SchemaStatus.UNPUBLISHED;
+                updateIRI(item);
                 await schemaRepository.update(item.id, item);
             }
         }
@@ -145,11 +169,13 @@ export const schemaAPI = async function (
                 item.document = msg.payload.document;
                 item.version = msg.payload.version;
                 item.status = SchemaStatus.DRAFT;
+                updateIRI(item);
                 await schemaRepository.update(item.id, item);
             }
         } else {
             const schemaObject = schemaRepository.create(msg.payload as ISchema);
             schemaObject.status = SchemaStatus.DRAFT;
+            updateIRI(schemaObject);
             await schemaRepository.save(schemaObject);
         }
         const schemes = await schemaRepository.find();
@@ -173,8 +199,8 @@ export const schemaAPI = async function (
                 return;
             }
             if (msg.payload.uuid) {
-                const schemes = await schemaRepository.find({ 
-                    where: { uuid: { $eq: msg.payload.uuid } } 
+                const schemes = await schemaRepository.find({
+                    where: { uuid: { $eq: msg.payload.uuid } }
                 });
                 res.send(schemes);
                 return;
@@ -231,21 +257,33 @@ export const schemaAPI = async function (
                 items = [items];
             }
 
-            items = items.filter((e) => e.uuid && e.document);
+            let importSchemes = [];
+            for (let i = 0; i < items.length; i++) {
+                const { iri, version, uuid, owner } = SchemaModel.parsRef(items[i]);
+                items[i].uuid = uuid;
+                items[i].version = version;
+                items[i].owner = owner;
+                items[i].iri = iri;
+                items[i].status = SchemaStatus.PUBLISHED;
+                if (uuid) {
+                    importSchemes.push(items[i])
+                }
+            }
             const schemes = await schemaRepository.find();
             const mapName = {};
             for (let i = 0; i < schemes.length; i++) {
-                mapName[schemes[i].uuid] = true;
+                mapName[schemes[i].iri] = true;
             }
-            items = items.filter((e) => !mapName[e.uuid]);
+            importSchemes = importSchemes.filter((s) => !mapName[s.iri]);
 
-            const schemaObject = schemaRepository.create(items);
+            const schemaObject = schemaRepository.create(importSchemes);
             await schemaRepository.save(schemaObject);
 
             const newSchemes = await schemaRepository.find();
             res.send(newSchemes);
         } catch (error) {
-            console.error(error)
+            console.error(error);
+            res.send(null);
         }
     });
 
@@ -259,9 +297,9 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
         try {
-            const ids = msg.payload as string[];
-            const data = await schemaRepository.find();
-            const schemes = data.map(s => new SchemaModel(s));
+            const refs = msg.payload as string[];
+            const allSchemes = await schemaRepository.find();
+            const schemes = allSchemes.map(s => new SchemaModel(s));
             const mapType: any = {};
             const mapSchemes: any = {};
             const result = [];
@@ -269,7 +307,7 @@ export const schemaAPI = async function (
                 const schema = schemes[i];
                 mapType[schema.ref] = false;
                 mapSchemes[schema.ref] = schema;
-                if (ids.indexOf(schema.uuid) != -1) {
+                if (refs.indexOf(schema.ref) != -1) {
                     mapType[schema.ref] = true;
                     result.push(schema);
                 }

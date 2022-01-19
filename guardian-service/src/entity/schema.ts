@@ -1,5 +1,5 @@
 import { ISchema, SchemaEntity, SchemaStatus, Schema as SchemaModel } from 'interfaces';
-import { BeforeInsert, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
 export class Schema implements ISchema {
@@ -36,11 +36,15 @@ export class Schema implements ISchema {
     @Column()
     version: string;
 
+    @Column()
+    iri: string;
+
     @BeforeInsert()
     setDefaults() {
         this.entity = this.entity || SchemaEntity.NONE;
         this.status = this.status || SchemaStatus.DRAFT;
         this.readonly = !!this.readonly;
         this.uuid = this.uuid || SchemaModel.randomUUID();
+        this.iri = null;
     }
 }

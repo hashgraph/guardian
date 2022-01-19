@@ -1,7 +1,7 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { Request, Response, Router } from 'express';
-import { Schema, UserRole } from 'interfaces';
+import { ISchema, Schema, UserRole } from 'interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 
@@ -31,7 +31,7 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
         } else {
             newSchema.version = "";
             delete newSchema.id;
-            delete newSchema.status;  
+            delete newSchema.status;
         }
         Schema.updateOwner(newSchema, user.did);
         const schemes = (await guardians.setSchema(newSchema));
@@ -154,6 +154,11 @@ schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req:
     try {
         const guardians = new Guardians();
         const newSchemes = req.body.schemes;
+        newSchemes.forEach((s: ISchema) => {
+            delete s.owner;
+            delete s.id;
+            delete s.status;
+        });
         await guardians.importSchemes(newSchemes);
         const schemes = (await guardians.getSchemes(null));
         res.status(201).json(schemes);
@@ -165,8 +170,12 @@ schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req:
 schemaAPI.post('/export', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
     try {
         const guardians = new Guardians();
-        const ids = req.body.ids as string[];
-        const schemes = (await guardians.exportSchemes(ids));
+        const refs = req.body.refs as string[];
+        const schemes = (await guardians.exportSchemes(refs));
+        schemes.forEach((s: ISchema) => {
+            delete s.id;
+            delete s.status;
+        });
         const json = schemes;
         res.status(200).json({ schemes: json });
     } catch (error) {

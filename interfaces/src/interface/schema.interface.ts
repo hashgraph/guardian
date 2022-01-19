@@ -15,4 +15,5 @@ export interface ISchema {
     owner?: string;
     version?: string;
     isOwner?: boolean;
+    iri?: string;
 }

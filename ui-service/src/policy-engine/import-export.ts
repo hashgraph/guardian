@@ -14,11 +14,11 @@ importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: 
         const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
         const guardians = new Guardians();
 
-        const uuid = findAllEntities(policy.config, 'schema');
+        const refs = findAllEntities(policy.config, 'schema');
         const tokenIds = findAllEntities(policy.config, 'tokenId');
 
         const [schemas, tokens] = await Promise.all([
-            guardians.exportSchemes(uuid),
+            guardians.exportSchemes(refs),
             guardians.getTokens({ids: tokenIds})
         ]);
 
@@ -49,26 +49,14 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
 
         const dateNow = '_' + Date.now();
 
-        const existingTokens = await guardians.getTokens();
-        const existingSchemas = await guardians.getSchemes();
-
-        const existingTokensMap = {};
-        existingTokens.forEach(token => existingTokensMap[token.tokenId] = true);
-        tokens = tokens.filter((token:any) => !existingTokensMap[token.tokenId]);
         for (let token of tokens) {
             delete token.id;
             delete token.selected;
         }
-
         for (let schema of schemas) {
-            const oldUUID = schema.uuid;
-            const newUUID = GenerateUUIDv4();
-            if (existingSchemas.map(schema => schema.uuid).includes(oldUUID)) {
-                schema.name = schema.name + dateNow;
-            }
-            schema.uuid = newUUID;
-            policy = JSON.parse(JSON.stringify(policy).replace(new RegExp(oldUUID, 'g'), newUUID));
-            schema.document = schema.document.replace(new RegExp(oldUUID, 'g'), newUUID);
+            delete schema.owner;
+            delete schema.id;
+            delete schema.status;
         }
 
         const policyRepository = getMongoRepository(Policy);
@@ -80,8 +68,9 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
         delete policy.id;
         delete policy.status;
         policy.owner = req.user.did;
+
         await Promise.all([
-            Promise.all(tokens.map(token => guardians.setToken(token))),
+            guardians.importTokens(tokens),
             guardians.importSchemes(schemas),
             policyRepository.save(policyRepository.create(policy))
         ]);

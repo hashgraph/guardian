@@ -4,11 +4,11 @@ import {BlockActionError, BlockInitError} from '@policy-engine/errors';
 import {BlockStateUpdate, DependenciesUpdateHandler} from '@policy-engine/helpers/decorators';
 import {DataSourceBlock} from '@policy-engine/helpers/decorators/data-source-block';
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {UserRole} from 'interfaces';
+import {SchemaStatus, UserRole} from 'interfaces';
 import {getMongoRepository} from 'typeorm';
 import {IAuthUser} from '../../auth/auth.interface';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
+import {Inject} from '@helpers/decorators/inject';
+import {Users} from '@helpers/users';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 /**
@@ -21,6 +21,9 @@ import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation
 export class InterfaceDocumentsSource {
     @Inject()
     private users: Users;
+
+    @Inject()
+    private guardians: Guardians;
 
     private init() {
         const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
@@ -46,7 +49,6 @@ export class InterfaceDocumentsSource {
     }
 
     async getData(user: IAuthUser): Promise<any> {
-        const guardians = new Guardians();
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
 
@@ -62,16 +64,16 @@ export class InterfaceDocumentsSource {
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await guardians.getVcDocuments(filters);
+                data = await this.guardians.getVcDocuments(filters);
                 break;
 
             case 'did-documents':
-                data = await guardians.getDidDocuments(filters);
+                data = await this.guardians.getDidDocuments(filters);
                 break;
 
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await guardians.getVpDocuments(filters);
+                data = await this.guardians.getVpDocuments(filters);
                 break;
 
             case 'root-authorities':
@@ -80,7 +82,7 @@ export class InterfaceDocumentsSource {
 
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await guardians.getApproveDocuments(filters);
+                data = await this.guardians.getApproveDocuments(filters);
                 break;
 
             case 'source':
@@ -106,6 +108,23 @@ export class InterfaceDocumentsSource {
                 if (!resultsContainer.isTagExist(tag)) {
                     resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
                 }
+            }
+        }
+
+        if (ref.options.filters && ref.options.filters.schema) {
+            if (typeof ref.options.filters.schema !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+                return;
+            }
+            const schemas = await this.guardians.getSchemes() || [];
+            const schema = schemas.find(s => s.iri === ref.options.filters.schema)
+            if (!schema) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.filters.schema}" does not exist`);
+                return;
+            }
+            if (schema.status != SchemaStatus.PUBLISHED) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.filters.schema}" does not published`);
+                return;
             }
         }
     }
