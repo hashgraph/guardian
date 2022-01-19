@@ -2,6 +2,83 @@
   "name": "TymlezMeter",
   "uuid": "b578cb95-8530-46cc-9dc4-f31980744bf7",
   "entity": "INVERTER",
-  "document": "{\"$id\":\"#b578cb95-8530-46cc-9dc4-f31980744bf7\",\"$comment\":\"{\\\"term\\\": \\\"b578cb95-8530-46cc-9dc4-f31980744bf7\\\", \\\"@id\\\": \\\"https://localhost/schema#b578cb95-8530-46cc-9dc4-f31980744bf7\\\"}\",\"title\":\"TymlezMeter\",\"description\":\"\",\"type\":\"object\",\"properties\":{\"@context\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"array\",\"items\":{\"type\":\"string\"}}],\"readOnly\":true},\"type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"array\",\"items\":{\"type\":\"string\"}}],\"readOnly\":true},\"id\":{\"type\":\"string\",\"readOnly\":true},\"field0\":{\"title\":\"Meter Id\",\"description\":\"Meter Id\",\"readOnly\":false,\"$comment\":\"{\\\"term\\\": \\\"field0\\\", \\\"@id\\\": \\\"https://www.schema.org/text\\\"}\",\"type\":\"string\"},\"field1\":{\"title\":\"Meter Label\",\"description\":\"Meter Label\",\"readOnly\":false,\"$comment\":\"{\\\"term\\\": \\\"field1\\\", \\\"@id\\\": \\\"https://www.schema.org/text\\\"}\",\"type\":\"string\"},\"policyId\":{\"title\":\"policyId\",\"description\":\"policyId\",\"readOnly\":true,\"$comment\":\"{\\\"term\\\": \\\"policyId\\\", \\\"@id\\\": \\\"https://www.schema.org/text\\\"}\",\"type\":\"string\"}},\"required\":[\"@context\",\"type\",\"field0\",\"field1\",\"policyId\"],\"additionalProperties\":false}",
+  "document": {
+    "$id": "#b578cb95-8530-46cc-9dc4-f31980744bf7",
+    "$comment": "{\"term\": \"b578cb95-8530-46cc-9dc4-f31980744bf7\", \"@id\": \"https://localhost/schema#b578cb95-8530-46cc-9dc4-f31980744bf7\"}",
+    "title": "TymlezMeter",
+    "description": "",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "meterId": {
+        "title": "Meter Id",
+        "description": "Meter Id",
+        "readOnly": false,
+        "$comment": "{\"term\": \"meterId\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "meterLabel": {
+        "title": "Meter Label",
+        "description": "Meter Label",
+        "readOnly": false,
+        "$comment": "{\"term\": \"meterLabel\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "meterType": {
+        "title": "Meter Type",
+        "description": "Meter Type",
+        "readOnly": false,
+        "$comment": "{\"term\": \"meterType\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "policyId": {
+        "title": "policyId",
+        "description": "policyId",
+        "readOnly": true,
+        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "meterId",
+      "meterLabel",
+      "meterType",
+      "policyId"
+    ],
+    "additionalProperties": false
+  },
   "relationships": []
 }

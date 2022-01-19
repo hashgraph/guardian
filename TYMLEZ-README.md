@@ -34,13 +34,7 @@ CLIENT_NAME=cohort npm run dev:watch 2>&1 | tee .tmp/logs/$(date "+%Y-%m-%dT%H-%
 # 3b. Start dev servers with docker, does not watch for file changes
 CLIENT_NAME=cohort npm run dev:docker
 
-# 4. Initialize Guardian (manual)
-#
-# - Open http://localhost:3002
-# - Login as RootAuthority
-# - Complete the configuration
-
-# 5. Initialize tokens, schemas and policies
+# 4. Initialize root config, installers, tokens, schemas and policies
 CLIENT_NAME=cohort npm run tools init
 ```
 

@@ -6,21 +6,32 @@
   "topicDescription": "Tymlez Policy to track Carbon Emission",
   "config": {
     "defaultActive": true,
-    "permissions": ["ROOT_AUTHORITY", "INSTALLER"],
+    "permissions": [
+      "ROOT_AUTHORITY",
+      "INSTALLER"
+    ],
     "blockType": "interfaceContainerBlock",
-    "uiMetaData": { "type": "blank" },
+    "uiMetaData": {
+      "type": "blank"
+    },
     "children": [
       {
         "defaultActive": true,
         "tag": "init_installer_steps",
-        "permissions": ["INSTALLER"],
+        "permissions": [
+          "INSTALLER"
+        ],
         "blockType": "interfaceStepBlock",
-        "uiMetaData": { "type": "blank" },
+        "uiMetaData": {
+          "type": "blank"
+        },
         "children": [
           {
             "tag": "add_new_installer_request",
             "defaultActive": true,
-            "permissions": ["INSTALLER"],
+            "permissions": [
+              "INSTALLER"
+            ],
             "blockType": "requestVcDocument",
             "schema": "91bf250b-d809-40b2-b492-97240a746bbb",
             "idType": "OWNER",
@@ -28,7 +39,9 @@
               "type": "page",
               "title": "New Installer",
               "description": "Description",
-              "privateFields": ["policyId"]
+              "privateFields": [
+                "policyId"
+              ]
             },
             "id": "7511d80c-b938-412e-a0eb-4b9e737d6b5d"
           },
@@ -52,23 +65,36 @@
           {
             "tag": "installer_header",
             "defaultActive": true,
-            "permissions": ["INSTALLER"],
+            "permissions": [
+              "INSTALLER"
+            ],
             "blockType": "interfaceContainerBlock",
-            "uiMetaData": { "type": "tabs" },
+            "uiMetaData": {
+              "type": "tabs"
+            },
             "children": [
               {
                 "tag": "sensors_page",
                 "defaultActive": true,
-                "permissions": ["INSTALLER"],
+                "permissions": [
+                  "INSTALLER"
+                ],
                 "blockType": "interfaceContainerBlock",
-                "uiMetaData": { "type": "blank", "title": "Sensors" },
+                "uiMetaData": {
+                  "type": "blank",
+                  "title": "Sensors"
+                },
                 "children": [
                   {
                     "tag": "sensors_grid",
                     "defaultActive": true,
-                    "permissions": ["INSTALLER"],
+                    "permissions": [
+                      "INSTALLER"
+                    ],
                     "blockType": "interfaceDocumentsSource",
-                    "dependencies": ["SendVCtoGuardian"],
+                    "dependencies": [
+                      "SendVCtoGuardian"
+                    ],
                     "onlyOwnDocuments": true,
                     "dataType": "vc-documents",
                     "filters": {
@@ -116,32 +142,45 @@
                   {
                     "tag": "download_config_btn",
                     "blockType": "interfaceAction",
-                    "permissions": ["INSTALLER"],
+                    "permissions": [
+                      "INSTALLER"
+                    ],
                     "type": "download",
                     "schema": "7aeb0cec-d277-456e-a943-21d742d63816",
                     "stopPropagation": true,
                     "targetUrl": "http://localhost:3003/mrv",
-                    "uiMetaData": { "content": "download", "options": [] },
+                    "uiMetaData": {
+                      "content": "download",
+                      "options": []
+                    },
                     "id": "a16ad25f-783d-4793-bb5e-016eac44341d"
                   },
                   {
                     "defaultActive": true,
                     "tag": "create_new_sensor_steps",
-                    "permissions": ["INSTALLER"],
+                    "permissions": [
+                      "INSTALLER"
+                    ],
                     "blockType": "interfaceStepBlock",
-                    "uiMetaData": { "type": "blank" },
+                    "uiMetaData": {
+                      "type": "blank"
+                    },
                     "children": [
                       {
                         "tag": "add_sensor_bnt",
                         "defaultActive": true,
-                        "permissions": ["INSTALLER"],
+                        "permissions": [
+                          "INSTALLER"
+                        ],
                         "blockType": "requestVcDocument",
                         "schema": "b578cb95-8530-46cc-9dc4-f31980744bf7",
                         "idType": "DID",
                         "uiMetaData": {
                           "type": "dialog",
                           "description": "Description",
-                          "privateFields": ["policyId"],
+                          "privateFields": [
+                            "policyId"
+                          ],
                           "content": "New Sensors",
                           "uiClass": "btn",
                           "dialogContent": "New Sensors",
@@ -177,16 +216,25 @@
               {
                 "tag": "mrv_page",
                 "defaultActive": true,
-                "permissions": ["INSTALLER"],
+                "permissions": [
+                  "INSTALLER"
+                ],
                 "blockType": "interfaceContainerBlock",
-                "uiMetaData": { "type": "blank", "title": "MRV" },
+                "uiMetaData": {
+                  "type": "blank",
+                  "title": "MRV"
+                },
                 "children": [
                   {
                     "tag": "mrv_grid",
                     "defaultActive": true,
-                    "permissions": ["INSTALLER"],
+                    "permissions": [
+                      "INSTALLER"
+                    ],
                     "blockType": "interfaceDocumentsSource",
-                    "dependencies": ["SendVCtoGuardian"],
+                    "dependencies": [
+                      "SendVCtoGuardian"
+                    ],
                     "onlyOwnDocuments": true,
                     "dataType": "vc-documents",
                     "filters": {
@@ -233,9 +281,14 @@
       {
         "tag": "mint_events",
         "defaultActive": true,
-        "permissions": ["ROOT_AUTHORITY", "INSTALLER"],
+        "permissions": [
+          "ROOT_AUTHORITY",
+          "INSTALLER"
+        ],
         "blockType": "interfaceContainerBlock",
-        "uiMetaData": { "type": "blank" },
+        "uiMetaData": {
+          "type": "blank"
+        },
         "children": [
           {
             "tag": "mrv_source",
@@ -259,7 +312,7 @@
             "blockType": "aggregateDocument",
             "children": [],
             "uiMetaData": {},
-            "rule": "field1",
+            "rule": "mrvCarbonAmount",
             "threshold": "1"
           },
           {

@@ -9,10 +9,11 @@ import { template } from 'lodash';
 import pLimit from 'p-limit';
 import { IPolicy } from './IPolicy';
 import type { IPolicyPackage } from '../../../tymlez-service/src/entity/policy-package';
+import { getPolicyFolders } from './getPolicyFolders';
 
 const globAsync = promisify(glob);
 
-const { readdir, readFile } = fs.promises;
+const { readFile } = fs.promises;
 
 export async function createPolicyPackages({
   GUARDIAN_TYMLEZ_API_KEY,
@@ -50,9 +51,23 @@ export async function createPolicyPackages({
           templateData,
         })) as IPolicy,
         schemas: await Promise.all(
-          schemaFiles.map((file) =>
-            parsePolicyPackageFile({ folder, file, templateData }),
-          ),
+          schemaFiles.map(async (file) => {
+            const schema = await parsePolicyPackageFile({
+              folder,
+              file,
+              templateData,
+            });
+
+            assert(
+              typeof schema.document !== 'string',
+              `Expect schema document to be decoded, please run "npm run tools decode-schemas"`,
+            );
+
+            return {
+              ...schema,
+              document: JSON.stringify(schema.document),
+            };
+          }),
         ),
         tokens: await Promise.all(
           tokenFiles.map(async (file) =>
@@ -103,11 +118,4 @@ async function parsePolicyPackageFile({
   const content = await readFile(path.join(folder, file), 'utf8');
   const compiledTemplate = template(content);
   return JSON.parse(compiledTemplate(templateData));
-}
-
-async function getPolicyFolders() {
-  const policiesDir = path.join(__dirname, 'policies');
-  return (await readdir(policiesDir, { withFileTypes: true }))
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => path.join(policiesDir, dirent.name));
 }

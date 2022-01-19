@@ -6,31 +6,28 @@ import type { PolicyPackage } from '@entity/policy-package';
 export async function addMeterToUiService({
   policyPackage,
   installer,
-  meterId,
-  meterLabel,
+  meterInfo,
   policyId,
   uiServiceBaseUrl,
 }: {
   policyPackage: PolicyPackage;
   uiServiceBaseUrl: string;
   policyId: string;
-  meterId: string;
-  meterLabel: string;
+  meterInfo: any;
   installer: IUser;
 }): Promise<void> {
   const inverterSchema = policyPackage.schemas.find(
     (schema) => schema.inputName === 'TymlezMeter',
   );
 
-  assert(inverterSchema, `Cannot find inverter schema`);
+  assert(inverterSchema, `Cannot find TymlezMeter schema`);
 
   await axios.post(
     `${uiServiceBaseUrl}/policy/block/tag2/${policyId}/add_sensor_bnt`,
     {
       type: inverterSchema.uuid,
       '@context': ['https://localhost/schema'],
-      field0: meterId,
-      field1: meterLabel,
+      ...meterInfo,
     },
     {
       headers: {

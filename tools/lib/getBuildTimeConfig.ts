@@ -69,30 +69,11 @@ export const getBuildTimeConfig = async ({
   };
 };
 
-const COHORT_METER_INFOS = [
+const COHORT_METER_INFOS: IMeterInfo[] = [
   {
     meterId: 'DD54108399431',
-    meterLabel: 'Main'
-  },
-  {
-    meterId: 'DDA4108813784',
-    meterLabel: 'T8 and T1'
-  },
-  {
-    meterId: 'DDE4108813923',
-    meterLabel: 'T2 and T3'
-  },
-  {
-    meterId: 'DDA4108814035',
-    meterLabel: 'T4 and T5'
-  },
-  {
-    meterId: 'DDC4108814545',
-    meterLabel: 'T6 and T7'
-  },
-  {
-    meterId: 'DDF4108813619',
-    meterLabel: 'Communal'
+    meterLabel: 'Main',
+    meterType: 'consumption',
   },
 ];
 
@@ -127,4 +108,5 @@ interface IConfig {
 export interface IMeterInfo {
   meterId: string;
   meterLabel: string;
+  meterType: 'consumption' | 'generation' | 'generation-forecast';
 }

@@ -1,7 +1,7 @@
 import Yargs from 'yargs/yargs';
 import { deploy } from '../lib/deploy';
 import { loadEnv } from '../lib/loadEnv';
-import { init } from '../lib/init';
+import { decodeSchemas, init } from '../lib/init';
 
 async function main(): Promise<void> {
   const rootYargs = Yargs(process.argv.slice(2));
@@ -10,6 +10,7 @@ async function main(): Promise<void> {
     .command('deploy', 'Deploy', {}, deploy)
     .command('load-env', 'Load environment variables', {}, loadEnv)
     .command('init', 'Initialize Guardian', {}, init)
+    .command('decode-schemas', 'Decode schemas', {}, decodeSchemas)
 
     .demandCommand()
     .strict()

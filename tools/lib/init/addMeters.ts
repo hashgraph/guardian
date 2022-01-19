@@ -15,17 +15,19 @@ export async function addMeters({
   const limit = pLimit(1);
 
   await Promise.all(
-    meterInfos.map((meterInfo) =>
-      limit(() =>
-        addMeter({
-          GUARDIAN_TYMLEZ_API_KEY,
-          GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-          username: 'Installer',
-          policyTag: 'TymlezCET',
-          meterInfo,
-        }),
+    meterInfos
+      .filter((info) => info.meterType === 'consumption')
+      .map((meterInfo) =>
+        limit(() =>
+          addMeter({
+            GUARDIAN_TYMLEZ_API_KEY,
+            GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+            username: 'Installer',
+            policyTag: 'TymlezCET',
+            meterInfo,
+          }),
+        ),
       ),
-    ),
   );
 }
 
@@ -50,7 +52,7 @@ async function addMeter({
       username,
       policyTag,
       meterId: meterInfo.meterId,
-      meterLabel: meterInfo.meterLabel
+      meterInfo,
     },
     {
       headers: {

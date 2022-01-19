@@ -36,10 +36,10 @@ export const makeTrackAndTraceApi = ({
   trackAndTraceApi.post(
     '/register-installer',
     async (req: Request, res: Response) => {
-      const { username, policyTag, installerOptions } = req.body as {
+      const { username, policyTag, installerInfo } = req.body as {
         policyTag: string | undefined;
         username: InstallerUserName | undefined;
-        installerOptions: any;
+        installerInfo: any;
       };
 
       assert(username, `username is missing`);
@@ -48,7 +48,7 @@ export const makeTrackAndTraceApi = ({
         `Unexpected username '${username}', expect one of the installers`,
       );
       assert(policyTag, `policyTag is missing`);
-      assert(installerOptions, `installerOptions is missing`);
+      assert(installerInfo, `installerInfo is missing`);
 
       const installer = await loginToUiService({
         uiServiceBaseUrl,
@@ -80,7 +80,7 @@ export const makeTrackAndTraceApi = ({
       ) {
         console.log(
           `Skip because installer '${JSON.stringify(
-            installerOptions,
+            installerInfo,
           )}' was registered before.`,
           installerBlock,
         );
@@ -92,7 +92,7 @@ export const makeTrackAndTraceApi = ({
         policyPackage,
         uiServiceBaseUrl,
         policyId: policyPackage.policy.id,
-        installerOptions,
+        installerInfo,
         installer,
       });
 
@@ -119,11 +119,11 @@ export const makeTrackAndTraceApi = ({
   );
 
   trackAndTraceApi.post('/add-meter', async (req: Request, res: Response) => {
-    const { username, meterId, meterLabel, policyTag } = req.body as {
+    const { username, meterId, meterInfo, policyTag } = req.body as {
       username: InstallerUserName | undefined;
       policyTag: string | undefined;
       meterId: string | undefined;
-      meterLabel: string | undefined;
+      meterInfo: any;
     };
     policyTag;
 
@@ -134,6 +134,7 @@ export const makeTrackAndTraceApi = ({
     );
     assert(policyTag, `policyTag is missing`);
     assert(meterId, `meterId is missing`);
+    assert(meterInfo, `meterInfo is missing`);
 
     const meterConfigKey = `${policyTag}-${meterId}`;
 
@@ -169,8 +170,7 @@ export const makeTrackAndTraceApi = ({
       policyPackage,
       uiServiceBaseUrl,
       policyId: policyPackage.policy.id,
-      meterId,
-      meterLabel,
+      meterInfo,
       installer,
     });
 

@@ -5,7 +5,7 @@ import type { PolicyPackage } from '@entity/policy-package';
 
 export async function registerInstallerInUiService({
   installer,
-  installerOptions,
+  installerInfo,
   policyId,
   policyPackage,
   uiServiceBaseUrl,
@@ -13,21 +13,21 @@ export async function registerInstallerInUiService({
   policyPackage: PolicyPackage;
   uiServiceBaseUrl: string;
   policyId: string;
-  installerOptions: any;
+  installerInfo: any;
   installer: IUser;
 }) {
   const installerSchema = policyPackage.schemas.find(
     (schema) => schema.inputName === 'TymlezInstaller',
   );
 
-  assert(installerSchema, `Cannot find installer schema`);
+  assert(installerSchema, `Cannot find TymlezInstaller schema`);
 
   await axios.post(
     `${uiServiceBaseUrl}/policy/block/tag2/${policyId}/add_new_installer_request`,
     {
       type: installerSchema.uuid,
       '@context': ['https://localhost/schema'],
-      ...installerOptions,
+      ...installerInfo,
     },
     {
       headers: {
