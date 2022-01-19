@@ -130,6 +130,7 @@ a {
 
 .schemes-table .mat-column-uuid,
 .schemes-table .mat-column-type,
+.schemes-table .mat-column-version,
 .schemes-table .mat-column-entity {
     padding-left: 10px;
 }
