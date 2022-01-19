@@ -65,7 +65,7 @@
       },
       "mrvDuration": {
         "title": "Duration",
-        "description": "Duration in seconds",
+        "description": "Duration in milliseconds",
         "readOnly": false,
         "$comment": "{\"term\": \"mrvDuration\", \"@id\": \"https://www.schema.org/text\"}",
         "type": "number"

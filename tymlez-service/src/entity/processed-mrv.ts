@@ -5,9 +5,11 @@ import {
   ObjectIdColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import type { IIsoDate } from './IIsoDate';
+import type { ITimeSpanMsec } from './ITimeSpanMsec';
 
 @Entity()
-export class MeterConfig implements IMeterConfig {
+export class ProcessedMrv implements IProcessedMrv {
   @ObjectIdColumn()
   id!: string;
 
@@ -23,7 +25,7 @@ export class MeterConfig implements IMeterConfig {
   policyTag!: string;
 
   @Column()
-  config!: IUIServiceMeterConfig;
+  timestamp!: IIsoDate;
 
   @CreateDateColumn()
   createDate!: Date;
@@ -32,23 +34,9 @@ export class MeterConfig implements IMeterConfig {
   updateDate!: Date;
 }
 
-export interface IMeterConfig {
+export interface IProcessedMrv {
   key: string;
   meterId: string;
   policyTag: string;
-  config: IUIServiceMeterConfig;
-}
-
-export interface IUIServiceMeterConfig {
-  url: string;
-  topic: string;
-  hederaAccountId: string;
-  hederaAccountKey: string;
-  installer: string;
-  did: string;
-  key: string;
-  type: string;
-  schema: any;
-  policyId: string;
-  policyTag: string;
+  timestamp: IIsoDate;
 }

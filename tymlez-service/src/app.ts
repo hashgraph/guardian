@@ -20,6 +20,7 @@ import { makePolicyApi } from '@api/policy';
 import { makeUserApi } from '@api/user';
 import axios from 'axios';
 import { PolicyPackage } from '@entity/policy-package';
+import { ProcessedMrv } from '@entity/processed-mrv';
 
 axios.interceptors.request.use((request) => {
   if (request.url?.includes('login')) {
@@ -107,6 +108,7 @@ Promise.all([
 
   const meterConfigRepository = db.getMongoRepository(MeterConfig);
   const policyPackageRepository = db.getMongoRepository(PolicyPackage);
+  const processedMrvRepository = db.getMongoRepository(ProcessedMrv);
 
   // <-- Document Loader
 
@@ -138,6 +140,7 @@ Promise.all([
       vcHelper,
       meterConfigRepository,
       policyPackageRepository,
+      processedMrvRepository,
       mrvReceiverUrl: MRV_RECEIVER_URL,
       uiServiceBaseUrl: UI_SERVICE_BASE_URL,
     }),

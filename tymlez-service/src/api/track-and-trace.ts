@@ -1,6 +1,7 @@
 import assert from 'assert';
 import { Request, Response, Router } from 'express';
 import { HederaHelper } from 'vc-modules';
+import Joi from 'joi';
 import axios from 'axios';
 import type { VCDocumentLoader } from '../document-loader/vc-document-loader';
 import type { VCHelper } from 'vc-modules';
@@ -15,12 +16,17 @@ import {
   getNewMeters,
   registerInstallerInUiService,
 } from '../modules/track-and-trace';
+import type { ProcessedMrv } from '@entity/processed-mrv';
+import { mrvSettingSchema } from '../modules/track-and-trace/mrvSettingSchema';
+import type { IMrvSetting } from '../modules/track-and-trace/IMrvSetting';
+import type { IIsoDate } from '@entity/IIsoDate';
 
 export const makeTrackAndTraceApi = ({
   vcDocumentLoader,
   vcHelper,
   meterConfigRepository,
   policyPackageRepository,
+  processedMrvRepository,
   mrvReceiverUrl,
   uiServiceBaseUrl,
 }: {
@@ -28,6 +34,7 @@ export const makeTrackAndTraceApi = ({
   vcHelper: VCHelper;
   meterConfigRepository: MongoRepository<MeterConfig>;
   policyPackageRepository: MongoRepository<PolicyPackage>;
+  processedMrvRepository: MongoRepository<ProcessedMrv>;
   mrvReceiverUrl: string;
   uiServiceBaseUrl: string;
 }) => {
@@ -205,6 +212,30 @@ export const makeTrackAndTraceApi = ({
     res.status(200).json(meterConfig);
   });
 
+  trackAndTraceApi.get(
+    '/latest-mrv/:policyTag/:meterId',
+    async (req: Request, res: Response) => {
+      const { meterId, policyTag } = req.params as {
+        policyTag: string | undefined;
+        meterId: string | undefined;
+      };
+
+      const mrv = await processedMrvRepository.findOne({
+        where: { policyTag, meterId },
+        order: { timestamp: 'DESC' },
+      });
+
+      if (mrv) {
+        res.status(200).json(mrv);
+        return;
+      }
+
+      res
+        .status(404)
+        .send(`Cannot find latest MRV for ${policyTag}-${meterId}`);
+    },
+  );
+
   trackAndTraceApi.post(
     '/generate-mrv',
     async (req: Request, res: Response) => {
@@ -212,15 +243,7 @@ export const makeTrackAndTraceApi = ({
         setting,
         meterId,
         policyTag: inputPolicyTag,
-      } = req.body as {
-        setting: Record<string, any> | undefined;
-        policyTag: string | undefined;
-        meterId: string | undefined;
-      };
-
-      assert(setting, `setting is missing`);
-      assert(meterId, `meterId is missing`);
-      assert(inputPolicyTag, `inputPolicyTag is missing`);
+      } = await getGenerateMrvRequest(req.body);
 
       const meterConfigKey = `${inputPolicyTag}-${meterId}`;
       const meterConfig = await meterConfigRepository.findOne({
@@ -229,6 +252,19 @@ export const makeTrackAndTraceApi = ({
 
       if (!meterConfig) {
         res.status(404).send(`Cannot find meter config for ${meterId}`);
+        return;
+      }
+
+      const mrvKey = `${inputPolicyTag}-${meterId}-${setting.mrvTimestamp}`;
+      const processedMrv = await processedMrvRepository.findOne({
+        where: { key: mrvKey },
+      });
+
+      if (processedMrv) {
+        console.log(`Skip because MRV ${mrvKey} already processed`);
+        res.status(200).json({
+          exists: true,
+        });
         return;
       }
 
@@ -254,16 +290,7 @@ export const makeTrackAndTraceApi = ({
 
       let document, vc;
       try {
-        const date = new Date().toISOString();
-        const vcSubject: any = {};
-        if (setting) {
-          const keys = Object.keys(setting);
-          for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
-            const value = setting[key];
-            vcSubject[key] = String(value);
-          }
-        }
+        const vcSubject: any = { ...setting };
         vcSubject.policyId = policyId;
         vcSubject.accountId = hederaAccountId;
 
@@ -303,9 +330,60 @@ export const makeTrackAndTraceApi = ({
         return;
       }
 
+      await saveProcessedMrv({
+        processedMrvRepository,
+        meterId,
+        policyTag: inputPolicyTag,
+        timestamp: setting.mrvTimestamp,
+      });
+
       res.status(200).json(document);
     },
   );
 
   return trackAndTraceApi;
 };
+
+async function saveProcessedMrv({
+  processedMrvRepository,
+  policyTag,
+  meterId,
+  timestamp,
+}: {
+  processedMrvRepository: MongoRepository<ProcessedMrv>;
+  policyTag: string;
+  meterId: string | undefined;
+  timestamp: IIsoDate;
+}) {
+  const mrvKey = `${policyTag}-${meterId}-${timestamp}`;
+
+  const processedMrv = processedMrvRepository.create({
+    key: mrvKey,
+    meterId,
+    policyTag,
+    timestamp,
+  });
+
+  await processedMrvRepository.save(processedMrv);
+}
+
+async function getGenerateMrvRequest(input: any) {
+  await generateMrvRequestSchema.validateAsync(input, {
+    abortEarly: false,
+    allowUnknown: true,
+  });
+
+  return input as IGenerateMrvRequest;
+}
+
+interface IGenerateMrvRequest {
+  setting: IMrvSetting;
+  policyTag: string;
+  meterId: string;
+}
+
+const generateMrvRequestSchema = Joi.object<IGenerateMrvRequest>({
+  policyTag: Joi.string().required(),
+  meterId: Joi.string().required(),
+  setting: mrvSettingSchema,
+});
