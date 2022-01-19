@@ -456,12 +456,22 @@ export class Schema {
             if (ref) {
                 const id = ref.split("#");
                 const keys = id[id.length - 1].split("/");
-                return {
-                    iri: ref,
-                    type: id[id.length - 1],
-                    owner: keys[0],
-                    uuid: keys[1],
-                    version: keys[2]
+                if (keys[0] && keys[0].startsWith("did")) {
+                    return {
+                        iri: ref,
+                        type: id[id.length - 1],
+                        owner: keys[0] || null,
+                        uuid: keys[1] || null,
+                        version: keys[2] || null
+                    }
+                } else {
+                    return {
+                        iri: ref,
+                        type: id[id.length - 1],
+                        owner: null,
+                        uuid: keys[0] || null,
+                        version: keys[1] || null
+                    }
                 }
             }
             return {
