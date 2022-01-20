@@ -30,6 +30,11 @@ export class FiltersAddonBlock {
     @Inject()
     private guardians: Guardians;
 
+    init() {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        ref.filters = ref.options.defaultValue || {}
+    }
+
     async getData(user: IAuthUser) {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
