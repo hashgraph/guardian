@@ -8,7 +8,8 @@ import glob from 'glob';
 import { template } from 'lodash';
 import pLimit from 'p-limit';
 import { IPolicy } from './IPolicy';
-import type { IPolicyPackage } from '../../../tymlez-service/src/entity/policy-package';
+// Paul Debug
+// import type { IPolicyPackage } from '../../../tymlez-service/src/entity/policy-package';
 import { getPolicyFolders } from './getPolicyFolders';
 
 const globAsync = promisify(glob);
@@ -94,7 +95,7 @@ export async function createPolicyPackages({
           },
         );
 
-        return importedPackage as IPolicyPackage;
+        return importedPackage;
       }),
     ),
   );
