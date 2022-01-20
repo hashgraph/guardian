@@ -140,7 +140,7 @@ export class TreeFlatOverview {
       return;
     }
 
-    // insert node 
+    // insert node
     newSiblings.splice(insertIndex, 0, nodeToInsert);
 
     // rebuild tree with mutated data
@@ -277,7 +277,7 @@ export class TreeFlatOverview {
     if (blockType == 'wipeDocument') {
       return 'delete';
     }
-    if (blockType == 'interfaceSelector') {
+    if (blockType == 'filtersAddon') {
       return 'filter_alt';
     }
     return 'code'

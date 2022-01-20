@@ -103,9 +103,9 @@
             <roles-config *ngIf="currentBlock.blockType=='policyRolesBlock'" [block]="currentBlock" [schemes]="schemes"
                 [all]="allBlocks" [readonly]="readonly" [tokens]="tokens" [roles]="roles">
             </roles-config>
-            <selector-config *ngIf="currentBlock.blockType=='interfaceSelector'" [block]="currentBlock" [schemes]="schemes"
+            <filters-addon-config *ngIf="currentBlock.blockType=='filtersAddon'" [block]="currentBlock" [schemes]="schemes"
                 [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
-            </selector-config>
+            </filters-addon-config>
         </div>
     </div>
 </div>

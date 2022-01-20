@@ -420,6 +420,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     getIcon(blockType: string) {
+        console.log(blockType)
         if (blockType == 'interfaceContainerBlock') {
             return 'tab';
         }
@@ -450,7 +451,7 @@ export class PolicyConfigurationComponent implements OnInit {
         if (blockType == 'externalDataBlock') {
             return 'cloud';
         }
-        if (blockType == 'interfaceSelector') {
+        if (blockType == 'filtersAddon') {
             return 'filter_alt';
         }
         return 'code'

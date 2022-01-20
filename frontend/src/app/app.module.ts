@@ -88,6 +88,9 @@ import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
 import { SelectorConfigComponent } from './policy-engine/policy-configuration/selector-config/selector-config.component';
 import { SelectorBlockComponent } from './policy-engine/policy-viewer/selector-block/selector-block.component';
+import {
+  FiltersAddonConfigComponent
+} from './policy-engine/policy-configuration/filters-addon-config/filters-addon-config.component';
 
 @NgModule({
     declarations: [
@@ -137,7 +140,8 @@ import { SelectorBlockComponent } from './policy-engine/policy-viewer/selector-b
         RolesConfigComponent,
         RolesBlockComponent,
         SelectorConfigComponent,
-        SelectorBlockComponent
+        SelectorBlockComponent,
+        FiltersAddonConfigComponent
     ],
     imports: [
         BrowserModule,
