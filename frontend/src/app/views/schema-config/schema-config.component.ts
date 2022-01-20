@@ -8,6 +8,7 @@ import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.compone
 import { SchemaDialog } from '../../components/dialogs/schema-dialog/schema-dialog.component';
 import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/components/dialogs/import-schema/import-schema-dialog.component';
+import { VersionSchemaDialog } from 'src/app/components/dialogs/version-schema/version-schema-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -26,6 +27,7 @@ export class SchemaConfigComponent implements OnInit {
         'selected',
         'uuid',
         'type',
+        'version',
         'entity',
         'status',
         'operation',
@@ -81,6 +83,7 @@ export class SchemaConfigComponent implements OnInit {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
+                type: 'new',
                 schemes: this.publishSchemes
             }
         });
@@ -116,6 +119,7 @@ export class SchemaConfigComponent implements OnInit {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
+                type: 'edit',
                 schemes: this.publishSchemes,
                 scheme: element
             }
@@ -136,15 +140,51 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
+    newVersionDocument(element: Schema) {
+        const dialogRef = this.dialog.open(SchemaDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                type: 'version',
+                schemes: this.publishSchemes,
+                scheme: element
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+            if (schema) {
+                this.loading = true;
+                this.schemaService.newVersion(schema, element.id).subscribe((data) => {
+                    this.setSchema(data);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
+    }
+    
     publish(element: any) {
-        this.loading = true;
-        this.schemaService.publish(element.id).subscribe((data: any) => {
-            this.setSchema(data);
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        }, (e) => {
-            this.loading = false;
+        const dialogRef = this.dialog.open(VersionSchemaDialog, {
+            width: '850px',
+            data: {
+                schemes: this.schemes
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (version) => {
+            if (version) {
+                this.loading = true;
+                this.schemaService.publish(element.id, version).subscribe((data: any) => {
+                    this.setSchema(data);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    this.loading = false;
+                });
+            }
         });
     }
 

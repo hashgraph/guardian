@@ -53,7 +53,7 @@ export class Guardians {
 
     /**
      * Return Root Address book
-     *
+     * 
      * @returns {IAddressBookConfig} - Address book
      */
     public async getRootAddressBook(): Promise<IAddressBookConfig> {
@@ -62,9 +62,9 @@ export class Guardians {
 
     /**
      * Return Address book
-     *
+     * 
      * @param {string} owner - owner DID
-     *
+     * 
      * @returns {IAddressBookConfig} - Address book
      */
     public async getAddressBook(owner: string): Promise<IAddressBookConfig> {
@@ -75,10 +75,10 @@ export class Guardians {
 
     /**
      * Return DID Documents
-     *
+     * 
      * @param {Object} params - filters
      * @param {string} params.did - DID
-     *
+     * 
      * @returns {IDidDocument[]} - DID Documents
      */
     public async getDidDocuments(params: IFilter): Promise<IDidDocument[]> {
@@ -87,15 +87,15 @@ export class Guardians {
 
     /**
      * Return VC Documents
-     *
+     * 
      * @param {Object} [params] - filters
-     * @param {string} [params.id] - filter by id
-     * @param {string} [params.type] - filter by type
-     * @param {string} [params.owner] - filter by owner
-     * @param {string} [params.issuer] - filter by issuer
-     * @param {string} [params.hash] - filter by hash
-     * @param {string} [params.policyId] - filter by policy id
-     *
+     * @param {string} [params.id] - filter by id 
+     * @param {string} [params.type] - filter by type 
+     * @param {string} [params.owner] - filter by owner 
+     * @param {string} [params.issuer] - filter by issuer 
+     * @param {string} [params.hash] - filter by hash 
+     * @param {string} [params.policyId] - filter by policy id 
+     * 
      * @returns {IVCDocument[]} - VC Documents
      */
     public async getVcDocuments(params: IFilter): Promise<IVCDocument[]> {
@@ -104,9 +104,9 @@ export class Guardians {
 
     /**
      * Return VP Documents
-     *
+     * 
      * @param {Object} [payload] - filters
-     *
+     * 
      * @returns {IVPDocument[]} - VP Documents
      */
     public async getVpDocuments(params?: IFilter): Promise<IVPDocument[]> {
@@ -115,23 +115,35 @@ export class Guardians {
 
     /**
      * Return schemes
-     *
+     * 
      * @param {Object} [params] - filters
-     * @param {string} [params.type] - schema type
+     * @param {string} [params.type] - schema type 
      * @param {string} [params.entity] - schema entity type
-     *
+     * 
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemes(params?: IFilter): Promise<ISchema[]> {
         return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, params)).payload;
     }
 
+
+    /**
+     * Return schema by id
+     * 
+     * @param {string} [id] - schema id 
+     * 
+     * @returns {ISchema} - schema
+     */
+    public async getSchema(id: string): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, { id: id })).payload;
+    }
+
     /**
      * Return tokens
-     *
+     * 
      * @param {Object} [params] - filters
-     * @param {string} [params.tokenId] - token id
-     *
+     * @param {string} [params.tokenId] - token id 
+     * 
      * @returns {IToken[]} - tokens
      */
     public async getTokens(params?: IFilter): Promise<IToken[]> {
@@ -140,9 +152,9 @@ export class Guardians {
 
     /**
      * Return Address books, VC Document and DID Document
-     *
+     * 
      * @param {string} did - DID
-     *
+     * 
      * @returns {IFullConfig} - Address books, VC Document and DID Document
      */
     public async getRootConfig(did: string): Promise<IRootConfig> {
@@ -151,9 +163,9 @@ export class Guardians {
 
     /**
      * Return trust chain
-     *
+     * 
      * @param {string} id - hash or uuid
-     *
+     * 
      * @returns {IChainItem[]} - trust chain
      */
     public async getChain(id: string): Promise<IChainItem[]> {
@@ -162,10 +174,10 @@ export class Guardians {
 
     /**
      * Return DID Document
-     *
+     * 
      * @param {Object} params - filters
      * @param {string} params.did - DID
-     *
+     * 
      * @returns {any} - DID Document
      */
     public async loadDidDocument(params: IFilter): Promise<any> {
@@ -174,9 +186,9 @@ export class Guardians {
 
     /**
      * Return Schema Document
-     *
+     * 
      * @param {string} [uuid] - schema uuid
-     *
+     * 
      * @returns {any} - Schema Document
      */
     public async loadSchemaDocument(uuid?: string): Promise<any> {
@@ -185,9 +197,9 @@ export class Guardians {
 
     /**
      * Return Schema
-     *
+     * 
      * @param {string} uuid - schema uuid
-     *
+     * 
      * @returns {any} - Schema Document
      */
     public async loadSchema(uuid: string): Promise<any> {
@@ -196,11 +208,11 @@ export class Guardians {
 
     /**
      * Create or update DID Documents
-     *
+     * 
      * @param {IDidDocument} item - document
      * @param {string} [item.did] - did
      * @param {string} [item.operation] - document status
-     *
+     * 
      * @returns {IDidDocument} - new DID Documents
      */
     public async setDidDocument(item: IDidDocument | any): Promise<IDidDocument> {
@@ -209,11 +221,11 @@ export class Guardians {
 
     /**
      * Create or update VC Documents
-     *
+     * 
      * @param {IVCDocument} item - document
      * @param {string} [item.hash] - hash
      * @param {string} [item.operation] - document status
-     *
+     * 
      * @returns {IVCDocument} - new VC Documents
      */
     public async setVcDocument(item: IVCDocument | any): Promise<IVCDocument> {
@@ -222,9 +234,9 @@ export class Guardians {
 
     /**
      * Create new VP Document
-     *
+     * 
      * @param {IVPDocument} item - document
-     *
+     * 
      * @returns {IVPDocument} - new VP Document
      */
     public async setVpDocument(item: IVPDocument): Promise<IVPDocument> {
@@ -233,9 +245,9 @@ export class Guardians {
 
     /**
      * Create or update schema
-     *
+     * 
      * @param {ISchema} item - schema
-     *
+     * 
      * @returns {ISchema[]} - all schemes
      */
     public async setSchema(item: ISchema | any): Promise<ISchema[]> {
@@ -244,9 +256,9 @@ export class Guardians {
 
     /**
      * Import schemes
-     *
+     * 
      * @param {ISchema[]} items - schemes
-     *
+     * 
      * @returns {ISchema[]} - all schemes
      */
     public async importSchemes(items: ISchema[]): Promise<void> {
@@ -255,9 +267,9 @@ export class Guardians {
 
     /**
      * Create new token
-     *
+     * 
      * @param {IToken} item - token
-     *
+     * 
      * @returns {IToken[]} - all tokens
      */
     public async setToken(item: IToken | any): Promise<IToken[]> {
@@ -265,10 +277,21 @@ export class Guardians {
     }
 
     /**
+     * Import tokens
+     * 
+     * @param {IToken[]} items - tokens
+     * 
+     * @returns {IToken[]} - all tokens
+     */
+    public async importTokens(items: IToken[]): Promise<void> {
+        return (await this.channel.request(this.target, MessageAPI.IMPORT_TOKENS, items)).payload;
+    }
+
+    /**
      * Create Address books
-     *
+     * 
      * @param {Object} item - Address books config
-     *
+     * 
      * @returns {IFullConfig} - Address books config
      */
     public async setRootConfig(item: IRootConfig | any): Promise<IRootConfig> {
@@ -277,9 +300,9 @@ export class Guardians {
 
     /**
      * Create or update approve documents
-     *
+     * 
      * @param {IApprovalDocument[]} items - documents
-     *
+     * 
      * @returns {IApprovalDocument[]} - new approve documents
      */
     public async setApproveDocuments(items: IApprovalDocument[] | any): Promise<IApprovalDocument[]> {
@@ -288,13 +311,13 @@ export class Guardians {
 
     /**
      * Return approve documents
-     *
+     * 
      * @param {Object} [params] - filters
-     * @param {string} [params.id] - document id
-     * @param {string} [params.owner] - document owner
-     * @param {string} [params.approver] - document approver
-     * @param {string} [params.policyId] - policy id
-     *
+     * @param {string} [params.id] - document id 
+     * @param {string} [params.owner] - document owner 
+     * @param {string} [params.approver] - document approver 
+     * @param {string} [params.policyId] - policy id 
+     * 
      * @returns {IApprovalDocument[]} - approve documents
      */
     public async getApproveDocuments(params: IFilter): Promise<IApprovalDocument[]> {
@@ -303,9 +326,9 @@ export class Guardians {
 
     /**
      * Update approve document
-     *
+     * 
      * @param {IApprovalDocument} item - document
-     *
+     * 
      * @returns {IApprovalDocument} - new approve document
      */
     public async updateApproveDocument(item: IApprovalDocument): Promise<void> {
@@ -325,20 +348,20 @@ export class Guardians {
 
     /**
      * Export schemes
-     *
-     * @param {string[]} ids - schema ids
-     *
+     * 
+     * @param {string[]} refs - schema refs
+     * 
      * @returns {ISchema[]} - array of selected and nested schemas
      */
-    public async exportSchemes(ids: string[]): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
+    public async exportSchemes(refs: string[]): Promise<ISchema[]> {
+        return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, refs)).payload;
     }
 
     /**
      * Changing the status of a schema on PUBLISHED.
-     *
-     * @param {string} id - schema id
-     *
+     * 
+     * @param {string} id - schema id 
+     * 
      * @returns {ISchema[]} - all schemes
      */
     public async publishSchema(id: string): Promise<ISchema[]> {
@@ -347,9 +370,9 @@ export class Guardians {
 
     /**
      * Changing the status of a schema on UNPUBLISHED.
-     *
-     * @param {string} id - schema id
-     *
+     * 
+     * @param {string} id - schema id 
+     * 
      * @returns {ISchema[]} - all schemes
      */
     public async unpublishedSchema(id: string): Promise<ISchema[]> {
@@ -358,9 +381,9 @@ export class Guardians {
 
     /**
      * Deleting a schema.
-     *
-     * @param {string} id - schema id
-     *
+     * 
+     * @param {string} id - schema id 
+     * 
      * @returns {ISchema[]} - all schemes
      */
     public async deleteSchema(id: string): Promise<ISchema[]> {

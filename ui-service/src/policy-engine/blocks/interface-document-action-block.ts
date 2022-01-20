@@ -237,7 +237,7 @@ export class InterfaceDocumentActionBlock {
                         resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                         break;
                     }
-                    const schema = schemas.find(s => s.uuid === ref.options.schema)
+                    const schema = schemas.find(s => s.iri === ref.options.schema)
                     if (!schema) {
                         resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                         break;

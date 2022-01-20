@@ -347,22 +347,47 @@ describe('Schema service', function () {
                 'additionalProperties': false
             })
         });
-        assert.deepEqual(value, [s1db]);
+        assert.deepEqual(value, [{ ...s1db, status: DRAFT, iri: null }]);
     });
-
-
 
     it('Test GET_SCHEMES', async function () {
         let value = await channel.run(GET_SCHEMES, null);
-        assert.deepEqual(value, [s1db]);
+        assert.deepEqual(value, [{ ...s1db, status: DRAFT, iri: null }]);
 
         value = await channel.run(GET_SCHEMES, { type: 'type', entity: 'entity' });
-        assert.deepEqual(value, { where: { type: { '$eq': 'type' } } });
+        assert.deepEqual(value, {
+            where: {
+                type: { '$eq': 'type' },
+                entity: { '$eq': 'entity' },
+                status: { "$eq": PUBLISHED }
+            }
+        });
 
         value = await channel.run(GET_SCHEMES, { entity: 'entity' });
-        assert.deepEqual(value, { where: { entity: { '$eq': 'entity' } } });
-    });
+        assert.deepEqual(value, {
+            where: {
+                entity: { '$eq': 'entity' },
+                status: { "$eq": PUBLISHED }
+            }
+        });
 
+        value = await channel.run(GET_SCHEMES, { owner: 'owner1' });
+        assert.deepEqual(value, {
+            where: {
+                "$or": [
+                    {
+                        status: {
+                            "$eq": "PUBLISHED"
+                        }
+                    }, {
+                        owner: {
+                            "$eq": "owner1"
+                        }
+                    }
+                ]
+            }
+        });
+    });
 
     it('Test IMPORT_SCHEMA|EXPORT_SCHEMES', async function () {
         await channel.run(SET_SCHEMA, {
@@ -500,7 +525,7 @@ describe('Schema service', function () {
             'relationships': []
         }
 
-        const export1 = await channel.run(EXPORT_SCHEMES, ['0fae2a20-0db2-4835-bab9-99b4effbe03e']);
+        const export1 = await channel.run(EXPORT_SCHEMES, ['#0fae2a20-0db2-4835-bab9-99b4effbe03e']);
         assert.deepEqual(export1, [s1e], 'Export 1');
 
         const s2e = {
@@ -513,7 +538,7 @@ describe('Schema service', function () {
             'relationships': []
         }
 
-        const export2 = await channel.run(EXPORT_SCHEMES, ['0fae2a20-0db2-4835-bab9-99b4effbe03e', '59b934e2-9eb6-4395-9b85-ad3624f1f752']);
+        const export2 = await channel.run(EXPORT_SCHEMES, ['#0fae2a20-0db2-4835-bab9-99b4effbe03e', '#59b934e2-9eb6-4395-9b85-ad3624f1f752']);
         assert.deepEqual(export2, [s1e, s2e, s3e], 'Export 2');
 
         schemas.length = 0;
@@ -522,27 +547,53 @@ describe('Schema service', function () {
             ...s1,
             '_id': '4',
             'id': '4',
-            'relationships': []
+            'relationships': [],
+            'uuid': '0fae2120-0db2-4835-bab9-99b4effbe03e',
+            'document': s1.document.replace(/0fae2a20-0db2-4835-bab9-99b4effbe03e/g, "0fae2120-0db2-4835-bab9-99b4effbe03e"),
+            'iri': '#0fae2120-0db2-4835-bab9-99b4effbe03e',
+            'owner': null,
+            'status': PUBLISHED,
+            'version': null,
         }
         const s2i = {
-            ...s2,
+            ...s1,
             '_id': '5',
             'id': '5',
-            'relationships': ['#ad2de08d-a43c-43c7-a458-3f0e8db65e8f']
+            'relationships': [],
+            'iri': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
+            'owner': null,
+            'status': PUBLISHED,
+            'version': null,
         }
         const s3i = {
-            ...s3,
+            ...s2,
             '_id': '6',
             'id': '6',
-            'relationships': []
+            'relationships': ['#ad2de08d-a43c-43c7-a458-3f0e8db65e8f'],
+            'iri': '#59b934e2-9eb6-4395-9b85-ad3624f1f752',
+            'owner': null,
+            'status': PUBLISHED,
+            'version': null,
         }
-        const import1 = await channel.run(IMPORT_SCHEMA, export1);
+        const s4i = {
+            ...s3,
+            '_id': '7',
+            'id': '7',
+            'relationships': [],
+            'iri': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
+            'owner': null,
+            'status': PUBLISHED,
+            'version': null,
+        }
+        s1e.uuid = "0fae2120-0db2-4835-bab9-99b4effbe03e";
+        s1e.document = s1e.document.replace(/0fae2a20-0db2-4835-bab9-99b4effbe03e/g, "0fae2120-0db2-4835-bab9-99b4effbe03e");
+
+        const import1 = await channel.run(IMPORT_SCHEMA, [s1e]);
         assert.deepEqual(import1, [s1i], 'Import 1');
 
         const import2 = await channel.run(IMPORT_SCHEMA, export2);
-        assert.deepEqual(import2, [s1i, s2i, s3i], 'Import 2');
+        assert.deepEqual(import2, [s1i, s2i, s3i, s4i], 'Import 2');
     });
-
 
     it('Test PUBLISH_SCHEMA', async function () {
         index = 0;
@@ -565,6 +616,7 @@ describe('Schema service', function () {
             'id': '1',
             'readonly': false,
             'status': DRAFT,
+            'iri': null
         }
         const s2i = {
             ...s2,
@@ -572,10 +624,10 @@ describe('Schema service', function () {
             'id': '2',
             'readonly': false,
             'status': PUBLISHED,
+            'iri': '#59b934e2-9eb6-4395-9b85-ad3624f1f752'
         }
         assert.deepEqual(value, [s1i, s2i]);
     });
-
 
     it('Test UNPUBLISHED_SCHEMA', async function () {
         let value = await channel.run(UNPUBLISHED_SCHEMA, '2');
@@ -585,6 +637,7 @@ describe('Schema service', function () {
             'id': '1',
             'readonly': false,
             'status': DRAFT,
+            'iri': null
         }
         const s2i = {
             ...s2,
@@ -592,6 +645,7 @@ describe('Schema service', function () {
             'id': '2',
             'readonly': false,
             'status': UNPUBLISHED,
+            'iri': '#59b934e2-9eb6-4395-9b85-ad3624f1f752'
         }
         assert.deepEqual(value, [s1i, s2i]);
     });
@@ -604,6 +658,7 @@ describe('Schema service', function () {
             'id': '1',
             'readonly': false,
             'status': DRAFT,
+            'iri': null
         }
         assert.deepEqual(value, [s1i]);
     });

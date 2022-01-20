@@ -167,7 +167,8 @@ export class RequestVcDocumentBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
             return;
         }
-        const schema = schemas.find(s => s.uuid === ref.options.schema)
+        console.log(schemas.map(s => s.iri), ref.options.schema)
+        const schema = schemas.find(s => s.iri === ref.options.schema)
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
             return;

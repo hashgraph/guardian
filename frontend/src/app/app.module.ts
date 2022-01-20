@@ -88,6 +88,7 @@ import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
 import { FiltersAddonBlockComponent } from './policy-engine/policy-viewer/filters-addon-block/filters-addon-block.component';
 import { FiltersAddonConfigComponent} from './policy-engine/policy-configuration/filters-addon-config/filters-addon-config.component';
+import { VersionSchemaDialog } from './components/dialogs/version-schema/version-schema-dialog.component';
 
 @NgModule({
     declarations: [
@@ -136,6 +137,7 @@ import { FiltersAddonConfigComponent} from './policy-engine/policy-configuration
         ExportPolicyDialog,
         RolesConfigComponent,
         RolesBlockComponent,
+        VersionSchemaDialog,
         FiltersAddonBlockComponent,
         FiltersAddonConfigComponent
     ],

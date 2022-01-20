@@ -219,3 +219,7 @@ form {
     left: 0;
     top: 0;
 }
+
+*[disabled='true'] {
+    pointer-events: none;
+}
