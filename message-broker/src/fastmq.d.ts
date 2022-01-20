@@ -6,7 +6,7 @@ declare module 'fastmq' {
 
     Server: {
       create(channelName: string, port: number, host: string): IFastMqServer;
-    };
+    }
   }
 
   export interface IFastMqChannel {
@@ -14,12 +14,13 @@ declare module 'fastmq' {
       target: string,
       topic: string,
       data: any,
-      dataType?: string,
+      dataType?: string
     ): Promise<{ payload: any }>;
+
   }
 
   export interface IFastMqServer {
-    start(): Promise<any>;
+    start(): Promise<any>
   }
 
   const fastmq: IFastMq;
