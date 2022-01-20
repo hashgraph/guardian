@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser } from 'interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
+import { SetVersionDialog } from 'src/app/components/dialogs/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -171,9 +172,21 @@ export class PolicyViewerComponent implements OnInit {
         });
     }
 
-    publish(element: any) {
+    setVersion(element: any) {
+      const dialogRef = this.dialog.open(SetVersionDialog, {
+          width: '350px',
+          data: {}
+      });
+      dialogRef.afterClosed().subscribe((version) => {
+          if (version) {
+              this.publish(element, version);
+          }
+      });
+    }
+
+    private publish(element: any, version: string) {
         this.loading = true;
-        this.policyEngineService.publish(element.id).subscribe((data: any) => {
+        this.policyEngineService.publish(element.id, version).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (!isValid) {
                 let text = [];
