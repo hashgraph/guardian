@@ -36,7 +36,7 @@ export class RootConfigComponent implements OnInit {
     profile: IUser | null;
     balance: string | null;
     progressInterval: any;
-    
+
     vcForm: FormGroup;
     schema: any;
     hideVC: any;
@@ -148,14 +148,15 @@ export class RootConfigComponent implements OnInit {
         }
     }
 
-    openDocument(document: any, isVcDocument: boolean = false) {
+    openDocument(document: any, title: string, isVcDocument: boolean = false, viewVcDocument: boolean = false) {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
                 document: document,
-                title: "DID",
+                title: title,
                 isVcDocument: isVcDocument,
-                schemas: this.schemas
+                schemas: this.schemas,
+                viewVcDocument: viewVcDocument
             }
         });
 

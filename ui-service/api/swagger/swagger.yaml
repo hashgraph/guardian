@@ -1799,6 +1799,7 @@ paths:
           content:
             application/json:
               schema:
+                description: CID of added file.
                 type: string
         401:
           description: Unauthorized.

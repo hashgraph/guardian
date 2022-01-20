@@ -1,6 +1,5 @@
-import { Component, Input, OnInit, } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, } from '@angular/core';
 import { Schema} from 'interfaces';
-import { SchemaService } from 'src/app/services/schema.service';
 
 
 /**
@@ -9,7 +8,8 @@ import { SchemaService } from 'src/app/services/schema.service';
 @Component({
     selector: 'app-vc-document-view',
     templateUrl: './vc-document-view.component.html',
-    styleUrls: ['./vc-document-view.component.css']
+    styleUrls: ['./vc-document-view.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VcDocumentViewComponent implements OnInit{
     @Input('vc-document') vcDocument: any;
@@ -19,27 +19,25 @@ export class VcDocumentViewComponent implements OnInit{
     credentialSubjects: any[] = []
     proofJson!: string;
 
-    constructor(
-      private schemaService: SchemaService,
-    ) {
-      this.schemaService.getSchemes()
-        .subscribe((schemas) => {
-          this.schemas = Schema.mapRef(schemas);
-        });
-    }
+    constructor() { }
 
     ngOnInit(): void {
       this.proofJson = this.vcDocument.proof
         ? JSON.stringify(this.vcDocument.proof)
         : "";
 
-      for(let i=0;i<this.vcDocument.credentialSubject.length;i++)
-      {
-        this.credentialSubjects.push(this.vcDocument.credentialSubject[i])
+      if (Object.getPrototypeOf(this.vcDocument.credentialSubject) === Object.prototype) {
+        this.credentialSubjects.push(this.vcDocument.credentialSubject);
+      }
+      else {
+        for(let i=0;i<this.vcDocument.credentialSubject.length;i++)
+        {
+          this.credentialSubjects.push(this.vcDocument.credentialSubject[i])
+        }
       }
     }
 
     GetSchema(id: any) {
-        return this.schemas.filter((schema)=> schema.context.type === id)[0];
+        return this.schemas.filter((schema)=> schema.uuid === id)[0];
     }
 }

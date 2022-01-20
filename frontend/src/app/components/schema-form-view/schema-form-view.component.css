@@ -115,12 +115,21 @@ form {
 }
 
 .ipfs-image {
-  margin: 20px auto;
-  width: auto;
-  display: block;
-  max-height: 300px;
+    margin: 20px auto;
+    width: auto;
+    display: block;
+    max-height: 300px;
 }
 
 :host mat-form-field {
-  cursor: not-allowed;
+    cursor: not-allowed;
+}
+
+.image-action-buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+.hidden-item {
+    display: none;
 }

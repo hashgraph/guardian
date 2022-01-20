@@ -9,9 +9,13 @@
                     class="example-full-width"
                     appearance="outline"
                   >
-                    <input matInput readonly [value]="item.value">
+                    <input matInput readonly [value]="item.value" [ngClass]="{'hidden-item': item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+' }">
                     <div *ngIf="item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'">
-                      <img class="ipfs-image" [src]="item.value">
+                      <div class="image-action-buttons">
+                        <button mat-button type="button" [cdkCopyToClipboard]="item.value">Copy Link</button>
+                        <button mat-button color="accent" [cdkCopyToClipboard]="getCID(item.value)">Copy CID</button>
+                      </div>
+                      <img class="ipfs-image" [src]="item.value" [alt]="item.value">
                     </div>
 
                   </mat-form-field>
@@ -91,7 +95,14 @@
                         class="example-full-width"
                         appearance="outline"
                       >
-                        <input readonly matInput [value]="listItem">
+                        <input readonly matInput [value]="listItem" [ngClass]="{'hidden-item': item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+' }">
+                        <div *ngIf="item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'">
+                          <div class="image-action-buttons">
+                            <button mat-button type="button" [cdkCopyToClipboard]="listItem">Copy Link</button>
+                            <button mat-button color="accent" [cdkCopyToClipboard]="getCID(listItem)">Copy CID</button>
+                          </div>
+                          <img class="ipfs-image" [src]="listItem" [alt]="listItem">
+                        </div>
                       </mat-form-field>
 
                       <mat-form-field *ngIf="item.type ==='string' && item.format === 'time'"

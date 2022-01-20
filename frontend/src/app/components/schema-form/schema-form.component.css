@@ -204,8 +204,12 @@ form {
     color: red;
 }
 
-.invalid-arrow-circle{
+.invalid-arrow-circle {
     position: absolute;
     left: -35px;
     font-size: 30px;
+}
+
+.ipfs-url ::ng-deep .mat-form-field-infix {
+    padding-right: 35px;
 }

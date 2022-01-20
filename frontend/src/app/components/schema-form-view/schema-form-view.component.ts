@@ -1,6 +1,6 @@
 import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { Component, Input, OnInit} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import { Schema, SchemaField } from 'interfaces';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 
@@ -14,7 +14,8 @@ import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
     providers: [
       { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
       { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
-    ]
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SchemaFormViewComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
@@ -106,5 +107,12 @@ export class SchemaFormViewComponent implements OnInit {
             fields.push(item);
         }
         this.fields = fields;
+    }
+
+    getCID(link: string): string {
+      let matches = link.match(/Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/);
+      return matches
+        ? matches[0]
+        : "";
     }
 }

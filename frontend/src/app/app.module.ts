@@ -27,6 +27,7 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatRadioModule } from '@angular/material/radio';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ClipboardModule } from '@angular/cdk/clipboard';
 import { ToastrModule } from 'ngx-toastr';
 import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
 import { AppRoutingModule, AuditorGuard, UserGuard, RootAuthorityGuard } from './app-routing.module';
@@ -169,6 +170,7 @@ import { VcDocumentViewComponent } from './components/vc-document-view/vc-docume
         MatSelectModule,
         MatCheckboxModule,
         MatSlideToggleModule,
+        ClipboardModule,
         FormsModule,
         CommonModule,
         MatTreeModule,

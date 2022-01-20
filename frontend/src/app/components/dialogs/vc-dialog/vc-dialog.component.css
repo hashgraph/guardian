@@ -8,25 +8,25 @@
     margin-bottom: 8px;
 }
 
-
 .content {
     height: 550px;
     overflow-y: scroll;
     overflow-x: hidden;
+    padding-right: 10px;
 }
 
 .dialog-content {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 .view-toggle {
-  float: right
+    float: right
 }
 
 .dialog-title {
-  display: inline-block;
+    display: inline-block;
 }
 
 .dialog-actions {
-  padding-bottom: 20px;
+    padding-bottom: 20px;
 }
