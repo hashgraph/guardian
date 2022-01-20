@@ -91,58 +91,19 @@ export class FiltersAddonBlockComponent implements OnInit {
                 if (data.canBeEmpty) {
                     this.options.push({
                         name: "",
-                        value: -1
+                        value: null,
                     });
                 }
                 if (options) {
                     for (let i = 0; i < options.length; i++) {
                         const item = options[i];
-                        this.options.push({
-                            name: this.getObjectValue(item, data.optionName),
-                            value: i
-                        })
+                        this.options.push(item);
                     }
                 }
             }
         } else {
             this.data = null;
         }
-
-        setTimeout(() => {
-            this.currentValue = data.filterValue;
-        });
-    }
-
-    getObjectValue(data: any, value: any) {
-        let result: any = null;
-        if (data && value) {
-            const keys = value.split('.');
-            result = data;
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-                result = result[key];
-            }
-        }
-        return result;
-    }
-
-    getFilters(data: any) {
-        if (!data) {
-            return null;
-        }
-        if (this.filters) {
-            const filters: any = {};
-            for (let i = 0; i < this.filters.length; i++) {
-                const filter = this.filters[i];
-                if (filter.type == 'object') {
-                    filters[filter.name] = this.getObjectValue(data, filter.value);
-                } else {
-                    filters[filter.name] = filter.value;
-                }
-            }
-            return filters;
-        }
-        return null;
     }
 
     onFilters() {
@@ -153,21 +114,5 @@ export class FiltersAddonBlockComponent implements OnInit {
             console.error(e.error);
             this.loading = false;
         });
-        // const currentFilters = this.getFilters(this.currentValue);
-        // this.loading = true;
-        // this.policyEngineService.getGetIdByName(this.target, this.policyId).subscribe(({ id }: any) => {
-        //     this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {
-        //         this.loading = false;
-        //         const filters: any = {};
-        //         for (let index = parents.length - 1; index > 0; index--) {
-        //             filters[parents[index]] = parents[index - 1];
-        //         }
-        //         filters[parents[0]] = currentFilters;
-        //         this.policyHelper.setParams(filters)
-        //     }, (e) => {
-        //         console.error(e.error);
-        //         this.loading = false;
-        //     });
-        // });
     }
 }

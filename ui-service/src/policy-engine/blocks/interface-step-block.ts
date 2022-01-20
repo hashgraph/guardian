@@ -11,14 +11,12 @@ import {StateContainer} from '@policy-engine/state-container';
     commonBlock: false
 })
 export class InterfaceStepBlock {
-    private init(): void {
-        const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
-
-        if (!options.uiMetaData) {
-            throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
-        }
-
-    }
+    // private init(): void {
+    //     const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
+    //     if (!options.uiMetaData) {
+    //         throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
+    //     }
+    // }
 
     @DependenciesUpdateHandler()
     async handler(uuid, state, user, tag) {

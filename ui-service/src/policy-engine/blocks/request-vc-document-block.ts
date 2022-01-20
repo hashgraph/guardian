@@ -34,13 +34,12 @@ export class RequestVcDocumentBlock {
 
     private schema: any;
 
-    private init(): void {
-        const { options, blockType, uuid } = PolicyBlockHelpers.GetBlockRef(this);
-
-        if (!options.schema) {
-            throw new BlockInitError(`Field "schema" is required`, blockType, uuid);
-        }
-    }
+    // private init(): void {
+    //     const { options, blockType, uuid } = PolicyBlockHelpers.GetBlockRef(this);
+    //     if (!options.schema) {
+    //         throw new BlockInitError(`Field "schema" is required`, blockType, uuid);
+    //     }
+    // }
 
     constructor() {
     }

@@ -25,22 +25,21 @@ export class InterfaceDocumentsSource {
     @Inject()
     private guardians: Guardians;
 
-    private init() {
-        const { options, uuid, blockType } = PolicyBlockHelpers.GetBlockRef(this);
-
-        if (!options.dataType) {
-            throw new BlockInitError(`Field "dataType" is required`, blockType, uuid);
-        }
-        if (!options.onlyOwnDocuments) {
-            options.onlyOwnDocuments = true;
-        }
-        if (!options.onlyAssignDocuments) {
-            options.onlyAssignDocuments = false;
-        }
-        if (!options.uiMetaData) {
-            throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
-        }
-    }
+    // private init() {
+    //     const { options, uuid, blockType } = PolicyBlockHelpers.GetBlockRef(this);
+    //     if (!options.dataType) {
+    //         throw new BlockInitError(`Field "dataType" is required`, blockType, uuid);
+    //     }
+    //     if (!options.onlyOwnDocuments) {
+    //         options.onlyOwnDocuments = true;
+    //     }
+    //     if (!options.onlyAssignDocuments) {
+    //         options.onlyAssignDocuments = false;
+    //     }
+    //     if (!options.uiMetaData) {
+    //         throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
+    //     }
+    // }
 
     @BlockStateUpdate()
     async update(state, user) {
@@ -68,6 +67,8 @@ export class InterfaceDocumentsSource {
 
         Object.assign(filters, ref.getFilters());
 
+        console.log('getData', filters);
+        
         let data: any[];
         switch (ref.options.dataType) {
             case 'vc-documents':

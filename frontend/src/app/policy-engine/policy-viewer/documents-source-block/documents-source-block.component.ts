@@ -45,7 +45,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (!this.static) {
             this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
         }
-        this.params = this.policyHelper.subscribe(this.onUpdateParams.bind(this));
         this.loadData();
     }
 
@@ -53,19 +52,12 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (this.socket) {
             this.socket.unsubscribe();
         }
-        if (this.params) {
-            this.params.unsubscribe();
-        }
     }
 
     onUpdate(id: string): void {
         if (this.id == id) {
             this.loadData();
         }
-    }
-
-    onUpdateParams() {
-        this.loadData();
     }
 
     loadData() {
@@ -184,6 +176,19 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
+    getObjectValue(data: any, value: any) {
+        let result: any = null;
+        if (data && value) {
+            const keys = value.split('.');
+            result = data;
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                result = result[key];
+            }
+        }
+        return result;
+    }
+
     getConfig(row: any, field: any, block: any) {
         const config = { ...block };
         config.data = row;
@@ -196,5 +201,36 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (field.action == 'dialog') {
             this.onDialog(row, field);
         }
+        if (field.action == 'link') {
+            this.onRedirect(row, field);
+        }
+    }
+
+    onRedirect(row: any, field: any) {
+        const data = row;
+        const value = this.getObjectValue(row, field.name);
+        this.loading = true;
+        this.policyEngineService.getGetIdByName(field.bindBlock, this.policyId).subscribe(({ id }: any) => {
+            this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {
+                this.policyEngineService.setBlockData(id, this.policyId, { filterValue: value }).subscribe(() => {
+                    this.loading = false;
+                    const filters: any = {};
+                    for (let index = parents.length - 1; index > 0; index--) {
+                        filters[parents[index]] = parents[index - 1];
+                    }
+                    filters[parents[0]] = value;
+                    this.policyHelper.setParams(filters);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
     }
 }

@@ -156,9 +156,16 @@
             <ng-container *ngIf="field.action=='link'">
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">URL</td>
+                    <td class="propRowCell cellName">
+                        <mat-icon class="icon-link">
+                            add_link
+                        </mat-icon>
+                        Bind Block
+                    </td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="field.url" [readonly]="readonly">
+                        <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
+                            <mat-option *ngFor="let item of allBlocks" [value]="item.tag">{{item.tag}}</mat-option>
+                        </mat-select>
                     </td>
                 </tr>
             </ng-container>

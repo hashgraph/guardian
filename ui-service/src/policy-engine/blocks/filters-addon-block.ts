@@ -30,9 +30,25 @@ export class FiltersAddonBlock {
     @Inject()
     private guardians: Guardians;
 
-    init() {
+    private init(): void {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
-        ref.filters = ref.options.defaultValue || {}
+        if (!ref.options.canBeEmpty) {
+            ref.filters = {};
+            this.lastData = null;
+            this.lastValue = null;
+
+            if (ref.options.type == 'dropdown') {
+                ref.filters[ref.options.field] = "";
+            }
+
+            if (ref.options.type == 'unselected') {
+                ref.filters[ref.options.field] = ref.options.filterValue
+            }
+        } else {
+            this.lastData = null;
+            this.lastValue = null;
+        }
+
     }
 
     async getData(user: IAuthUser) {
@@ -91,13 +107,17 @@ export class FiltersAddonBlock {
                 default:
                     throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
             }
-
-            block.data = data;
+            data = data || [];
+            this.lastData = data.map((e) => {
+                return {
+                    name: findOptions(e, ref.options.optionName),
+                    value: findOptions(e, ref.options.optionValue),
+                }
+            });
+            block.data = this.lastData;
             block.optionName = ref.options.optionName;
             block.optionValue = ref.options.optionValue;
-            block.filterValue = ref.options.canBeEmpty ? -1 : 0;
             block.filterValue = this.lastValue;
-            this.lastData = data;
         }
 
         if (ref.options.type == 'unselected') {
@@ -114,17 +134,17 @@ export class FiltersAddonBlock {
             throw new BlockActionError(`filter value "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
         if (ref.options.type == 'dropdown') {
-            const index = data.filterValue;
+            const value = data.filterValue;
             if (!this.lastData) {
                 throw new BlockActionError(`data "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
             }
-            const selectItem = this.lastData[index];
+            const selectItem = this.lastData.find((e:any) => e.value == value);
             if (selectItem) {
-                filter[ref.options.field] = findOptions(selectItem, ref.options.optionValue);
+                filter[ref.options.field] = selectItem.value;
             } else if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
             }
-            this.lastValue = index;
+            this.lastValue = value;
         }
         ref.setFilters(filter);
     }

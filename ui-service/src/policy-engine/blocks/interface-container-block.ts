@@ -10,13 +10,12 @@ import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
     commonBlock: false
 })
 export class InterfaceContainerBlock {
-    private init(): void {
-        const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
-
-        if (!options.uiMetaData) {
-            throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
-        }
-    }
+    // private init(): void {
+    //     const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
+    //     if (!options.uiMetaData) {
+    //         throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
+    //     }
+    // }
 
     async getData(user): Promise<any> {
         const {options} = PolicyBlockHelpers.GetBlockRef(this);

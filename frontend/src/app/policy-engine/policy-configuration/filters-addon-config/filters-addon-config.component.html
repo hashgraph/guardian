@@ -12,7 +12,7 @@
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.type" [disabled]="readonly">
-                <mat-option value="unelected">Unelected</mat-option>
+                <mat-option value="unselected">Unselected</mat-option>
                 <mat-option value="dropdown">Dropdown</mat-option>
             </mat-select>
         </td>
@@ -32,7 +32,7 @@
         </td>
     </tr>
 
-    <ng-container *ngIf="block.type == 'unelected'">
+    <ng-container *ngIf="block.type == 'unselected'">
         <tr class="propRow">
             <td class="propRowCol" (click)="onHide(propHidden, 'unelectedGroup')"
                 [attr.collapse]="propHidden.unelectedGroup">
