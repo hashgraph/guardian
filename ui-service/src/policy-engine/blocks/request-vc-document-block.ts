@@ -8,7 +8,7 @@ import { BlockStateUpdate } from '@policy-engine/helpers/decorators';
 import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { PolicyBlockStateData } from '@policy-engine/interfaces';
 import { StateContainer } from '@policy-engine/state-container';
-import { Schema } from 'interfaces';
+import { Schema, SchemaStatus } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '../../auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
@@ -158,13 +158,23 @@ export class RequestVcDocumentBlock {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
 
         // Test schema options
-        const schemas = await this.guardians.getSchemes({}) || [];
+        const schemas = await this.guardians.getSchemes() || [];
         if (!ref.options.schema) {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
-        } else if (typeof ref.options.schema !== 'string') {
+            return;
+        }
+        if (typeof ref.options.schema !== 'string') {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-        } else if (!schemas.find(s => s.uuid === ref.options.schema)) {
-            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`)
+            return;
+        }
+        const schema = schemas.find(s => s.uuid === ref.options.schema)
+        if (!schema) {
+            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+            return;
+        }
+        if (schema.status != SchemaStatus.PUBLISHED) {
+            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not published`);
+            return;
         }
     }
 }
