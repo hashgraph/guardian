@@ -29,17 +29,17 @@ jobs:
         with:
           node-version: '16.10.0'
 
-      - name: restore npm
-        id: npm-cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/package.json') }}
+      # - name: restore npm
+      #   id: npm-cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: |
+      #       node_modules
+      #       */*/node_modules
+      #     key: ${{ runner.os }}-${{ hashFiles('**/package.json') }}
 
       - name: npm install
-        if: steps.npm-cache.outputs.cache-hit != 'true'
+        # if: steps.npm-cache.outputs.cache-hit != 'true'
         run: |
           npm install
 
