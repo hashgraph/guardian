@@ -7,7 +7,7 @@ import {InformationBlockComponent} from '../information-block/information-block.
 import {RequestDocumentBlockComponent} from '../request-document-block/request-document-block.component';
 import {StepBlockComponent} from '../step-block/step-block.component';
 import {RolesBlockComponent} from '../roles-block/roles-block.component';
-import { SelectorBlockComponent } from '../selector-block/selector-block.component';
+import { FiltersAddonBlockComponent } from '../filters-addon-block/filters-addon-block.component';
 
 
 /**
@@ -79,8 +79,8 @@ export class RenderBlockComponent {
         componentFactory = this.componentFactoryResolver.resolveComponentFactory(RolesBlockComponent);
         break;
       }
-      case 'interfaceSelector': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(SelectorBlockComponent);
+      case 'filtersAddon': {
+        componentFactory = this.componentFactoryResolver.resolveComponentFactory(FiltersAddonBlockComponent);
         break;
       }
     }

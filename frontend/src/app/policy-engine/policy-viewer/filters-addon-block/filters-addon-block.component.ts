@@ -6,11 +6,11 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
  * Component for display block of 'requestVcDocument' type.
  */
 @Component({
-    selector: 'selector-block',
-    templateUrl: './selector-block.component.html',
-    styleUrls: ['./selector-block.component.css']
+    selector: 'filters-addon-block',
+    templateUrl: './filters-addon-block.component.html',
+    styleUrls: ['./filters-addon-block.component.css']
 })
-export class SelectorBlockComponent implements OnInit {
+export class FiltersAddonBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
@@ -141,20 +141,20 @@ export class SelectorBlockComponent implements OnInit {
 
     onFilters() {
         const currentFilters = this.getFilters(this.currentValue);
-        this.loading = true;
-        this.policyEngineService.getGetIdByName(this.target, this.policyId).subscribe(({ id }: any) => {
-            this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {
-                this.loading = false;
-                const filters: any = {};
-                for (let index = parents.length - 1; index > 0; index--) {
-                    filters[parents[index]] = parents[index - 1];
-                }
-                filters[parents[0]] = currentFilters;
-                this.policyHelper.setParams(filters)
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
-        });
+        // this.loading = true;
+        // this.policyEngineService.getGetIdByName(this.target, this.policyId).subscribe(({ id }: any) => {
+        //     this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {
+        //         this.loading = false;
+        //         const filters: any = {};
+        //         for (let index = parents.length - 1; index > 0; index--) {
+        //             filters[parents[index]] = parents[index - 1];
+        //         }
+        //         filters[parents[0]] = currentFilters;
+        //         this.policyHelper.setParams(filters)
+        //     }, (e) => {
+        //         console.error(e.error);
+        //         this.loading = false;
+        //     });
+        // });
     }
 }

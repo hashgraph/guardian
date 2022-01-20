@@ -86,11 +86,8 @@ import { RolesConfigComponent } from './policy-engine/policy-configuration/roles
 import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
-import { SelectorConfigComponent } from './policy-engine/policy-configuration/selector-config/selector-config.component';
-import { SelectorBlockComponent } from './policy-engine/policy-viewer/selector-block/selector-block.component';
-import {
-  FiltersAddonConfigComponent
-} from './policy-engine/policy-configuration/filters-addon-config/filters-addon-config.component';
+import { FiltersAddonBlockComponent } from './policy-engine/policy-viewer/filters-addon-block/filters-addon-block.component';
+import { FiltersAddonConfigComponent} from './policy-engine/policy-configuration/filters-addon-config/filters-addon-config.component';
 
 @NgModule({
     declarations: [
@@ -139,8 +136,7 @@ import {
         ExportPolicyDialog,
         RolesConfigComponent,
         RolesBlockComponent,
-        SelectorConfigComponent,
-        SelectorBlockComponent,
+        FiltersAddonBlockComponent,
         FiltersAddonConfigComponent
     ],
     imports: [
