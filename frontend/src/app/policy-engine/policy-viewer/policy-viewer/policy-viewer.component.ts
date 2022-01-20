@@ -7,8 +7,8 @@ import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
-import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../export-import-dialog/export-import-dialog.component';
-import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
+import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../helpers/export-import-dialog/export-import-dialog.component';
+import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
 
 /**
  * Component for choosing a policy and

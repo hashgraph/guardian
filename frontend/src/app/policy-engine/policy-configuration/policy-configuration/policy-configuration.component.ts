@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { BlockNode } from '../../data-source/tree-data-source';
+import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema, SchemaStatus, Token } from 'interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
+import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
 import { TokenService } from 'src/app/services/token.service';
+import { RegisteredBlocks } from '../../helpers/registered-blocks';
 
 /**
  * The page for editing the policy and blocks.
@@ -61,6 +62,7 @@ export class PolicyConfigurationComponent implements OnInit {
     };
 
     constructor(
+        public registeredBlocks: RegisteredBlocks,
         private schemaService: SchemaService,
         private tokenService: TokenService,
         private policyEngineService: PolicyEngineService,

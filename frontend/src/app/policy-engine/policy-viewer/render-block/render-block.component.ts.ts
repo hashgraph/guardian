@@ -1,13 +1,14 @@
-import {Component, ComponentFactoryResolver, Input, ViewContainerRef} from '@angular/core';
-import {IBlock} from '../../data-source/block';
-import {ActionBlockComponent} from '../action-block/action-block.component';
-import {ContainerBlockComponent} from '../container-block/container-block.component';
-import {DocumentsSourceBlockComponent} from '../documents-source-block/documents-source-block.component';
-import {InformationBlockComponent} from '../information-block/information-block.component';
-import {RequestDocumentBlockComponent} from '../request-document-block/request-document-block.component';
-import {StepBlockComponent} from '../step-block/step-block.component';
-import {RolesBlockComponent} from '../roles-block/roles-block.component';
-import { FiltersAddonBlockComponent } from '../filters-addon-block/filters-addon-block.component';
+import { Component, ComponentFactoryResolver, Input, ViewContainerRef } from '@angular/core';
+import { IBlock } from '../../helpers/tree-data-source/block';
+import { ActionBlockComponent } from '../blocks/action-block/action-block.component';
+import { ContainerBlockComponent } from '../blocks/container-block/container-block.component';
+import { DocumentsSourceBlockComponent } from '../blocks/documents-source-block/documents-source-block.component';
+import { InformationBlockComponent } from '../blocks/information-block/information-block.component';
+import { RequestDocumentBlockComponent } from '../blocks/request-document-block/request-document-block.component';
+import { StepBlockComponent } from '../blocks/step-block/step-block.component';
+import { RolesBlockComponent } from '../blocks/roles-block/roles-block.component';
+import { FiltersAddonBlockComponent } from '../blocks/filters-addon-block/filters-addon-block.component';
+import { RegisteredBlocks } from '../../helpers/registered-blocks';
 
 
 /**
@@ -27,6 +28,7 @@ export class RenderBlockComponent {
   blockType: any;
 
   constructor(
+    public registeredBlocks: RegisteredBlocks,
     private componentFactoryResolver: ComponentFactoryResolver,
     private viewContainerRef: ViewContainerRef) {
   }
@@ -49,43 +51,9 @@ export class RenderBlockComponent {
 
   loadComponent() {
     this.viewContainerRef.clear();
-    let componentFactory: any = null;
-    switch (this.blockType) {
-      case 'interfaceContainerBlock': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(ContainerBlockComponent);
-        break;
-      }
-      case 'interfaceDocumentsSource': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(DocumentsSourceBlockComponent);
-        break;
-      }
-      case 'requestVcDocument': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(RequestDocumentBlockComponent);
-        break;
-      }
-      case 'interfaceAction': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(ActionBlockComponent);
-        break;
-      }
-      case 'interfaceStepBlock': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(StepBlockComponent);
-        break;
-      }
-      case 'informationBlock': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(InformationBlockComponent);
-        break;
-      }
-      case 'policyRolesBlock': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(RolesBlockComponent);
-        break;
-      }
-      case 'filtersAddon': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(FiltersAddonBlockComponent);
-        break;
-      }
-    }
-    if (componentFactory) {
-      console.log('render: ', this.blockType);
+    const factory: any = this.registeredBlocks.getFactory(this.blockType);
+    if (factory) {
+      let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
       let componentRef: any = this.viewContainerRef.createComponent(componentFactory);
       componentRef.instance.id = this.id;
       componentRef.instance.static = this.static;

@@ -39,12 +39,11 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Permissions</td>
                     <td class="propRowCell">
-                        <mat-select [(ngModel)]="block.permissions" multiple
-                            [disabled]="readonly">
+                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly">
                             <mat-option value="OWNER">Owner</mat-option>
                             <mat-option value="NO_ROLE">No Role</mat-option>
                             <mat-option value="ANY_ROLE">Any Role</mat-option>
-                            <ng-container *ngIf="roles" >
+                            <ng-container *ngIf="roles">
                                 <mat-option *ngFor="let item of roles" [value]="item">{{item}}</mat-option>
                             </ng-container>
                         </mat-select>
@@ -67,45 +66,35 @@
                     </td>
                 </tr>
             </table>
-            <document-source *ngIf="currentBlock.blockType=='interfaceDocumentsSource'" [block]="currentBlock"
-                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
-            </document-source>
-            <action-config *ngIf="currentBlock.blockType=='interfaceAction'" [block]="currentBlock" [schemes]="schemes"
-                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+
+            <template #configContainer></template>
+
+            <!-- <document-viewer-config *ngIf="currentBlock.blockType=='interfaceDocumentsSource'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </document-viewer-config>
+            <action-config *ngIf="currentBlock.blockType=='interfaceAction'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </action-config>
-            <container-config *ngIf="currentBlock.blockType=='interfaceContainerBlock'" [block]="currentBlock"
-                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <container-config *ngIf="currentBlock.blockType=='interfaceContainerBlock'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </container-config>
-            <request-config *ngIf="currentBlock.blockType=='requestVcDocument'" [block]="currentBlock"
-                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <request-config *ngIf="currentBlock.blockType=='requestVcDocument'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </request-config>
-            <container-config *ngIf="currentBlock.blockType=='interfaceStepBlock'" [block]="currentBlock"
-                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <container-config *ngIf="currentBlock.blockType=='interfaceStepBlock'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </container-config>
-            <mint-config *ngIf="currentBlock.blockType=='mintDocument'" [block]="currentBlock" [schemes]="schemes"
-                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <mint-config *ngIf="currentBlock.blockType=='mintDocument'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </mint-config>
-            <send-config *ngIf="currentBlock.blockType=='sendToGuardian'" [block]="currentBlock" [schemes]="schemes"
-                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <send-config *ngIf="currentBlock.blockType=='sendToGuardian'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </send-config>
-            <external-data-config *ngIf="currentBlock.blockType=='externalDataBlock'" [block]="currentBlock"
-                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <external-data-config *ngIf="currentBlock.blockType=='externalDataBlock'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </external-data-config>
-            <aggregate-config *ngIf="currentBlock.blockType=='aggregateDocument'" [block]="currentBlock"
-                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <aggregate-config *ngIf="currentBlock.blockType=='aggregateDocument'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </aggregate-config>
-            <mint-config *ngIf="currentBlock.blockType=='wipeDocument'" [block]="currentBlock" [schemes]="schemes"
-                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <mint-config *ngIf="currentBlock.blockType=='wipeDocument'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </mint-config>
-            <information-config *ngIf="currentBlock.blockType=='informationBlock'" [block]="currentBlock"
-                [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            <information-config *ngIf="currentBlock.blockType=='informationBlock'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
             </information-config>
-            <roles-config *ngIf="currentBlock.blockType=='policyRolesBlock'" [block]="currentBlock" [schemes]="schemes"
-                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens" [roles]="roles">
+            <roles-config *ngIf="currentBlock.blockType=='policyRolesBlock'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens" [roles]="roles">
             </roles-config>
-            <filters-addon-config *ngIf="currentBlock.blockType=='filtersAddon'" [block]="currentBlock" [schemes]="schemes"
-                [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
-            </filters-addon-config>
+            <filters-addon-config *ngIf="currentBlock.blockType=='filtersAddon'" [block]="currentBlock" [schemes]="schemes" [all]="allBlocks" [readonly]="readonly" [tokens]="tokens">
+            </filters-addon-config> -->
         </div>
     </div>
 </div>

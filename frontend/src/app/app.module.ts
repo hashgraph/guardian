@@ -54,41 +54,43 @@ import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
 import { PolicyViewerComponent } from './policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
 import { CommonPropertiesComponent } from './policy-engine/policy-configuration/common-properties/common-properties.component';
-import { DocumentSourceComponent } from './policy-engine/policy-configuration/document-source/document-source.component';
-import { ActionConfigComponent } from './policy-engine/policy-configuration/action-config/action-config.component';
+import { DocumentSourceComponent } from './policy-engine/policy-configuration/blocks/document-viewer-config/document-viewer-config.component';
+import { ActionConfigComponent } from './policy-engine/policy-configuration/blocks/action-config/action-config.component';
 import { PolicyConfigurationComponent } from './policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
 import { DialogBlock } from './policy-engine/policy-viewer/dialog-block/dialog-block.component';
-import { RequestDocumentBlockComponent } from './policy-engine/policy-viewer/request-document-block/request-document-block.component';
-import { DocumentsSourceBlockComponent } from './policy-engine/policy-viewer/documents-source-block/documents-source-block.component';
-import { ContainerBlockComponent } from './policy-engine/policy-viewer/container-block/container-block.component';
-import { InformationBlockComponent } from './policy-engine/policy-viewer/information-block/information-block.component';
+import { RequestDocumentBlockComponent } from './policy-engine/policy-viewer/blocks/request-document-block/request-document-block.component';
+import { DocumentsSourceBlockComponent } from './policy-engine/policy-viewer/blocks/documents-source-block/documents-source-block.component';
+import { ContainerBlockComponent } from './policy-engine/policy-viewer/blocks/container-block/container-block.component';
+import { InformationBlockComponent } from './policy-engine/policy-viewer/blocks/information-block/information-block.component';
 import { RenderBlockComponent } from './policy-engine/policy-viewer/render-block/render-block.component.ts';
-import { ContainerConfigComponent } from './policy-engine/policy-configuration/container-config/container-config.component';
-import { RequestConfigComponent } from './policy-engine/policy-configuration/request-config/request-config.component';
+import { ContainerConfigComponent } from './policy-engine/policy-configuration/blocks/container-config/container-config.component';
+import { RequestConfigComponent } from './policy-engine/policy-configuration/blocks/request-config/request-config.component';
 import { PolicyPropertiesComponent } from './policy-engine/policy-configuration/policy-properties/policy-properties.component';
-import { NewPolicyDialog } from './policy-engine/new-policy-dialog/new-policy-dialog.component';
-import { ActionBlockComponent } from './policy-engine/policy-viewer/action-block/action-block.component';
-import { DocumentDialogBlock } from './policy-engine/policy-viewer/document-dialog-block/document-dialog-block.component';
-import { StepBlockComponent } from './policy-engine/policy-viewer/step-block/step-block.component';
-import { MintConfigComponent } from './policy-engine/policy-configuration/mint-config/mint-config.component';
-import { SendConfigComponent } from './policy-engine/policy-configuration/send-config/send-config.component';
-import { ExternalDataConfigComponent } from './policy-engine/policy-configuration/external-data-config/external-data-config.component';
-import { HelpIconDialog } from './policy-engine/help-icon/help-icon.component';
+import { NewPolicyDialog } from './policy-engine/helpers/new-policy-dialog/new-policy-dialog.component';
+import { ActionBlockComponent } from './policy-engine/policy-viewer/blocks/action-block/action-block.component';
+import { DocumentDialogBlock } from './policy-engine/policy-viewer/blocks/document-dialog-block/document-dialog-block.component';
+import { StepBlockComponent } from './policy-engine/policy-viewer/blocks/step-block/step-block.component';
+import { MintConfigComponent } from './policy-engine/policy-configuration/blocks/mint-config/mint-config.component';
+import { SendConfigComponent } from './policy-engine/policy-configuration/blocks/send-config/send-config.component';
+import { ExternalDataConfigComponent } from './policy-engine/policy-configuration/blocks/external-data-config/external-data-config.component';
+import { HelpIconDialog } from './policy-engine/helpers/help-icon/help-icon.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ImportSchemaDialog } from './components/dialogs/import-schema/import-schema-dialog.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { TreeFlatOverview } from './components/tree-flat-overview/tree-flat-overview';
-import { AggregateConfigComponent } from './policy-engine/policy-configuration/aggregate-config/aggregate-config.component';
-import { InformationConfigComponent } from './policy-engine/policy-configuration/information-config/information-config.component';
-import { ExportPolicyDialog } from './policy-engine/export-import-dialog/export-import-dialog.component';
+import { TreeFlatOverview } from './policy-engine/helpers/tree-flat-overview/tree-flat-overview';
+import { AggregateConfigComponent } from './policy-engine/policy-configuration/blocks/aggregate-config/aggregate-config.component';
+import { InformationConfigComponent } from './policy-engine/policy-configuration/blocks/information-config/information-config.component';
+import { ExportPolicyDialog } from './policy-engine/helpers/export-import-dialog/export-import-dialog.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
-import { RolesConfigComponent } from './policy-engine/policy-configuration/roles-config/roles-config.component';
-import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
+import { RolesConfigComponent } from './policy-engine/policy-configuration/blocks/roles-config/roles-config.component';
+import { RolesBlockComponent } from './policy-engine/policy-viewer/blocks/roles-block/roles-block.component';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
-import { FiltersAddonBlockComponent } from './policy-engine/policy-viewer/filters-addon-block/filters-addon-block.component';
-import { FiltersAddonConfigComponent} from './policy-engine/policy-configuration/filters-addon-config/filters-addon-config.component';
+import { FiltersAddonBlockComponent } from './policy-engine/policy-viewer/blocks/filters-addon-block/filters-addon-block.component';
+import { FiltersAddonConfigComponent} from './policy-engine/policy-configuration/blocks/filters-addon-config/filters-addon-config.component';
 import { VersionSchemaDialog } from './components/dialogs/version-schema/version-schema-dialog.component';
+import { RegisteredBlocks } from './policy-engine/helpers/registered-blocks';
+import { SourceAddonConfigComponent } from './policy-engine/policy-configuration/blocks/source-addon-config/source-addon-config.component';
 
 @NgModule({
     declarations: [
@@ -139,7 +141,8 @@ import { VersionSchemaDialog } from './components/dialogs/version-schema/version
         RolesBlockComponent,
         VersionSchemaDialog,
         FiltersAddonBlockComponent,
-        FiltersAddonConfigComponent
+        FiltersAddonConfigComponent,
+        SourceAddonConfigComponent
     ],
     imports: [
         BrowserModule,
@@ -179,6 +182,7 @@ import { VersionSchemaDialog } from './components/dialogs/version-schema/version
     ],
     exports: [],
     providers: [
+        RegisteredBlocks,
         UserGuard,
         RootAuthorityGuard,
         AuditorGuard,
