@@ -8,7 +8,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
 
         return class extends basicClass {
 
-            private filters: {[key: string]: string} = {};
+            private filters: {[key: string]: string};
 
             public readonly blockClassName = 'DataSourceAddon';
 

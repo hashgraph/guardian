@@ -1,3 +1,4 @@
+export {SourceAddon} from './source-addon';
 export {ExternalData} from './external-data';
 export {EventBlock} from './event-block';
 export {ContainerBlock} from './container-block';
