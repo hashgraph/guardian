@@ -29,7 +29,8 @@ export class FiltersAddonConfigComponent implements OnInit {
         options: {},
         filterGroup: false,
         filters: {},
-        dropdownGroup: false
+        dropdownGroup: false,
+        unelectedGroup: false
     };
 
     block!: BlockNode;

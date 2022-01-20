@@ -50,8 +50,8 @@ export class RequestVcDocumentBlock {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
 
         if(!this.schema) {
-            const schemas = await this.guardians.getSchemes({}) || [];
-            this.schema = Schema.mapRef(schemas).find(s => s.uuid === options.schema);
+            const schemas = await this.guardians.getSchemes() || [];
+            this.schema = Schema.mapRef(schemas).find(s => s.ref === options.schema);
         }
         if (!this.schema) {
             throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
@@ -167,7 +167,6 @@ export class RequestVcDocumentBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
             return;
         }
-        console.log(schemas.map(s => s.iri), ref.options.schema)
         const schema = schemas.find(s => s.iri === ref.options.schema)
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);

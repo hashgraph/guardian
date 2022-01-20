@@ -181,7 +181,7 @@ export class Schema {
             return null;
         }
 
-        const type = Schema.buildType(this.owner, this.uuid, this.currentVersion);
+        const type = Schema.buildType(this.uuid, this.currentVersion);
         const ref = Schema.buildRef(type);
         const document = {
             $id: ref,
@@ -375,11 +375,11 @@ export class Schema {
     public static updateVersion(data: ISchema, newVersion: string) {
         const document = JSON.parse(data.document);
 
-        let { version, owner, uuid } = Schema.parsRef(document.$id);
+        let { version, uuid } = Schema.parsRef(document.$id);
         let { previousVersion } = Schema.parsComment(document.$comment);
 
         let _version = data.version || version;
-        let _owner = data.owner || owner;
+        let _owner = data.owner;
         let _uuid = data.uuid || uuid;
 
         if (!Schema.checkVersionFormat(newVersion)) {
@@ -395,7 +395,7 @@ export class Schema {
         data.owner = _owner;
         data.uuid = _uuid;
 
-        const type = Schema.buildType(_owner, _uuid, _version);
+        const type = Schema.buildType(_uuid, _version);
         const ref = Schema.buildRef(type);
         document.$id = ref;
         document.$comment = Schema.buildComment(type, Schema.buildUrl(ref), previousVersion);
@@ -410,7 +410,7 @@ export class Schema {
         data.version = data.version || version;
         data.uuid = data.uuid || uuid;
         data.owner = newOwner;
-        const type = Schema.buildType(data.owner, data.uuid, data.version);
+        const type = Schema.buildType(data.uuid, data.version);
         const ref = Schema.buildRef(type);
         document.$id = ref;
         document.$comment = Schema.buildComment(type, Schema.buildUrl(ref), previousVersion);
@@ -429,13 +429,10 @@ export class Schema {
         return `${Schema.LOCAL_SCHEMA}${ref}`
     }
 
-    public static buildType(owner: string, uuid: string, version?: string) {
+    public static buildType(uuid: string, version?: string) {
         let type = uuid;
-        if (owner) {
-            type = `${owner}/${type}`;
-        }
         if (version) {
-            return `${type}/${version}`;
+            return `${type}&${version}`;
         }
         return type;
     }
@@ -455,29 +452,17 @@ export class Schema {
             }
             if (ref) {
                 const id = ref.split("#");
-                const keys = id[id.length - 1].split("/");
-                if (keys[0] && keys[0].startsWith("did")) {
-                    return {
-                        iri: ref,
-                        type: id[id.length - 1],
-                        owner: keys[0] || null,
-                        uuid: keys[1] || null,
-                        version: keys[2] || null
-                    }
-                } else {
-                    return {
-                        iri: ref,
-                        type: id[id.length - 1],
-                        owner: null,
-                        uuid: keys[0] || null,
-                        version: keys[1] || null
-                    }
+                const keys = id[id.length - 1].split("&");
+                return {
+                    iri: ref,
+                    type: id[id.length - 1],
+                    uuid: keys[0] || null,
+                    version: keys[1] || null
                 }
             }
             return {
                 iri: null,
                 type: null,
-                owner: null,
                 uuid: null,
                 version: null
             }
@@ -485,7 +470,6 @@ export class Schema {
             return {
                 iri: null,
                 type: null,
-                owner: null,
                 uuid: null,
                 version: null
             }

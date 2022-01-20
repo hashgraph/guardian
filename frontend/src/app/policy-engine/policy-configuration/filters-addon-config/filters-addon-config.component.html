@@ -17,6 +17,38 @@
             </mat-select>
         </td>
     </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Can Be Empty</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.canBeEmpty" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Field</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.field" [readonly]="readonly">
+        </td>
+    </tr>
+
+    <ng-container *ngIf="block.type == 'unelected'">
+        <tr class="propRow">
+            <td class="propRowCol" (click)="onHide(propHidden, 'unelectedGroup')"
+                [attr.collapse]="propHidden.unelectedGroup">
+                <mat-icon>expand_more</mat-icon>
+            </td>
+            <td class="propRowCell cellName">Filter Options</td>
+            <td class="propRowCell"></td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Filter Value</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.filterValue" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
 
     <ng-container *ngIf="block.type == 'dropdown'">
         <tr class="propRow">
@@ -30,16 +62,23 @@
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Item Name</td>
+            <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.name" [readonly]="readonly">
+                <input [(ngModel)]="block.optionName" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Data Source</td>
+            <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
-                <mat-select [(value)]="block.documentSource" [disabled]="readonly">
+                <input [(ngModel)]="block.optionValue" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Source</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="block.optionSource" [disabled]="readonly">
                     <mat-option value="vc-documents">VC</mat-option>
                     <mat-option value="did-documents">DID</mat-option>
                     <mat-option value="approve">Approve</mat-option>
@@ -50,8 +89,8 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Schema</td>
             <td class="propRowCell">
-                <mat-select [(value)]="block.documentSchema" [disabled]="readonly">
-                    <mat-option *ngFor="let schema of schemes" [value]="schema.uuid">{{schema.name}}</mat-option>
+                <mat-select [(value)]="block.optionSourceSchema" [disabled]="readonly">
+                    <mat-option *ngFor="let schema of schemes" [value]="schema.ref">{{schema.name}}</mat-option>
                 </mat-select>
             </td>
         </tr>
@@ -59,7 +98,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Entity Type</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.documentType" [readonly]="readonly">
+                <input [(ngModel)]="block.optionSourceType" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
@@ -77,56 +116,6 @@
             </td>
         </tr>
     </ng-container>
-
-    <tr class="propRow">
-        <td class="propRowCol" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
-            <mat-icon *ngIf="block.filters?.length">expand_more</mat-icon>
-        </td>
-        <td class="propRowCell cellName">Filters</td>
-        <td class="propRowCell">
-            <div class="propAdd" (click)="addFilters()">
-                <mat-icon>add</mat-icon>
-                <span>Add Filter</span>
-            </div>
-        </td>
-    </tr>
-    <ng-container *ngFor="let filter of block.filters; let i=index">
-        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
-                <mat-icon>expand_more</mat-icon>
-            </td>
-            <td class="propRowCell cellName">Filter {{i}}</td>
-            <td class="propRowCell">{{filter.name}}</td>
-        </tr>
-        <tr class="propRow subRow-2"
-            [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Filter Type</td>
-            <td class="propRowCell">
-                <mat-select [(value)]="filter.type" [disabled]="readonly">
-                    <mat-option value="text">TEXT</mat-option>
-                    <mat-option value="object">OBJECT</mat-option>
-                </mat-select>
-            </td>
-        </tr>
-        <tr class="propRow subRow-2"
-            [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Name</td>
-            <td class="propRowCell">
-                <input [(ngModel)]="filter.name" [readonly]="readonly">
-            </td>
-        </tr>
-        <tr class="propRow subRow-2"
-            [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Value</td>
-            <td class="propRowCell">
-                <input [(ngModel)]="filter.value" [readonly]="readonly">
-            </td>
-        </tr>
-    </ng-container>
-
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">

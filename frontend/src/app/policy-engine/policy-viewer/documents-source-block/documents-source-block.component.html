@@ -3,13 +3,9 @@
         <mat-spinner></mat-spinner>
     </div>
 
-    <div *ngIf="filters" class="grid-filters">
-        <div *ngFor="let filter of filters" class="grid-filter">
-            <div class="filter-name">{{filter.name}}</div>
-            <div class="filter-value">{{filter.value}}</div>
-            <div class="filter-delete" (click)="onRemoveFilter(filter)">
-                <mat-icon>close</mat-icon>
-            </div>
+    <div *ngIf="addons && addons.length" class="grid-filters">
+        <div *ngFor="let block of addons" class="grid-filter">
+            <render-block [block]="block" [policyId]="policyId"></render-block>
         </div>
     </div>
     <div *ngIf="fields && documents">

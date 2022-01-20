@@ -1,15 +1,15 @@
-import {User} from '@entity/user';
-import {Guardians} from '@helpers/guardians';
-import {BlockActionError, BlockInitError} from '@policy-engine/errors';
-import {BlockStateUpdate, DependenciesUpdateHandler} from '@policy-engine/helpers/decorators';
-import {DataSourceBlock} from '@policy-engine/helpers/decorators/data-source-block';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {SchemaStatus, UserRole} from 'interfaces';
-import {getMongoRepository} from 'typeorm';
-import {IAuthUser} from '../../auth/auth.interface';
-import {Inject} from '@helpers/decorators/inject';
-import {Users} from '@helpers/users';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { User } from '@entity/user';
+import { Guardians } from '@helpers/guardians';
+import { BlockActionError, BlockInitError } from '@policy-engine/errors';
+import { BlockStateUpdate, DependenciesUpdateHandler } from '@policy-engine/helpers/decorators';
+import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
+import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
+import { SchemaStatus, UserRole } from 'interfaces';
+import { getMongoRepository } from 'typeorm';
+import { IAuthUser } from '../../auth/auth.interface';
+import { Inject } from '@helpers/decorators/inject';
+import { Users } from '@helpers/users';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 /**
  * Document source block with UI
@@ -26,7 +26,7 @@ export class InterfaceDocumentsSource {
     private guardians: Guardians;
 
     private init() {
-        const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
+        const { options, uuid, blockType } = PolicyBlockHelpers.GetBlockRef(this);
 
         if (!options.dataType) {
             throw new BlockInitError(`Field "dataType" is required`, blockType, uuid);
@@ -65,16 +65,10 @@ export class InterfaceDocumentsSource {
         if (ref.options.onlyAssignDocuments) {
             filters.assign = userFull.did;
         }
-        let data;
 
-        Object.assign(filters, ref.getFilters())
+        Object.assign(filters, ref.getFilters());
 
-        // if (typeof queryParams === 'object') {
-        //     for (let [key, value] of Object.entries(queryParams)) {
-        //         filters[key] = value;
-        //     }
-        // }
-
+        let data: any[];
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
@@ -91,7 +85,7 @@ export class InterfaceDocumentsSource {
                 break;
 
             case 'root-authorities':
-                data = getMongoRepository(User).find({where: {role: {$eq: UserRole.ROOT_AUTHORITY}}})
+                data = await getMongoRepository(User).find({ where: { role: { $eq: UserRole.ROOT_AUTHORITY } } });
                 break;
 
             case 'approve':
@@ -115,7 +109,7 @@ export class InterfaceDocumentsSource {
             }
         });
 
-        return Object.assign({data, blocks}, ref.options.uiMetaData);
+        return Object.assign({ data, blocks }, ref.options.uiMetaData);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

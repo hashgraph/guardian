@@ -11,7 +11,7 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { User } from '@entity/user';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
-import {SchemaStatus} from 'interfaces';
+import { SchemaStatus } from 'interfaces';
 
 /**
  * Document action clock with UI
@@ -64,7 +64,7 @@ export class InterfaceDocumentActionBlock {
                 filters.type = ref.options.documentType;
             }
 
-            let documents;
+            let documents: any[];
             switch (ref.options.documentSource) {
                 case 'vc-documents':
                     filters.policyId = ref.policyId;

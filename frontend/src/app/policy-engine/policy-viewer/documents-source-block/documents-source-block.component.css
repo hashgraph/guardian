@@ -95,12 +95,11 @@
 
 .grid-filter {
     box-shadow: 0px 3px 6px #00000020;
-    border-radius: 24px;
     background: #e5e5e5;
     display: inline-block;
     margin: 7px;
-    padding: 0px 10px;
-    height: 30px;
+    padding: 10px 10px 6px 10px;
+    min-width: 190px;
 }
 
 .filter-name {

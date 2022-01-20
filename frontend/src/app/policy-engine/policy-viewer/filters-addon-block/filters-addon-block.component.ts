@@ -80,24 +80,26 @@ export class FiltersAddonBlockComponent implements OnInit {
             this.target = data.targetBlock;
             this.content = data.uiMetaData.content;
             this.filters = data.filters;
+            this.currentValue = data.filterValue;
 
             if (this.type == 'unelected') {
-                this.currentValue = this.data;
             }
 
             if (this.type == 'dropdown') {
-                this.currentValue = null;
-                const options = data.options;
-                this.options = [{
-                    name: "",
-                    value: null
-                }];
+                const options = data.data;
+                this.options = [];
+                if (data.canBeEmpty) {
+                    this.options.push({
+                        name: "",
+                        value: -1
+                    });
+                }
                 if (options) {
                     for (let i = 0; i < options.length; i++) {
                         const item = options[i];
                         this.options.push({
-                            name: this.getObjectValue(item, data.name),
-                            value: item
+                            name: this.getObjectValue(item, data.optionName),
+                            value: i
                         })
                     }
                 }
@@ -105,6 +107,10 @@ export class FiltersAddonBlockComponent implements OnInit {
         } else {
             this.data = null;
         }
+
+        setTimeout(() => {
+            this.currentValue = data.filterValue;
+        });
     }
 
     getObjectValue(data: any, value: any) {
@@ -140,7 +146,14 @@ export class FiltersAddonBlockComponent implements OnInit {
     }
 
     onFilters() {
-        const currentFilters = this.getFilters(this.currentValue);
+        this.loading = true;
+        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue: this.currentValue }).subscribe(() => {
+            this.loading = false;
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+        // const currentFilters = this.getFilters(this.currentValue);
         // this.loading = true;
         // this.policyEngineService.getGetIdByName(this.target, this.policyId).subscribe(({ id }: any) => {
         //     this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {

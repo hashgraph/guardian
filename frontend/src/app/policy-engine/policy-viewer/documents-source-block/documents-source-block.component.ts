@@ -28,7 +28,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     documents: any[] | null;
     children: any[] | null;
     insert: any;
-    filters: any;
+    addons: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -71,20 +71,12 @@ export class DocumentsSourceBlockComponent implements OnInit {
     loadData() {
         this.loading = true;
         if (this.static) {
-            this.filters = null;
             this.setData(this.static);
             setTimeout(() => {
                 this.loading = false;
             }, 500);
         } else {
-            const filters = this.policyHelper.getParams(this.id);
-            const keys = filters ? Object.keys(filters) : null;
-            if(keys && keys.length) {
-                this.filters = keys.map(key => ({ name: key, value: filters[key]}));
-            } else {
-                this.filters = null;
-            }
-            this.policyEngineService.getBlockData(this.id, this.policyId, filters).subscribe((data: any) => {
+            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
                 this.setData(data).then(() => {
                     setTimeout(() => {
                         this.loading = false;
@@ -114,13 +106,14 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.documents = data.data || [];
             this.isActive = data.isActive;
             this.insert = data.insert;
-
+            this.addons = data.blocks || [];
         } else {
             this.fields = [];
             this.columns = [];
             this.documents = null;
             this.children = null;
             this.isActive = false;
+            this.addons = [];
         }
     }
 
@@ -136,16 +129,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 });
             });
         });
-    }
-
-    onRemoveFilter(filter:any) {
-        this.filters = this.filters.filter((e:any) => e!= filter);
-        const filters:any = {};
-        for (let i = 0; i < this.filters.length; i++) {
-            const filter = this.filters[i];
-            filters[filter.name] = filter.value;
-        }
-        this.policyHelper.setParams(this.id, filters);
     }
 
     onDialog(row: any, field: any) {
