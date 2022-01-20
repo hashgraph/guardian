@@ -25,12 +25,17 @@ export class SchemaService {
     return this.http.put<any[]>(`${this.url}`, data);
   }
 
+  public newVersion(schema: Schema, id?: string): Observable<ISchema[]> {
+    const data = Object.assign({}, schema, { id: id || schema.id });
+    return this.http.post<any[]>(`${this.url}`, data);
+  }
+  
   public getSchemes(): Observable<ISchema[]> {
     return this.http.get<any[]>(`${this.url}`);
   }
 
-  public publish(id: string): Observable<ISchema[]> {
-    return this.http.put<any[]>(`${this.url}/${id}/publish`, null);
+  public publish(id: string, version: string): Observable<ISchema[]> {
+    return this.http.put<any[]>(`${this.url}/${id}/publish`, { version });
   }
 
   public unpublished(id: string): Observable<ISchema[]> {

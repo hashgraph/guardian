@@ -1,14 +1,14 @@
 <form class="context" [formGroup]="dataForm">
 
     <div class="optional-row">
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
             <mat-label>* Schema Name</mat-label>
-            <input matInput type="text" placeholder="Schema Name" formControlName="name">
+            <input matInput type="text" placeholder="Schema Name" formControlName="name" tabindex='-1'>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
             <mat-label>For (Entity)</mat-label>
-            <mat-select formControlName="entity">
+            <mat-select formControlName="entity" tabindex='-1'>
                 <mat-option value="NONE">NONE</mat-option>
                 <mat-option value="VC">VC</mat-option>
                 <mat-option value="MRV">MRV</mat-option>            

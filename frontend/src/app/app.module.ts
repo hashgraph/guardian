@@ -85,6 +85,7 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { RolesConfigComponent } from './policy-engine/policy-configuration/roles-config/roles-config.component';
 import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
 import { DemoService } from './services/demo.service';
+import { VersionSchemaDialog } from './components/dialogs/version-schema/version-schema-dialog.component';
 
 @NgModule({
     declarations: [
@@ -132,7 +133,8 @@ import { DemoService } from './services/demo.service';
         InformationConfigComponent,
         ExportPolicyDialog,
         RolesConfigComponent,
-        RolesBlockComponent
+        RolesBlockComponent,
+        VersionSchemaDialog
     ],
     imports: [
         BrowserModule,

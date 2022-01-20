@@ -54,4 +54,33 @@ export const tokenAPI = async function (
         const tokens: IToken[] = await tokenRepository.find();
         res.send(tokens);
     })
+
+    /**
+     * Import tokens
+     * 
+     * @param {IToken[]} payload - tokens
+     * 
+     * @returns {IToken[]} - all tokens
+     */
+    channel.response(MessageAPI.IMPORT_TOKENS, async (msg, res) => {
+        try {
+            let items: IToken[] = msg.payload;
+            if (!Array.isArray(items)) {
+                items = [items];
+            }
+            const existingTokens = await tokenRepository.find();
+            const existingTokensMap = {};
+            for (let i = 0; i < existingTokens.length; i++) {
+                existingTokensMap[existingTokens[i].tokenId] = true;
+            }
+            items = items.filter((token: any) => !existingTokensMap[token.tokenId]);
+            const tokenObject = tokenRepository.create(items);
+            const result = await tokenRepository.save(tokenObject);
+            const tokens = await tokenRepository.find();
+            res.send(tokens);
+        } catch (error) {
+            console.error(error);
+            res.send(null);
+        }
+    })
 }

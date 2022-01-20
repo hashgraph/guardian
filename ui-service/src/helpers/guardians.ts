@@ -126,6 +126,18 @@ export class Guardians {
         return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, params)).payload;
     }
 
+
+    /**
+     * Return schema by id
+     * 
+     * @param {string} [id] - schema id 
+     * 
+     * @returns {ISchema} - schema
+     */
+    public async getSchema(id: string): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, { id: id })).payload;
+    }
+
     /**
      * Return tokens
      * 
@@ -265,6 +277,17 @@ export class Guardians {
     }
 
     /**
+     * Import tokens
+     * 
+     * @param {IToken[]} items - tokens
+     * 
+     * @returns {IToken[]} - all tokens
+     */
+    public async importTokens(items: IToken[]): Promise<void> {
+        return (await this.channel.request(this.target, MessageAPI.IMPORT_TOKENS, items)).payload;
+    }
+
+    /**
      * Create Address books
      * 
      * @param {Object} item - Address books config
@@ -326,12 +349,12 @@ export class Guardians {
     /**
      * Export schemes
      * 
-     * @param {string[]} ids - schema ids
+     * @param {string[]} refs - schema refs
      * 
      * @returns {ISchema[]} - array of selected and nested schemas
      */
-    public async exportSchemes(ids: string[]): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
+    public async exportSchemes(refs: string[]): Promise<ISchema[]> {
+        return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, refs)).payload;
     }
 
     /**
