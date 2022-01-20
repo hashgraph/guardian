@@ -137,8 +137,6 @@
     </div>
 </mat-menu>
 
-
-
 <mat-menu #tokensMenu="matMenu">
     <div *ngFor="let item of registeredBlocks.groups.Tokens" class="btn-new-block-menu btn-status-edit"
         (click)="onAdd(item.type)" [title]="item.title">

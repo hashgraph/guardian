@@ -1,24 +1,24 @@
 import { Injectable } from "@angular/core";
-import { ActionConfigComponent } from "../policy-configuration/blocks/action-config/action-config.component";
-import { AggregateConfigComponent } from "../policy-configuration/blocks/aggregate-config/aggregate-config.component";
-import { ContainerConfigComponent } from "../policy-configuration/blocks/container-config/container-config.component";
-import { DocumentSourceComponent } from "../policy-configuration/blocks/document-viewer-config/document-viewer-config.component";
-import { ExternalDataConfigComponent } from "../policy-configuration/blocks/external-data-config/external-data-config.component";
-import { FiltersAddonConfigComponent } from "../policy-configuration/blocks/filters-addon-config/filters-addon-config.component";
-import { InformationConfigComponent } from "../policy-configuration/blocks/information-config/information-config.component";
-import { MintConfigComponent } from "../policy-configuration/blocks/mint-config/mint-config.component";
-import { RequestConfigComponent } from "../policy-configuration/blocks/request-config/request-config.component";
-import { RolesConfigComponent } from "../policy-configuration/blocks/roles-config/roles-config.component";
-import { SendConfigComponent } from "../policy-configuration/blocks/send-config/send-config.component";
-import { SourceAddonConfigComponent } from "../policy-configuration/blocks/source-addon-config/source-addon-config.component";
-import { ActionBlockComponent } from "../policy-viewer/blocks/action-block/action-block.component";
-import { ContainerBlockComponent } from "../policy-viewer/blocks/container-block/container-block.component";
-import { DocumentsSourceBlockComponent } from "../policy-viewer/blocks/documents-source-block/documents-source-block.component";
-import { FiltersAddonBlockComponent } from "../policy-viewer/blocks/filters-addon-block/filters-addon-block.component";
-import { InformationBlockComponent } from "../policy-viewer/blocks/information-block/information-block.component";
-import { RequestDocumentBlockComponent } from "../policy-viewer/blocks/request-document-block/request-document-block.component";
-import { RolesBlockComponent } from "../policy-viewer/blocks/roles-block/roles-block.component";
-import { StepBlockComponent } from "../policy-viewer/blocks/step-block/step-block.component";
+import { ActionConfigComponent } from "./policy-configuration/blocks/action-config/action-config.component";
+import { AggregateConfigComponent } from "./policy-configuration/blocks/aggregate-config/aggregate-config.component";
+import { ContainerConfigComponent } from "./policy-configuration/blocks/container-config/container-config.component";
+import { DocumentSourceComponent } from "./policy-configuration/blocks/document-viewer-config/document-viewer-config.component";
+import { ExternalDataConfigComponent } from "./policy-configuration/blocks/external-data-config/external-data-config.component";
+import { FiltersAddonConfigComponent } from "./policy-configuration/blocks/filters-addon-config/filters-addon-config.component";
+import { InformationConfigComponent } from "./policy-configuration/blocks/information-config/information-config.component";
+import { MintConfigComponent } from "./policy-configuration/blocks/mint-config/mint-config.component";
+import { RequestConfigComponent } from "./policy-configuration/blocks/request-config/request-config.component";
+import { RolesConfigComponent } from "./policy-configuration/blocks/roles-config/roles-config.component";
+import { SendConfigComponent } from "./policy-configuration/blocks/send-config/send-config.component";
+import { SourceAddonConfigComponent } from "./policy-configuration/blocks/source-addon-config/source-addon-config.component";
+import { ActionBlockComponent } from "./policy-viewer/blocks/action-block/action-block.component";
+import { ContainerBlockComponent } from "./policy-viewer/blocks/container-block/container-block.component";
+import { DocumentsSourceBlockComponent } from "./policy-viewer/blocks/documents-source-block/documents-source-block.component";
+import { FiltersAddonBlockComponent } from "./policy-viewer/blocks/filters-addon-block/filters-addon-block.component";
+import { InformationBlockComponent } from "./policy-viewer/blocks/information-block/information-block.component";
+import { RequestDocumentBlockComponent } from "./policy-viewer/blocks/request-document-block/request-document-block.component";
+import { RolesBlockComponent } from "./policy-viewer/blocks/roles-block/roles-block.component";
+import { StepBlockComponent } from "./policy-viewer/blocks/step-block/step-block.component";
 
 
 export enum BlockType {

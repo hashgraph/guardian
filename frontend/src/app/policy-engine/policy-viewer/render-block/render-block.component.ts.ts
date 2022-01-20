@@ -1,14 +1,6 @@
 import { Component, ComponentFactoryResolver, Input, ViewContainerRef } from '@angular/core';
 import { IBlock } from '../../helpers/tree-data-source/block';
-import { ActionBlockComponent } from '../blocks/action-block/action-block.component';
-import { ContainerBlockComponent } from '../blocks/container-block/container-block.component';
-import { DocumentsSourceBlockComponent } from '../blocks/documents-source-block/documents-source-block.component';
-import { InformationBlockComponent } from '../blocks/information-block/information-block.component';
-import { RequestDocumentBlockComponent } from '../blocks/request-document-block/request-document-block.component';
-import { StepBlockComponent } from '../blocks/step-block/step-block.component';
-import { RolesBlockComponent } from '../blocks/roles-block/roles-block.component';
-import { FiltersAddonBlockComponent } from '../blocks/filters-addon-block/filters-addon-block.component';
-import { RegisteredBlocks } from '../../helpers/registered-blocks';
+import { RegisteredBlocks } from '../../registered-blocks';
 
 
 /**

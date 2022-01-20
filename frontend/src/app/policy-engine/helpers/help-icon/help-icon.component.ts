@@ -8,6 +8,6 @@ import { Component, Input } from '@angular/core';
     templateUrl: './help-icon.component.html',
     styleUrls: ['./help-icon.component.css']
 })
-export class HelpIconDialog {
+export class HelpIcon {
     @Input('text') text!: string;
 }

@@ -4,30 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatStepperModule } from '@angular/material/stepper';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTableModule } from '@angular/material/table';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatListModule } from '@angular/material/list';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatTreeModule } from '@angular/material/tree';
-import { MatDatepickerModule } from "@angular/material/datepicker";
-import { MatRadioModule } from '@angular/material/radio';
-import { MatNativeDateModule } from '@angular/material/core';
 import { ToastrModule } from 'ngx-toastr';
-import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
 import { AppRoutingModule, AuditorGuard, UserGuard, RootAuthorityGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor, AuthService } from "./services/auth.service";
@@ -40,57 +17,23 @@ import { PolicyEngineService } from './services/policy-engine.service';
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
 import { HomeComponent } from './views/home/home.component';
-import { HeaderComponent } from './components/header/header.component';
+import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootConfigComponent } from './views/root-config/root-config.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
-import { TokenDialog } from './components/dialogs/token-dialog/token-dialog.component';
-import { JsonDialog } from './components/dialogs/vc-dialog/vc-dialog.component';
-import { SchemaDialog } from './components/dialogs/schema-dialog/schema-dialog.component';
-import { SchemaFormComponent } from './components/schema-form/schema-form.component';
-import { SchemaConfigurationComponent } from './components/schema-configuration/schema-configuration.component';
+import { TokenDialog } from './components/token-dialog/token-dialog.component';
+import { JsonDialog } from './components/vc-dialog/vc-dialog.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
-import { PolicyViewerComponent } from './policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
-import { CommonPropertiesComponent } from './policy-engine/policy-configuration/common-properties/common-properties.component';
-import { DocumentSourceComponent } from './policy-engine/policy-configuration/blocks/document-viewer-config/document-viewer-config.component';
-import { ActionConfigComponent } from './policy-engine/policy-configuration/blocks/action-config/action-config.component';
-import { PolicyConfigurationComponent } from './policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
-import { DialogBlock } from './policy-engine/policy-viewer/dialog-block/dialog-block.component';
-import { RequestDocumentBlockComponent } from './policy-engine/policy-viewer/blocks/request-document-block/request-document-block.component';
-import { DocumentsSourceBlockComponent } from './policy-engine/policy-viewer/blocks/documents-source-block/documents-source-block.component';
-import { ContainerBlockComponent } from './policy-engine/policy-viewer/blocks/container-block/container-block.component';
-import { InformationBlockComponent } from './policy-engine/policy-viewer/blocks/information-block/information-block.component';
-import { RenderBlockComponent } from './policy-engine/policy-viewer/render-block/render-block.component.ts';
-import { ContainerConfigComponent } from './policy-engine/policy-configuration/blocks/container-config/container-config.component';
-import { RequestConfigComponent } from './policy-engine/policy-configuration/blocks/request-config/request-config.component';
-import { PolicyPropertiesComponent } from './policy-engine/policy-configuration/policy-properties/policy-properties.component';
 import { NewPolicyDialog } from './policy-engine/helpers/new-policy-dialog/new-policy-dialog.component';
-import { ActionBlockComponent } from './policy-engine/policy-viewer/blocks/action-block/action-block.component';
-import { DocumentDialogBlock } from './policy-engine/policy-viewer/blocks/document-dialog-block/document-dialog-block.component';
-import { StepBlockComponent } from './policy-engine/policy-viewer/blocks/step-block/step-block.component';
-import { MintConfigComponent } from './policy-engine/policy-configuration/blocks/mint-config/mint-config.component';
-import { SendConfigComponent } from './policy-engine/policy-configuration/blocks/send-config/send-config.component';
-import { ExternalDataConfigComponent } from './policy-engine/policy-configuration/blocks/external-data-config/external-data-config.component';
-import { HelpIconDialog } from './policy-engine/helpers/help-icon/help-icon.component';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { ImportSchemaDialog } from './components/dialogs/import-schema/import-schema-dialog.component';
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { TreeFlatOverview } from './policy-engine/helpers/tree-flat-overview/tree-flat-overview';
-import { AggregateConfigComponent } from './policy-engine/policy-configuration/blocks/aggregate-config/aggregate-config.component';
-import { InformationConfigComponent } from './policy-engine/policy-configuration/blocks/information-config/information-config.component';
 import { ExportPolicyDialog } from './policy-engine/helpers/export-import-dialog/export-import-dialog.component';
-import { CodemirrorModule } from '@ctrl/ngx-codemirror';
-import { RolesConfigComponent } from './policy-engine/policy-configuration/blocks/roles-config/roles-config.component';
-import { RolesBlockComponent } from './policy-engine/policy-viewer/blocks/roles-block/roles-block.component';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
-import { FiltersAddonBlockComponent } from './policy-engine/policy-viewer/blocks/filters-addon-block/filters-addon-block.component';
-import { FiltersAddonConfigComponent} from './policy-engine/policy-configuration/blocks/filters-addon-config/filters-addon-config.component';
-import { VersionSchemaDialog } from './components/dialogs/version-schema/version-schema-dialog.component';
-import { RegisteredBlocks } from './policy-engine/helpers/registered-blocks';
-import { SourceAddonConfigComponent } from './policy-engine/policy-configuration/blocks/source-addon-config/source-addon-config.component';
+import { VersionSchemaDialog } from './components/version-schema/version-schema-dialog.component';
+import { MaterialModule } from './material.module';
+import { PolicyEngineModule } from './policy-engine/policy-engine.module';
+import { SchemaEngineModule } from './schema-engine/schema-engine.module';
 
 @NgModule({
     declarations: [
@@ -105,84 +48,26 @@ import { SourceAddonConfigComponent } from './policy-engine/policy-configuration
         TokenDialog,
         JsonDialog,
         SchemaConfigComponent,
-        SchemaDialog,
-        SchemaFormComponent,
-        SchemaConfigurationComponent,
         AuditComponent,
         TrustChainComponent,
-        ActionBlockComponent,
-        RequestDocumentBlockComponent,
-        ContainerBlockComponent,
-        DocumentsSourceBlockComponent,
-        PolicyViewerComponent,
-        RenderBlockComponent,
-        DialogBlock,
-        DocumentDialogBlock,
-        InformationBlockComponent,
-        PolicyConfigurationComponent,
-        DocumentSourceComponent,
-        CommonPropertiesComponent,
-        ActionConfigComponent,
-        ContainerConfigComponent,
-        RequestConfigComponent,
-        PolicyPropertiesComponent,
         NewPolicyDialog,
-        StepBlockComponent,
-        MintConfigComponent,
-        SendConfigComponent,
-        ExternalDataConfigComponent,
-        HelpIconDialog,
-        ImportSchemaDialog,
-        TreeFlatOverview,
-        AggregateConfigComponent,
-        InformationConfigComponent,
         ExportPolicyDialog,
-        RolesConfigComponent,
-        RolesBlockComponent,
         VersionSchemaDialog,
-        FiltersAddonBlockComponent,
-        FiltersAddonConfigComponent,
-        SourceAddonConfigComponent
     ],
     imports: [
         BrowserModule,
+        CommonModule,
+        MaterialModule,
         AppRoutingModule,
         BrowserAnimationsModule,
-        MatTabsModule,
-        MatStepperModule,
-        MatExpansionModule,
-        MatIconModule,
-        ReactiveFormsModule,
-        MatInputModule,
-        MatButtonModule,
-        MatTableModule,
-        MatDialogModule,
-        MatDatepickerModule,
-        MatRadioModule,
-        NgxMatDatetimePickerModule,
-        NgxMatNativeDateModule,
-        NgxMatTimepickerModule,
-        MatNativeDateModule,
-        MatProgressSpinnerModule,
-        MatToolbarModule,
-        MatMenuModule,
         HttpClientModule,
-        MatDividerModule,
-        MatListModule,
-        MatProgressBarModule,
-        MatSelectModule,
-        MatCheckboxModule,
         FormsModule,
-        CommonModule,
-        MatTreeModule,
-        MatTooltipModule,
-        DragDropModule,
-        CodemirrorModule,
-        ToastrModule.forRoot()
+        ToastrModule.forRoot(),
+        PolicyEngineModule,
+        SchemaEngineModule
     ],
     exports: [],
     providers: [
-        RegisteredBlocks,
         UserGuard,
         RootAuthorityGuard,
         AuditorGuard,

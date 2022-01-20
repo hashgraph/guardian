@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
-import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
+import { JsonDialog } from '../../components/vc-dialog/vc-dialog.component';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';

@@ -1,6 +1,6 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { Schema, Token } from 'interfaces';
-import { RegisteredBlocks } from '../../helpers/registered-blocks';
+import { RegisteredBlocks } from '../../registered-blocks';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 
 /**

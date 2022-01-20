@@ -5,7 +5,7 @@ import { BehaviorSubject, Observable, of as observableOf } from 'rxjs';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { SelectionModel } from '@angular/cdk/collections';
 import { BlockNode } from 'src/app/policy-engine/helpers/tree-data-source/tree-data-source';
-import { RegisteredBlocks } from '../registered-blocks';
+import { RegisteredBlocks } from '../../registered-blocks';
 
 /** Flat node with expandable and level information */
 export class FlatBlockNode {

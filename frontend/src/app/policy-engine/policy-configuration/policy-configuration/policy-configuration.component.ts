@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
 import { TokenService } from 'src/app/services/token.service';
-import { RegisteredBlocks } from '../../helpers/registered-blocks';
+import { RegisteredBlocks } from '../../registered-blocks';
 
 /**
  * The page for editing the policy and blocks.
