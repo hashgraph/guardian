@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { UserName } from '../../../tymlez-service/src/modules/user';
 
 export async function registerNewInstallers({
   GUARDIAN_TYMLEZ_API_KEY,
@@ -29,7 +28,7 @@ async function registerNewInstaller({
 }: {
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
   GUARDIAN_TYMLEZ_API_KEY: string;
-  username: UserName;
+  username: string;
   policyTag: string;
   installerInfo: any;
 }) {

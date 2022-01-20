@@ -1,6 +1,5 @@
 import axios from 'axios';
 import pLimit from 'p-limit';
-import { InstallerUserName } from '../../../tymlez-service/src/modules/user';
 import { IMeterInfo } from '../getBuildTimeConfig';
 
 export async function addMeters({
@@ -40,7 +39,7 @@ async function addMeter({
 }: {
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
   GUARDIAN_TYMLEZ_API_KEY: string;
-  username: InstallerUserName;
+  username: string;
   policyTag: string;
   meterInfo: IMeterInfo;
 }) {
