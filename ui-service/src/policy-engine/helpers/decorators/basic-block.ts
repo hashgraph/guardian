@@ -214,7 +214,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             private init() {
-
+                if (typeof super.init === 'function') {
+                    super.init();
+                }
             }
 
         };
