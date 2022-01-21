@@ -90,7 +90,8 @@ import { DemoService } from './services/demo.service';
 import { IPFSService } from './services/ipfs.service';
 import { SchemaFormViewComponent } from './components/schema-form-view/schema-form-view.component';
 import { VcDocumentViewComponent } from './components/vc-document-view/vc-document-view.component';
-import { VersionSchemaDialog } from './components/dialogs/version-schema/version-schema-dialog.component';
+import { SetVersionDialog } from './components/dialogs/set-version-dialog/set-version-dialog.component';
+import { SavePolicyDialog } from './policy-engine/save-policy-dialog/save-policy-dialog.component';
 
 @NgModule({
     declarations: [
@@ -127,6 +128,7 @@ import { VersionSchemaDialog } from './components/dialogs/version-schema/version
         RequestConfigComponent,
         PolicyPropertiesComponent,
         NewPolicyDialog,
+        SavePolicyDialog,
         StepBlockComponent,
         MintConfigComponent,
         SendConfigComponent,
@@ -141,7 +143,7 @@ import { VersionSchemaDialog } from './components/dialogs/version-schema/version
         RolesBlockComponent,
         SchemaFormViewComponent,
         VcDocumentViewComponent,
-        VersionSchemaDialog
+        SetVersionDialog
     ],
     imports: [
         BrowserModule,

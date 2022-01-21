@@ -330,13 +330,23 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.router.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.put('/:policyId/publish/:policyVersion', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const errors = await this.validate(req.params.policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
                     const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+                    const countModels = await getMongoRepository(Policy).count({ 
+                        version: req.params.policyVersion,
+                        uuid: model.uuid
+                    });
+
+                    if (countModels > 0) {
+                        res.status(500).send({ code: 500, message: 'Policy with current version already was published' });
+                        return;
+                    }
+
                     const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                     if (!model.config) {
                         res.status(500).send({ code: 500, message: 'The policy is empty' });
@@ -359,6 +369,7 @@ export class BlockTreeGenerator {
                         .newTopic(root.hederaAccountKey, model.topicDescription);
                     model.status = 'PUBLISH';
                     model.topicId = topicId;
+                    model.version = req.params.policyVersion;
 
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
