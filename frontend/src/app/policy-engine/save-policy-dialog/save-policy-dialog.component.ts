@@ -77,4 +77,15 @@ export class SavePolicyDialog {
       }
       this._isActionSelected$.next(true);
     }
+
+    getTitle(): string {
+      switch(this.action) {
+        case PolicyAction.CREATE_NEW_POLICY:
+          return "New Policy";
+        case PolicyAction.CREATE_NEW_VERSION:
+          return "New Version"
+        default:
+          return "";
+      }
+    }
 }
