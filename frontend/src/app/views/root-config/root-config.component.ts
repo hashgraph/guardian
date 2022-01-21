@@ -41,6 +41,7 @@ export class RootConfigComponent implements OnInit {
     schema: any;
     hideVC: any;
     formValid: boolean = false;
+    schemas!: Schema[];
 
     constructor(
         private auth: AuthService,
@@ -98,8 +99,8 @@ export class RootConfigComponent implements OnInit {
 
             const profile = value[0];
             const balance = value[1];
-            const schemes = Schema.mapRef(value[2]);
-            this.schema = schemes
+            this.schemas = Schema.mapRef(value[2]);
+            this.schema = this.schemas
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
 
             this.isConfirmed = !!(profile.confirmed);
@@ -147,12 +148,15 @@ export class RootConfigComponent implements OnInit {
         }
     }
 
-    openDocument(document: any) {
+    openDocument(document: any, title: string, isVcDocument: boolean = false, viewVcDocument: boolean = false) {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
                 document: document,
-                title: "DID"
+                title: title,
+                isVcDocument: isVcDocument,
+                schemas: this.schemas,
+                viewVcDocument: viewVcDocument
             }
         });
 

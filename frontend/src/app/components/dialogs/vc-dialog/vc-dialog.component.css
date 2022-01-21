@@ -3,15 +3,30 @@
 }
 
 .json {
-    white-space: pre;
+    word-break: break-all;
+    white-space: pre-wrap;
     margin-bottom: 8px;
-    width: 800px;
-    height: 530px;
-    overflow: auto;
 }
 
-
 .content {
-    height: 600px;
+    height: 550px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-right: 10px;
+}
+
+.dialog-content {
     overflow: hidden;
+}
+
+.view-toggle {
+    float: right
+}
+
+.dialog-title {
+    display: inline-block;
+}
+
+.dialog-actions {
+    padding-bottom: 20px;
 }

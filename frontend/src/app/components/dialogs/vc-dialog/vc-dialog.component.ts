@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 /**
@@ -12,6 +12,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 export class JsonDialog {
     title: string = "";
     json: string = "";
+    viewVcDocument!: boolean;
 
     constructor(
         public dialogRef: MatDialogRef<JsonDialog>,
@@ -19,9 +20,10 @@ export class JsonDialog {
     }
 
     ngOnInit() {
-        const { document, title } = this.data;
+        const { document, title, viewVcDocument } = this.data;
         this.title = title;
         this.json = JSON.stringify((document), null, 4);
+        this.viewVcDocument = viewVcDocument;
     }
 
     onClick(): void {

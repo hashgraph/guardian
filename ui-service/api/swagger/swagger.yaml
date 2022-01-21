@@ -382,6 +382,8 @@ tags:
     description: "APIs for external data sources"
   - name: "demo"
     description: "Demo Only APIs"
+  - name: "ipfs"
+    description: "IPFS Operations"
 paths:
   /accounts:
     get:
@@ -1775,6 +1777,38 @@ paths:
           description: Unauthorized.
         403:
           description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /ipfs/file:
+    post:
+      tags:
+        - ipfs 
+      description: Add file to ipfs.
+      summary: Add file to ipfs.
+      requestBody: 
+        description: Data array of file.
+        required: true
+        content:
+          binary/octet-stream:
+              schema:
+                type: string
+                format: binary
+      security:
+      - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                description: CID of added file.
+                type: string
+        401:
+          description: Unauthorized.
         500:
           description: Internal server error.
           content:

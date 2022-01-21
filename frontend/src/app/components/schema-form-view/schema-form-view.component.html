@@ -1,0 +1,183 @@
+<form>
+    <ng-container *ngFor="let item of fields">
+        <div *ngIf="!item.hide" class="form-field-container">
+            <div *ngIf="!item.isArray && !item.isRef" class="form-field">
+                <div class="label-field">{{item.description}}</div>
+
+                  <mat-form-field
+                    *ngIf="(item.type === 'string' || item.type === 'number' || item.type === 'integer') && (item.format !== 'date' && item.format !== 'time' && item.format !== 'date-time')"
+                    class="example-full-width"
+                    appearance="outline"
+                  >
+                    <input matInput readonly [value]="item.value" [ngClass]="{'hidden-item': item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+' }">
+                    <div *ngIf="item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'">
+                      <div class="image-action-buttons">
+                        <button mat-button type="button" [cdkCopyToClipboard]="item.value">Copy Link</button>
+                        <button mat-button color="accent" [cdkCopyToClipboard]="getCID(item.value)">Copy CID</button>
+                      </div>
+                      <img class="ipfs-image" [src]="item.value" [alt]="item.value">
+                    </div>
+
+                  </mat-form-field>
+
+                  <mat-form-field *ngIf="item.type ==='string' && item.format === 'time'"
+                    class="example-full-width"
+                    appearance="outline"
+                  >
+                    <input matInput readonly type="time" step="1" [value]="item.value">
+                  </mat-form-field>
+
+                  <mat-form-field *ngIf="item.type ==='string' && item.format === 'date-time'"
+                    class="example-full-width"
+                    appearance="outline"
+                  >
+                    <input
+                      readonly
+                      matInput
+                      [ngxMatDatetimePicker]="dateTimePicker"
+                      [value]="item.value"
+                    >
+                    <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
+                    <ngx-mat-datetime-picker [disabled]="true" #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
+                  </mat-form-field>
+
+                  <mat-form-field
+                    *ngIf="item.type === 'string' && item.format === 'date'"
+                    class="example-full-width"
+                    appearance="outline"
+                  >
+                    <input
+                      readonly
+                      [value]="item.value"
+                      matInput
+                      [matDatepicker]="dateItem"
+                    >
+                    <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
+                    <mat-datepicker [disabled]="true" #dateItem ></mat-datepicker>
+                  </mat-form-field>
+
+                  <div
+                    *ngIf="item.type === 'boolean'"
+                    class="boolean-form-field"
+                  >
+                    <mat-radio-group [value]="item.value" [disabled]="true">
+                      <mat-radio-button color="primary" value="true">True</mat-radio-button>
+                      <mat-radio-button color="primary" value="false">False</mat-radio-button>
+                      <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
+                    </mat-radio-group>
+                  </div>
+
+            </div>
+
+            <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
+                <div class="label-field">{{item.description}}</div>
+                <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item" >
+                    <div class="form-field-group">
+                        <app-schema-form-view
+                            [fields]="item.fields"
+                            [private-fields]="hide"
+                            [delimiter-hide]="true"
+                            [values]="this.values && this.values[item.name]">
+                        </app-schema-form-view>
+                    </div>
+                </div>
+            </div>
+
+
+            <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
+                <div class="label-field">{{item.description}}</div>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                    [attr.index]="item.list.indexOf(listItem)">
+                    <div class="form-field">
+
+                      <mat-form-field
+                        *ngIf="(item.type === 'string' || item.type === 'number' || item.type === 'integer') && (item.format !== 'date' && item.format !== 'time' && item.format !== 'date-time')"
+                        class="example-full-width"
+                        appearance="outline"
+                      >
+                        <input readonly matInput [value]="listItem" [ngClass]="{'hidden-item': item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+' }">
+                        <div *ngIf="item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'">
+                          <div class="image-action-buttons">
+                            <button mat-button type="button" [cdkCopyToClipboard]="listItem">Copy Link</button>
+                            <button mat-button color="accent" [cdkCopyToClipboard]="getCID(listItem)">Copy CID</button>
+                          </div>
+                          <img class="ipfs-image" [src]="listItem" [alt]="listItem">
+                        </div>
+                      </mat-form-field>
+
+                      <mat-form-field *ngIf="item.type ==='string' && item.format === 'time'"
+                        class="example-full-width"
+                        appearance="outline"
+                      >
+                        <input readonly matInput type="time" step="1" [value]="listItem">
+                      </mat-form-field>
+
+                      <mat-form-field *ngIf="item.type ==='string' && item.format === 'date-time'"
+                        class="example-full-width"
+                        appearance="outline"
+                      >
+                        <input
+                          readonly
+                          matInput
+                          [ngxMatDatetimePicker]="dateTimePicker"
+                          [value]="listItem"
+                        >
+                        <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
+                        <ngx-mat-datetime-picker [disabled]="true" #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
+                      </mat-form-field>
+
+                      <mat-form-field
+                        *ngIf="item.type === 'string' && item.format === 'date'"
+                        class="example-full-width"
+                        appearance="outline"
+                      >
+                        <input
+                          readonly
+                          [value]="listItem"
+                          matInput
+                          [matDatepicker]="dateItem"
+                        >
+                        <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
+                        <mat-datepicker [disabled]="true" #dateItem></mat-datepicker>
+                      </mat-form-field>
+
+                      <div
+                        *ngIf="item.type === 'boolean'"
+                        class="boolean-form-field"
+                      >
+                        <mat-radio-group [value]="listItem" [disabled]="true">
+                          <mat-radio-button color="primary" value="true">True</mat-radio-button>
+                          <mat-radio-button color="primary" value="false">False</mat-radio-button>
+                          <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
+                        </mat-radio-group>
+                      </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
+                <div class="label-field">{{item.description}}</div>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                    [attr.index]="item.list.indexOf(listItem)">
+                    <div class="form-field-group">
+                        <app-schema-form-view
+                            [fields]="item.fields"
+                            [private-fields]="hide"
+                            [delimiter-hide]="true"
+                            [values]="listItem">
+                        </app-schema-form-view>
+                    </div>
+                    <div class="short-delimiter-container">
+                        <div class="delimiter"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div *ngIf="!delimiterHide" class="delimiter"></div>
+
+    </ng-container>
+</form>

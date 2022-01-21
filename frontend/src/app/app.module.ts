@@ -26,6 +26,8 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatRadioModule } from '@angular/material/radio';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ClipboardModule } from '@angular/cdk/clipboard';
 import { ToastrModule } from 'ngx-toastr';
 import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
 import { AppRoutingModule, AuditorGuard, UserGuard, RootAuthorityGuard } from './app-routing.module';
@@ -85,6 +87,9 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { RolesConfigComponent } from './policy-engine/policy-configuration/roles-config/roles-config.component';
 import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
 import { DemoService } from './services/demo.service';
+import { IPFSService } from './services/ipfs.service';
+import { SchemaFormViewComponent } from './components/schema-form-view/schema-form-view.component';
+import { VcDocumentViewComponent } from './components/vc-document-view/vc-document-view.component';
 import { SetVersionDialog } from './components/dialogs/set-version-dialog/set-version-dialog.component';
 import { SavePolicyDialog } from './policy-engine/save-policy-dialog/save-policy-dialog.component';
 
@@ -136,6 +141,8 @@ import { SavePolicyDialog } from './policy-engine/save-policy-dialog/save-policy
         ExportPolicyDialog,
         RolesConfigComponent,
         RolesBlockComponent,
+        SchemaFormViewComponent,
+        VcDocumentViewComponent,
         SetVersionDialog
     ],
     imports: [
@@ -166,6 +173,8 @@ import { SavePolicyDialog } from './policy-engine/save-policy-dialog/save-policy
         MatProgressBarModule,
         MatSelectModule,
         MatCheckboxModule,
+        MatSlideToggleModule,
+        ClipboardModule,
         FormsModule,
         CommonModule,
         MatTreeModule,
@@ -186,6 +195,7 @@ import { SavePolicyDialog } from './policy-engine/save-policy-dialog/save-policy
         AuditService,
         PolicyEngineService,
         DemoService,
+        IPFSService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,
