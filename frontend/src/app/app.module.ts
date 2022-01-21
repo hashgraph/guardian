@@ -90,6 +90,7 @@ import { DemoService } from './services/demo.service';
 import { IPFSService } from './services/ipfs.service';
 import { SchemaFormViewComponent } from './components/schema-form-view/schema-form-view.component';
 import { VcDocumentViewComponent } from './components/vc-document-view/vc-document-view.component';
+import { VersionSchemaDialog } from './components/dialogs/version-schema/version-schema-dialog.component';
 
 @NgModule({
     declarations: [
@@ -140,6 +141,7 @@ import { VcDocumentViewComponent } from './components/vc-document-view/vc-docume
         RolesBlockComponent,
         SchemaFormViewComponent,
         VcDocumentViewComponent
+        VersionSchemaDialog
     ],
     imports: [
         BrowserModule,

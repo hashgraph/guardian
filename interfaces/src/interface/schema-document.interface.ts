@@ -23,6 +23,7 @@ export enum SchemaDataFormat {
 
 export interface ISchemaDocument {
     $id?: string;
+    $comment?: string;
     title?: string;
     description?: string;
     type?: SchemaDataTypes;

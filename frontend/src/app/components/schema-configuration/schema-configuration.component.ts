@@ -13,6 +13,7 @@ import { Schema, SchemaField } from 'interfaces';
 export class SchemaConfigurationComponent implements OnInit {
     @Input('schemes') schemes!: Schema[];
     @Input('value') value!: Schema;
+    @Input('type') type!: string;
 
     started = false;
     fieldsForm!: FormGroup;
@@ -293,7 +294,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
     public getSchema() {
         const value = this.dataForm.value;
-        const schema = new Schema();
+        const schema = new Schema(this.value);
         schema.name = value.name;
         schema.description = value.description;
         schema.entity = value.entity;
