@@ -14,7 +14,7 @@ Promise.all([
     await fileAPI(channel, new NFTStorage({ token: process.env.NFT_API_KEY }));
 
     app.listen(PORT, () => {
-        console.log('ipfs-node service started', PORT);
+        console.log('ipfs-client service started', PORT);
     });
 })
 .catch(err => console.log(err));

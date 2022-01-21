@@ -72,7 +72,7 @@
             <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
                 <div class="label-field">{{item.description}}</div>
                 <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item" >
-                    <div class="form-field-group" [ngClass]="{'schema-form-field-group' : !item.required}">
+                    <div class="form-field-group">
                         <app-schema-form-view
                             [fields]="item.fields"
                             [private-fields]="hide"

@@ -97,11 +97,11 @@ form {
 }
 
 .schema-form-field-array-group > .form-field-array-item > .form-field-group,
-.form-field-array-item > .schema-form-field-group {
+.form-field-array-item > .form-field-group {
     border-left: 2px dashed #c8c8c8;
 }
 
-.schema-form-field-group {
+.form-field-group {
   margin-bottom: 15px;
 }
 

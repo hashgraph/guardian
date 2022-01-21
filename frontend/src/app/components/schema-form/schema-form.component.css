@@ -117,11 +117,11 @@ form {
     padding-right: 0;
 }
 
-.form-field-array-item[index='0'][required='true'] .fields-remove {
+.form-field-array-item[index='0'][required='true'] > .fields-remove {
     display: none;
 }
 
-.form-field-array-item[index='0'][required='true'] .remove-btn {
+.form-field-array-item[index='0'][required='true'] > .form-field-group > .remove-btn {
     display: none;
 }
 
