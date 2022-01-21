@@ -31,6 +31,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
         const schema = schemes[i];
         schema.readonly = true;
         schema.status = SchemaStatus.PUBLISHED;
+        updateIRI(schema);
         const item: any = schemaRepository.create(schema);
         const existingItem = existingSchemes.find(s => s.uuid === schema.uuid);
         if (existingItem) {
@@ -259,10 +260,9 @@ export const schemaAPI = async function (
 
             let importSchemes = [];
             for (let i = 0; i < items.length; i++) {
-                const { iri, version, uuid, owner } = SchemaModel.parsRef(items[i]);
+                const { iri, version, uuid } = SchemaModel.parsRef(items[i]);
                 items[i].uuid = uuid;
                 items[i].version = version;
-                items[i].owner = owner;
                 items[i].iri = iri;
                 items[i].status = SchemaStatus.PUBLISHED;
                 if (uuid) {
