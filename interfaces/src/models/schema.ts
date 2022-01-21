@@ -1,3 +1,4 @@
+import { ModelHelper } from '../helpers/model-helper';
 import { ISchemaDocument, SchemaDataTypes } from '../interface/schema-document.interface';
 import { ISchema } from '../interface/schema.interface';
 import { SchemaEntity } from '../type/schema-entity.type';
@@ -161,10 +162,10 @@ export class Schema {
 
     public setVersion(version: string) {
         let currentVersion = this.currentVersion || this.version;
-        if (!Schema.checkVersionFormat(version)) {
+        if (!ModelHelper.checkVersionFormat(version)) {
             throw new Error("Invalid version format");
         }
-        if (Schema.versionCompare(version, currentVersion) > 0) {
+        if (ModelHelper.versionCompare(version, currentVersion) > 0) {
             this.version = version;
             this.currentVersion = version;
             this.previousVersion = currentVersion;
@@ -314,41 +315,8 @@ export class Schema {
         return clone
     }
 
-    private static checkVersionFormat(version: string) {
-        return (/^[\d]+([\\.][\d]+){0,2}$/.test(version));
-    }
-
-    private static versionCompare(v1: string, v2: string) {
-        if (!v2) {
-            return 1;
-        }
-        const v1parts = v1.split('.');
-        const v2parts = v2.split('.');
-        for (let i = 0; i < v1parts.length; ++i) {
-            if (v2parts.length == i) {
-                return 1;
-            }
-            if (v1parts[i] == v2parts[i]) {
-                continue;
-            }
-            else if (v1parts[i] > v2parts[i]) {
-                return 1;
-            }
-            else {
-                return -1;
-            }
-        }
-        if (v1parts.length != v2parts.length) {
-            return -1;
-        }
-        return 0;
-    }
-
     public static randomUUID(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+        return ModelHelper.randomUUID();
     }
 
     public static validate(schema: any) {
@@ -382,10 +350,10 @@ export class Schema {
         let _owner = data.owner || owner;
         let _uuid = data.uuid || uuid;
 
-        if (!Schema.checkVersionFormat(newVersion)) {
+        if (!ModelHelper.checkVersionFormat(newVersion)) {
             throw new Error("Invalid version format");
         }
-        if (Schema.versionCompare(newVersion, _version) <= 0) {
+        if (ModelHelper.versionCompare(newVersion, _version) <= 0) {
             throw new Error("Version must be greater than " + _version);
         }
         previousVersion = _version;

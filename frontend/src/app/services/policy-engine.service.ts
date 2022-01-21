@@ -143,7 +143,7 @@ export class PolicyEngineService {
   }
 
   public publish(policyId: string, policyVersion: string): Observable<any> {
-    return this.http.put<any>(`${this.url}/${policyId}/publish/${policyVersion}`, null);
+    return this.http.put<any>(`${this.url}/${policyId}/publish`, {policyVersion: policyVersion});
   }
 
   public validate(policy: any): Observable<any> {

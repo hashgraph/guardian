@@ -1397,7 +1397,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /policies/{policyId}/publish/{policyVersion}:
+  /policies/{policyId}/publish:
     put:
       tags:
         - policies
@@ -1409,12 +1409,16 @@ paths:
             type: string
           required: true
           description: Selected policy ID.
-        - in: path
-          name: policyVersion
-          schema:
-            type: string
-          required: true
-          description: Selected policy version.
+      requestBody:
+        description: Object that contains policy version.
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  policyVersion:
+                    type: string
       summary: Publishes policy.
       security:
       - bearerAuth: []
