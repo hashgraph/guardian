@@ -332,6 +332,11 @@ export class BlockTreeGenerator {
 
         this.router.put('/:policyId/publish/', async (req: AuthenticatedRequest, res: Response) => {
             try {
+                if (!req.body || !req.body.policyVersion)
+                {
+                    throw new Error("Policy version in body is empty");
+                }
+
                 const errors = await this.validate(req.params.policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
