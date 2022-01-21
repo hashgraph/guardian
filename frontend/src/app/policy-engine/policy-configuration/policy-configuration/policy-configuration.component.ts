@@ -449,42 +449,4 @@ export class PolicyConfigurationComponent implements OnInit {
         const root = await this.jsonToObject(json);
         return await this.objectToYaml(root);
     }
-
-    getIcon(blockType: string) {
-        console.log(blockType)
-        if (blockType == 'interfaceContainerBlock') {
-            return 'tab';
-        }
-        if (blockType == 'interfaceDocumentsSource') {
-            return 'table_view';
-        }
-        if (blockType == 'informationBlock') {
-            return 'info';
-        }
-        if (blockType == 'policyRolesBlock') {
-            return 'manage_accounts';
-        }
-        if (blockType == 'requestVcDocument') {
-            return 'dynamic_form';
-        }
-        if (blockType == 'sendToGuardian') {
-            return 'send';
-        }
-        if (blockType == 'interfaceAction') {
-            return 'flash_on';
-        }
-        if (blockType == 'interfaceStepBlock') {
-            return 'vertical_split';
-        }
-        if (blockType == 'mintDocument') {
-            return 'paid';
-        }
-        if (blockType == 'externalDataBlock') {
-            return 'cloud';
-        }
-        if (blockType == 'filtersAddon') {
-            return 'filter_alt';
-        }
-        return 'code'
-    }
 }
