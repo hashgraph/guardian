@@ -551,7 +551,6 @@ describe('Schema service', function () {
             'uuid': '0fae2120-0db2-4835-bab9-99b4effbe03e',
             'document': s1.document.replace(/0fae2a20-0db2-4835-bab9-99b4effbe03e/g, "0fae2120-0db2-4835-bab9-99b4effbe03e"),
             'iri': '#0fae2120-0db2-4835-bab9-99b4effbe03e',
-            'owner': null,
             'status': PUBLISHED,
             'version': null,
         }
@@ -561,7 +560,6 @@ describe('Schema service', function () {
             'id': '5',
             'relationships': [],
             'iri': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
-            'owner': null,
             'status': PUBLISHED,
             'version': null,
         }
@@ -571,7 +569,6 @@ describe('Schema service', function () {
             'id': '6',
             'relationships': ['#ad2de08d-a43c-43c7-a458-3f0e8db65e8f'],
             'iri': '#59b934e2-9eb6-4395-9b85-ad3624f1f752',
-            'owner': null,
             'status': PUBLISHED,
             'version': null,
         }
@@ -581,7 +578,6 @@ describe('Schema service', function () {
             'id': '7',
             'relationships': [],
             'iri': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
-            'owner': null,
             'status': PUBLISHED,
             'version': null,
         }
