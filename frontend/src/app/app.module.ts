@@ -140,7 +140,7 @@ import { VersionSchemaDialog } from './components/dialogs/version-schema/version
         RolesConfigComponent,
         RolesBlockComponent,
         SchemaFormViewComponent,
-        VcDocumentViewComponent
+        VcDocumentViewComponent,
         VersionSchemaDialog
     ],
     imports: [
