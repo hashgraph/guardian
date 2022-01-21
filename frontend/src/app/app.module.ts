@@ -85,7 +85,8 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { RolesConfigComponent } from './policy-engine/policy-configuration/roles-config/roles-config.component';
 import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/roles-block.component';
 import { DemoService } from './services/demo.service';
-import { VersionSchemaDialog } from './components/dialogs/version-schema/version-schema-dialog.component';
+import { SetVersionDialog } from './components/dialogs/set-version-dialog/set-version-dialog.component';
+import { SavePolicyDialog } from './policy-engine/save-policy-dialog/save-policy-dialog.component';
 
 @NgModule({
     declarations: [
@@ -122,6 +123,7 @@ import { VersionSchemaDialog } from './components/dialogs/version-schema/version
         RequestConfigComponent,
         PolicyPropertiesComponent,
         NewPolicyDialog,
+        SavePolicyDialog,
         StepBlockComponent,
         MintConfigComponent,
         SendConfigComponent,
@@ -134,7 +136,7 @@ import { VersionSchemaDialog } from './components/dialogs/version-schema/version
         ExportPolicyDialog,
         RolesConfigComponent,
         RolesBlockComponent,
-        VersionSchemaDialog
+        SetVersionDialog
     ],
     imports: [
         BrowserModule,

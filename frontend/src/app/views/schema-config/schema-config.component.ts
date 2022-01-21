@@ -8,7 +8,7 @@ import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.compone
 import { SchemaDialog } from '../../components/dialogs/schema-dialog/schema-dialog.component';
 import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/components/dialogs/import-schema/import-schema-dialog.component';
-import { VersionSchemaDialog } from 'src/app/components/dialogs/version-schema/version-schema-dialog.component';
+import { SetVersionDialog } from 'src/app/components/dialogs/set-version-dialog/set-version-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -165,10 +165,10 @@ export class SchemaConfigComponent implements OnInit {
             }
         });
     }
-    
+
     publish(element: any) {
-        const dialogRef = this.dialog.open(VersionSchemaDialog, {
-            width: '850px',
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
             data: {
                 schemes: this.schemes
             }
