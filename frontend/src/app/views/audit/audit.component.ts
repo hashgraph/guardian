@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { JsonDialog } from 'src/app/components/vc-dialog/vc-dialog.component';
+import { JsonDialog } from 'src/app/schema-engine/json-dialog/json-dialog.component';
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
 

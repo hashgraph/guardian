@@ -32,6 +32,14 @@ services:
     depends_on:
       - mongo
       - message-broker
+  ipfs-client:
+    build:
+      context: .
+      dockerfile: ./ipfs-client/Dockerfile
+    #    ports:
+    #      - 3006:3006
+    depends_on:
+      - message-broker
   mrv-sender:
     build:
       context: .

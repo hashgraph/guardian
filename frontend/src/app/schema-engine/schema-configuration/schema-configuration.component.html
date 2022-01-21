@@ -3,7 +3,7 @@
     <div class="optional-row">
         <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
             <mat-label>* Schema Name</mat-label>
-            <input matInput type="text" placeholder="Schema Name" formControlName="name" tabindex='-1'>
+            <input matInput type="text" placeholder="Schema Name" formControlName="name" [tabindex]='value ? -1 : 0'>
         </mat-form-field>
 
         <mat-form-field appearance="outline" [attr.disabled]="type=='version'">

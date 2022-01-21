@@ -1,4 +1,5 @@
 import {BeforeInsert, Column, Entity, ObjectIdColumn} from 'typeorm';
+import { Schema as SchemaModel } from 'interfaces';
 
 /**
  * Policy collection
@@ -8,13 +9,17 @@ export class Policy {
     @ObjectIdColumn()
     id: string;
 
-    @Column({
-        unique: true
-    })
+    @Column()
+    uuid: string;
+
+    @Column()
     name: string;
 
     @Column()
     version: string;
+
+    @Column()
+    previousVersion: string;
 
     @Column()
     description: string;
@@ -49,5 +54,6 @@ export class Policy {
     setDefaults() {
         this.status = this.status || 'DRAFT';
         this.registeredUsers = {};
+        this.uuid = this.uuid || SchemaModel.randomUUID();
     }
 }

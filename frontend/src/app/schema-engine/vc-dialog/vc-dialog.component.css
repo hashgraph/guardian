@@ -1,0 +1,32 @@
+.mat-button-base:not([started]) {
+    background-color: rgba(0,0,0,.12);
+}
+
+.json {
+    word-break: break-all;
+    white-space: pre-wrap;
+    margin-bottom: 8px;
+}
+
+.content {
+    height: 550px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-right: 10px;
+}
+
+.dialog-content {
+    overflow: hidden;
+}
+
+.view-toggle {
+    float: right
+}
+
+.dialog-title {
+    display: inline-block;
+}
+
+.dialog-actions {
+    padding-bottom: 20px;
+}

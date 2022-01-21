@@ -117,11 +117,11 @@ form {
     padding-right: 0;
 }
 
-.form-field-array-item[index='0'][required='true'] .fields-remove {
+.form-field-array-item[index='0'][required='true'] > .fields-remove {
     display: none;
 }
 
-.form-field-array-item[index='0'][required='true'] .remove-btn {
+.form-field-array-item[index='0'][required='true'] > .form-field-group > .remove-btn {
     display: none;
 }
 
@@ -204,8 +204,12 @@ form {
     color: red;
 }
 
-.invalid-arrow-circle{
+.invalid-arrow-circle {
     position: absolute;
     left: -35px;
     font-size: 30px;
+}
+
+.ipfs-url ::ng-deep .mat-form-field-infix {
+    padding-right: 35px;
 }

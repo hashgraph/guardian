@@ -1,13 +1,13 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 /**
  * Dialog for display json
  */
 @Component({
-    selector: 'vc-dialog',
-    templateUrl: './vc-dialog.component.html',
-    styleUrls: ['./vc-dialog.component.css']
+    selector: 'json-dialog',
+    templateUrl: './json-dialog.component.html',
+    styleUrls: ['./json-dialog.component.css']
 })
 export class JsonDialog {
     title: string = "";

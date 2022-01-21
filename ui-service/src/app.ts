@@ -7,7 +7,8 @@ import {
     profileAPI,
     schemaAPI,
     tokenAPI,
-    externalAPI
+    externalAPI,
+    ipfsAPI
 } from '@api/service';
 import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
@@ -21,6 +22,7 @@ import {authorizationHelper} from './auth/authorizationHelper';
 import {StateContainer} from '@policy-engine/state-container';
 import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
+import { IPFS } from '@helpers/ipfs';
 
 const PORT = process.env.PORT || 3002;
 const API_VERSION = 'v1';
@@ -65,6 +67,8 @@ Promise.all([
         await StateContainer.ReceiveExternalData(data);
     });
 
+    new IPFS().setChannel(channel);
+    
     const server = createServer(app);
     const policyGenerator = new BlockTreeGenerator();
     policyGenerator.registerWssServer(new WebSocket.Server({server}));
@@ -85,6 +89,7 @@ Promise.all([
     app.use(`/api/${API_VERSION}/trustchains/`, authorizationHelper, trustchainsAPI);
     app.use(`/api/${API_VERSION}/external/`, externalAPI);
     app.use(`/api/${API_VERSION}/demo/`, demoAPI);
+    app.use(`/api/${API_VERSION}/ipfs`, authorizationHelper, ipfsAPI);
     app.use(`/api-docs/${API_VERSION}`, swaggerAPI);
     app.use('/', frontendService);
     /////////////////////////////////////////

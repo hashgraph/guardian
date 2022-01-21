@@ -16,13 +16,13 @@
             <div class="list-item">
                 <h4 mat-line>DID Document</h4>
                 <p mat-line class="root-field">
-                    <a (click)="openDocument(profile.didDocument)">View Document</a>
+                    <a (click)="openDocument(profile.didDocument, 'DID', false)">View Document</a>
                 </p>
             </div>
             <div class="list-item">
                 <h4 mat-line>VC Document</h4>
                 <p mat-line class="root-field">
-                    <a (click)="openDocument(profile.vcDocument)">View Document</a>
+                    <a (click)="openDocument(profile.vcDocument, 'VC', true)">View Document</a>
                 </p>
             </div>
             <div class="list-item">
@@ -143,5 +143,5 @@
     <div *ngIf="errorLoadSchema" class="error-schema">
         <p>Failed to load system schemes.</p>
     </div>
-    
+
 </div>

@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es6",
+        "lib": [
+            "es5",
+            "es6",
+            "DOM"
+        ],
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "dist/",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "esModuleInterop": true,
+        "baseUrl": "./src",
+        "paths": {
+            "@api/*": ["api/*"]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "compileOnSave": true
+}

@@ -14,7 +14,6 @@ export class NewPolicyDialog {
     started = false;
     dataForm = this.fb.group({
         name: ['', Validators.required],
-        version: [''],
         description: [''],
         topicDescription: [''],
         policyTag: ['', Validators.required],

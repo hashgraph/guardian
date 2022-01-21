@@ -7,13 +7,24 @@ import { SchemaFormComponent } from './schema-form/schema-form.component';
 import { SchemaConfigurationComponent } from './schema-configuration/schema-configuration.component';
 import { ImportSchemaDialog } from './import-schema/import-schema-dialog.component';
 import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
+import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.component';
+import { ClipboardModule } from '@angular/cdk/clipboard';
+import { VcDocumentViewComponent } from './vc-document-view/vc-document-view.component';
+import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
+import { JsonDialog } from './json-dialog/json-dialog.component';
+import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
 
 @NgModule({
     declarations: [
         SchemaDialog,
         SchemaFormComponent,
         SchemaConfigurationComponent,
-        ImportSchemaDialog
+        ImportSchemaDialog,
+        SchemaFormViewComponent,
+        JsonDialog,
+        VCViewerDialog,
+        VcDocumentViewComponent,
+        SetVersionDialog
     ],
     imports: [
         CommonModule,
@@ -22,12 +33,18 @@ import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerMod
         NgxMatDatetimePickerModule,
         NgxMatNativeDateModule,
         NgxMatTimepickerModule,
+        ClipboardModule
     ],
     exports: [
         SchemaDialog,
         SchemaFormComponent,
         SchemaConfigurationComponent,
-        ImportSchemaDialog
+        ImportSchemaDialog,
+        SchemaFormViewComponent,
+        JsonDialog,
+        VCViewerDialog,
+        VcDocumentViewComponent,
+        SetVersionDialog
     ]
 })
 export class SchemaEngineModule {

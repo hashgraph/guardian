@@ -23,17 +23,15 @@ import { RootConfigComponent } from './views/root-config/root-config.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
 import { TokenDialog } from './components/token-dialog/token-dialog.component';
-import { JsonDialog } from './components/vc-dialog/vc-dialog.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
 import { NewPolicyDialog } from './policy-engine/helpers/new-policy-dialog/new-policy-dialog.component';
 import { ExportPolicyDialog } from './policy-engine/helpers/export-import-dialog/export-import-dialog.component';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
-import { VersionSchemaDialog } from './components/version-schema/version-schema-dialog.component';
 import { MaterialModule } from './material.module';
 import { PolicyEngineModule } from './policy-engine/policy-engine.module';
-import { SchemaEngineModule } from './schema-engine/schema-engine.module';
+import { IPFSService } from './services/ipfs.service';
 
 @NgModule({
     declarations: [
@@ -46,13 +44,11 @@ import { SchemaEngineModule } from './schema-engine/schema-engine.module';
         RootConfigComponent,
         TokenConfigComponent,
         TokenDialog,
-        JsonDialog,
         SchemaConfigComponent,
         AuditComponent,
         TrustChainComponent,
         NewPolicyDialog,
-        ExportPolicyDialog,
-        VersionSchemaDialog,
+        ExportPolicyDialog
     ],
     imports: [
         BrowserModule,
@@ -63,8 +59,7 @@ import { SchemaEngineModule } from './schema-engine/schema-engine.module';
         HttpClientModule,
         FormsModule,
         ToastrModule.forRoot(),
-        PolicyEngineModule,
-        SchemaEngineModule
+        PolicyEngineModule
     ],
     exports: [],
     providers: [
@@ -78,6 +73,7 @@ import { SchemaEngineModule } from './schema-engine/schema-engine.module';
         AuditService,
         PolicyEngineService,
         PolicyHelper,
+        IPFSService,
         DemoService,
         {
             provide: HTTP_INTERCEPTORS,

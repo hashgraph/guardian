@@ -160,7 +160,7 @@ export class BlockTreeGenerator {
         return model as IPolicyInterfaceBlock;
     }
 
-    private async tagFinder(instance: any, resultsContainer:PolicyValidationResultsContainer) {
+    private async tagFinder(instance: any, resultsContainer: PolicyValidationResultsContainer) {
         if (instance.tag) {
             resultsContainer.addTag(instance.tag);
         }
@@ -336,7 +336,23 @@ export class BlockTreeGenerator {
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
+                    const { version } = req.body;
                     const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+                    if (!model) {
+                        res.status(500).send({ code: 500, message: 'Unknown policy' });
+                        return;
+                    }
+
+                    const countModels = await getMongoRepository(Policy).count({
+                        version: version,
+                        uuid: model.uuid
+                    });
+
+                    if (countModels > 0) {
+                        res.status(500).send({ code: 500, message: 'Policy with current version already was published' });
+                        return;
+                    }
+
                     const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                     if (!model.config) {
                         res.status(500).send({ code: 500, message: 'The policy is empty' });
@@ -359,6 +375,7 @@ export class BlockTreeGenerator {
                         .newTopic(root.hederaAccountKey, model.topicDescription);
                     model.status = 'PUBLISH';
                     model.topicId = topicId;
+                    model.version = version;
 
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
@@ -428,7 +445,7 @@ export class BlockTreeGenerator {
         this.router.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if(!block) {
+                if (!block) {
                     const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
@@ -449,7 +466,7 @@ export class BlockTreeGenerator {
         this.router.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if(!block) {
+                if (!block) {
                     const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
@@ -470,7 +487,7 @@ export class BlockTreeGenerator {
         this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByTag(req.params.policyId, req.params.tagName);
-                if(!block) {
+                if (!block) {
                     const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
@@ -490,7 +507,7 @@ export class BlockTreeGenerator {
         this.router.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if(!block) {
+                if (!block) {
                     const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;

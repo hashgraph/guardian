@@ -4,11 +4,11 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
-import { JsonDialog } from '../../components/vc-dialog/vc-dialog.component';
 import { SchemaDialog } from '../../schema-engine/schema-dialog/schema-dialog.component';
 import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-schema-dialog.component';
-import { VersionSchemaDialog } from 'src/app/components/version-schema/version-schema-dialog.component';
+import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
+import { JsonDialog } from 'src/app/schema-engine/json-dialog/json-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -165,10 +165,10 @@ export class SchemaConfigComponent implements OnInit {
             }
         });
     }
-    
+
     publish(element: any) {
-        const dialogRef = this.dialog.open(VersionSchemaDialog, {
-            width: '850px',
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
             data: {
                 schemes: this.schemes
             }

@@ -6,9 +6,10 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
 import { TokenService } from 'src/app/services/token.service';
 import { RegisteredBlocks } from '../../registered-blocks';
+import { PolicyAction, SavePolicyDialog } from '../../save-policy-dialog/save-policy-dialog.component';
+import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -164,7 +165,7 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this.currentBlock) {
             this.currentBlock.children = this.currentBlock.children || [];
             let permissions = undefined;
-            if(this.currentBlock.permissions) {
+            if (this.currentBlock.permissions) {
                 permissions = this.currentBlock.permissions.slice();
             }
             const newBlock: BlockNode = {
@@ -238,9 +239,21 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    publishPolicy() {
+    setVersion() {
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe((version) => {
+            if (version) {
+                this.publishPolicy(version);
+            }
+        });
+    }
+
+    private publishPolicy(version: string) {
         this.loading = true;
-        this.policyEngineService.publish(this.policyId).subscribe((data: any) => {
+        this.policyEngineService.publish(this.policyId, version).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (isValid) {
                 this.loadPolicy();
@@ -290,16 +303,32 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     saveAsPolicy() {
-        const dialogRef = this.dialog.open(NewPolicyDialog, {
+        const dialogRef = this.dialog.open(SavePolicyDialog, {
             width: '500px',
+            data: {
+                policy: this.policy,
+                action: this.policy.status === 'DRAFT'
+                    ? PolicyAction.CREATE_NEW_POLICY
+                    : null
+            },
+            autoFocus: false
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                const policy = Object.assign({}, this.policy, result);
+                const policy = Object.assign({}, this.policy, result.policy);
                 delete policy.id;
                 delete policy.status;
                 delete policy.owner;
+                delete policy.version;
+
+                if (result.action === PolicyAction.CREATE_NEW_POLICY) {
+                    delete policy.uuid;
+                }
+                else if (result.action === PolicyAction.CREATE_NEW_VERSION) {
+                    policy.previousVersion = this.policy.version;
+                }
+
                 this.policyEngineService.create(policy).subscribe((policies: any) => {
                     const last = policies[policies.length - 1];
                     this.router.navigate(['/policy-configuration'], { queryParams: { policyId: last.id } });

@@ -96,7 +96,7 @@ export const documentsAPI = async function (
     channel.response(MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
         if (msg.payload) {
             const reqObj: any = { where: {} };
-            const {type, owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
+            const { type, owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
             if (type) {
                 reqObj.where['type'] = { $eq: type }
             }
@@ -119,7 +119,7 @@ export const documentsAPI = async function (
                 reqObj.where['policyId'] = { $eq: policyId }
             }
             if (schema) {
-                if(schema.startsWith('#')) {
+                if (schema.startsWith('#')) {
                     reqObj.where['document.credentialSubject.type'] = { $eq: schema.substr(1) }
                 } else {
                     reqObj.where['document.credentialSubject.type'] = { $eq: schema }
@@ -179,11 +179,11 @@ export const documentsAPI = async function (
         let result: IVCDocument;
 
         const hash = msg.payload.hash;
-        if(hash) {
+        if (hash) {
             result = await vcDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
         }
 
-        if(result) {
+        if (result) {
             const operation = msg.payload.operation;
             if (operation) {
                 result.hederaStatus = getVCOperation(operation);
@@ -206,7 +206,7 @@ export const documentsAPI = async function (
         }
 
         if (!result) {
-            if(msg.payload.document) {
+            if (msg.payload.document) {
                 result = vcDocumentRepository.create(msg.payload as VcDocument);
             } else {
                 res.send(null);

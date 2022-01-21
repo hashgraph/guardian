@@ -142,8 +142,8 @@ export class PolicyEngineService {
     return this.http.put<any>(`${this.url}/${policyId}`, policy);
   }
 
-  public publish(policyId: string): Observable<any> {
-    return this.http.put<any>(`${this.url}/${policyId}/publish`, null);
+  public publish(policyId: string, version: string): Observable<any> {
+    return this.http.put<any>(`${this.url}/${policyId}/publish`, { version });
   }
 
   public validate(policy: any): Observable<any> {
@@ -154,7 +154,7 @@ export class PolicyEngineService {
     return this.http.get<any>(`${this.url}/${policyId}/blocks`);
   }
 
-  public getBlockData(blockId: string, policyId: string, filters?:any): Observable<any> {
+  public getBlockData(blockId: string, policyId: string, filters?: any): Observable<any> {
     return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`, {
       params: filters
     });

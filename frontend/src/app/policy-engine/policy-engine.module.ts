@@ -36,6 +36,7 @@ import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { AppRoutingModule } from '../app-routing.module';
 import { RegisteredBlocks } from './registered-blocks';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { SavePolicyDialog } from './save-policy-dialog/save-policy-dialog.component';
 
 @NgModule({
     declarations: [
@@ -68,6 +69,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
         RolesBlockComponent,
         FiltersAddonBlockComponent,
         HelpIcon,
+        SavePolicyDialog
     ],
     imports: [
         CommonModule,
@@ -76,7 +78,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
         MaterialModule,
         SchemaEngineModule,
         AppRoutingModule,
-        DragDropModule
+        DragDropModule,
+        SchemaEngineModule
     ],
     exports: [
         PolicyConfigurationComponent,
@@ -108,6 +111,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
         RolesBlockComponent,
         FiltersAddonBlockComponent,
         HelpIcon,
+        SavePolicyDialog,
+        SchemaEngineModule
     ],
     providers: [
         RegisteredBlocks

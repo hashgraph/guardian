@@ -93,6 +93,7 @@ export class SchemaConfigurationComponent implements OnInit {
             { name: "Duration", value: "8" },
             { name: "URL", value: "9" },
             { name: "Email", value: "10" },
+            { name: "Image", value: "11" }
         ];
         this.schemaTypeMap = {};
         this.schemaTypeMap["1"] = {
@@ -153,6 +154,12 @@ export class SchemaConfigurationComponent implements OnInit {
             type: 'string',
             format: 'email',
             pattern: undefined,
+            isRef: false
+        };
+        this.schemaTypeMap["11"] = {
+            type: 'string',
+            format: 'url',
+            pattern: '^((https):\/\/)?ipfs.io\/ipfs\/.+',
             isRef: false
         };
 

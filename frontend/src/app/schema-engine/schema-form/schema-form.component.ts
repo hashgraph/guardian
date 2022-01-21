@@ -1,11 +1,13 @@
 import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { AbstractControl, FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaField } from 'interfaces';
 import * as moment from 'moment';
+import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
-const DATETIME_FORMATS = {
+export const DATETIME_FORMATS = {
   parse: {
     dateInput: 'l, LT',
   },
@@ -71,8 +73,10 @@ export class SchemaFormComponent implements OnInit {
 
     @Output('change') change = new EventEmitter<Schema | null>();
 
-    constructor(private fb: FormBuilder) {
-    }
+    constructor(
+      private ipfs: IPFSService,
+      protected changeDetectorRef: ChangeDetectorRef
+    ) { }
 
 
     ngOnInit(): void {
@@ -125,10 +129,9 @@ export class SchemaFormComponent implements OnInit {
 
     addGroup(item: any) {
         item.control = new FormGroup({});
-        setTimeout(() => {
-            this.options?.addControl(item.d, item.control);
-            this.change.emit();
-        });
+        this.options?.addControl(item.name, item.control);
+        this.change.emit();
+        this.changeDetectorRef.detectChanges();
     }
 
     removeGroup(item: any) {
@@ -222,6 +225,21 @@ export class SchemaFormComponent implements OnInit {
             this.options.addControl("type", new FormControl(this.context.type));
             this.options.addControl("@context", new FormControl(this.context.context));
         }
+        this.changeDetectorRef.detectChanges();
+    }
+
+    onFileSelected(event:any, control: AbstractControl)
+    {
+      control.patchValue("");
+      const file = event?.target?.files[0];
+
+      if (!file)
+      {
+        return;
+      }
+
+      this.ipfs.addFile(file)
+        .subscribe(res => control.patchValue(API_IPFS_GATEWAY_URL + res));
     }
 
     GetInvalidMessageByFieldType(type: string, isArray: boolean = false): string {
