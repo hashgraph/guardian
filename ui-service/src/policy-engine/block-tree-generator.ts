@@ -373,8 +373,8 @@ export class BlockTreeGenerator {
                     const topicId = await HederaHelper
                         .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
                         .newTopic(root.hederaAccountKey, model.topicDescription);
-                    model.status = 'PUBLISH';
                     model.topicId = topicId;
+                    model.status = 'PUBLISH';
                     model.version = version;
 
                     const vcHelper = new VcHelper();
@@ -409,7 +409,7 @@ export class BlockTreeGenerator {
                     errors
                 });
             } catch (error) {
-                res.status(500).send({ code: 500, message: error.message });
+                res.status(500).send({ code: 500, message: error.message || error });
             }
         });
 
