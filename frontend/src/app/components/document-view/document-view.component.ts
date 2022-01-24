@@ -1,11 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, } from '@angular/core';
 import { Schema } from 'interfaces';
 
-enum DocumentTypes {
-  VP = "VerifiablePresentation",
-  VC = "VerifiableCredential"
-}
-
 /**
  * View document
  */
@@ -18,11 +13,11 @@ enum DocumentTypes {
 export class DocumentViewComponent implements OnInit{
     @Input('document') document: any;
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
-    @Input('schemas') schemas!: Schema[]
+    @Input('schemas') schemas!: Schema[];
+    @Input('type') type!: 'VC' | 'VP';
 
     subjects: any[] = []
     proofJson!: string;
-    documentType!: string;
 
     constructor() { }
 
@@ -31,10 +26,8 @@ export class DocumentViewComponent implements OnInit{
         ? JSON.stringify(this.document.proof)
         : "";
 
-      this.documentType = this.document.type ? this.document.type[0] : "";
-
-      switch (this.documentType){
-        case DocumentTypes.VC:
+      switch (this.type){
+        case 'VC':
           if (Object.getPrototypeOf(this.document.credentialSubject) === Object.prototype) {
             this.subjects.push(this.document.credentialSubject);
           }
@@ -45,7 +38,7 @@ export class DocumentViewComponent implements OnInit{
             }
           }
           break;
-        case DocumentTypes.VP:
+        case 'VP':
           if (Object.getPrototypeOf(this.document.verifiableCredential) === Object.prototype) {
             this.subjects.push(this.document.verifiableCredential);
           }
@@ -61,16 +54,5 @@ export class DocumentViewComponent implements OnInit{
 
     GetSchema(id: any) {
         return this.schemas.filter((schema)=> schema.uuid === id)[0];
-    }
-
-    GetSubjectsTitle(documentType: string): string {
-      switch (documentType) {
-        case DocumentTypes.VC:
-          return "Credential Subject";
-        case DocumentTypes.VP:
-          return "Verifiable Credential";
-        default:
-          return "";
-      }
     }
 }

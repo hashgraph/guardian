@@ -1,6 +1,6 @@
 <h1 mat-dialog-title class="dialog-title">{{title}}</h1>
 <mat-slide-toggle
-  *ngIf="isVcDocument"
+  *ngIf="isVcDocument || isVpDocument"
   class="view-toggle"
   labelPosition='before'
   [(ngModel)]="viewDocument"
@@ -11,6 +11,7 @@
         <app-document-view
           [document]="document"
           [schemas]="schemas"
+          [type]="type"
           *ngSwitchCase="true">
         </app-document-view>
         <div class="json" *ngSwitchCase="false">

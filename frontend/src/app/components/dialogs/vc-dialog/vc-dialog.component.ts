@@ -17,7 +17,7 @@ export class JsonDialog {
     isVcDocument!: boolean;
     schemas: any;
     document: any;
-    type: string = "";
+    type: any;
     isVpDocument!: boolean;
     isJsonDocument!: boolean;
 
@@ -48,17 +48,15 @@ export class JsonDialog {
         this.isVcDocument = false;
         this.isVpDocument = false;
         this.isJsonDocument = false;
-        if(this.type == 'VC') {
+        if (this.type == 'VC') {
             this.isVcDocument = true;
-        } else if(this.type == 'VP') {
+        } else if (this.type == 'VP') {
             this.isVpDocument = true;
         } else {
             this.isJsonDocument = true;
-        } 
-        this.viewDocument = (viewDocument || false) && this.isVcDocument;
-        if (this.isVcDocument) {
-            this.schemas = schemas;
         }
+        this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
+        this.schemas = schemas;
     }
 
     onClick(): void {
