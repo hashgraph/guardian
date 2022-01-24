@@ -4,10 +4,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IVC } from 'interfaces';
+import { IVC, Schema } from 'interfaces';
 import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.component';
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
+import { forkJoin } from 'rxjs';
+import { SchemaService } from 'src/app/services/schema.service';
 
 /**
  * Page to find VP Documents and display Trust Chain.
@@ -29,9 +31,11 @@ export class TrustChainComponent implements OnInit {
     vpPolicy: any;
 
     hasParam: boolean = false;
+    schemas!: Schema[];
 
     constructor(
         private auth: AuthService,
+        private schemaService: SchemaService,
         private auditService: AuditService,
         private route: ActivatedRoute,
         private router: Router,
@@ -80,8 +84,17 @@ export class TrustChainComponent implements OnInit {
         const value = this.searchForm.value.value;
         if (value) {
             this.loading = true;
-            this.auditService.searchHash(value).subscribe((data: any) => {
-                const { chain, userMap } = data;
+
+            forkJoin([
+                this.auditService.searchHash(value),
+                this.schemaService.getSchemes()
+            ]).subscribe((value) => {
+                const documents:any = value[0];
+                const schemes = value[1];
+
+                this.schemas = Schema.mapRef(schemes);
+
+                const { chain, userMap } = documents;
                 this.userMap = {};
                 userMap.forEach((user: any) => {
                     this.userMap[user.did] = user.username;
@@ -129,13 +142,41 @@ export class TrustChainComponent implements OnInit {
         }
     }
 
-    openDocument(item: any, viewDocument: boolean = false) {
+    openVCDocument(item: any) {
+        const dialogRef = this.dialog.open(JsonDialog, {
+            width: '850px',
+            data: {
+                viewDocument: true,
+                document: item.document,
+                title: item.type,
+                type: 'VC',
+                schemas: this.schemas,
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => { });
+    }
+
+    openVPDocument(item: any) {
+        const dialogRef = this.dialog.open(JsonDialog, {
+            width: '850px',
+            data: {
+                viewDocument: true,
+                document: item.document,
+                title: item.type,
+                type: 'VP',
+                schemas: this.schemas,
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => { });
+    }
+
+    openJsonDocument(item: any) {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
                 document: item.document,
                 title: item.type,
-                viewDocument: viewDocument
+                type: 'JSON',
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => { });

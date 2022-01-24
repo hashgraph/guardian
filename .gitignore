@@ -25,3 +25,4 @@ interfaces/node_modules/
 www-data/
 ui-service/.vs/
 /test_results/
+ipfs-client/package-lock.json

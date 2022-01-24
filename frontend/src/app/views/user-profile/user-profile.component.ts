@@ -166,7 +166,8 @@ export class UserProfileComponent implements OnInit {
             width: '850px',
             data: {
                 document: JSON.parse(document),
-                title: "DID"
+                title: "DID",
+                type: 'JSON',
             }
         });
 

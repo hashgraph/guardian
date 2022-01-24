@@ -108,7 +108,8 @@ export class SchemaConfigComponent implements OnInit {
             width: '850px',
             data: {
                 document: element.schema,
-                title: 'Schema'
+                title: 'Schema',
+                type: 'JSON',
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => { });
