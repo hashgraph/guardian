@@ -132,7 +132,7 @@ Promise.all([
   );
 
   app.use('/debug/', debugApi);
-  app.use('/audit/', makeAuditApi(channel));
+  app.use('/audit/', makeAuditApi(channel, meterConfigRepository));
   app.use(
     '/track-and-trace/',
     makeTrackAndTraceApi({

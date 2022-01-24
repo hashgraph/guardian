@@ -24,5 +24,6 @@ export enum MessageAPI {
     PUBLISH_SCHEMA = 'publish-schema',
     UNPUBLISHED_SCHEMA = 'unpublished-schema',
     DELETE_SCHEMA = 'delete-schema',
-    LOAD_SCHEMA = 'load-schema'
+    LOAD_SCHEMA = 'load-schema',
+    FIND_VP_DOCUMENTS = "find-vp-documents"
 }

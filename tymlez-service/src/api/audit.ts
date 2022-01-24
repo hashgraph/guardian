@@ -2,28 +2,54 @@ import { Request, Response, Router } from 'express';
 import type { IFastMqChannel } from 'fastmq';
 import { MessageAPI } from 'interfaces';
 import { take, takeRight } from 'lodash';
+import type { MongoRepository } from 'typeorm/repository/MongoRepository';
+import type { MeterConfig } from '@entity/meter-config';
 
-export const makeAuditApi = (channel: IFastMqChannel) => {
+export const makeAuditApi = (
+  channel: IFastMqChannel,
+  meterConfigRepository: MongoRepository<MeterConfig>,
+) => {
   const auditApi = Router();
 
-  auditApi.get('/get-vp-documents', async (req: Request, res: Response) => {
-    const filter: IFilter | null = null;
+  auditApi.get(
+    '/get-vp-documents/:meterId',
+    async (req: Request, res: Response) => {
+      const { meterId } = req.params as {
+        meterId: string | undefined;
+      };
 
-    const vp = (
-      await channel.request('guardian.*', MessageAPI.GET_VP_DOCUMENTS, filter)
-    ).payload;
+      const meter = await meterConfigRepository.findOne({
+        where: { meterId },
+      });
 
-    res.status(200).json(vp);
-  });
+      let filter: IFilter | null = null;
+
+      if (meter) {
+        filter = { issuer: meter.config.did };
+        const vp = (
+          await channel.request(
+            'guardian.*',
+            MessageAPI.FIND_VP_DOCUMENTS,
+            filter,
+          )
+        ).payload;
+
+        res.status(200).json(vp);
+        return;
+      }
+
+      res.status(404).send(`Cannot find VP documents for meterId: ${meterId}`);
+    },
+  );
 
   return auditApi;
 };
 
 interface IFilter {
-  id: string; //  filter by id
-  type: string; // filter by type
-  owner: string; // filter by owner
-  issuer: string; // filter by issuer
-  hash: string; // filter by hash
-  policyId: string; // filter by policy id
+  id?: string; //  filter by id
+  type?: string; // filter by type
+  owner?: string; // filter by owner
+  issuer?: string; // filter by issuer
+  hash?: string; // filter by hash
+  policyId?: string; // filter by policy id
 }

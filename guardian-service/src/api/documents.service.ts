@@ -213,4 +213,35 @@ export const documentsAPI = async function (
             res.send(documents);
         }
     });
+
+    /**
+     * Return VP Documents using filters
+     * 
+     * @param {Object} [payload] - filters
+     * 
+     * @returns {IVPDocument[]} - VP Documents
+     */
+     channel.response(MessageAPI.FIND_VP_DOCUMENTS, async (msg, res) => {        
+            const reqObj: any = { where: {} };
+            if (msg.payload.type) {
+                reqObj.where['type'] = { $eq: msg.payload.type }
+            }
+            if (msg.payload.owner) {
+                reqObj.where['owner'] = { $eq: msg.payload.owner }
+            }
+            if (msg.payload.issuer) {
+                reqObj.where['document.verifiableCredential.issuer'] = msg.payload.issuer
+            }
+            if (msg.payload.id) {
+                reqObj.where['document.id'] = { $eq: msg.payload.id }
+            }
+            if (msg.payload.hash) {
+                reqObj.where['hash'] = { $in: msg.payload.hash }
+            }
+            if (msg.payload.policyId) {
+                reqObj.where['policyId'] = { $eq: msg.payload.policyId }
+            } 
+            const documents: IVPDocument[] = await vpDocumentRepository.find(reqObj);
+            res.send(documents);      
+    });
 }
