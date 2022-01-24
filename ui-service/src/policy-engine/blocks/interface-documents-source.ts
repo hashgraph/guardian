@@ -65,44 +65,7 @@ export class InterfaceDocumentsSource {
             filters.assign = userFull.did;
         }
 
-        Object.assign(filters, ref.getFilters());
-
-        console.log('getData', filters);
-        
-        let data: any[];
-        switch (ref.options.dataType) {
-            case 'vc-documents':
-                filters.policyId = ref.policyId;
-                data = await this.guardians.getVcDocuments(filters);
-                break;
-
-            case 'did-documents':
-                data = await this.guardians.getDidDocuments(filters);
-                break;
-
-            case 'vp-documents':
-                filters.policyId = ref.policyId;
-                data = await this.guardians.getVpDocuments(filters);
-                break;
-
-            case 'root-authorities':
-                data = await getMongoRepository(User).find({ where: { role: { $eq: UserRole.ROOT_AUTHORITY } } });
-                break;
-
-            case 'approve':
-                filters.policyId = ref.policyId;
-                data = await this.guardians.getApproveDocuments(filters);
-                break;
-
-            case 'source':
-                data = [];
-                break;
-
-            default:
-                throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
-        }
-
-        const blocks = ref.getAddons().map(addon => {
+        const blocks = ref.getFiltersAddons().map(addon => {
             return {
                 id: addon.uuid,
                 uiMetaData: addon.options.uiMetaData,
@@ -110,7 +73,10 @@ export class InterfaceDocumentsSource {
             }
         });
 
-        return Object.assign({ data, blocks }, ref.options.uiMetaData);
+        return Object.assign({
+            data: ref.getSources(filters),
+            blocks
+        }, ref.options.uiMetaData);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

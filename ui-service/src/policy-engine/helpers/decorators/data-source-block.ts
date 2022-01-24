@@ -14,20 +14,28 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public readonly blockClassName = 'DataSourceBlock';
 
-            protected getAddons(): IPolicyBlock[] {
-                return this.children.filter(child => {
-                    return child.blockClassName === 'DataSourceAddon';
-                });
-            }
+            protected getFiltersAddons(): IPolicyBlock[] {
+                const filters: IPolicyBlock[] = [];
 
-            protected getFilters(): {[key: string]: string} {
-                const filters = {};
-
-                for (let addon of this.getAddons()) {
-                    Object.assign(filters, (addon as any).getFilters());
+                for (let child of this.children) {
+                    if (child.blockClassName === 'SourceAddon') {
+                        for (let filter of child.children) {
+                            filters.push(child);
+                        }
+                    }
                 }
 
                 return filters;
+            }
+
+            protected async getSources(filters): Promise<any[]> {
+                let data = [];
+                for (let child of this.children) {
+                    if (child.blockClassName === 'SourceAddon') {
+                        data = data.concat(await child.getFromSource(filters))
+                    }
+                }
+                return data;
             }
 
             async getData(...args: any[]): Promise<any> {

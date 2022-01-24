@@ -9,6 +9,16 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public readonly blockClassName = 'SourceAddon';
 
+            protected getFilters(): {[key: string]: string} {
+                const filters = {};
+
+                for (let addon of this.getAddons()) {
+                    Object.assign(filters, (addon as any).getFilters());
+                }
+
+                return filters;
+            }
+
             public getFromSource(...args): any[] {
                 if (super.getFromSource === 'function') {
                     return super.getFromSource(...args)
