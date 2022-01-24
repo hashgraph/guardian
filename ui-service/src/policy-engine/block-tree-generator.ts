@@ -160,7 +160,7 @@ export class BlockTreeGenerator {
         return model as IPolicyInterfaceBlock;
     }
 
-    private async tagFinder(instance: any, resultsContainer:PolicyValidationResultsContainer) {
+    private async tagFinder(instance: any, resultsContainer: PolicyValidationResultsContainer) {
         if (instance.tag) {
             resultsContainer.addTag(instance.tag);
         }
@@ -293,7 +293,9 @@ export class BlockTreeGenerator {
                 const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
                 model.owner = user.did;
-                delete model.topicId;
+                if (!model.uuid) {
+                    delete model.topicId;
+                }
                 await getMongoRepository(Policy).save(model);
                 const policies = await getMongoRepository(Policy).find({ owner: user.did })
                 res.json(policies);
@@ -332,8 +334,7 @@ export class BlockTreeGenerator {
 
         this.router.put('/:policyId/publish/', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                if (!req.body || !req.body.policyVersion)
-                {
+                if (!req.body || !req.body.policyVersion) {
                     throw new Error("Policy version in body is empty");
                 }
 
@@ -350,7 +351,7 @@ export class BlockTreeGenerator {
                         throw new Error("Version must be greater than " + model.previousVersion);
                     }
 
-                    const countModels = await getMongoRepository(Policy).count({ 
+                    const countModels = await getMongoRepository(Policy).count({
                         version: req.body.policyVersion,
                         uuid: model.uuid
                     });
@@ -377,11 +378,14 @@ export class BlockTreeGenerator {
                     regenerateIds(model.config);
                     const guardians = new Guardians();
                     const root = await guardians.getRootConfig(user.did);
-                    const topicId = await HederaHelper
-                        .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-                        .newTopic(root.hederaAccountKey, model.topicDescription);
+
+                    if (!model.topicId) {
+                        const topicId = await HederaHelper
+                            .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+                            .newTopic(root.hederaAccountKey, model.topicDescription);
+                        model.topicId = topicId;
+                    }
                     model.status = 'PUBLISH';
-                    model.topicId = topicId;
                     model.version = req.body.policyVersion;
 
                     const vcHelper = new VcHelper();
@@ -452,7 +456,7 @@ export class BlockTreeGenerator {
         this.router.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if(!block) {
+                if (!block) {
                     const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
@@ -473,7 +477,7 @@ export class BlockTreeGenerator {
         this.router.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if(!block) {
+                if (!block) {
                     const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
@@ -494,7 +498,7 @@ export class BlockTreeGenerator {
         this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const block = StateContainer.GetBlockByTag(req.params.policyId, req.params.tagName);
-                if(!block) {
+                if (!block) {
                     const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;

@@ -56,7 +56,7 @@
       </ng-template>
 
       <ng-template [ngSwitchCase]="'VP'">
-        <div class="label-field">Verifiable Credential</div>
+        <div class="label-header">Verifiable Credential</div>
         <div *ngFor="let vcDocument of this.subjects" class="form-field-array-item"
           [attr.index]="this.subjects.indexOf(vcDocument)">
           <div class="form-field-group">

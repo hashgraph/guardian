@@ -23,7 +23,7 @@ export class DocumentViewComponent implements OnInit {
 
   ngOnInit(): void {
     this.proofJson = this.document.proof
-      ? JSON.stringify(this.document.proof)
+      ? JSON.stringify(this.document.proof, null, 4)
       : "";
 
     switch (this.type) {
