@@ -3,16 +3,16 @@
   *ngIf="this.data.isVcDocument"
   class="view-toggle"
   labelPosition='before'
-  [(ngModel)]="viewVcDocument"
+  [(ngModel)]="viewDocument"
   color="primary"
 >View as form</mat-slide-toggle>
 <div mat-dialog-content class="dialog-content">
-    <div class="content" [ngSwitch]="viewVcDocument">
-        <app-vc-document-view
-          [vc-document]="this.data.document.document"
+    <div class="content" [ngSwitch]="viewDocument">
+        <app-document-view
+          [document]="this.data.document.document"
           [schemas]="this.data.schemas"
           *ngSwitchCase="true">
-        </app-vc-document-view>
+        </app-document-view>
 
         <div class="json" *ngSwitchCase="false">
             {{json}}

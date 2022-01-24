@@ -129,12 +129,13 @@ export class TrustChainComponent implements OnInit {
         }
     }
 
-    openDocument(item: any,) {
+    openDocument(item: any, viewDocument: boolean = false) {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
                 document: item.document,
-                title: item.type
+                title: item.type,
+                viewDocument: viewDocument
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => { });
