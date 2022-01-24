@@ -48,8 +48,8 @@ export class RequestVcDocumentBlock {
     async getData(user: IAuthUser): Promise<any> {
         const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
         if (!this.schema) {
-            const schemas = await this.guardians.getSchemes({}) || [];
-            this.schema = Schema.mapRef(schemas).find(s => s.uuid === options.schema);
+            const schemas = await this.guardians.getSchemes() || [];
+            this.schema = Schema.mapRef(schemas).find((s) => s.iri === options.schema);
         }
         if (!this.schema) {
             const ref = PolicyBlockHelpers.GetBlockRef(this);

@@ -117,7 +117,7 @@ export class PolicyConfigurationComponent implements OnInit {
         if (!policy) {
             return;
         }
-        policy.policyPoles = policy.policyPoles || [];
+        policy.policyRoles = policy.policyRoles || [];
         policy.config = policy.config || {
             blockType: 'interfaceContainerBlock',
         };

@@ -38,6 +38,7 @@ export class Schema {
     public isOwner: boolean;
     public previousVersion: string;
     public currentVersion: string;
+    public iri: string;
 
     public schema: ISchemaDocument;
     public fields: SchemaField[];
@@ -60,6 +61,7 @@ export class Schema {
             this.owner = data.owner || "";
             this.version = data.version || "";
             this.isOwner = data.isOwner;
+            this.iri = data.iri || "";
         } else {
             this.uuid = Schema.randomUUID();
             this.hash = "";
@@ -72,6 +74,7 @@ export class Schema {
             this.owner = "";
             this.version = "";
             this.isOwner = true;
+            this.iri = "";
         }
         if (data && data.document) {
             this.document = data.document;
