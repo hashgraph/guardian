@@ -131,6 +131,7 @@ export class InterfaceDocumentActionBlock {
             const userDID = userFull.did;
             const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
+            const { type } = Schema.parsRef(ref.options.schema);
             return {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
@@ -141,7 +142,7 @@ export class InterfaceDocumentActionBlock {
                     'installer': userDID,
                     'did': sensorDid,
                     'key': sensorKey,
-                    'type': ref.options.schema,
+                    'type': type,
                     'schema': await this.guardians.loadSchemaDocument(ref.options.schema),
                     'policyId': ref.policyId,
                     'policyTag': policy.policyTag

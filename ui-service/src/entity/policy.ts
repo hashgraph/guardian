@@ -1,5 +1,5 @@
 import {BeforeInsert, Column, Entity, ObjectIdColumn} from 'typeorm';
-import { Schema as SchemaModel } from 'interfaces';
+import { ModelHelper } from 'interfaces';
 
 /**
  * Policy collection
@@ -54,6 +54,6 @@ export class Policy {
     setDefaults() {
         this.status = this.status || 'DRAFT';
         this.registeredUsers = {};
-        this.uuid = this.uuid || SchemaModel.randomUUID();
+        this.uuid = this.uuid || ModelHelper.randomUUID();
     }
 }

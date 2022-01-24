@@ -20,19 +20,19 @@
                     Verified Presentation
                     <mat-icon>check_circle</mat-icon>
 
-                    <a class="open-vp" (click)="openDocument(vp)">VP File</a>
+                    <a class="open-vp" (click)="openVPDocument(vp)">VP File</a>
                 </div>
                 <div *ngIf="!vp && chain" class="header">
                     <a routerLink="/audit" class="go-back-link">
                         <mat-icon>chevron_left</mat-icon>
                         {{chain[0].label}}: {{chain[0].id}}
                     </a>
-                    <a class="open-vp" (click)="openDocument(chain[0])">File</a>
+                    <a class="open-vp" (click)="openVCDocument(chain[0])">File</a>
                 </div>
                 <div *ngIf="vpMint" class="vp-section">
                     <div class="vp-section-header">
                         Token & Issuer
-                        <a class="open-vp" (click)="openDocument(vpMint)">VC Files</a>
+                        <a class="open-vp" (click)="openJsonDocument(vpMint)">VC Files</a>
                     </div>
                     <div class="vp-table">
                         <div class="vp-field">
@@ -52,7 +52,7 @@
                 <div *ngIf="vpPolicy" class="vp-section">
                     <div class="vp-section-header">
                         Policy Overview
-                        <a class="open-vp" (click)="openDocument(vpPolicy)">VC Files</a>
+                        <a class="open-vp" (click)="openVCDocument(vpPolicy)">VC Files</a>
                     </div>
                     <div class="vp-table">
                         <div class="vp-field">
@@ -94,7 +94,7 @@
                                     <mat-icon *ngSwitchCase="'MintNFToken'" svgIcon="token"></mat-icon>
                                     <mat-icon *ngSwitchDefault>account_circle</mat-icon>
                                 </ng-container>
-                                
+
                                 {{item.schema}}
                             </div>
                             <div class="chain-id">
@@ -107,7 +107,7 @@
                                 </div>
                             </div>
                             <div class="chain-document">
-                                <a (click)="openDocument(item)">VC Files</a>
+                                <a (click)="openVCDocument(item)">VC Files</a>
                             </div>
                         </div>
                     </ng-container>
@@ -116,7 +116,7 @@
             </div>
         </div>
     </ng-template>
-    
+
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
