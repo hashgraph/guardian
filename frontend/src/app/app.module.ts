@@ -89,7 +89,7 @@ import { RolesBlockComponent } from './policy-engine/policy-viewer/roles-block/r
 import { DemoService } from './services/demo.service';
 import { IPFSService } from './services/ipfs.service';
 import { SchemaFormViewComponent } from './components/schema-form-view/schema-form-view.component';
-import { VcDocumentViewComponent } from './components/vc-document-view/vc-document-view.component';
+import { DocumentViewComponent } from './components/document-view/document-view.component';
 import { SetVersionDialog } from './components/dialogs/set-version-dialog/set-version-dialog.component';
 import { SavePolicyDialog } from './policy-engine/save-policy-dialog/save-policy-dialog.component';
 
@@ -142,7 +142,7 @@ import { SavePolicyDialog } from './policy-engine/save-policy-dialog/save-policy
         RolesConfigComponent,
         RolesBlockComponent,
         SchemaFormViewComponent,
-        VcDocumentViewComponent,
+        DocumentViewComponent,
         SetVersionDialog
     ],
     imports: [

@@ -148,7 +148,7 @@ export class RootConfigComponent implements OnInit {
         }
     }
 
-    openDocument(document: any, title: string, isVcDocument: boolean = false, viewVcDocument: boolean = false) {
+    openDocument(document: any, title: string, isVcDocument: boolean = false, viewDocument: boolean = false) {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
@@ -156,7 +156,7 @@ export class RootConfigComponent implements OnInit {
                 title: title,
                 isVcDocument: isVcDocument,
                 schemas: this.schemas,
-                viewVcDocument: viewVcDocument
+                viewDocument: viewDocument
             }
         });
 

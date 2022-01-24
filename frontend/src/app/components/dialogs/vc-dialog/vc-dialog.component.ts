@@ -12,7 +12,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 export class JsonDialog {
     title: string = "";
     json: string = "";
-    viewVcDocument!: boolean;
+    viewDocument!: boolean;
 
     constructor(
         public dialogRef: MatDialogRef<JsonDialog>,
@@ -20,10 +20,10 @@ export class JsonDialog {
     }
 
     ngOnInit() {
-        const { document, title, viewVcDocument } = this.data;
+        const { document, title, viewDocument } = this.data;
         this.title = title;
         this.json = JSON.stringify((document), null, 4);
-        this.viewVcDocument = viewVcDocument || false;
+        this.viewDocument = viewDocument || false;
     }
 
     onClick(): void {

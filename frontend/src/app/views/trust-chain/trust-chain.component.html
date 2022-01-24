@@ -20,7 +20,7 @@
                     Verified Presentation
                     <mat-icon>check_circle</mat-icon>
 
-                    <a class="open-vp" (click)="openDocument(vp)">VP File</a>
+                    <a class="open-vp" (click)="openDocument(vp, true)">VP File</a>
                 </div>
                 <div *ngIf="!vp && chain" class="header">
                     <a routerLink="/audit" class="go-back-link">
@@ -94,7 +94,7 @@
                                     <mat-icon *ngSwitchCase="'MintNFToken'" svgIcon="token"></mat-icon>
                                     <mat-icon *ngSwitchDefault>account_circle</mat-icon>
                                 </ng-container>
-                                
+
                                 {{item.schema}}
                             </div>
                             <div class="chain-id">
@@ -116,7 +116,7 @@
             </div>
         </div>
     </ng-template>
-    
+
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
