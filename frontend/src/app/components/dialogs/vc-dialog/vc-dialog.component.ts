@@ -1,5 +1,6 @@
 import { Component, Inject, Input } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Schema } from 'interfaces';
 
 /**
  * Dialog for display json
@@ -13,17 +14,51 @@ export class JsonDialog {
     title: string = "";
     json: string = "";
     viewDocument!: boolean;
+    isVcDocument!: boolean;
+    schemas: any;
+    document: any;
+    type: string = "";
+    isVpDocument!: boolean;
+    isJsonDocument!: boolean;
 
     constructor(
         public dialogRef: MatDialogRef<JsonDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        @Inject(MAT_DIALOG_DATA) public data: {
+            document: any,
+            title: string,
+            viewDocument?: boolean,
+            type?: 'VC' | 'VP' | 'JSON',
+            schemas?: Schema[],
+        }) {
     }
 
     ngOnInit() {
-        const { document, title, viewDocument } = this.data;
+        const {
+            document,
+            title,
+            viewDocument,
+            type,
+            schemas
+        } = this.data;
         this.title = title;
         this.json = JSON.stringify((document), null, 4);
-        this.viewDocument = viewDocument || false;
+        this.document = document;
+        this.type = type || 'JSON';
+
+        this.isVcDocument = false;
+        this.isVpDocument = false;
+        this.isJsonDocument = false;
+        if(this.type == 'VC') {
+            this.isVcDocument = true;
+        } else if(this.type == 'VP') {
+            this.isVpDocument = true;
+        } else {
+            this.isJsonDocument = true;
+        } 
+        this.viewDocument = (viewDocument || false) && this.isVcDocument;
+        if (this.isVcDocument) {
+            this.schemas = schemas;
+        }
     }
 
     onClick(): void {

@@ -52,12 +52,15 @@ export class AuditComponent implements OnInit {
         });;
     }
 
-    openVC(document: any) {
+    openVP(document: any) {
         const dialogRef = this.dialog.open(JsonDialog, {
             width: '850px',
             data: {
                 document: document,
-                title: "VP"
+                title: 'VP',
+                type: 'VP',
+                // schemas: this.schemas,
+                // viewDocument: true
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => { });

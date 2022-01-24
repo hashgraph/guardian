@@ -1,8 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { DialogBlock } from '../dialog-block/dialog-block.component';
 import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
+import { forkJoin } from 'rxjs';
+import { SchemaService } from 'src/app/services/schema.service';
+import { Schema } from 'interfaces';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -26,10 +30,12 @@ export class DocumentsSourceBlockComponent implements OnInit {
     documents: any[] | null;
     children: any[] | null;
     insert: any;
+    schemas!: Schema[];
 
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private schemaService: SchemaService,
         private dialog: MatDialog
     ) {
         this.fields = [];
@@ -65,7 +71,13 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
+            forkJoin([
+                this.policyEngineService.getBlockData(this.id, this.policyId),
+                this.schemaService.getSchemes()
+            ]).subscribe((value) => {
+                const data:any = value[0];
+                const schemes = value[1];
+                this.schemas = Schema.mapRef(schemes);
                 this.setData(data).then(() => {
                     setTimeout(() => {
                         this.loading = false;
@@ -139,14 +151,14 @@ export class DocumentsSourceBlockComponent implements OnInit {
             });
             dialogRef.afterClosed().subscribe(async (result) => { });
         } else {
-            const dialogRef = this.dialog.open(DocumentDialogBlock, {
+            const dialogRef = this.dialog.open(JsonDialog, {
                 width: '850px',
                 data: {
-                    data: data,
                     document: document,
-                    dialogType: field.dialogType,
-                    dialogClass: field.dialogClass,
-                    title: field.dialogContent
+                    title: field.dialogContent,
+                    type: 'VC',
+                    schemas: this.schemas,
+                    viewDocument: true
                 }
             });
             dialogRef.afterClosed().subscribe(async (result) => { });
