@@ -23,7 +23,7 @@ export class JsonDialog {
         const { document, title, viewVcDocument } = this.data;
         this.title = title;
         this.json = JSON.stringify((document), null, 4);
-        this.viewVcDocument = viewVcDocument;
+        this.viewVcDocument = viewVcDocument || false;
     }
 
     onClick(): void {

@@ -15,7 +15,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { SchemaEntity, UserRole } from 'interfaces';
+import { ModelHelper, SchemaEntity, UserRole } from 'interfaces';
 import { HederaHelper } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
@@ -330,15 +330,28 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.router.put('/:policyId/publish/:policyVersion', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.put('/:policyId/publish/', async (req: AuthenticatedRequest, res: Response) => {
             try {
+                if (!req.body || !req.body.policyVersion)
+                {
+                    throw new Error("Policy version in body is empty");
+                }
+
                 const errors = await this.validate(req.params.policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
                     const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+
+                    if (!ModelHelper.checkVersionFormat(req.body.policyVersion)) {
+                        throw new Error("Invalid version format");
+                    }
+                    if (ModelHelper.versionCompare(req.body.policyVersion, model.previousVersion) <= 0) {
+                        throw new Error("Version must be greater than " + model.previousVersion);
+                    }
+
                     const countModels = await getMongoRepository(Policy).count({ 
-                        version: req.params.policyVersion,
+                        version: req.body.policyVersion,
                         uuid: model.uuid
                     });
 
@@ -369,7 +382,7 @@ export class BlockTreeGenerator {
                         .newTopic(root.hederaAccountKey, model.topicDescription);
                     model.status = 'PUBLISH';
                     model.topicId = topicId;
-                    model.version = req.params.policyVersion;
+                    model.version = req.body.policyVersion;
 
                     const vcHelper = new VcHelper();
                     const credentialSubject = {

@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 /**
@@ -10,7 +11,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./set-version-dialog.component.css']
 })
 export class SetVersionDialog {
-    version!: any;
+    versionControl: FormControl = new FormControl('', Validators.pattern(/^[\d]+([\\.][\d]+){0,2}$/));
 
     constructor(
         public dialogRef: MatDialogRef<SetVersionDialog>,
@@ -26,6 +27,6 @@ export class SetVersionDialog {
     }
 
     onSubmit() {
-        this.dialogRef.close(this.version);
+        this.dialogRef.close(this.versionControl.value);
     }
 }

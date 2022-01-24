@@ -3,11 +3,11 @@
     <div>
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Version:</mat-label>
-            <input matInput type="text" placeholder="1.0.0" [(ngModel)]="version">
+            <input matInput type="text" placeholder="1.0.0" [formControl]="versionControl">
         </mat-form-field>
     </div>
     <div mat-dialog-actions>
-        <button mat-raised-button color="primary" [disabled]="!version" (click)="onSubmit()">Publish</button>
+        <button mat-raised-button color="primary" [disabled]="!versionControl.valid" (click)="onSubmit()">Publish</button>
         <button mat-button type="button" (click)="onNoClick()">Cancel</button>
     </div>
 </div>
