@@ -242,14 +242,15 @@
     box-shadow: inset 0 0 0 2px #d4d4d4;
 }
 
+.btn-group,
 .btn-new-block {
     display: flex;
     overflow: hidden;
-    min-width: 50px;
-    height: 40px;
+    min-width: 45px;
+    height: 52px;
     flex-direction: column;
     border: 1px solid transparent;
-    margin: 2px;
+    margin: 5px 4px;
     padding: 2px;
     font-size: 12px;
     align-items: center;
@@ -259,20 +260,91 @@
     padding-top: 4px;
     position: relative;
     user-select: none;
+    border-radius: 6px;
+    background: rgb(252 252 252);
+    border: 1px solid rgb(220 220 220);
 }
 
+.btn-group:hover,
 .btn-new-block:hover {
     background: rgb(63 81 181 / 3%);
     border: 1px solid #3f51b5;
 }
 
+.btn-group span,
 .btn-new-block span {
     font-size: 12px;
-    align-items: center;
-    align-content: center;
     text-align: center;
     line-height: 14px;
     user-select: none;
+    display: flex;
+    max-width: 65px;
+    min-width: 60px;
+    height: 28px;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    justify-items: center;
+}
+
+.btn-group span {
+    max-width: 65px;
+    min-width: 45px;
+}
+
+
+.btn-group {
+    padding-right: 21px;
+}
+
+.btn-group .expand-group {
+    position: absolute;
+    top: 0;
+    right: 0px;
+    bottom: 0;
+    width: 18px;
+    overflow: hidden;
+    background: rgb(240 240 240);
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-left: 1px solid rgb(220 220 220);
+}
+.btn-group .expand-group mat-icon {
+    position: absolute;
+    top: 14px;
+    font-size: 27px;
+    left: -5px;
+}
+
+.btn-new-block[errors-count] {
+    color: #ff0000;
+}
+
+.btn-new-block[errors-count="-1"] {
+    color: #3f51b5;
+}
+
+.btn-new-block[errors-count="0"] {
+    color: #00bd06;
+}
+
+.btn-status-edit[readonly="true"] {
+    pointer-events: none;
+    color: #b9b9b9;
+}
+
+.btn-new-block > .error-count {
+    position: absolute;
+    top: 0;
+    color: white;
+    right: 0;
+    background: #ff0000;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 18px;
 }
 
 .btn-new-block-menu {
@@ -327,7 +399,7 @@
 
 .delimiter {
     width: 6px;
-    height: 38px;
+    height: 56px;
     border-left: 1px solid #3f51b5;
     margin: 6px 0px 6px 6px;
 }
@@ -345,7 +417,7 @@ input[readonly] {
 .tree-container {
     position: absolute;
     left: 0;
-    top: 64px;
+    top: 82px;
     right: 0;
     bottom: 0;
     background: #eee;
@@ -364,8 +436,8 @@ input[readonly] {
 
 .view-menu {
     position: absolute;
-    top: 70px;
-    right: 22px;
+    top: 90px;
+    right: 8px;
     background: #fff;
     border: 1px solid;
     display: flex;
@@ -417,37 +489,6 @@ input[readonly] {
     transform: translate(-50%, -50%);
     font-size: 20px;
     color: darkgrey;
-}
-
-.btn-new-block[errors-count] {
-    color: #ff0000;
-}
-
-.btn-new-block[errors-count="-1"] {
-    color: #3f51b5;
-}
-
-.btn-new-block[errors-count="0"] {
-    color: #00bd06;
-}
-
-.btn-status-edit[readonly="true"] {
-    pointer-events: none;
-    color: #b9b9b9;
-}
-
-.btn-new-block > .error-count {
-    position: absolute;
-    top: 0;
-    color: white;
-    right: 0;
-    background: #ff0000;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    box-sizing: border-box;
-    text-align: center;
-    line-height: 18px;
 }
 
 .btn-status-edit[readonly="true"] > .error-count {

@@ -44,14 +44,20 @@
                         <span>{{item.name}}</span>
                     </div>
 
-                    <div class="btn-new-block btn-status-edit" [matMenuTriggerFor]="vcMenu">
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="vcMenu">
                         <mat-icon>description</mat-icon>
                         <span>Verifiable Credential</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
                     </div>
 
-                    <div class="btn-new-block btn-status-edit" [matMenuTriggerFor]="tokensMenu">
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="tokensMenu">
                         <mat-icon>paid</mat-icon>
                         <span>Tokens</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
                     </div>
                 </div>
 
@@ -71,20 +77,14 @@
                 </div>
 
                 <div class="tree-container code-container-{{currentView}}">
-                    <!-- <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code"
-                        [readonly]="readonly">
-                    </textarea> -->
-
                     <div *ngIf="currentView !== 'blocks'" class="textarea-code">
                         <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"></ngx-codemirror>
                     </div>
-
                     <div *ngIf="currentView !== 'blocks' && errors && errors.length" class="json-errors">
                         <div *ngFor="let item of errors" class="errors-property">
                             <span></span>{{item}}
                         </div>
                     </div>
-
                     <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" [errors]="errorsMap"
                         (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)">
                     </tree-flat-overview>
