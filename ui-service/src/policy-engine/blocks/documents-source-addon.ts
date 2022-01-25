@@ -17,8 +17,20 @@ export class DocumentsSourceAddon {
     // data source
     // action block
     // addon
-    async getFromSource(filters) {
+    async getFromSource(user) {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
+
+        let filters: any = {};
+        if (ref.options.filters) {
+            filters = Object.assign(filters, ref.options.filters);
+        }
+        if (ref.options.onlyOwnDocuments) {
+            filters.owner = user.did;
+        }
+        if (ref.options.onlyAssignDocuments) {
+            filters.assign = user.did;
+        }
+
         Object.assign(filters, ref.getFilters());
 
         let data: any[];

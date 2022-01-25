@@ -54,17 +54,6 @@ export class InterfaceDocumentsSource {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
 
-        let filters: any = {};
-        if (ref.options.filters) {
-            filters = Object.assign(filters, ref.options.filters);
-        }
-        if (ref.options.onlyOwnDocuments) {
-            filters.owner = userFull.did;
-        }
-        if (ref.options.onlyAssignDocuments) {
-            filters.assign = userFull.did;
-        }
-
         const blocks = ref.getFiltersAddons().map(addon => {
             return {
                 id: addon.uuid,
@@ -74,7 +63,7 @@ export class InterfaceDocumentsSource {
         });
 
         return Object.assign({
-            data: ref.getSources(filters),
+            data: ref.getSources(userFull),
             blocks
         }, ref.options.uiMetaData);
     }

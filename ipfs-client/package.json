@@ -4,6 +4,7 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "@web-std/fetch": "3.0.0",
     "cors": "^2.8.5",
     "cross-blob": "^2.0.1",
     "dotenv": "^10.0.0",

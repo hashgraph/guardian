@@ -28,11 +28,11 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 return filters;
             }
 
-            protected async getSources(filters): Promise<any[]> {
+            protected async getSources(user): Promise<any[]> {
                 let data = [];
                 for (let child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {
-                        data = data.concat(await child.getFromSource(filters))
+                        data = data.concat(await child.getFromSource(user))
                     }
                 }
                 return data;
