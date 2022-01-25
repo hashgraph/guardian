@@ -305,9 +305,13 @@ export class BlockTreeGenerator {
         });
 
         this.router.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
-            const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-            delete model.registeredUsers;
-            res.send(model);
+            try {
+                const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+                delete model.registeredUsers;
+                res.send(model);
+            } catch (e) {
+                res.status(500).send({ code: 500, message: e.message });
+            }
         });
 
         this.router.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
