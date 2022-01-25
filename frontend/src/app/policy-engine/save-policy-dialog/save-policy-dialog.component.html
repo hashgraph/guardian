@@ -1,6 +1,6 @@
 <div mat-dialog-content>
   <div *ngIf="isActionSelected$ | async; else selectActionTemplate">
-    <h1 mat-dialog-title *ngIf="isActionSelected$ | async">New Policy</h1>
+    <h1 mat-dialog-title *ngIf="isActionSelected$ | async">{{getTitle()}}</h1>
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
         <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>* NAME:</mat-label>

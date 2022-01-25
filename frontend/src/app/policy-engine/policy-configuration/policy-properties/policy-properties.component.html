@@ -51,11 +51,18 @@
                 </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Previous Version</td>
+                    <td class="propRowCell">
+                        <input [(ngModel)]="policy.previousVersion" readonly>
+                    </td>
+                </tr>
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Version</td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="policy.version" [readonly]="readonly">
+                        <input [(ngModel)]="policy.version" readonly>
                     </td>
-                </tr>  
+                </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Topic Description</td>

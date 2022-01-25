@@ -148,15 +148,28 @@ export class RootConfigComponent implements OnInit {
         }
     }
 
-    openDocument(document: any, title: string, isVcDocument: boolean = false) {
+    openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
-                document: document,
+                document: document.document,
                 title: title,
+                type: 'VC',
                 schemas: this.schemas,
-                isVcDocument: isVcDocument,
-                viewVcDocument: isVcDocument
+                viewDocument: true
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+        });
+    }
+
+    openDIDDocument(document: any, title: string) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
+            width: '850px',
+            data: {
+                document: document.document,
+                title: title,
+                type: 'JSON',
             }
         });
 

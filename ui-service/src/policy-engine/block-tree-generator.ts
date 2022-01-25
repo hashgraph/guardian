@@ -332,19 +332,31 @@ export class BlockTreeGenerator {
 
         this.router.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
             try {
+                if (!req.body || !req.body.policyVersion) {
+                    throw new Error("Policy version in body is empty");
+                }
+		
                 const errors = await this.validate(req.params.policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
-                    const { version } = req.body;
+                    const { policyVersion } = req.body;
                     const model = await getMongoRepository(Policy).findOne(req.params.policyId);
                     if (!model) {
                         res.status(500).send({ code: 500, message: 'Unknown policy' });
                         return;
                     }
+		    
+                    if (!ModelHelper.checkVersionFormat(req.body.policyVersion)) {
+                        throw new Error("Invalid version format");
+                    }
+		    
+                    if (ModelHelper.versionCompare(req.body.policyVersion, model.previousVersion) <= 0) {
+                        throw new Error("Version must be greater than " + model.previousVersion);
+                    }
 
                     const countModels = await getMongoRepository(Policy).count({
-                        version: version,
+                        version: policyVersion,
                         uuid: model.uuid
                     });
 
@@ -375,7 +387,7 @@ export class BlockTreeGenerator {
                         .newTopic(root.hederaAccountKey, model.topicDescription);
                     model.topicId = topicId;
                     model.status = 'PUBLISH';
-                    model.version = version;
+                    model.version = policyVersion;
 
                     const vcHelper = new VcHelper();
                     const credentialSubject = {

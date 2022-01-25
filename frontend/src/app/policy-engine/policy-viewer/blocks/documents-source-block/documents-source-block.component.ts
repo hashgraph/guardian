@@ -4,6 +4,10 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
 import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
+import { forkJoin } from 'rxjs';
+import { SchemaService } from 'src/app/services/schema.service';
+import { Schema } from 'interfaces';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -29,10 +33,12 @@ export class DocumentsSourceBlockComponent implements OnInit {
     children: any[] | null;
     insert: any;
     addons: any;
-
+    schemas!: Schema[];
+    
     constructor(
         private policyEngineService: PolicyEngineService,
         private policyHelper: PolicyHelper,
+        private schemaService: SchemaService,
         private dialog: MatDialog
     ) {
         this.fields = [];
@@ -68,7 +74,13 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
+            forkJoin([
+                this.policyEngineService.getBlockData(this.id, this.policyId),
+                this.schemaService.getSchemes()
+            ]).subscribe((value) => {
+                const data:any = value[0];
+                const schemes = value[1];
+                this.schemas = Schema.mapRef(schemes);
                 this.setData(data).then(() => {
                     setTimeout(() => {
                         this.loading = false;
@@ -80,6 +92,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             });
         }
     }
+
 
     async setData(data: any) {
         if (data) {
@@ -142,14 +155,14 @@ export class DocumentsSourceBlockComponent implements OnInit {
             });
             dialogRef.afterClosed().subscribe(async (result) => { });
         } else {
-            const dialogRef = this.dialog.open(DocumentDialogBlock, {
+            const dialogRef = this.dialog.open(VCViewerDialog, {
                 width: '850px',
                 data: {
-                    data: data,
                     document: document,
-                    dialogType: field.dialogType,
-                    dialogClass: field.dialogClass,
-                    title: field.dialogContent
+                    title: field.dialogContent,
+                    type: 'VC',
+                    schemas: this.schemas,
+                    viewDocument: true
                 }
             });
             dialogRef.afterClosed().subscribe(async (result) => { });

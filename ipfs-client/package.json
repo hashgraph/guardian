@@ -33,7 +33,7 @@
   },
   "license": "Apache-2.0",
   "main": "dist/index.js",
-  "name": "ipfs-node",
+  "name": "ipfs-client",
   "scripts": {
     "watch": "nodemon src/index.ts",
     "build": "tsc",
@@ -41,7 +41,7 @@
     "dev": "tsc -w",
     "lint": "tslint --project .",
     "start": "node dist/index.js",
-    "test": "mocha tests/**/*.test.js  --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ipfs-node.xml"
+    "test": "mocha tests/**/*.test.js  --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ipfs-client.xml"
   },
   "version": "1.0.0"
 }

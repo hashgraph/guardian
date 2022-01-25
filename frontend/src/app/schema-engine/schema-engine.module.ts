@@ -9,9 +9,8 @@ import { ImportSchemaDialog } from './import-schema/import-schema-dialog.compone
 import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
 import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.component';
 import { ClipboardModule } from '@angular/cdk/clipboard';
-import { VcDocumentViewComponent } from './vc-document-view/vc-document-view.component';
+import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
-import { JsonDialog } from './json-dialog/json-dialog.component';
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
 
 @NgModule({
@@ -21,10 +20,9 @@ import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
         SchemaConfigurationComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,
-        JsonDialog,
-        VCViewerDialog,
-        VcDocumentViewComponent,
-        SetVersionDialog
+        DocumentViewComponent,
+        SetVersionDialog,
+        VCViewerDialog
     ],
     imports: [
         CommonModule,
@@ -41,10 +39,9 @@ import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
         SchemaConfigurationComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,
-        JsonDialog,
-        VCViewerDialog,
-        VcDocumentViewComponent,
-        SetVersionDialog
+        DocumentViewComponent,
+        SetVersionDialog,
+        VCViewerDialog
     ]
 })
 export class SchemaEngineModule {

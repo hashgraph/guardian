@@ -50,7 +50,7 @@ export class RequestVcDocumentBlock {
 
         if(!this.schema) {
             const schemas = await this.guardians.getSchemes() || [];
-            this.schema = Schema.mapRef(schemas).find(s => s.ref === options.schema);
+            this.schema = Schema.mapRef(schemas).find(s => s.iri === options.schema);
         }
         if (!this.schema) {
             throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);

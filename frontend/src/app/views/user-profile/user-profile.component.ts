@@ -167,9 +167,9 @@ export class UserProfileComponent implements OnInit {
             data: {
                 document: JSON.parse(document),
                 title: "DID",
-                isVcDocument: false,
-                viewVcDocument: false
+                type: 'JSON',
             }
+
         });
 
         dialogRef.afterClosed().subscribe(async (result) => {
