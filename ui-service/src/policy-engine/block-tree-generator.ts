@@ -51,14 +51,27 @@ export class BlockTreeGenerator {
      * @param uuid {string} - id of block
      * @param user {IAuthUser} - short user object
      */
-    stateChangeCb(uuid: string, state: any, user?: IAuthUser) {
+    stateChangeCb(uuid: string, state: any, user: IAuthUser) {
         this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
             try {
-                const policy = await getMongoRepository(Policy).findOne((StateContainer.GetBlockByUUID(uuid) as any).policyId);
+                const blockRef = StateContainer.GetBlockByUUID(uuid) as any;
+                const policy = await getMongoRepository(Policy).findOne(blockRef.policyId);
                 const role = policy.registeredUsers[user.did];
+
+                if (blockRef.permissions.includes('NO_ROLE') && !role) {
+                    client.send(uuid);
+                    return;
+                }
+
+                if (blockRef.permissions.includes('OWNER') && (policy.owner === user.did)) {
+                    client.send(uuid);
+                    return;
+                }
+
                 if (!role) {
                     return
                 }
+
                 if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, role, user)) {
                     client.send(uuid);
                 }
@@ -335,7 +348,7 @@ export class BlockTreeGenerator {
                 if (!req.body || !req.body.policyVersion) {
                     throw new Error("Policy version in body is empty");
                 }
-		
+
                 const errors = await this.validate(req.params.policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
@@ -346,11 +359,11 @@ export class BlockTreeGenerator {
                         res.status(500).send({ code: 500, message: 'Unknown policy' });
                         return;
                     }
-		    
+
                     if (!ModelHelper.checkVersionFormat(req.body.policyVersion)) {
                         throw new Error("Invalid version format");
                     }
-		    
+
                     if (ModelHelper.versionCompare(req.body.policyVersion, model.previousVersion) <= 0) {
                         throw new Error("Version must be greater than " + model.previousVersion);
                     }
