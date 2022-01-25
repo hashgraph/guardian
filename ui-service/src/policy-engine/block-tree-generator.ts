@@ -15,7 +15,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { SchemaEntity, UserRole } from 'interfaces';
+import { ModelHelper, SchemaEntity, UserRole } from 'interfaces';
 import { HederaHelper } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';

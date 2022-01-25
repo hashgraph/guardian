@@ -25,8 +25,7 @@ export class DocumentSourceComponent implements OnInit {
     propHidden: any = {
         fieldsGroup: false,
         fields: {},
-        insertGroup: false,
-        filtersGroup: false,
+        insertGroup: false
     };
 
     block!: BlockNode;
@@ -71,7 +70,6 @@ export class DocumentSourceComponent implements OnInit {
     load(block: BlockNode) {
         this.block = block;
         this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.filters = this.block.filters || {};
         this.block.uiMetaData.fields = this.block.uiMetaData.fields || [];
     }
 

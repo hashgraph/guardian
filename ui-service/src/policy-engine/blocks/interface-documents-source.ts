@@ -82,22 +82,5 @@ export class InterfaceDocumentsSource {
                 }
             }
         }
-
-        if (ref.options.filters && ref.options.filters.schema) {
-            if (typeof ref.options.filters.schema !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                return;
-            }
-            const schemas = await this.guardians.getSchemes() || [];
-            const schema = schemas.find(s => s.iri === ref.options.filters.schema)
-            if (!schema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.filters.schema}" does not exist`);
-                return;
-            }
-            if (schema.status != SchemaStatus.PUBLISHED) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.filters.schema}" does not published`);
-                return;
-            }
-        }
     }
 }

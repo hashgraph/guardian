@@ -24,6 +24,8 @@ export class SourceAddonConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
+        filtersGroup: false,
+        filters: {},
     };
 
     block!: BlockNode;
@@ -42,10 +44,19 @@ export class SourceAddonConfigComponent implements OnInit {
 
     load(block: BlockNode) {
         this.block = block;
-        this.block.uiMetaData = this.block.uiMetaData || {}
+        this.block.filters = this.block.filters || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    addField() {
+        this.block.filters.push({
+            title: '',
+            name: '',
+            tooltip: '',
+            type: 'text',
+        })
     }
 }

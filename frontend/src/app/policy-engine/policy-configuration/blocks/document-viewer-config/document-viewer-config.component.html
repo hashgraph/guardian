@@ -1,16 +1,6 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Data Type</td>
-        <td class="propRowCell">
-            <mat-select [(value)]="block.dataType" [disabled]="readonly">
-                <mat-option value="vc-documents">VC</mat-option>
-                <mat-option value="did-documents">DID</mat-option>
-                <mat-option value="approve">Approve</mat-option>
-            </mat-select>
-        </td>
-    </tr>
+
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
@@ -26,47 +16,6 @@
             <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
         </td>
     </tr>
-
-    <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'filtersGroup')" [attr.collapse]="propHidden.filtersGroup">
-            <mat-icon>
-                expand_more
-            </mat-icon>
-        </td>
-        <td class="propHeaderCell cellName">Filters</td>
-        <td class="propHeaderCell"></td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Schema</td>
-        <td class="propRowCell">
-            <mat-select [(value)]="block.filters.schema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemes" [value]="schema.ref">{{schema.name}}</mat-option>
-            </mat-select>
-        </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Entity Type</td>
-        <td class="propRowCell">
-            <input [(ngModel)]="block.filters.type" [readonly]="readonly">
-        </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Only Own Documents</td>
-        <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.onlyOwnDocuments" [readonly]="readonly">
-        </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Only Assign Documents</td>
-        <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.onlyAssignDocuments" [readonly]="readonly">
-        </td>
-    </tr>
-
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'fieldsGroup')" [attr.collapse]="propHidden.fieldsGroup">
             <mat-icon>

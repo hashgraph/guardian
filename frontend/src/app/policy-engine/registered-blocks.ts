@@ -23,7 +23,7 @@ import { StepBlockComponent } from "./policy-viewer/blocks/step-block/step-block
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
-    DocumentsSource = 'interfaceDocumentsSource',
+    DocumentsViewer = 'interfaceDocumentsSource',
     Information = 'informationBlock',
     PolicyRoles = 'policyRolesBlock',
     Request = 'requestVcDocument',
@@ -68,7 +68,7 @@ export class RegisteredBlocks {
         this.register(BlockType.PolicyRoles, 'manage_accounts', 'Roles', `Add 'Choice Of Roles' Block`);
         this.register(BlockType.Information, 'info', 'Information', `Add 'Information' Block`);
         this.register(BlockType.Action, 'flash_on', 'Action', `Add 'Action' Block`);
-        this.register(BlockType.DocumentsSource, 'table_view', 'Documents', `Add 'Documents Source' Block`);
+        this.register(BlockType.DocumentsViewer, 'table_view', 'Documents', `Add 'Documents Source' Block`);
         this.register(BlockType.Request, 'dynamic_form', 'Request', `Add 'Request' Block`);
         this.register(BlockType.SendToGuardian, 'send', 'Send', `Add 'Send' Block`);
         this.register(BlockType.ExternalData, 'cloud', 'External Data', `Add 'External Data' Block`);
@@ -76,14 +76,14 @@ export class RegisteredBlocks {
         this.register(BlockType.FiltersAddon, 'filter_alt', 'Filters Addon', `Add 'Filters' Block`);
         this.register(BlockType.Mint, 'paid', 'Mint', `Add 'Mint' Block`);
         this.register(BlockType.Wipe, 'delete', 'Wipe', `Add 'Wipe' Block`);
-        this.register(BlockType.DocumentsSourceAddon, 'delete', 'Source', `Add 'DocumentsSourceAddon' Block`);
+        this.register(BlockType.DocumentsSourceAddon, 'source', 'Source', `Add 'DocumentsSourceAddon' Block`);
 
         this.registerGroup(BlockGroup.Main, BlockType.Container);
         this.registerGroup(BlockGroup.Main, BlockType.Step);
         this.registerGroup(BlockGroup.Main, BlockType.PolicyRoles);
         this.registerGroup(BlockGroup.Main, BlockType.Information);
         this.registerGroup(BlockGroup.Main, BlockType.Action);
-        this.registerGroup(BlockGroup.Documents, BlockType.DocumentsSource);
+        this.registerGroup(BlockGroup.Documents, BlockType.DocumentsViewer);
         this.registerGroup(BlockGroup.Documents, BlockType.Request);
         this.registerGroup(BlockGroup.Documents, BlockType.SendToGuardian);
         this.registerGroup(BlockGroup.Documents, BlockType.ExternalData);
@@ -94,7 +94,7 @@ export class RegisteredBlocks {
         this.registerGroup(BlockGroup.Tokens, BlockType.Wipe);
 
         this.registerFactory(BlockType.Container, ContainerBlockComponent);
-        this.registerFactory(BlockType.DocumentsSource, DocumentsSourceBlockComponent);
+        this.registerFactory(BlockType.DocumentsViewer, DocumentsSourceBlockComponent);
         this.registerFactory(BlockType.Request, RequestDocumentBlockComponent);
         this.registerFactory(BlockType.Action, ActionBlockComponent);
         this.registerFactory(BlockType.Step, StepBlockComponent);
@@ -102,7 +102,7 @@ export class RegisteredBlocks {
         this.registerFactory(BlockType.PolicyRoles, RolesBlockComponent);
         this.registerFactory(BlockType.FiltersAddon, FiltersAddonBlockComponent);
 
-        this.registerProperties(BlockType.DocumentsSource, DocumentSourceComponent);
+        this.registerProperties(BlockType.DocumentsViewer, DocumentSourceComponent);
         this.registerProperties(BlockType.Action, ActionConfigComponent);
         this.registerProperties(BlockType.Container, ContainerConfigComponent);
         this.registerProperties(BlockType.Request, RequestConfigComponent);
