@@ -105,12 +105,26 @@ To get a local copy up and running, follow these simple example steps. When buil
    - The `OPERATOR_ID` is the Hedera account's `accountId`
    - The `OPERATOR_KEY` is the Hedera account's `privateKey`
    - The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, delete the `TOPIC_ID` line.
+3. Update the following files with your NFT.Storage API KEY. Please follow the steps from https://nft.storage/#getting-started to obtain it.
 
-3. If you want to build with Docker (Once this step you are finished)
+   For example:
+
+   in `ipfs-client/.env`:
+
+   ```
+   NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+   ```
+
+   in `ipfs-client/.env.docker`:
+
+   ```
+   NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+   ``` 
+4. If you want to build with Docker (Once this step you are finished)
    ```
    docker-compose up -d --build
    ```
-4. If you want to manually build every component, then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly, the MRV Sender Service. See below for commands.
+5. If you want to manually build every component, then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly, the MRV Sender Service. See below for commands.
 
    **From the Message broker folder (Need to run first)**
 
@@ -220,7 +234,7 @@ After successfully launching your application, you can find the generated Swagge
 
 ## Postman Collection
 
-Postman Collection that covers all available API endpoints could be found [here](https://github.com/hashgraph/guardian/tree/main/ui-service/api/Guardian%20API.postman_collection.json).
+Postman Collection that covers all available API endpoints could be found [here](https://github.com/hashgraph/guardian/tree/main/ui-service/api/Guardian.postman_collection.json).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
