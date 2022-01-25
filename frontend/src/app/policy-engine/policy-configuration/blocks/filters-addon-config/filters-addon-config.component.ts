@@ -51,6 +51,7 @@ export class FiltersAddonConfigComponent implements OnInit {
         this.block = block;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.options = this.block.uiMetaData.options || [];
+        this.block.type = 'dropdown';
     }
 
     onHide(item: any, prop: any) {
