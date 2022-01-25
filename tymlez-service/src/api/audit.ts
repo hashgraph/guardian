@@ -18,6 +18,12 @@ export const makeAuditApi = (
         meterId: string | undefined;
       };
 
+      const { page, pageSize, period} = req.query as {
+        page: number | undefined;
+        pageSize: number | undefined;
+        period: number | undefined
+      };
+
       const meter = await meterConfigRepository.findOne({
         where: { meterId },
       });
@@ -25,7 +31,7 @@ export const makeAuditApi = (
       let filter: IFilter | null = null;
 
       if (meter) {
-        filter = { issuer: meter.config.did };
+        filter = { issuer: meter.config.did, page, pageSize, period };
         const vp = (
           await channel.request(
             'guardian.*',
@@ -52,4 +58,7 @@ interface IFilter {
   issuer?: string; // filter by issuer
   hash?: string; // filter by hash
   policyId?: string; // filter by policy id
+  pageSize?: number;
+  page?: number;
+  period?: number;
 }

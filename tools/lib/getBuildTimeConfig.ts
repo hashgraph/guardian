@@ -71,9 +71,9 @@ export const getBuildTimeConfig = async ({
 
 const COHORT_METER_INFOS: IMeterInfo[] = [
   {
-    meterId: 'DD54108399431',
-    meterLabel: 'Main',
-    meterType: 'consumption',
+    deviceId: 'DD54108399431',
+    deviceLabel: 'Main',
+    deviceType: 'consumption',
   },
 ];
 
@@ -106,7 +106,7 @@ interface IConfig {
 }
 
 export interface IMeterInfo {
-  meterId: string;
-  meterLabel: string;
-  meterType: 'consumption' | 'generation' | 'generation-forecast';
+  deviceId: string;
+  deviceLabel: string;
+  deviceType: 'consumption' | 'generation' | 'generation-forecast';
 }

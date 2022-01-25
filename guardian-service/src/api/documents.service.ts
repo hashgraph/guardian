@@ -221,8 +221,11 @@ export const documentsAPI = async function (
      * 
      * @returns {IVPDocument[]} - VP Documents
      */
-     channel.response(MessageAPI.FIND_VP_DOCUMENTS, async (msg, res) => {        
-            const reqObj: any = { where: {} };
+     channel.response(MessageAPI.FIND_VP_DOCUMENTS, async (msg, res) => { 
+         try {
+            const skip = msg.payload.pageSize * (msg.payload.page - 1);
+            const take = Number(msg.payload.pageSize);
+            const reqObj: any = { where: {}, take, skip };
             if (msg.payload.type) {
                 reqObj.where['type'] = { $eq: msg.payload.type }
             }
@@ -241,7 +244,17 @@ export const documentsAPI = async function (
             if (msg.payload.policyId) {
                 reqObj.where['policyId'] = { $eq: msg.payload.policyId }
             } 
-            const documents: IVPDocument[] = await vpDocumentRepository.find(reqObj);
-            res.send(documents);      
+
+            if(msg.payload.period === '24h'){
+                const startDate = new Date();
+                startDate.setHours(startDate.getHours() - 24);
+                reqObj.where['createDate'] = { $gt: startDate }
+            }
+            const documents: [IVPDocument[], number] = await vpDocumentRepository.findAndCount(reqObj);
+            res.send(documents); 
+        } catch (error) {
+            console.error(error);
+            res.send({}); 
+        }     
     });
 }

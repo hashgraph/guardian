@@ -1,11 +1,11 @@
 {
-  "name": "TymlezMeter",
+  "name": "TymlezDevice",
   "uuid": "b578cb95-8530-46cc-9dc4-f31980744bf7",
   "entity": "INVERTER",
   "document": {
     "$id": "#b578cb95-8530-46cc-9dc4-f31980744bf7",
     "$comment": "{\"term\": \"b578cb95-8530-46cc-9dc4-f31980744bf7\", \"@id\": \"https://localhost/schema#b578cb95-8530-46cc-9dc4-f31980744bf7\"}",
-    "title": "TymlezMeter",
+    "title": "TymlezDevice",
     "description": "",
     "type": "object",
     "properties": {
@@ -41,25 +41,25 @@
         "type": "string",
         "readOnly": true
       },
-      "meterId": {
-        "title": "Meter Id",
-        "description": "Meter Id",
+      "deviceId": {
+        "title": "Device Id",
+        "description": "Device Id",
         "readOnly": false,
-        "$comment": "{\"term\": \"meterId\", \"@id\": \"https://www.schema.org/text\"}",
+        "$comment": "{\"term\": \"deviceId\", \"@id\": \"https://www.schema.org/text\"}",
         "type": "string"
       },
-      "meterLabel": {
-        "title": "Meter Label",
-        "description": "Meter Label",
+      "deviceLabel": {
+        "title": "Device Label",
+        "description": "Device Label",
         "readOnly": false,
-        "$comment": "{\"term\": \"meterLabel\", \"@id\": \"https://www.schema.org/text\"}",
+        "$comment": "{\"term\": \"deviceLabel\", \"@id\": \"https://www.schema.org/text\"}",
         "type": "string"
       },
-      "meterType": {
-        "title": "Meter Type",
-        "description": "Meter Type",
+      "deviceType": {
+        "title": "Device Type",
+        "description": "Device Type",
         "readOnly": false,
-        "$comment": "{\"term\": \"meterType\", \"@id\": \"https://www.schema.org/text\"}",
+        "$comment": "{\"term\": \"deviceType\", \"@id\": \"https://www.schema.org/text\"}",
         "type": "string"
       },
       "policyId": {
@@ -73,9 +73,9 @@
     "required": [
       "@context",
       "type",
-      "meterId",
-      "meterLabel",
-      "meterType",
+      "deviceId",
+      "deviceLabel",
+      "deviceType",
       "policyId"
     ],
     "additionalProperties": false
