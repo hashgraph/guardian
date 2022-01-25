@@ -109,7 +109,9 @@ export class DocumentsSourceAddon {
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
-        return data;
+        return data.map(item => {
+            item.__sourceTag__ = ref.tag;
+        });
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
