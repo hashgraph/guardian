@@ -1,11 +1,14 @@
-import {SourceAddon} from '@policy-engine/helpers/decorators';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {getMongoRepository} from 'typeorm';
-import {User} from '@entity/user';
-import {UserRole} from 'interfaces';
-import {BlockActionError} from '@policy-engine/errors';
-import {Inject} from '@helpers/decorators/inject';
-import {Guardians} from '@helpers/guardians';
+import { SourceAddon } from '@policy-engine/helpers/decorators';
+import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
+import { getMongoRepository } from 'typeorm';
+import { User } from '@entity/user';
+import { SchemaStatus, UserRole } from 'interfaces';
+import { BlockActionError } from '@policy-engine/errors';
+import { Inject } from '@helpers/decorators/inject';
+import { Guardians } from '@helpers/guardians';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { IAuthUser } from '@auth/auth.interface';
+import { Users } from '@helpers/users';
 
 @SourceAddon({
     blockType: 'documentsSourceAddon'
@@ -14,12 +17,28 @@ export class DocumentsSourceAddon {
     @Inject()
     private guardians: Guardians;
 
-    async getFromSource(user) {
+    @Inject()
+    private users: Users;
+
+    async getFromSource(user: IAuthUser) {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const userFull = await this.users.getUser(user.username);
 
         let filters: any = {};
         if (!Array.isArray(ref.options.filters)) {
             throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);
+        }
+
+        if (ref.options.onlyOwnDocuments) {
+            filters.owner = userFull.did;
+        }
+
+        if (ref.options.onlyAssignDocuments) {
+            filters.assign = userFull.did;
+        }
+
+        if (ref.options.schema) {
+            filters.schema = ref.options.schema;
         }
 
         for (let filter of ref.options.filters) {
@@ -91,5 +110,31 @@ export class DocumentsSourceAddon {
         }
 
         return data;
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+
+        const types = ['vc-documents', 'did-documents', 'vp-documents', 'root-authorities', 'approve', 'source'];
+        if (types.indexOf(ref.options.dataType) == -1) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of ' + types.join(','));
+        }
+
+        if (ref.options.schema) {
+            if (typeof ref.options.schema !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+                return;
+            }
+            const schemas = await this.guardians.getSchemes() || [];
+            const schema = schemas.find(s => s.iri === ref.options.schema)
+            if (!schema) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+                return;
+            }
+            if (schema.status != SchemaStatus.PUBLISHED) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not published`);
+                return;
+            }
+        }
     }
 }

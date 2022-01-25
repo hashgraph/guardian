@@ -129,7 +129,7 @@ export const documentsAPI = async function (
                 reqObj.where = {};
             }
             Object.assign(reqObj.where, otherArgs);
-            console.log(reqObj)
+            console.log('GET_VC_DOCUMENTS', reqObj)
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
             res.send(vcDocuments);
         } else {
