@@ -11,7 +11,7 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { User } from '@entity/user';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
-import { SchemaStatus } from 'interfaces';
+import {Schema, SchemaStatus} from 'interfaces';
 
 /**
  * Document action clock with UI

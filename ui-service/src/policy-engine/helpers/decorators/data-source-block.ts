@@ -20,7 +20,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 for (let child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {
                         for (let filter of child.children) {
-                            filters.push(child);
+                            filters.push(filter);
                         }
                     }
                 }
@@ -28,11 +28,11 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 return filters;
             }
 
-            protected async getSources(user): Promise<any[]> {
+            protected async getSources(...args): Promise<any[]> {
                 let data = [];
                 for (let child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {
-                        data = data.concat(await child.getFromSource(user))
+                        data = data.concat(await child.getFromSource(...args))
                     }
                 }
                 return data;

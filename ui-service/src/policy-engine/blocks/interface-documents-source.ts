@@ -63,7 +63,7 @@ export class InterfaceDocumentsSource {
         });
 
         return Object.assign({
-            data: ref.getSources(userFull),
+            data: await ref.getSources(userFull),
             blocks
         }, ref.options.uiMetaData);
     }

@@ -484,7 +484,6 @@ export class BlockTreeGenerator {
                 } catch (e) {
                     res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
                 }
-                console.error(e);
             }
         });
 

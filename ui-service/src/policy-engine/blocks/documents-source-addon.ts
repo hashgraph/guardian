@@ -14,24 +14,48 @@ export class DocumentsSourceAddon {
     @Inject()
     private guardians: Guardians;
 
-    // data source
-    // action block
-    // addon
     async getFromSource(user) {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
 
         let filters: any = {};
-        if (ref.options.filters) {
-            filters = Object.assign(filters, ref.options.filters);
-        }
-        if (ref.options.onlyOwnDocuments) {
-            filters.owner = user.did;
-        }
-        if (ref.options.onlyAssignDocuments) {
-            filters.assign = user.did;
+        if (!Array.isArray(ref.options.filters)) {
+            throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);
         }
 
-        Object.assign(filters, ref.getFilters());
+        for (let filter of ref.options.filters) {
+            const expr = filters[filter.field] || {};
+
+            switch (filter.type) {
+                case 'equal':
+                    Object.assign(expr, { $eq: filter.value })
+                    break;
+
+                case 'not_equal':
+                    Object.assign(expr, { $ne: filter.value });
+                    break;
+
+                case 'in':
+                    Object.assign(expr, { $in: filter.value.split(',') });
+                    break;
+
+                case 'not_in':
+                    Object.assign(expr, { $nin: filter.value.split(',') });
+                    break;
+
+                default:
+                    throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+            }
+            filters[filter.field] = expr;
+        }
+
+        const dynFilters = {};
+        for (let [key, value] of Object.entries(ref.getFilters())) {
+            dynFilters[key] = { $eq: value };
+        }
+
+        Object.assign(filters, dynFilters);
+
+        console.log(filters);
 
         let data: any[];
         switch (ref.options.dataType) {

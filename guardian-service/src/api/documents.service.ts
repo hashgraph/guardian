@@ -125,10 +125,11 @@ export const documentsAPI = async function (
                     reqObj.where['document.credentialSubject.type'] = { $eq: schema }
                 }
             }
-            for (let [key, value] of Object.entries(otherArgs)) {
-                reqObj.where[key] = { $eq: value };
+            if (typeof reqObj.where !== 'object') {
+                reqObj.where = {};
             }
-            console.log("vc", reqObj)
+            Object.assign(reqObj.where, otherArgs);
+            console.log(reqObj)
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
             res.send(vcDocuments);
         } else {
