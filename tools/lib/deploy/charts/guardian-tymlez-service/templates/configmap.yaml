@@ -6,5 +6,7 @@ data:
   {{- toYaml .Values.configmap.data | nindent 2 }}
   MQ_ADDRESS: {{ .Release.Name }}-guardian-message-broker-{{ .Release.Revision }}
   DB_HOST: {{ .Release.Name }}-mongodb
-  
+  MRV_RECEIVER_URL: http://{{ .Release.Name }}-guardian-message-broker-{{ .Release.Revision }}:3003/mrv
+  UI_SERVICE_BASE_URL: http://{{ .Release.Name }}-guardian-ui-service:3002
+
 

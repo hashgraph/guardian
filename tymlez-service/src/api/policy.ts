@@ -87,7 +87,7 @@ export const makePolicyApi = ({
         name: importedPolicy.name,
         policyTag: importedPolicy.policyTag,
         config: {
-          id: importedPolicy.config.id,
+          id: importedPolicy.config?.id,
         },
       });
       await publishPolicyToUiService({
@@ -174,7 +174,7 @@ async function importPolicyPackage({
   };
 
   const importedPolicy = allPolicies.find(
-    (policy) => policy.config.id === newPolicyConfigId,
+    (policy) => policy.config?.id === newPolicyConfigId,
   );
 
   assert(

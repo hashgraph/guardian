@@ -60,4 +60,6 @@ tolerations: []
 affinity: {}
 
 configmap:
-  data: {}
+  data: 
+    NODE_DEBUG: 'fastmq*'
+

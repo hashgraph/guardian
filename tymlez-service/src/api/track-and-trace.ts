@@ -239,6 +239,8 @@ export const makeTrackAndTraceApi = ({
   trackAndTraceApi.post(
     '/generate-mrv',
     async (req: Request, res: Response) => {
+      console.log('Generate MRV', req.body);
+
       const {
         setting,
         meterId,
@@ -380,10 +382,12 @@ interface IGenerateMrvRequest {
   setting: IMrvSetting;
   policyTag: string;
   meterId: string;
+  requestId: string;
 }
 
 const generateMrvRequestSchema = Joi.object<IGenerateMrvRequest>({
   policyTag: Joi.string().required(),
   meterId: Joi.string().required(),
+  requestId: Joi.string(),
   setting: mrvSettingSchema,
 });

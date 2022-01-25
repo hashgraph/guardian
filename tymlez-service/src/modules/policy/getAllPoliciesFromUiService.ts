@@ -19,7 +19,7 @@ export interface IPolicy {
   status: string;
   name: string;
   policyTag: string;
-  config: {
+  config?: {
     id: string;
   };
 }

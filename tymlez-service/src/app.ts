@@ -42,19 +42,23 @@ const {
   DB_DATABASE,
   GUARDIAN_TYMLEZ_API_KEY,
   UI_SERVICE_BASE_URL,
+  OPERATOR_ID,
 } = process.env;
 
 const PORT = process.env.PORT || 3010;
 
 console.log('Starting tymlez-service', {
   now: new Date().toString(),
-  PORT,
-  DB_HOST: DB_HOST,
-  DB_DATABASE: DB_DATABASE,
   BUILD_VERSION: process.env.BUILD_VERSION,
   DEPLOY_VERSION: process.env.DEPLOY_VERSION,
-  OPERATOR_ID: process.env.OPERATOR_ID,
-  MRV_RECEIVER_URL: MRV_RECEIVER_URL,
+  PORT,
+  DB_HOST,
+  DB_DATABASE,
+  OPERATOR_ID,
+  MRV_RECEIVER_URL,
+  UI_SERVICE_BASE_URL,
+  SERVICE_CHANNEL,
+  MQ_ADDRESS,
 });
 
 assert(DB_HOST, `DB_HOST is missing`);
