@@ -306,7 +306,9 @@ export class BlockTreeGenerator {
                 const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
                 model.owner = user.did;
-                delete model.topicId;
+                if (!model.uuid) {
+                    delete model.topicId;
+                }
                 await getMongoRepository(Policy).save(model);
                 const policies = await getMongoRepository(Policy).find({ owner: user.did })
                 res.json(policies);
@@ -399,12 +401,15 @@ export class BlockTreeGenerator {
                     regenerateIds(model.config);
                     const guardians = new Guardians();
                     const root = await guardians.getRootConfig(user.did);
-                    const topicId = await HederaHelper
-                        .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-                        .newTopic(root.hederaAccountKey, model.topicDescription);
-                    model.topicId = topicId;
+		    
+                    if (!model.topicId) {
+                        const topicId = await HederaHelper
+                            .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+                            .newTopic(root.hederaAccountKey, model.topicDescription);
+                        model.topicId = topicId;
+                    }
                     model.status = 'PUBLISH';
-                    model.version = policyVersion;
+                    model.version = req.body.policyVersion;
 
                     const vcHelper = new VcHelper();
                     const credentialSubject = {

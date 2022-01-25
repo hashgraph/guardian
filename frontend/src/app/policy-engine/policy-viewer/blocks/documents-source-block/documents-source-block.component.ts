@@ -34,7 +34,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     insert: any;
     addons: any;
     schemas!: Schema[];
-    
+
     constructor(
         private policyEngineService: PolicyEngineService,
         private policyHelper: PolicyHelper,
@@ -78,7 +78,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 this.policyEngineService.getBlockData(this.id, this.policyId),
                 this.schemaService.getSchemes()
             ]).subscribe((value) => {
-                const data:any = value[0];
+                const data: any = value[0];
                 const schemes = value[1];
                 this.schemas = Schema.mapRef(schemes);
                 this.setData(data).then(() => {
@@ -187,6 +187,13 @@ export class DocumentsSourceBlockComponent implements OnInit {
         } catch (error) {
             return "";
         }
+    }
+
+    getGroup(row: any, field: any) {
+        if (field.bindGroup) {
+            return row.__sourceTag__ == field.bindGroup;
+        }
+        return true;
     }
 
     getObjectValue(data: any, value: any) {

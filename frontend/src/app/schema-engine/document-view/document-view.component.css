@@ -61,6 +61,12 @@ form {
   margin-bottom: 10px;
 }
 
+.label-header {
+  font-size: 18px;
+  margin-bottom: 30px;
+  font-weight: 500;
+}
+
 .delimiter {
   padding: 30px 50px 50px 50px;
   width: 100%;

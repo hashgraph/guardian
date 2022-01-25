@@ -23,7 +23,7 @@ export class DocumentViewComponent implements OnInit {
 
   ngOnInit(): void {
     this.proofJson = this.document.proof
-      ? JSON.stringify(this.document.proof)
+      ? JSON.stringify(this.document.proof, null, 4)
       : "";
 
     switch (this.type) {
@@ -50,7 +50,7 @@ export class DocumentViewComponent implements OnInit {
     }
   }
 
-  GetSchema(id: any) {
-    return this.schemas.filter((schema) => schema.uuid === id)[0];
+  GetSchema(id: any): any {
+    return this.schemas.find((schema) => schema?.context?.type === id);
   }
 }

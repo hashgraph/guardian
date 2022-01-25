@@ -60,6 +60,20 @@
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                <mat-icon class="icon-link">
+                    add_link
+                </mat-icon>
+                Bind Group
+            </td>
+            <td class="propRowCell">
+                <mat-select [(value)]="field.bindGroup" [disabled]="readonly">
+                    <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
                 <input [(ngModel)]="field.title" [readonly]="readonly">
