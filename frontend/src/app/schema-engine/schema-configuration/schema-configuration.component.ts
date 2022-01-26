@@ -47,8 +47,8 @@ export class SchemaConfigurationComponent implements OnInit {
             {
                 name: 'ref',
                 description: '',
-                required: true,
-                isArray: true,
+                required: false,
+                isArray: false,
                 isRef: false,
                 type: 'string',
                 format: undefined,

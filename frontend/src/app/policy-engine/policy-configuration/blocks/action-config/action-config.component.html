@@ -158,14 +158,14 @@
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Name</td>
+            <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
                 <input [(ngModel)]="block.name" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Value</td>
+            <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
                 <input [(ngModel)]="block.value" [readonly]="readonly">
             </td>
@@ -175,40 +175,6 @@
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
                 <input [(ngModel)]="block.field" [readonly]="readonly">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Data Source</td>
-            <td class="propRowCell">
-                <mat-select [(value)]="block.documentSource" [disabled]="readonly">
-                    <mat-option value="vc-documents">VC</mat-option>
-                    <mat-option value="did-documents">DID</mat-option>
-                    <mat-option value="approve">Approve</mat-option>
-                </mat-select>
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Schema</td>
-            <td class="propRowCell">
-                <mat-select [(value)]="block.documentSchema" [disabled]="readonly">
-                    <mat-option *ngFor="let schema of schemes" [value]="schema.uuid">{{schema.name}}</mat-option>
-                </mat-select>
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Entity Type</td>
-            <td class="propRowCell">
-                <input [(ngModel)]="block.documentType" [readonly]="readonly">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Only Own Documents</td>
-            <td class="propRowCell">
-                <input type="checkbox" [(ngModel)]="block.onlyOwnDocuments" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">

@@ -307,6 +307,8 @@ export class BlockTreeGenerator {
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
                 model.owner = user.did;
                 if (!model.uuid) {
+                    delete model.version;
+                    delete model.previousVersion;
                     delete model.topicId;
                 }
                 await getMongoRepository(Policy).save(model);

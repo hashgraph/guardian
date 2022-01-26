@@ -12,6 +12,7 @@ import { User } from '@entity/user';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 import {Schema, SchemaStatus} from 'interfaces';
+import { findOptions } from '@policy-engine/helpers/find-options';
 
 /**
  * Document action clock with UI
@@ -31,6 +32,17 @@ export class InterfaceDocumentActionBlock {
     @Inject()
     private wallet: Wallet;
 
+    private async getSources(...args): Promise<any[]> {
+        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        let data = [];
+        for (let child of ref.children) {
+            if (child.blockClassName === 'SourceAddon') {
+                data = data.concat(await child.getFromSource(...args))
+            }
+        }
+        return data;
+    }
+
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
@@ -47,53 +59,16 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type == 'dropdown') {
-            const guardians = new Guardians();
-
+            let documents: any[] = await this.getSources(userFull);
             data.name = ref.options.name;
             data.value = ref.options.value;
             data.field = ref.options.field;
-
-            let filters: any = {};
-            if (ref.options.onlyOwnDocuments) {
-                filters.owner = userFull.did;
-            }
-            if (ref.options.documentSchema) {
-                filters.schema = ref.options.documentSchema;
-            }
-            if (ref.options.documentType) {
-                filters.type = ref.options.documentType;
-            }
-
-            let documents: any[];
-            switch (ref.options.documentSource) {
-                case 'vc-documents':
-                    filters.policyId = ref.policyId;
-                    documents = await guardians.getVcDocuments(filters);
-                    break;
-
-                case 'did-documents':
-                    documents = await guardians.getDidDocuments(filters);
-                    break;
-
-                case 'vp-documents':
-                    filters.policyId = ref.policyId;
-                    documents = await guardians.getVpDocuments(filters);
-                    break;
-
-                case 'approve':
-                    filters.policyId = ref.policyId;
-                    documents = await guardians.getApproveDocuments(filters);
-                    break;
-
-                case 'source':
-                    documents = [];
-                    break;
-
-                default:
-                    throw new BlockActionError(`dataType "${ref.options.documentType}" is unknown`, ref.blockType, ref.uuid)
-            }
-
-            data.options = documents;
+            data.options = documents.map((e) => {
+                return {
+                    name: findOptions(e, ref.options.name),
+                    value: findOptions(e, ref.options.value),
+                }
+            });
         }
         return data;
     }
@@ -250,10 +225,6 @@ export class InterfaceDocumentActionBlock {
                     break;
 
                 case 'dropdown':
-                    if (!ref.options.documentSource) {
-                        resultsContainer.addBlockError(ref.uuid, 'Option "documentSource" does not set');
-                        break;
-                    }
                     if (!ref.options.name) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "name" does not set');
                         break;

@@ -23,7 +23,8 @@ export class ExternalDataBlock {
     async receiveData(data) {
         let verify: boolean;
         try {
-            verify = await this.vcHelper.verifySchema(data.document);
+            const res = await this.vcHelper.verifySchema(data.document);
+            verify = res.ok;
             if(verify) {
                 verify = await this.vcHelper.verifyVC(data.document);
             }

@@ -89,17 +89,7 @@ export class ActionBlockComponent implements OnInit {
       }
       if (this.type == 'dropdown') {
         this.field = data.field;
-        const options = data.options;
-        this.options = [];
-        if (options) {
-          for (let i = 0; i < options.length; i++) {
-            const item = options[i];
-            this.options.push({
-              name: this.getObjectValue(item, data.name),
-              value: this.getObjectValue(item, data.value)
-            })
-          }
-        }
+        this.options = data.options || [];
         this.currentValue = this.getObjectValue(this.data, this.field);
       }
     } else {
