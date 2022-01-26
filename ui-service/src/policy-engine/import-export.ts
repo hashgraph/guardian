@@ -6,34 +6,17 @@ import { Policy } from '@entity/policy';
 import { Guardians } from '@helpers/guardians';
 import { findAllEntities } from '@helpers/utils';
 import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 
 export const importExportAPI = Router();
 
 importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
-        const guardians = new Guardians();
 
-        const refs = findAllEntities(policy.config, 'schema');
-        const tokenIds = findAllEntities(policy.config, 'tokenId');
-
-        const [schemas, tokens] = await Promise.all([
-            guardians.exportSchemes(refs),
-            guardians.getTokens({ids: tokenIds})
-        ]);
-
-        const zip = new JSZip();
-        zip.folder('schemas')
-        for (let schema of schemas) {
-            zip.file(`schemas/${schema.name}.json`, JSON.stringify(schema));
-        }
-
-        zip.folder('tokens')
-        for (let token of tokens) {
-            zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
-        }
-        zip.file(`policy.json`, JSON.stringify(policy));
+        const zip = await PolicyImportExportHelper.generateZipFile(policy);
         const arcStream = zip.generateNodeStream();
+
         res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
         res.setHeader('Content-type', 'application/zip');
         arcStream.pipe(res);

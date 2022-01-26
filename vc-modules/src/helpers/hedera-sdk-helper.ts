@@ -19,6 +19,7 @@ import {
     TokenUnfreezeTransaction,
     TokenWipeTransaction,
     TopicCreateTransaction,
+    TopicMessageSubmitTransaction,
     TransactionResponse,
     TransferTransaction
 } from '@hashgraph/sdk';
@@ -555,5 +556,20 @@ export class HederaSDKHelper {
         const topicId = (await dtxId.getReceipt(client)).topicId;
 
         return topicId.toString();
+    }
+
+    /**
+     * Submit message to the topic (TopicMessageSubmitTransaction)
+     * 
+     * @param topicId Topic identifier
+     * @param message Message to publish
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async submitMessage(topicId: string, message: string): Promise<void> {
+        const client = this.client;
+        await new TopicMessageSubmitTransaction({
+            topicId: topicId,
+            message: message,
+        }).execute(client);
     }
 }

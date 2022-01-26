@@ -1,9 +1,12 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { Request, Response, Router } from 'express';
-import { ISchema, Schema, UserRole } from 'interfaces';
+import { ISchema, ISubmitModelMessage, Schema, UserRole, ModelActionType} from 'interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
+import { Blob } from 'buffer';
+import { HederaHelper } from 'vc-modules';
+import { IPFS } from '@helpers/ipfs';
 
 /**
  * Schema route
@@ -100,6 +103,25 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
         (await guardians.setSchema(schema));
         const schemes = (await guardians.publishSchema(schemaId));
         schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
+
+        const publishedSchema = await guardians.getSchema(schemaId);
+        const root = await guardians.getRootConfig(user.did);
+        const schemaFile  = new Blob([JSON.stringify(publishedSchema)], {type: "application/json"});
+        const cid = await new IPFS().addFile(await schemaFile.arrayBuffer());
+
+        let schemaPublishMessage: ISubmitModelMessage = {
+            name: publishedSchema.name,
+            owner: publishedSchema.owner,
+            cid: cid,
+            uuid: publishedSchema.uuid,
+            version: publishedSchema.version,
+            operation: ModelActionType.PUBLISH
+        }
+
+        await HederaHelper
+            .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+            .submitMessage(process.env.SUBMIT_TOPIC_ID, JSON.stringify(schemaPublishMessage));
+
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });

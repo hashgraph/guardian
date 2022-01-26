@@ -28,3 +28,5 @@ export {SchemaStatus} from './type/schema-status.type';
 export {ISchemaDocument} from './interface/schema-document.interface';
 export {SchemaField} from './models/schema';
 export {ModelHelper} from './helpers/model-helper'
+export {ModelActionType} from './type/model-action.type';
+export {ISubmitModelMessage} from './interface/submit-model-message.interface';
