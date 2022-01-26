@@ -58,7 +58,7 @@ Promise.all([
     const schemaDocumentLoader = new SchemaDocumentLoader('https://localhost/schema', schemaRepository);
     const didDocumentLoader = new DIDDocumentLoader(didDocumentRepository);
     const schemaObjectLoader = new SchemaObjectLoader(schemaRepository);
-    
+
     vcHelper.addContext('https://localhost/schema');
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(schemaDocumentLoader);

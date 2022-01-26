@@ -1,0 +1,52 @@
+name: Guardian CI
+on: []
+jobs:
+  buildAndTest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 16.x ]
+        mongodb-version: [ '4.4' ]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.7.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Build
+        run: |
+          pushd interfaces
+          npm install
+          npm run build
+          popd
+          pushd vc-modules
+          npm install
+          npm run build
+          popd
+          pushd frontend
+          npm install
+          npm run build
+          popd
+          pushd guardian-service
+          npm install
+          npm run build
+          popd
+          pushd message-broker
+          npm install
+          npm run build
+          popd
+          pushd ui-service
+          npm install
+          npm run build
+          popd
+        env:
+          CI: true
+      - name: Start
+        run: |
+          pushd api-tests
+          npm run test
+          popd
