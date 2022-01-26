@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import type { IFastMqChannel } from 'fastmq';
-import { MessageAPI } from 'interfaces';
+import { IVPDocument, MessageAPI } from 'interfaces';
 import { take, takeRight } from 'lodash';
 import type { MongoRepository } from 'typeorm/repository/MongoRepository';
 import type { MeterConfig } from '@entity/meter-config';
@@ -39,17 +39,47 @@ export const makeAuditApi = (
             filter,
           )
         ).payload;
-
+        vp.data = extractAndFormatVp(vp);
         res.status(200).json(vp);
         return;
       }
-
+      
       res.status(404).send(`Cannot find VP documents for meterId: ${meterId}`);
     },
   );
 
   return auditApi;
 };
+
+function extractAndFormatVp(dbResponse: IPagination) {
+  return dbResponse.data.map(vpDocument => {
+    const vcRecords: IVcRecord[] = vpDocument.document.verifiableCredential.slice(0,vpDocument.document.verifiableCredential.length-1).map(vc=>{
+      return vc.credentialSubject.map(cs=>{
+        return {
+          mrvEnergyAmount: cs.mrvEnergyAmount,
+          mrvCarbonAmount: cs.mrvCarbonAmount,
+          mrvTimestamp: cs.mrvTimestamp,
+          mrvDuration: cs.mrvDuration,
+        }
+      })
+    }).flat();
+
+    const energyCarbonValue = vcRecords.reduce((prevValue, vcRecord)=>{
+      prevValue.totalEnergyValue+=Number(vcRecord.mrvEnergyAmount);
+      prevValue.totalCarbonAmount+=Number(vcRecord.mrvCarbonAmount);
+      return prevValue;
+    }, {totalEnergyValue:0,totalCarbonAmount: 0});
+
+    return {
+      vpId: vpDocument.id,
+      vcRecords,
+      energyType: 'consumption',
+      energyValue: energyCarbonValue.totalEnergyValue,
+      co2Produced: energyCarbonValue.totalCarbonAmount,
+      timestamp: vpDocument.createDate
+    } as IVpRecord
+  })
+}
 
 interface IFilter {
   id?: string; //  filter by id
@@ -61,4 +91,38 @@ interface IFilter {
   pageSize?: number;
   page?: number;
   period?: number;
+}
+
+//ToDo: Pradeep Update the datatypes based on tymlez interfaces
+export interface IVcRecord {
+  mrvEnergyAmount: number;
+  mrvCarbonAmount: number;
+  mrvTimestamp: number;
+  mrvDuration: number;
+}
+
+export interface IVpRecord {
+  vpId: string;
+  vcRecords: Array<IVcRecord>;
+  energyType: string;
+  energyValue: number;
+  timestamp: Date;
+  co2Produced: number;
+  co2Saved?: number;
+}
+
+export type VerificationPeriod = 'all' | '24h';
+
+export interface IVerification {
+  records: Array<IVpRecord>;
+  num: number;
+}
+interface IPagination {
+  perPage: number,
+  totalRecords: number,
+  currentPage: number,
+  hasPrevPage: boolean,
+  hasNextPage: boolean,
+  lastPage: number,
+  data: IVPDocument[]
 }

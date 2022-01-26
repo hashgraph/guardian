@@ -254,9 +254,9 @@ export const documentsAPI = async function (
 
             const documents: [IVPDocument[], number] = await vpDocumentRepository.findAndCount(reqObj);
             const lastPage = Math.ceil(documents[1] / pageSize);
-            const response: IPagination = {
+            const response  = {
                 perPage: pageSize,
-                total: documents[1],
+                totalRecords: documents[1],
                 lastPage,
                 currentPage,
                 hasNextPage: lastPage > currentPage,
@@ -271,12 +271,3 @@ export const documentsAPI = async function (
     });
 }
 
-interface IPagination {
-    perPage: number,
-    total: number,
-    currentPage: number,
-    hasPrevPage: boolean,
-    hasNextPage: boolean,
-    lastPage: number,
-    data: IVPDocument[]
-}
