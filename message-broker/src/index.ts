@@ -1,13 +1,13 @@
 import FastMQ from 'fastmq'
 import express, {Request, Response} from 'express'
 
-const server = FastMQ.Server.create('master', 7500, '0.0.0.0');
+const mqServer = FastMQ.Server.create('master', 7500, '0.0.0.0');
 
 const PORT = process.env.PORT || 3003;
 
 // start server
-Promise.all([
-    server.start()
+export default Promise.all([
+    mqServer.start()
 ]).then(async () => {
 
     const app = express();

@@ -26,3 +26,5 @@ www-data/
 ui-service/.vs/
 /test_results/
 ipfs-client/package-lock.json
+/api-tests/node_modules/
+/api-tests/package-lock.json
