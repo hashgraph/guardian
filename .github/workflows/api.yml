@@ -1,5 +1,8 @@
-name: Guardian CI
-on: []
+name: Guardian CI API Tests
+on:
+  push:
+    branches:
+      - main
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest
