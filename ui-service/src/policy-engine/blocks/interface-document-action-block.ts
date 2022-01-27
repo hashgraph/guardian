@@ -3,7 +3,7 @@ import { IAuthUser } from '../../auth/auth.interface';
 import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { Inject } from '@helpers/decorators/inject';
 import { Guardians } from '@helpers/guardians';
-import { StateContainer } from '@policy-engine/state-container';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
 import { getMongoRepository, getRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
@@ -81,7 +81,7 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type == 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
-                const block = StateContainer.GetBlockByTag(ref.policyId, option.bindBlock) as any;
+                const block = PolicyComponentsStuff.GetBlockByTag(ref.policyId, option.bindBlock) as any;
                 const owner = await getRepository(User).findOne({ did: document.owner });
                 await ref.runTarget(owner, state, block);
             }
@@ -117,7 +117,7 @@ export class InterfaceDocumentActionBlock {
 
         if (ref.options.type == 'dropdown') {
             if (ref.options.bindBlock) {
-                const block = StateContainer.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
+                const block = PolicyComponentsStuff.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
                 const owner = await getRepository(User).findOne({ did: document.owner });
                 await ref.runTarget(owner, state, block);
                 return;

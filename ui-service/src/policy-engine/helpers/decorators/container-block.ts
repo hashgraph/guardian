@@ -1,6 +1,6 @@
 import {BasicBlock} from '@policy-engine/helpers/decorators/basic-block';
 import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces/block-options';
-import {StateContainer} from '@policy-engine/state-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 import {IAuthUser} from '../../../auth/auth.interface';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
@@ -61,7 +61,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                         }
 
                         if(currentRole) {
-                            if (StateContainer.IfHasPermission(child.uuid, currentRole, dbUser)) {
+                            if (PolicyComponentsStuff.IfHasPermission(child.uuid, currentRole, dbUser)) {
                                 return returnValue;
                             }
                         } else {

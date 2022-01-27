@@ -7,7 +7,7 @@ import { HcsVcDocument, HederaHelper, VcSubject } from 'vc-modules';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { StateContainer } from '@policy-engine/state-container';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 @BasicBlock({

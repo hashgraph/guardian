@@ -10,7 +10,7 @@ import WebSocket from 'ws';
 import { AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser } from '../auth/auth.interface';
 import { PolicyBlockHelpers } from './helpers/policy-block-helpers';
 import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { StateContainer } from './state-container';
+import { PolicyComponentsStuff } from './policy-components-stuff';
 import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
@@ -31,7 +31,7 @@ export class BlockTreeGenerator {
 
     constructor() {
         this.router = Router();
-        StateContainer.UpdateFn = (...args: any[]) => {
+        PolicyComponentsStuff.UpdateFn = (...args: any[]) => {
             this.stateChangeCb.apply(this, args);
         };
     }
@@ -55,7 +55,7 @@ export class BlockTreeGenerator {
         this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
             try {
                 const dbUser = await getMongoRepository(User).findOne({username: client.user.username});
-                const blockRef = StateContainer.GetBlockByUUID(uuid) as any;
+                const blockRef = PolicyComponentsStuff.GetBlockByUUID(uuid) as any;
 
                 const policy = await getMongoRepository(Policy).findOne(blockRef.policyId);
                 const role = policy.registeredUsers[dbUser.did];
@@ -75,7 +75,7 @@ export class BlockTreeGenerator {
                     return
                 }
 
-                if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, role, dbUser)) {
+                if (PolicyComponentsStuff.IfUUIDRegistered(uuid) && PolicyComponentsStuff.IfHasPermission(uuid, role, dbUser)) {
                     client.send(uuid);
                 }
             } catch (e) {
@@ -144,7 +144,7 @@ export class BlockTreeGenerator {
             policyId = arg;
         } else {
             policy = arg;
-            policyId = StateContainer.GenerateNewUUID();
+            policyId = PolicyComponentsStuff.GenerateNewUUID();
         }
 
         const configObject = policy.config as ISerializedBlock;
@@ -481,7 +481,7 @@ export class BlockTreeGenerator {
 
         this.router.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+                const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
                 if (!block) {
                     const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
@@ -501,7 +501,7 @@ export class BlockTreeGenerator {
 
         this.router.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+                const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
                 if (!block) {
                     const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
@@ -522,7 +522,7 @@ export class BlockTreeGenerator {
 
         this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByTag(req.params.policyId, req.params.tagName);
+                const block = PolicyComponentsStuff.GetBlockByTag(req.params.policyId, req.params.tagName);
                 if (!block) {
                     const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
@@ -542,7 +542,7 @@ export class BlockTreeGenerator {
 
         this.router.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+                const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
                 if (!block) {
                     const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);

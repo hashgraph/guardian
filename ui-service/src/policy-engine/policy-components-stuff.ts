@@ -7,7 +7,7 @@ import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
 import {STATE_KEY} from '@policy-engine/helpers/constants';
 
-export class StateContainer {
+export class PolicyComponentsStuff {
     private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
     private static PolicyBlockMapObject: PolicyBlockMap = new Map();
     private static PolicyTagMapObject: Map<string, PolicyTagMap> = new Map();
@@ -20,13 +20,13 @@ export class StateContainer {
      * @param policyId
      * @constructor
      */
-    public static BlockComponentStaff(policyId: string) {
+    public static BlockComponentStuff(policyId: string) {
         return {
             get blockMap(): PolicyBlockMap {
-                return StateContainer.PolicyBlockMapObject;
+                return PolicyComponentsStuff.PolicyBlockMapObject;
             },
             get tagMap(): PolicyTagMap {
-                return StateContainer.PolicyTagMapObject.get(policyId);
+                return PolicyComponentsStuff.PolicyTagMapObject.get(policyId);
             }
         }
     }
@@ -39,11 +39,11 @@ export class StateContainer {
     public static RegisterDependencyCallback(tag: string, policyId: string, fn: Function): void {
         let policyTagsMap: Map<string, Function[]>;
 
-        if (!StateContainer.BlockSubscriptions.has(policyId)) {
+        if (!PolicyComponentsStuff.BlockSubscriptions.has(policyId)) {
             policyTagsMap = new Map();
-            StateContainer.BlockSubscriptions.set(policyId, policyTagsMap);
+            PolicyComponentsStuff.BlockSubscriptions.set(policyId, policyTagsMap);
         } else {
-            policyTagsMap = StateContainer.BlockSubscriptions.get(policyId);
+            policyTagsMap = PolicyComponentsStuff.BlockSubscriptions.get(policyId);
         }
 
         let subscriptionsArray: Function[];
@@ -64,7 +64,7 @@ export class StateContainer {
         let uuid: string;
         do {
             uuid = GenerateUUIDv4();
-        } while (StateContainer.PolicyBlockMapObject.has(uuid));
+        } while (PolicyComponentsStuff.PolicyBlockMapObject.has(uuid));
         return uuid;
     }
 
@@ -75,7 +75,7 @@ export class StateContainer {
      * @constructor
      */
     public static RegisterComponent(policyId: string, component: IPolicyBlock): void {
-        StateContainer.PolicyBlockMapObject.set(component.uuid, component);
+        PolicyComponentsStuff.PolicyBlockMapObject.set(component.uuid, component);
         let tagMap;
         if (!this.PolicyTagMapObject.has(policyId)) {
             tagMap = new Map();
@@ -90,21 +90,20 @@ export class StateContainer {
             tagMap.set(component.tag, component.uuid);
         }
         if (component.blockClassName === 'ExternalData') {
-            StateContainer.ExternalDataBlocks.set(component.uuid, component);
+            PolicyComponentsStuff.ExternalDataBlocks.set(component.uuid, component);
         }
 
         const componentRef = component as any;
         for (let dep of componentRef.dependencies) {
-            StateContainer.RegisterDependencyCallback(dep, policyId,(user) => {
-                console.log('Update block', component);
+            PolicyComponentsStuff.RegisterDependencyCallback(dep, policyId,(user) => {
                 component.updateBlock({}, user, '');
             })
         }
     }
 
     public static CallDependencyCallbacks(tag: string, policyId: string, user: any): void {
-        if (StateContainer.BlockSubscriptions.has(policyId) && StateContainer.BlockSubscriptions.get(policyId).has(tag)) {
-            for (let fn of StateContainer.BlockSubscriptions.get(policyId).get(tag)) {
+        if (PolicyComponentsStuff.BlockSubscriptions.has(policyId) && PolicyComponentsStuff.BlockSubscriptions.get(policyId).has(tag)) {
+            for (let fn of PolicyComponentsStuff.BlockSubscriptions.get(policyId).get(tag)) {
                 fn(user);
             }
         }
@@ -115,7 +114,7 @@ export class StateContainer {
      * @param data
      */
     public static async ReceiveExternalData(data: any): Promise<void> {
-        for (let block of StateContainer.ExternalDataBlocks.values()) {
+        for (let block of PolicyComponentsStuff.ExternalDataBlocks.values()) {
             const policy = await getMongoRepository(Policy).findOne({policyTag: data.policyTag});
             if (policy.id.toString() === (block as any).policyId) {
                 await (block as any).receiveData(data);
@@ -128,7 +127,7 @@ export class StateContainer {
      * @param uuid
      */
     public static IfUUIDRegistered(uuid: string): boolean {
-        return StateContainer.PolicyBlockMapObject.has(uuid);
+        return PolicyComponentsStuff.PolicyBlockMapObject.has(uuid);
     }
 
     /**
@@ -138,7 +137,7 @@ export class StateContainer {
      * @param user
      */
     public static IfHasPermission(uuid: string, role: PolicyRole, user: IAuthUser | null): boolean {
-        return StateContainer.PolicyBlockMapObject.get(uuid).hasPermission(role, user);
+        return PolicyComponentsStuff.PolicyBlockMapObject.get(uuid).hasPermission(role, user);
     }
 
     /**
@@ -146,7 +145,7 @@ export class StateContainer {
      * @param uuid
      */
     public static GetBlockByUUID<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(uuid: string): T {
-        return StateContainer.PolicyBlockMapObject.get(uuid) as T;
+        return PolicyComponentsStuff.PolicyBlockMapObject.get(uuid) as T;
     }
 
     /**
@@ -155,7 +154,7 @@ export class StateContainer {
      * @param tag
      */
     public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
-        return StateContainer.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag));
+        return PolicyComponentsStuff.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag));
     }
 
     public static GetStateFields(target): Object {

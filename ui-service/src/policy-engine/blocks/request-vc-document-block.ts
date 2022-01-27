@@ -5,7 +5,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
-import { StateContainer } from '@policy-engine/state-container';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
 import { Schema, SchemaStatus } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '@auth/auth.interface';
@@ -100,7 +100,7 @@ export class RequestVcDocumentBlock {
         };
 
         await ref.runNext(user, { data: item });
-        
+
         return {};
     }
 

@@ -3,7 +3,7 @@ import {IAuthUser} from '../../auth/auth.interface';
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
-import {StateContainer} from '@policy-engine/state-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
 @EventBlock({
     blockType: 'policyRolesBlock',
@@ -29,7 +29,7 @@ export class PolicyRolesBlock {
         currentPolicy.registeredUsers[user.did] = document.role;
 
         const result = await policyRepository.save(currentPolicy);
-        StateContainer.UpdateFn(ref.parent.uuid, {}, user, ref.tag);
+        PolicyComponentsStuff.UpdateFn(ref.parent.uuid, {}, user, ref.tag);
 
         return result;
     }

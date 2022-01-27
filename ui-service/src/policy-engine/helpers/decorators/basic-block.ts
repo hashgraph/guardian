@@ -4,7 +4,7 @@ import {PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList} from '@policy-
 import {PolicyRole} from 'interfaces';
 
 import {IPolicyBlock, ISerializedBlock,} from '../../policy-engine.interface';
-import {StateContainer} from '../../state-container';
+import {PolicyComponentsStuff} from '../../policy-components-stuff';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 import {IAuthUser} from '../../../auth/auth.interface';
 import {getMongoRepository} from 'typeorm';
@@ -57,7 +57,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
         }
 
         const o: PolicyBlockFullArgumentList = <PolicyBlockFullArgumentList>Object.assign(
-            StateContainer.BlockComponentStaff(null),
+            PolicyComponentsStuff.BlockComponentStuff(null),
             options,
             PolicyBlockDefaultOptions(),
             {
@@ -152,17 +152,15 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             public async updateBlock(state, user, tag) {
-                console.log("updateBlock");
-
                 if (!!this.tag) {
-                    StateContainer.CallDependencyCallbacks(this.tag, this.policyId, user);
+                    PolicyComponentsStuff.CallDependencyCallbacks(this.tag, this.policyId, user);
                 }
                 await this.saveState();
-                StateContainer.UpdateFn(this.uuid, state, user, tag);
+                PolicyComponentsStuff.UpdateFn(this.uuid, state, user, tag);
             }
 
             private async saveState(): Promise<void> {
-                const stateFields = StateContainer.GetStateFields(this);
+                const stateFields = PolicyComponentsStuff.GetStateFields(this);
                 if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
                     const repo = getMongoRepository(BlockState);
                     let stateEntity = await repo.findOne({
@@ -178,8 +176,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                     stateEntity.blockState = JSON.stringify(stateFields);
 
-                    const result = await repo.save(stateEntity)
-                    console.log(result);
+                    await repo.save(stateEntity)
 
                 }
             }
@@ -193,6 +190,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!stateEntity) {
                     return;
                 }
+
 
                 for (let [key, value] of Object.entries(JSON.parse(stateEntity.blockState))) {
                     this[key] = value;

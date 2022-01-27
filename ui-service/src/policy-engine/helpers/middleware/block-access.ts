@@ -1,5 +1,5 @@
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {StateContainer} from '@policy-engine/state-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 import {Response} from 'express';
 import {AuthenticatedRequest} from '@auth/auth.interface';
 
@@ -10,7 +10,7 @@ import {AuthenticatedRequest} from '@auth/auth.interface';
  * @param next
  */
 export function BlockAccess(req: AuthenticatedRequest, res: Response, next: Function) {
-    const block = StateContainer.GetBlockByUUID<any>(req.params.uuid);
+    const block = PolicyComponentsStuff.GetBlockByUUID<any>(req.params.uuid);
     const type = PolicyBlockHelpers.GetBlockRef(block).blockClassName;
     let noAccsess = true;
     switch (req.method) {

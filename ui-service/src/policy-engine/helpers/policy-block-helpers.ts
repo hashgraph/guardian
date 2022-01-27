@@ -1,6 +1,6 @@
 import {GetBlockByType} from '../blocks/get-block-by-type';
 import {PolicyBlockConstructorParams, PolicyBlockFullArgumentList} from '@policy-engine/interfaces/block-options';
-import {StateContainer} from '../state-container';
+import {PolicyComponentsStuff} from '../policy-components-stuff';
 import {GetOtherOptions} from './get-other-options';
 
 export namespace PolicyBlockHelpers {
@@ -19,7 +19,7 @@ export namespace PolicyBlockHelpers {
         }
         const blockConstructor = GetBlockByType(blockType) as any;
         const instance = new blockConstructor(
-            options.id || StateContainer.GenerateNewUUID(),
+            options.id || PolicyComponentsStuff.GenerateNewUUID(),
             options.defaultActive,
             options.tag,
             options.permissions,
@@ -28,7 +28,7 @@ export namespace PolicyBlockHelpers {
             GetOtherOptions(options as PolicyBlockFullArgumentList)
         );
         if (!skipRegistration) {
-            StateContainer.RegisterComponent(policyId, instance);
+            PolicyComponentsStuff.RegisterComponent(policyId, instance);
         }
         return instance;
     }
