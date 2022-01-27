@@ -1,7 +1,6 @@
-import {AuthenticatedRequest} from '../../../auth/auth.interface';
+import {AuthenticatedRequest} from '@auth/auth.interface';
 import {Response} from 'express';
 import {PolicyComponentsStuff} from '../../policy-components-stuff';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
 

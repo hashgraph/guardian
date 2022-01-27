@@ -1,11 +1,11 @@
 import { ExternalData } from '@policy-engine/helpers/decorators';
 import { HcsVcDocument, VcSubject } from 'vc-modules';
 import { DocumentSignature, DocumentStatus, SchemaStatus } from 'interfaces';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { Inject } from '@helpers/decorators/inject';
 import { VcHelper } from '@helpers/vcHelper';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Guardians } from '@helpers/guardians';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 /**
  * External data block
  */
@@ -32,7 +32,7 @@ export class ExternalDataBlock {
             verify = false;
         }
         const signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const vc = HcsVcDocument.fromJsonTree<VcSubject>(data.document, null, VcSubject);
         const doc = {
             hash: vc.toCredentialHash(),
@@ -50,7 +50,7 @@ export class ExternalDataBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         if (ref.options.schema) {
             if (typeof ref.options.schema !== 'string') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');

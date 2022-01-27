@@ -1,6 +1,6 @@
 import {ContainerBlock, StateField} from '@policy-engine/helpers/decorators';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
 import {BlockActionError} from '@policy-engine/errors';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
 /**
  * Step block
@@ -14,7 +14,7 @@ export class InterfaceStepBlock {
     state: {[key: string]: any} = {};
 
     async changeStep(user, data, target) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -37,7 +37,7 @@ export class InterfaceStepBlock {
     }
 
     async getData(user): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};

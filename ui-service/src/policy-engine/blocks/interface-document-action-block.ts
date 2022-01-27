@@ -1,6 +1,5 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { IAuthUser } from '../../auth/auth.interface';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
+import { IAuthUser } from '@auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
 import { Guardians } from '@helpers/guardians';
 import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
@@ -10,7 +9,6 @@ import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { User } from '@entity/user';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 import {Schema, SchemaStatus} from 'interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
 
@@ -33,7 +31,7 @@ export class InterfaceDocumentActionBlock {
     private wallet: Wallet;
 
     private async getSources(...args): Promise<any[]> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         let data = [];
         for (let child of ref.children) {
             if (child.blockClassName === 'SourceAddon') {
@@ -44,7 +42,7 @@ export class InterfaceDocumentActionBlock {
     }
 
     async getData(user: IAuthUser): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
 
         const data: any = {
@@ -74,7 +72,7 @@ export class InterfaceDocumentActionBlock {
     }
 
     async setData(user: IAuthUser, document: any): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         let state: any = { data: document };
 
@@ -139,7 +137,7 @@ export class InterfaceDocumentActionBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         if (!ref.options.type) {
             resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');

@@ -8,7 +8,6 @@ import { verify } from 'jsonwebtoken';
 import { getConnection, getMongoRepository } from 'typeorm';
 import WebSocket from 'ws';
 import { AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser } from '../auth/auth.interface';
-import { PolicyBlockHelpers } from './helpers/policy-block-helpers';
 import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { PolicyComponentsStuff } from './policy-components-stuff';
 import { Singleton } from '@helpers/decorators/singleton';
@@ -154,7 +153,7 @@ export class BlockTreeGenerator {
             if (parent) {
                 params._parent = parent;
             }
-            const blockInstance = PolicyBlockHelpers.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
+            const blockInstance = PolicyComponentsStuff.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
             blockInstance.setPolicyId(policyId.toString())
             blockInstance.setPolicyOwner(policy.owner);
             if (children && children.length) {

@@ -1,10 +1,9 @@
 import {BasicBlock} from '@policy-engine/helpers/decorators/basic-block';
 import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces/block-options';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
-import {IAuthUser} from '../../../auth/auth.interface';
+import {IAuthUser} from '@auth/auth.interface';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
 import {User} from '@entity/user';
 
 /**
@@ -35,7 +34,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     data = await super.getData(user);
                 }
 
-                const ref = PolicyBlockHelpers.GetBlockRef(this);
+                const ref = PolicyComponentsStuff.GetBlockRef(this);
                 const currentPolicy = await getMongoRepository(Policy).findOne(ref.policyId);
                 const currentRole = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[user.did] : null;
                 const dbUser = await getMongoRepository(User).findOne({username: user.username});

@@ -4,7 +4,6 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
 import { Schema, SchemaStatus } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
@@ -33,7 +32,7 @@ export class RequestVcDocumentBlock {
     private schema: any;
 
     // private init(): void {
-    //     const { options, blockType, uuid } = PolicyBlockHelpers.GetBlockRef(this);
+    //     const { options, blockType, uuid } = PolicyComponentsStuff.GetBlockRef(this);
     //     if (!options.schema) {
     //         throw new BlockInitError(`Field "schema" is required`, blockType, uuid);
     //     }
@@ -43,8 +42,8 @@ export class RequestVcDocumentBlock {
     }
 
     async getData(user: IAuthUser): Promise<any> {
-        const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const options = PolicyComponentsStuff.GetBlockUniqueOptionsObject(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         if(!this.schema) {
             const schemas = await this.guardians.getSchemes() || [];
@@ -68,7 +67,7 @@ export class RequestVcDocumentBlock {
     // }
 
     async setData(user: IAuthUser, _data: any): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
         if (!userFull.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
@@ -109,7 +108,7 @@ export class RequestVcDocumentBlock {
             return HederaUtils.randomUUID();
         }
         if (idType == 'DID') {
-            const ref = PolicyBlockHelpers.GetBlockRef(this);
+            const ref = PolicyComponentsStuff.GetBlockRef(this);
             const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
             const hederaHelper = HederaHelper
                 .setOperator(userHederaAccount, userHederaKey)
@@ -140,7 +139,7 @@ export class RequestVcDocumentBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         // Test schema options
         const schemas = await this.guardians.getSchemes() || [];

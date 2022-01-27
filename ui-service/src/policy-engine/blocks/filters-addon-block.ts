@@ -1,12 +1,12 @@
 import { DataSourceAddon } from '@policy-engine/helpers/decorators/data-source-addon';
 import { IAuthUser } from '@auth/auth.interface';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Inject } from '@helpers/decorators/inject';
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
 @DataSourceAddon({
     blockType: 'filtersAddon'
@@ -22,7 +22,7 @@ export class FiltersAddonBlock {
     private guardians: Guardians;
 
     private init(): void {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         if (!ref.options.canBeEmpty) {
             ref.filters = {};
             this.lastData = null;
@@ -38,7 +38,7 @@ export class FiltersAddonBlock {
     }
 
     async getData(user: IAuthUser) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
 
         let block: any = {
@@ -68,7 +68,7 @@ export class FiltersAddonBlock {
     }
 
     async setData(user: IAuthUser, data: any) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
@@ -90,7 +90,7 @@ export class FiltersAddonBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         if (!ref.options.type) {
             resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');

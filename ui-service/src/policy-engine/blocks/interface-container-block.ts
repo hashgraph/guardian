@@ -1,6 +1,5 @@
-import {BlockInitError} from '@policy-engine/errors';
 import {ContainerBlock} from '@policy-engine/helpers/decorators/container-block';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
 /**
  * Container block with UI
@@ -11,14 +10,14 @@ import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
 })
 export class InterfaceContainerBlock {
     // private init(): void {
-    //     const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
+    //     const {options, uuid, blockType} = PolicyComponentsStuff.GetBlockRef(this);
     //     if (!options.uiMetaData) {
     //         throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
     //     }
     // }
 
     async getData(user): Promise<any> {
-        const {options} = PolicyBlockHelpers.GetBlockRef(this);
+        const {options} = PolicyComponentsStuff.GetBlockRef(this);
         return {uiMetaData: options.uiMetaData};
     }
 }

@@ -1,5 +1,4 @@
 import { SourceAddon } from '@policy-engine/helpers/decorators';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { getMongoRepository } from 'typeorm';
 import { User } from '@entity/user';
 import { SchemaStatus, UserRole } from 'interfaces';
@@ -9,6 +8,7 @@ import { Guardians } from '@helpers/guardians';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
 @SourceAddon({
     blockType: 'documentsSourceAddon'
@@ -21,7 +21,7 @@ export class DocumentsSourceAddon {
     private users: Users;
 
     async getFromSource(user: IAuthUser) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
 
         let filters: any = {};
@@ -115,7 +115,7 @@ export class DocumentsSourceAddon {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         const types = ['vc-documents', 'did-documents', 'vp-documents', 'root-authorities', 'approve', 'source'];
         if (types.indexOf(ref.options.dataType) == -1) {

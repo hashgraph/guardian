@@ -1,4 +1,9 @@
-import {PolicyBlockMap, PolicyTagMap} from '@policy-engine/interfaces';
+import {
+    PolicyBlockConstructorParams,
+    PolicyBlockFullArgumentList,
+    PolicyBlockMap,
+    PolicyTagMap
+} from '@policy-engine/interfaces';
 import {PolicyRole, UserRole} from 'interfaces';
 import {IAuthUser} from '../auth/auth.interface';
 import {GenerateUUIDv4} from './helpers/uuidv4';
@@ -6,6 +11,8 @@ import {IPolicyBlock, IPolicyInterfaceBlock} from './policy-engine.interface';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
 import {STATE_KEY} from '@policy-engine/helpers/constants';
+import {GetBlockByType} from '@policy-engine/blocks/get-block-by-type';
+import {GetOtherOptions} from '@policy-engine/helpers/get-other-options';
 
 export class PolicyComponentsStuff {
     private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
@@ -157,7 +164,56 @@ export class PolicyComponentsStuff {
         return PolicyComponentsStuff.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag));
     }
 
+    /**
+     * Return block state fields
+     * @param target
+     */
     public static GetStateFields(target): Object {
         return target[STATE_KEY];
+    }
+
+    /**
+     * Configure new block instance
+     * @param policyId
+     * @param blockType
+     * @param options
+     * @param skipRegistration
+     */
+    public static ConfigureBlock(policyId: string, blockType: string,
+                                   options: Partial<PolicyBlockConstructorParams>,
+                                   skipRegistration?: boolean): any {
+        if (options.options) {
+            options = Object.assign(options, options.options);
+        }
+        const blockConstructor = GetBlockByType(blockType) as any;
+        const instance = new blockConstructor(
+            options.id || PolicyComponentsStuff.GenerateNewUUID(),
+            options.defaultActive,
+            options.tag,
+            options.permissions,
+            options.dependencies,
+            options._parent,
+            GetOtherOptions(options as PolicyBlockFullArgumentList)
+        );
+        if (!skipRegistration) {
+            PolicyComponentsStuff.RegisterComponent(policyId, instance);
+        }
+        return instance;
+    }
+
+    /**
+     * Return block instance reference
+     * @param obj
+     */
+    public static GetBlockRef(obj: any): any {
+        return obj as any;
+    }
+
+    /**
+     * Return block options object
+     * @param obj
+     */
+    public static GetBlockUniqueOptionsObject(obj: any): { [key: string]: any } {
+        return obj.options;
     }
 }

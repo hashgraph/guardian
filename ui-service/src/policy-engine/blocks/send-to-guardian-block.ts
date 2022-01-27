@@ -1,7 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { HcsVcDocument, HederaHelper, VcSubject } from 'vc-modules';
 import { Inject } from '@helpers/decorators/inject';
@@ -25,7 +24,7 @@ export class SendToGuardianBlock {
     private users: Users;
 
     async documentSender(state, user): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         let document = state.data;
         document.policyId = ref.policyId;
@@ -64,7 +63,7 @@ export class SendToGuardianBlock {
     }
 
     async runAction(state, user) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
         console.log("runAction");
@@ -113,7 +112,7 @@ export class SendToGuardianBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
             resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
