@@ -15,8 +15,8 @@
                     {{field.title}}
                     <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
                 </th>
-                <td mat-cell *matCellDef="let element">
-                    <ng-container *ngIf="getGroup(element, field)">
+                <td mat-cell *matCellDef="let element" >
+                    <div *ngIf="getGroup(element, field)" [style.width]="field.width">
                         <span *ngIf="field.type=='text'">{{getText(element, field)}}</span>
                         <span *ngIf="field.type=='button'" class="col-btn">
                             <div class="btn-field {{field.uiClass}}" (click)="onButton($event, element, field)">
@@ -27,7 +27,7 @@
                                 [policyId]="policyId">
                             </render-block>
                         </div>
-                    </ng-container>
+                    </div>
                 </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
