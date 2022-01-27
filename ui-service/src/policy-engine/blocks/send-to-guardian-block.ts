@@ -74,15 +74,14 @@ export class SendToGuardianBlock {
         if (ref.options.stopPropagation) {
             return;
         }
+
+        if(user) {
+            await ref.parent.changeStep(user, ref);
+        }
+
         const currentIndex = ref.parent.children.findIndex(el => this === el);
         const nextBlock = ref.parent.children[currentIndex + 1];
         if (nextBlock) {
-            if(user) {
-                const target = ref.parent;
-                const _state = StateContainer.GetBlockState(target.uuid, user);
-                _state.index = currentIndex + 1;
-                // await StateContainer.SetBlockState(target.uuid, _state, user, null);
-            }
             if (nextBlock.runAction) {
                 await nextBlock.runAction(state, user);
             } else {

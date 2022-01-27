@@ -43,6 +43,8 @@ export interface IPolicyBlock {
 
     validate(resultsContainer: PolicyValidationResultsContainer);
 
+    changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
+
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {

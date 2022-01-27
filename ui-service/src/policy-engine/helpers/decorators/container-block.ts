@@ -5,6 +5,7 @@ import {IAuthUser} from '../../../auth/auth.interface';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
+import {User} from '@entity/user';
 
 /**
  * Container block decorator
@@ -18,6 +19,15 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public readonly blockClassName = 'ContainerBlock';
 
+            async changeStep(user, data, target) {
+                if (typeof super.changeStep === 'function') {
+                    if (target) {
+                        await target.runAction(data, user)
+                    }
+                    return super.changeStep(user, data, target);
+                }
+            }
+
             async getData(user: IAuthUser | null): Promise<any> {
                 let data = {}
                 if (super.getData) {
@@ -27,21 +37,45 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const ref = PolicyBlockHelpers.GetBlockRef(this);
                 const currentPolicy = await getMongoRepository(Policy).findOne(ref.policyId);
                 const currentRole = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[user.did] : null;
+                const dbUser = await getMongoRepository(User).findOne({username: user.username});
 
                 return Object.assign(data, {
                     id: this.uuid,
                     blockType: this.blockType,
                     blocks: this.children.map(child => {
-                        if (!StateContainer.IfHasPermission(child.uuid, currentRole, user)) {
-                            return undefined;
-                        }
-                        return {
+                        let returnValue = {
                             uiMetaData: child.options.uiMetaData,
                             content: child.blockType,
                             blockType: child.blockType,
                             id: child.uuid,
-                            isActive: StateContainer.GetBlockState(child.uuid, user).isActive
+                            isActive: true
+                        };
+
+                        if (!child.defaultActive) {
+                            return undefined;
                         }
+
+                        if (child.permissions.includes('ANY_ROLE')) {
+                            return returnValue;
+                        }
+
+                        if(currentRole) {
+                            if (StateContainer.IfHasPermission(child.uuid, currentRole, dbUser)) {
+                                return returnValue;
+                            }
+                        } else {
+                            if(currentPolicy.owner === dbUser.did) {
+                                if (child.permissions.includes('OWNER')) {
+                                    return returnValue;
+                                }
+                            } else {
+                                if (child.permissions.includes('NO_ROLE')) {
+                                    return returnValue;
+                                }
+                            }
+                        }
+
+                        return undefined;
                     }),
                     isActive: StateContainer.GetBlockState(this.uuid, user).isActive
                 })

@@ -84,13 +84,16 @@ export class InterfaceDocumentActionBlock {
                 const block = StateContainer.GetBlockByTag(ref.policyId, option.bindBlock) as any;
                 const target = block.parent;
                 const index = target.children.findIndex(e => e.uuid == block.uuid);
-                state = StateContainer.GetBlockState(target.uuid, user);
-                state.index = index;
-                state.data = document;
+                // state = StateContainer.GetBlockState(target.uuid, user);
+                // state.index = index;
+                // state.data = document;
                 const owner = await getRepository(User).findOne({ did: document.owner });
                 if (block.runAction) {
                     await block.runAction(state, owner);
                 } else {
+                    if(user) {
+                        await ref.parent.changeStep(user, ref);
+                    }
                     // await StateContainer.SetBlockState(target.uuid, state, owner, null);
                 }
             } else {
@@ -130,20 +133,26 @@ export class InterfaceDocumentActionBlock {
                 const block = StateContainer.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
                 const parent = block.parent;
                 const index = parent.children.findIndex(e => e.uuid == block.uuid);
-                state = StateContainer.GetBlockState(parent.uuid, user);
-                state.index = index;
-                state.data = document;
+                // state = StateContainer.GetBlockState(parent.uuid, user);
+                // state.index = index;
+                // state.data = document;
                 const owner = await getRepository(User).findOne({ did: document.owner });
                 console.log(parent.uuid, block.uuid);
                 if (block.runAction) {
                     await block.runAction(state, owner);
                 } else {
+                    if(user) {
+                        await ref.parent.changeStep(user, ref);
+                    }
                     // await StateContainer.SetBlockState(parent.uuid, state, owner, null);
                 }
                 return;
             }
         }
 
+        if(user) {
+            await ref.parent.changeStep(user, ref);
+        }
         const currentIndex = ref.parent.children.findIndex(el => this === el);
         const nextBlock = ref.parent.children[currentIndex + 1];
         if (nextBlock && nextBlock.runAction) {

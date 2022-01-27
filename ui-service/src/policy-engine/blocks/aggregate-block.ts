@@ -81,6 +81,11 @@ export class AggregateBlock {
 
         if (amount >= threshold) {
             await repository.remove(rawEntities);
+
+            if(user) {
+                await ref.parent.changeStep(user, ref);
+            }
+
             const currentIndex = ref.parent.children.findIndex(el => this === el);
             if (ref.parent.children[currentIndex + 1] && ref.parent.children[currentIndex + 1].runAction) {
                 await ref.parent.children[currentIndex + 1].runAction({data: rawEntities}, null);

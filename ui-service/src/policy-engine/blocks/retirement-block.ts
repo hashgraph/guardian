@@ -202,6 +202,10 @@ export class RetirementBlock {
         } catch (e) {
             throw e;
         }
+
+        if(curUser) {
+            await ref.parent.changeStep(curUser, ref);
+        }
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

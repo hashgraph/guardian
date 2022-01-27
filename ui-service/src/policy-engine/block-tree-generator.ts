@@ -53,7 +53,6 @@ export class BlockTreeGenerator {
      */
     stateChangeCb(uuid: string, state: any, user: IAuthUser) {
         this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
-            console.log(client, user);
             try {
                 const dbUser = await getMongoRepository(User).findOne({username: client.user.username});
                 const blockRef = StateContainer.GetBlockByUUID(uuid) as any;

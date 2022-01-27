@@ -128,15 +128,26 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return;
             }
 
-            public async updateBlock(state, user, tag) {
-                // TransformState(this.options.stateMutation, state, tag, this.uuid);
-                //
-                // if (Array.isArray(this.updateHandlers)) {
-                //     for (let fn of this.updateHandlers) {
-                //         await fn.call(this, this.uuid, state, user, tag);
-                //     }
-                // }
+            public async runNext(user: IAuthUser, data: any): Promise<void> {
+                if (this.parent && (typeof this.parent['changeStep'] === 'function')) {
+                    await this.parent.changeStep(user, data, this.parent.children[this.parent.children.indexOf(this) + 1]);
+                }
 
+            }
+
+            public async runTarget(user: IAuthUser, data: any, target: IPolicyBlock): Promise<void> {
+                if (target.parent && (typeof target.parent['changeStep'] === 'function')) {
+                    await target.parent.changeStep(user, data, target);
+                }
+            }
+
+            public async runAction(...args): Promise<any> {
+                if (typeof super.runAction === 'function') {
+                    return await super.runAction(...args);
+                }
+            }
+
+            public async updateBlock(state, user, tag) {
                 if (!!this.tag) {
                     StateContainer.CallDependencyCallbacks(this.tag, user);
                 }
