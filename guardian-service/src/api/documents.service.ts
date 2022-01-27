@@ -2,14 +2,14 @@ import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { DidMethodOperation, HcsVcOperation } from 'did-sdk-js';
-import { 
-    DidDocumentStatus, 
-    DocumentSignature, 
-    DocumentStatus, 
-    IDidDocument, 
-    IVCDocument, 
-    IVPDocument, 
-    MessageAPI 
+import {
+    DidDocumentStatus,
+    DocumentSignature,
+    DocumentStatus,
+    IDidDocument,
+    IVCDocument,
+    IVPDocument,
+    MessageAPI
 } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { VCHelper } from 'vc-modules';
@@ -42,7 +42,7 @@ export const documentsAPI = async function (
                 return DidDocumentStatus.NEW;
         }
     }
-    
+
     const getVCOperation = function (operation: HcsVcOperation) {
         switch (operation) {
             case HcsVcOperation.ISSUE:
@@ -57,7 +57,7 @@ export const documentsAPI = async function (
                 return DocumentStatus.NEW;
         }
     }
-    
+
     /**
      * Return DID Documents by DID
      * 
@@ -221,8 +221,12 @@ export const documentsAPI = async function (
      * 
      * @returns {IVPDocument[]} - VP Documents
      */
-     channel.response(MessageAPI.FIND_VP_DOCUMENTS, async (msg, res) => {        
-            const reqObj: any = { where: {} };
+    channel.response(MessageAPI.FIND_VP_DOCUMENTS, async (msg, res) => {
+        try {
+            const pageSize = Number(msg.payload.pageSize);
+            const currentPage = Number(msg.payload.page) === 0 ? 1 : Number(msg.payload.page);
+            const skip = pageSize * (currentPage - 1);
+            const reqObj: any = { where: {}, take: pageSize, skip };
             if (msg.payload.type) {
                 reqObj.where['type'] = { $eq: msg.payload.type }
             }
@@ -240,8 +244,30 @@ export const documentsAPI = async function (
             }
             if (msg.payload.policyId) {
                 reqObj.where['policyId'] = { $eq: msg.payload.policyId }
-            } 
-            const documents: IVPDocument[] = await vpDocumentRepository.find(reqObj);
-            res.send(documents);      
+            }
+
+            if (msg.payload.period === '24h') {
+                const startDate = new Date();
+                startDate.setHours(startDate.getHours() - 24);
+                reqObj.where['createDate'] = { $gt: startDate }
+            }
+
+            const documents: [IVPDocument[], number] = await vpDocumentRepository.findAndCount(reqObj);
+            const lastPage = Math.ceil(documents[1] / pageSize);
+            const response  = {
+                perPage: pageSize,
+                totalRecords: documents[1],
+                lastPage,
+                currentPage,
+                hasNextPage: lastPage > currentPage,
+                hasPrevPage: currentPage > 1,
+                data: documents[0]
+            };
+            res.send(response);
+        } catch (error) {
+            console.error(error);
+            res.send({});
+        }
     });
 }
+

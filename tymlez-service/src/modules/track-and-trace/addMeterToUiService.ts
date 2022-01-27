@@ -17,10 +17,10 @@ export async function addMeterToUiService({
   installer: IUser;
 }): Promise<void> {
   const inverterSchema = policyPackage.schemas.find(
-    (schema) => schema.inputName === 'TymlezMeter',
+    (schema) => schema.inputName === 'TymlezDevice',
   );
 
-  assert(inverterSchema, `Cannot find TymlezMeter schema`);
+  assert(inverterSchema, `Cannot find TymlezDevice schema`);
 
   await axios.post(
     `${uiServiceBaseUrl}/policy/block/tag2/${policyId}/add_sensor_bnt`,

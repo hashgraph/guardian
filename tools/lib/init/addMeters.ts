@@ -16,7 +16,7 @@ export async function addMeters({
 
   await Promise.all(
     meterInfos
-      .filter((info) => info.meterType === 'consumption')
+      .filter((info) => info.deviceType === 'consumption')
       .map((meterInfo) =>
         limit(() =>
           addMeter({
@@ -51,7 +51,7 @@ async function addMeter({
     {
       username,
       policyTag,
-      meterId: meterInfo.meterId,
+      meterId: meterInfo.deviceId,
       meterInfo,
     },
     {
