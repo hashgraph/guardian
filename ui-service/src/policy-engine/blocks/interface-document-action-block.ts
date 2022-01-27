@@ -91,7 +91,7 @@ export class InterfaceDocumentActionBlock {
                 if (block.runAction) {
                     await block.runAction(state, owner);
                 } else {
-                    await StateContainer.SetBlockState(target.uuid, state, owner, null);
+                    // await StateContainer.SetBlockState(target.uuid, state, owner, null);
                 }
             } else {
                 return;
@@ -138,7 +138,7 @@ export class InterfaceDocumentActionBlock {
                 if (block.runAction) {
                     await block.runAction(state, owner);
                 } else {
-                    await StateContainer.SetBlockState(parent.uuid, state, owner, null);
+                    // await StateContainer.SetBlockState(parent.uuid, state, owner, null);
                 }
                 return;
             }

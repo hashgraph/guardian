@@ -1,7 +1,7 @@
 import { User } from '@entity/user';
 import { Guardians } from '@helpers/guardians';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
-import { BlockStateUpdate, DependenciesUpdateHandler } from '@policy-engine/helpers/decorators';
+import { BlockStateUpdate } from '@policy-engine/helpers/decorators';
 import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
 import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { SchemaStatus, UserRole } from 'interfaces';
@@ -45,10 +45,10 @@ export class InterfaceDocumentsSource {
     async update(state, user) {
     }
 
-    @DependenciesUpdateHandler()
-    async handler(uuid, state, user, tag) {
-        console.log(state, state.isActive);
-    }
+    // @DependenciesUpdateHandler()
+    // async handler(uuid, state, user, tag) {
+    //     console.log(state, state.isActive);
+    // }
 
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);

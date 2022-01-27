@@ -10,7 +10,7 @@ export function BlockStateUpdate() {
         const oldValue = descriptor.value;
         descriptor.value = async function (state: PolicyBlockStateData<any>, user: IAuthUser) {
             const stateFromHandler = await oldValue.call(this, state, user) || state;
-            await StateContainer.SetBlockState(this.uuid, stateFromHandler, user, this.tag);
+            // await StateContainer.SetBlockState(this.uuid, stateFromHandler, user, this.tag);
         };
     }
 }

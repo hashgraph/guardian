@@ -11,8 +11,7 @@ export class StateContainer {
     private static PolicyBlockMapObject: PolicyBlockMap = new Map();
     private static PolicyTagMapObject: Map<string, PolicyTagMap> = new Map();
     private static PolicyStateObject: Map<string, any> = new Map();
-    private static PolicyStateSubscriptions: Map<string, Function[]> = new Map();
-    // private static BlockConstructorsMap: {[key: string]: NewableFunction} = BlockConstructors;
+    private static BlockSubscriptions: Map<string, Function[]> = new Map();
 
     public static UpdateFn: Function;
 
@@ -30,6 +29,23 @@ export class StateContainer {
                 return StateContainer.PolicyTagMapObject.get(policyId);
             }
         }
+    }
+
+    /**
+     * Register dependency
+     * @param tag {string}
+     * @param fn {Function}
+     */
+    public static RegisterDependencyCallback(tag: string, fn: Function): void {
+        let subscriptionsArray: Function[];
+        if (!Array.isArray(this.BlockSubscriptions.get(tag))) {
+            subscriptionsArray = [];
+            this.BlockSubscriptions.set(tag, subscriptionsArray);
+        } else {
+            subscriptionsArray = this.BlockSubscriptions.get(tag);
+        }
+
+        subscriptionsArray.push(fn);
     }
 
     /**
@@ -66,6 +82,22 @@ export class StateContainer {
         }
         if (component.blockClassName === 'ExternalData') {
             StateContainer.ExternalDataBlocks.set(component.uuid, component);
+        }
+
+        const componentRef = component as any;
+        for (let dep of componentRef.dependencies) {
+            StateContainer.RegisterDependencyCallback(dep, (user) => {
+                console.log('Update block', component);
+                component.updateBlock({}, user, '');
+            })
+        }
+    }
+
+    public static CallDependencyCallbacks(tag: string, user: any): void {
+        if (StateContainer.BlockSubscriptions.has(tag)) {
+            for (let fn of StateContainer.BlockSubscriptions.get(tag)) {
+                fn(user);
+            }
         }
     }
 
@@ -125,21 +157,21 @@ export class StateContainer {
      * @param tag
      * @param noUpdate
      */
-    public static async SetBlockState(uuid: string, state: any, user: IAuthUser, tag: string, noUpdate?: boolean): Promise<void> {
-        let curState = StateContainer.PolicyStateObject.get(uuid) || {};
-        const block = StateContainer.GetBlockByUUID(uuid);
-
-        if (block.commonBlock) {
-            curState = state;
-        } else {
-            curState[user.username] = state;
-        }
-
-        if (!noUpdate) {
-            block.parent.updateBlock(state, user, tag);
-        }
-        this.PolicyStateObject.set(uuid, curState);
-    }
+    // public static async SetBlockState(uuid: string, state: any, user: IAuthUser, tag: string, noUpdate?: boolean): Promise<void> {
+    //     let curState = StateContainer.PolicyStateObject.get(uuid) || {};
+    //     const block = StateContainer.GetBlockByUUID(uuid);
+    //
+    //     if (block.commonBlock) {
+    //         curState = state;
+    //     } else {
+    //         curState[user.username] = state;
+    //     }
+    //
+    //     if (!noUpdate) {
+    //         block.parent.updateBlock(state, user, tag);
+    //     }
+    //     this.PolicyStateObject.set(uuid, curState);
+    // }
 
 
     /**
@@ -155,12 +187,6 @@ export class StateContainer {
             return state || {isActive: block.defaultActive};
         } else {
             return state && state[user.username] || {isActive: block.defaultActive};
-        }
-    }
-
-    public static InitStateSubscriptions(): void {
-        for (let b of StateContainer.PolicyBlockMapObject.values()) {
-            b.registerSubscriptions();
         }
     }
 }

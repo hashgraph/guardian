@@ -39,8 +39,6 @@ export interface IPolicyBlock {
 
     registerChild(child: IPolicyBlock): void;
 
-    registerSubscriptions(): void;
-
     destroy();
 
     validate(resultsContainer: PolicyValidationResultsContainer);

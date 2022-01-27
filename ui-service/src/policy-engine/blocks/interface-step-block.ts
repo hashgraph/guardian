@@ -1,4 +1,4 @@
-import {ContainerBlock, DependenciesUpdateHandler} from '@policy-engine/helpers/decorators';
+import {ContainerBlock} from '@policy-engine/helpers/decorators';
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
 import {BlockInitError} from '@policy-engine/errors';
 import {StateContainer} from '@policy-engine/state-container';
@@ -18,21 +18,21 @@ export class InterfaceStepBlock {
     //     }
     // }
 
-    @DependenciesUpdateHandler()
-    async handler(uuid, state, user, tag) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
-        const blockState = StateContainer.GetBlockState(ref.uuid, user);
-        blockState.index = (blockState.index || 0) + 1;
-        blockState.data = {};
-        if (
-            ref.options.cyclic &&
-            (blockState.index >= ref.children.length)
-        ) {
-            blockState.index = 0;
-        }
-        await StateContainer.SetBlockState(ref.uuid, blockState, user, null, true);
-
-    }
+    // @DependenciesUpdateHandler()
+    // async handler(uuid, state, user, tag) {
+    //     const ref = PolicyBlockHelpers.GetBlockRef(this);
+    //     const blockState = StateContainer.GetBlockState(ref.uuid, user);
+    //     blockState.index = (blockState.index || 0) + 1;
+    //     blockState.data = {};
+    //     if (
+    //         ref.options.cyclic &&
+    //         (blockState.index >= ref.children.length)
+    //     ) {
+    //         blockState.index = 0;
+    //     }
+    //     await StateContainer.SetBlockState(ref.uuid, blockState, user, null, true);
+    //
+    // }
 
     async getData(user): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);

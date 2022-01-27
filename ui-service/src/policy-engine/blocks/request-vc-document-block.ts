@@ -3,14 +3,12 @@ import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { BlockActionError, BlockInitError } from '@policy-engine/errors';
-import { BlockStateUpdate } from '@policy-engine/helpers/decorators';
+import { BlockActionError } from '@policy-engine/errors';
 import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
-import { PolicyBlockStateData } from '@policy-engine/interfaces';
 import { StateContainer } from '@policy-engine/state-container';
 import { Schema, SchemaStatus } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
-import { IAuthUser } from '../../auth/auth.interface';
+import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
@@ -64,10 +62,10 @@ export class RequestVcDocumentBlock {
         };
     }
 
-    @BlockStateUpdate()
-    async update(state: PolicyBlockStateData<any>, user: IAuthUser): Promise<any> {
-        return state;
-    }
+    // @BlockStateUpdate()
+    // async update(state: PolicyBlockStateData<any>, user: IAuthUser): Promise<any> {
+    //     return state;
+    // }
 
     async setData(user: IAuthUser, _data: any): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
@@ -103,7 +101,7 @@ export class RequestVcDocumentBlock {
         const state = StateContainer.GetBlockState((this as any).uuid, user);
         const newState = Object.assign(state, { data: item });
 
-        await this.update(newState, user);
+        // await this.update(newState, user);
 
         if(ref.options.stopPropagation) {
             return {};

@@ -70,6 +70,7 @@ export class SendToGuardianBlock {
         console.log("runAction 2");
         await this.documentSender(state, user);
         console.log("runAction 3");
+        ref.updateBlock(state, user, '');
         if (ref.options.stopPropagation) {
             return;
         }
@@ -80,7 +81,7 @@ export class SendToGuardianBlock {
                 const target = ref.parent;
                 const _state = StateContainer.GetBlockState(target.uuid, user);
                 _state.index = currentIndex + 1;
-                await StateContainer.SetBlockState(target.uuid, _state, user, null);
+                // await StateContainer.SetBlockState(target.uuid, _state, user, null);
             }
             if (nextBlock.runAction) {
                 await nextBlock.runAction(state, user);
@@ -92,7 +93,7 @@ export class SendToGuardianBlock {
             const target = ref.parent;
             const _state = StateContainer.GetBlockState(target.uuid, user);
             _state.index = 0;
-            await StateContainer.SetBlockState(target.uuid, _state, user, null);
+            // await StateContainer.SetBlockState(target.uuid, _state, user, null);
         }
     }
 

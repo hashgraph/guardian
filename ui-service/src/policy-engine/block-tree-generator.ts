@@ -53,17 +53,21 @@ export class BlockTreeGenerator {
      */
     stateChangeCb(uuid: string, state: any, user: IAuthUser) {
         this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
+            console.log(client, user);
             try {
+                const dbUser = await getMongoRepository(User).findOne({username: client.user.username});
                 const blockRef = StateContainer.GetBlockByUUID(uuid) as any;
+
                 const policy = await getMongoRepository(Policy).findOne(blockRef.policyId);
-                const role = policy.registeredUsers[user.did];
+                const role = policy.registeredUsers[dbUser.did];
+
 
                 if (blockRef.permissions.includes('NO_ROLE') && !role) {
                     client.send(uuid);
                     return;
                 }
 
-                if (blockRef.permissions.includes('OWNER') && (policy.owner === user.did)) {
+                if (blockRef.permissions.includes('OWNER') && (policy.owner === dbUser.did)) {
                     client.send(uuid);
                     return;
                 }
@@ -72,7 +76,7 @@ export class BlockTreeGenerator {
                     return
                 }
 
-                if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, role, user)) {
+                if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, role, dbUser)) {
                     client.send(uuid);
                 }
             } catch (e) {
@@ -167,8 +171,6 @@ export class BlockTreeGenerator {
         if (!skipRegistration) {
             this.models.set(policy.id.toString(), model as any);
         }
-
-        StateContainer.InitStateSubscriptions();
 
         return model as IPolicyInterfaceBlock;
     }
@@ -403,7 +405,7 @@ export class BlockTreeGenerator {
                     regenerateIds(model.config);
                     const guardians = new Guardians();
                     const root = await guardians.getRootConfig(user.did);
-		    
+
                     if (!model.topicId) {
                         const topicId = await HederaHelper
                             .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK

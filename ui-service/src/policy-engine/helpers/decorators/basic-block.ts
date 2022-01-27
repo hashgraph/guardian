@@ -100,17 +100,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.init();
             }
 
-            public registerSubscriptions(): void {
-                // if (this.dependencies.length === 0) {
-                //     return;
-                // }
-                //
-                // for (let dep of this.dependencies) {
-                //     const block = StateContainer.GetBlockByTag(dep);
-                //     StateContainer.RegisterStateSubscription(block.uuid, this.updateBlock.bind(this));
-                // }
-            }
-
             public setPolicyId(id): void {
                 this.policyId = id;
             }
@@ -142,10 +131,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async updateBlock(state, user, tag) {
                 // TransformState(this.options.stateMutation, state, tag, this.uuid);
                 //
-                if (Array.isArray(this.updateHandlers)) {
-                    for (let fn of this.updateHandlers) {
-                        await fn.call(this, this.uuid, state, user, tag);
-                    }
+                // if (Array.isArray(this.updateHandlers)) {
+                //     for (let fn of this.updateHandlers) {
+                //         await fn.call(this, this.uuid, state, user, tag);
+                //     }
+                // }
+
+                if (!!this.tag) {
+                    StateContainer.CallDependencyCallbacks(this.tag, user);
                 }
 
                 StateContainer.UpdateFn(this.uuid, state, user, tag);
