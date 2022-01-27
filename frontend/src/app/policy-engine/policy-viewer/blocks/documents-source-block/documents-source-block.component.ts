@@ -109,7 +109,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.children = data.children;
             this.fields = fields;
             this.documents = data.data || [];
-            this.isActive = data.isActive;
+            this.isActive = true;
             this.insert = data.insert;
             this.addons = data.blocks || [];
         } else {

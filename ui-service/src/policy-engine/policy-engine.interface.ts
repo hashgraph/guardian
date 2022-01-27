@@ -51,6 +51,9 @@ export interface IPolicyBlock {
 
     runTarget(user: IAuthUser, data: any, target: AnyBlockType)
 
+    isChildActive(child: AnyBlockType, user: IAuthUser): boolean;
+
+    isActive(user: IAuthUser): boolean;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {

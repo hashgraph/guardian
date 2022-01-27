@@ -123,7 +123,7 @@ export class RequestDocumentBlockComponent implements OnInit {
                 this.title = uiMetaData.title;
                 this.description = uiMetaData.description;
             }
-            this.isActive = data.isActive;
+            this.isActive = true;
         } else {
             this.ref = null;
             this.schema = null;

@@ -3,7 +3,7 @@ import {PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap} from '@policy-eng
 import {PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList} from '@policy-engine/interfaces/block-options';
 import {PolicyRole} from 'interfaces';
 
-import {IPolicyBlock, ISerializedBlock,} from '../../policy-engine.interface';
+import {AnyBlockType, IPolicyBlock, ISerializedBlock,} from '../../policy-engine.interface';
 import {PolicyComponentsStuff} from '../../policy-components-stuff';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 import {IAuthUser} from '../../../auth/auth.interface';
@@ -157,6 +157,20 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 PolicyComponentsStuff.UpdateFn(this.uuid, state, user, tag);
             }
 
+            public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
+                if (typeof super.isChildActive === 'function') {
+                    return super.isChildActive(child, user);
+                }
+                return true;
+            }
+
+            isActive(user: IAuthUser): boolean {
+                if (!this.parent) {
+                    return true;
+                }
+                return this.parent.isChildActive(this, user);
+            }
+
             private async saveState(): Promise<void> {
                 const stateFields = PolicyComponentsStuff.GetStateFields(this);
                 if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
@@ -251,10 +265,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 for (let child of (this as any).children) {
                     child.destroy();
                 }
-            }
-
-            public getBlockRef(): any {
-                return this;
             }
 
             private init() {

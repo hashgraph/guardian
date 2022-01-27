@@ -21,6 +21,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import * as Buffer from 'buffer';
 import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
+import {BlockPermissions} from '@policy-engine/helpers/middleware/block-permissions';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -58,21 +59,6 @@ export class BlockTreeGenerator {
 
                 const policy = await getMongoRepository(Policy).findOne(blockRef.policyId);
                 const role = policy.registeredUsers[dbUser.did];
-
-
-                if (blockRef.permissions.includes('NO_ROLE') && !role) {
-                    client.send(uuid);
-                    return;
-                }
-
-                if (blockRef.permissions.includes('OWNER') && (policy.owner === dbUser.did)) {
-                    client.send(uuid);
-                    return;
-                }
-
-                if (!role) {
-                    return
-                }
 
                 if (PolicyComponentsStuff.IfUUIDRegistered(uuid) && PolicyComponentsStuff.IfHasPermission(uuid, role, dbUser)) {
                     client.send(uuid);
@@ -478,15 +464,10 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.router.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+        const blockRouter = Router();
+        blockRouter.get('/', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if (!block) {
-                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
-                    res.status(err.errorObject.code).send(err.errorObject);
-                    return;
-                }
-                const data = await block.getData(req.user, req.params.uuid, req.query);
+                const data = await req['block'].getData(req.user, req['block'].uuid, req.query);
                 res.send(data);
             } catch (e) {
                 try {
@@ -497,16 +478,9 @@ export class BlockTreeGenerator {
                 }
             }
         });
-
-        this.router.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+        blockRouter.post('/', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if (!block) {
-                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
-                    res.status(err.errorObject.code).send(err.errorObject);
-                    return;
-                }
-                const data = await block.setData(req.user, req.body);
+                const data = await req['block'].setData(req.user, req.body);
                 res.status(200).send(data || {});
             } catch (e) {
                 try {
@@ -518,6 +492,7 @@ export class BlockTreeGenerator {
                 console.error(e);
             }
         });
+        this.router.use('/:policyId/blocks/:uuid', BlockPermissions, blockRouter);
 
         this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
             try {

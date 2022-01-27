@@ -1,6 +1,8 @@
 import {ContainerBlock, StateField} from '@policy-engine/helpers/decorators';
 import {BlockActionError} from '@policy-engine/errors';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {AnyBlockType, IPolicyContainerBlock} from '@policy-engine/policy-engine.interface';
+import {IAuthUser} from '@auth/auth.interface';
 
 /**
  * Step block
@@ -11,7 +13,7 @@ import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 })
 export class InterfaceStepBlock {
     @StateField()
-    state: {[key: string]: any} = {};
+    state: {[key: string]: any} = {index: 0};
 
     async changeStep(user, data, target) {
         const ref = PolicyComponentsStuff.GetBlockRef(this);
@@ -50,5 +52,21 @@ export class InterfaceStepBlock {
         }
         const {options} = ref;
         return {uiMetaData: options.uiMetaData, index: blockState.index};
+    }
+
+    public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyContainerBlock>(this);
+        const childIndex = ref.children.indexOf(child);
+        if (childIndex === -1) {
+            throw new BlockActionError('Bad block child', ref.blockType, ref.uuid);
+        }
+
+        let index = 0;
+        const state = this.state[user.did];
+        if (state) {
+            index = state.index;
+        }
+        return index === childIndex;
+
     }
 }

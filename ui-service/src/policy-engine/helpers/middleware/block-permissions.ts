@@ -3,6 +3,8 @@ import {Response} from 'express';
 import {PolicyComponentsStuff} from '../../policy-components-stuff';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
+import {PolicyOtherError} from '@policy-engine/errors';
+import {IPolicyInterfaceBlock} from '@policy-engine/policy-engine.interface';
 
 /**
  * Block permissions middleware
@@ -11,14 +13,26 @@ import {Policy} from '@entity/policy';
  * @param next
  */
 export async function BlockPermissions(req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
-    const block = PolicyComponentsStuff.GetBlockByUUID(req.params.uuid) as any;
-    const currentPolicy = await getMongoRepository(Policy).findOne(block.policyId);
-    const role = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[req.user.did] : null;
+    try {
+        const block = PolicyComponentsStuff.GetBlockByUUID(req.params.uuid) as any;
+        if (!block) {
+            const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+            res.status(err.errorObject.code).send(err.errorObject);
+            return;
+        }
 
-    if (PolicyComponentsStuff.IfUUIDRegistered(req.params.uuid) &&
-        PolicyComponentsStuff.IfHasPermission(req.params.uuid, role, req.user)) {
-        next();
-    } else {
-        res.sendStatus(404);
+        const currentPolicy = await getMongoRepository(Policy).findOne(block.policyId);
+        const role = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[req.user.did] : null;
+
+        if (PolicyComponentsStuff.IfHasPermission(req.params.uuid, role, req.user)) {
+            req['block'] = block;
+            next();
+        } else {
+            const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+            res.status(err.errorObject.code).send(err.errorObject);
+        }
+    } catch (e) {
+        const err = new PolicyOtherError(e.message, req.params.uuid, 404);
+        res.status(err.errorObject.code).send(err.errorObject);
     }
 }

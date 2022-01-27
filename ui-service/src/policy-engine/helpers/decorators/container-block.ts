@@ -49,36 +49,18 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                             content: child.blockType,
                             blockType: child.blockType,
                             id: child.uuid,
-                            isActive: true
                         };
 
-                        if (!child.defaultActive) {
+                        if (!child.isActive(user) || !child.defaultActive) {
                             return undefined;
                         }
 
-                        if (child.permissions.includes('ANY_ROLE')) {
+                        if (PolicyComponentsStuff.IfHasPermission(child.uuid, currentRole, dbUser)) {
                             return returnValue;
                         }
 
-                        if(currentRole) {
-                            if (PolicyComponentsStuff.IfHasPermission(child.uuid, currentRole, dbUser)) {
-                                return returnValue;
-                            }
-                        } else {
-                            if(currentPolicy.owner === dbUser.did) {
-                                if (child.permissions.includes('OWNER')) {
-                                    return returnValue;
-                                }
-                            } else {
-                                if (child.permissions.includes('NO_ROLE')) {
-                                    return returnValue;
-                                }
-                            }
-                        }
-
                         return undefined;
-                    }),
-                    isActive: true
+                    })
                 })
             }
         }

@@ -77,7 +77,7 @@ export class InformationBlockComponent implements OnInit {
             this.title = uiMetaData.title;
             this.description = uiMetaData.description;
 
-            this.isActive = data.isActive;
+            this.isActive = true;
         } else {
             this.content = null;
             this.isActive = false;

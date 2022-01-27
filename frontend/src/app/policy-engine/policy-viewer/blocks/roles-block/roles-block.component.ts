@@ -15,7 +15,7 @@ export class RolesBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    
+
     isActive = false;
     loading: boolean = true;
     socket: any;
@@ -27,8 +27,8 @@ export class RolesBlockComponent implements OnInit {
     roleForm: FormGroup;
 
     constructor(
-        private policyEngineService: PolicyEngineService,   
-        private policyHelper: PolicyHelper, 
+        private policyEngineService: PolicyEngineService,
+        private policyHelper: PolicyHelper,
         private fb: FormBuilder
         ) {
         this.roleForm = fb.group({
@@ -37,7 +37,7 @@ export class RolesBlockComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        if (!this.static) { 
+        if (!this.static) {
             this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
         }
         this.loadData();
@@ -83,7 +83,7 @@ export class RolesBlockComponent implements OnInit {
             this.title = uiMetaData.title;
             this.description = uiMetaData.description;
 
-            this.isActive = data.isActive;
+            this.isActive = true;
         } else {
             this.content = null;
             this.isActive = false;

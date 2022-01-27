@@ -90,10 +90,10 @@ export class ContainerBlockComponent implements OnInit {
     setData(data: any) {
         if (data) {
             const uiMetaData = data.uiMetaData || {};
-            this.isActive = data.isActive;
+            this.isActive = true;
             this.type = uiMetaData.type;
             this.blocks = data.blocks || [];
-            this.blocks = this.blocks.filter((b: any) => (b && b.isActive));
+            this.blocks = this.blocks.filter((b: any) => !!b);
 
             this.activeBlockId = this.policyHelper.getParams(this.id);
             this.selectedIndex = this.blocks.findIndex((b: any) => b.id == this.activeBlockId);

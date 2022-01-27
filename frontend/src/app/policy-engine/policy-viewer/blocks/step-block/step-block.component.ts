@@ -76,7 +76,7 @@ export class StepBlockComponent implements OnInit {
 
   setData(data: any) {
     if (data) {
-      this.isActive = data.isActive;
+      this.isActive = true;
       this.blocks = data.blocks || [];
       this.index = data.index;
     } else {
