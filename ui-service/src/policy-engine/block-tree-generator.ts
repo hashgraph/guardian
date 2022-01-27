@@ -81,7 +81,6 @@ export class BlockTreeGenerator {
             } catch (e) {
                 console.error('WS Error', e);
             }
-
         });
     }
 

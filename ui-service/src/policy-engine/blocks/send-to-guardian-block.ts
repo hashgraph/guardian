@@ -64,11 +64,11 @@ export class SendToGuardianBlock {
     }
 
     async runAction(state, user) {
-        console.log("--- send runAction");
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         await this.documentSender(state, user);
-        console.log("--- send runAction runNext");
         await ref.runNext(user, state);
+        console.log("runAction");
+        ref.updateBlock(state, user, '');
     }
 
     convertDocument(document: any, newType: string, ref: any) {
@@ -107,10 +107,8 @@ export class SendToGuardianBlock {
             .setOperator(userID, userKey)
             .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
         const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
-        console.log("vcTopic", addressBook.vcTopic, vc.toCredentialHash());
         const result = await hederaHelper.DID.createVcTransaction(vc, userKey);
         document.hederaStatus = result.getOperation();
-        console.log("status", document.hederaStatus, result.getCredentialHash());
         return document;
     }
 
