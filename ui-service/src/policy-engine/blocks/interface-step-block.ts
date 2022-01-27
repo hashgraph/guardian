@@ -1,8 +1,6 @@
 import {ContainerBlock, StateField} from '@policy-engine/helpers/decorators';
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {BlockActionError, BlockInitError} from '@policy-engine/errors';
-import {StateContainer} from '@policy-engine/state-container';
-import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
+import {BlockActionError} from '@policy-engine/errors';
 
 /**
  * Step block
@@ -12,16 +10,17 @@ import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
     commonBlock: false
 })
 export class InterfaceStepBlock {
-    state: Map<string, any> = new Map();
+    @StateField()
+    state: {[key: string]: any} = {};
 
     async changeStep(user, data, target) {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         let blockState;
-        if (!this.state.has(user.did)) {
+        if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
-            this.state.set(user.did, blockState);
+            this.state[user.did] = blockState;
         } else {
-            blockState = this.state.get(user.did);
+            blockState = this.state[user.did];
         }
 
         if (target) {
@@ -40,11 +39,11 @@ export class InterfaceStepBlock {
     async getData(user): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         let blockState;
-        if (!this.state.has(user.did)) {
+        if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
-            this.state.set(user.did, blockState);
+            this.state[user.did] = blockState;
         } else {
-            blockState = this.state.get(user.did);
+            blockState = this.state[user.did];
         }
         if (blockState.index === undefined) {
             blockState.index = 0;

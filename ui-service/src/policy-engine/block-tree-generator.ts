@@ -149,7 +149,7 @@ export class BlockTreeGenerator {
 
         const configObject = policy.config as ISerializedBlock;
 
-        function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): IPolicyBlock {
+        async function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): Promise<IPolicyBlock> {
             const { blockType, children, ...params }: ISerializedBlockExtend = block;
             if (parent) {
                 params._parent = parent;
@@ -159,13 +159,14 @@ export class BlockTreeGenerator {
             blockInstance.setPolicyOwner(policy.owner);
             if (children && children.length) {
                 for (let child of children) {
-                    BuildInstances(child, blockInstance);
+                    await BuildInstances(child, blockInstance);
                 }
             }
+            await blockInstance.restoreState();
             return blockInstance;
         }
 
-        const model = BuildInstances(configObject);
+        const model = await BuildInstances(configObject);
         if (!skipRegistration) {
             this.models.set(policy.id.toString(), model as any);
         }

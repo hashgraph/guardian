@@ -5,6 +5,7 @@ import {GenerateUUIDv4} from './helpers/uuidv4';
 import {IPolicyBlock, IPolicyInterfaceBlock} from './policy-engine.interface';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
+import {STATE_KEY} from '@policy-engine/helpers/constants';
 
 export class StateContainer {
     private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
@@ -155,5 +156,9 @@ export class StateContainer {
      */
     public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
         return StateContainer.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag));
+    }
+
+    public static GetStateFields(target): Object {
+        return target[STATE_KEY];
     }
 }

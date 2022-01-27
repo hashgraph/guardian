@@ -7,6 +7,8 @@ import {IPolicyBlock, ISerializedBlock,} from '../../policy-engine.interface';
 import {StateContainer} from '../../state-container';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 import {IAuthUser} from '../../../auth/auth.interface';
+import {getMongoRepository} from 'typeorm';
+import {BlockState} from '@entity/block-state';
 
 /**
  * Basic block decorator
@@ -151,12 +153,50 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public async updateBlock(state, user, tag) {
                 console.log("updateBlock");
-                
+
                 if (!!this.tag) {
                     StateContainer.CallDependencyCallbacks(this.tag, this.policyId, user);
                 }
-
+                await this.saveState();
                 StateContainer.UpdateFn(this.uuid, state, user, tag);
+            }
+
+            private async saveState(): Promise<void> {
+                const stateFields = StateContainer.GetStateFields(this);
+                if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
+                    const repo = getMongoRepository(BlockState);
+                    let stateEntity = await repo.findOne({
+                        policyId: this.policyId,
+                        blockId: this.uuid
+                    });
+                    if (!stateEntity) {
+                        stateEntity = repo.create({
+                            policyId: this.policyId,
+                            blockId: this.uuid,
+                        })
+                    }
+
+                    stateEntity.blockState = JSON.stringify(stateFields);
+
+                    const result = await repo.save(stateEntity)
+                    console.log(result);
+
+                }
+            }
+
+            public async restoreState(): Promise<void> {
+                const stateEntity = await getMongoRepository(BlockState).findOne({
+                    policyId: this.policyId,
+                    blockId: this.uuid
+                });
+
+                if (!stateEntity) {
+                    return;
+                }
+
+                for (let [key, value] of Object.entries(JSON.parse(stateEntity.blockState))) {
+                    this[key] = value;
+                }
             }
 
             public registerChild(child: IPolicyBlock): void {
