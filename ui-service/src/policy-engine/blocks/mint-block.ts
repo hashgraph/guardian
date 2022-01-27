@@ -8,7 +8,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature } from 'interfaces';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -173,6 +173,8 @@ export class MintBlock {
         let status = false;
         status = await this.saveVC(mintVC, user.did, ref);
         status = await this.saveVP(vp, user.did, DataTypes.MINT, ref);
+
+        return vp;
     }
 
     async runAction(state, user) {
@@ -215,16 +217,15 @@ export class MintBlock {
         }
 
         try {
-            await this.mintProcessing(token, vcs, rule, root, curUser, ref);
+            const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
+            ref.runNext(null, { data: doc }).then(
+                function () { },
+                function (error: any) { console.error(error); }
+            );
         } catch (e) {
             throw e;
         }
-
-        if(curUser) {
-            await ref.parent.changeStep(curUser, ref);
-        }
     }
-
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);

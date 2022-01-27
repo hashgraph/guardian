@@ -21,6 +21,8 @@ export class InterfaceStepBlock {
     // }
 
     async changeStep(user, data, target) {
+        console.log("--- changeStep StepBlock");
+
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         let blockState;
         if (!this.state.has(user.did)) {
@@ -30,9 +32,10 @@ export class InterfaceStepBlock {
             blockState = this.state.get(user.did);
         }
 
+        console.log("--- changeStep StepBlock pre index", blockState.index);
+
         if (target) {
             blockState.index = ref.children.indexOf(target);
-
             if (blockState.index === -1) {
                 throw new BlockActionError('Bad child block', ref.blockType, ref.uuid);
             }
@@ -41,8 +44,9 @@ export class InterfaceStepBlock {
             blockState.data = {};
         }
 
-        ref.updateBlock(blockState, user);
+        console.log("--- changeStep StepBlock post index", blockState.index);
 
+        ref.updateBlock(blockState, user);
     }
 
     async getData(user): Promise<any> {

@@ -1,14 +1,14 @@
-import {BasicBlock} from '@policy-engine/helpers/decorators';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {HcsVcDocument, VcSubject} from 'vc-modules';
-import {Guardians} from '@helpers/guardians';
-import {Inject} from '@helpers/decorators/inject';
-import {Users} from '@helpers/users';
+import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
+import { HcsVcDocument, VcSubject } from 'vc-modules';
+import { Guardians } from '@helpers/guardians';
+import { Inject } from '@helpers/decorators/inject';
+import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
-import {BlockActionError} from '@policy-engine/errors';
-import {getMongoRepository} from 'typeorm';
-import {AggregateVC} from '@entity/aggregateDocuments';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { BlockActionError } from '@policy-engine/errors';
+import { getMongoRepository } from 'typeorm';
+import { AggregateVC } from '@entity/aggregateDocuments';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -52,19 +52,20 @@ export class AggregateBlock {
         return amount;
     }
 
-    async runAction(state, user) {
+    async runAction(data: any, user: any) {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const {
             tokenId,
             rule,
             threshold
         } = ref.options;
-        const token = (await this.guardians.getTokens({tokenId}))[0];
+
+        const token = (await this.guardians.getTokens({ tokenId }))[0];
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
         this.rule = rule;
-        const doc = state.data;
+        const doc = data.data;
         const vc = HcsVcDocument.fromJsonTree(doc.document, null, VcSubject);
         const repository = getMongoRepository(AggregateVC)
         const newVC = repository.create({
@@ -81,15 +82,7 @@ export class AggregateBlock {
 
         if (amount >= threshold) {
             await repository.remove(rawEntities);
-
-            if(user) {
-                await ref.parent.changeStep(user, ref);
-            }
-
-            const currentIndex = ref.parent.children.findIndex(el => this === el);
-            if (ref.parent.children[currentIndex + 1] && ref.parent.children[currentIndex + 1].runAction) {
-                await ref.parent.children[currentIndex + 1].runAction({data: rawEntities}, null);
-            }
+            await ref.runNext(null, { data: rawEntities });
         }
     }
 

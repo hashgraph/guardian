@@ -21,10 +21,11 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
             async changeStep(user, data, target) {
                 if (typeof super.changeStep === 'function') {
+                    const result = super.changeStep(user, data, target);
                     if (target) {
                         await target.runAction(data, user)
                     }
-                    return super.changeStep(user, data, target);
+                    return result;
                 }
             }
 

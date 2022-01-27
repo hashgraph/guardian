@@ -157,6 +157,8 @@ export class RetirementBlock {
         let status = false;
         status = await this.saveVC(wipeVC, user.did, ref);
         status = await this.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
+
+        return vp;
     }
 
     async runAction(state, user) {
@@ -198,13 +200,13 @@ export class RetirementBlock {
         }
 
         try {
-            await this.retirementProcessing(token, vcs, rule, root, curUser, ref);
+            const doc = await this.retirementProcessing(token, vcs, rule, root, curUser, ref);
+            ref.runNext(null, { data: doc }).then(
+                function () { },
+                function (error: any) { console.error(error); }
+            );
         } catch (e) {
             throw e;
-        }
-
-        if(curUser) {
-            await ref.parent.changeStep(curUser, ref);
         }
     }
 

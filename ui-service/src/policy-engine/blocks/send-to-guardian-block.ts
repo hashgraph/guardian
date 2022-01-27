@@ -36,12 +36,11 @@ export class SendToGuardianBlock {
             document.id = undefined;
             state.data = document;
         }
-        console.log("documentSender 1", ref.options, document);
-        let result;
+
+        let result:any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const doc = this.convertDocument(document, 'vc-documents', ref)
-                console.log("documentSender 2", doc);
                 result = await this.guardians.setVcDocument(doc);
                 break;
             }
@@ -65,35 +64,11 @@ export class SendToGuardianBlock {
     }
 
     async runAction(state, user) {
-        console.log("runAction");
+        console.log("--- send runAction");
         const ref = PolicyBlockHelpers.GetBlockRef(this);
-        console.log("runAction 2");
         await this.documentSender(state, user);
-        console.log("runAction 3");
-        ref.updateBlock(state, user, '');
-        if (ref.options.stopPropagation) {
-            return;
-        }
-
-        if(user) {
-            await ref.parent.changeStep(user, ref);
-        }
-
-        const currentIndex = ref.parent.children.findIndex(el => this === el);
-        const nextBlock = ref.parent.children[currentIndex + 1];
-        if (nextBlock) {
-            if (nextBlock.runAction) {
-                await nextBlock.runAction(state, user);
-            } else {
-
-            }
-        } else {
-            console.log("last block")
-            const target = ref.parent;
-            const _state = StateContainer.GetBlockState(target.uuid, user);
-            _state.index = 0;
-            // await StateContainer.SetBlockState(target.uuid, _state, user, null);
-        }
+        console.log("--- send runAction runNext");
+        await ref.runNext(user, state);
     }
 
     convertDocument(document: any, newType: string, ref: any) {
