@@ -87,13 +87,14 @@ export class StateContainer {
         const componentRef = component as any;
         for (let dep of componentRef.dependencies) {
             StateContainer.RegisterDependencyCallback(dep, (user) => {
-                console.log('Update block', component);
+                console.log('Update block:', component.uuid);
                 component.updateBlock({}, user, '');
             })
         }
     }
 
     public static CallDependencyCallbacks(tag: string, user: any): void {
+        console.log("CallDependencyCallbacks", tag);
         if (StateContainer.BlockSubscriptions.has(tag)) {
             for (let fn of StateContainer.BlockSubscriptions.get(tag)) {
                 fn(user);

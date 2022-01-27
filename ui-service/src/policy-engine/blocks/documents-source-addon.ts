@@ -74,8 +74,6 @@ export class DocumentsSourceAddon {
 
         Object.assign(filters, dynFilters);
 
-        console.log(filters);
-
         let data: any[];
         switch (ref.options.dataType) {
             case 'vc-documents':

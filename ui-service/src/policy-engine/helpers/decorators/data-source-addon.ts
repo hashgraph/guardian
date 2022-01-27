@@ -29,7 +29,6 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             protected setFilters(filters): void {
-                console.log('setFilters', filters)
                 this.filters = filters
             }
 

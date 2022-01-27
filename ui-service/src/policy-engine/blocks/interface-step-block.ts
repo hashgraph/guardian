@@ -21,8 +21,6 @@ export class InterfaceStepBlock {
     // }
 
     async changeStep(user, data, target) {
-        console.log("--- changeStep StepBlock");
-
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         let blockState;
         if (!this.state.has(user.did)) {
@@ -31,8 +29,6 @@ export class InterfaceStepBlock {
         } else {
             blockState = this.state.get(user.did);
         }
-
-        console.log("--- changeStep StepBlock pre index", blockState.index);
 
         if (target) {
             blockState.index = ref.children.indexOf(target);
@@ -43,8 +39,6 @@ export class InterfaceStepBlock {
             blockState.index = ref.options.cyclic ? 0 : ref.children.length - 1;
             blockState.data = {};
         }
-
-        console.log("--- changeStep StepBlock post index", blockState.index);
 
         ref.updateBlock(blockState, user);
     }
