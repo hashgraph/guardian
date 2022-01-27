@@ -100,6 +100,13 @@
                 <input [(ngModel)]="field.uiClass" [readonly]="readonly">
             </td>
         </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">width</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.width" [readonly]="readonly">
+            </td>
+        </tr>
         <ng-container *ngIf="field.type=='button'">
             <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                 <td class="propRowCol"></td>

@@ -26,6 +26,15 @@
     width: 100%;
 }
 
+.table-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    top: 77px;
+    overflow: auto;
+}
+
 .btn-approve {
     background: #4caf50;
     border-radius: 6px;
