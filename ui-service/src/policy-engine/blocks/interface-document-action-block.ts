@@ -11,6 +11,7 @@ import { User } from '@entity/user';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import {Schema, SchemaStatus} from 'interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
+import {IPolicyAddonBlock, IPolicyInterfaceBlock} from '@policy-engine/policy-engine.interface';
 
 /**
  * Document action clock with UI
@@ -30,12 +31,12 @@ export class InterfaceDocumentActionBlock {
     @Inject()
     private wallet: Wallet;
 
-    private async getSources(...args): Promise<any[]> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+    private async getSources(user): Promise<any[]> {
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyInterfaceBlock>(this);
         let data = [];
         for (let child of ref.children) {
             if (child.blockClassName === 'SourceAddon') {
-                data = data.concat(await child.getFromSource(...args))
+                data = data.concat(await PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(child).getFromSource(user))
             }
         }
         return data;
@@ -72,7 +73,7 @@ export class InterfaceDocumentActionBlock {
     }
 
     async setData(user: IAuthUser, document: any): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         let state: any = { data: document };
 

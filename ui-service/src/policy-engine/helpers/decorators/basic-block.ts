@@ -24,8 +24,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 public defaultActive: boolean,
                 protected readonly permissions: PolicyRole[],
                 protected readonly dependencies: PolicyBlockDependencies,
-                private readonly blockMap: PolicyBlockMap,
-                private readonly tagMap: PolicyTagMap,
                 private readonly _uuid: string,
                 private readonly _parent: IPolicyBlock,
                 private readonly _options: any
@@ -57,7 +55,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
         }
 
         const o: PolicyBlockFullArgumentList = <PolicyBlockFullArgumentList>Object.assign(
-            PolicyComponentsStuff.BlockComponentStuff(null),
             options,
             PolicyBlockDefaultOptions(),
             {
@@ -69,6 +66,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
         return class extends basicClass {
             static blockType = o.blockType;
+
+            public policyId: string;
+            public policyOwner: string;
 
             public readonly blockClassName = 'BasicBlock';
 
@@ -88,8 +88,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     defaultActive || o.defaultActive,
                     permissions || o.permissions,
                     dependencies || o.dependencies,
-                    o.blockMap,
-                    o.tagMap,
                     _uuid,
                     _parent || o._parent,
                     _options

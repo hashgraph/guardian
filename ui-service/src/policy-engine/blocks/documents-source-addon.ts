@@ -9,6 +9,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
 
 @SourceAddon({
     blockType: 'documentsSourceAddon'
@@ -21,7 +22,7 @@ export class DocumentsSourceAddon {
     private users: Users;
 
     async getFromSource(user: IAuthUser) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
         const userFull = await this.users.getUser(user.username);
 
         let filters: any = {};

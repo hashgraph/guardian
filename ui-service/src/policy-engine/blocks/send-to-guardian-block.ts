@@ -8,6 +8,7 @@ import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
 
 @BasicBlock({
     blockType: 'sendToGuardian',
@@ -63,7 +64,7 @@ export class SendToGuardianBlock {
     }
 
     async runAction(state, user) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyBlock>(this);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
         console.log("runAction");

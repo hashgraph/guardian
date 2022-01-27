@@ -6,6 +6,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {IPolicyContainerBlock, IPolicySourceBlock} from '@policy-engine/policy-engine.interface';
 
 /**
  * Document source block with UI
@@ -26,7 +27,7 @@ export class InterfaceDocumentsSource {
     }
 
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicySourceBlock>(this);
         const userFull = await this.users.getUser(user.username);
 
         const blocks = ref.getFiltersAddons().map(addon => {

@@ -7,6 +7,7 @@ import { Users } from '@helpers/users';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
 
 @DataSourceAddon({
     blockType: 'filtersAddon'
@@ -22,7 +23,7 @@ export class FiltersAddonBlock {
     private guardians: Guardians;
 
     private init(): void {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
         if (!ref.options.canBeEmpty) {
             ref.filters = {};
             this.lastData = null;
@@ -38,7 +39,7 @@ export class FiltersAddonBlock {
     }
 
     async getData(user: IAuthUser) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
         const userFull = await this.users.getUser(user.username);
 
         let block: any = {
@@ -68,7 +69,7 @@ export class FiltersAddonBlock {
     }
 
     async setData(user: IAuthUser, data: any) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)

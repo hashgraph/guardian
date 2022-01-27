@@ -5,9 +5,9 @@ import {
     PolicyTagMap
 } from '@policy-engine/interfaces';
 import {PolicyRole, UserRole} from 'interfaces';
-import {IAuthUser} from '../auth/auth.interface';
+import {IAuthUser} from '@auth/auth.interface';
 import {GenerateUUIDv4} from './helpers/uuidv4';
-import {IPolicyBlock, IPolicyInterfaceBlock} from './policy-engine.interface';
+import {AnyBlockType, IPolicyBlock, IPolicyInterfaceBlock} from './policy-engine.interface';
 import {getMongoRepository} from 'typeorm';
 import {Policy} from '@entity/policy';
 import {STATE_KEY} from '@policy-engine/helpers/constants';
@@ -21,22 +21,6 @@ export class PolicyComponentsStuff {
     private static BlockSubscriptions: Map<string, Map<string, Function[]>> = new Map();
 
     public static UpdateFn: Function;
-
-    /**
-     * Method for inject maps into block instance
-     * @param policyId
-     * @constructor
-     */
-    public static BlockComponentStuff(policyId: string) {
-        return {
-            get blockMap(): PolicyBlockMap {
-                return PolicyComponentsStuff.PolicyBlockMapObject;
-            },
-            get tagMap(): PolicyTagMap {
-                return PolicyComponentsStuff.PolicyTagMapObject.get(policyId);
-            }
-        }
-    }
 
     /**
      * Register dependency
@@ -108,6 +92,12 @@ export class PolicyComponentsStuff {
         }
     }
 
+    /**
+     * Call callbacks of all dependency blocks
+     * @param tag
+     * @param policyId
+     * @param user
+     */
     public static CallDependencyCallbacks(tag: string, policyId: string, user: any): void {
         if (PolicyComponentsStuff.BlockSubscriptions.has(policyId) && PolicyComponentsStuff.BlockSubscriptions.get(policyId).has(tag)) {
             for (let fn of PolicyComponentsStuff.BlockSubscriptions.get(policyId).get(tag)) {
@@ -205,8 +195,8 @@ export class PolicyComponentsStuff {
      * Return block instance reference
      * @param obj
      */
-    public static GetBlockRef(obj: any): any {
-        return obj as any;
+    public static GetBlockRef<T extends AnyBlockType>(obj: any): T {
+        return obj as T;
     }
 
     /**
