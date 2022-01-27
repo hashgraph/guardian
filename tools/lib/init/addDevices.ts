@@ -1,7 +1,7 @@
 import axios from 'axios';
 import pLimit from 'p-limit';
-import { InstallerUserName } from '../../../tymlez-service/src/modules/user';
-import { IDeviceInfo } from '../getBuildTimeConfig';
+import type { InstallerUserName } from '../../../tymlez-service/src/modules/user';
+import type { IDeviceInfo } from '../getBuildTimeConfig';
 
 export async function addDevices({
   GUARDIAN_TYMLEZ_API_KEY,
@@ -24,6 +24,38 @@ export async function addDevices({
             GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
             username: 'Installer',
             policyTag: 'TymlezCET',
+            deviceInfo,
+          }),
+        ),
+      ),
+  );
+
+  await Promise.all(
+    deviceInfos
+      .filter((deviceInfo) => deviceInfo.deviceType === 'generation')
+      .map((deviceInfo) =>
+        limit(() =>
+          addDevice({
+            GUARDIAN_TYMLEZ_API_KEY,
+            GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+            username: 'Installer',
+            policyTag: 'TymlezCRU',
+            deviceInfo,
+          }),
+        ),
+      ),
+  );
+
+  await Promise.all(
+    deviceInfos
+      .filter((deviceInfo) => deviceInfo.deviceType === 'generation-forecast')
+      .map((deviceInfo) =>
+        limit(() =>
+          addDevice({
+            GUARDIAN_TYMLEZ_API_KEY,
+            GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+            username: 'Installer',
+            policyTag: 'TymlezCRUF',
             deviceInfo,
           }),
         ),

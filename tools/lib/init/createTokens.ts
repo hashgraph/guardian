@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ITokenResponse } from './ITokenResponse';
+import type { ITokenResponse } from './ITokenResponse';
 
 export async function createTokens({
   GUARDIAN_TYMLEZ_API_KEY,
@@ -81,6 +81,18 @@ const INIT_TOKENS: ITokenRequest[] = [
   {
     tokenName: 'Tymlez CRU',
     tokenSymbol: 'TYM_CRU',
+    tokenType: 'non-fungible',
+    decimals: '0',
+    initialSupply: '0',
+    enableAdmin: true,
+    changeSupply: true,
+    enableFreeze: true,
+    enableKYC: true,
+    enableWipe: true,
+  },
+  {
+    tokenName: 'Tymlez CRU Forecast',
+    tokenSymbol: 'TYM_CRUF',
     tokenType: 'non-fungible',
     decimals: '0',
     initialSupply: '0',

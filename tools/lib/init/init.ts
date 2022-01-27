@@ -30,7 +30,7 @@ export async function init() {
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
   });
 
-  await createPolicyPackages({
+  const policyPackages = await createPolicyPackages({
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     tokens,
@@ -49,6 +49,7 @@ export async function init() {
   });
 
   await registerNewInstallers({
+    policyPackages,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     GUARDIAN_TYMLEZ_API_KEY,
   });

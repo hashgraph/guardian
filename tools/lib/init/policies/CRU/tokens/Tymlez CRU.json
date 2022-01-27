@@ -1,0 +1,6 @@
+{
+  "tokenId": "<%= CRU_TOKEN_ID %>",
+  "tokenName": "Tymlez CRU",
+  "tokenSymbol": "TYM_CRU",
+  "selected": true
+}

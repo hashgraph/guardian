@@ -29,6 +29,7 @@
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
     "removeComments": false,
+    "importsNotUsedAsValues": "error",
     // skipDefaultLibCheck and skipLibCheck greatly improved performance and
     // avoid type conflict between libraries
     "skipDefaultLibCheck": true,

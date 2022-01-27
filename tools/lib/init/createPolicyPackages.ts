@@ -2,12 +2,12 @@ import assert from 'assert';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import { ITokenResponse } from './ITokenResponse';
+import type { ITokenResponse } from './ITokenResponse';
 import { promisify } from 'util';
 import glob from 'glob';
 import { template } from 'lodash';
 import pLimit from 'p-limit';
-import { IPolicy } from './IPolicy';
+import type { IPolicy } from './IPolicy';
 import type { IPolicyPackage } from '../../../tymlez-service/src/entity/policy-package';
 import { getPolicyFolders } from './getPolicyFolders';
 
@@ -27,6 +27,7 @@ export async function createPolicyPackages({
   const templateData = {
     CET_TOKEN_ID: findToken(tokens, 'TYM_CET').tokenId,
     CRU_TOKEN_ID: findToken(tokens, 'TYM_CRU').tokenId,
+    CRUF_TOKEN_ID: findToken(tokens, 'TYM_CRUF').tokenId,
   };
 
   const policyFolders = await getPolicyFolders();

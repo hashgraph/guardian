@@ -1,0 +1,76 @@
+{
+  "name": "TymlezInstaller",
+  "uuid": "91bf250b-d809-40b2-b492-97240a746bbb",
+  "entity": "INSTALLER",
+  "document": {
+    "$id": "#91bf250b-d809-40b2-b492-97240a746bbb",
+    "$comment": "{\"term\": \"91bf250b-d809-40b2-b492-97240a746bbb\", \"@id\": \"https://localhost/schema#91bf250b-d809-40b2-b492-97240a746bbb\"}",
+    "title": "TymlezInstaller",
+    "description": "",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "installerName": {
+        "title": "Installer Name",
+        "description": "Installer Name",
+        "readOnly": false,
+        "$comment": "{\"term\": \"installerName\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "installerLicense": {
+        "title": "Installer License",
+        "description": "Installer License",
+        "readOnly": false,
+        "$comment": "{\"term\": \"installerLicense\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "policyId": {
+        "title": "policyId",
+        "description": "policyId",
+        "readOnly": true,
+        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "installerName",
+      "installerLicense",
+      "policyId"
+    ],
+    "additionalProperties": false
+  },
+  "relationships": []
+}

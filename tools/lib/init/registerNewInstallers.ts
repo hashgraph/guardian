@@ -1,23 +1,30 @@
 import axios from 'axios';
-import { UserName } from '../../../tymlez-service/src/modules/user';
+import type { IPolicyPackage } from '../../../tymlez-service/src/entity/policy-package';
+import type { UserName } from '../../../tymlez-service/src/modules/user';
 
 export async function registerNewInstallers({
+  policyPackages,
   GUARDIAN_TYMLEZ_API_KEY,
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
 }: {
+  policyPackages: IPolicyPackage[];
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
   GUARDIAN_TYMLEZ_API_KEY: string;
 }) {
-  await registerNewInstaller({
-    GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-    GUARDIAN_TYMLEZ_API_KEY,
-    username: 'Installer',
-    policyTag: 'TymlezCET',
-    installerInfo: {
-      installerName: 'Installer 1',
-      installerLicense: 'License 1',
-    },
-  });
+  await Promise.all(
+    policyPackages.map(async (policyPackage) => {
+      await registerNewInstaller({
+        GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+        GUARDIAN_TYMLEZ_API_KEY,
+        username: 'Installer',
+        policyTag: policyPackage.policy.inputPolicyTag,
+        installerInfo: {
+          installerName: 'Installer 1',
+          installerLicense: 'License 1',
+        },
+      });
+    }),
+  );
 }
 
 async function registerNewInstaller({

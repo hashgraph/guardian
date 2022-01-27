@@ -69,11 +69,18 @@ export const getBuildTimeConfig = async ({
   };
 };
 
+// Refer to https://github.com/Tymlez/tymlez-platform/blob/main/services/cohort-middleware/tools/lib/deploy/bootstrap.js
 const COHORT_DEVICE_INFOS: IDeviceInfo[] = [
   {
     deviceId: 'DD54108399431',
     deviceLabel: 'Main',
     deviceType: 'consumption',
+    siteName: 'main',
+  },
+  {
+    deviceId: '6587-6532-5132-b217',
+    deviceLabel: 'Solcast 1',
+    deviceType: 'generation-forecast',
     siteName: 'main',
   },
 ];
