@@ -153,7 +153,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public async updateBlock(state, user, tag) {
                 if (!!this.tag) {
-                    StateContainer.CallDependencyCallbacks(this.tag, user);
+                    StateContainer.CallDependencyCallbacks(this.tag, this.policyId, user);
                 }
 
                 StateContainer.UpdateFn(this.uuid, state, user, tag);

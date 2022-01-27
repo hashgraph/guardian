@@ -10,8 +10,7 @@ export class StateContainer {
     private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
     private static PolicyBlockMapObject: PolicyBlockMap = new Map();
     private static PolicyTagMapObject: Map<string, PolicyTagMap> = new Map();
-    private static PolicyStateObject: Map<string, any> = new Map();
-    private static BlockSubscriptions: Map<string, Function[]> = new Map();
+    private static BlockSubscriptions: Map<string, Map<string, Function[]>> = new Map();
 
     public static UpdateFn: Function;
 
@@ -36,13 +35,22 @@ export class StateContainer {
      * @param tag {string}
      * @param fn {Function}
      */
-    public static RegisterDependencyCallback(tag: string, fn: Function): void {
-        let subscriptionsArray: Function[];
-        if (!Array.isArray(this.BlockSubscriptions.get(tag))) {
-            subscriptionsArray = [];
-            this.BlockSubscriptions.set(tag, subscriptionsArray);
+    public static RegisterDependencyCallback(tag: string, policyId: string, fn: Function): void {
+        let policyTagsMap: Map<string, Function[]>;
+
+        if (!StateContainer.BlockSubscriptions.has(policyId)) {
+            policyTagsMap = new Map();
+            StateContainer.BlockSubscriptions.set(policyId, policyTagsMap);
         } else {
-            subscriptionsArray = this.BlockSubscriptions.get(tag);
+            policyTagsMap = StateContainer.BlockSubscriptions.get(policyId);
+        }
+
+        let subscriptionsArray: Function[];
+        if (!Array.isArray(policyTagsMap.get(tag))) {
+            subscriptionsArray = [];
+            policyTagsMap.set(tag, subscriptionsArray);
+        } else {
+            subscriptionsArray = policyTagsMap.get(tag);
         }
 
         subscriptionsArray.push(fn);
@@ -86,16 +94,16 @@ export class StateContainer {
 
         const componentRef = component as any;
         for (let dep of componentRef.dependencies) {
-            StateContainer.RegisterDependencyCallback(dep, (user) => {
+            StateContainer.RegisterDependencyCallback(dep, policyId,(user) => {
                 console.log('Update block', component);
                 component.updateBlock({}, user, '');
             })
         }
     }
 
-    public static CallDependencyCallbacks(tag: string, user: any): void {
-        if (StateContainer.BlockSubscriptions.has(tag)) {
-            for (let fn of StateContainer.BlockSubscriptions.get(tag)) {
+    public static CallDependencyCallbacks(tag: string, policyId: string, user: any): void {
+        if (StateContainer.BlockSubscriptions.has(policyId) && StateContainer.BlockSubscriptions.get(policyId).has(tag)) {
+            for (let fn of StateContainer.BlockSubscriptions.get(policyId).get(tag)) {
                 fn(user);
             }
         }
@@ -147,46 +155,5 @@ export class StateContainer {
      */
     public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
         return StateContainer.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag));
-    }
-
-    /**
-     * Set new state for block
-     * @param uuid
-     * @param state
-     * @param user
-     * @param tag
-     * @param noUpdate
-     */
-    // public static async SetBlockState(uuid: string, state: any, user: IAuthUser, tag: string, noUpdate?: boolean): Promise<void> {
-    //     let curState = StateContainer.PolicyStateObject.get(uuid) || {};
-    //     const block = StateContainer.GetBlockByUUID(uuid);
-    //
-    //     if (block.commonBlock) {
-    //         curState = state;
-    //     } else {
-    //         curState[user.username] = state;
-    //     }
-    //
-    //     if (!noUpdate) {
-    //         block.parent.updateBlock(state, user, tag);
-    //     }
-    //     this.PolicyStateObject.set(uuid, curState);
-    // }
-
-
-    /**
-     * Get block state
-     * @param uuid
-     * @param user
-     */
-    public static GetBlockState(uuid: string, user: IAuthUser): any {
-        const block = StateContainer.PolicyBlockMapObject.get(uuid);
-        const state = StateContainer.PolicyStateObject.get(uuid);
-
-        if (block.commonBlock) {
-            return state || {isActive: block.defaultActive};
-        } else {
-            return state && state[user.username] || {isActive: block.defaultActive};
-        }
     }
 }

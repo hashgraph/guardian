@@ -78,7 +78,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
                         return undefined;
                     }),
-                    isActive: StateContainer.GetBlockState(this.uuid, user).isActive
+                    isActive: true
                 })
             }
         }

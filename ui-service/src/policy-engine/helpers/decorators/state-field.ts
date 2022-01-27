@@ -1,7 +1,5 @@
-import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
-
 export function StateField() {
-    return function (target: IPolicyBlock, propertyKey: string) {
+    return function (target: any, propertyKey: string) {
         let value: any;
 
         const getter = function() {
@@ -10,11 +8,12 @@ export function StateField() {
 
         const setter = function(v: any) {
             value = v;
-            console.log('set state', target.uuid, propertyKey, value);
+            console.log('set state', this.uuid, propertyKey, value);
         }
 
         Object.defineProperty(target, propertyKey, {
-            get: getter
+            get: getter,
+            set: setter
         })
     }
 }

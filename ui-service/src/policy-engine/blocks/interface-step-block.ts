@@ -1,4 +1,4 @@
-import {ContainerBlock} from '@policy-engine/helpers/decorators';
+import {ContainerBlock, StateField} from '@policy-engine/helpers/decorators';
 import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
 import {BlockActionError, BlockInitError} from '@policy-engine/errors';
 import {StateContainer} from '@policy-engine/state-container';
@@ -13,12 +13,6 @@ import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
 })
 export class InterfaceStepBlock {
     state: Map<string, any> = new Map();
-    // private init(): void {
-    //     const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
-    //     if (!options.uiMetaData) {
-    //         throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
-    //     }
-    // }
 
     async changeStep(user, data, target) {
         console.log("--- changeStep StepBlock");
