@@ -1,8 +1,8 @@
 import axios from 'axios';
 import type { IUser } from '../user';
-import type { IUIServiceMeter } from './IUIServiceMeter';
+import type { IUIServiceDevice } from './IUIServiceDevice';
 
-export async function getMetersFromUiService({
+export async function getDevicesFromUiService({
   uiServiceBaseUrl,
   policyId,
   installer,
@@ -10,9 +10,9 @@ export async function getMetersFromUiService({
   uiServiceBaseUrl: string;
   policyId: string;
   installer: IUser;
-}): Promise<IUIServiceMeter[]> {
+}): Promise<IUIServiceDevice[]> {
   const {
-    data: { data: meters },
+    data: { data: devices },
   } = await axios.get(
     `${uiServiceBaseUrl}/policy/block/tag2/${policyId}/sensors_grid`,
     {
@@ -22,5 +22,5 @@ export async function getMetersFromUiService({
     },
   );
 
-  return meters;
+  return devices;
 }

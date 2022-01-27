@@ -6,14 +6,14 @@ import axios from 'axios';
 import type { VCDocumentLoader } from '../document-loader/vc-document-loader';
 import type { VCHelper } from 'vc-modules';
 import type { MongoRepository } from 'typeorm/repository/MongoRepository';
-import type { MeterConfig } from '@entity/meter-config';
+import type { DeviceConfig } from '@entity/device-config';
 import { InstallerUserName, loginToUiService } from '../modules/user';
 import type { PolicyPackage } from '@entity/policy-package';
 import {
-  addMeterToUiService,
-  getMeterConfigFromUiService,
-  getMetersFromUiService,
-  getNewMeters,
+  addDeviceToUiService,
+  getDeviceConfigFromUiService,
+  getDevicesFromUiService,
+  getNewDevices,
   registerInstallerInUiService,
 } from '../modules/track-and-trace';
 import type { ProcessedMrv } from '@entity/processed-mrv';
@@ -24,7 +24,7 @@ import type { IIsoDate } from '@entity/IIsoDate';
 export const makeTrackAndTraceApi = ({
   vcDocumentLoader,
   vcHelper,
-  meterConfigRepository,
+  deviceConfigRepository,
   policyPackageRepository,
   processedMrvRepository,
   mrvReceiverUrl,
@@ -32,7 +32,7 @@ export const makeTrackAndTraceApi = ({
 }: {
   vcDocumentLoader: VCDocumentLoader;
   vcHelper: VCHelper;
-  meterConfigRepository: MongoRepository<MeterConfig>;
+  deviceConfigRepository: MongoRepository<DeviceConfig>;
   policyPackageRepository: MongoRepository<PolicyPackage>;
   processedMrvRepository: MongoRepository<ProcessedMrv>;
   mrvReceiverUrl: string;
@@ -108,29 +108,29 @@ export const makeTrackAndTraceApi = ({
   );
 
   trackAndTraceApi.get(
-    '/list-meters/:policyTag',
+    '/list-devices/:policyTag',
     async (req: Request, res: Response) => {
       const { policyTag } = req.params as { policyTag: string | undefined };
       assert(policyTag, `policyTag is missing`);
 
-      const meterConfigs = await meterConfigRepository.find({
+      const deviceConfigs = await deviceConfigRepository.find({
         where: { policyTag: req.params.policyTag },
       });
-      if (!meterConfigs) {
+      if (!deviceConfigs) {
         res.send(null);
         return;
       }
 
-      res.status(200).json(meterConfigs);
+      res.status(200).json(deviceConfigs);
     },
   );
 
-  trackAndTraceApi.post('/add-meter', async (req: Request, res: Response) => {
-    const { username, meterId, meterInfo, policyTag } = req.body as {
+  trackAndTraceApi.post('/add-device', async (req: Request, res: Response) => {
+    const { username, deviceId, deviceInfo, policyTag } = req.body as {
       username: InstallerUserName | undefined;
       policyTag: string | undefined;
-      meterId: string | undefined;
-      meterInfo: any;
+      deviceId: string | undefined;
+      deviceInfo: any;
     };
     policyTag;
 
@@ -140,20 +140,20 @@ export const makeTrackAndTraceApi = ({
       `Unexpected username '${username}', expect one of the installers`,
     );
     assert(policyTag, `policyTag is missing`);
-    assert(meterId, `meterId is missing`);
-    assert(meterInfo, `meterInfo is missing`);
+    assert(deviceId, `deviceId is missing`);
+    assert(deviceInfo, `deviceInfo is missing`);
 
-    const meterConfigKey = `${policyTag}-${meterId}`;
+    const deviceConfigKey = `${policyTag}-${deviceId}`;
 
-    const existingMeterConfig = await meterConfigRepository.findOne({
-      where: { key: meterConfigKey },
+    const existingDeviceConfig = await deviceConfigRepository.findOne({
+      where: { key: deviceConfigKey },
     });
 
-    if (existingMeterConfig) {
+    if (existingDeviceConfig) {
       console.log(
-        `Skip because meter '${meterId}' with policy '${policyTag}' was added before.`,
+        `Skip because device '${deviceId}' with policy '${policyTag}' was added before.`,
       );
-      res.status(200).json(existingMeterConfig);
+      res.status(200).json(existingDeviceConfig);
       return;
     }
 
@@ -167,61 +167,63 @@ export const makeTrackAndTraceApi = ({
     });
     assert(policyPackage, `Cannot find ${policyTag} package`);
 
-    const preAddMeters = await getMetersFromUiService({
+    const preAddDevices = await getDevicesFromUiService({
       uiServiceBaseUrl,
       policyId: policyPackage.policy.id,
       installer,
     });
 
-    await addMeterToUiService({
+    await addDeviceToUiService({
       policyPackage,
       uiServiceBaseUrl,
       policyId: policyPackage.policy.id,
-      meterInfo,
+      deviceInfo,
       installer,
     });
 
-    const newMeters = await getNewMeters({
+    const newDevices = await getNewDevices({
       uiServiceBaseUrl,
       policyId: policyPackage.policy.id,
       installer,
-      preAddMeters,
+      preAddDevices,
     });
 
     assert(
-      newMeters.length === 1,
-      `Number of new meters is ${newMeters.length}, expect 1`,
+      newDevices.length === 1,
+      `Number of new devices is ${newDevices.length}, expect 1`,
     );
 
-    console.log(`Getting meter config for ${meterId} with policy ${policyTag}`);
-    const meterConfig = await getMeterConfigFromUiService({
+    console.log(
+      `Getting device config for ${deviceId} with policy ${policyTag}`,
+    );
+    const deviceConfig = await getDeviceConfigFromUiService({
       uiServiceBaseUrl,
       policyId: policyPackage.policy.id,
-      meter: newMeters[0],
+      device: newDevices[0],
       installer,
     });
 
-    const newMeterConfig = meterConfigRepository.create({
-      key: meterConfigKey,
-      meterId,
+    const newDeviceConfig = deviceConfigRepository.create({
+      key: deviceConfigKey,
+      deviceId,
       policyTag,
-      config: meterConfig,
-    } as MeterConfig);
-    await meterConfigRepository.save(newMeterConfig);
+      config: deviceConfig,
+    } as DeviceConfig);
+    await deviceConfigRepository.save(newDeviceConfig);
 
-    res.status(200).json(meterConfig);
+    res.status(200).json(deviceConfig);
   });
 
   trackAndTraceApi.get(
-    '/latest-mrv/:policyTag/:meterId',
+    '/latest-mrv/:policyTag/:deviceId',
     async (req: Request, res: Response) => {
-      const { meterId, policyTag } = req.params as {
+      const { deviceId, policyTag } = req.params as {
         policyTag: string | undefined;
-        meterId: string | undefined;
+        deviceId: string | undefined;
       };
 
       const mrv = await processedMrvRepository.findOne({
-        where: { policyTag, meterId },
+        where: { policyTag, deviceId },
         order: { timestamp: 'DESC' },
       });
 
@@ -232,7 +234,7 @@ export const makeTrackAndTraceApi = ({
 
       res
         .status(404)
-        .send(`Cannot find latest MRV for ${policyTag}-${meterId}`);
+        .send(`Cannot find latest MRV for ${policyTag}-${deviceId}`);
     },
   );
 
@@ -243,21 +245,21 @@ export const makeTrackAndTraceApi = ({
 
       const {
         setting,
-        meterId,
+        deviceId,
         policyTag: inputPolicyTag,
       } = await getGenerateMrvRequest(req.body);
 
-      const meterConfigKey = `${inputPolicyTag}-${meterId}`;
-      const meterConfig = await meterConfigRepository.findOne({
-        where: { key: meterConfigKey },
+      const deviceConfigKey = `${inputPolicyTag}-${deviceId}`;
+      const deviceConfig = await deviceConfigRepository.findOne({
+        where: { key: deviceConfigKey },
       });
 
-      if (!meterConfig) {
-        res.status(404).send(`Cannot find meter config for ${meterId}`);
+      if (!deviceConfig) {
+        res.status(404).send(`Cannot find device config for ${deviceId}`);
         return;
       }
 
-      const mrvKey = `${inputPolicyTag}-${meterId}-${setting.mrvTimestamp}`;
+      const mrvKey = `${inputPolicyTag}-${deviceId}-${setting.mrvTimestamp}`;
       const processedMrv = await processedMrvRepository.findOne({
         where: { key: mrvKey },
       });
@@ -281,7 +283,7 @@ export const makeTrackAndTraceApi = ({
         type,
         schema,
         policyTag,
-      } = meterConfig.config;
+      } = deviceConfig.config;
 
       vcDocumentLoader.setDocument(schema);
 
@@ -334,7 +336,7 @@ export const makeTrackAndTraceApi = ({
 
       await saveProcessedMrv({
         processedMrvRepository,
-        meterId,
+        deviceId,
         policyTag: inputPolicyTag,
         timestamp: setting.mrvTimestamp,
       });
@@ -349,19 +351,19 @@ export const makeTrackAndTraceApi = ({
 async function saveProcessedMrv({
   processedMrvRepository,
   policyTag,
-  meterId,
+  deviceId,
   timestamp,
 }: {
   processedMrvRepository: MongoRepository<ProcessedMrv>;
   policyTag: string;
-  meterId: string | undefined;
+  deviceId: string | undefined;
   timestamp: IIsoDate;
 }) {
-  const mrvKey = `${policyTag}-${meterId}-${timestamp}`;
+  const mrvKey = `${policyTag}-${deviceId}-${timestamp}`;
 
   const processedMrv = processedMrvRepository.create({
     key: mrvKey,
-    meterId,
+    deviceId,
     policyTag,
     timestamp,
   });
@@ -381,13 +383,13 @@ async function getGenerateMrvRequest(input: any) {
 interface IGenerateMrvRequest {
   setting: IMrvSetting;
   policyTag: string;
-  meterId: string;
+  deviceId: string;
   requestId: string;
 }
 
 const generateMrvRequestSchema = Joi.object<IGenerateMrvRequest>({
   policyTag: Joi.string().required(),
-  meterId: Joi.string().required(),
+  deviceId: Joi.string().required(),
   requestId: Joi.string(),
   setting: mrvSettingSchema,
 });

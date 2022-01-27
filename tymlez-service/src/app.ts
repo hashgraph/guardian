@@ -12,7 +12,7 @@ import { debugApi } from '@api/debug';
 import { makeAuditApi } from '@api/audit';
 import assert from 'assert';
 import { makeTrackAndTraceApi } from '@api/track-and-trace';
-import { MeterConfig } from '@entity/meter-config';
+import { DeviceConfig } from '@entity/device-config';
 import morgan from 'morgan';
 import { makeSchemaApi } from '@api/schema';
 import { makeTokenApi } from '@api/token';
@@ -110,7 +110,7 @@ Promise.all([
   );
   app.use(express.json());
 
-  const meterConfigRepository = db.getMongoRepository(MeterConfig);
+  const deviceConfigRepository = db.getMongoRepository(DeviceConfig);
   const policyPackageRepository = db.getMongoRepository(PolicyPackage);
   const processedMrvRepository = db.getMongoRepository(ProcessedMrv);
 
@@ -136,13 +136,13 @@ Promise.all([
   );
 
   app.use('/debug/', debugApi);
-  app.use('/audit/', makeAuditApi(channel, meterConfigRepository));
+  app.use('/audit/', makeAuditApi({ channel, deviceConfigRepository }));
   app.use(
     '/track-and-trace/',
     makeTrackAndTraceApi({
       vcDocumentLoader,
       vcHelper,
-      meterConfigRepository,
+      deviceConfigRepository,
       policyPackageRepository,
       processedMrvRepository,
       mrvReceiverUrl: MRV_RECEIVER_URL,

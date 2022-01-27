@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { getBuildTimeConfig } from '../getBuildTimeConfig';
-import { addMeters } from './addMeters';
+import { addDevices } from './addDevices';
 import { createPolicyPackages } from './createPolicyPackages';
 import { createTokens } from './createTokens';
 import { grantTokenKvcToInstallers } from './grantTokenKvcToInstallers';
@@ -17,7 +17,7 @@ export async function init() {
   const {
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-    METER_INFOS,
+    DEVICE_INFOS,
   } = await getBuildTimeConfig({ env: ENV, clientName: CLIENT_NAME });
 
   await initRootAuthority({
@@ -53,10 +53,10 @@ export async function init() {
     GUARDIAN_TYMLEZ_API_KEY,
   });
 
-  assert(METER_INFOS && METER_INFOS.length > 0, `METER_INFOS is missing`);
-  await addMeters({
+  assert(DEVICE_INFOS && DEVICE_INFOS.length > 0, `DEVICE_INFOS is missing`);
+  await addDevices({
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-    meterInfos: METER_INFOS,
+    deviceInfos: DEVICE_INFOS,
   });
 }

@@ -1,8 +1,8 @@
-export interface IUIServiceMeter {
+export interface IUIServiceDevice {
   id: string;
   owner: string;
   hash: string;
-  document: IUIServiceMeterDocument;
+  document: IUIServiceDeviceDocument;
   createDate: string;
   updateDate: string;
   status: string;
@@ -12,17 +12,17 @@ export interface IUIServiceMeter {
   tag: string;
 }
 
-export interface IUIServiceMeterDocument {
+export interface IUIServiceDeviceDocument {
   '@context': string[];
   id: string;
   type: string[];
-  credentialSubject: IUIServiceMeterCredentialSubject[];
+  credentialSubject: IUIServiceDeviceCredentialSubject[];
   issuer: string;
   issuanceDate: string;
   proof: Object;
 }
 
-export interface IUIServiceMeterCredentialSubject {
+export interface IUIServiceDeviceCredentialSubject {
   '@context': string[];
   id: string;
   type: string;

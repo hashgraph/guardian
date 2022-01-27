@@ -62,6 +62,13 @@
         "$comment": "{\"term\": \"deviceType\", \"@id\": \"https://www.schema.org/text\"}",
         "type": "string"
       },
+      "siteName": {
+        "title": "Site Name",
+        "description": "Site Name",
+        "readOnly": false,
+        "$comment": "{\"term\": \"siteName\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
       "policyId": {
         "title": "policyId",
         "description": "policyId",
@@ -76,6 +83,7 @@
       "deviceId",
       "deviceLabel",
       "deviceType",
+      "siteName",
       "policyId"
     ],
     "additionalProperties": false

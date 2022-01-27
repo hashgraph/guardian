@@ -1,58 +1,58 @@
 import axios from 'axios';
 import pLimit from 'p-limit';
 import { InstallerUserName } from '../../../tymlez-service/src/modules/user';
-import { IMeterInfo } from '../getBuildTimeConfig';
+import { IDeviceInfo } from '../getBuildTimeConfig';
 
-export async function addMeters({
+export async function addDevices({
   GUARDIAN_TYMLEZ_API_KEY,
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
-  meterInfos,
+  deviceInfos,
 }: {
   GUARDIAN_TYMLEZ_API_KEY: string;
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
-  meterInfos: IMeterInfo[];
+  deviceInfos: IDeviceInfo[];
 }) {
   const limit = pLimit(1);
 
   await Promise.all(
-    meterInfos
-      .filter((info) => info.deviceType === 'consumption')
-      .map((meterInfo) =>
+    deviceInfos
+      .filter((deviceInfo) => deviceInfo.deviceType === 'consumption')
+      .map((deviceInfo) =>
         limit(() =>
-          addMeter({
+          addDevice({
             GUARDIAN_TYMLEZ_API_KEY,
             GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
             username: 'Installer',
             policyTag: 'TymlezCET',
-            meterInfo,
+            deviceInfo,
           }),
         ),
       ),
   );
 }
 
-async function addMeter({
+async function addDevice({
   GUARDIAN_TYMLEZ_API_KEY,
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
   username,
   policyTag,
-  meterInfo,
+  deviceInfo,
 }: {
   GUARDIAN_TYMLEZ_SERVICE_BASE_URL: string;
   GUARDIAN_TYMLEZ_API_KEY: string;
   username: InstallerUserName;
   policyTag: string;
-  meterInfo: IMeterInfo;
+  deviceInfo: IDeviceInfo;
 }) {
-  console.log('Adding meter', { username, policyTag, meterInfo });
+  console.log('Adding device', { username, policyTag, deviceInfo });
 
   await axios.post(
-    `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/track-and-trace/add-meter`,
+    `${GUARDIAN_TYMLEZ_SERVICE_BASE_URL}/track-and-trace/add-device`,
     {
       username,
       policyTag,
-      meterId: meterInfo.deviceId,
-      meterInfo,
+      deviceId: deviceInfo.deviceId,
+      deviceInfo: deviceInfo,
     },
     {
       headers: {

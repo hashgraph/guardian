@@ -19,7 +19,7 @@ export class ProcessedMrv implements IProcessedMrv {
   key!: string;
 
   @Column()
-  meterId!: string;
+  deviceId!: string;
 
   @Column()
   policyTag!: string;
@@ -36,7 +36,7 @@ export class ProcessedMrv implements IProcessedMrv {
 
 export interface IProcessedMrv {
   key: string;
-  meterId: string;
+  deviceId: string;
   policyTag: string;
   timestamp: IIsoDate;
 }

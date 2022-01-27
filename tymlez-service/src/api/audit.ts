@@ -3,35 +3,38 @@ import type { IFastMqChannel } from 'fastmq';
 import { IVPDocument, MessageAPI } from 'interfaces';
 import { take, takeRight } from 'lodash';
 import type { MongoRepository } from 'typeorm/repository/MongoRepository';
-import type { MeterConfig } from '@entity/meter-config';
+import type { DeviceConfig } from '@entity/device-config';
 
-export const makeAuditApi = (
-  channel: IFastMqChannel,
-  meterConfigRepository: MongoRepository<MeterConfig>,
-) => {
+export const makeAuditApi = ({
+  channel,
+  deviceConfigRepository,
+}: {
+  channel: IFastMqChannel;
+  deviceConfigRepository: MongoRepository<DeviceConfig>;
+}) => {
   const auditApi = Router();
 
   auditApi.get(
-    '/get-vp-documents/:meterId',
+    '/get-vp-documents/:deviceId',
     async (req: Request, res: Response) => {
-      const { meterId } = req.params as {
-        meterId: string | undefined;
+      const { deviceId } = req.params as {
+        deviceId: string | undefined;
       };
 
-      const { page, pageSize, period} = req.query as {
+      const { page, pageSize, period } = req.query as {
         page: number | undefined;
         pageSize: number | undefined;
-        period: number | undefined
+        period: number | undefined;
       };
 
-      const meter = await meterConfigRepository.findOne({
-        where: { meterId },
+      const device = await deviceConfigRepository.findOne({
+        where: { deviceId },
       });
 
       let filter: IFilter | null = null;
 
-      if (meter) {
-        filter = { issuer: meter.config.did, page, pageSize, period };
+      if (device) {
+        filter = { issuer: device.config.did, page, pageSize, period };
         const vp = (
           await channel.request(
             'guardian.*',
@@ -43,8 +46,10 @@ export const makeAuditApi = (
         res.status(200).json(vp);
         return;
       }
-      
-      res.status(404).send(`Cannot find VP documents for meterId: ${meterId}`);
+
+      res
+        .status(404)
+        .send(`Cannot find VP documents for deviceId: ${deviceId}`);
     },
   );
 
@@ -52,23 +57,29 @@ export const makeAuditApi = (
 };
 
 function extractAndFormatVp(dbResponse: IPagination) {
-  return dbResponse.data.map(vpDocument => {
-    const vcRecords: IVcRecord[] = vpDocument.document.verifiableCredential.slice(0,vpDocument.document.verifiableCredential.length-1).map(vc=>{
-      return vc.credentialSubject.map(cs=>{
-        return {
-          mrvEnergyAmount: cs.mrvEnergyAmount,
-          mrvCarbonAmount: cs.mrvCarbonAmount,
-          mrvTimestamp: cs.mrvTimestamp,
-          mrvDuration: cs.mrvDuration,
-        }
+  return dbResponse.data.map((vpDocument) => {
+    const vcRecords: IVcRecord[] = vpDocument.document.verifiableCredential
+      .slice(0, vpDocument.document.verifiableCredential.length - 1)
+      .map((vc) => {
+        return vc.credentialSubject.map((cs) => {
+          return {
+            mrvEnergyAmount: cs.mrvEnergyAmount,
+            mrvCarbonAmount: cs.mrvCarbonAmount,
+            mrvTimestamp: cs.mrvTimestamp,
+            mrvDuration: cs.mrvDuration,
+          };
+        });
       })
-    }).flat();
+      .flat();
 
-    const energyCarbonValue = vcRecords.reduce((prevValue, vcRecord)=>{
-      prevValue.totalEnergyValue+=Number(vcRecord.mrvEnergyAmount);
-      prevValue.totalCarbonAmount+=Number(vcRecord.mrvCarbonAmount);
-      return prevValue;
-    }, {totalEnergyValue:0,totalCarbonAmount: 0});
+    const energyCarbonValue = vcRecords.reduce(
+      (prevValue, vcRecord) => {
+        prevValue.totalEnergyValue += Number(vcRecord.mrvEnergyAmount);
+        prevValue.totalCarbonAmount += Number(vcRecord.mrvCarbonAmount);
+        return prevValue;
+      },
+      { totalEnergyValue: 0, totalCarbonAmount: 0 },
+    );
 
     return {
       vpId: vpDocument.id,
@@ -76,9 +87,9 @@ function extractAndFormatVp(dbResponse: IPagination) {
       energyType: 'consumption',
       energyValue: energyCarbonValue.totalEnergyValue,
       co2Produced: energyCarbonValue.totalCarbonAmount,
-      timestamp: vpDocument.createDate
-    } as IVpRecord
-  })
+      timestamp: vpDocument.createDate,
+    } as IVpRecord;
+  });
 }
 
 interface IFilter {
@@ -118,11 +129,11 @@ export interface IVerification {
   num: number;
 }
 interface IPagination {
-  perPage: number,
-  totalRecords: number,
-  currentPage: number,
-  hasPrevPage: boolean,
-  hasNextPage: boolean,
-  lastPage: number,
-  data: IVPDocument[]
+  perPage: number;
+  totalRecords: number;
+  currentPage: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  lastPage: number;
+  data: IVPDocument[];
 }

@@ -69,26 +69,27 @@ export const getBuildTimeConfig = async ({
   };
 };
 
-const COHORT_METER_INFOS: IMeterInfo[] = [
+const COHORT_DEVICE_INFOS: IDeviceInfo[] = [
   {
     deviceId: 'DD54108399431',
     deviceLabel: 'Main',
     deviceType: 'consumption',
+    siteName: 'main',
   },
 ];
 
 const STATIC_CONFIGS: Record<string, Partial<IConfig> | undefined> = {
   'cohort-local': {
-    METER_INFOS: COHORT_METER_INFOS,
+    DEVICE_INFOS: COHORT_DEVICE_INFOS,
   },
   'cohort-dev': {
-    METER_INFOS: COHORT_METER_INFOS,
+    DEVICE_INFOS: COHORT_DEVICE_INFOS,
   },
   'cohort-preprod': {
-    METER_INFOS: COHORT_METER_INFOS,
+    DEVICE_INFOS: COHORT_DEVICE_INFOS,
   },
   'cohort-prod': {
-    METER_INFOS: COHORT_METER_INFOS,
+    DEVICE_INFOS: COHORT_DEVICE_INFOS,
   },
 };
 
@@ -102,11 +103,12 @@ interface IConfig {
   GCP_REGION?: string;
   GKE_CLUSTER?: string;
 
-  METER_INFOS?: IMeterInfo[];
+  DEVICE_INFOS?: IDeviceInfo[];
 }
 
-export interface IMeterInfo {
+export interface IDeviceInfo {
   deviceId: string;
   deviceLabel: string;
   deviceType: 'consumption' | 'generation' | 'generation-forecast';
+  siteName: string;
 }

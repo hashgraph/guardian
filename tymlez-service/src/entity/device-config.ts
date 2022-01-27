@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class MeterConfig implements IMeterConfig {
+export class DeviceConfig implements IDeviceConfig {
   @ObjectIdColumn()
   id!: string;
 
@@ -17,13 +17,13 @@ export class MeterConfig implements IMeterConfig {
   key!: string;
 
   @Column()
-  meterId!: string;
+  deviceId!: string;
 
   @Column()
   policyTag!: string;
 
   @Column()
-  config!: IUIServiceMeterConfig;
+  config!: IUIServiceDeviceConfig;
 
   @CreateDateColumn()
   createDate!: Date;
@@ -32,14 +32,14 @@ export class MeterConfig implements IMeterConfig {
   updateDate!: Date;
 }
 
-export interface IMeterConfig {
+export interface IDeviceConfig {
   key: string;
-  meterId: string;
+  deviceId: string;
   policyTag: string;
-  config: IUIServiceMeterConfig;
+  config: IUIServiceDeviceConfig;
 }
 
-export interface IUIServiceMeterConfig {
+export interface IUIServiceDeviceConfig {
   url: string;
   topic: string;
   hederaAccountId: string;

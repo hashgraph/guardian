@@ -1,25 +1,25 @@
-import type { IUIServiceMeterConfig } from '@entity/meter-config';
+import type { IUIServiceDeviceConfig } from '@entity/device-config';
 import axios from 'axios';
 import type { IUser } from '../user';
-import type { IUIServiceMeter } from './IUIServiceMeter';
+import type { IUIServiceDevice } from './IUIServiceDevice';
 
-export async function getMeterConfigFromUiService({
+export async function getDeviceConfigFromUiService({
   installer,
-  meter,
+  device,
   policyId,
   uiServiceBaseUrl,
 }: {
   uiServiceBaseUrl: string;
   policyId: string;
-  meter: IUIServiceMeter;
+  device: IUIServiceDevice;
   installer: IUser;
-}): Promise<IUIServiceMeterConfig> {
-  const meterConfig = (
+}): Promise<IUIServiceDeviceConfig> {
+  const deviceConfig = (
     await axios.post(
       `${uiServiceBaseUrl}/policy/block/tag2/${policyId}/download_config_btn`,
       {
-        owner: meter.owner,
-        document: meter.document,
+        owner: device.owner,
+        document: device.document,
       },
       {
         headers: {
@@ -29,5 +29,5 @@ export async function getMeterConfigFromUiService({
     )
   ).data.body;
 
-  return meterConfig;
+  return deviceConfig;
 }
