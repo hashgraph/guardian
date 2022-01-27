@@ -25,31 +25,10 @@ export class InterfaceDocumentsSource {
     @Inject()
     private guardians: Guardians;
 
-    // private init() {
-    //     const { options, uuid, blockType } = PolicyBlockHelpers.GetBlockRef(this);
-    //     if (!options.dataType) {
-    //         throw new BlockInitError(`Field "dataType" is required`, blockType, uuid);
-    //     }
-    //     if (!options.onlyOwnDocuments) {
-    //         options.onlyOwnDocuments = true;
-    //     }
-    //     if (!options.onlyAssignDocuments) {
-    //         options.onlyAssignDocuments = false;
-    //     }
-    //     if (!options.uiMetaData) {
-    //         throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
-    //     }
-    // }
-
     @BlockStateUpdate()
     async update(state, user) {
     }
-
-    // @DependenciesUpdateHandler()
-    // async handler(uuid, state, user, tag) {
-    //     console.log(state, state.isActive);
-    // }
-
+    
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyBlockHelpers.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);

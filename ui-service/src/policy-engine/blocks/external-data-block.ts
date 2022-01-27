@@ -1,11 +1,11 @@
-import {ExternalData} from '@policy-engine/helpers/decorators';
-import {HcsVcDocument, VcSubject} from 'vc-modules';
-import {DocumentSignature, DocumentStatus, SchemaStatus} from 'interfaces';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {Inject} from '@helpers/decorators/inject';
-import {VcHelper} from '@helpers/vcHelper';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
-import {Guardians} from '@helpers/guardians';
+import { ExternalData } from '@policy-engine/helpers/decorators';
+import { HcsVcDocument, VcSubject } from 'vc-modules';
+import { DocumentSignature, DocumentStatus, SchemaStatus } from 'interfaces';
+import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
+import { Inject } from '@helpers/decorators/inject';
+import { VcHelper } from '@helpers/vcHelper';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { Guardians } from '@helpers/guardians';
 /**
  * External data block
  */
@@ -25,7 +25,7 @@ export class ExternalDataBlock {
         try {
             const res = await this.vcHelper.verifySchema(data.document);
             verify = res.ok;
-            if(verify) {
+            if (verify) {
                 verify = await this.vcHelper.verifyVC(data.document);
             }
         } catch (error) {
@@ -39,18 +39,14 @@ export class ExternalDataBlock {
             owner: data.owner,
             document: vc.toJsonTree(),
             status: DocumentStatus.NEW,
-            signature:signature,
+            signature: signature,
             policyId: ref.policyId,
             type: ref.options.entityType
         };
-        const currentIndex = ref.parent.children.findIndex(el => this === el);
-        const nextBlock = ref.parent.children[currentIndex + 1];
-        if (nextBlock && nextBlock.runAction) {
-            nextBlock.runAction({data: doc}, null).then(
-                function () { },
-                function (error: any) { console.error(error); }
-            );
-        }
+        ref.runNext(null, { data: doc }).then(
+            function () { },
+            function (error: any) { console.error(error); }
+        );
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

@@ -98,21 +98,9 @@ export class RequestVcDocumentBlock {
             document: vc.toJsonTree(),
             type: schema
         };
-        const state = StateContainer.GetBlockState((this as any).uuid, user);
-        const newState = Object.assign(state, { data: item });
 
-        // await this.update(newState, user);
-
-        if(ref.options.stopPropagation) {
-            return {};
-        }
-
-        const currentIndex = ref.parent.children.findIndex(el => this === el);
-        const nextBlock = ref.parent.children[currentIndex + 1];
-        if (nextBlock && nextBlock.runAction) {
-            await nextBlock.runAction({ data: item }, user);
-        }
-
+        await ref.runNext(user, { data: item });
+        
         return {};
     }
 

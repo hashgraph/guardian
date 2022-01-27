@@ -129,10 +129,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             public async runNext(user: IAuthUser, data: any): Promise<void> {
+                console.log("--- runNext");
+                if (this.options.stopPropagation) {
+                    return;
+                }
                 if (this.parent && (typeof this.parent['changeStep'] === 'function')) {
+                    console.log("--- runNext changeStep");
                     await this.parent.changeStep(user, data, this.parent.children[this.parent.children.indexOf(this) + 1]);
                 }
-
             }
 
             public async runTarget(user: IAuthUser, data: any, target: IPolicyBlock): Promise<void> {
