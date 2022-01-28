@@ -129,7 +129,6 @@ export const documentsAPI = async function (
                 reqObj.where = {};
             }
             Object.assign(reqObj.where, otherArgs);
-            console.log('GET_VC_DOCUMENTS', reqObj)
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
             res.send(vcDocuments);
         } else {
@@ -176,7 +175,6 @@ export const documentsAPI = async function (
      * @returns {IVCDocument} - new VC Document
      */
     channel.response(MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
-        console.log("SET_VC_DOCUMENT", msg.payload);
         let result: IVCDocument;
 
         const hash = msg.payload.hash;
@@ -217,13 +215,11 @@ export const documentsAPI = async function (
 
         let verify: boolean;
         try {
-            console.log('verify', JSON.stringify(result.document, null, 4));
             const res = await vc.verifySchema(result.document);
             console.log('verifySchema', JSON.stringify(res, null, 4));
             verify = res.ok;
             if (verify) {
                 verify = await vc.verifyVC(result.document);
-                console.log('verifyVC', verify);
             }
         } catch (error) {
             verify = false;

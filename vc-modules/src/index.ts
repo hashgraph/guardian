@@ -3,7 +3,6 @@ export { VCHelper} from './helpers/hedera-vc-helper';
 export { HcsVcDocument } from './vc/vc-document';
 export { HcsVpDocument } from './vc/vp-document';
 export { VcSubject } from './vc/vc-subject';
-export { HederaListener, ListenerType, IListener } from './hedera-listener';
 export { DocumentLoader } from './document-loader/document-loader';
 export { IDocumentFormat } from './document-loader/document-format';
 export { SchemaLoader } from './document-loader/schema-loader';
