@@ -4,11 +4,11 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
-import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
-import { SchemaDialog } from '../../components/dialogs/schema-dialog/schema-dialog.component';
+import { SchemaDialog } from '../../schema-engine/schema-dialog/schema-dialog.component';
 import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
-import { ImportSchemaDialog } from 'src/app/components/dialogs/import-schema/import-schema-dialog.component';
-import { SetVersionDialog } from 'src/app/components/dialogs/set-version-dialog/set-version-dialog.component';
+import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-schema-dialog.component';
+import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -104,7 +104,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     openDocument(element: Schema) {
-        const dialogRef = this.dialog.open(JsonDialog, {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
                 document: element.schema,

@@ -19,7 +19,7 @@ import {createServer} from 'http';
 import {createConnection, getMongoRepository} from 'typeorm';
 import WebSocket from 'ws';
 import {authorizationHelper} from './auth/authorizationHelper';
-import {StateContainer} from '@policy-engine/state-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
 import { IPFS } from '@helpers/ipfs';
@@ -64,11 +64,11 @@ Promise.all([
     new Guardians().setChannel(channel);
     new Guardians().registerMRVReceiver(async (data) => {
         console.log(data);
-        await StateContainer.ReceiveExternalData(data);
+        await PolicyComponentsStuff.ReceiveExternalData(data);
     });
 
     new IPFS().setChannel(channel);
-    
+
     const server = createServer(app);
     const policyGenerator = new BlockTreeGenerator();
     policyGenerator.registerWssServer(new WebSocket.Server({server}));
@@ -98,4 +98,3 @@ Promise.all([
         console.log('UI service started on', PORT);
     });
 });
-

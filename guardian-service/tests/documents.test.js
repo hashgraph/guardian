@@ -139,41 +139,48 @@ describe('Documents service', function () {
 
     it('Test SET_VC_DOCUMENT', async function () {
         let value = await channel.run(SET_VC_DOCUMENT, {
-            field1: 'field1',
-            field2: 'field2'
+            document: {
+                field1: 'field1',
+                field2: 'field2'
+            }
         });
+        console.log(value)
         assert.deepEqual(value, {
             '_id': '1',
-            field1: 'field1',
-            field2: 'field2',
-            signature: 1
-        });
+            document: {
+                field1: 'field1',
+                field2: 'field2'
+            },
+            signature: 2
+        }, 'Set 1');
 
         value = await channel.run(SET_VC_DOCUMENT, {
             hash: 'hash',
             operation: 'operation',
-            field1: 'field1',
-            field2: 'field2'
+            document: {
+                field1: 'field1',
+                field2: 'field2'
+            }
         });
         assert.deepEqual(value, {
-            'signature': 1,
-            'status': 'NEW',
+            'signature': 2,
+            'hederaStatus': 'NEW',
             'where': {
                 'hash': {
                     '$eq': 'hash'
                 }
             }
-        });
+        }, 'Set 2');
 
         value = await channel.run(SET_VC_DOCUMENT, {
             hash: 'hash',
             operation: 'issue',
         });
         assert.deepEqual(value, {
-            'signature': 1,
-            'status': 'ISSUE',
+            'signature': 2,
+            'hederaStatus': 'ISSUE',
             'where': { 'hash': { '$eq': 'hash' } }
-        });
+        }, 'Set 3');
 
 
         value = await channel.run(SET_VC_DOCUMENT, {
@@ -181,41 +188,45 @@ describe('Documents service', function () {
             operation: 'revoke',
         });
         assert.deepEqual(value, {
-            'signature': 1,
-            'status': 'REVOKE',
+            'signature': 2,
+            'hederaStatus': 'REVOKE',
             'where': { 'hash': { '$eq': 'hash' } }
-        });
+        }, 'Set 4');
 
         value = await channel.run(SET_VC_DOCUMENT, {
             hash: 'hash',
             operation: 'suspend',
         });
         assert.deepEqual(value, {
-            'signature': 1,
-            'status': 'SUSPEND',
+            'signature': 2,
+            'hederaStatus': 'SUSPEND',
             'where': { 'hash': { '$eq': 'hash' } }
-        });
+        }, 'Set 5');
 
         value = await channel.run(SET_VC_DOCUMENT, {
             hash: 'hash',
             operation: 'resume',
         });
         assert.deepEqual(value, {
-            'signature': 1,
-            'status': 'RESUME',
+            'signature': 2,
+            'hederaStatus': 'RESUME',
             'where': { 'hash': { '$eq': 'hash' } }
-        });
+        }, 'Set 6');
     });
 
     it('Test SET_VP_DOCUMENT', async function () {
         let value = await channel.run(SET_VP_DOCUMENT, {
-            field1: 'field1',
-            field2: 'field2'
+            document: {
+                field1: 'field1',
+                field2: 'field2'
+            }
         });
         assert.deepEqual(value, {
             '_id': '1',
-            field1: 'field1',
-            field2: 'field2'
+            document: {
+                field1: 'field1',
+                field2: 'field2'
+            }
         });
     });
 

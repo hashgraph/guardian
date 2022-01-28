@@ -3,16 +3,13 @@ import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { BlockActionError, BlockInitError } from '@policy-engine/errors';
-import { BlockStateUpdate } from '@policy-engine/helpers/decorators';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
-import { PolicyBlockStateData } from '@policy-engine/interfaces';
-import { StateContainer } from '@policy-engine/state-container';
+import { BlockActionError } from '@policy-engine/errors';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
 import { Schema, SchemaStatus } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
-import { IAuthUser } from '../../auth/auth.interface';
+import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 @EventBlock({
     blockType: 'requestVcDocument',
@@ -34,41 +31,43 @@ export class RequestVcDocumentBlock {
 
     private schema: any;
 
-    private init(): void {
-        const { options, blockType, uuid } = PolicyBlockHelpers.GetBlockRef(this);
-
-        if (!options.schema) {
-            throw new BlockInitError(`Field "schema" is required`, blockType, uuid);
-        }
-    }
+    // private init(): void {
+    //     const { options, blockType, uuid } = PolicyComponentsStuff.GetBlockRef(this);
+    //     if (!options.schema) {
+    //         throw new BlockInitError(`Field "schema" is required`, blockType, uuid);
+    //     }
+    // }
 
     constructor() {
     }
 
     async getData(user: IAuthUser): Promise<any> {
-        const options = PolicyBlockHelpers.GetBlockUniqueOptionsObject(this);
-        if (!this.schema) {
+        const options = PolicyComponentsStuff.GetBlockUniqueOptionsObject(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
+
+        if(!this.schema) {
             const schemas = await this.guardians.getSchemes() || [];
-            this.schema = Schema.mapRef(schemas).find((s) => s.iri === options.schema);
+            this.schema = Schema.mapRef(schemas).find(s => s.iri === options.schema);
         }
         if (!this.schema) {
-            const ref = PolicyBlockHelpers.GetBlockRef(this);
             throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
         }
         return {
-            data: this.schema,
+            id: ref.uuid,
+            blockType: 'requestVcDocument',
+            schema: this.schema,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || []
         };
     }
 
-    @BlockStateUpdate()
-    async update(state: PolicyBlockStateData<any>, user: IAuthUser): Promise<any> {
-        return state;
-    }
+    // @BlockStateUpdate()
+    // async update(state: PolicyBlockStateData<any>, user: IAuthUser): Promise<any> {
+    //     return state;
+    // }
 
-    async setData(user: IAuthUser, document: any): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+    async setData(user: IAuthUser, _data: any): Promise<any> {
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
         if (!userFull.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
@@ -77,6 +76,8 @@ export class RequestVcDocumentBlock {
         const userHederaAccount = userFull.hederaAccountId;
         const userHederaKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userFull.did);
 
+        const document = _data.document;
+        const documentRef = _data.ref;
         const credentialSubject = document;
         const schema = ref.options.schema;
         const idType = ref.options.idType;
@@ -84,27 +85,20 @@ export class RequestVcDocumentBlock {
         if (id) {
             credentialSubject.id = id;
         }
+        if (documentRef) {
+            credentialSubject.ref = documentRef;
+        }
         credentialSubject.policyId = ref.policyId;
 
         const vc = await this.vcHelper.createVC(userFull.did, userHederaKey, schema, credentialSubject);
-        const data = {
+        const item = {
             hash: vc.toCredentialHash(),
             owner: userFull.did,
             document: vc.toJsonTree(),
             type: schema
         };
 
-        await this.update(Object.assign(StateContainer.GetBlockState((this as any).uuid, user), { data }), user);
-
-        if (ref.options.stopPropagation) {
-            return {};
-        }
-
-        const currentIndex = ref.parent.children.findIndex(el => this === el);
-        const nextBlock = ref.parent.children[currentIndex + 1];
-        if (nextBlock && nextBlock.runAction) {
-            await nextBlock.runAction({ data }, user);
-        }
+        await ref.runNext(user, { data: item });
 
         return {};
     }
@@ -114,7 +108,7 @@ export class RequestVcDocumentBlock {
             return HederaUtils.randomUUID();
         }
         if (idType == 'DID') {
-            const ref = PolicyBlockHelpers.GetBlockRef(this);
+            const ref = PolicyComponentsStuff.GetBlockRef(this);
             const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
             const hederaHelper = HederaHelper
                 .setOperator(userHederaAccount, userHederaKey)
@@ -145,7 +139,7 @@ export class RequestVcDocumentBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         // Test schema options
         const schemas = await this.guardians.getSchemes() || [];
@@ -157,7 +151,6 @@ export class RequestVcDocumentBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
             return;
         }
-        console.log(schemas.map(s => s.iri), ref.options.schema)
         const schema = schemas.find(s => s.iri === ref.options.schema)
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);

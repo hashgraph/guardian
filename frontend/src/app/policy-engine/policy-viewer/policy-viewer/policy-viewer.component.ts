@@ -4,12 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser } from 'interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
-import { SetVersionDialog } from 'src/app/components/dialogs/set-version-dialog/set-version-dialog.component';
+import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
-import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../export-import-dialog/export-import-dialog.component';
-import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
+import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../helpers/export-import-dialog/export-import-dialog.component';
+import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -73,6 +73,10 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicy() {
         const policyId = this.route.snapshot.queryParams['policyId'];
+        if(policyId && this.policyId == policyId) {
+            return;
+        }
+
         this.policyId = policyId;
         this.policies = null;
         this.policy = null;

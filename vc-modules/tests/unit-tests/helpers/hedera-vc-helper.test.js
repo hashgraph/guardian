@@ -425,10 +425,10 @@ describe('VCHelper', function () {
         let vc = await vcHelper.createVC(did, privateKey, 'Test', data);
 
         let verify = await vcHelper.verifySchema(vc);
-        assert.equal(verify, true);
+        assert.deepEqual(verify, { ok: true });
 
         verify = await vcHelper.verifySchema(vc.toJsonTree());
-        assert.equal(verify, true);
+        assert.deepEqual(verify, { ok: true });
 
         vc = await vcHelper.createVC(did, privateKey, 'Test', {
             '@context': ['https://localhost/schema'],
@@ -437,6 +437,41 @@ describe('VCHelper', function () {
         });
 
         verify = await vcHelper.verifySchema(vc);
-        assert.equal(verify, false);
+        console.log(verify)
+        assert.deepEqual(verify, {
+            "ok": false,
+            "error": {
+                "details": [
+                    {
+                        "instancePath": "/credentialSubject",
+                        "keyword": "type",
+                        "message": "must be object",
+                        "params": {
+                            "type": "object",
+                        },
+                        "schemaPath": "#Test/type"
+                    },
+                    {
+                        "instancePath": "/credentialSubject/0",
+                        "keyword": "required",
+                        "message": "must have required property 'field2'",
+                        "params": {
+                            "missingProperty": "field2"
+                        },
+                        "schemaPath": "#Test/required"
+                    },
+                    {
+                        "instancePath": "/credentialSubject",
+                        "keyword": "oneOf",
+                        "message": "must match exactly one schema in oneOf",
+                        "params": {
+                            "passingSchemas": null
+                        },
+                        "schemaPath": "#/properties/credentialSubject/oneOf"
+                    },
+                ],
+                "type": "JSON_SCHEMA_VALIDATION_ERROR"
+            }
+        });
     });
 });

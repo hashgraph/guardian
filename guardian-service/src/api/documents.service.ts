@@ -125,9 +125,10 @@ export const documentsAPI = async function (
                     reqObj.where['document.credentialSubject.type'] = { $eq: schema }
                 }
             }
-            for (let [key, value] of Object.entries(otherArgs)) {
-                reqObj.where[key] = { $eq: value };
+            if (typeof reqObj.where !== 'object') {
+                reqObj.where = {};
             }
+            Object.assign(reqObj.where, otherArgs);
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
             res.send(vcDocuments);
         } else {
@@ -166,31 +167,57 @@ export const documentsAPI = async function (
 
     /**
      * Create or update VC Documents
-     * 
+     *
      * @param {IVCDocument} payload - document
      * @param {string} [payload.hash] - hash
      * @param {string} [payload.operation] - document status
-     * 
+     *
      * @returns {IVCDocument} - new VC Document
      */
     channel.response(MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
-        let result: IVCDocument
-        if (msg.payload.hash && msg.payload.operation) {
-            const hash = msg.payload.hash;
-            const operation = msg.payload.operation;
+        let result: IVCDocument;
+
+        const hash = msg.payload.hash;
+        if (hash) {
             result = await vcDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
-            if (result) {
-                result.status = getVCOperation(operation);
+        }
+
+        if (result) {
+            const operation = msg.payload.operation;
+            if (operation) {
+                result.hederaStatus = getVCOperation(operation);
+            }
+
+            const assign = msg.payload.assign;
+            if (assign) {
+                result.assign = assign;
+            }
+
+            const type = msg.payload.type;
+            if (type) {
+                result.type = type;
+            }
+
+            const option = msg.payload.option;
+            if (option) {
+                result.option = option;
+            }
+        }
+
+        if (!result) {
+            if (msg.payload.document) {
+                result = vcDocumentRepository.create(msg.payload as VcDocument);
             } else {
                 res.send(null);
                 return;
             }
-        } else {
-            result = vcDocumentRepository.create(msg.payload as VcDocument);
         }
+
         let verify: boolean;
         try {
-            verify = await vc.verifySchema(result.document);
+            const res = await vc.verifySchema(result.document);
+            console.log('verifySchema', JSON.stringify(res, null, 4));
+            verify = res.ok;
             if (verify) {
                 verify = await vc.verifyVC(result.document);
             }
@@ -198,6 +225,7 @@ export const documentsAPI = async function (
             verify = false;
         }
         result.signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
+
         result = await vcDocumentRepository.save(result);
         res.send(result);
     });

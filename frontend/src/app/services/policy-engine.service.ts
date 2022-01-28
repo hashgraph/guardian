@@ -143,7 +143,7 @@ export class PolicyEngineService {
   }
 
   public publish(policyId: string, policyVersion: string): Observable<any> {
-    return this.http.put<any>(`${this.url}/${policyId}/publish`, {policyVersion: policyVersion});
+    return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
   }
 
   public validate(policy: any): Observable<any> {
@@ -154,8 +154,10 @@ export class PolicyEngineService {
     return this.http.get<any>(`${this.url}/${policyId}/blocks`);
   }
 
-  public getBlockData(blockId: string, policyId: string): Observable<any> {
-    return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`);
+  public getBlockData(blockId: string, policyId: string, filters?: any): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`, {
+      params: filters
+    });
   }
 
   public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {
@@ -164,6 +166,10 @@ export class PolicyEngineService {
 
   public getGetIdByName(blockName: string, policyId: string): Observable<any> {
     return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}`);
+  }
+
+  public getParents(blockId: string, policyId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}/parents`);
   }
 
   public exportPolicy(policyId: string): Observable<Blob> {

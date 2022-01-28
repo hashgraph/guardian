@@ -1,3 +1,5 @@
+export {DocumentsSourceAddon} from './documents-source-addon';
+export {FiltersAddonBlock} from './filters-addon-block';
 export {PolicyRolesBlock} from './policy-roles';
 export {ExternalDataBlock} from './external-data-block';
 export {MintBlock} from './mint-block';
@@ -10,3 +12,4 @@ export {InterfaceContainerBlock} from './interface-container-block';
 export {AggregateBlock} from './aggregate-block';
 export {RetirementBlock} from './retirement-block';
 export {InformationBlock} from './information-block';
+// export {InterfaceDocumentSelectorBlock} from './interface-document-selector-block';

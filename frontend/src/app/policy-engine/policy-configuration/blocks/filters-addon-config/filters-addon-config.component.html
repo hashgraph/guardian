@@ -1,0 +1,81 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Stop Propagation</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.type" [disabled]="readonly">
+                <mat-option value="dropdown">Dropdown</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Can Be Empty</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.canBeEmpty" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Field</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.field" [readonly]="readonly">
+        </td>
+    </tr>
+
+    <ng-container *ngIf="block.type == 'dropdown'">
+        <tr class="propRow">
+            <td class="propRowCol" (click)="onHide(propHidden, 'dropdownGroup')"
+                [attr.collapse]="propHidden.dropdownGroup">
+                <mat-icon>expand_more</mat-icon>
+            </td>
+            <td class="propRowCell cellName">Dropdown Options</td>
+            <td class="propRowCell">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Name</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.optionName" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Value</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.optionValue" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+            <mat-icon>expand_more</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">UI</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Title</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Button Content</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+        </td>
+    </tr>
+</table>

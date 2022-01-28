@@ -3,20 +3,12 @@
         "module": "commonjs",
         "target": "es6",
         "lib": [
-            "es5",
-            "es6",
-            "DOM"
+            "es6"
         ],
         "moduleResolution": "node",
         "sourceMap": true,
         "outDir": "dist/",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "esModuleInterop": true,
-        "baseUrl": "./src",
-        "paths": {
-            "@api/*": ["api/*"]
-        }
+        "esModuleInterop": true
     },
     "include": [
         "src/**/*"
