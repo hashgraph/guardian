@@ -142,6 +142,7 @@ export const makeTrackAndTraceApi = ({
     assert(policyTag, `policyTag is missing`);
     assert(deviceId, `deviceId is missing`);
     assert(deviceInfo, `deviceInfo is missing`);
+    assert(deviceInfo.deviceType, `deviceType is missing`);
 
     const deviceConfigKey = `${policyTag}-${deviceId}`;
 
@@ -206,6 +207,7 @@ export const makeTrackAndTraceApi = ({
     const newDeviceConfig = deviceConfigRepository.create({
       key: deviceConfigKey,
       deviceId,
+      deviceType: deviceInfo.deviceType,
       policyTag,
       config: deviceConfig,
     } as DeviceConfig);

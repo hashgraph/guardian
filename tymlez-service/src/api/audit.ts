@@ -43,7 +43,7 @@ export const makeAuditApi = ({
             filter,
           )
         ).payload;
-        vp.data = extractAndFormatVp(vp);
+        vp.data = extractAndFormatVp(vp, device.deviceType);
         res.status(200).json(vp);
         return;
       }
@@ -57,7 +57,7 @@ export const makeAuditApi = ({
   return auditApi;
 };
 
-function extractAndFormatVp(dbResponse: IPagination): IVpRecord[] {
+function extractAndFormatVp(dbResponse: IPagination, deviceType: string): IVpRecord[] {
   return dbResponse.data.map((vpDocument) => {
     const vcRecords: IMrvSetting[] = vpDocument.document.verifiableCredential
       .slice(0, vpDocument.document.verifiableCredential.length - 1)
@@ -85,6 +85,7 @@ function extractAndFormatVp(dbResponse: IPagination): IVpRecord[] {
     return {
       vpId: vpDocument.id,
       vcRecords,
+      energyType: deviceType,
       energyValue: energyCarbonValue.totalEnergyValue,
       co2Produced: energyCarbonValue.totalCarbonAmount,
       timestamp: vpDocument.createDate,
@@ -107,6 +108,7 @@ interface IFilter {
 export interface IVpRecord {
   vpId: string;
   vcRecords: Array<IMrvSetting>;
+  energyType: string;
   energyValue: number;
   timestamp: Date;
   co2Produced: number;

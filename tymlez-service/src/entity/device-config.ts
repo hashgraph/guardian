@@ -20,6 +20,9 @@ export class DeviceConfig implements IDeviceConfig {
   deviceId!: string;
 
   @Column()
+  deviceType!: string;
+
+  @Column()
   policyTag!: string;
 
   @Column()
@@ -35,6 +38,7 @@ export class DeviceConfig implements IDeviceConfig {
 export interface IDeviceConfig {
   key: string;
   deviceId: string;
+  deviceType: string;
   policyTag: string;
   config: IUIServiceDeviceConfig;
 }
