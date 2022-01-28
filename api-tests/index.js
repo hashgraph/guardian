@@ -3,16 +3,12 @@ const kill  = require('tree-kill');
 const path = require('path');
 const fs = require('fs');
 
+const {sleep} = require("./helpers");
+
+const {Login} = require("./test-suits/accounts");
+
+
 const processes = []
-
-function sleep(time) {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve();
-        }, time)
-    })
-}
-
 
 describe('Tests', function() {
     before(async function() {
@@ -42,12 +38,10 @@ describe('Tests', function() {
             )
             await sleep(5000);
         }
+        // await sleep(15000);
     })
 
-    it('test', async function() {
-        this.timeout(10000000000);
-        await sleep(1000);
-    })
+    it('Accounts/Login', Login);
 
     after(async function() {
         for (let proc of processes) {
