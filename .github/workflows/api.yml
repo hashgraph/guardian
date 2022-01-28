@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         node-version: [ 16.x ]
-        mongodb-version: [ '4.4' ]
+        mongodb-version: [ 4.4 ]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -50,3 +50,5 @@ jobs:
           pushd api-tests
           npm run test
           popd
+        env:
+          CI: true
