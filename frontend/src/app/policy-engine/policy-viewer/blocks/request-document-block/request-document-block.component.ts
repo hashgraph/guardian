@@ -160,6 +160,7 @@ export class RequestDocumentBlockComponent implements OnInit {
 
 
     onDialog() {
+        this.dataForm.reset();
         this.dialogRef = this.dialog.open(this.dialogTemplate, {
             width: '850px',
             data: this

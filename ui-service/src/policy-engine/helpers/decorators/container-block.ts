@@ -1,11 +1,11 @@
-import {BasicBlock} from '@policy-engine/helpers/decorators/basic-block';
-import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces/block-options';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
-import {IAuthUser} from '@auth/auth.interface';
-import {getMongoRepository} from 'typeorm';
-import {Policy} from '@entity/policy';
-import {User} from '@entity/user';
-import {IPolicyContainerBlock} from '@policy-engine/policy-engine.interface';
+import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
+import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { IAuthUser } from '@auth/auth.interface';
+import { getMongoRepository } from 'typeorm';
+import { Policy } from '@entity/policy';
+import { User } from '@entity/user';
+import { IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 
 /**
  * Container block decorator
@@ -20,13 +20,14 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             public readonly blockClassName = 'ContainerBlock';
 
             async changeStep(user, data, target) {
+                let result: any;
                 if (typeof super.changeStep === 'function') {
-                    const result = super.changeStep(user, data, target);
-                    if (target) {
-                        await target.runAction(data, user)
-                    }
-                    return result;
+                    result = super.changeStep(user, data, target);
                 }
+                if (target) {
+                    await target.runAction(data, user)
+                }
+                return result;
             }
 
             async getData(user: IAuthUser | null): Promise<any> {
@@ -38,7 +39,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const ref = PolicyComponentsStuff.GetBlockRef<IPolicyContainerBlock>(this);
                 const currentPolicy = await getMongoRepository(Policy).findOne(ref.policyId);
                 const currentRole = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[user.did] : null;
-                const dbUser = await getMongoRepository(User).findOne({username: user.username});
+                const dbUser = await getMongoRepository(User).findOne({ username: user.username });
 
                 return Object.assign(data, {
                     id: this.uuid,

@@ -64,10 +64,10 @@ export class SendToGuardianBlock {
     }
 
     async runAction(state, user) {
+        console.log("send-to-guardian-block runAction");
         const ref = PolicyComponentsStuff.GetBlockRef<IPolicyBlock>(this);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
-        console.log("runAction");
         ref.updateBlock(state, user, '');
     }
 

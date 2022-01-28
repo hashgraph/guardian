@@ -139,18 +139,25 @@ export class PolicyConfigurationComponent implements OnInit {
         this.root = root;
         this.blocks = [root];
         this.currentBlock = root;
-        this.allBlocks = this.all(root, []);
+        this.allBlocks = this.all(root);
         this.allBlocks.forEach((b => {
             if (!b.id) b.id = this.generateUUIDv4();
         }));
     }
 
-    all(block: BlockNode, allBlocks: BlockNode[]) {
+    all(block: BlockNode) {
+        let allBlocks: BlockNode[] = [];
+        this.children(block, allBlocks);
+        allBlocks = allBlocks.sort((a, b) => (a.tag < b.tag ? -1 : 1));
+        return allBlocks;
+    }
+
+    children(block: BlockNode, allBlocks: BlockNode[]) {
         allBlocks.push(block);
         if (block.children) {
             for (let index = 0; index < block.children.length; index++) {
                 const element = block.children[index];
-                this.all(element, allBlocks);
+                this.children(element, allBlocks);
             }
         }
         return allBlocks;

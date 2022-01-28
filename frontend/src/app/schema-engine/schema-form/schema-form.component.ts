@@ -110,7 +110,7 @@ export class SchemaFormComponent implements OnInit {
         this.subscribeFormatDateValue(listItem.control, item.format);
       }
       if (['number', 'integer', 'duration'].includes(item.type)) {
-        this.subscribeFormatNumberValue(item.control, item.format);
+        this.subscribeFormatNumberValue(item.control, item.type);
       }
     }
     item.list.push(listItem);
@@ -187,7 +187,7 @@ export class SchemaFormComponent implements OnInit {
           this.subscribeFormatDateValue(item.control, item.format);
         }
         if (['number', 'integer', 'duration'].includes(item.type)) {
-          this.subscribeFormatNumberValue(item.control, item.format);
+          this.subscribeFormatNumberValue(item.control, item.type);
         }
 
         group[field.name] = item.control;
@@ -332,8 +332,7 @@ export class SchemaFormComponent implements OnInit {
   private subscribeFormatNumberValue(control: FormControl, type: string) {
     control.valueChanges
       .subscribe((val: any) => {
-        let momentDate = moment(val);
-        let valueToSet;
+        let valueToSet: any = val;
         try {
           if (type == 'integer') {
             valueToSet = parseInt(val);
@@ -343,6 +342,9 @@ export class SchemaFormComponent implements OnInit {
           }
         } catch (error) {
           valueToSet = null;
+        }
+        if (!Number.isFinite(valueToSet)) {
+          valueToSet = val;
         }
         control.setValue(valueToSet,
           {

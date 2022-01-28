@@ -21,6 +21,7 @@
                 <mat-icon>chevron_left</mat-icon>
                 <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
                 <span *ngIf="policyInfo && policyInfo.description">: {{policyInfo.description}}</span>
+                <span *ngIf="policyInfo && policyInfo.version">({{policyInfo.version}})</span>
             </a>
         </div>
         <div class="policy-container">
