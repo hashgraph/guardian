@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BlockNode } from '../../data-source/tree-data-source';
+import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema, SchemaStatus, Token } from 'interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -7,8 +7,9 @@ import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TokenService } from 'src/app/services/token.service';
+import { RegisteredBlocks } from '../../registered-blocks';
 import { PolicyAction, SavePolicyDialog } from '../../save-policy-dialog/save-policy-dialog.component';
-import { SetVersionDialog } from 'src/app/components/dialogs/set-version-dialog/set-version-dialog.component';
+import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -62,6 +63,7 @@ export class PolicyConfigurationComponent implements OnInit {
     };
 
     constructor(
+        public registeredBlocks: RegisteredBlocks,
         private schemaService: SchemaService,
         private tokenService: TokenService,
         private policyEngineService: PolicyEngineService,
@@ -137,18 +139,25 @@ export class PolicyConfigurationComponent implements OnInit {
         this.root = root;
         this.blocks = [root];
         this.currentBlock = root;
-        this.allBlocks = this.all(root, []);
+        this.allBlocks = this.all(root);
         this.allBlocks.forEach((b => {
             if (!b.id) b.id = this.generateUUIDv4();
         }));
     }
 
-    all(block: BlockNode, allBlocks: BlockNode[]) {
+    all(block: BlockNode) {
+        let allBlocks: BlockNode[] = [];
+        this.children(block, allBlocks);
+        allBlocks = allBlocks.sort((a, b) => (a.tag < b.tag ? -1 : 1));
+        return allBlocks;
+    }
+
+    children(block: BlockNode, allBlocks: BlockNode[]) {
         allBlocks.push(block);
         if (block.children) {
             for (let index = 0; index < block.children.length; index++) {
                 const element = block.children[index];
-                this.all(element, allBlocks);
+                this.children(element, allBlocks);
             }
         }
         return allBlocks;
@@ -162,12 +171,17 @@ export class PolicyConfigurationComponent implements OnInit {
     onAdd(type: string) {
         if (this.currentBlock) {
             this.currentBlock.children = this.currentBlock.children || [];
+            let permissions = undefined;
+            if (this.currentBlock.permissions) {
+                permissions = this.currentBlock.permissions.slice();
+            }
             const newBlock: BlockNode = {
                 id: this.generateUUIDv4(),
                 tag: `Block${this.indexBlock}`,
                 blockType: type,
                 defaultActive: true,
-                children: []
+                children: [],
+                permissions: permissions
             };
             this.currentBlock.children.push(newBlock);
             this.setBlocks(this.blocks[0]);
@@ -233,15 +247,15 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     setVersion() {
-      const dialogRef = this.dialog.open(SetVersionDialog, {
-        width: '350px',
-        data: {}
-      });
-      dialogRef.afterClosed().subscribe((version) => {
-          if (version) {
-              this.publishPolicy(version);
-          }
-      });
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe((version) => {
+            if (version) {
+                this.publishPolicy(version);
+            }
+        });
     }
 
     private publishPolicy(version: string) {
@@ -299,10 +313,10 @@ export class PolicyConfigurationComponent implements OnInit {
         const dialogRef = this.dialog.open(SavePolicyDialog, {
             width: '500px',
             data: {
-              policy: this.policy,
-              action: this.policy.status === 'DRAFT'
-                ? PolicyAction.CREATE_NEW_POLICY
-                : null
+                policy: this.policy,
+                action: this.policy.status === 'DRAFT'
+                    ? PolicyAction.CREATE_NEW_POLICY
+                    : null
             },
             autoFocus: false
         });
@@ -315,12 +329,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 delete policy.owner;
                 delete policy.version;
 
-                if (result.action === PolicyAction.CREATE_NEW_POLICY)
-                {
-                  delete policy.uuid;
+                if (result.action === PolicyAction.CREATE_NEW_POLICY) {
+                    delete policy.uuid;
                 }
                 else if (result.action === PolicyAction.CREATE_NEW_VERSION) {
-                  policy.previousVersion = this.policy.version;
+                    policy.previousVersion = this.policy.version;
                 }
 
                 this.policyEngineService.create(policy).subscribe((policies: any) => {
@@ -442,39 +455,5 @@ export class PolicyConfigurationComponent implements OnInit {
     async jsonToYaml(json: string): Promise<string> {
         const root = await this.jsonToObject(json);
         return await this.objectToYaml(root);
-    }
-
-    getIcon(blockType: string) {
-        if (blockType == 'interfaceContainerBlock') {
-            return 'tab';
-        }
-        if (blockType == 'interfaceDocumentsSource') {
-            return 'table_view';
-        }
-        if (blockType == 'informationBlock') {
-            return 'info';
-        }
-        if (blockType == 'policyRolesBlock') {
-            return 'manage_accounts';
-        }
-        if (blockType == 'requestVcDocument') {
-            return 'dynamic_form';
-        }
-        if (blockType == 'sendToGuardian') {
-            return 'send';
-        }
-        if (blockType == 'interfaceAction') {
-            return 'flash_on';
-        }
-        if (blockType == 'interfaceStepBlock') {
-            return 'vertical_split';
-        }
-        if (blockType == 'mintDocument') {
-            return 'paid';
-        }
-        if (blockType == 'externalDataBlock') {
-            return 'cloud';
-        }
-        return 'code'
     }
 }

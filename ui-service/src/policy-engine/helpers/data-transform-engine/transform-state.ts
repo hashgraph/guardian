@@ -1,5 +1,5 @@
 import {BlockActionError} from "@policy-engine/errors";
-import {StateContainer} from "@policy-engine/state-container";
+import {PolicyComponentsStuff} from "@policy-engine/policy-components-stuff";
 
 export function TransformState(rules: any, state: any, updateSource: string, updateTarget: string): any {
     if (!rules) {
@@ -21,7 +21,7 @@ export function TransformState(rules: any, state: any, updateSource: string, upd
     try {
         updates[configuration.target] = expression(state);
     } catch (e) {
-        throw new BlockActionError(e.message, StateContainer.GetBlockByUUID(updateTarget).blockType, updateTarget);
+        throw new BlockActionError(e.message, PolicyComponentsStuff.GetBlockByUUID(updateTarget).blockType, updateTarget);
     }
     return Object.assign({}, state, updates);
 }

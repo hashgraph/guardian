@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.component';
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema } from 'interfaces';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * Page with the list of VP Documents.
@@ -64,7 +64,7 @@ export class AuditComponent implements OnInit {
     }
 
     openVP(document: any) {
-        const dialogRef = this.dialog.open(JsonDialog, {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
                 document: document,

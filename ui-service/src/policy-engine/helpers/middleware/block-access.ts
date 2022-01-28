@@ -1,7 +1,6 @@
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {StateContainer} from '@policy-engine/state-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 import {Response} from 'express';
-import {AuthenticatedRequest} from '../../../auth/auth.interface';
+import {AuthenticatedRequest} from '@auth/auth.interface';
 
 /**
  * Block access middleware
@@ -10,18 +9,18 @@ import {AuthenticatedRequest} from '../../../auth/auth.interface';
  * @param next
  */
 export function BlockAccess(req: AuthenticatedRequest, res: Response, next: Function) {
-    const block = StateContainer.GetBlockByUUID<any>(req.params.uuid);
-    const type = PolicyBlockHelpers.GetBlockRef(block).blockClassName;
+    const block = PolicyComponentsStuff.GetBlockByUUID<any>(req.params.uuid);
+    const type = PolicyComponentsStuff.GetBlockRef(block).blockClassName;
     let noAccsess = true;
     switch (req.method) {
         case 'GET':
-            if (['EventBlock', 'DataSourceBlock', 'ContainerBlock'].includes(type)) {
+            if (['EventBlock', 'DataSourceBlock', 'ContainerBlock', 'DataSourceAddon'].includes(type)) {
                 noAccsess = false;
             }
             break;
 
         case 'POST':
-            if (['EventBlock'].includes(type)) {
+            if (['EventBlock', 'DataSourceAddon'].includes(type)) {
                 noAccsess = false;
             }
             break;

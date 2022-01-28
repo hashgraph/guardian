@@ -3,7 +3,7 @@ import {
     TimestampUtils,
     HcsDidRootKey
 } from '@hashgraph/did-sdk-js';
-import { check } from '@transmute/jsonld-schema';
+import { check, CheckResult } from '@transmute/jsonld-schema';
 
 import { VcSubject } from '../vc/vc-subject';
 import { HcsVcDocument } from '../vc/vc-document';
@@ -66,7 +66,7 @@ export class VCHelper {
      * 
      */
     public addSchemaLoader(schemaLoader: SchemaLoader): void {
-        if(schemaLoader) {
+        if (schemaLoader) {
             this.schemaLoader = schemaLoader.get.bind(schemaLoader);
         } else {
             this.schemaLoader = null;
@@ -241,7 +241,7 @@ export class VCHelper {
      * 
      * @returns {boolean} - is verified
      */
-    public async verifySchema(vcDocument: HcsVcDocument<VcSubject> | any) {
+    public async verifySchema(vcDocument: HcsVcDocument<VcSubject> | any): Promise<CheckResult> {
         let vc: any;
         if (vcDocument && typeof vcDocument.toJsonTree === 'function') {
             vc = vcDocument.toJsonTree();
@@ -266,15 +266,11 @@ export class VCHelper {
             throw new Error('Schema not found');
         }
 
-        try {
-            const res = await check({
-                input: vc,
-                schema: schema,
-                documentLoader: this.loader as any,
-            });
-            return res.ok;
-        } catch (error) {
-            return false;
-        }
+        const res = await check({
+            input: vc,
+            schema: schema,
+            documentLoader: this.loader as any,
+        });
+        return res;
     }
 }

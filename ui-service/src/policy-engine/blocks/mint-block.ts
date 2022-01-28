@@ -1,5 +1,4 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { HcsVcDocument, HcsVpDocument, HederaHelper, HederaUtils, VcSubject } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
@@ -8,7 +7,8 @@ import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature } from 'interfaces';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -173,10 +173,12 @@ export class MintBlock {
         let status = false;
         status = await this.saveVC(mintVC, user.did, ref);
         status = await this.saveVP(vp, user.did, DataTypes.MINT, ref);
+
+        return vp;
     }
 
     async runAction(state, user) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const {
             tokenId,
             rule
@@ -215,15 +217,18 @@ export class MintBlock {
         }
 
         try {
-            await this.mintProcessing(token, vcs, rule, root, curUser, ref);
+            const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
+            ref.runNext(null, { data: doc }).then(
+                function () { },
+                function (error: any) { console.error(error); }
+            );
         } catch (e) {
             throw e;
         }
     }
 
-    
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         if (!ref.options.tokenId) {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');

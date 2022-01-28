@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
-import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { IUser, Schema, SchemaEntity } from 'interfaces';
 import { DemoService } from 'src/app/services/demo.service';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * RootAuthority profile settings page.
@@ -149,7 +149,7 @@ export class RootConfigComponent implements OnInit {
     }
 
     openVCDocument(document: any, title: string) {
-        const dialogRef = this.dialog.open(JsonDialog, {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
                 document: document.document,
@@ -164,7 +164,7 @@ export class RootConfigComponent implements OnInit {
     }
 
     openDIDDocument(document: any, title: string) {
-        const dialogRef = this.dialog.open(JsonDialog, {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
                 document: document.document,

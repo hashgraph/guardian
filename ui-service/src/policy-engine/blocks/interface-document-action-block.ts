@@ -1,16 +1,17 @@
-import {EventBlock} from '@policy-engine/helpers/decorators';
-import {IAuthUser} from '../../auth/auth.interface';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {Inject} from '@helpers/decorators/inject';
-import {Guardians} from '@helpers/guardians';
-import {StateContainer} from '@policy-engine/state-container';
-import {getMongoRepository, getRepository} from 'typeorm';
-import {Policy} from '@entity/policy';
-import {Users} from '@helpers/users';
-import {KeyType, Wallet} from '@helpers/wallet';
-import {User} from '@entity/user';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { EventBlock } from '@policy-engine/helpers/decorators';
+import { IAuthUser } from '@auth/auth.interface';
+import { Inject } from '@helpers/decorators/inject';
+import { Guardians } from '@helpers/guardians';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { getMongoRepository, getRepository } from 'typeorm';
+import { Policy } from '@entity/policy';
+import { Users } from '@helpers/users';
+import { KeyType, Wallet } from '@helpers/wallet';
+import { User } from '@entity/user';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import {Schema, SchemaStatus} from 'interfaces';
+import { findOptions } from '@policy-engine/helpers/find-options';
+import {IPolicyAddonBlock, IPolicyInterfaceBlock} from '@policy-engine/policy-engine.interface';
 
 /**
  * Document action clock with UI
@@ -30,41 +31,60 @@ export class InterfaceDocumentActionBlock {
     @Inject()
     private wallet: Wallet;
 
-    async getData(user: IAuthUser): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
-        return {
-            type: ref.options.type,
-            blockType: 'interfaceAction',
-            uiMetaData: ref.options.uiMetaData,
-            id: ref.uuid
+    private async getSources(user): Promise<any[]> {
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyInterfaceBlock>(this);
+        let data = [];
+        for (let child of ref.children) {
+            if (child.blockClassName === 'SourceAddon') {
+                data = data.concat(await PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(child).getFromSource(user))
+            }
         }
+        return data;
+    }
+
+    async getData(user: IAuthUser): Promise<any> {
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const userFull = await this.users.getUser(user.username);
+
+        const data: any = {
+            id: ref.uuid,
+            blockType: 'interfaceAction',
+            type: ref.options.type,
+            uiMetaData: ref.options.uiMetaData
+        }
+
+        if (ref.options.type == 'selector') {
+            data.field = ref.options.field;
+        }
+
+        if (ref.options.type == 'dropdown') {
+            let documents: any[] = await this.getSources(userFull);
+            data.name = ref.options.name;
+            data.value = ref.options.value;
+            data.field = ref.options.field;
+            data.options = documents.map((e) => {
+                return {
+                    name: findOptions(e, ref.options.name),
+                    value: findOptions(e, ref.options.value),
+                }
+            });
+        }
+        return data;
     }
 
     async setData(user: IAuthUser, document: any): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
-        const uiMetaData = ref.options.uiMetaData;
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyInterfaceBlock>(this);
 
-        let state: any = {data: document};
+        let state: any = { data: document };
+
         if (ref.options.type == 'selector') {
-            //?
-            const value = document[uiMetaData.field];
-            const option = uiMetaData.options.find(e => e.value == value);
+            const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
-                const block = StateContainer.GetBlockByTag(ref.policyId, option.bindBlock) as any;
-                const target = block.parent;
-                const index = target.children.findIndex(e => e.uuid == block.uuid);
-                state = StateContainer.GetBlockState(target.uuid, user);
-                state.index = index;
-                state.data = document;
-                const owner = await getRepository(User).findOne({did: document.owner});
-                if (block.runAction) {
-                    await block.runAction(state, owner);
-                } else {
-                    await StateContainer.SetBlockState(target.uuid, state, owner, null);
-                }
-            } else {
-                return;
+                const block = PolicyComponentsStuff.GetBlockByTag(ref.policyId, option.bindBlock) as any;
+                const owner = await getRepository(User).findOne({ did: document.owner });
+                await ref.runTarget(owner, state, block);
             }
+            return;
         }
 
         if (ref.options.type == 'download') {
@@ -94,17 +114,31 @@ export class InterfaceDocumentActionBlock {
             }
         }
 
-        const currentIndex = ref.parent.children.findIndex(el => this === el);
-        const nextBlock = ref.parent.children[currentIndex + 1];
-        if (nextBlock && nextBlock.runAction) {
-            await nextBlock.runAction(state, user);
+        if (ref.options.type == 'dropdown') {
+            if (ref.options.bindBlock) {
+                const block = PolicyComponentsStuff.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
+                const owner = await getRepository(User).findOne({ did: document.owner });
+                await ref.runTarget(owner, state, block);
+                return;
+            }
         }
-        // await StateContainer.SetBlockState(ref.uuid, document, owner, null);
-        // block.updateBlock(state, owner, null);
+    }
+
+    private findOptions(document: any, field: any, options: any[]) {
+        let value: any = null;
+        if (document && field) {
+            const keys = field.split('.');
+            value = document;
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                value = value[key];
+            }
+        }
+        return options.find(e => e.value == value);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         if (!ref.options.type) {
             resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
@@ -114,8 +148,8 @@ export class InterfaceDocumentActionBlock {
                     if (!ref.options.uiMetaData || (typeof ref.options.uiMetaData !== 'object')) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData" does not set');
                     } else {
-                        if (!ref.options.uiMetaData.field) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.field" does not set');
+                        if (!ref.options.field) {
+                            resultsContainer.addBlockError(ref.uuid, 'Option "field" does not set');
                         }
                         if (!ref.options.uiMetaData.options) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.options" does not set');
@@ -161,8 +195,19 @@ export class InterfaceDocumentActionBlock {
                     }
                     break;
 
+                case 'dropdown':
+                    if (!ref.options.name) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "name" does not set');
+                        break;
+                    }
+                    if (!ref.options.value) {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "value" does not set');
+                        break;
+                    }
+                    break;
+
                 default:
-                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector" or "download"');
+                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector|download|dropdown"');
             }
         }
     }

@@ -53,7 +53,7 @@ export class Policy {
     @BeforeInsert()
     setDefaults() {
         this.status = this.status || 'DRAFT';
-        this.policyRoles = this.policyRoles;
+        this.registeredUsers = {};
         this.uuid = this.uuid || ModelHelper.randomUUID();
     }
 }

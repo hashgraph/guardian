@@ -8,9 +8,8 @@ import { verify } from 'jsonwebtoken';
 import { getConnection, getMongoRepository } from 'typeorm';
 import WebSocket from 'ws';
 import { AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser } from '../auth/auth.interface';
-import { PolicyBlockHelpers } from './helpers/policy-block-helpers';
 import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { StateContainer } from './state-container';
+import { PolicyComponentsStuff } from './policy-components-stuff';
 import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
@@ -22,6 +21,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import * as Buffer from 'buffer';
 import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
+import {BlockPermissions} from '@policy-engine/helpers/middleware/block-permissions';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -31,7 +31,7 @@ export class BlockTreeGenerator {
 
     constructor() {
         this.router = Router();
-        StateContainer.UpdateFn = (...args: any[]) => {
+        PolicyComponentsStuff.UpdateFn = (...args: any[]) => {
             this.stateChangeCb.apply(this, args);
         };
     }
@@ -51,21 +51,21 @@ export class BlockTreeGenerator {
      * @param uuid {string} - id of block
      * @param user {IAuthUser} - short user object
      */
-    stateChangeCb(uuid: string, state: any, user?: IAuthUser) {
+    stateChangeCb(uuid: string, state: any, user: IAuthUser) {
         this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
             try {
-                const policy = await getMongoRepository(Policy).findOne((StateContainer.GetBlockByUUID(uuid) as any).policyId);
-                const role = policy.registeredUsers[user.did];
-                if (!role) {
-                    return
-                }
-                if (StateContainer.IfUUIDRegistered(uuid) && StateContainer.IfHasPermission(uuid, role, user)) {
+                const dbUser = await getMongoRepository(User).findOne({username: client.user.username});
+                const blockRef = PolicyComponentsStuff.GetBlockByUUID(uuid) as any;
+
+                const policy = await getMongoRepository(Policy).findOne(blockRef.policyId);
+                const role = policy.registeredUsers[dbUser.did];
+
+                if (PolicyComponentsStuff.IfUUIDRegistered(uuid) && PolicyComponentsStuff.IfHasPermission(uuid, role, dbUser)) {
                     client.send(uuid);
                 }
             } catch (e) {
                 console.error('WS Error', e);
             }
-
         });
     }
 
@@ -129,33 +129,32 @@ export class BlockTreeGenerator {
             policyId = arg;
         } else {
             policy = arg;
-            policyId = StateContainer.GenerateNewUUID();
+            policyId = PolicyComponentsStuff.GenerateNewUUID();
         }
 
         const configObject = policy.config as ISerializedBlock;
 
-        function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): IPolicyBlock {
+        async function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): Promise<IPolicyBlock> {
             const { blockType, children, ...params }: ISerializedBlockExtend = block;
             if (parent) {
                 params._parent = parent;
             }
-            const blockInstance = PolicyBlockHelpers.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
+            const blockInstance = PolicyComponentsStuff.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
             blockInstance.setPolicyId(policyId.toString())
             blockInstance.setPolicyOwner(policy.owner);
             if (children && children.length) {
                 for (let child of children) {
-                    BuildInstances(child, blockInstance);
+                    await BuildInstances(child, blockInstance);
                 }
             }
+            await blockInstance.restoreState();
             return blockInstance;
         }
 
-        const model = BuildInstances(configObject);
+        const model = await BuildInstances(configObject);
         if (!skipRegistration) {
             this.models.set(policy.id.toString(), model as any);
         }
-
-        StateContainer.InitStateSubscriptions();
 
         return model as IPolicyInterfaceBlock;
     }
@@ -294,6 +293,8 @@ export class BlockTreeGenerator {
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
                 model.owner = user.did;
                 if (!model.uuid) {
+                    delete model.version;
+                    delete model.previousVersion;
                     delete model.topicId;
                 }
                 await getMongoRepository(Policy).save(model);
@@ -336,7 +337,7 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.router.put('/:policyId/publish/', async (req: AuthenticatedRequest, res: Response) => {
+        this.router.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 if (!req.body || !req.body.policyVersion) {
                     throw new Error("Policy version in body is empty");
@@ -346,17 +347,23 @@ export class BlockTreeGenerator {
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
+                    const { policyVersion } = req.body;
                     const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+                    if (!model) {
+                        res.status(500).send({ code: 500, message: 'Unknown policy' });
+                        return;
+                    }
 
                     if (!ModelHelper.checkVersionFormat(req.body.policyVersion)) {
                         throw new Error("Invalid version format");
                     }
+
                     if (ModelHelper.versionCompare(req.body.policyVersion, model.previousVersion) <= 0) {
                         throw new Error("Version must be greater than " + model.previousVersion);
                     }
 
                     const countModels = await getMongoRepository(Policy).count({
-                        version: req.body.policyVersion,
+                        version: policyVersion,
                         uuid: model.uuid
                     });
 
@@ -424,7 +431,7 @@ export class BlockTreeGenerator {
                     errors
                 });
             } catch (error) {
-                res.status(500).send({ code: 500, message: error.message });
+                res.status(500).send({ code: 500, message: error.message || error });
             }
         });
 
@@ -457,15 +464,10 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.router.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+        const blockRouter = Router();
+        blockRouter.get('/', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if (!block) {
-                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
-                    res.status(err.errorObject.code).send(err.errorObject);
-                    return;
-                }
-                const data = await block.getData(req.user, req.params.uuid, req.query);
+                const data = await req['block'].getData(req.user, req['block'].uuid, req.query);
                 res.send(data);
             } catch (e) {
                 try {
@@ -474,19 +476,11 @@ export class BlockTreeGenerator {
                 } catch (e) {
                     res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
                 }
-                console.error(e);
             }
         });
-
-        this.router.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+        blockRouter.post('/', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-                if (!block) {
-                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
-                    res.status(err.errorObject.code).send(err.errorObject);
-                    return;
-                }
-                const data = await block.setData(req.user, req.body);
+                const data = await req['block'].setData(req.user, req.body);
                 res.status(200).send(data || {});
             } catch (e) {
                 try {
@@ -498,16 +492,43 @@ export class BlockTreeGenerator {
                 console.error(e);
             }
         });
+        this.router.use('/:policyId/blocks/:uuid', BlockPermissions, blockRouter);
 
         this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
             try {
-                const block = StateContainer.GetBlockByTag(req.params.policyId, req.params.tagName);
+                const block = PolicyComponentsStuff.GetBlockByTag(req.params.policyId, req.params.tagName);
                 if (!block) {
                     const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
                 }
                 res.send({ id: block.uuid });
+            } catch (e) {
+                try {
+                    const err = e as BlockError;
+                    res.status(err.errorObject.code).send(err.errorObject);
+                } catch (_e) {
+                    res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+                }
+                console.error(e);
+            }
+        });
+
+        this.router.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+                if (!block) {
+                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+                    res.status(err.errorObject.code).send(err.errorObject);
+                    return;
+                }
+                let tmpBlock: IPolicyBlock = block;
+                const parents = [block.uuid];
+                while (tmpBlock.parent) {
+                    parents.push(tmpBlock.parent.uuid);
+                    tmpBlock = tmpBlock.parent;
+                }
+                res.send(parents);
             } catch (e) {
                 try {
                     const err = e as BlockError;
