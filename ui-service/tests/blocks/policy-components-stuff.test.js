@@ -1,10 +1,13 @@
 require('module-alias/register');
+const rewire = require("rewire");
+
+const {Inject} = rewire('../../dist/helpers/decorators/inject');
 const {PolicyComponentsStuff} = require("../../dist/policy-engine/policy-components-stuff");
 const {assert} = require('chai');
 
 describe('State Container', function () {
     it('GenerateNewUUID', async function () {
-        assert.equal(StateContainer.GenerateNewUUID().length, 36)
+        assert.equal(PolicyComponentsStuff.GenerateNewUUID().length, 36)
     });
 
     it('IfUUIDRegistered', async function () {
