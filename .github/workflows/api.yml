@@ -48,6 +48,7 @@ jobs:
       - name: Start
         run: |
           pushd api-tests
+          npm install
           npm run test
           popd
         env:
