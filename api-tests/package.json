@@ -8,7 +8,7 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "license": "Apache-2.0",
-  "dependencies": {
+  "devDependencies": {
     "chai": "^4.3.5",
     "mocha": "^9.2.0",
     "mocha-junit-reporter": "^2.0.2",
