@@ -4,6 +4,7 @@ import { IVPDocument, MessageAPI } from 'interfaces';
 import { take, takeRight } from 'lodash';
 import type { MongoRepository } from 'typeorm/repository/MongoRepository';
 import type { DeviceConfig } from '@entity/device-config';
+import type { IMrvSetting } from 'modules/track-and-trace/IMrvSetting';
 
 export const makeAuditApi = ({
   channel,
@@ -56,17 +57,17 @@ export const makeAuditApi = ({
   return auditApi;
 };
 
-function extractAndFormatVp(dbResponse: IPagination) {
+function extractAndFormatVp(dbResponse: IPagination): IVpRecord[] {
   return dbResponse.data.map((vpDocument) => {
-    const vcRecords: IVcRecord[] = vpDocument.document.verifiableCredential
+    const vcRecords: IMrvSetting[] = vpDocument.document.verifiableCredential
       .slice(0, vpDocument.document.verifiableCredential.length - 1)
       .map((vc) => {
         return vc.credentialSubject.map((cs) => {
           return {
-            mrvEnergyAmount: cs.mrvEnergyAmount,
-            mrvCarbonAmount: cs.mrvCarbonAmount,
-            mrvTimestamp: cs.mrvTimestamp,
-            mrvDuration: cs.mrvDuration,
+            mrvEnergyAmount: Number(cs.mrvEnergyAmount),
+            mrvCarbonAmount: Number(cs.mrvCarbonAmount),
+            mrvTimestamp: cs.mrvTimestamp as string,
+            mrvDuration: Number(cs.mrvDuration),
           };
         });
       })
@@ -84,7 +85,6 @@ function extractAndFormatVp(dbResponse: IPagination) {
     return {
       vpId: vpDocument.id,
       vcRecords,
-      energyType: 'consumption',
       energyValue: energyCarbonValue.totalEnergyValue,
       co2Produced: energyCarbonValue.totalCarbonAmount,
       timestamp: vpDocument.createDate,
@@ -104,18 +104,9 @@ interface IFilter {
   period?: number;
 }
 
-//ToDo: Pradeep Update the datatypes based on tymlez interfaces
-export interface IVcRecord {
-  mrvEnergyAmount: number;
-  mrvCarbonAmount: number;
-  mrvTimestamp: number;
-  mrvDuration: number;
-}
-
 export interface IVpRecord {
   vpId: string;
-  vcRecords: Array<IVcRecord>;
-  energyType: string;
+  vcRecords: Array<IMrvSetting>;
   energyValue: number;
   timestamp: Date;
   co2Produced: number;
