@@ -51,7 +51,6 @@ export const approveAPI = async function (
      * @returns {IApprovalDocument[]} - new approve documents
      */
     channel.response(MessageAPI.SET_APPROVE_DOCUMENTS, async (msg, res) => {
-        console.log("SET_APPROVE_DOCUMENTS", msg.payload);
         const id = msg.payload.id;
         let result;
         if (id) {
