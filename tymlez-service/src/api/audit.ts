@@ -1,7 +1,6 @@
 import { Request, Response, Router } from 'express';
 import type { IFastMqChannel } from 'fastmq';
 import { IVPDocument, MessageAPI } from 'interfaces';
-import { take, takeRight } from 'lodash';
 import type { MongoRepository } from 'typeorm/repository/MongoRepository';
 import type { DeviceConfig } from '@entity/device-config';
 import type { IMrvSetting } from 'modules/track-and-trace/IMrvSetting';
@@ -57,7 +56,10 @@ export const makeAuditApi = ({
   return auditApi;
 };
 
-function extractAndFormatVp(dbResponse: IPagination, deviceType: string): IVpRecord[] {
+function extractAndFormatVp(
+  dbResponse: IPagination,
+  deviceType: string,
+): IVpRecord[] {
   return dbResponse.data.map((vpDocument) => {
     const vcRecords: IMrvSetting[] = vpDocument.document.verifiableCredential
       .slice(0, vpDocument.document.verifiableCredential.length - 1)
@@ -107,7 +109,7 @@ interface IFilter {
 
 export interface IVpRecord {
   vpId: string;
-  vcRecords: Array<IMrvSetting>;
+  vcRecords: IMrvSetting[];
   energyType: string;
   energyValue: number;
   timestamp: Date;
@@ -118,7 +120,7 @@ export interface IVpRecord {
 export type VerificationPeriod = 'all' | '24h';
 
 export interface IVerification {
-  records: Array<IVpRecord>;
+  records: IVpRecord[];
   num: number;
 }
 interface IPagination {

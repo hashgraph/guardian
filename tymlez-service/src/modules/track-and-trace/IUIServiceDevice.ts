@@ -19,7 +19,7 @@ export interface IUIServiceDeviceDocument {
   credentialSubject: IUIServiceDeviceCredentialSubject[];
   issuer: string;
   issuanceDate: string;
-  proof: Object;
+  proof: any;
 }
 
 export interface IUIServiceDeviceCredentialSubject {

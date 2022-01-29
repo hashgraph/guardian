@@ -61,7 +61,7 @@
     "build": "tsc",
     "debug": "nodemon dist/index.js",
     "dev": "tsc -w",
-    "lint": "tslint --project .",
+    "lint": "tsc --noEmit --incremental false && tslint --project .",
     "start": "node dist/index.js",
     "watch": "npx -y concurrently 'npm:dev' 'npm:debug'"
   },

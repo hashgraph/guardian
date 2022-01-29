@@ -7,7 +7,6 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "inlineSourceMap": true,
-    "importsNotUsedAsValues": "error",
     "lib": [
       "es5",
       "es6"

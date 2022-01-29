@@ -50,7 +50,7 @@ async function initRootConfig({
     },
   );
 
-  let userProfile: IUserProfile | undefined = undefined;
+  let userProfile: IUserProfile | undefined;
 
   while (!userProfile || userProfile.state < UserState.CONFIRMED) {
     console.log('Waiting for user to be initialized', userProfile);

@@ -10,12 +10,6 @@ message-broker/dist/
 .vscode/
 vc/node_modules/
 vc/dist/
-guardian-service/package-lock.json
-message-broker/package-lock.json
-mrv-sender/package-lock.json
-ui-service/package-lock.json
-ui-service/public/package-lock.json
-tymlez-service/package-lock.json
 vc-modules/node_modules/
 vc-modules/dist/
 config.keys
@@ -32,3 +26,4 @@ ui-service/.env
 ui-service/.env.docker
 tymlez-service/.env
 tymlez-service/.env.docker
+*.tsbuildinfo

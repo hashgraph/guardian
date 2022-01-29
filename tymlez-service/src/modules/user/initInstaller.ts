@@ -51,7 +51,7 @@ async function initInstallerHederaProfile({
     },
   );
 
-  let userProfile: IUserProfile | undefined = undefined;
+  let userProfile: IUserProfile | undefined;
 
   while (!userProfile || userProfile.state < UserState.HEDERA_CONFIRMED) {
     console.log('Waiting for user to be initialized', userProfile);

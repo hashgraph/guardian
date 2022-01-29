@@ -31,7 +31,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "lint": "tslint --project .",
+    "lint": "tsc --noEmit --incremental false && tslint --project .",
     "test": "mocha tests/unit-tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/vc-modules.xml",
     "test:network": "mocha tests/network-tests/**/*.test.js",
     "test:stability": "mocha tests/stability.test.js",

@@ -16,12 +16,77 @@ env:
   AWS_DEFAULT_REGION: ap-southeast-2
 
 jobs:
+  install:
+    runs-on: ubuntu-latest
+    if: "!contains(github.ref, 'dependabot/')"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+
+      - name: restore npm
+        id: npm-cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-lerna-${{ hashFiles('**/package-lock.json') }}
+
+      - name: npm install
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+
+  check:
+    runs-on: ubuntu-latest
+    needs: install
+    if: "!contains(github.ref, 'dependabot/')"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+
+      - name: restore npm
+        id: npm-cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-lerna-${{ hashFiles('**/package-lock.json') }}
+
+      - name: npm install
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+
+      - name: Check
+        run: |
+          npm run build
+          npm run lint
+
   deploy-dev:
+    strategy:
+      fail-fast: false
+      matrix:
+        job: [cohort]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    needs: check
     env:
-      ENV: dev
-      CLOUDSDK_CORE_PROJECT: tymlez-platform-328903
+      ENV: 'dev'
+      CLIENT_NAME: '${{ matrix.job }}'
 
     steps:
       - name: Get GIT_SHA and GIT_TAG
@@ -42,23 +107,37 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
+          node-version: '16.x'
+
+      - name: restore npm
+        id: npm-cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-lerna-${{ hashFiles('**/package-lock.json') }}
 
       - name: npm install
+        if: steps.npm-cache.outputs.cache-hit != 'true'
         run: |
-          # Paul Debug
-          gcloud --version
-          gcloud container clusters list
           npm install
 
-      - name: Check
-        run: |
-          npm run lint
+      # - name: Deploy (${{ matrix.job }})
+      #   run: |
+      #     aws sts get-caller-identity
 
-#          Paul Debug
-# - name: Deploy
-#   run: |
-#     npm run deploy
-#   env:
-#     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws ssm get-parameter --name /${ENV}/tymlez-platform/gcp-ci-credentials.json --with-decryption | jq ".Parameter.Value | fromjson" > gcp-ci-credentials.json || true
+      #     export GOOGLE_APPLICATION_CREDENTIALS="$PWD/gcp-ci-credentials.json"
+      #     cat "$GOOGLE_APPLICATION_CREDENTIALS" | jq .client_email || true
+
+      #     npm run deploy:${{ matrix.job }} -- --since $SINCE
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets[format('{0}_{1}_AWS_ACCESS_KEY_ID', matrix.job, env.ENV)] }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets[format('{0}_{1}_AWS_SECRET_ACCESS_KEY', matrix.job, env.ENV)] }}
+      #     # Paul Debug: get CLOUDSDK_CORE_PROJECT from SSM
+      #     CLOUDSDK_CORE_PROJECT: tymlez-platform-328903
+
+
+

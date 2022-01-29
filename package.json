@@ -1,14 +1,14 @@
 {
   "name": "tymlez-guardian",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "preinstall": "./tools/bin/ensure-node16.sh",
     "install": "lerna clean --no-private --yes && npm run bootstrap",
     "bootstrap": "./tools/bin/bootstrap.sh",
-    "clean": "lerna run clean --stream && lerna clean --no-private --yes",
-    "lint": "npm run npm7:check && tsc --noEmit",
+    "clean": "lerna run clean --stream --concurrency ${CONCURRENCY:-2} && lerna clean --no-private --yes",
+    "lint": "npm run npm7:check && tsc --noEmit && lerna run lint --stream --concurrency ${CONCURRENCY:-2}",
     "npm7:check": "./tools/bin/ensure-npm7.sh",
-    "build": "lerna run build --stream --ignore guardian && lerna run build:deploy --stream",
+    "build": "lerna run build --stream --concurrency ${CONCURRENCY:-2} --ignore guardian && lerna run build:deploy --stream --concurrency ${CONCURRENCY:-2}",
     "dev:docker": "npm run load-env && docker-compose up -d --build",
     "dev:watch": "npm run load-env && ./tools/bin/dev-watch.sh",
     "deploy:manual": "npm run load-env && npm run tools deploy",
