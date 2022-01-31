@@ -124,20 +124,25 @@ jobs:
         run: |
           npm install
 
-      # - name: Deploy (${{ matrix.job }})
-      #   run: |
-      #     aws sts get-caller-identity
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
 
-      #     aws ssm get-parameter --name /${ENV}/tymlez-platform/gcp-ci-credentials.json --with-decryption | jq ".Parameter.Value | fromjson" > gcp-ci-credentials.json || true
-      #     export GOOGLE_APPLICATION_CREDENTIALS="$PWD/gcp-ci-credentials.json"
-      #     cat "$GOOGLE_APPLICATION_CREDENTIALS" | jq .client_email || true
+      - name: Deploy (${{ matrix.job }})
+        run: |
+          aws sts get-caller-identity
 
-      #     npm run deploy:${{ matrix.job }} -- --since $SINCE
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets[format('{0}_{1}_AWS_ACCESS_KEY_ID', matrix.job, env.ENV)] }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets[format('{0}_{1}_AWS_SECRET_ACCESS_KEY', matrix.job, env.ENV)] }}
-      #     # Paul Debug: get CLOUDSDK_CORE_PROJECT from SSM
-      #     CLOUDSDK_CORE_PROJECT: tymlez-platform-328903
+          aws ssm get-parameter --name /${ENV}/tymlez-platform/gcp-ci-credentials.json --with-decryption | jq ".Parameter.Value | fromjson" > gcp-ci-credentials.json || true
+          export GCP_PROJECT_ID=`aws ssm get-parameter --name /${ENV}/tymlez-platform/gcp-project-id | jq -r ".Parameter.Value"`
+
+          echo GCP_PROJECT_ID=$GCP_PROJECT_ID
+
+          gcloud auth login --cred-file "$PWD/gcp-ci-credentials.json"
+          gcloud config set project $GCP_PROJECT_ID
+
+          npm run deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets[format('{0}_{1}_AWS_ACCESS_KEY_ID', matrix.job, env.ENV)] }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets[format('{0}_{1}_AWS_SECRET_ACCESS_KEY', matrix.job, env.ENV)] }}
 
 
 

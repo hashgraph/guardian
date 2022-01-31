@@ -31,6 +31,7 @@ export async function deployToGke({
     ].join(' '),
   );
 
+  console.log('Using GKE Cluster', { gkeCluster, region });
   await exec(
     [
       'gcloud',

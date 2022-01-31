@@ -7,7 +7,7 @@ import passport from 'passport';
 import { HeaderAPIKeyStrategy } from 'passport-headerapikey';
 import createError from 'http-errors';
 import { VCDocumentLoader } from './document-loader/vc-document-loader';
-import { infoApi } from '@api/info';
+import { makeInfoApi } from '@api/info';
 import { debugApi } from '@api/debug';
 import { makeAuditApi } from '@api/audit';
 import assert from 'assert';
@@ -42,6 +42,8 @@ const {
   DB_DATABASE,
   GUARDIAN_TYMLEZ_API_KEY,
   UI_SERVICE_BASE_URL,
+  GUARDIAN_SERVICE_BASE_URL,
+  MESSAGE_BROKER_BASE_URL,
   OPERATOR_ID,
 } = process.env;
 
@@ -57,6 +59,8 @@ console.log('Starting tymlez-service', {
   OPERATOR_ID,
   MRV_RECEIVER_URL,
   UI_SERVICE_BASE_URL,
+  GUARDIAN_SERVICE_BASE_URL,
+  MESSAGE_BROKER_BASE_URL,
   SERVICE_CHANNEL,
   MQ_ADDRESS,
 });
@@ -67,6 +71,8 @@ assert(SERVICE_CHANNEL, `SERVICE_CHANNEL is missing`);
 assert(MQ_ADDRESS, `MQ_ADDRESS is missing`);
 assert(MRV_RECEIVER_URL, `MRV_RECEIVER_URL is missing`);
 assert(UI_SERVICE_BASE_URL, `UI_SERVICE_BASE_URL is missing`);
+assert(GUARDIAN_SERVICE_BASE_URL, `GUARDIAN_SERVICE_BASE_URL is missing`);
+assert(MESSAGE_BROKER_BASE_URL, `MESSAGE_BROKER_BASE_URL is missing`);
 assert(GUARDIAN_TYMLEZ_API_KEY, `GUARDIAN_TYMLEZ_API_KEY is missing`);
 
 passport.use(
@@ -126,7 +132,14 @@ Promise.all([
   // Document Loader -->
 
   // No not protect /info
-  app.use('/info', infoApi);
+  app.use(
+    '/info',
+    makeInfoApi({
+      uiServiceBaseUrl: UI_SERVICE_BASE_URL,
+      guardianServiceBaseUrl: GUARDIAN_SERVICE_BASE_URL,
+      messageBrokerBaseUrl: MESSAGE_BROKER_BASE_URL,
+    }),
+  );
 
   // Add all protected routes below
   app.use(

@@ -34,6 +34,8 @@ export async function deploy() {
 
   await exec(['docker-compose', 'build'].join(' '));
 
+  await exec(['gcloud', 'auth', 'configure-docker'].join(' '));
+
   await pushImages({
     gcpProjectId: GCP_PROJECT_ID,
     imageTag,

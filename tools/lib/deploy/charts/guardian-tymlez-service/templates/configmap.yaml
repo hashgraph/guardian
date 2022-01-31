@@ -8,5 +8,7 @@ data:
   DB_HOST: {{ .Release.Name }}-mongodb
   MRV_RECEIVER_URL: http://{{ .Release.Name }}-guardian-message-broker-{{ .Release.Revision }}:3003/mrv
   UI_SERVICE_BASE_URL: http://{{ .Release.Name }}-guardian-ui-service:3002
+  GUARDIAN_SERVICE_BASE_URL: http://{{ .Release.Name }}-guardian-service:3001
+  MESSAGE_BROKER_BASE_URL: http://{{ .Release.Name }}-guardian-message-broker:3003
 
 

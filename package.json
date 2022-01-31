@@ -11,7 +11,7 @@
     "build": "lerna run build --stream --concurrency ${CONCURRENCY:-2} --ignore guardian && lerna run build:deploy --stream --concurrency ${CONCURRENCY:-2}",
     "dev:docker": "npm run load-env && docker-compose up -d --build",
     "dev:watch": "npm run load-env && ./tools/bin/dev-watch.sh",
-    "deploy:manual": "npm run load-env && npm run tools deploy",
+    "deploy": "npm run load-env && npm run tools deploy",
     "tools": "node -r esbuild-register ./tools/bin/index.ts",
     "load-env": "node -r esbuild-register ./tools/bin/index.ts load-env"
   },
