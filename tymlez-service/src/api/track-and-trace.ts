@@ -318,7 +318,7 @@ export const makeTrackAndTraceApi = ({
       try {
         console.error('start post');
         const resp = await axios.post(mrvReceiverUrl, body);
-        console.error('end post', resp);
+        console.error('end post', resp?.status, resp?.data);
       } catch (e) {
         console.error(e);
         res.status(500).json(e);
