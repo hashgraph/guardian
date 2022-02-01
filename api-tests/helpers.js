@@ -1,4 +1,74 @@
+const axios = require("axios");
+const assert = require("assert");
 const BASE_URL = 'http://localhost:3002/api/v1'
+
+let tokens = [
+];
+
+async function GenerateTokens() {
+    tokens = [];
+    let result;
+    result = await axios.post(
+        GetURL('accounts', 'login'),
+        JSON.stringify({
+            username: 'RootAuthority',
+            password: 'test'
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+    SaveToken(result.data.username, result.data.accessToken);
+    result = await axios.post(
+        GetURL('accounts', 'login'),
+        JSON.stringify({
+            username: 'Installer',
+            password: 'test'
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+    SaveToken(result.data.username, result.data.accessToken);
+    result = await axios.post(
+        GetURL('accounts', 'login'),
+        JSON.stringify({
+            username: 'Installer2',
+            password: 'test'
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+    SaveToken(result.data.username, result.data.accessToken);
+    result = await axios.post(
+        GetURL('accounts', 'login'),
+        JSON.stringify({
+            username: 'Auditor',
+            password: 'test'
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+    SaveToken(result.data.username, result.data.accessToken);
+}
+
+function SaveToken(name, token) {
+    tokens.push({token, name});
+}
+
+function GetToken(name) {
+    return (tokens.find(t => t.name === name) || {}).token;
+}
 
 function sleep(time) {
     return new Promise(resolve => {
@@ -8,11 +78,14 @@ function sleep(time) {
     })
 }
 
-function GetURL(service, method) {
-    return [BASE_URL, service, method].join('/');
+function GetURL(service, ...methods) {
+    return [BASE_URL, service, ...methods].join('/');
 }
 
 module.exports = {
     sleep,
-    GetURL
+    GetURL,
+    SaveToken,
+    GetToken,
+    GenerateTokens
 }

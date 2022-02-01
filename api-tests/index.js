@@ -3,14 +3,20 @@ const kill  = require('tree-kill');
 const path = require('path');
 const fs = require('fs');
 
-const {sleep} = require("./helpers");
+const {sleep, GenerateTokens} = require("./helpers");
 
-const {Login} = require("./test-suits/accounts");
+const {Accounts} = require("./test-suits/accounts");
+const {Profiles} = require("./test-suits/profiles");
+const {Schemas} = require("./test-suits/schemas");
+const {Tokens} = require("./test-suits/tokens");
+const {Trustchains} = require("./test-suits/trustchains");
+const {Policies} = require("./test-suits/policies");
+const {Ipfs} = require("./test-suits/ipfs");
 
 
-const processes = []
+const processes = [];
 
-describe('Tests', function() {
+describe('Tests', async function() {
     before(async function() {
         const configs = [
             {from: path.resolve(path.join('configs', 'guardian-service', 'config.json')) , to:path.resolve(path.join('..', 'guardian-service', 'config.json'))},
@@ -33,15 +39,22 @@ describe('Tests', function() {
                 spawn('npm start', {
                     cwd: p,
                     shell: true,
-                    // detached: true
                 })
             )
             await sleep(5000);
         }
-        // await sleep(15000);
+        await sleep(15000);
     })
 
-    it('Accounts/Login', Login);
+    beforeEach(GenerateTokens);
+
+    Accounts();
+    Profiles();
+    Schemas();
+    Tokens();
+    Trustchains();
+    Policies();
+    // Ipfs();
 
     after(async function() {
         for (let proc of processes) {
