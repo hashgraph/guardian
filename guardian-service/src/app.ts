@@ -69,7 +69,7 @@ Promise.all([
 
     await setDefaultSchema(schemaRepository);
     await configAPI(channel, fileConfig);
-    await schemaAPI(channel, schemaRepository);
+    await schemaAPI(channel, schemaRepository, configRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentLoader, schemaDocumentLoader, schemaObjectLoader);
     await rootAuthorityAPI(channel, configRepository, didDocumentRepository, vcDocumentRepository);

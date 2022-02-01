@@ -123,11 +123,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
             res.status(500).json({ code: 500, message: 'Version already exists.' });
         }
 
-        const message = await guardians.publishSchema(schemaId, version);
-        const root = await guardians.getRootConfig(user.did);
-        await HederaHelper
-            .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-            .submitMessage(process.env.SUBMIT_SCHEMA_TOPIC_ID, JSON.stringify(message));
+        const item = await guardians.publishSchema(schemaId, version, user.did);
 
         const schemes = await guardians.getSchemesByOwner(user.did);
         schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);

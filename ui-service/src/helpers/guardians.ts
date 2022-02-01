@@ -401,8 +401,8 @@ export class Guardians {
      * 
      * @returns {ISchemaSubmitMessage} - message
      */
-    public async publishSchema(id: string, version: string): Promise<ISchemaSubmitMessage | null> {
-        return (await this.channel.request(this.target, MessageAPI.PUBLISH_SCHEMA, { id, version })).payload;
+    public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.PUBLISH_SCHEMA, { id, version, owner })).payload;
     }
 
     /**

@@ -4,6 +4,8 @@ import { MongoRepository } from 'typeorm';
 import { readJSON, writeJSON, readdirSync } from 'fs-extra';
 import path from 'path';
 import { Blob } from 'buffer';
+import { HederaHelper } from 'vc-modules';
+import { RootConfig } from '@entity/root-config';
 
 /**
  * Creation of default schemes.
@@ -87,7 +89,8 @@ const updateIRIs = function (schemes: ISchema[]) {
  */
 export const schemaAPI = async function (
     channel: any,
-    schemaRepository: MongoRepository<Schema>
+    schemaRepository: MongoRepository<Schema>,
+    configRepository: MongoRepository<RootConfig>,
 ): Promise<void> {
     /**
      * Create or update schema
@@ -192,51 +195,72 @@ export const schemaAPI = async function (
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
-        if (msg.payload) {
-            const id = msg.payload.id as string;
-            const version = msg.payload.version as string;
-
-            const item = await schemaRepository.findOne(id);
-
-            if (!item) {
-                res.send(null);
+        try {
+            if (msg.payload) {
+                const id = msg.payload.id as string;
+                const version = msg.payload.version as string;
+                const owner = msg.payload.owner as string;
+    
+                const item = await schemaRepository.findOne(id);
+    
+                if (!item) {
+                    res.send(null);
+                }
+    
+                if (item.creator != owner) {
+                    res.send(null);
+                }
+    
+                if (item.status == SchemaStatus.PUBLISHED) {
+                    res.send(null);
+                }
+    
+                SchemaHelper.updateVersion(item, version);
+    
+                const document = item.document;
+                const context = item.context;
+    
+                const documentFile = new Blob([document], { type: "application/json" });
+                const contextFile = new Blob([context], { type: "application/json" });
+                const cid = await new IPFS().addFile(await documentFile.arrayBuffer());
+                const contextCid = await new IPFS().addFile(await contextFile.arrayBuffer());
+    
+                item.status = SchemaStatus.PUBLISHED;
+                item.documentURL = cid;
+                item.contextURL = contextCid;
+    
+                const schemaPublishMessage: ISchemaSubmitMessage = {
+                    name: item.name,
+                    owner: item.creator,
+                    cid: cid,
+                    uuid: item.uuid,
+                    version: item.version,
+                    operation: ModelActionType.PUBLISH,
+                    context_cid: contextCid
+                }
+    
+                const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
+                if (!root) {
+                    res.send(null);
+                    return;
+                }
+    
+                const messageId = await HederaHelper
+                    .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+                    .submitMessage(process.env.SUBMIT_SCHEMA_TOPIC_ID, JSON.stringify(schemaPublishMessage));
+    
+                item.messageId = messageId.toString();
+    
+                updateIRI(item);
+                await schemaRepository.update(item.id, item);
+    
+                res.send(item);
+                return;
             }
-
-            if (item && item.status == SchemaStatus.PUBLISHED) {
-                res.send(null);
-            }
-
-            SchemaHelper.updateVersion(item, version);
-
-            const document = item.document;
-            const context = item.context;
-
-            const documentFile = new Blob([document], { type: "application/json" });
-            const contextFile = new Blob([context], { type: "application/json" });
-            const cid = await new IPFS().addFile(await documentFile.arrayBuffer());
-            const contextCid = await new IPFS().addFile(await contextFile.arrayBuffer());
-
-            item.status = SchemaStatus.PUBLISHED;
-            item.documentURL = cid;
-            item.contextURL = contextCid;
-
-            updateIRI(item);
-            await schemaRepository.update(item.id, item);
-
-            const schemaPublishMessage: ISchemaSubmitMessage = {
-                name: item.name,
-                owner: item.creator,
-                cid: cid,
-                uuid: item.uuid,
-                version: item.version,
-                operation: ModelActionType.PUBLISH,
-                context_cid: contextCid
-            }
-
-            res.send(schemaPublishMessage);
-            return;
+            res.send(null);
+        } catch (error) {
+            res.send(null);
         }
-        res.send(null);
     });
 
     /**
