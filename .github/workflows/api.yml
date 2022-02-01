@@ -53,7 +53,7 @@ jobs:
           popd
         env:
           CI: true
-      - name: Publish Unit Test Results
+      - name: Publish API Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
