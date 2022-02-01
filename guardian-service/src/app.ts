@@ -20,6 +20,7 @@ import { VpDocument } from '@entity/vp-document';
 import { DIDDocumentLoader } from './document-loader/did-document-loader';
 import { SchemaDocumentLoader } from './document-loader/vc-document-loader';
 import { SchemaObjectLoader } from './document-loader/schema-loader';
+import { IPFS } from '@helpers/ipfs';
 
 const PORT = process.env.PORT || 3001;
 
@@ -43,6 +44,8 @@ Promise.all([
 ]).then(async values => {
     const [db, channel, fileConfig] = values;
     const app = express();
+
+    IPFS.setChannel(channel);
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);
     const vcDocumentRepository = db.getMongoRepository(VcDocument);

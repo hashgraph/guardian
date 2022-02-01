@@ -6,6 +6,8 @@ import path from 'path';
 import { Blob } from 'buffer';
 import { HederaHelper } from 'vc-modules';
 import { RootConfig } from '@entity/root-config';
+import { schemasToContext } from '@transmute/jsonld-schema';
+import { IPFS } from '@helpers/ipfs';
 
 /**
  * Creation of default schemes.
@@ -214,16 +216,20 @@ export const schemaAPI = async function (
                 if (item.status == SchemaStatus.PUBLISHED) {
                     res.send(null);
                 }
-    
+                
                 SchemaHelper.updateVersion(item, version);
-    
+
+                const itemDocument = JSON.parse(item.document);
+                const defsArray = Object.values(itemDocument.$defs);
+                item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
+
                 const document = item.document;
                 const context = item.context;
     
                 const documentFile = new Blob([document], { type: "application/json" });
                 const contextFile = new Blob([context], { type: "application/json" });
-                const cid = await new IPFS().addFile(await documentFile.arrayBuffer());
-                const contextCid = await new IPFS().addFile(await contextFile.arrayBuffer());
+                const cid = await IPFS.addFile(await documentFile.arrayBuffer());
+                const contextCid = await IPFS.addFile(await contextFile.arrayBuffer());
     
                 item.status = SchemaStatus.PUBLISHED;
                 item.documentURL = cid;
