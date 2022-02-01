@@ -85,62 +85,6 @@ const updateIRIs = function (schemes: ISchema[]) {
 }
 
 /**
- * Load schema by message identifier
- * @param messageId Message identifier
- * @param schemaRepository Schema repository
- * @returns Found or uploaded schema
- */
-const loadSchema = async function (messageId: string, schemaRepository: MongoRepository<Schema>): Promise<Schema> {
-    const schema = await schemaRepository.findOne({
-        where: { messageId: { $eq: messageId } }
-    });
-
-    if (schema) {
-        return schema;
-    }
-
-    const topicMessage = await Import.getTopicMessage(messageId) as ISchemaSubmitMessage;
-    const context = await Import.getSchemaContext(topicMessage.context_cid);
-    const schemaToImport = await Import.getSchema(topicMessage.cid) as Schema;
-
-    schemaToImport.context = context;
-    schemaToImport.documentURL = topicMessage.cid;
-    schemaToImport.contextURL = topicMessage.context_cid;
-    schemaToImport.messageId = messageId;
-
-    updateIRI(schemaToImport);
-    await schemaRepository.create(schemaToImport);
-
-    return await schemaRepository.findOne({
-        where: { messageId: { $eq: messageId } }
-    });
-}
-
-/**
- * Get schema document
- * @param documentUrl Document URL
- * @param schemaRepository Schema repository
- * @returns Schema document
- */
-const getSchemaDocument = async function (documentUrl: string, schemaRepository: MongoRepository<Schema>) {
-    return await schemaRepository.findOne({
-        where: { documentURL: { $eq: documentUrl } }
-    });
-}
-
-/**
- * Get schema context
- * @param contextUrl Context URL
- * @param schemaRepository Schema repository
- * @returns Schema context
- */
-const getSchemaContext = async function (contextUrl: string, schemaRepository: MongoRepository<Schema>) {
-    return await schemaRepository.findOne({
-        where: { contextURL: { $eq: contextUrl } }
-    });
-}
-
-/**
  * Connect to the message broker methods of working with schemes.
  * 
  * @param channel - channel
@@ -192,15 +136,106 @@ export const schemaAPI = async function (
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.GET_SCHEMA, async (msg, res) => {
-        if (msg.payload && msg.payload.id) {
+        try {
+            if (!msg.payload || !msg.payload.id) {
+                res.send(null);
+                return;
+            }
+
             const schema = await schemaRepository.findOne(msg.payload.id);
             res.send(schema);
-            return;
         }
-        if (msg.payload && msg.payload.messageId) {
-            const schema = await loadSchema(msg.payload.messageId, schemaRepository);
+        catch (error) {
+            res.send(null);
+        }
+    });
+
+    /**
+     * Load schema by message identifier
+     * 
+     * @param {string} [payload.messageId] Message identifier
+     * 
+     * @returns {Schema} Found or uploaded schema
+     */
+    channel.response(MessageAPI.LOAD_SCHEMA, async (msg, res) => {
+        try {
+            if (!msg.payload || !msg.payload.messageId) {
+                res.send(null);
+                return;
+            }
+
+            const messageId = msg.payload.messageId;
+            let schema = await schemaRepository.findOne({
+                where: { messageId: { $eq: messageId } }
+            });
+        
+            if (schema) {
+                res.send(schema);
+                return;
+            }
+        
+            const topicMessage = await Import.getTopicMessage(messageId) as ISchemaSubmitMessage;
+            const context = await Import.getSchemaContext(topicMessage.context_cid);
+            const schemaToImport = await Import.getSchema(topicMessage.cid) as Schema;
+        
+            schemaToImport.context = context;
+            schemaToImport.documentURL = topicMessage.cid;
+            schemaToImport.contextURL = topicMessage.context_cid;
+            schemaToImport.messageId = messageId;
+        
+            updateIRI(schemaToImport);
+
+            schema = await schemaRepository.create(schemaToImport);
             res.send(schema);
-            return;
+        }
+        catch (error) {
+            res.send(null);
+        }
+    });
+
+    /**
+     * Load schema document
+     * @param {string} [payload.url] Document URL
+     * 
+     * @returns Schema document
+     */
+    channel.response(MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg, res) => {
+        try {   
+            if (!msg.payload || !msg.payload.url) {
+                res.send(null)
+                return;
+            }
+
+            const schema = await schemaRepository.findOne({
+                where: { documentURL: { $eq: msg.payload.url } }
+            });
+            res.send(schema);
+        }
+        catch (error) {
+            res.send(null);
+        }
+    });
+
+    /**
+     * Get schema context
+     * @param {string} [payload.url] Context URL
+     * 
+     * @returns Schema context
+     */
+    channel.response(MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg, res) => {
+        try {   
+            if (!msg.payload || !msg.payload.url) {
+                res.send(null)
+                return;
+            }
+            
+            const schema = await schemaRepository.findOne({
+                where: { contextURL: { $eq: msg.payload.url } }
+            });
+            res.send(schema);
+        }
+        catch (error) {
+            res.send(null);
         }
     });
 

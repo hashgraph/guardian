@@ -12,6 +12,7 @@ export enum MessageAPI {
     IMPORT_TOKENS = 'import-tokens',
     LOAD_DID_DOCUMENT = 'load-did-document',
     LOAD_SCHEMA_DOCUMENT = 'load-schema-document',
+    LOAD_SCHEMA_CONTEXT = 'load-schema-context',
     GET_ROOT_CONFIG = 'get-root-config',
     SET_ROOT_CONFIG = 'set-root-config',
     SET_APPROVE_DOCUMENTS = 'set-approve-documents',
