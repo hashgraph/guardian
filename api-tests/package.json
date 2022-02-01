@@ -4,7 +4,7 @@
   "description": "API Tests",
   "main": "index.js",
   "scripts": {
-    "test": "mocha index.js"
+    "test": "mocha index.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/api-tests.xml"
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "license": "Apache-2.0",
