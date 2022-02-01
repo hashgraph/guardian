@@ -9,9 +9,9 @@ import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { User } from '@entity/user';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import {Schema, SchemaStatus} from 'interfaces';
+import { Schema, SchemaStatus } from 'interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import {IPolicyAddonBlock, IPolicyInterfaceBlock} from '@policy-engine/policy-engine.interface';
+import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 
 /**
  * Document action clock with UI
@@ -95,7 +95,8 @@ export class InterfaceDocumentActionBlock {
             const userDID = userFull.did;
             const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
-            const { type } = Schema.parsRef(ref.options.schema);
+            const schemaObject = await this.guardians.getSchemaByMessage(ref.options.schema);
+            const schema = schemaObject ? new Schema(schemaObject) : null;
             return {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
@@ -106,7 +107,7 @@ export class InterfaceDocumentActionBlock {
                     'installer': userDID,
                     'did': sensorDid,
                     'key': sensorKey,
-                    'type': type,
+                    'type': schema.type,
                     'schema': await this.guardians.loadSchemaDocument(ref.options.schema),
                     'policyId': ref.policyId,
                     'policyTag': policy.policyTag
@@ -175,7 +176,6 @@ export class InterfaceDocumentActionBlock {
                         resultsContainer.addBlockError(ref.uuid, 'Option "targetUrl" does not set');
                     }
 
-                    const schemas = await this.guardians.getSchemes() || [];
                     if (!ref.options.schema) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
                         break;
@@ -184,7 +184,8 @@ export class InterfaceDocumentActionBlock {
                         resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                         break;
                     }
-                    const schema = schemas.find(s => s.iri === ref.options.schema)
+
+                    const schema = await this.guardians.getSchemaByMessage(ref.options.schema);
                     if (!schema) {
                         resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                         break;

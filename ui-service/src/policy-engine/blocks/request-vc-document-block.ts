@@ -9,7 +9,7 @@ import { Schema, SchemaStatus } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 @EventBlock({
     blockType: 'requestVcDocument',
@@ -29,7 +29,7 @@ export class RequestVcDocumentBlock {
     @Inject()
     private users: Users;
 
-    private schema: any;
+    private schema: Schema | null;
 
     // private init(): void {
     //     const { options, blockType, uuid } = PolicyComponentsStuff.GetBlockRef(this);
@@ -45,9 +45,9 @@ export class RequestVcDocumentBlock {
         const options = PolicyComponentsStuff.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsStuff.GetBlockRef(this);
 
-        if(!this.schema) {
-            const schemas = await this.guardians.getSchemes() || [];
-            this.schema = Schema.mapRef(schemas).find(s => s.iri === options.schema);
+        if (!this.schema) {
+            const schema = await this.guardians.getSchemaByMessage(ref.options.schema);
+            this.schema = schema ? new Schema(schema) : null;
         }
         if (!this.schema) {
             throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
@@ -142,7 +142,6 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         // Test schema options
-        const schemas = await this.guardians.getSchemes() || [];
         if (!ref.options.schema) {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
             return;
@@ -151,7 +150,7 @@ export class RequestVcDocumentBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
             return;
         }
-        const schema = schemas.find(s => s.iri === ref.options.schema)
+        const schema = await this.guardians.getSchemaByMessage(ref.options.schema);
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
             return;

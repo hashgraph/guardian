@@ -45,7 +45,7 @@
         <div *ngFor="let credentialSubject of this.subjects" class="form-field-array-item"
           [attr.index]="this.subjects.indexOf(credentialSubject)">
           <div class="form-field-group">
-            <app-schema-form-view [private-fields]="hideFields" [schema]="GetSchema(credentialSubject.type)"
+            <app-schema-form-view [private-fields]="hideFields" [schema]="getSchema(credentialSubject.type)"
               [delimiter-hide]="true" [values]="credentialSubject">
             </app-schema-form-view>
           </div>

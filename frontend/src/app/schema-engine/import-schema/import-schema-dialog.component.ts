@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ImportType, Schema } from 'interfaces';
+import { ImportType, Schema, SchemaHelper } from 'interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 /**
@@ -137,7 +137,7 @@ export class ImportSchemaDialog {
     validationSchema(schemes: any[]) {
         for (let i = 0; i < schemes.length; i++) {
             const schema = schemes[i];
-            if (!Schema.validate(schema)) {
+            if (!SchemaHelper.validate(schema)) {
                 return null;
             }
         }

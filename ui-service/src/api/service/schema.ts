@@ -1,7 +1,6 @@
 import { Guardians } from '@helpers/guardians';
-import { Users } from '@helpers/users';
 import { Request, Response, Router } from 'express';
-import { ISchema, ISchemaSubmitMessage, ModelActionType, Schema, UserRole } from 'interfaces';
+import { ISchema, ISchemaSubmitMessage, ModelActionType, Schema, SchemaHelper, UserRole } from 'interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Blob } from 'buffer';
@@ -21,7 +20,7 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
         const guardians = new Guardians();
         const newSchema = req.body;
         if (newSchema.id) {
-            const schema = await guardians.getSchema(newSchema.id);
+            const schema = await guardians.getSchemaById(newSchema.id);
             if (!schema) {
                 res.status(500).json({ code: 500, message: 'Schema does not exist.' });
                 return;
@@ -38,7 +37,7 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
             delete newSchema.id;
             delete newSchema.status;
         }
-        Schema.updateOwner(newSchema, user.did);
+        SchemaHelper.updateOwner(newSchema, user.did);
         const schemes = (await guardians.setSchema(newSchema));
         schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
         res.status(201).json(schemes);
@@ -51,7 +50,7 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
-        const schemes = (await guardians.getSchemes({ owner: user.did }));
+        const schemes = await guardians.getSchemesByOwner(user.did);
         schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
         res.status(200).json(schemes);
     } catch (error) {
@@ -64,7 +63,7 @@ schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
         const user = req.user;
         const guardians = new Guardians();
         const newSchema = req.body;
-        const schema = await guardians.getSchema(newSchema.id);
+        const schema = await guardians.getSchemaById(newSchema.id);
         if (!schema) {
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
@@ -73,7 +72,7 @@ schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
             res.status(500).json({ code: 500, message: 'Invalid owner.' });
             return;
         }
-        Schema.updateOwner(newSchema, user.did);
+        SchemaHelper.updateOwner(newSchema, user.did);
         const schemes = (await guardians.setSchema(newSchema));
         schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
         res.status(200).json(schemes);
@@ -87,7 +86,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
-        const schema = await guardians.getSchema(schemaId);
+        const schema = await guardians.getSchemaById(schemaId);
         if (!schema) {
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
@@ -96,23 +95,23 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
             res.status(500).json({ code: 500, message: 'Invalid owner.' });
             return;
         }
-        const allVersion = (await guardians.getSchemes({ uuid: schema.uuid }));
+        const allVersion = await guardians.getSchemesByUUID(schema.uuid);
         const { version } = req.body;
         if (allVersion.findIndex(s => s.version == version) !== -1) {
             res.status(500).json({ code: 500, message: 'Version already exists.' });
         }
-        Schema.updateVersion(schema, version);
+        SchemaHelper.updateVersion(schema, version);
         (await guardians.setSchema(schema));
         const schemes = (await guardians.publishSchema(schemaId));
         schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
 
-        const publishedSchema = await guardians.getSchema(schemaId);
+        const publishedSchema = await guardians.getSchemaById(schemaId);
         const root = await guardians.getRootConfig(user.did);
-        const schemaFile  = new Blob([JSON.stringify(publishedSchema)], {type: "application/json"});
+        const schemaFile = new Blob([JSON.stringify(publishedSchema)], { type: "application/json" });
         const cid = await new IPFS().addFile(await schemaFile.arrayBuffer());
-        const contextFile  = new Blob([JSON.stringify(schemasToContext([publishedSchema.document]))], {type: "application/json"});
+        const contextFile = new Blob([JSON.stringify(schemasToContext([publishedSchema.document]))], { type: "application/json" });
         const contextCid = await new IPFS().addFile(await contextFile.arrayBuffer());
-        
+
         let schemaPublishMessage: ISchemaSubmitMessage = {
             name: publishedSchema.name,
             owner: publishedSchema.owner,
@@ -138,7 +137,7 @@ schemaAPI.put('/:schemaId/unpublish', permissionHelper(UserRole.ROOT_AUTHORITY),
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
-        const schema = await guardians.getSchema(schemaId);
+        const schema = await guardians.getSchemaById(schemaId);
         if (!schema) {
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
@@ -160,7 +159,7 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async 
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
-        const schema = await guardians.getSchema(schemaId);
+        const schema = await guardians.getSchemaById(schemaId);
         if (!schema) {
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
@@ -177,67 +176,67 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async 
     }
 });
 
-schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-    try {
-        const guardians = new Guardians();
-        const newSchemes = req.body.schemes;
-        newSchemes.forEach((s: ISchema) => {
-            delete s.owner;
-            delete s.id;
-            delete s.status;
-        });
-        await guardians.importSchemes(newSchemes);
-        const schemes = (await guardians.getSchemes(null));
-        res.status(201).json(schemes);
-    } catch (error) {
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
+// schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+//     try {
+//         const guardians = new Guardians();
+//         const newSchemes = req.body.schemes;
+//         newSchemes.forEach((s: ISchema) => {
+//             delete s.owner;
+//             delete s.id;
+//             delete s.status;
+//         });
+//         await guardians.importSchemes(newSchemes);
+//         const schemes = (await guardians.getSchemes(null));
+//         res.status(201).json(schemes);
+//     } catch (error) {
+//         res.status(500).json({ code: 500, message: error.message });
+//     }
+// });
 
-schemaAPI.post('/import/topic', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-    try {
-        const importHelper = new Import();
-        const guardians = new Guardians();
-        const messageId = req.body.messageId;
-        const topicMessage = await importHelper.getTopicMessage(messageId);
-        const schemaToImport = await importHelper.getSchema(topicMessage.cid);
-        
-        delete schemaToImport.owner;
-        delete schemaToImport.id;
-        delete schemaToImport.status;
+// schemaAPI.post('/import/topic', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+//     try {
+//         const importHelper = new Import();
+//         const guardians = new Guardians();
+//         const messageId = req.body.messageId;
+//         const topicMessage = await importHelper.getTopicMessage(messageId);
+//         const schemaToImport = await importHelper.getSchema(topicMessage.cid);
 
-        await guardians.importSchemes([schemaToImport]);
-        const schemes = (await guardians.getSchemes(null));
-        res.status(201).json(schemes);
-    } catch (error) {
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
+//         delete schemaToImport.owner;
+//         delete schemaToImport.id;
+//         delete schemaToImport.status;
 
-schemaAPI.get('/import/preview/:messageId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-    try {
-        const importHelper = new Import();
-        const messageId = req.params.messageId;
-        const topicMessage = await importHelper.getTopicMessage(messageId);
-        const schemaToImport = await importHelper.getSchema(topicMessage.cid);
-        res.status(200).json(schemaToImport);
-    } catch (error) {
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
+//         await guardians.importSchemes([schemaToImport]);
+//         const schemes = (await guardians.getSchemes(null));
+//         res.status(201).json(schemes);
+//     } catch (error) {
+//         res.status(500).json({ code: 500, message: error.message });
+//     }
+// });
 
-schemaAPI.post('/export', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-    try {
-        const guardians = new Guardians();
-        const refs = req.body.refs as string[];
-        const schemes = (await guardians.exportSchemes(refs));
-        schemes.forEach((s: ISchema) => {
-            delete s.id;
-            delete s.status;
-        });
-        const json = schemes;
-        res.status(200).json({ schemes: json });
-    } catch (error) {
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
+// schemaAPI.get('/import/preview/:messageId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+//     try {
+//         const importHelper = new Import();
+//         const messageId = req.params.messageId;
+//         const topicMessage = await importHelper.getTopicMessage(messageId);
+//         const schemaToImport = await importHelper.getSchema(topicMessage.cid);
+//         res.status(200).json(schemaToImport);
+//     } catch (error) {
+//         res.status(500).json({ code: 500, message: error.message });
+//     }
+// });
+
+// schemaAPI.post('/export', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+//     try {
+//         const guardians = new Guardians();
+//         const refs = req.body.refs as string[];
+//         const schemes = (await guardians.exportSchemes(refs));
+//         schemes.forEach((s: ISchema) => {
+//             delete s.id;
+//             delete s.status;
+//         });
+//         const json = schemes;
+//         res.status(200).json({ schemes: json });
+//     } catch (error) {
+//         res.status(500).json({ code: 500, message: error.message });
+//     }
+// });

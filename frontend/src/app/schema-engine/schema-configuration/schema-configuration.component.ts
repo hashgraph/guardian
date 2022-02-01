@@ -191,7 +191,7 @@ export class SchemaConfigurationComponent implements OnInit {
                         value: index
                     });
                     this.schemaTypeMap[index] = {
-                        type: this.schemes[i].ref,
+                        type: this.schemes[i].iri,
                         format: undefined,
                         pattern: undefined,
                         isRef: true,
@@ -347,7 +347,7 @@ export class SchemaConfigurationComponent implements OnInit {
             });
         }
         schema.update(fields);
-        schema.updateRef(this.schemes);
+        schema.updateRefs(this.schemes);
         return schema;
     }
 

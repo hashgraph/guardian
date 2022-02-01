@@ -26,5 +26,6 @@ export enum MessageAPI {
     UNPUBLISHED_SCHEMA = 'unpublished-schema',
     DELETE_SCHEMA = 'delete-schema',
     LOAD_SCHEMA = 'load-schema',
-    IPFS_ADD_FILE = 'ipfs-add-file'
+    IPFS_ADD_FILE = 'ipfs-add-file',
+    GET_SCHEMA = 'get-schema'
 }

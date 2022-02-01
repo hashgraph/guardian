@@ -3,17 +3,25 @@ import {SchemaStatus} from '../type/schema-status.type';
 
 export interface ISchema {
     id: string;
-    uuid: string;
-    document: string;
-    status: SchemaStatus;
+    uuid?: string;
     hash?: string;
     name?: string;
     description?: string;
-    relationships?: string;
     entity?: SchemaEntity;
+    status?: SchemaStatus;
     readonly?: boolean;
-    owner?: string;
+    document?: string;
+    context?: string;
     version?: string;
-    isOwner?: boolean;
+    creator?: string;
+    owner?: string;
+    topicId?: string;
+    messageId?: string;
+    documentURL?: string;
+    contextURL?: string;
     iri?: string;
+    isOwner?: boolean;
+    relationships?: string;
 }
+
+

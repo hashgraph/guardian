@@ -89,6 +89,100 @@ export const schemaAPI = async function (
     schemaRepository: MongoRepository<Schema>
 ): Promise<void> {
     /**
+     * Create or update schema
+     * 
+     * @param {ISchema} payload - schema
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
+    channel.response(MessageAPI.SET_SCHEMA, async (msg, res) => {
+        if (msg.payload.id) {
+            const id = msg.payload.id as string;
+            const item = await schemaRepository.findOne(id);
+            if (item) {
+                item.name = msg.payload.name;
+                item.description = msg.payload.description;
+                item.entity = msg.payload.entity;
+                item.document = msg.payload.document;
+                item.version = msg.payload.version;
+                item.status = SchemaStatus.DRAFT;
+                updateIRI(item);
+                await schemaRepository.update(item.id, item);
+            }
+        } else {
+            const schemaObject = schemaRepository.create(msg.payload as ISchema);
+            schemaObject.status = SchemaStatus.DRAFT;
+            updateIRI(schemaObject);
+            await schemaRepository.save(schemaObject);
+        }
+        const schemes = await schemaRepository.find();
+        res.send(schemes);
+    });
+
+    /**
+     * Return schemes
+     * 
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.type] - schema type 
+     * @param {string} [payload.entity] - schema entity type
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
+    channel.response(MessageAPI.GET_SCHEMA, async (msg, res) => {
+        if (msg.payload && msg.payload.id) {
+            const schema = await schemaRepository.findOne(msg.payload.id);
+            res.send(schema);
+            return;
+        }
+        if (msg.payload && msg.payload.messageId) {
+            const schema = await schemaRepository.findOne({
+                where: { messageId: { $eq: msg.payload.messageId } }
+            });
+            res.send(schema);
+            return;
+        }
+    });
+
+    /**
+     * Return schemes
+     * 
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.type] - schema type 
+     * @param {string} [payload.entity] - schema entity type
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
+    channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
+        if (msg.payload && msg.payload.owner) {
+            const schemes = await schemaRepository.find({
+                where: {
+                    $or: [
+                        {
+                            status: { $eq: SchemaStatus.PUBLISHED },
+                        },
+                        {
+                            owner: { $eq: msg.payload.owner }
+                        },
+                    ]
+                }
+            });
+            res.send(schemes);
+            return;
+        }
+        if (msg.payload && msg.payload.uuid) {
+            const schemes = await schemaRepository.find({
+                where: { uuid: { $eq: msg.payload.uuid } }
+            });
+            res.send(schemes);
+            return;
+        }
+        const schemes = await schemaRepository.find({
+            where: { status: { $eq: SchemaStatus.PUBLISHED } }
+        });
+        res.send(schemes);
+    });
+
+    /**
      * Change the status of a schema on PUBLISHED.
      * 
      * @param {Object} payload - filters
@@ -152,194 +246,112 @@ export const schemaAPI = async function (
         res.send(schemes);
     });
 
-    /**
-     * Create or update schema
-     * 
-     * @param {ISchema} payload - schema
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    channel.response(MessageAPI.SET_SCHEMA, async (msg, res) => {
-        if (msg.payload.id) {
-            const id = msg.payload.id as string;
-            const item = await schemaRepository.findOne(id);
-            if (item) {
-                item.name = msg.payload.name;
-                item.description = msg.payload.description;
-                item.entity = msg.payload.entity;
-                item.document = msg.payload.document;
-                item.version = msg.payload.version;
-                item.status = SchemaStatus.DRAFT;
-                updateIRI(item);
-                await schemaRepository.update(item.id, item);
-            }
-        } else {
-            const schemaObject = schemaRepository.create(msg.payload as ISchema);
-            schemaObject.status = SchemaStatus.DRAFT;
-            updateIRI(schemaObject);
-            await schemaRepository.save(schemaObject);
-        }
-        const schemes = await schemaRepository.find();
-        res.send(schemes);
-    });
 
-    /**
-     * Return schemes
-     * 
-     * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
-     * @param {string} [payload.entity] - schema entity type
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
-        if (msg.payload) {
-            if (msg.payload.id) {
-                const schema = await schemaRepository.findOne(msg.payload.id);
-                res.send(schema);
-                return;
-            }
-            if (msg.payload.uuid) {
-                const schemes = await schemaRepository.find({
-                    where: { uuid: { $eq: msg.payload.uuid } }
-                });
-                res.send(schemes);
-                return;
-            }
-            const { type, entity, owner } = msg.payload;
-            const filter: any = {};
-            if (type !== undefined) {
-                filter.type = { $eq: type };
-            }
-            if (entity !== undefined) {
-                filter.entity = { $eq: entity };
-            }
-            const reqObj: any = {};
-            if (owner) {
-                reqObj.where = {
-                    $or: [
-                        {
-                            ...filter,
-                            status: { $eq: SchemaStatus.PUBLISHED },
-                        },
-                        {
-                            ...filter,
-                            owner: { $eq: owner }
-                        },
-                    ]
-                }
-            } else {
-                filter.status = { $eq: SchemaStatus.PUBLISHED };
-                reqObj.where = filter;
-            }
-            // reqObj.order = {
-            //     name: "uuid",
-            //     id: "DESC",
-            // }
-            const schemes = await schemaRepository.find(reqObj);
-            res.send(schemes);
-        } else {
-            const schemes = await schemaRepository.find();
-            res.send(schemes);
-        }
-    });
 
-    /**
-     * Import schemes
-     * 
-     * @param {ISchema[]} payload - schemes
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
-        try {
-            let items: ISchema[] = msg.payload;
-            if (!Array.isArray(items)) {
-                items = [items];
-            }
 
-            let importSchemes = [];
-            for (let i = 0; i < items.length; i++) {
-                const { iri, version, uuid } = SchemaModel.parsRef(items[i]);
-                items[i].uuid = uuid;
-                items[i].version = version;
-                items[i].iri = iri;
-                items[i].status = SchemaStatus.PUBLISHED;
-                if (uuid) {
-                    importSchemes.push(items[i])
-                }
-            }
-            const schemes = await schemaRepository.find();
-            const mapName = {};
-            for (let i = 0; i < schemes.length; i++) {
-                mapName[schemes[i].iri] = true;
-            }
-            importSchemes = importSchemes.filter((s) => !mapName[s.iri]);
 
-            const schemaObject = schemaRepository.create(importSchemes);
-            await schemaRepository.save(schemaObject);
 
-            const newSchemes = await schemaRepository.find();
-            res.send(newSchemes);
-        } catch (error) {
-            console.error(error);
-            res.send(null);
-        }
-    });
 
-    /**
-     * Export schemes
-     * 
-     * @param {Object} payload - filters
-     * @param {string[]} payload.ids - schema ids
-     * 
-     * @returns {ISchema[]} - array of selected and nested schemas
-     */
-    channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
-        try {
-            const refs = msg.payload as string[];
-            const allSchemes = await schemaRepository.find();
-            const schemes = allSchemes.map(s => new SchemaModel(s));
-            const mapType: any = {};
-            const mapSchemes: any = {};
-            const result = [];
-            for (let i = 0; i < schemes.length; i++) {
-                const schema = schemes[i];
-                mapType[schema.ref] = false;
-                mapSchemes[schema.ref] = schema;
-                if (refs.indexOf(schema.ref) != -1) {
-                    mapType[schema.ref] = true;
-                    result.push(schema);
-                }
-            }
-            let index = 0;
-            while (index < result.length) {
-                const relationships = getRelationships(result[index]);
-                for (let i = 0; i < relationships.length; i++) {
-                    const id = relationships[i];
-                    if (mapType[id] === false) {
-                        mapType[id] = true;
-                        result.push(mapSchemes[id]);
-                    }
-                }
-                result[index].relationships = relationships;
-                index++;
-            }
-            const documents = [];
-            for (let i = 0; i < result.length; i++) {
-                const element = result[i];
-                documents.push({
-                    name: element.name,
-                    uuid: element.uuid,
-                    entity: element.entity,
-                    document: element.document,
-                    relationships: element.relationships,
-                })
-            }
-            res.send(documents);
-        } catch (error) {
-            console.error(error);
-            res.send(null);
-        }
-    });
+
+
+
+
+    // /**
+    //  * Import schemes
+    //  * 
+    //  * @param {ISchema[]} payload - schemes
+    //  * 
+    //  * @returns {ISchema[]} - all schemes
+    //  */
+    // channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
+    //     try {
+    //         let items: ISchema[] = msg.payload;
+    //         if (!Array.isArray(items)) {
+    //             items = [items];
+    //         }
+
+    //         let importSchemes = [];
+    //         for (let i = 0; i < items.length; i++) {
+    //             const { iri, version, uuid } = SchemaModel.parsRef(items[i]);
+    //             items[i].uuid = uuid;
+    //             items[i].version = version;
+    //             items[i].iri = iri;
+    //             items[i].status = SchemaStatus.PUBLISHED;
+    //             if (uuid) {
+    //                 importSchemes.push(items[i])
+    //             }
+    //         }
+    //         const schemes = await schemaRepository.find();
+    //         const mapName = {};
+    //         for (let i = 0; i < schemes.length; i++) {
+    //             mapName[schemes[i].iri] = true;
+    //         }
+    //         importSchemes = importSchemes.filter((s) => !mapName[s.iri]);
+
+    //         const schemaObject = schemaRepository.create(importSchemes);
+    //         await schemaRepository.save(schemaObject);
+
+    //         const newSchemes = await schemaRepository.find();
+    //         res.send(newSchemes);
+    //     } catch (error) {
+    //         console.error(error);
+    //         res.send(null);
+    //     }
+    // });
+
+    // /**
+    //  * Export schemes
+    //  * 
+    //  * @param {Object} payload - filters
+    //  * @param {string[]} payload.ids - schema ids
+    //  * 
+    //  * @returns {ISchema[]} - array of selected and nested schemas
+    //  */
+    // channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
+    //     try {
+    //         const refs = msg.payload as string[];
+    //         const allSchemes = await schemaRepository.find();
+    //         const schemes = allSchemes.map(s => new SchemaModel(s));
+    //         const mapType: any = {};
+    //         const mapSchemes: any = {};
+    //         const result = [];
+    //         for (let i = 0; i < schemes.length; i++) {
+    //             const schema = schemes[i];
+    //             mapType[schema.ref] = false;
+    //             mapSchemes[schema.ref] = schema;
+    //             if (refs.indexOf(schema.ref) != -1) {
+    //                 mapType[schema.ref] = true;
+    //                 result.push(schema);
+    //             }
+    //         }
+    //         let index = 0;
+    //         while (index < result.length) {
+    //             const relationships = getRelationships(result[index]);
+    //             for (let i = 0; i < relationships.length; i++) {
+    //                 const id = relationships[i];
+    //                 if (mapType[id] === false) {
+    //                     mapType[id] = true;
+    //                     result.push(mapSchemes[id]);
+    //                 }
+    //             }
+    //             result[index].relationships = relationships;
+    //             index++;
+    //         }
+    //         const documents = [];
+    //         for (let i = 0; i < result.length; i++) {
+    //             const element = result[i];
+    //             documents.push({
+    //                 name: element.name,
+    //                 uuid: element.uuid,
+    //                 entity: element.entity,
+    //                 document: element.document,
+    //                 relationships: element.relationships,
+    //             })
+    //         }
+    //         res.send(documents);
+    //     } catch (error) {
+    //         console.error(error);
+    //         res.send(null);
+    //     }
+    // });
 }

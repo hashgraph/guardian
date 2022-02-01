@@ -29,7 +29,7 @@ export interface ISchemaDocument {
     type?: SchemaDataTypes;
     format?: SchemaDataFormat;
     pattern?: string;
-    readOnly?: string;
+    readOnly?: boolean;
     properties?: {
         [x: string]: ISchemaDocument;
     }

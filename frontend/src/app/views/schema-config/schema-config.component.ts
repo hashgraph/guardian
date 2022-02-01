@@ -5,7 +5,7 @@ import { ProfileService } from '../../services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
 import { SchemaDialog } from '../../schema-engine/schema-dialog/schema-dialog.component';
-import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
+import { ISchema, IUser, Schema, SchemaHelper, SchemaStatus } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
@@ -108,7 +108,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
-                document: element.schema,
+                document: element.documentObject,
                 title: 'Schema',
                 type: 'JSON',
             }
@@ -256,20 +256,21 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     setSchema(data: ISchema[]) {
-        this.schemes = Schema.mapRef(data) || [];
+        this.schemes = SchemaHelper.map(data);
         this.schemes =  this.schemes.filter(s=>!s.readonly);
         this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
     }
 
     exportSchemes() {
-        const ids = this.schemes.filter((s: any) => s._selected).map(s => s.uuid);
-        this.schemaService.export(ids).subscribe((data) => {
-            this.downloadObjectAsJson(data.schemes, 'schema');
-            this.loading = false;
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        debugger;
+        // const ids = this.schemes.filter((s: any) => s._selected).map(s => s.uuid);
+        // this.schemaService.export(ids).subscribe((data) => {
+        //     this.downloadObjectAsJson(data.schemes, 'schema');
+        //     this.loading = false;
+        // }, (e) => {
+        //     console.error(e.error);
+        //     this.loading = false;
+        // });
     }
 
     downloadObjectAsJson(exportObj: any, exportName: string) {

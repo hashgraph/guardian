@@ -113,6 +113,19 @@ export class Guardians {
         return (await this.channel.request(this.target, MessageAPI.GET_VP_DOCUMENTS, params)).payload;
     }
 
+    // /**
+    //  * Return schemes
+    //  * 
+    //  * @param {Object} [params] - filters
+    //  * @param {string} [params.type] - schema type 
+    //  * @param {string} [params.entity] - schema entity type
+    //  * 
+    //  * @returns {ISchema[]} - all schemes
+    //  */
+    // public async getSchemes(params?: IFilter): Promise<ISchema[]> {
+    //     return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, params)).payload;
+    // }
+
     /**
      * Return schemes
      * 
@@ -122,10 +135,22 @@ export class Guardians {
      * 
      * @returns {ISchema[]} - all schemes
      */
-    public async getSchemes(params?: IFilter): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, params)).payload;
+    public async getSchemesByOwner(did: string): Promise<ISchema[]> {
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, { owner: did })).payload;
     }
 
+    /**
+     * Return schemes
+     * 
+     * @param {Object} [params] - filters
+     * @param {string} [params.type] - schema type 
+     * @param {string} [params.entity] - schema entity type
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
+    public async getSchemesByUUID(uuid: string): Promise<ISchema[]> {
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, { uuid: uuid })).payload;
+    }
 
     /**
      * Return schema by id
@@ -134,8 +159,19 @@ export class Guardians {
      * 
      * @returns {ISchema} - schema
      */
-    public async getSchema(id: string): Promise<ISchema> {
-        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, { id: id })).payload;
+    public async getSchemaByMessage(messageId: string): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { messageId: messageId })).payload;
+    }
+
+    /**
+     * Return schema by id
+     * 
+     * @param {string} [id] - schema id 
+     * 
+     * @returns {ISchema} - schema
+     */
+    public async getSchemaById(id: string): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { id: id })).payload;
     }
 
     /**
@@ -254,16 +290,16 @@ export class Guardians {
         return (await this.channel.request(this.target, MessageAPI.SET_SCHEMA, item)).payload;
     }
 
-    /**
-     * Import schemes
-     * 
-     * @param {ISchema[]} items - schemes
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    public async importSchemes(items: ISchema[]): Promise<void> {
-        return (await this.channel.request(this.target, MessageAPI.IMPORT_SCHEMA, items)).payload;
-    }
+    // /**
+    //  * Import schemes
+    //  * 
+    //  * @param {ISchema[]} items - schemes
+    //  * 
+    //  * @returns {ISchema[]} - all schemes
+    //  */
+    // public async importSchemes(items: ISchema[]): Promise<void> {
+    //     return (await this.channel.request(this.target, MessageAPI.IMPORT_SCHEMA, items)).payload;
+    // }
 
     /**
      * Create new token
@@ -346,16 +382,16 @@ export class Guardians {
         });
     }
 
-    /**
-     * Export schemes
-     * 
-     * @param {string[]} refs - schema refs
-     * 
-     * @returns {ISchema[]} - array of selected and nested schemas
-     */
-    public async exportSchemes(refs: string[]): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, refs)).payload;
-    }
+    // /**
+    //  * Export schemes
+    //  * 
+    //  * @param {string[]} refs - schema refs
+    //  * 
+    //  * @returns {ISchema[]} - array of selected and nested schemas
+    //  */
+    // public async exportSchemes(refs: string[]): Promise<ISchema[]> {
+    //     return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, refs)).payload;
+    // }
 
     /**
      * Changing the status of a schema on PUBLISHED.
