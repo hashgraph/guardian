@@ -81,6 +81,28 @@ schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
     }
 });
 
+schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        const schema = await guardians.getSchemaById(schemaId);
+        if (!schema) {
+            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+            return;
+        }
+        if (schema.owner != user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            return;
+        }
+        const schemes = (await guardians.deleteSchema(schemaId));
+        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
+        res.status(200).json(schemes);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
 schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
@@ -100,32 +122,15 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
         if (allVersion.findIndex(s => s.version == version) !== -1) {
             res.status(500).json({ code: 500, message: 'Version already exists.' });
         }
-        SchemaHelper.updateVersion(schema, version);
-        (await guardians.setSchema(schema));
-        const schemes = (await guardians.publishSchema(schemaId));
-        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
 
-        const publishedSchema = await guardians.getSchemaById(schemaId);
+        const message = await guardians.publishSchema(schemaId, version);
         const root = await guardians.getRootConfig(user.did);
-        const schemaFile = new Blob([JSON.stringify(publishedSchema)], { type: "application/json" });
-        const cid = await new IPFS().addFile(await schemaFile.arrayBuffer());
-        const contextFile = new Blob([JSON.stringify(schemasToContext([publishedSchema.document]))], { type: "application/json" });
-        const contextCid = await new IPFS().addFile(await contextFile.arrayBuffer());
-
-        let schemaPublishMessage: ISchemaSubmitMessage = {
-            name: publishedSchema.name,
-            owner: publishedSchema.owner,
-            cid: cid,
-            uuid: publishedSchema.uuid,
-            version: publishedSchema.version,
-            operation: ModelActionType.PUBLISH,
-            context_cid: contextCid
-        }
-
         await HederaHelper
             .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-            .submitMessage(process.env.SUBMIT_SCHEMA_TOPIC_ID, JSON.stringify(schemaPublishMessage));
+            .submitMessage(process.env.SUBMIT_SCHEMA_TOPIC_ID, JSON.stringify(message));
 
+        const schemes = await guardians.getSchemesByOwner(user.did);
+        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
@@ -147,28 +152,6 @@ schemaAPI.put('/:schemaId/unpublish', permissionHelper(UserRole.ROOT_AUTHORITY),
             return;
         }
         const schemes = (await guardians.unpublishedSchema(schemaId));
-        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
-        res.status(200).json(schemes);
-    } catch (error) {
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
-
-schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const user = req.user;
-        const guardians = new Guardians();
-        const schemaId = req.params.schemaId;
-        const schema = await guardians.getSchemaById(schemaId);
-        if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
-        }
-        if (schema.owner != user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid owner.' });
-            return;
-        }
-        const schemes = (await guardians.deleteSchema(schemaId));
         schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
         res.status(200).json(schemes);
     } catch (error) {

@@ -1,8 +1,9 @@
 import { Schema } from '@entity/schema';
-import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, Schema as SchemaModel } from 'interfaces';
+import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, Schema as SchemaModel, ISchemaSubmitMessage, ModelActionType, SchemaHelper } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { readJSON, writeJSON, readdirSync } from 'fs-extra';
 import path from 'path';
+import { Blob } from 'buffer';
 
 /**
  * Creation of default schemes.
@@ -192,16 +193,50 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
         if (msg.payload) {
-            const id = msg.payload as string;
+            const id = msg.payload.id as string;
+            const version = msg.payload.version as string;
+
             const item = await schemaRepository.findOne(id);
-            if (item) {
-                item.status = SchemaStatus.PUBLISHED;
-                updateIRI(item);
-                await schemaRepository.update(item.id, item);
+
+            if (!item) {
+                res.send(null);
             }
+
+            if (item && item.status == SchemaStatus.PUBLISHED) {
+                res.send(null);
+            }
+
+            SchemaHelper.updateVersion(item, version);
+
+            const document = item.document;
+            const context = item.context;
+
+            const documentFile = new Blob([document], { type: "application/json" });
+            const contextFile = new Blob([context], { type: "application/json" });
+            const cid = await new IPFS().addFile(await documentFile.arrayBuffer());
+            const contextCid = await new IPFS().addFile(await contextFile.arrayBuffer());
+
+            item.status = SchemaStatus.PUBLISHED;
+            item.documentURL = cid;
+            item.contextURL = contextCid;
+
+            updateIRI(item);
+            await schemaRepository.update(item.id, item);
+
+            const schemaPublishMessage: ISchemaSubmitMessage = {
+                name: item.name,
+                owner: item.creator,
+                cid: cid,
+                uuid: item.uuid,
+                version: item.version,
+                operation: ModelActionType.PUBLISH,
+                context_cid: contextCid
+            }
+
+            res.send(schemaPublishMessage);
+            return;
         }
-        const schemes = await schemaRepository.find();
-        res.send(schemes);
+        res.send(null);
     });
 
     /**

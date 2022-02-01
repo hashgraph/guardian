@@ -6,6 +6,7 @@ import {
     IDidDocument,
     IRootConfig,
     ISchema,
+    ISchemaSubmitMessage,
     IToken,
     IVCDocument,
     IVPDocument,
@@ -398,10 +399,10 @@ export class Guardians {
      * 
      * @param {string} id - schema id 
      * 
-     * @returns {ISchema[]} - all schemes
+     * @returns {ISchemaSubmitMessage} - message
      */
-    public async publishSchema(id: string): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.PUBLISH_SCHEMA, id)).payload;
+    public async publishSchema(id: string, version: string): Promise<ISchemaSubmitMessage | null> {
+        return (await this.channel.request(this.target, MessageAPI.PUBLISH_SCHEMA, { id, version })).payload;
     }
 
     /**
