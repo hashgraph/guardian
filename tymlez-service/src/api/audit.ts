@@ -24,7 +24,7 @@ export const makeAuditApi = ({
       const { page, pageSize, period } = req.query as {
         page: number | undefined;
         pageSize: number | undefined;
-        period: number | undefined;
+        period: VerificationPeriod | undefined;
       };
 
       const device = await deviceConfigRepository.findOne({
@@ -104,7 +104,7 @@ interface IFilter {
   policyId?: string; // filter by policy id
   pageSize?: number;
   page?: number;
-  period?: number;
+  period?: VerificationPeriod;
 }
 
 export interface IVpRecord {
