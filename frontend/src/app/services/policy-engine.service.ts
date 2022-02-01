@@ -190,6 +190,14 @@ export class PolicyEngineService {
     });
   }
 
+  public topicImport(messageId: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.url}/import/topic`, { messageId: messageId });
+  }
+
+  public topicPreview(messageId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/import/preview/${messageId}`);
+  }
+
   public toYAML(json: any): Observable<any> {
     return this.http.post<any>(`${this.url}/to-yaml`, { json });
   }

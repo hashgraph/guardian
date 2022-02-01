@@ -1,7 +1,9 @@
 import { Component, Inject } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Schema } from 'interfaces';
-
+import { ImportType, Schema } from 'interfaces';
+import { Observable, ReplaySubject } from 'rxjs';
+import { SchemaService } from 'src/app/services/schema.service';
 /**
  * Dialog allowing you to select a file and load schemes.
  */
@@ -14,24 +16,70 @@ export class ImportSchemaDialog {
     schemes: any[];
     valid: boolean = false;
     newSchemes!: any;
+    importType?: ImportType;
+    dataForm = this.fb.group({
+      timestamp: ['']
+    });
+    callbackIpfsImport: any
+
+    private _isimportTypeSelected$ = new ReplaySubject<boolean>(1);
 
     constructor(
         public dialogRef: MatDialogRef<ImportSchemaDialog>,
+        private fb: FormBuilder,
+        private schemaService: SchemaService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.schemes = data.schemes || [];
+        this._isimportTypeSelected$.next(false);
+    }
+
+    public get isImportTypeSelected$(): Observable<boolean> {
+      return this._isimportTypeSelected$;
+    }
+
+    setImportType(importType: ImportType) {
+      this.importType = importType;
+      this._isimportTypeSelected$.next(true);
+    }
+
+    getDialogTitle() {
+      switch (this.importType){
+        case ImportType.FILE:
+          return "Import Schemes";
+        case ImportType.IPFS:
+          return "Enter hedera message timestamp";
+        default:
+          return "";
+      }
     }
 
     ngOnInit() {
-
+        this.callbackIpfsImport = this.data.callbackIpfsImport;
     }
 
     onNoClick(): void {
         this.dialogRef.close(null);
     }
 
+    onTimestampSubmit() {
+      if (!this.dataForm.valid)
+      {
+        return;
+      }
+
+      const topicId = this.dataForm.get('timestamp')?.value;
+
+      this.schemaService.topicPreview(topicId)
+        .subscribe(schema => {
+            console.log(schema);
+            this.dialogRef.close(null);
+            this.callbackIpfsImport(schema, topicId);
+          });
+    }
+
     onSubmit() {
-        if(this.valid ) {
+        if (this.valid) {
             this.dialogRef.close({ schemes: this.newSchemes });
         }
     }

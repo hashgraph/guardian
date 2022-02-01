@@ -4,6 +4,8 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } fro
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaField } from 'interfaces';
 import * as moment from 'moment';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
@@ -72,6 +74,7 @@ export class SchemaFormComponent implements OnInit {
   fields: any[] | undefined = [];
 
   @Output('change') change = new EventEmitter<Schema | null>();
+  destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     private ipfs: IPFSService,
@@ -296,6 +299,7 @@ export class SchemaFormComponent implements OnInit {
   private subscribeFormatDateValue(control: FormControl, format: string) {
     if (format === 'date') {
       control.valueChanges
+        .pipe(takeUntil(this.destroy$))
         .subscribe((val: any) => {
           let momentDate = moment(val);
           let valueToSet = "";
@@ -313,6 +317,7 @@ export class SchemaFormComponent implements OnInit {
 
     if (format === 'date-time') {
       control.valueChanges
+        .pipe(takeUntil(this.destroy$))
         .subscribe((val: any) => {
           let momentDate = moment(val);
           let valueToSet = "";
@@ -387,5 +392,10 @@ export class SchemaFormComponent implements OnInit {
     }
 
     return validators;
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
   }
 }

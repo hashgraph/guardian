@@ -447,6 +447,21 @@ export class Schema {
         }
     }
 
+    public updateRef(schemes: any[]) {
+        const map = {};
+        for (let i = 0; i < this.fields.length; i++) {
+            const field = this.fields[i];
+            if(field.isRef) {
+                const s = schemes.find(e=>e.ref == field.type);
+                if(s) {
+                    map[s.ref] = s.schema
+                }
+            }
+        }
+        this.schema['$defs'] = map;
+        this.document = JSON.stringify( this.schema);
+    }
+
     public static parsComment(comment: string): any {
         try {
             const item = JSON.parse(comment);

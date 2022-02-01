@@ -9,6 +9,7 @@ import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { SchemaViewDialog } from 'src/app/schema-engine/schema-view-dialog/schema-view-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -215,14 +216,36 @@ export class SchemaConfigComponent implements OnInit {
 
     async importSchemes() {
         const dialogRef = this.dialog.open(ImportSchemaDialog, {
-            width: '850px',
+            width: '500px',
             data: {
-                schemes: this.schemes
+                schemes: this.schemes,
+                callbackIpfsImport: this.schemaPreview.bind(this)
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result && result.schemes) {
                 this.schemaService.import(result.schemes).subscribe((data) => {
+                    this.setSchema(data);
+                    this.loading = false;
+                }, (e) => {
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
+    schemaPreview(schema: string, topicId: string){
+        const dialogRef = this.dialog.open(SchemaViewDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                schema: schema
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.loading = true;
+                this.schemaService.topicImport(topicId).subscribe((data) => {
                     this.setSchema(data);
                     this.loading = false;
                 }, (e) => {

@@ -16,7 +16,7 @@ export const fileAPI = async function (
     /**
      * Add file and return hash
      * 
-     * @param {any} [payload] - file to add
+     * @param {ArrayBuffer} [payload] - file to add
      * 
      * @returns {string} - hash of added file
      */

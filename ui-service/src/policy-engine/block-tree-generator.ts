@@ -14,7 +14,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { ModelHelper, SchemaEntity, UserRole } from 'interfaces';
+import { ISubmitModelMessage, ModelActionType, ModelHelper, SchemaEntity, UserRole } from 'interfaces';
 import { HederaHelper } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
@@ -22,6 +22,8 @@ import * as Buffer from 'buffer';
 import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import {BlockPermissions} from '@policy-engine/helpers/middleware/block-permissions';
+import { IPFS } from '@helpers/ipfs';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -389,10 +391,11 @@ export class BlockTreeGenerator {
                     regenerateIds(model.config);
                     const guardians = new Guardians();
                     const root = await guardians.getRootConfig(user.did);
+                    const hederaHelper = HederaHelper
+                        .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
 
                     if (!model.topicId) {
-                        const topicId = await HederaHelper
-                            .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+                        const topicId = await hederaHelper
                             .newTopic(root.hederaAccountKey, model.topicDescription);
                         model.topicId = topicId;
                     }
@@ -419,6 +422,21 @@ export class BlockTreeGenerator {
                     });
 
                     await this.generate(model.id.toString());
+
+                    const publishedPolicy = await getMongoRepository(Policy).findOne(req.params.policyId);
+                    const zip = await PolicyImportExportHelper.generateZipFile(publishedPolicy);
+                    const cid = await new IPFS().addFile(await zip.generateAsync({type: "arraybuffer"}));
+
+                    let publishPolicyMessage: ISubmitModelMessage = {
+                        name: model.name,
+                        owner: model.owner,
+                        cid: cid,
+                        uuid: model.uuid,
+                        version: model.version,
+                        operation: ModelActionType.PUBLISH
+                    }
+
+                    hederaHelper.submitMessage(process.env.SUBMIT_POLICY_TOPIC_ID, JSON.stringify(publishPolicyMessage));
                 }
 
                 const policies = await getMongoRepository(Policy).find() as Policy[];

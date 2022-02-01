@@ -347,6 +347,7 @@ export class SchemaConfigurationComponent implements OnInit {
             });
         }
         schema.update(fields);
+        schema.updateRef(this.schemes);
         return schema;
     }
 

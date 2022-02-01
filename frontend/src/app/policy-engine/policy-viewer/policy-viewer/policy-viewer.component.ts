@@ -10,6 +10,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../helpers/export-import-dialog/export-import-dialog.component';
 import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
+import { ImportPolicyDialog } from '../../import-policy-dialog/import-policy-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -243,7 +244,7 @@ export class PolicyViewerComponent implements OnInit {
         });
     }
 
-    importPolicy() {
+    importPolicyFromFile() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.zip';
@@ -265,7 +266,22 @@ export class PolicyViewerComponent implements OnInit {
         }
     }
 
-    importPolicyDetails(policy: any) {
+    importPolicy() {
+      const dialogRef = this.dialog.open(ImportPolicyDialog, {
+          width: '500px',
+          data: {
+              callbackFileImport: this.importPolicyFromFile.bind(this)
+          },
+          autoFocus: false
+      });
+      dialogRef.afterClosed().subscribe(async (result) => {
+          if (result && result.policy && result.topicId) {
+            this.importPolicyDetails(result.policy, result.topicId);
+          }
+      });
+  }
+
+    importPolicyDetails(policy: any, topicId: string = "") {
         const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -276,12 +292,23 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.importUpload(policy).subscribe((policies) => {
-                    this.updatePolicy(policies);
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                });
+
+                if (!topicId){
+                    this.policyEngineService.importUpload(policy).subscribe((policies) => {
+                        this.updatePolicy(policies);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    });
+                }
+                else {
+                    this.policyEngineService.topicImport(topicId).subscribe((policies) => {
+                        this.updatePolicy(policies);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    });
+                }
             }
         });
     }

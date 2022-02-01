@@ -53,4 +53,12 @@ export class SchemaService {
   public export(ids: string[]): Observable<any> {
     return this.http.post<any[]>(`${this.url}/export`, { ids });
   }
+
+  public topicImport(messageId: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.url}/import/topic`, { messageId: messageId });
+  }
+
+  public topicPreview(messageId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/import/preview/${messageId}`);
+  }
 }
