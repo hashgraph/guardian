@@ -49,7 +49,7 @@ jobs:
         run: |
           pushd api-tests
           npm install
-          npm run test
+          npm run test:ci
           popd
         env:
           CI: true
