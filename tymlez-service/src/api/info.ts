@@ -58,6 +58,6 @@ async function getServiceInfo({
     return serviceInfo;
   } catch (ex) {
     console.warn(`Failed to get info from ${serviceName} ${baseUrl}`);
-    return undefined;
+    return null;
   }
 }

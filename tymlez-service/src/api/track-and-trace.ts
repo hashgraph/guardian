@@ -316,9 +316,9 @@ export const makeTrackAndTraceApi = ({
         policyTag: policyTag,
       };
       try {
-        console.error('start post');
+        console.log('start post');
         const resp = await axios.post(mrvReceiverUrl, body);
-        console.error('end post', resp?.status, resp?.data);
+        console.log('end post', resp?.status, resp?.data);
       } catch (e) {
         console.error(e);
         res.status(500).json(e);

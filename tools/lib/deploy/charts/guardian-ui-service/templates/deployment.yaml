@@ -38,10 +38,16 @@ spec:
             httpGet:
               path: /api/info
               port: p3002
+            timeoutSeconds: 30
+            failureThreshold: 5
+            initialDelaySeconds: 20
+            periodSeconds: 20
           readinessProbe:
             httpGet:
               path: /api/info
               port: p3002
+            initialDelaySeconds: 20
+            periodSeconds: 20
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:

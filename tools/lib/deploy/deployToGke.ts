@@ -16,6 +16,7 @@ export async function deployToGke({
   region: string;
   imageTag: string;
 }) {
+  // Make sure w don't deploy to the wrong GCP project
   const fullEnv = `${clientName}-${env}`;
   await exec(
     [
