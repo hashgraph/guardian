@@ -5,7 +5,7 @@ import { MessageAPI } from "interfaces";
  */
 export class IPFS {
     private static channel: any;
-    private static  readonly target: string = 'ipfs-client';
+    private static readonly target: string = 'ipfs-client';
 
     /**
      * Register channel
@@ -18,7 +18,7 @@ export class IPFS {
     /**
      * Get channel
      */
-    public static  getChannel(): any {
+    public static getChannel(): any {
         return this.channel;
     }
 
@@ -28,8 +28,7 @@ export class IPFS {
      * 
      * @returns {string} - hash
      */
-    public static async addFile(file: ArrayBuffer): Promise<string>
-    {
+    public static async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {
         return (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
     }
 
@@ -40,6 +39,6 @@ export class IPFS {
      * @returns File
      */
     public static async getFile(cid: string, responseType: 'json' | 'raw' | 'string'): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, {cid, responseType}, 'json')).payload;
+        return (await this.channel.request(this.target, MessageAPI.IPFS_GET_FILE, { cid, responseType }, 'json')).payload;
     }
 }

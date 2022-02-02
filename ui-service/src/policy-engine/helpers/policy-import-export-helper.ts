@@ -11,6 +11,7 @@ export namespace PolicyImportExportHelper {
      * 
      * @returns Zip file
      */
+    /*
     export async function generateZipFile(policy: Policy): Promise<JSZip> {
         const guardians = new Guardians();
 
@@ -35,7 +36,7 @@ export namespace PolicyImportExportHelper {
         zip.file(`policy.json`, JSON.stringify(policy));
 
         return zip;
-    }
+    }*/
 
     /**
      * Parse zip policy file
@@ -73,6 +74,7 @@ export namespace PolicyImportExportHelper {
      * 
      * @returns Policies by owner  
      */
+    /*
     export async function importPolicy(policyToImport: any, policyOwner: any): Promise<Policy[]> {
         let {policy, tokens, schemas} = policyToImport;
         const guardians = new Guardians();
@@ -107,4 +109,5 @@ export namespace PolicyImportExportHelper {
 
         return await policyRepository.find({owner: policyOwner});
     }
+    */
 }

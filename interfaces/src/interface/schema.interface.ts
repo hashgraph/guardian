@@ -21,6 +21,7 @@ export interface ISchema {
     contextURL?: string;
     iri?: string;
     isOwner?: boolean;
+    isCreator?: boolean;
     relationships?: string;
 }
 

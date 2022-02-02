@@ -338,7 +338,7 @@ export class BlockTreeGenerator {
                 res.status(500).send({ code: 500, message: 'Unknown error' });
             }
         });
-
+/*
         this.router.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 if (!req.body || !req.body.policyVersion) {
@@ -452,7 +452,7 @@ export class BlockTreeGenerator {
                 res.status(500).send({ code: 500, message: error.message || error });
             }
         });
-
+*/
         this.router.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const policy = req.body as Policy;

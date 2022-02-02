@@ -43,11 +43,12 @@ export const fileAPI = async function (
         try {
             let blob = new Blob([msg.payload]);
             const cid = await client.storeBlob(blob);
-            res.send(cid, 'json');
+            const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
+            res.send({ cid, url }, 'json');
         }
-        catch(e) {
+        catch (e) {
             console.log(e);
-            res.send(null,'json');
+            res.send(null, 'json');
         }
     })
 
@@ -65,10 +66,10 @@ export const fileAPI = async function (
                 res.send(null)
                 return;
             }
-            const file = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, {responseType: mapResponseType(msg.payload.responseType)});
+            const file = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: mapResponseType(msg.payload.responseType) });
             res.send(file, msg.payload.responseType);
         }
-        catch(e) {
+        catch (e) {
             console.log(e);
             res.send(null);
         }

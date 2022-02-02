@@ -11,9 +11,16 @@ export class HederaMirrorNodeHelper {
      * 
      * @returns {any} - Message
      */
-    public static async getTopicMessage(timeStamp: string): Promise<any>
-    {
-        const res = await axios.get(`${HederaHelper.HEDERA_MESSAGE_API}/${timeStamp}`,{responseType: 'json'});
-        return JSON.parse(Buffer.from(res.data.message, 'base64').toString());
+    public static async getTopicMessage(timeStamp: string): Promise<{
+        timeStamp: string,
+        topicId: string,
+        message: string
+    }> {
+        const res = await axios.get(`${HederaHelper.HEDERA_MESSAGE_API}/${timeStamp}`, { responseType: 'json' });
+        return {
+            timeStamp: res.data.consensus_timestamp,
+            topicId: res.data.topic_id,
+            message: Buffer.from(res.data.message, 'base64').toString()
+        }
     }
 }

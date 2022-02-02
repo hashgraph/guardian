@@ -66,7 +66,10 @@ export class SchemaFormComponent implements OnInit {
   @Input('private-fields') hide!: { [x: string]: boolean };
   @Input('schema') schema!: Schema;
   @Input('fields') schemaFields!: SchemaField[];
-  @Input('context') context!: any;
+  @Input('context') context!: {
+    type: any;
+    context: any;
+  };
   @Input('formGroup') group!: FormGroup;
   @Input('delimiter-hide') delimiterHide: boolean = false;
 
@@ -91,7 +94,10 @@ export class SchemaFormComponent implements OnInit {
       this.update(this.schemaFields);
       return;
     } else if (this.schema) {
-      this.context = this.schema.context;
+      this.context = {
+        type: this.schema.type,
+        context: this.schema.contextURL
+      };
       this.update(this.schema.fields);
       return;
     }

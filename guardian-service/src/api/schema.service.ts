@@ -164,27 +164,42 @@ export const schemaAPI = async function (
             }
 
             const messageId = msg.payload.messageId;
+            const owner = msg.payload.owner;
+
             let schema = await schemaRepository.findOne({
                 where: { messageId: { $eq: messageId } }
             });
-        
+
             if (schema) {
                 res.send(schema);
                 return;
             }
-        
-            const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId) as ISchemaSubmitMessage;
-            const context = await IPFS.getFile(topicMessage.context_cid, "string") as string;
-            const schemaToImport = await IPFS.getFile(topicMessage.cid, "json") as Schema;
-        
-            schemaToImport.context = context;
-            schemaToImport.documentURL = topicMessage.cid;
-            schemaToImport.contextURL = topicMessage.context_cid;
-            schemaToImport.messageId = messageId;
-        
-            updateIRI(schemaToImport);
 
-            schema = await schemaRepository.create(schemaToImport);
+            const { topicId, message } = await HederaMirrorNodeHelper.getTopicMessage(messageId);
+            const topicMessage = JSON.parse(message) as ISchemaSubmitMessage;
+            const documentObject = await IPFS.getFile(topicMessage.document_cid, "string") as string;
+            const contextObject = await IPFS.getFile(topicMessage.context_cid, "string") as string;
+            const schemaToImport: any = {
+                uuid: topicMessage.uuid,
+                hash: "",
+                name: topicMessage.name,
+                description: topicMessage.description,
+                entity: topicMessage.entity as SchemaEntity,
+                status: SchemaStatus.PUBLISHED,
+                readonly: false,
+                document: documentObject,
+                context: contextObject,
+                version: topicMessage.version,
+                creator: topicMessage.owner,
+                owner: owner,
+                topicId: topicId,
+                messageId: messageId,
+                documentURL: topicMessage.document_url,
+                contextURL: topicMessage.context_url,
+                iri: null
+            }
+            updateIRI(schemaToImport);
+            schema = schemaRepository.create(schemaToImport) as any;
             res.send(schema);
         }
         catch (error) {
@@ -199,7 +214,7 @@ export const schemaAPI = async function (
      * @returns Schema document
      */
     channel.response(MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg, res) => {
-        try {   
+        try {
             if (!msg.payload || !msg.payload.url) {
                 res.send(null)
                 return;
@@ -222,12 +237,12 @@ export const schemaAPI = async function (
      * @returns Schema context
      */
     channel.response(MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg, res) => {
-        try {   
+        try {
             if (!msg.payload || !msg.payload.url) {
                 res.send(null)
                 return;
             }
-            
+
             const schema = await schemaRepository.findOne({
                 where: { contextURL: { $eq: msg.payload.url } }
             });
@@ -291,21 +306,27 @@ export const schemaAPI = async function (
                 const id = msg.payload.id as string;
                 const version = msg.payload.version as string;
                 const owner = msg.payload.owner as string;
-    
+
                 const item = await schemaRepository.findOne(id);
-    
+
                 if (!item) {
+                    console.error("not item");
                     res.send(null);
+                    return;
                 }
-    
+
                 if (item.creator != owner) {
+                    console.error("not owner");
                     res.send(null);
+                    return;
                 }
-    
+
                 if (item.status == SchemaStatus.PUBLISHED) {
+                    console.error("not status");
                     res.send(null);
+                    return;
                 }
-                
+
                 SchemaHelper.updateVersion(item, version);
 
                 const itemDocument = JSON.parse(item.document);
@@ -314,46 +335,58 @@ export const schemaAPI = async function (
 
                 const document = item.document;
                 const context = item.context;
-    
+
                 const documentFile = new Blob([document], { type: "application/json" });
                 const contextFile = new Blob([context], { type: "application/json" });
-                const cid = await IPFS.addFile(await documentFile.arrayBuffer());
-                const contextCid = await IPFS.addFile(await contextFile.arrayBuffer());
-    
+                let result: any;
+                result = await IPFS.addFile(await documentFile.arrayBuffer());
+                const documentCid = result.cid;
+                const documentUrl = result.url;
+                result = await IPFS.addFile(await contextFile.arrayBuffer());
+                const contextCid = result.cid;
+                const contextUrl = result.url;
+
                 item.status = SchemaStatus.PUBLISHED;
-                item.documentURL = cid;
-                item.contextURL = contextCid;
-    
+                item.documentURL = documentUrl;
+                item.contextURL = contextUrl;
+
                 const schemaPublishMessage: ISchemaSubmitMessage = {
                     name: item.name,
+                    description: item.description,
+                    entity: item.entity,
                     owner: item.creator,
-                    cid: cid,
                     uuid: item.uuid,
                     version: item.version,
                     operation: ModelActionType.PUBLISH,
-                    context_cid: contextCid
+                    document_cid: documentCid,
+                    document_url: documentUrl,
+                    context_cid: contextCid,
+                    context_url: contextUrl
                 }
-    
+
                 const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
                 if (!root) {
+                    console.error("not root");
                     res.send(null);
                     return;
                 }
-    
+
                 const messageId = await HederaHelper
                     .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
                     .submitMessage(process.env.SUBMIT_SCHEMA_TOPIC_ID, JSON.stringify(schemaPublishMessage));
-    
-                item.messageId = messageId.toString();
-    
+
+                item.messageId = messageId;
+
                 updateIRI(item);
                 await schemaRepository.update(item.id, item);
-    
+
                 res.send(item);
                 return;
             }
+            console.error("not id");
             res.send(null);
         } catch (error) {
+            console.error(error);
             res.send(null);
         }
     });

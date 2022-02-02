@@ -259,6 +259,7 @@ export class SchemaConfigComponent implements OnInit {
         this.schemes = SchemaHelper.map(data);
         this.schemes =  this.schemes.filter(s=>!s.readonly);
         this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
+        
     }
 
     exportSchemes() {

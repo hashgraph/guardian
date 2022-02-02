@@ -4,7 +4,6 @@ import { ISchema } from '../interface/schema.interface';
 import { Schema } from '../models/schema';
 import { SchemaField } from "../interface/schema-field.interface";
 
-
 export class SchemaHelper {
     public static parseRef(data: string | ISchema): {
         iri: string | null;
@@ -243,7 +242,7 @@ export class SchemaHelper {
         let { previousVersion } = SchemaHelper.parseComment(document.$comment);
 
         let _version = data.version || version;
-        let _owner = data.owner;
+        let _owner = data.creator || data.owner;
         let _uuid = data.uuid || uuid;
 
         if (!ModelHelper.checkVersionFormat(newVersion)) {
@@ -257,6 +256,7 @@ export class SchemaHelper {
 
         data.version = _version;
         data.owner = _owner;
+        data.creator = _owner;
         data.uuid = _uuid;
 
         const type = SchemaHelper.buildType(_uuid, _version);
@@ -274,6 +274,7 @@ export class SchemaHelper {
         data.version = data.version || version;
         data.uuid = data.uuid || uuid;
         data.owner = newOwner;
+        data.creator = newOwner;
         const type = SchemaHelper.buildType(data.uuid, data.version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
@@ -282,11 +283,19 @@ export class SchemaHelper {
         return data;
     }
 
-    public static map(data: ISchema[]): Schema[] {
-        if (!data) {
-            return [];
+    public static updatePermission(data: ISchema[], did: string) {
+        for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            element.isOwner = element.owner && element.owner == did;
+            element.isCreator = element.creator && element.creator == did;
         }
-        return data.map(e => new Schema(e));
+    }
+
+    public static map(data: ISchema[]): Schema[] {
+        if (data) {
+            return data.map(e => new Schema(e));
+        }
+        return [];
     }
 
     public static validate(schema: ISchema) {

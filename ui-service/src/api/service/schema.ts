@@ -24,8 +24,8 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
                 res.status(500).json({ code: 500, message: 'Schema does not exist.' });
                 return;
             }
-            if (schema.owner != user.did) {
-                res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            if (schema.creator != user.did) {
+                res.status(500).json({ code: 500, message: 'Invalid creator.' });
                 return;
             }
             newSchema.version = schema.version;
@@ -38,7 +38,7 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
         }
         SchemaHelper.updateOwner(newSchema, user.did);
         const schemes = (await guardians.setSchema(newSchema));
-        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
         res.status(201).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
@@ -50,7 +50,7 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         const user = req.user;
         const guardians = new Guardians();
         const schemes = await guardians.getSchemesByOwner(user.did);
-        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
@@ -67,13 +67,13 @@ schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (schema.owner != user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+        if (schema.creator != user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid creator.' });
             return;
         }
         SchemaHelper.updateOwner(newSchema, user.did);
         const schemes = (await guardians.setSchema(newSchema));
-        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
@@ -90,12 +90,12 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async 
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (schema.owner != user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+        if (schema.creator != user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid creator.' });
             return;
         }
         const schemes = (await guardians.deleteSchema(schemaId));
-        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
@@ -112,8 +112,8 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (schema.owner != user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+        if (schema.creator != user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid creator.' });
             return;
         }
         const allVersion = await guardians.getSchemesByUUID(schema.uuid);
@@ -125,7 +125,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
         const item = await guardians.publishSchema(schemaId, version, user.did);
 
         const schemes = await guardians.getSchemesByOwner(user.did);
-        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
@@ -142,12 +142,12 @@ schemaAPI.put('/:schemaId/unpublish', permissionHelper(UserRole.ROOT_AUTHORITY),
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (schema.owner != user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+        if (schema.creator != user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid creator.' });
             return;
         }
         const schemes = (await guardians.unpublishedSchema(schemaId));
-        schemes.forEach((s) => s.isOwner = s.owner && s.owner == user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });

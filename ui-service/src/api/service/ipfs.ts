@@ -8,20 +8,17 @@ export const ipfsAPI = Router();
 
 ipfsAPI.post('/file', async (req: any, res: Response) => {
     try {
-        if (!req.user)
-        {
+        if (!req.user) {
             res.sendStatus(401);
             return;
         }
-        if (!req.body)
-        {
+        if (!req.body) {
             throw new Error("Body content in request is empty");
         }
 
         const ipfs = new IPFS();
-        const cid = await ipfs.addFile(req.body);
-        if (!cid)
-        {
+        const { cid } = await ipfs.addFile(req.body);
+        if (!cid) {
             throw new Error("File is not uploaded");
         }
 

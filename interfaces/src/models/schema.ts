@@ -33,8 +33,33 @@ export class Schema implements ISchema {
 
     private userDID: string;
 
-    constructor(data?: ISchema) {
-        if (data) {
+    constructor(schema?: ISchema) {
+        if (schema) {
+            this.id = schema.id || undefined;
+            this.uuid = schema.uuid || ModelHelper.randomUUID();
+            this.hash = schema.hash || "";
+            this.name = schema.name || "";
+            this.description = schema.description || "";
+            this.entity = schema.entity || SchemaEntity.NONE;
+            this.status = schema.status || SchemaStatus.DRAFT;
+            this.readonly = schema.readonly || false;
+            this.document = schema.document || "";
+            this.context = schema.context || "";
+            this.version = schema.version || "";
+            this.creator = schema.creator || "";
+            this.owner = schema.owner || "";
+            this.topicId = schema.topicId || "";
+            this.messageId = schema.messageId || "";
+            this.documentURL = schema.documentURL || "";
+            this.contextURL = schema.contextURL || "";
+            this.iri = schema.iri || "";
+            if(schema.isOwner) {
+                this.userDID = this.owner;
+            }
+            if(schema.isCreator) {
+                this.userDID = this.creator;
+            }
+        } else {
             this.id = undefined;
             this.uuid = ModelHelper.randomUUID();
             this.hash = "";
@@ -53,25 +78,6 @@ export class Schema implements ISchema {
             this.documentURL = "";
             this.contextURL = "";
             this.iri = "";
-        } else {
-            this.id = data.id || undefined;
-            this.uuid = data.uuid || ModelHelper.randomUUID();
-            this.hash = data.hash || "";
-            this.name = data.name || "";
-            this.description = data.description || "";
-            this.entity = data.entity || SchemaEntity.NONE;
-            this.status = data.status || SchemaStatus.DRAFT;
-            this.readonly = data.readonly || false;
-            this.document = data.document || "";
-            this.context = data.context || "";
-            this.version = data.version || "";
-            this.creator = data.creator || "";
-            this.owner = data.owner || "";
-            this.topicId = data.topicId || "";
-            this.messageId = data.messageId || "";
-            this.documentURL = data.documentURL || "";
-            this.contextURL = data.contextURL || "";
-            this.iri = data.iri || "";
         }
         this.userDID = null;
         if (this.document) {
@@ -170,93 +176,3 @@ export class Schema implements ISchema {
         this.document = JSON.stringify( this.documentObject);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// export class Schema1 {
-//     public static LOCAL_SCHEMA = 'https://localhost/schema';
-//     public id: string;
-//     public uuid: string;
-//     public hash: string;
-//     public name: string;
-//     public description: string;
-//     public entity: SchemaEntity;
-//     public status: SchemaStatus;
-//     public readonly: boolean;
-//     public document: string;
-//     public owner: string;
-//     public version: string;
-//     public isOwner: boolean;
-//     public previousVersion: string;
-//     public currentVersion: string;
-//     public iri: string;
-
-//     public schema: ISchemaDocument;
-//     public fields: SchemaField[];
-//     public ref: string;
-//     public context: {
-//         type: string;
-//         context: string[];
-//     };
-
-
-
-
-//     public updateRef(schemes: any[]) {
-//         const map = {};
-//         for (let i = 0; i < this.fields.length; i++) {
-//             const field = this.fields[i];
-//             if (field.isRef) {
-//                 const s = schemes.find(e => e.ref == field.type);
-//                 if (s) {
-//                     map[s.ref] = s.schema
-//                 }
-//             }
-//         }
-//         this.schema['$defs'] = map;
-//         this.document = JSON.stringify(this.schema);
-//     }
-// }
