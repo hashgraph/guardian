@@ -32,4 +32,14 @@ export class IPFS {
     {
         return (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
     }
+
+    /**
+     * Returns file by IPFS CID
+     * @param cid IPFS CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public static async getFile(cid: string, responseType: 'json' | 'raw' | 'string'): Promise<any> {
+        return (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, {cid, responseType}, 'json')).payload;
+    }
 }

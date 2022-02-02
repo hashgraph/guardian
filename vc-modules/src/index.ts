@@ -1,5 +1,6 @@
 export { HederaHelper, IHederaNetwork, IHederaHelper } from './helpers/hedera-helper';
 export { VCHelper} from './helpers/hedera-vc-helper';
+export { HederaMirrorNodeHelper } from './helpers/hedera-mirror-node.helper'
 export { HcsVcDocument } from './vc/vc-document';
 export { HcsVpDocument } from './vc/vp-document';
 export { VcSubject } from './vc/vc-subject';

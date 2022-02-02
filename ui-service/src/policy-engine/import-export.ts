@@ -7,7 +7,9 @@ import { Guardians } from '@helpers/guardians';
 import { findAllEntities } from '@helpers/utils';
 import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { Import } from '@helpers/import';
+import { HederaMirrorNodeHelper } from 'vc-modules';
+import { ISubmitModelMessage } from 'interfaces';
+import { IPFS } from '@helpers/ipfs';
 
 export const importExportAPI = Router();
 
@@ -35,10 +37,10 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
 
 importExportAPI.post('/import/topic', async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const importHelper = new Import();
+        const ipfsHelper = new IPFS();
         const messageId = req.body.messageId;
-        const topicMessage = await importHelper.getTopicMessage(messageId);
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(await importHelper.getPolicy(topicMessage.cid));
+        const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId) as ISubmitModelMessage;
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(await ipfsHelper.getFile(topicMessage.cid, "raw"));
         const policies = await PolicyImportExportHelper.importPolicy(policyToImport, req.user.did);
 
         res.status(201).json(policies);
@@ -49,10 +51,10 @@ importExportAPI.post('/import/topic', async (req: AuthenticatedRequest, res: Res
 
 importExportAPI.get('/import/preview/:messageId', async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const importHelper = new Import();
+        const ipfsHelper = new IPFS();
         const messageId = req.params.messageId;
-        const topicMessage = await importHelper.getTopicMessage(messageId);
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(await importHelper.getPolicy(topicMessage.cid));
+        const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId) as ISubmitModelMessage;
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(await ipfsHelper.getFile(topicMessage.cid, "raw"));
         res.status(200).json(policyToImport);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });

@@ -1,7 +1,26 @@
 import { MessageAPI } from 'interfaces';
 import { NFTStorage } from 'nft.storage';
 import Blob from 'cross-blob';
+import axios, { ResponseType } from 'axios';
 
+
+export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
+
+/**
+ * Map fastmq response type to axios response type
+ * @param responseType FastMq response type
+ * @returns 
+ */
+function mapResponseType(responseType: string): ResponseType {
+    switch (responseType) {
+        case 'raw':
+            return 'arraybuffer';
+        case 'string':
+            return 'text';
+        default:
+            return 'json';
+    }
+}
 
 /**
  * Connecting to the message broker methods of working with IPFS.
@@ -29,6 +48,29 @@ export const fileAPI = async function (
         catch(e) {
             console.log(e);
             res.send(null,'json');
+        }
+    })
+
+    /**
+     * Get file from IPFS.
+     * 
+     * @param {string} [payload.cid] - File CID.
+     * @param {string} [payload.responseType] - Response type
+     * 
+     * @return {any} - File
+     */
+    channel.response(MessageAPI.IPFS_GET_FILE, async (msg, res) => {
+        try {
+            if (!msg.payload || !msg.payload.cid || !msg.payload.responseType) {
+                res.send(null)
+                return;
+            }
+            const file = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, {responseType: mapResponseType(msg.payload.responseType)});
+            res.send(file, msg.payload.responseType);
+        }
+        catch(e) {
+            console.log(e);
+            res.send(null);
         }
     })
 }

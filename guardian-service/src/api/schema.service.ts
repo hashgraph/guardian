@@ -4,11 +4,10 @@ import { MongoRepository } from 'typeorm';
 import { readJSON, writeJSON, readdirSync } from 'fs-extra';
 import path from 'path';
 import { Blob } from 'buffer';
-import { HederaHelper } from 'vc-modules';
+import { HederaHelper, HederaMirrorNodeHelper } from 'vc-modules';
 import { RootConfig } from '@entity/root-config';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
-import { Import } from '@helpers/import';
 
 /**
  * Creation of default schemes.
@@ -174,9 +173,9 @@ export const schemaAPI = async function (
                 return;
             }
         
-            const topicMessage = await Import.getTopicMessage(messageId) as ISchemaSubmitMessage;
-            const context = await Import.getSchemaContext(topicMessage.context_cid);
-            const schemaToImport = await Import.getSchema(topicMessage.cid) as Schema;
+            const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId) as ISchemaSubmitMessage;
+            const context = await IPFS.getFile(topicMessage.context_cid, "string") as string;
+            const schemaToImport = await IPFS.getFile(topicMessage.cid, "json") as Schema;
         
             schemaToImport.context = context;
             schemaToImport.documentURL = topicMessage.cid;

@@ -6,7 +6,6 @@ import { permissionHelper } from '@auth/authorizationHelper';
 import { Blob } from 'buffer';
 import { IPFS } from '@helpers/ipfs';
 import { HederaHelper } from 'vc-modules';
-import { Import } from '@helpers/import';
 import { schemasToContext } from '@transmute/jsonld-schema';
 
 /**
