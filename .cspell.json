@@ -1,6 +1,6 @@
 {
   "version": "0.2",
   "language": "en",
-  "ignoreWords": ["tymlez", "hedera", "uuidv4"],
+  "ignoreWords": ["tymlez", "hedera", "uuidv4", "kubernetes", "hashgraph"],
   "flagWords": ["license"]
 }

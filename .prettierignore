@@ -9,3 +9,4 @@
 *.yaml
 *.yml
 *.md
+!TYMLEZ-README.md

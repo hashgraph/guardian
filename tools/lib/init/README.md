@@ -1,4 +1,4 @@
-# Prepare new policies
+# How to create policy
 
 1. Use Guardian UI to create schemas, tokens and policy
 2. Export the policy, which will generate a zip file
