@@ -31,9 +31,6 @@ export class AggregateBlock {
     @Inject()
     private guardians: Guardians;
 
-    @Inject()
-    private users: Users;
-
     private tokenId: any;
     private rule: any;
 

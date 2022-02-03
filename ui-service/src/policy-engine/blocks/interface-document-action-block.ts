@@ -191,7 +191,7 @@ export class InterfaceDocumentActionBlock {
                         break;
                     }
                     if (schema.status != SchemaStatus.PUBLISHED) {
-                        resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not published`);
+                        resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" is not published`);
                         break;
                     }
                     break;
