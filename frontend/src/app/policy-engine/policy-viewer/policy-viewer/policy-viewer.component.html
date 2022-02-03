@@ -69,8 +69,8 @@
                 </ng-container>
                 <ng-container matColumnDef="export">
                     <th mat-header-cell *matHeaderCellDef> Export </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="btn-settings" (click)="exportPolicy(element)">
+                    <td mat-cell *matCellDef="let element" >
+                        <div class="btn-settings" *ngIf="element.messageId" (click)="exportPolicy(element)">
                             <mat-icon>import_export</mat-icon>
                             <span>Export</span>
                         </div>

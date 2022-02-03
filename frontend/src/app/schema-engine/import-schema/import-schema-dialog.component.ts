@@ -56,6 +56,7 @@ export class ImportSchemaDialog {
 
     ngOnInit() {
         this.callbackIpfsImport = this.data.callbackIpfsImport;
+        this.setImportType(ImportType.IPFS);
     }
 
     onNoClick(): void {

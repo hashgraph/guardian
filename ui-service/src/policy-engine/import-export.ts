@@ -13,18 +13,22 @@ import { IPFS } from '@helpers/ipfs';
 
 export const importExportAPI = Router();
 
-// importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: Response) => {
-//     try {
-//         const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
-//         const zip = await PolicyImportExportHelper.generateZipFile(policy);
-//         const arcStream = zip.generateNodeStream();
-//         res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
-//         res.setHeader('Content-type', 'application/zip');
-//         arcStream.pipe(res);
-//     } catch(e) {
-//         res.status(500).send({code: 500, message: e.message});
-//     }
-// });
+importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
+        if (!policy) {
+            throw new Error(`Cannot export policy ${req.params.policyId}`);
+        }
+
+        res.status(200).send({
+            name: policy.name,
+            version: policy.version,
+            messageId: policy.messageId
+        })
+    } catch(e) {
+        res.status(500).send({code: 500, message: e.message});
+    }
+});
 
 // importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response) => {
 //     try {

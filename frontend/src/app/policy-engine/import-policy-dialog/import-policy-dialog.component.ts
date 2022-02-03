@@ -36,6 +36,7 @@ export class ImportPolicyDialog {
 
     ngOnInit() {
       this.callbackFileImport = this.data.callbackFileImport;
+      this.setImportType(ImportType.IPFS);
     }
 
     onNoClick(): void {

@@ -172,10 +172,8 @@ export class PolicyEngineService {
     return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}/parents`);
   }
 
-  public exportPolicy(policyId: string): Observable<Blob> {
-    return this.http.get(`${this.url}/${policyId}/export`, {
-      responseType: 'blob'
-    });
+  public exportPolicy(policyId: string): Observable<any> {
+    return this.http.get(`${this.url}/${policyId}/export`);
   }
 
   public importUpload(policyData: any): Observable<any[]> {

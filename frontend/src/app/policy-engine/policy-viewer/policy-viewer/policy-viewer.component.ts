@@ -230,13 +230,14 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     exportPolicy(element: any) {
-        this.dialog.open(ExportModelDialog, {
-            width: '700px',
-            data: {
-                models: [element]
-            },
-            autoFocus: false
-        });
+        this.policyEngineService.exportPolicy(element.id)
+            .subscribe( exportedPolicy => this.dialog.open(ExportModelDialog, {
+                width: '700px',
+                data: {
+                    models: [exportedPolicy]
+                },
+                autoFocus: false
+            }));
     }
 
     importPolicyFromFile() {
