@@ -189,13 +189,7 @@ export class VCHelper {
         vc.setIssuanceDate(TimestampUtils.now());
         vc.addCredentialSubject(vcSubject);
         vc.setIssuer(didId);
-
-        console.log("createVC", JSON.stringify(vc.toJsonTree(), null, 4));
-
         vc = await VCJS.issue(vc, suite, this.loader);
-
-        console.log("createVC issue", JSON.stringify(vc.toJsonTree(), null, 4));
-
         return vc;
     }
 

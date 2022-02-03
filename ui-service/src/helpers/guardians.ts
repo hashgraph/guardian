@@ -4,6 +4,7 @@ import {
     IApprovalDocument,
     IChainItem,
     IDidDocument,
+    IMessageResponse,
     IRootConfig,
     ISchema,
     ISchemaSubmitMessage,
@@ -45,9 +46,13 @@ export class Guardians {
      * @param params
      * @param type
      */
-    public async request<T>(entity: string, params: any, type?: string): Promise<T> {
+    public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
         try {
-            return (await this.channel.request(this.target, entity, params, type)).payload;
+            const response: IMessageResponse<T> =(await this.channel.request(this.target, entity, params, type)).payload;
+            if (response.error) {
+                throw response.error;
+            }
+            return response.body;
         } catch (e) {
             throw new Error('Guardian send error ' + e.message);
         }
@@ -59,7 +64,7 @@ export class Guardians {
      * @returns {IAddressBookConfig} - Address book
      */
     public async getRootAddressBook(): Promise<IAddressBookConfig> {
-        return (await this.channel.request(this.target, MessageAPI.GET_ROOT_ADDRESS_BOOK)).payload;
+        return await this.request(MessageAPI.GET_ROOT_ADDRESS_BOOK);
     }
 
     /**
@@ -70,9 +75,7 @@ export class Guardians {
      * @returns {IAddressBookConfig} - Address book
      */
     public async getAddressBook(owner: string): Promise<IAddressBookConfig> {
-        return (await this.channel.request(this.target, MessageAPI.GET_ADDRESS_BOOK,
-            { owner: owner }
-        )).payload;
+        return await this.request(MessageAPI.GET_ADDRESS_BOOK, { owner: owner });
     }
 
     /**
@@ -84,7 +87,7 @@ export class Guardians {
      * @returns {IDidDocument[]} - DID Documents
      */
     public async getDidDocuments(params: IFilter): Promise<IDidDocument[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_DID_DOCUMENTS, params)).payload;
+        return await this.request(MessageAPI.GET_DID_DOCUMENTS, params);
     }
 
     /**
@@ -101,7 +104,7 @@ export class Guardians {
      * @returns {IVCDocument[]} - VC Documents
      */
     public async getVcDocuments(params: IFilter): Promise<IVCDocument[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_VC_DOCUMENTS, params)).payload;
+        return await this.request(MessageAPI.GET_VC_DOCUMENTS, params);
     }
 
     /**
@@ -112,7 +115,7 @@ export class Guardians {
      * @returns {IVPDocument[]} - VP Documents
      */
     public async getVpDocuments(params?: IFilter): Promise<IVPDocument[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_VP_DOCUMENTS, params)).payload;
+        return await this.request(MessageAPI.GET_VP_DOCUMENTS, params);
     }
 
     /**
@@ -125,7 +128,7 @@ export class Guardians {
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemesByOwner(did: string): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, { owner: did })).payload;
+        return await this.request(MessageAPI.GET_SCHEMES, { owner: did });
     }
 
     /**
@@ -138,7 +141,7 @@ export class Guardians {
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemesByUUID(uuid: string): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, { uuid: uuid })).payload;
+        return await this.request(MessageAPI.GET_SCHEMES, { uuid: uuid });
     }
 
     /**
@@ -149,7 +152,7 @@ export class Guardians {
      * @returns {ISchema} - schema
      */
     public async getSchemaByMessage(messageId: string): Promise<ISchema> {
-        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { messageId })).payload;
+        return await this.request(MessageAPI.GET_SCHEMA, { messageId });
     }
 
     /**
@@ -160,7 +163,7 @@ export class Guardians {
      * @returns {ISchema} - schema
      */
     public async getSchemaByEntity(entity: SchemaEntity): Promise<ISchema> {
-        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { entity })).payload;
+        return await this.request(MessageAPI.GET_SCHEMA, { entity });
     }
 
     /**
@@ -171,7 +174,7 @@ export class Guardians {
      * @returns {ISchema} - schema
      */
     public async getSchemaById(id: string): Promise<ISchema> {
-        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { id: id })).payload;
+        return await this.request(MessageAPI.GET_SCHEMA, { id: id });
     }
 
     /**
@@ -183,7 +186,7 @@ export class Guardians {
      * @returns {IToken[]} - tokens
      */
     public async getTokens(params?: IFilter): Promise<IToken[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_TOKENS, params)).payload;
+        return await this.request(MessageAPI.GET_TOKENS, params);
     }
 
     /**
@@ -194,7 +197,7 @@ export class Guardians {
      * @returns {IFullConfig} - Address books, VC Document and DID Document
      */
     public async getRootConfig(did: string): Promise<IRootConfig> {
-        return (await this.channel.request(this.target, MessageAPI.GET_ROOT_CONFIG, did)).payload;
+        return await this.request(MessageAPI.GET_ROOT_CONFIG, did);
     }
 
     /**
@@ -205,7 +208,7 @@ export class Guardians {
      * @returns {IChainItem[]} - trust chain
      */
     public async getChain(id: string): Promise<IChainItem[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_CHAIN, id)).payload;
+        return await this.request(MessageAPI.GET_CHAIN, id);
     }
 
     /**
@@ -217,7 +220,7 @@ export class Guardians {
      * @returns {any} - DID Document
      */
     public async loadDidDocument(params: IFilter): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.LOAD_DID_DOCUMENT, params)).payload;
+        return await this.request(MessageAPI.LOAD_DID_DOCUMENT, params);
     }
 
     /**
@@ -228,7 +231,7 @@ export class Guardians {
      * @returns {any} - Schema Document
      */
     public async loadSchemaDocument(url: string): Promise<ISchema> {
-        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA_DOCUMENT, url)).payload;
+        return await this.request(MessageAPI.LOAD_SCHEMA_DOCUMENT, url);
     }
 
     /**
@@ -239,7 +242,7 @@ export class Guardians {
      * @returns {any} - Schema Context
      */
     public async loadSchemaContext(url: string): Promise<ISchema> {
-        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA_CONTEXT, url)).payload;
+        return await this.request(MessageAPI.LOAD_SCHEMA_CONTEXT, url);
     }
 
     /**
@@ -250,7 +253,7 @@ export class Guardians {
      * @returns {any} - Schemes Context
      */
     public async loadSchemaContexts(urls: string[]): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA_CONTEXT, urls)).payload;
+        return await this.request(MessageAPI.LOAD_SCHEMA_CONTEXT, urls);
     }
 
     /**
@@ -261,7 +264,7 @@ export class Guardians {
      * @returns {any} - Schema Document
      */
     public async importSchema(messageId: string, owner: string): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.IMPORT_SCHEMA, { messageId, owner })).payload;
+        return await this.request(MessageAPI.IMPORT_SCHEMA, { messageId, owner });
     }
 
     /**
@@ -274,7 +277,7 @@ export class Guardians {
      * @returns {IDidDocument} - new DID Documents
      */
     public async setDidDocument(item: IDidDocument | any): Promise<IDidDocument> {
-        return (await this.channel.request(this.target, MessageAPI.SET_DID_DOCUMENT, item)).payload;
+        return await this.request(MessageAPI.SET_DID_DOCUMENT, item);
     }
 
     /**
@@ -287,7 +290,7 @@ export class Guardians {
      * @returns {IVCDocument} - new VC Documents
      */
     public async setVcDocument(item: IVCDocument | any): Promise<IVCDocument> {
-        return (await this.channel.request(this.target, MessageAPI.SET_VC_DOCUMENT, item)).payload;
+        return await this.request(MessageAPI.SET_VC_DOCUMENT, item);
     }
 
     /**
@@ -298,7 +301,7 @@ export class Guardians {
      * @returns {IVPDocument} - new VP Document
      */
     public async setVpDocument(item: IVPDocument): Promise<IVPDocument> {
-        return (await this.channel.request(this.target, MessageAPI.SET_VP_DOCUMENT, item)).payload;
+        return await this.request(MessageAPI.SET_VP_DOCUMENT, item);
     }
 
     /**
@@ -309,7 +312,7 @@ export class Guardians {
      * @returns {ISchema[]} - all schemes
      */
     public async setSchema(item: ISchema | any): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.SET_SCHEMA, item)).payload;
+        return await this.request(MessageAPI.SET_SCHEMA, item);
     }
 
     /**
@@ -320,7 +323,7 @@ export class Guardians {
      * @returns {IToken[]} - all tokens
      */
     public async setToken(item: IToken | any): Promise<IToken[]> {
-        return (await this.channel.request(this.target, MessageAPI.SET_TOKEN, item)).payload;
+        return await this.request(MessageAPI.SET_TOKEN, item);
     }
 
     /**
@@ -331,7 +334,7 @@ export class Guardians {
      * @returns {IToken[]} - all tokens
      */
     public async importTokens(items: IToken[]): Promise<void> {
-        return (await this.channel.request(this.target, MessageAPI.IMPORT_TOKENS, items)).payload;
+        return await this.request(MessageAPI.IMPORT_TOKENS, items);
     }
 
     /**
@@ -342,7 +345,7 @@ export class Guardians {
      * @returns {IFullConfig} - Address books config
      */
     public async setRootConfig(item: IRootConfig | any): Promise<IRootConfig> {
-        return (await this.channel.request(this.target, MessageAPI.SET_ROOT_CONFIG, item)).payload;
+        return await this.request(MessageAPI.SET_ROOT_CONFIG, item);
     }
 
     /**
@@ -353,7 +356,7 @@ export class Guardians {
      * @returns {IApprovalDocument[]} - new approve documents
      */
     public async setApproveDocuments(items: IApprovalDocument[] | any): Promise<IApprovalDocument[]> {
-        return (await this.channel.request(this.target, MessageAPI.SET_APPROVE_DOCUMENTS, items)).payload;
+        return await this.request(MessageAPI.SET_APPROVE_DOCUMENTS, items);
     }
 
     /**
@@ -368,7 +371,7 @@ export class Guardians {
      * @returns {IApprovalDocument[]} - approve documents
      */
     public async getApproveDocuments(params: IFilter): Promise<IApprovalDocument[]> {
-        return (await this.channel.request(this.target, MessageAPI.GET_APPROVE_DOCUMENTS, params)).payload;
+        return await this.request(MessageAPI.GET_APPROVE_DOCUMENTS, params);
     }
 
     /**
@@ -379,7 +382,7 @@ export class Guardians {
      * @returns {IApprovalDocument} - new approve document
      */
     public async updateApproveDocument(item: IApprovalDocument): Promise<void> {
-        return (await this.channel.request(this.target, MessageAPI.UPDATE_APPROVE_DOCUMENTS, item)).payload;
+        return await this.request(MessageAPI.UPDATE_APPROVE_DOCUMENTS, item);
     }
 
     /**
@@ -401,12 +404,7 @@ export class Guardians {
      * @returns {any[]} - Exported schemas
      */
     public async exportSchemes(ids: string[]): Promise<{ name: string, version: string, messageId: string }[]> {
-        const res = (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
-        if (res.error) {
-            throw new Error(res.error);
-        }
-
-        return res.body;
+        return await this.request(MessageAPI.EXPORT_SCHEMES, ids);
     }
 
     /**
@@ -417,7 +415,7 @@ export class Guardians {
      * @returns {ISchemaSubmitMessage} - message
      */
     public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
-        return (await this.channel.request(this.target, MessageAPI.PUBLISH_SCHEMA, { id, version, owner })).payload;
+        return await this.request(MessageAPI.PUBLISH_SCHEMA, { id, version, owner });
     }
 
     /**
@@ -428,7 +426,7 @@ export class Guardians {
      * @returns {ISchema[]} - all schemes
      */
     public async unpublishedSchema(id: string): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.UNPUBLISHED_SCHEMA, id)).payload;
+        return await this.request(MessageAPI.UNPUBLISHED_SCHEMA, id);
     }
 
     /**
@@ -439,7 +437,7 @@ export class Guardians {
      * @returns {ISchema[]} - all schemes
      */
     public async deleteSchema(id: string): Promise<ISchema[]> {
-        return (await this.channel.request(this.target, MessageAPI.DELETE_SCHEMA, id)).payload;
+        return await this.request(MessageAPI.DELETE_SCHEMA, id);
     }
 
     /**
@@ -450,6 +448,6 @@ export class Guardians {
      * @returns {any} Schema preview
      */
     public async getSchemaPreview(messageId: string, owner: string): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.PREVIEW_SCHEMA, { messageId, owner })).payload
+        return await this.request(MessageAPI.PREVIEW_SCHEMA, { messageId, owner });
     }
 }

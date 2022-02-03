@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, ISchemaSubmitMessage, ModelActionType, SchemaHelper } from 'interfaces';
+import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, ISchemaSubmitMessage, ModelActionType, SchemaHelper, MessageResponse, MessageError } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { readJSON, writeJSON, readdirSync } from 'fs-extra';
 import path from 'path';
@@ -50,7 +50,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
     for (let i = 0; i < messages.length; i++) {
         const messageId = messages[i] as string;
         const existingItem = existingSchemes.find(s => s.messageId === messageId);
-        if(existingItem) {
+        if (existingItem) {
             console.log("Skip " + existingItem.messageId);
             continue;
         }
@@ -145,7 +145,7 @@ export const schemaAPI = async function (
             await schemaRepository.save(schemaObject);
         }
         const schemes = await schemaRepository.find();
-        res.send(schemes);
+        res.send(new MessageResponse(schemes));
     });
 
     /**
@@ -162,28 +162,28 @@ export const schemaAPI = async function (
             if (msg.payload) {
                 if (msg.payload.id) {
                     const schema = await schemaRepository.findOne(msg.payload.id);
-                    res.send(schema);
+                    res.send(new MessageResponse(schema));
                     return;
                 }
                 if (msg.payload.messageId) {
                     const schema = await schemaRepository.findOne({
                         where: { messageId: { $eq: msg.payload.messageId } }
                     });
-                    res.send(schema);
+                    res.send(new MessageResponse(schema));
                     return;
                 }
                 if (msg.payload.entity) {
                     const schema = await schemaRepository.findOne({
                         where: { entity: { $eq: msg.payload.entity } }
                     });
-                    res.send(schema);
+                    res.send(new MessageResponse(schema));
                     return;
                 }
             }
-            res.send(null);
+            res.send(new MessageError('Schema not found'));
         }
         catch (error) {
-            res.send(null);
+            res.send(new MessageError(error));
         }
     });
 
@@ -197,7 +197,7 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
         try {
             if (!msg.payload || !msg.payload.messageId) {
-                res.send(null);
+                res.send(new MessageError('Schema not found'));
                 return;
             }
 
@@ -209,7 +209,7 @@ export const schemaAPI = async function (
             });
 
             if (schema) {
-                res.send(schema);
+                res.send(new MessageResponse(schema));
                 return;
             }
 
@@ -217,10 +217,10 @@ export const schemaAPI = async function (
 
             schema = schemaRepository.create(schemaToImport) as any;
             await schemaRepository.save(schema);
-            res.send(schema);
+            res.send(new MessageResponse(schema));
         }
         catch (error) {
-            res.send(null);
+            res.send(new MessageError(error));
         }
     });
 
@@ -234,7 +234,7 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
         try {
             if (!msg.payload || !msg.payload.messageId) {
-                res.send(null);
+                res.send(new MessageError('Schema not found'));
                 return;
             }
 
@@ -246,15 +246,15 @@ export const schemaAPI = async function (
             });
 
             if (schema) {
-                res.send(null);
+                res.send(new MessageError('Schema not found'));
                 return;
             }
 
             const schemaToImport: any = await loadSchema(messageId, owner);
-            res.send(schemaToImport);
+            res.send(new MessageResponse(schemaToImport));
         }
         catch (error) {
-            res.send(null);
+            res.send(new MessageResponse(error));
         }
     });
 
@@ -281,20 +281,20 @@ export const schemaAPI = async function (
                     ]
                 }
             });
-            res.send(schemes);
+            res.send(new MessageResponse(schemes));
             return;
         }
         if (msg.payload && msg.payload.uuid) {
             const schemes = await schemaRepository.find({
                 where: { uuid: { $eq: msg.payload.uuid } }
             });
-            res.send(schemes);
+            res.send(new MessageResponse(schemes));
             return;
         }
         const schemes = await schemaRepository.find({
             where: { status: { $eq: SchemaStatus.PUBLISHED } }
         });
-        res.send(schemes);
+        res.send(new MessageResponse(schemes));
     });
 
     /**
@@ -315,20 +315,17 @@ export const schemaAPI = async function (
                 const item = await schemaRepository.findOne(id);
 
                 if (!item) {
-                    console.error("not item");
-                    res.send(null);
+                    res.send(new MessageError("Schema not found"));
                     return;
                 }
 
                 if (item.creator != owner) {
-                    console.error("not owner");
-                    res.send(null);
+                    res.send(new MessageError("Invalid owner"));
                     return;
                 }
 
                 if (item.status == SchemaStatus.PUBLISHED) {
-                    console.error("not status");
-                    res.send(null);
+                    res.send(new MessageError("Invalid status"));
                     return;
                 }
 
@@ -371,8 +368,7 @@ export const schemaAPI = async function (
 
                 const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
                 if (!root) {
-                    console.error("not root");
-                    res.send(null);
+                    res.send(new MessageError("Root not found"));
                     return;
                 }
 
@@ -385,14 +381,13 @@ export const schemaAPI = async function (
                 updateIRI(item);
                 await schemaRepository.update(item.id, item);
 
-                res.send(item);
+                res.send(new MessageResponse(item));
                 return;
             }
-            console.error("not id");
-            res.send(null);
+            res.send(new MessageError("Invalid id"));
         } catch (error) {
             console.error(error);
-            res.send(null);
+            res.send(new MessageError(error));
         }
     });
 
@@ -415,7 +410,7 @@ export const schemaAPI = async function (
             }
         }
         const schemes = await schemaRepository.find();
-        res.send(schemes);
+        res.send(new MessageResponse(schemes));
     });
 
     /**
@@ -435,7 +430,7 @@ export const schemaAPI = async function (
             }
         }
         const schemes = await schemaRepository.find();
-        res.send(schemes);
+        res.send(new MessageResponse(schemes));
     });
 
     /**
@@ -462,9 +457,9 @@ export const schemaAPI = async function (
                     messageId: schema.messageId
                 }
             });
-            res.send({ body: schemasToExport });
+            res.send(new MessageResponse({ body: schemasToExport }));
         } catch (error) {
-            res.send({ error: error.message });
+            res.send(new MessageError(error));
         }
     });
 }

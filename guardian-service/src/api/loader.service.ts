@@ -1,4 +1,4 @@
-import { MessageAPI } from 'interfaces';
+import { MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { HcsDidRootKey } from '@hashgraph/did-sdk-js';
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
@@ -31,12 +31,12 @@ export const loaderAPI = async function (
             const reqObj = { where: { did: { $eq: did } } };
             const didDocuments = await didDocumentRepository.findOne(reqObj);
             if (didDocuments) {
-                res.send(didDocuments.document);
+                res.send(new MessageResponse(didDocuments.document));
                 return;
             }
-            res.send(null);  
+            res.send(new MessageError('Document not found'));
         } catch (e) {
-            res.send(null);
+            res.send(new MessageError(e));
         }
     });
 
@@ -49,7 +49,7 @@ export const loaderAPI = async function (
     channel.response(MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg, res) => {
         try {
             if (!msg.payload) {
-                res.send(null)
+                res.send(new MessageError('Document not found'));
                 return;
             }
 
@@ -57,16 +57,16 @@ export const loaderAPI = async function (
                 const schema = await schemaRepository.find({
                     where: { documentURL: { $in: msg.payload } }
                 });
-                res.send(schema);
+                res.send(new MessageResponse(schema));
             } else {
                 const schema = await schemaRepository.findOne({
                     where: { documentURL: { $eq: msg.payload } }
                 });
-                res.send(schema);
+                res.send(new MessageResponse(schema));
             }
         }
         catch (error) {
-            res.send(null);
+            res.send(new MessageError(error));
         }
     });
 
@@ -79,23 +79,23 @@ export const loaderAPI = async function (
     channel.response(MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg, res) => {
         try {
             if (!msg.payload) {
-                res.send(null)
+                res.send(new MessageError('Document not found'))
                 return;
             }
             if (Array.isArray(msg.payload)) {
                 const schema = await schemaRepository.find({
                     where: { contextURL: { $in: msg.payload } }
                 });
-                res.send(schema);
+                res.send(new MessageResponse(schema));
             } else {
                 const schema = await schemaRepository.findOne({
                     where: { contextURL: { $eq: msg.payload } }
                 });
-                res.send(schema);
+                res.send(new MessageResponse(schema));
             }
         }
         catch (error) {
-            res.send(null);
+            res.send(new MessageError(error));
         }
     });
 }

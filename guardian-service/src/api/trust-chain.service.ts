@@ -1,7 +1,7 @@
 import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { IChainItem, MessageAPI, SchemaEntity } from 'interfaces';
+import { IChainItem, MessageAPI, MessageError, MessageResponse, SchemaEntity } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { HcsVpDocument } from 'vc-modules';
 
@@ -185,7 +185,7 @@ export const trustChainAPI = async function (
                 const policyId = root.policyId;
                 await getParents(chain, root, {}, policyId);
                 await getPolicyInfo(chain, policyId);
-                res.send(chain);
+                res.send(new MessageResponse(chain));
                 return;
             }
 
@@ -207,7 +207,7 @@ export const trustChainAPI = async function (
                 const vc = await vcDocumentRepository.findOne({ where: { hash: { $eq: hashVc } } });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
-                res.send(chain);
+                res.send(new MessageResponse(chain));
                 return;
             }
 
@@ -229,15 +229,15 @@ export const trustChainAPI = async function (
                 const vc = await vcDocumentRepository.findOne({ where: { hash: { $eq: hashVc } } });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
-                res.send(chain);
+                res.send(new MessageResponse(chain));
                 return;
             }
 
             await getPolicyInfo(chain, null);
-            res.send(chain);
+            res.send(new MessageResponse(chain));
         } catch (error) {
             console.error(error);
-            res.send(null);
+            res.send(new MessageError(error));
         }
     });
 }

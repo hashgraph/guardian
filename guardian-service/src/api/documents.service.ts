@@ -9,7 +9,9 @@ import {
     IDidDocument,
     IVCDocument,
     IVPDocument,
-    MessageAPI
+    MessageAPI,
+    MessageError,
+    MessageResponse
 } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { VCHelper } from 'vc-modules';
@@ -77,7 +79,7 @@ export const documentsAPI = async function (
     channel.response(MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
         const reqObj = { where: { did: { $eq: msg.payload.did } } };
         const didDocuments: IDidDocument[] = await didDocumentRepository.find(reqObj);
-        res.send(didDocuments);
+        res.send(new MessageResponse(didDocuments));
     });
 
     /**
@@ -130,10 +132,10 @@ export const documentsAPI = async function (
             }
             Object.assign(reqObj.where, otherArgs);
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
-            res.send(vcDocuments);
+            res.send(new MessageResponse(vcDocuments));
         } else {
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find();
-            res.send(vcDocuments);
+            res.send(new MessageResponse(vcDocuments));
         }
     });
 
@@ -154,14 +156,14 @@ export const documentsAPI = async function (
             if (item) {
                 item.status = getDIDOperation(operation);
                 const result: IDidDocument = await didDocumentRepository.save(item);
-                res.send(result);
+                res.send(new MessageResponse(result));
             } else {
-                res.send(null);
+                res.send(new MessageError('Document not found'));
             }
         } else {
             const didDocumentObject = didDocumentRepository.create(msg.payload);
             const result: IDidDocument[] = await didDocumentRepository.save(didDocumentObject);
-            res.send(result);
+            res.send(new MessageResponse(result));
         }
     });
 
@@ -208,7 +210,7 @@ export const documentsAPI = async function (
             if (msg.payload.document) {
                 result = vcDocumentRepository.create(msg.payload as VcDocument);
             } else {
-                res.send(null);
+                res.send(new MessageError('Invalid document'));
                 return;
             }
         }
@@ -227,7 +229,7 @@ export const documentsAPI = async function (
         result.signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
 
         result = await vcDocumentRepository.save(result);
-        res.send(result);
+        res.send(new MessageResponse(result));
     });
 
     /**
@@ -240,7 +242,7 @@ export const documentsAPI = async function (
     channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
         const vpDocumentObject = vpDocumentRepository.create(msg.payload);
         const result: any = await vpDocumentRepository.save(vpDocumentObject);
-        res.send(result);
+        res.send(new MessageResponse(result));
     });
 
     /**
@@ -254,13 +256,13 @@ export const documentsAPI = async function (
         if (msg.payload) {
             const document: IVPDocument = await vpDocumentRepository.findOne(msg.payload);
             if (document) {
-                res.send([document]);
+                res.send(new MessageResponse([document]));
             } else {
-                res.send([]);
+                res.send(new MessageResponse([]));
             }
         } else {
             const documents: IVPDocument[] = await vpDocumentRepository.find();
-            res.send(documents);
+            res.send(new MessageResponse(documents));
         }
     });
 }
