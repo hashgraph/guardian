@@ -1,0 +1,60 @@
+name: Guardian CI API Tests
+on: [push]
+jobs:
+  buildAndTest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 16.x ]
+        mongodb-version: [ 4.4 ]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.7.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Build
+        run: |
+          pushd interfaces
+          npm install
+          npm run build
+          popd
+          pushd vc-modules
+          npm install
+          npm run build
+          popd
+          pushd frontend
+          npm install
+          npm run build
+          popd
+          pushd guardian-service
+          npm install
+          npm run build
+          popd
+          pushd message-broker
+          npm install
+          npm run build
+          popd
+          pushd ui-service
+          npm install
+          npm run build
+          popd
+        env:
+          CI: true
+      - name: Run tests
+        run: |
+          pushd api-tests
+          npm install
+          npm run test:ci
+          popd
+        env:
+          CI: true
+      - name: Publish API Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: test_results/**/*.xml

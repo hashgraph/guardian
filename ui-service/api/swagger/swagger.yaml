@@ -98,6 +98,12 @@ components:
               type: string
     Schema:
       type: object
+      required:
+        - id
+        - name
+        - description
+        - entity
+        - document
       properties:
         id:
           type: string
@@ -117,11 +123,18 @@ components:
           type: string
     ImportSchema:
       type: object
+      required:
+        - schemes
       properties:
         schemes:
           type: array
           items:
             type: object
+            required:
+              - document
+              - entity
+              - name
+              - uuid
             properties:
               document:
                 type: string
@@ -135,6 +148,8 @@ components:
                 type: string
     ExportSchema:
       type: object
+      required:
+        - ids
       properties:
         name:
           type: string
@@ -144,6 +159,17 @@ components:
           type: string
     Token:
       type: object
+      required:
+        - changeSupply
+        - decimals
+        - enableAdmin
+        - enableKYC
+        - enableFreeze
+        - enableWipe
+        - initialSupply
+        - tokenName
+        - tokenSymbol
+        - tokenType
       properties:
         changeSupply:
           type: boolean
@@ -167,6 +193,17 @@ components:
           type: string
     TokenInfo:
       type: object
+      required:
+        - id
+        - tokenId
+        - tokenName
+        - tokenSymbol
+        - tokenType
+        - decimals
+        - associated
+        - balance
+        - frozen
+        - kyc
       properties:
         id:
           type: string
@@ -190,6 +227,14 @@ components:
           type: boolean
     PolicyConfig:
       type: object
+      required:
+        - name
+        - version
+        - description
+        - topicDescription
+        - config
+        - topicId
+        - policyTag
       properties:
         name:
           type: string
@@ -215,11 +260,22 @@ components:
           type: string
     TrustChains:
       type: object
+      required:
+        - chain
+        - userMap
       properties:
         chain:
           type: array
           items:
             type: object
+            required:
+              - id
+              - type
+              - tag
+              - label
+              - schema
+              - owner
+              - document
             properties:
               id:
                 type: string
@@ -239,6 +295,9 @@ components:
           type: array
           items:
             type: object
+            required:
+              - did
+              - username
             properties:
               did:
                 type: string
@@ -246,6 +305,18 @@ components:
                 type: string
     VerifiablePresentation:
       type: object
+      required:
+        - hash
+        - id
+        - policyId
+        - signature
+        - status
+        - tag
+        - type
+        - updateDate
+        - createDate
+        - owner
+        - document
       properties:
         hash:
           type: string
@@ -271,6 +342,10 @@ components:
           type: object
     PublishPolicy:
       type: object
+      required:
+        - errors
+        - isValid
+        - policies
       properties:
         errors:
           type: array
@@ -284,6 +359,9 @@ components:
             type: object
     ValidatePolicy:
       type: object
+      required:
+        - config
+        - results
       properties:
         config:
           type: object
@@ -291,6 +369,11 @@ components:
           type: object
     PolicyBlock:
       type: object
+      required:
+        - id
+        - blockType
+        - isActive
+        - uiMetaData
       properties:
         id:
           type: string
@@ -306,6 +389,11 @@ components:
             type: object
     PolicyBlockData:
       type: object
+      required:
+        - id
+        - isActive
+        - uiMetaData
+        - data
       properties:
         id:
           type: string
@@ -315,15 +403,15 @@ components:
           type: boolean
         uiMetaData:
           type: object
-        data: 
+        data:
           type: object
-        fields: 
+        fields:
           type: array
           items:
             type: object
         index:
           type: number
-        roles: 
+        roles:
           type: array
           items:
             type: string
@@ -333,6 +421,10 @@ components:
             $ref: '#/components/schemas/PolicyBlock'
     ExportPolicy:
       type: object
+      required:
+        - policy
+        - schemas
+        - tokens
       properties:
         policy:
           type: object
@@ -346,6 +438,9 @@ components:
             type: object
     Error:
       type: object
+      required:
+        - code
+        - message
       properties:
         code:
           type: number
@@ -353,6 +448,10 @@ components:
           type: string
     ExternalData:
       type: object
+      required:
+        - owner
+        - policyTag
+        - document
       properties:
         owner:
           type: string
@@ -362,6 +461,9 @@ components:
           type: object
     HederaAccount:
       type: object
+      required:
+        - id
+        - key
       properties:
         id:
           type: string
@@ -681,7 +783,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        
+
   /schemas/{schemaId}/unpublish:
     put:
       tags:
@@ -1151,7 +1253,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          
+
   /tokens/{tokenId}/{username}/revokeKyc:
     put:
       tags:
@@ -1241,7 +1343,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          
+
   /tokens/{tokenId}/{username}/unfreeze:
     put:
       tags:
@@ -1550,7 +1652,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          
+
   /policies/{policyId}/blocks:
     get:
       tags:
@@ -1583,7 +1685,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          
+
   /policies/{policyId}/blocks/{uuid}:
     get:
       tags:
@@ -1662,7 +1764,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          
+
   /policies/{policyId}/tag/{tag}:
     get:
       tags:
@@ -1704,7 +1806,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          
+
   /policies/{policyId}/export:
     get:
       tags:
@@ -1732,8 +1834,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error' 
-          
+                $ref: '#/components/schemas/Error'
+
   /policies/import:
     post:
       tags:
@@ -1767,7 +1869,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error' 
+                $ref: '#/components/schemas/Error'
   
   /policies/import/topic:
     post:
@@ -1865,11 +1967,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-                
+
   /external:
     post:
       tags:
-        - external 
+        - external
       description: Sends data from an external source.
       summary: Sends data from an external source.
       requestBody:
@@ -1887,8 +1989,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error' 
-          
+                $ref: '#/components/schemas/Error'
+
   /demo/registeredUsers:
     get:
       tags:
@@ -1939,10 +2041,10 @@ paths:
   /ipfs/file:
     post:
       tags:
-        - ipfs 
+        - ipfs
       description: Add file to ipfs.
       summary: Add file to ipfs.
-      requestBody: 
+      requestBody:
         description: Data array of file.
         required: true
         content:

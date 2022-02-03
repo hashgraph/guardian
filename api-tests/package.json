@@ -1,0 +1,21 @@
+{
+  "name": "api-tests",
+  "version": "1.0.2",
+  "description": "API Tests",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha index.js",
+    "test:ci": "mocha index.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/api-tests.xml"
+  },
+  "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "^4.3.5",
+    "mocha": "^9.2.0",
+    "mocha-junit-reporter": "^2.0.2",
+    "tree-kill": "^1.2.2"
+  },
+  "dependencies": {
+    "axios": "^0.25.0"
+  }
+}
