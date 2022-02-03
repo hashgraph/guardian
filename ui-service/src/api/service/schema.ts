@@ -206,16 +206,7 @@ schemaAPI.post('/export', permissionHelper(UserRole.ROOT_AUTHORITY), async (req:
 
         const guardians = new Guardians();
         const ids = req.body.ids as string[];
-        
         const schemes = (await guardians.exportSchemes(ids));
-        console.log(schemes);
-        const exportedSchemas = schemes.map(schema => schema.id);
-        const notExportedSchemas = ids.filter(id => !exportedSchemas.includes(id));
-
-        if (notExportedSchemas.length !== 0) {
-            throw new Error(`Cannot export schemas: ${notExportedSchemas.join(' ,')}`);
-        }
-
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });

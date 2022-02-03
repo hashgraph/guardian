@@ -267,7 +267,7 @@ export class SchemaConfigComponent implements OnInit {
         const selectedSchemas = this.schemes.filter((schema:any) => schema._selected).map(schema=>schema.id);
         this.schemaService.export(selectedSchemas)
             .subscribe(res => this.dialog.open(ExportSchemaDialog, {
-                width: '800px',
+                width: '700px',
                 data: {
                     schemas: res
                 },
@@ -289,7 +289,10 @@ export class SchemaConfigComponent implements OnInit {
         this.selectedAll = selectedAll;
         for (let i = 0; i < this.schemes.length; i++) {
             const element: any = this.schemes[i];
-            element._selected = selectedAll;
+            if (element.messageId)
+            {
+                element._selected = selectedAll;
+            }
         }
         this.schemes = this.schemes.slice();
     }

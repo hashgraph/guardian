@@ -52,22 +52,20 @@ export const fileAPI = async function (
             }
 
             const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: 'arraybuffer' });
-            
             switch (msg.payload.responseType) {
                 case 'str':
-                    res.send(Buffer.from(fileRes.data, 'binary').toString());
+                    res.send({ body: Buffer.from(fileRes.data, 'binary').toString() });
                     return;
                 case 'json':
-                    res.send(Buffer.from(fileRes.data, 'binary').toJSON());
+                    res.send({ body: Buffer.from(fileRes.data, 'binary').toJSON() });
                     return;
                 default:
-                    res.send(fileRes.data, 'raw')
+                    res.send({ body: fileRes.data })
                     return;
             }
         }
         catch (e) {
-            console.log(e);
-            res.send(null);
+            res.send({ error: e.message });
         }
     })
 }

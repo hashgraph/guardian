@@ -136,9 +136,9 @@ components:
     ExportSchema:
       type: object
       properties:
-        uuid:
-          type: string
         name:
+          type: string
+        version:
           type: string
         messageId:
           type: string

@@ -540,28 +540,27 @@ export const schemaAPI = async function (
      * @param {Object} payload - filters
      * @param {string[]} payload.ids - schema ids
      * 
-     * @returns {any[]} - Exported schemas
+     * @returns {any} - Response result
      */
     channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
         try {
             const ids = msg.payload as string[];
-            const schemas = await schemaRepository.find({
-                where: {
-                    messageId: { $exists: true, $nin: ["", null] }
-                }
-            });
-            const schemasToExport = schemas.filter(schema => ids.includes(schema.id.toString())).map(schema => {
+            const schemas = await schemaRepository.findByIds(ids);
+            const notExported = schemas.filter(schema => !schema.messageId);
+            if (notExported.length > 0) {
+                throw new Error(`Cannot export schemas: ${notExported.map(schema => `${schema.name}`).join(', ')}`);
+                } 
+
+            const schemasToExport = schemas.map(schema => {
                 return {
-                    id: schema.id,
-                    uuid: schema.uuid,
                     name: schema.name,
+                    version: schema.version,
                     messageId: schema.messageId
                 }
             });
-            res.send(schemasToExport, 'json');
+            res.send({ body: schemasToExport });
         } catch (error) {
-            console.error(error);
-            res.send(null);
+            res.send({ error: error.message });
         }
     });
 }
