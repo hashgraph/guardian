@@ -49,6 +49,9 @@ export class Policy {
         unique: true
     })
     policyTag: string;
+    
+    @Column()
+    messageId: string;
 
     @BeforeInsert()
     setDefaults() {

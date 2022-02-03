@@ -83,6 +83,34 @@ const updateIRIs = function (schemes: ISchema[]) {
     }
 }
 
+const loadSchema = async function (messageId: string, owner: string) {
+    const { topicId, message } = await HederaMirrorNodeHelper.getTopicMessage(messageId);
+    const topicMessage = JSON.parse(message) as ISchemaSubmitMessage;
+    const documentObject = await IPFS.getFile(topicMessage.document_cid, "str") as string;
+    const contextObject = await IPFS.getFile(topicMessage.context_cid, "str") as string;
+    const schemaToImport: any = {
+        uuid: topicMessage.uuid,
+        hash: "",
+        name: topicMessage.name,
+        description: topicMessage.description,
+        entity: topicMessage.entity as SchemaEntity,
+        status: SchemaStatus.PUBLISHED,
+        readonly: false,
+        document: documentObject,
+        context: contextObject,
+        version: topicMessage.version,
+        creator: topicMessage.owner,
+        owner: owner,
+        topicId: topicId,
+        messageId: messageId,
+        documentURL: topicMessage.document_url,
+        contextURL: topicMessage.context_url,
+        iri: null
+    }
+    updateIRI(schemaToImport);
+    return schemaToImport;
+}
+
 /**
  * Connect to the message broker methods of working with schemes.
  * 
@@ -136,13 +164,21 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.GET_SCHEMA, async (msg, res) => {
         try {
-            if (!msg.payload || !msg.payload.id) {
-                res.send(null);
-                return;
+            if (msg.payload) {
+                if (msg.payload.id) {
+                    const schema = await schemaRepository.findOne(msg.payload.id);
+                    res.send(schema);
+                    return;
+                }
+                if (msg.payload.messageId) {
+                    const schema = await schemaRepository.findOne({
+                        where: { messageId: { $eq: msg.payload.messageId } }
+                    });
+                    res.send(schema);
+                    return;
+                }
             }
-
-            const schema = await schemaRepository.findOne(msg.payload.id);
-            res.send(schema);
+            res.send(null);
         }
         catch (error) {
             res.send(null);
@@ -175,31 +211,9 @@ export const schemaAPI = async function (
                 return;
             }
 
-            const { topicId, message } = await HederaMirrorNodeHelper.getTopicMessage(messageId);
-            const topicMessage = JSON.parse(message) as ISchemaSubmitMessage;
-            const documentObject = await IPFS.getFile(topicMessage.document_cid, "str") as string;
-            const contextObject = await IPFS.getFile(topicMessage.context_cid, "str") as string;
-            const schemaToImport: any = {
-                uuid: topicMessage.uuid,
-                hash: "",
-                name: topicMessage.name,
-                description: topicMessage.description,
-                entity: topicMessage.entity as SchemaEntity,
-                status: SchemaStatus.PUBLISHED,
-                readonly: false,
-                document: documentObject,
-                context: contextObject,
-                version: topicMessage.version,
-                creator: topicMessage.owner,
-                owner: owner,
-                topicId: topicId,
-                messageId: messageId,
-                documentURL: topicMessage.document_url,
-                contextURL: topicMessage.context_url,
-                iri: null
-            }
-            updateIRI(schemaToImport);
-            schema = await schemaRepository.create(schemaToImport) as any;
+            const schemaToImport: any = await loadSchema(messageId, owner);
+
+            schema = schemaRepository.create(schemaToImport) as any;
             await schemaRepository.save(schema);
             res.send(schema);
         }
@@ -217,30 +231,27 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
         try {
-            if (!msg.payload) {
+            if (!msg.payload || !msg.payload.messageId) {
                 res.send(null);
                 return;
             }
 
-            const messageId = msg.payload as string;
+            const messageId = msg.payload.messageId;
+            const owner = msg.payload.owner;
 
-            const { message } = await HederaMirrorNodeHelper.getTopicMessage(messageId);
-            const topicMessage = JSON.parse(message) as ISchemaSubmitMessage;
-            const documentObject = await IPFS.getFile(topicMessage.document_cid, "str") as string;
-            const contextObject = await IPFS.getFile(topicMessage.context_cid, "str") as string;
-            const schemaToImport: any = {
-                uuid: topicMessage.uuid,
-                name: topicMessage.name,
-                description: topicMessage.description,
-                document: documentObject,
-                context: contextObject,
-                version: topicMessage.version,
+            let schema = await schemaRepository.findOne({
+                where: { messageId: { $eq: messageId } }
+            });
+
+            if (schema) {
+                res.send(null);
+                return;
             }
 
+            const schemaToImport: any = await loadSchema(messageId, owner);
             res.send(schemaToImport);
         }
         catch (error) {
-            console.log(error);
             res.send(null);
         }
     });
@@ -480,7 +491,6 @@ export const schemaAPI = async function (
 
 
 
-
     // /**
     //  * Import schemes
     //  * 
@@ -535,19 +545,19 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
         try {
             const ids = msg.payload as string[];
-            const schemas = await schemaRepository.find({ 
+            const schemas = await schemaRepository.find({
                 where: {
                     messageId: { $exists: true, $nin: ["", null] }
-                } 
+                }
             });
             const schemasToExport = schemas.filter(schema => ids.includes(schema.id.toString())).map(schema => {
                 return {
                     id: schema.id,
-                    uuid: schema.uuid, 
+                    uuid: schema.uuid,
                     name: schema.name,
                     messageId: schema.messageId
                 }
-             });
+            });
             res.send(schemasToExport, 'json');
         } catch (error) {
             console.error(error);

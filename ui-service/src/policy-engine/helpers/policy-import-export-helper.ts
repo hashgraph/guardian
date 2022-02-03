@@ -11,23 +11,24 @@ export namespace PolicyImportExportHelper {
      * 
      * @returns Zip file
      */
-    /*
     export async function generateZipFile(policy: Policy): Promise<JSZip> {
         const guardians = new Guardians();
 
-        const refs = findAllEntities(policy.config, 'schema');
+        // const refs = findAllEntities(policy.config, 'schema');
         const tokenIds = findAllEntities(policy.config, 'tokenId');
 
-        const [schemas, tokens] = await Promise.all([
-            guardians.exportSchemes(refs),
-            guardians.getTokens({ids: tokenIds})
-        ]);
+        // const [schemas, tokens] = await Promise.all([
+        //     guardians.exportSchemes(refs),
+        //     guardians.getTokens({ ids: tokenIds })
+        // ]);
+
+        const tokens = await guardians.getTokens({ ids: tokenIds });
 
         const zip = new JSZip();
-        zip.folder('schemas')
-        for (let schema of schemas) {
-            zip.file(`schemas/${schema.name}.json`, JSON.stringify(schema));
-        }
+        // zip.folder('schemas')
+        // for (let schema of schemas) {
+        //     zip.file(`schemas/${schema.name}.json`, JSON.stringify(schema));
+        // }
 
         zip.folder('tokens')
         for (let token of tokens) {
@@ -36,7 +37,7 @@ export namespace PolicyImportExportHelper {
         zip.file(`policy.json`, JSON.stringify(policy));
 
         return zip;
-    }*/
+    }
 
     /**
      * Parse zip policy file
@@ -64,7 +65,7 @@ export namespace PolicyImportExportHelper {
         const schemas = schemaStringArray.map(item => JSON.parse(item));
 
 
-        return {policy, tokens, schemas};
+        return { policy, tokens, schemas };
     }
 
     /**

@@ -32,3 +32,4 @@ export {ISubmitModelMessage, ModelActionType} from './interface/submit-model-mes
 export {ISchemaSubmitMessage} from './interface/schema-submit-message.interface';
 export {ImportType} from './type/import.type';
 export {SchemaHelper} from './helpers/schema-helper';
+export {IPolicySubmitMessage} from './interface/policy-submit-message.interface';

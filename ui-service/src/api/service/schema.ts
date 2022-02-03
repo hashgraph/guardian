@@ -187,11 +187,11 @@ schemaAPI.post('/import/topic', permissionHelper(UserRole.ROOT_AUTHORITY), async
     }
 });
 
-schemaAPI.get('/import/preview/:messageId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+schemaAPI.get('/import/preview/:messageId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const messageId = req.params.messageId;
-        const schemaToPreview = await guardians.getSchemaPreview(messageId);
+        const schemaToPreview = await guardians.getSchemaPreview(messageId, req.user.did);
         res.status(200).json(schemaToPreview);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });

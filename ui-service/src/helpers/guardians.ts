@@ -161,7 +161,7 @@ export class Guardians {
      * @returns {ISchema} - schema
      */
     public async getSchemaByMessage(messageId: string): Promise<ISchema> {
-        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { messageId: messageId })).payload;
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { messageId })).payload;
     }
 
     /**
@@ -239,8 +239,8 @@ export class Guardians {
      * 
      * @returns {any} - Schema Document
      */
-    public async loadSchema(messageId: string, owner: string = ""): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA, {messageId, owner})).payload;
+    public async loadSchema(messageId: string, owner: string): Promise<any> {
+        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA, { messageId, owner })).payload;
     }
 
     /**
@@ -390,7 +390,7 @@ export class Guardians {
      * 
      * @returns {any[]} - Exported schemas
      */
-    public async exportSchemes(ids: string[]): Promise<{id:string, uuid: string, name: string, messageId: string}[]> {
+    public async exportSchemes(ids: string[]): Promise<{ id: string, uuid: string, name: string, messageId: string }[]> {
         return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
     }
 
@@ -434,7 +434,7 @@ export class Guardians {
      * 
      * @returns {any} Schema preview
      */
-    public async getSchemaPreview(messageId: string): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.PREVIEW_SCHEMA, messageId)).payload
+    public async getSchemaPreview(messageId: string, owner: string): Promise<any> {
+        return (await this.channel.request(this.target, MessageAPI.PREVIEW_SCHEMA, { messageId, owner })).payload
     }
 }

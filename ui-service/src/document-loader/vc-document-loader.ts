@@ -30,6 +30,8 @@ export class VCDocumentLoader extends DocumentLoader {
     }
 
     public async getDocument(iri: string): Promise<any> {
+        debugger;
+        console.log('VCDocumentLoader:', iri);
         const document = await this.guardians.loadSchemaDocument(null);
         if (!document) {
             throw new Error('Schema not found');

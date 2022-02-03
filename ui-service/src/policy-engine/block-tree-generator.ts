@@ -14,14 +14,14 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { ISubmitModelMessage, ModelActionType, ModelHelper, SchemaEntity, UserRole } from 'interfaces';
+import { IPolicySubmitMessage, ISubmitModelMessage, ModelActionType, ModelHelper, SchemaEntity, UserRole } from 'interfaces';
 import { HederaHelper } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import * as Buffer from 'buffer';
 import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import {BlockPermissions} from '@policy-engine/helpers/middleware/block-permissions';
+import { BlockPermissions } from '@policy-engine/helpers/middleware/block-permissions';
 import { IPFS } from '@helpers/ipfs';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 
@@ -56,7 +56,7 @@ export class BlockTreeGenerator {
     stateChangeCb(uuid: string, state: any, user: IAuthUser) {
         this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
             try {
-                const dbUser = await getMongoRepository(User).findOne({username: client.user.username});
+                const dbUser = await getMongoRepository(User).findOne({ username: client.user.username });
                 const blockRef = PolicyComponentsStuff.GetBlockByUUID(uuid) as any;
 
                 const policy = await getMongoRepository(Policy).findOne(blockRef.policyId);
@@ -338,48 +338,44 @@ export class BlockTreeGenerator {
                 res.status(500).send({ code: 500, message: 'Unknown error' });
             }
         });
-/*
+
         this.router.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 if (!req.body || !req.body.policyVersion) {
                     throw new Error("Policy version in body is empty");
                 }
 
+                const model = await getMongoRepository(Policy).findOne(req.params.policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+
+                if (!model.config) {
+                    throw new Error('The policy is empty');
+                }
+
+                const { policyVersion } = req.body;
+                if (!ModelHelper.checkVersionFormat(req.body.policyVersion)) {
+                    throw new Error("Invalid version format");
+                }
+
+                if (ModelHelper.versionCompare(req.body.policyVersion, model.previousVersion) <= 0) {
+                    throw new Error("Version must be greater than " + model.previousVersion);
+                }
+
+                const countModels = await getMongoRepository(Policy).count({
+                    version: policyVersion,
+                    uuid: model.uuid
+                });
+
+                if (countModels > 0) {
+                    throw new Error('Policy with current version already was published');
+                };
+
                 const errors = await this.validate(req.params.policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
-                    const { policyVersion } = req.body;
-                    const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-                    if (!model) {
-                        res.status(500).send({ code: 500, message: 'Unknown policy' });
-                        return;
-                    }
-
-                    if (!ModelHelper.checkVersionFormat(req.body.policyVersion)) {
-                        throw new Error("Invalid version format");
-                    }
-
-                    if (ModelHelper.versionCompare(req.body.policyVersion, model.previousVersion) <= 0) {
-                        throw new Error("Version must be greater than " + model.previousVersion);
-                    }
-
-                    const countModels = await getMongoRepository(Policy).count({
-                        version: policyVersion,
-                        uuid: model.uuid
-                    });
-
-                    if (countModels > 0) {
-                        res.status(500).send({ code: 500, message: 'Policy with current version already was published' });
-                        return;
-                    }
-
-                    const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
-                    if (!model.config) {
-                        res.status(500).send({ code: 500, message: 'The policy is empty' });
-                        return;
-                    }
-
                     function regenerateIds(block: any) {
                         block.id = GenerateUUIDv4();
                         if (Array.isArray(block.children)) {
@@ -389,7 +385,14 @@ export class BlockTreeGenerator {
                         }
                     }
                     regenerateIds(model.config);
+
                     const guardians = new Guardians();
+                    const user = await getMongoRepository(User).findOne({
+                        where: {
+                            username: { $eq: req.user.username }
+                        }
+                    });
+
                     const root = await guardians.getRootConfig(user.did);
                     const hederaHelper = HederaHelper
                         .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
@@ -401,18 +404,30 @@ export class BlockTreeGenerator {
                     }
                     model.status = 'PUBLISH';
                     model.version = req.body.policyVersion;
-
-                    const vcHelper = new VcHelper();
-                    const credentialSubject = {
-                        id: `${model.id}`,
+                    const zip = await PolicyImportExportHelper.generateZipFile(model);
+                    const { cid, url } = await new IPFS().addFile(await zip.generateAsync({ type: "arraybuffer" }));
+                    const publishPolicyMessage: IPolicySubmitMessage = {
                         name: model.name,
                         description: model.description,
                         topicDescription: model.topicDescription,
                         version: model.version,
-                        policyTag: model.policyTag
+                        policyTag: model.policyTag,
+                        owner: model.owner,
+                        cid: cid,
+                        url: url,
+                        uuid: model.uuid,
+                        operation: ModelActionType.PUBLISH
+                    }
+                    const messageId = await hederaHelper
+                        .submitMessage(model.topicId, JSON.stringify(publishPolicyMessage));
+                    model.messageId = messageId;
+
+                    const vcHelper = new VcHelper();
+                    const credentialSubject = {
+                        id: messageId,
+                        ...publishPolicyMessage
                     }
                     const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, "Policy", credentialSubject);
-                    await getMongoRepository(Policy).save(model);
                     await guardians.setVcDocument({
                         hash: vc.toCredentialHash(),
                         owner: user.did,
@@ -421,22 +436,8 @@ export class BlockTreeGenerator {
                         policyId: `${model.id}`
                     });
 
+                    await getMongoRepository(Policy).save(model);
                     await this.generate(model.id.toString());
-
-                    const publishedPolicy = await getMongoRepository(Policy).findOne(req.params.policyId);
-                    const zip = await PolicyImportExportHelper.generateZipFile(publishedPolicy);
-                    const cid = await new IPFS().addFile(await zip.generateAsync({type: "arraybuffer"}));
-
-                    let publishPolicyMessage: ISubmitModelMessage = {
-                        name: model.name,
-                        owner: model.owner,
-                        cid: cid,
-                        uuid: model.uuid,
-                        version: model.version,
-                        operation: ModelActionType.PUBLISH
-                    }
-
-                    hederaHelper.submitMessage(process.env.SUBMIT_POLICY_TOPIC_ID, JSON.stringify(publishPolicyMessage));
                 }
 
                 const policies = await getMongoRepository(Policy).find() as Policy[];
@@ -452,7 +453,7 @@ export class BlockTreeGenerator {
                 res.status(500).send({ code: 500, message: error.message || error });
             }
         });
-*/
+
         this.router.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 const policy = req.body as Policy;

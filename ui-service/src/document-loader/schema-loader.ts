@@ -14,10 +14,13 @@ export class SchemaLoader extends ISchemaLoader {
     }
 
     public async get(type: string): Promise<any> {
-        const document = await this.guardians.loadSchema(type);
-        if (!document) {
-            throw new Error('Schema not found');
-        }
-        return document;
+        console.log('SchemaLoader:', type);
+        
+        debugger;
+        // const document = await this.guardians.loadSchema(type);
+        // if (!document) {
+        //     throw new Error('Schema not found');
+        // }
+        // return document;
     }
 }
