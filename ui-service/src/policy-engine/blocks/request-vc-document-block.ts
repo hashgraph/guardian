@@ -90,7 +90,12 @@ export class RequestVcDocumentBlock {
         }
         credentialSubject.policyId = ref.policyId;
 
-        const vc = await this.vcHelper.createVC(userFull.did, userHederaKey, schema, credentialSubject);
+        const res = await this.vcHelper.verifySubject(credentialSubject);
+        if (!res.ok) {
+            throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
+        }
+
+        const vc = await this.vcHelper.createVC(userFull.did, userHederaKey, credentialSubject);
         const item = {
             hash: vc.toCredentialHash(),
             owner: userFull.did,

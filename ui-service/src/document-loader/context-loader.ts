@@ -1,11 +1,11 @@
-import {DocumentLoader, IDocumentFormat} from 'vc-modules';
-import {Guardians} from '@helpers/guardians';
-import {Inject} from '@helpers/decorators/inject';
+import { DocumentLoader, IDocumentFormat } from 'vc-modules';
+import { Guardians } from '@helpers/guardians';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * VC documents loader
  */
-export class VCDocumentLoader extends DocumentLoader {
+export class ContextLoader extends DocumentLoader {
     @Inject()
     private guardians: Guardians;
 
@@ -16,11 +16,11 @@ export class VCDocumentLoader extends DocumentLoader {
     }
 
     public async has(iri: string): Promise<boolean> {
-        return iri == this.context;
+        return iri && iri.startsWith(this.context);
     }
 
     public async get(iri: string): Promise<IDocumentFormat> {
-        if (iri == this.context) {
+        if (iri && iri.startsWith(this.context)) {
             return {
                 documentUrl: iri,
                 document: await this.getDocument(iri),
@@ -30,12 +30,15 @@ export class VCDocumentLoader extends DocumentLoader {
     }
 
     public async getDocument(iri: string): Promise<any> {
-        debugger;
-        console.log('VCDocumentLoader:', iri);
-        const document = await this.guardians.loadSchemaDocument(null);
-        if (!document) {
+        const schema = await this.guardians.loadSchemaContext(iri);
+        if (!schema) {
             throw new Error('Schema not found');
         }
+        if (!schema.context) {
+            throw new Error('context not found');
+        }
+        const document = JSON.parse(schema.context);
         return document;
     }
 }
+

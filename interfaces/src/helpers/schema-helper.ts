@@ -345,11 +345,23 @@ export class SchemaHelper {
                 const newSchema = { ...oldSchema };
                 delete newSchema.$defs;
                 newMap[iri] = newSchema;
-                if(oldSchema.$defs) {
+                if (oldSchema.$defs) {
                     this.uniqueRefs(oldSchema.$defs, newMap);
                 }
             }
         }
         return newMap;
+    }
+
+    public static getContext(item: ISchema): { 'type': string, '@context': string[] } {
+        try {
+            const { type } = SchemaHelper.parseRef(item.iri);
+            return {
+                'type': type,
+                '@context': [item.contextURL]
+            };
+        } catch (error) {
+            return null;
+        }
     }
 }

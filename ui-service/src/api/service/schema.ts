@@ -1,12 +1,8 @@
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { ISchema, ISchemaSubmitMessage, ModelActionType, Schema, SchemaHelper, UserRole } from 'interfaces';
+import { SchemaHelper, UserRole } from 'interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
-import { Blob } from 'buffer';
-import { IPFS } from '@helpers/ipfs';
-import { HederaHelper } from 'vc-modules';
-import { schemasToContext } from '@transmute/jsonld-schema';
 
 /**
  * Schema route
@@ -175,7 +171,7 @@ schemaAPI.post('/import/topic', permissionHelper(UserRole.ROOT_AUTHORITY), async
     try {
         const guardians = new Guardians();
         const messageId = req.body.messageId;
-        const schemaToPreview = await guardians.loadSchema(messageId, req.user.did);
+        const schemaToPreview = await guardians.importSchema(messageId, req.user.did);
 
         if (!schemaToPreview) {
             throw new Error('Cannot load schema');

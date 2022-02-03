@@ -10,7 +10,8 @@ import {
     IToken,
     IVCDocument,
     IVPDocument,
-    MessageAPI
+    MessageAPI,
+    SchemaEntity
 } from 'interfaces';
 
 type IFilter = any;
@@ -114,19 +115,6 @@ export class Guardians {
         return (await this.channel.request(this.target, MessageAPI.GET_VP_DOCUMENTS, params)).payload;
     }
 
-    // /**
-    //  * Return schemes
-    //  * 
-    //  * @param {Object} [params] - filters
-    //  * @param {string} [params.type] - schema type 
-    //  * @param {string} [params.entity] - schema entity type
-    //  * 
-    //  * @returns {ISchema[]} - all schemes
-    //  */
-    // public async getSchemes(params?: IFilter): Promise<ISchema[]> {
-    //     return (await this.channel.request(this.target, MessageAPI.GET_SCHEMES, params)).payload;
-    // }
-
     /**
      * Return schemes
      * 
@@ -162,6 +150,17 @@ export class Guardians {
      */
     public async getSchemaByMessage(messageId: string): Promise<ISchema> {
         return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { messageId })).payload;
+    }
+
+    /**
+     * Return schema by id
+     * 
+     * @param {string} [id] - schema id 
+     * 
+     * @returns {ISchema} - schema
+     */
+    public async getSchemaByEntity(entity: SchemaEntity): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.GET_SCHEMA, { entity })).payload;
     }
 
     /**
@@ -224,23 +223,45 @@ export class Guardians {
     /**
      * Return Schema Document
      * 
-     * @param {string} [uuid] - schema uuid
+     * @param {string} [uuid] - document url
      * 
      * @returns {any} - Schema Document
      */
-    public async loadSchemaDocument(uuid?: string): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA_DOCUMENT, uuid)).payload;
+    public async loadSchemaDocument(url: string): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA_DOCUMENT, url)).payload;
     }
 
     /**
-     * Return Schema
+     * Return Schema Context
+     * 
+     * @param {string} [url] - context url
+     * 
+     * @returns {any} - Schema Context
+     */
+    public async loadSchemaContext(url: string): Promise<ISchema> {
+        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA_CONTEXT, url)).payload;
+    }
+
+    /**
+     * Return Schemes Context
+     * 
+     * @param {string[]} [urls] - context url
+     * 
+     * @returns {any} - Schemes Context
+     */
+    public async loadSchemaContexts(urls: string[]): Promise<ISchema[]> {
+        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA_CONTEXT, urls)).payload;
+    }
+
+    /**
+     * Import schema
      * 
      * @param {string} messageId - schema uuid
      * 
      * @returns {any} - Schema Document
      */
-    public async loadSchema(messageId: string, owner: string): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA, { messageId, owner })).payload;
+    public async importSchema(messageId: string, owner: string): Promise<any> {
+        return (await this.channel.request(this.target, MessageAPI.IMPORT_SCHEMA, { messageId, owner })).payload;
     }
 
     /**
@@ -290,17 +311,6 @@ export class Guardians {
     public async setSchema(item: ISchema | any): Promise<ISchema[]> {
         return (await this.channel.request(this.target, MessageAPI.SET_SCHEMA, item)).payload;
     }
-
-    // /**
-    //  * Import schemes
-    //  * 
-    //  * @param {ISchema[]} items - schemes
-    //  * 
-    //  * @returns {ISchema[]} - all schemes
-    //  */
-    // public async importSchemes(items: ISchema[]): Promise<void> {
-    //     return (await this.channel.request(this.target, MessageAPI.IMPORT_SCHEMA, items)).payload;
-    // }
 
     /**
      * Create new token
@@ -390,10 +400,9 @@ export class Guardians {
      * 
      * @returns {any[]} - Exported schemas
      */
-    public async exportSchemes(ids: string[]): Promise<{name: string, version: string, messageId: string}[]> {
+    public async exportSchemes(ids: string[]): Promise<{ name: string, version: string, messageId: string }[]> {
         const res = (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
-        if (res.error)
-        {
+        if (res.error) {
             throw new Error(res.error);
         }
 

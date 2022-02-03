@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, Schema as SchemaModel, ISchemaSubmitMessage, ModelActionType, SchemaHelper } from 'interfaces';
+import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, ISchemaSubmitMessage, ModelActionType, SchemaHelper } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { readJSON, writeJSON, readdirSync } from 'fs-extra';
 import path from 'path';
@@ -15,71 +15,53 @@ import { IPFS } from '@helpers/ipfs';
  * @param schemaRepository - table with schemes
  */
 export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
-    let fileName: string;
-    const schemes = [];
-    const files = readdirSync(path.join(process.cwd(), 'system-schemes'));
-
+    const fileConfig = path.join(process.cwd(), 'system-schemes', 'system-schemes.json');
+    let fileContent: any;
     try {
-        for (let i = 0; i < files.length; i++) {
-            fileName = files[i];
-            const schema = await readJSON(path.join(process.cwd(), 'system-schemes', fileName));
-            schemes.push(schema);
-        }
+        fileContent = await readJSON(fileConfig);
     } catch (error) {
-        console.error(error);
-        throw (`Unable to read the file: system-schemes/${fileName}`);
+        throw ('you need to create a file \'system-schemes.json\'');
     }
 
-    const ids = schemes.map(s => s.uuid);
-    const existingSchemes = await schemaRepository.find({ where: { uuid: { $in: ids } } });
-    for (let i = 0; i < schemes.length; i++) {
-        const schema = schemes[i];
+    if (!fileContent.hasOwnProperty('MINT_NFTOKEN')) {
+        throw ('You need to fill MINT_NFTOKEN field in system-schemes.json file');
+    }
+
+    if (!fileContent.hasOwnProperty('MINT_TOKEN')) {
+        throw ('You need to fill MINT_TOKEN field in system-schemes.json file');
+    }
+
+    if (!fileContent.hasOwnProperty('POLICY')) {
+        throw ('You need to fill POLICY field in system-schemes.json file');
+    }
+
+    if (!fileContent.hasOwnProperty('ROOT_AUTHORITY')) {
+        throw ('You need to fill ROOT_AUTHORITY field in system-schemes.json file');
+    }
+
+    if (!fileContent.hasOwnProperty('WIPE_TOKEN')) {
+        throw ('You need to fill WIPE_TOKEN field in system-schemes.json file');
+    }
+
+    const messages = Object.values(fileContent);
+    const existingSchemes = await schemaRepository.find({ where: { messageId: { $in: messages } } });
+
+    console.log("Load Schemes...");
+    for (let i = 0; i < messages.length; i++) {
+        const messageId = messages[i] as string;
+        const existingItem = existingSchemes.find(s => s.messageId === messageId);
+        if(existingItem) {
+            console.log("Skip " + existingItem.messageId);
+            continue;
+        }
+        const schema = await loadSchema(messageId, null) as ISchema;
+        schema.owner = null;
+        schema.creator = null;
         schema.readonly = true;
-        schema.status = SchemaStatus.PUBLISHED;
-        updateIRI(schema);
+        console.log("Load " + messageId);
         const item: any = schemaRepository.create(schema);
-        const existingItem = existingSchemes.find(s => s.uuid === schema.uuid);
-        if (existingItem) {
-            await schemaRepository.update(existingItem.id, item);
-            console.log(`Updated schema: ${item.uuid}`);
-        } else {
-            await schemaRepository.save(item);
-            console.log(`Created schema: ${item.uuid}`);
-        }
-    }
-}
-
-const getRelationships = function (schema: SchemaModel) {
-    const fields = schema.fields;
-    const result = [];
-    for (let i = 0; i < fields.length; i++) {
-        const element = fields[i];
-        if (element.isRef) {
-            result.push(element.type);
-        }
-    }
-    return result;
-}
-
-const updateIRI = function (schema: ISchema) {
-    try {
-        if (schema.status != SchemaStatus.DRAFT && schema.document) {
-            const document = JSON.parse(schema.document);
-            schema.iri = document.$id || null;
-        } else {
-            schema.iri = null;
-        }
-    } catch (error) {
-        schema.iri = null;
-    }
-}
-
-const updateIRIs = function (schemes: ISchema[]) {
-    if (schemes) {
-        for (let i = 0; i < schemes.length; i++) {
-            const schema = schemes[i];
-            updateIRI(schema);
-        }
+        await schemaRepository.save(item);
+        console.log(`Created schema: ${item.messageId}`);
     }
 }
 
@@ -109,6 +91,19 @@ const loadSchema = async function (messageId: string, owner: string) {
     }
     updateIRI(schemaToImport);
     return schemaToImport;
+}
+
+const updateIRI = function (schema: ISchema) {
+    try {
+        if (schema.status != SchemaStatus.DRAFT && schema.document) {
+            const document = JSON.parse(schema.document);
+            schema.iri = document.$id || null;
+        } else {
+            schema.iri = null;
+        }
+    } catch (error) {
+        schema.iri = null;
+    }
 }
 
 /**
@@ -177,6 +172,13 @@ export const schemaAPI = async function (
                     res.send(schema);
                     return;
                 }
+                if (msg.payload.entity) {
+                    const schema = await schemaRepository.findOne({
+                        where: { entity: { $eq: msg.payload.entity } }
+                    });
+                    res.send(schema);
+                    return;
+                }
             }
             res.send(null);
         }
@@ -192,7 +194,7 @@ export const schemaAPI = async function (
      * 
      * @returns {Schema} Found or uploaded schema
      */
-    channel.response(MessageAPI.LOAD_SCHEMA, async (msg, res) => {
+    channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
         try {
             if (!msg.payload || !msg.payload.messageId) {
                 res.send(null);
@@ -250,52 +252,6 @@ export const schemaAPI = async function (
 
             const schemaToImport: any = await loadSchema(messageId, owner);
             res.send(schemaToImport);
-        }
-        catch (error) {
-            res.send(null);
-        }
-    });
-
-    /**
-     * Load schema document
-     * @param {string} [payload.url] Document URL
-     * 
-     * @returns Schema document
-     */
-    channel.response(MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg, res) => {
-        try {
-            if (!msg.payload || !msg.payload.url) {
-                res.send(null)
-                return;
-            }
-
-            const schema = await schemaRepository.findOne({
-                where: { documentURL: { $eq: msg.payload.url } }
-            });
-            res.send(schema);
-        }
-        catch (error) {
-            res.send(null);
-        }
-    });
-
-    /**
-     * Get schema context
-     * @param {string} [payload.url] Context URL
-     * 
-     * @returns Schema context
-     */
-    channel.response(MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg, res) => {
-        try {
-            if (!msg.payload || !msg.payload.url) {
-                res.send(null)
-                return;
-            }
-
-            const schema = await schemaRepository.findOne({
-                where: { contextURL: { $eq: msg.payload.url } }
-            });
-            res.send(schema);
         }
         catch (error) {
             res.send(null);
@@ -379,7 +335,7 @@ export const schemaAPI = async function (
                 SchemaHelper.updateVersion(item, version);
 
                 const itemDocument = JSON.parse(item.document);
-                const defsArray = Object.values(itemDocument.$defs);
+                const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
                 item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
 
                 const document = item.document;
@@ -422,7 +378,7 @@ export const schemaAPI = async function (
 
                 const messageId = await HederaHelper
                     .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-                    .submitMessage(process.env.SUBMIT_SCHEMA_TOPIC_ID, JSON.stringify(schemaPublishMessage));
+                    .submitMessage(process.env.SCHEMA_TOPIC_ID, JSON.stringify(schemaPublishMessage));
 
                 item.messageId = messageId;
 
@@ -482,58 +438,6 @@ export const schemaAPI = async function (
         res.send(schemes);
     });
 
-
-
-
-
-
-
-
-
-
-    // /**
-    //  * Import schemes
-    //  * 
-    //  * @param {ISchema[]} payload - schemes
-    //  * 
-    //  * @returns {ISchema[]} - all schemes
-    //  */
-    // channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
-    //     try {
-    //         let items: ISchema[] = msg.payload;
-    //         if (!Array.isArray(items)) {
-    //             items = [items];
-    //         }
-
-    //         let importSchemes = [];
-    //         for (let i = 0; i < items.length; i++) {
-    //             const { iri, version, uuid } = SchemaModel.parsRef(items[i]);
-    //             items[i].uuid = uuid;
-    //             items[i].version = version;
-    //             items[i].iri = iri;
-    //             items[i].status = SchemaStatus.PUBLISHED;
-    //             if (uuid) {
-    //                 importSchemes.push(items[i])
-    //             }
-    //         }
-    //         const schemes = await schemaRepository.find();
-    //         const mapName = {};
-    //         for (let i = 0; i < schemes.length; i++) {
-    //             mapName[schemes[i].iri] = true;
-    //         }
-    //         importSchemes = importSchemes.filter((s) => !mapName[s.iri]);
-
-    //         const schemaObject = schemaRepository.create(importSchemes);
-    //         await schemaRepository.save(schemaObject);
-
-    //         const newSchemes = await schemaRepository.find();
-    //         res.send(newSchemes);
-    //     } catch (error) {
-    //         console.error(error);
-    //         res.send(null);
-    //     }
-    // });
-
     /**
      * Export schemes
      * 
@@ -549,7 +453,7 @@ export const schemaAPI = async function (
             const notExported = schemas.filter(schema => !schema.messageId);
             if (notExported.length > 0) {
                 throw new Error(`Cannot export schemas: ${notExported.map(schema => `${schema.name}`).join(', ')}`);
-                } 
+            }
 
             const schemasToExport = schemas.map(schema => {
                 return {

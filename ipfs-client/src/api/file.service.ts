@@ -28,11 +28,19 @@ export const fileAPI = async function (
             let blob = new Blob([msg.payload]);
             const cid = await client.storeBlob(blob);
             const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
-            res.send({ cid, url }, 'json');
+            const response = {
+                body: { cid, url },
+                error: null
+            }
+            res.send(response, 'json');
         }
         catch (e) {
             console.log(e);
-            res.send(null, 'json');
+            const response = {
+                body: null,
+                error: e
+            }
+            res.send(response, 'json');
         }
     })
 
@@ -47,8 +55,7 @@ export const fileAPI = async function (
     channel.response(MessageAPI.IPFS_GET_FILE, async (msg, res) => {
         try {
             if (!msg.payload || !msg.payload.cid || !msg.payload.responseType) {
-                res.send(null)
-                return;
+                throw 'Invalid cid';
             }
 
             const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: 'arraybuffer' });

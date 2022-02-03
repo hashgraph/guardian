@@ -14,7 +14,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { IPolicySubmitMessage, ISubmitModelMessage, ModelActionType, ModelHelper, SchemaEntity, UserRole } from 'interfaces';
+import { IPolicySubmitMessage, ISubmitModelMessage, ModelActionType, ModelHelper, SchemaEntity, SchemaHelper, UserRole } from 'interfaces';
 import { HederaHelper } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
@@ -256,9 +256,9 @@ export class BlockTreeGenerator {
                 ws.user = user;
             });
 
-            ws.on("message", (data: Buffer) => {
+            ws.on('message', (data: Buffer) => {
                 switch (data.toString()) {
-                    case "ping":
+                    case 'ping':
                         ws.send('pong');
                         break;
                 }
@@ -342,7 +342,7 @@ export class BlockTreeGenerator {
         this.router.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
             try {
                 if (!req.body || !req.body.policyVersion) {
-                    throw new Error("Policy version in body is empty");
+                    throw new Error('Policy version in body is empty');
                 }
 
                 const model = await getMongoRepository(Policy).findOne(req.params.policyId);
@@ -356,11 +356,11 @@ export class BlockTreeGenerator {
 
                 const { policyVersion } = req.body;
                 if (!ModelHelper.checkVersionFormat(req.body.policyVersion)) {
-                    throw new Error("Invalid version format");
+                    throw new Error('Invalid version format');
                 }
 
                 if (ModelHelper.versionCompare(req.body.policyVersion, model.previousVersion) <= 0) {
-                    throw new Error("Version must be greater than " + model.previousVersion);
+                    throw new Error('Version must be greater than ' + model.previousVersion);
                 }
 
                 const countModels = await getMongoRepository(Policy).count({
@@ -405,7 +405,7 @@ export class BlockTreeGenerator {
                     model.status = 'PUBLISH';
                     model.version = req.body.policyVersion;
                     const zip = await PolicyImportExportHelper.generateZipFile(model);
-                    const { cid, url } = await new IPFS().addFile(await zip.generateAsync({ type: "arraybuffer" }));
+                    const { cid, url } = await new IPFS().addFile(await zip.generateAsync({ type: 'arraybuffer' }));
                     const publishPolicyMessage: IPolicySubmitMessage = {
                         name: model.name,
                         description: model.description,
@@ -422,12 +422,14 @@ export class BlockTreeGenerator {
                         .submitMessage(model.topicId, JSON.stringify(publishPolicyMessage));
                     model.messageId = messageId;
 
+                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);  
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
-                        id: messageId,
-                        ...publishPolicyMessage
+                        ...publishPolicyMessage,
+                        ...SchemaHelper.getContext(policySchema),
+                        id: messageId
                     }
-                    const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, "Policy", credentialSubject);
+                    const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, credentialSubject);
                     await guardians.setVcDocument({
                         hash: vc.toCredentialHash(),
                         owner: user.did,
