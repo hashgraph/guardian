@@ -9,6 +9,8 @@ import { RootConfig } from '@entity/root-config';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
 
+const schemaCache = {};
+
 /**
  * Creation of default schemes.
  * 
@@ -66,10 +68,18 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 }
 
 const loadSchema = async function (messageId: string, owner: string) {
+    if (schemaCache[messageId]) {
+        return schemaCache[messageId];
+    }
+    console.log("loadSchema: " + messageId);
     const { topicId, message } = await HederaMirrorNodeHelper.getTopicMessage(messageId);
+    console.log("loadSchema message");
     const topicMessage = JSON.parse(message) as ISchemaSubmitMessage;
+    console.log("loadSchema ipfs " + topicMessage.document_cid);
     const documentObject = await IPFS.getFile(topicMessage.document_cid, "str") as string;
+    console.log("loadSchema ipfs " + topicMessage.context_cid);
     const contextObject = await IPFS.getFile(topicMessage.context_cid, "str") as string;
+    console.log("loadSchema files");
     const schemaToImport: any = {
         uuid: topicMessage.uuid,
         hash: "",
@@ -90,6 +100,8 @@ const loadSchema = async function (messageId: string, owner: string) {
         iri: null
     }
     updateIRI(schemaToImport);
+    console.log("loadSchema end: " + messageId);
+    schemaCache[messageId] = { ...schemaToImport };
     return schemaToImport;
 }
 
@@ -196,31 +208,49 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
         try {
-            if (!msg.payload || !msg.payload.messageId) {
+            if (!msg.payload) {
+                res.send(new MessageError('Schema not found'));
+                return;
+            }
+            const { owner, messageIds } = msg.payload;
+            if (!owner || !messageIds) {
                 res.send(new MessageError('Schema not found'));
                 return;
             }
 
-            const messageId = msg.payload.messageId;
-            const owner = msg.payload.owner;
-
-            let schema = await schemaRepository.findOne({
-                where: { messageId: { $eq: messageId } }
-            });
-
-            if (schema) {
-                res.send(new MessageResponse(schema));
-                return;
+            let ids: string[];
+            if (Array.isArray(messageIds)) {
+                ids = messageIds;
+            } else {
+                ids = [messageIds];
             }
 
-            const schemaToImport: any = await loadSchema(messageId, owner);
+            const schemes = await schemaRepository.find({
+                where: { messageId: { $in: messageIds } }
+            });
+            const map = {};
+            for (let i = 0; i < schemes.length; i++) {
+                const element = schemes[i];
+                map[element.messageId] = element;
+            }
 
-            schema = schemaRepository.create(schemaToImport) as any;
-            await schemaRepository.save(schema);
-            res.send(new MessageResponse(schema));
+            const result = [];
+            for (let i = 0; i < messageIds.length; i++) {
+                const messageId = messageIds[i];
+                if (map[messageId]) {
+                    result.push(map[messageId]);
+                } else {
+                    map[messageId] = await loadSchema(messageId, null);
+                    const schema = schemaRepository.create(map[messageId]) as any;
+                    await schemaRepository.save(schema);
+                    result.push(map[messageId]);
+                }
+            }
+            res.send(new MessageResponse(result));
         }
         catch (error) {
-            res.send(new MessageError(error));
+            console.error(error);
+            res.send(new MessageError(error.message));
         }
     });
 
@@ -233,28 +263,44 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
         try {
-            if (!msg.payload || !msg.payload.messageId) {
+            if (!msg.payload) {
                 res.send(new MessageError('Schema not found'));
                 return;
             }
 
-            const messageId = msg.payload.messageId;
-            const owner = msg.payload.owner;
-
-            let schema = await schemaRepository.findOne({
-                where: { messageId: { $eq: messageId } }
-            });
-
-            if (schema) {
-                res.send(new MessageResponse(schema));
-                return;
+            let messageIds: string[];
+            if (Array.isArray(msg.payload)) {
+                messageIds = msg.payload;
+            } else {
+                messageIds = [msg.payload];
             }
 
-            const schemaToImport: any = await loadSchema(messageId, owner);
-            res.send(new MessageResponse(schemaToImport));
+            const schemes = await schemaRepository.find({
+                where: { messageId: { $in: messageIds } }
+            });
+            const map = {};
+            for (let i = 0; i < schemes.length; i++) {
+                const element = schemes[i];
+                map[element.messageId] = element;
+            }
+
+            const result = [];
+            for (let i = 0; i < messageIds.length; i++) {
+                const messageId = messageIds[i];
+                if (map[messageId]) {
+
+                    result.push(map[messageId]);
+                } else {
+                    map[messageId] = await loadSchema(messageId, null);
+                    result.push(map[messageId]);
+                }
+            }
+
+            res.send(new MessageResponse(result));
         }
         catch (error) {
-            res.send(new MessageResponse(error));
+            console.error(error);
+            res.send(new MessageError(error.message));
         }
     });
 
@@ -387,7 +433,7 @@ export const schemaAPI = async function (
             res.send(new MessageError("Invalid id"));
         } catch (error) {
             console.error(error);
-            res.send(new MessageError(error));
+            res.send(new MessageError(error.message));
         }
     });
 

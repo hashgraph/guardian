@@ -48,13 +48,13 @@ export class Guardians {
      */
     public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
         try {
-            const response: IMessageResponse<T> =(await this.channel.request(this.target, entity, params, type)).payload;
+            const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
             if (response.error) {
                 throw response.error;
             }
             return response.body;
         } catch (e) {
-            throw new Error('Guardian send error ' + e.message);
+            throw new Error(`Guardian send error ${entity} ` + e.message);
         }
     }
 
@@ -263,8 +263,8 @@ export class Guardians {
      * 
      * @returns {any} - Schema Document
      */
-    public async importSchema(messageId: string, owner: string): Promise<any> {
-        return await this.request(MessageAPI.IMPORT_SCHEMA, { messageId, owner });
+    public async importSchema(messageIds: string | string[], owner: string): Promise<any> {
+        return await this.request(MessageAPI.IMPORT_SCHEMA, { messageIds, owner });
     }
 
     /**
@@ -447,12 +447,7 @@ export class Guardians {
      * 
      * @returns {any} Schema preview
      */
-    public async getSchemaPreview(messageId: string, owner: string): Promise<any> {
-        const res = (await this.channel.request(this.target, MessageAPI.PREVIEW_SCHEMA, { messageId, owner })).payload
-        if (res.error) {
-            throw new Error(res.error);
-        }
-
-        return res.body;
+    public async getSchemaPreview(messageId: string | string[]): Promise<any> {
+        return await this.request(MessageAPI.PREVIEW_SCHEMA, messageId);
     }
 }

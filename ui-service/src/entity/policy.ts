@@ -34,6 +34,9 @@ export class Policy {
     status: string;
 
     @Column()
+    creator: string;
+
+    @Column()
     owner: string;
 
     @Column()

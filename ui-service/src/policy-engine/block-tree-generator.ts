@@ -293,12 +293,24 @@ export class BlockTreeGenerator {
             try {
                 const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
-                model.owner = user.did;
-                if (!model.uuid) {
+                if(model.uuid) {
+                    const old = await getMongoRepository(Policy).findOne({ uuid: model.uuid });
+                    if( model.creator != user.did) {
+                        throw 'Invalid owner';
+                    }
+                    if( old.creator != user.did) {
+                        throw 'Invalid owner';
+                    }
+                    model.creator = user.did;
+                    model.owner = user.did;
+                    delete model.version;
+                } else {
+                    model.creator = user.did;
+                    model.owner = user.did;
                     delete model.previousVersion;
                     delete model.topicId;
+                    delete model.version;
                 }
-                delete model.version;
                 await getMongoRepository(Policy).save(model);
                 const policies = await getMongoRepository(Policy).find({ owner: user.did })
                 res.json(policies);

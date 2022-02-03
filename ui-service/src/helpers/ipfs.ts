@@ -30,8 +30,7 @@ export class IPFS {
      * 
      * @returns {{ cid: string, url: string }} - hash
      */
-    public async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }>
-    {
+    public async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {
         return (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
     }
 
@@ -41,14 +40,13 @@ export class IPFS {
      * @param responseType Response type
      * @returns File
      */
-     public async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
+    public async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
         const res = (await this.channel.request(this.target, MessageAPI.IPFS_GET_FILE, { cid, responseType }, 'json')).payload;
         if (res.error) {
             throw new Error(res.error);
         }
-
-        return responseType === 'raw' 
-            ? res.body.data 
+        return responseType === 'raw'
+            ? res.body.data
             : res.body;
     }
 }

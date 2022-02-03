@@ -13,23 +13,9 @@ export namespace PolicyImportExportHelper {
      */
     export async function generateZipFile(policy: Policy): Promise<JSZip> {
         const guardians = new Guardians();
-
-        // const refs = findAllEntities(policy.config, 'schema');
         const tokenIds = findAllEntities(policy.config, 'tokenId');
-
-        // const [schemas, tokens] = await Promise.all([
-        //     guardians.exportSchemes(refs),
-        //     guardians.getTokens({ ids: tokenIds })
-        // ]);
-
         const tokens = await guardians.getTokens({ ids: tokenIds });
-
         const zip = new JSZip();
-        // zip.folder('schemas')
-        // for (let schema of schemas) {
-        //     zip.file(`schemas/${schema.name}.json`, JSON.stringify(schema));
-        // }
-
         zip.folder('tokens')
         for (let token of tokens) {
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
@@ -70,35 +56,36 @@ export namespace PolicyImportExportHelper {
      * 
      * @returns Policies by owner  
      */
-    export async function importPolicy(policyToImport: any, policyOwner: any): Promise<Policy[]> {
-        let {policy, tokens} = policyToImport;
+
+    export async function importPolicy(policyToImport: any, policyOwner: string): Promise<Policy[]> {
+        const { policy, tokens } = policyToImport;
         const guardians = new Guardians();
 
-        const dateNow = '_' + Date.now();
+        const schemasIds = findAllEntities(policy.config, 'schema');
+        if (schemasIds) {
+            await guardians.importSchema(schemasIds, policyOwner);
+        }
 
         for (let token of tokens) {
             delete token.id;
             delete token.selected;
         }
-        
-        const schemasIds = findAllEntities(policy.config, 'schema');
+        await guardians.importTokens(tokens)
 
+        const dateNow = '_' + Date.now();
         const policyRepository = getMongoRepository(Policy);
         policy.policyTag = policy.tag + dateNow;
-        if (await policyRepository.findOne({name: policy.name})) {
+        if (await policyRepository.findOne({ name: policy.name })) {
             policy.name = policy.name + dateNow;
         }
 
         delete policy.id;
-        delete policy.status;
+        policy.status = 'PUBLISH';
+        policy.creator = policy.owner;
         policy.owner = policyOwner;
-        
-        await Promise.all([
-            guardians.importTokens(tokens),
-            schemasIds.forEach(async id => await guardians.loadSchema(id, policyOwner)),
-            policyRepository.save(policyRepository.create(policy))
-        ]);
 
-        return await policyRepository.find({owner: policyOwner});
+        await policyRepository.save(policyRepository.create(policy))
+        return await policyRepository.find({ owner: policyOwner });
     }
+
 }

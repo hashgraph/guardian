@@ -292,6 +292,8 @@ export class PolicyViewerComponent implements OnInit {
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
+                }, (e) => {
+                    this.loading = false;
                 });
             }
         });

@@ -5,7 +5,7 @@ import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Guardians } from '@helpers/guardians';
 import { findAllEntities } from '@helpers/utils';
-import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
+import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { HederaMirrorNodeHelper } from 'vc-modules';
 import { IPolicySubmitMessage, ISubmitModelMessage } from 'interfaces';
@@ -39,22 +39,23 @@ importExportAPI.post('/import/topic', async (req: AuthenticatedRequest, res: Res
     try {
         const ipfsHelper = new IPFS();
         const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new Error('Policy ID in body is empty');
+        }
 
-        const existingPolicy = await getMongoRepository(Policy).find({ messageId: messageId });
-        
+        const existingPolicy = await getMongoRepository(Policy).findOne({ messageId: messageId });
         if (existingPolicy) {
-            res.status(201).json(await getMongoRepository(Policy).find({ owner: req.user.did }));
-            return;
+            throw new Error('Policy already exists');
         }
 
         const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId);
-        const message = JSON.parse(topicMessage.message)as IPolicySubmitMessage
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(await ipfsHelper.getFile(message.cid, "raw"));
+        const message = JSON.parse(topicMessage.message) as IPolicySubmitMessage;
+        const zip = await ipfsHelper.getFile(message.cid, "raw");
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
         const policies = await PolicyImportExportHelper.importPolicy(policyToImport, req.user.did);
-
         res.status(201).json(policies);
     } catch (e) {
-        res.status(500).send({code: 500, message: e.message});
+        res.status(500).send({ code: 500, message: e.message });
     }
 });
 
@@ -65,14 +66,16 @@ importExportAPI.get('/import/preview/:messageId', async (req: AuthenticatedReque
         const messageId = req.params.messageId;
         const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId);
         const message = JSON.parse(topicMessage.message) as IPolicySubmitMessage;
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(await ipfsHelper.getFile(message.cid, "raw"));
+        const zip = await ipfsHelper.getFile(message.cid, "raw");
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
         const schemasIds = findAllEntities(policyToImport.policy.config, 'schema');
-        const schemas = await Promise.all(schemasIds.map(async id => await guardians.getSchemaPreview(id, "")));
+        const schemas = await guardians.getSchemaPreview(schemasIds);
         res.status(200).json({ ...policyToImport, schemas });
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
     }
 })
+
 
 // importExportAPI.post('/import/preview', async (req: AuthenticatedRequest, res: Response) => {
 //     try {
