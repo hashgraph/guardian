@@ -50,10 +50,6 @@ export namespace PolicyImportExportHelper {
         const content = await zip.loadAsync(zipFile);
 
         let policyString = await content.files['policy.json'].async('string');
-        const schemaStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^schemas\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
 
         const tokensStringArray = await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)
@@ -62,10 +58,9 @@ export namespace PolicyImportExportHelper {
 
         const policy = JSON.parse(policyString);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
-        const schemas = schemaStringArray.map(item => JSON.parse(item));
 
 
-        return { policy, tokens, schemas };
+        return { policy, tokens };
     }
 
     /**
@@ -75,9 +70,8 @@ export namespace PolicyImportExportHelper {
      * 
      * @returns Policies by owner  
      */
-    /*
     export async function importPolicy(policyToImport: any, policyOwner: any): Promise<Policy[]> {
-        let {policy, tokens, schemas} = policyToImport;
+        let {policy, tokens} = policyToImport;
         const guardians = new Guardians();
 
         const dateNow = '_' + Date.now();
@@ -86,11 +80,8 @@ export namespace PolicyImportExportHelper {
             delete token.id;
             delete token.selected;
         }
-        for (let schema of schemas) {
-            delete schema.owner;
-            delete schema.id;
-            delete schema.status;
-        }
+        
+        const schemasIds = findAllEntities(policy.config, 'schema');
 
         const policyRepository = getMongoRepository(Policy);
         policy.policyTag = policy.tag + dateNow;
@@ -101,14 +92,13 @@ export namespace PolicyImportExportHelper {
         delete policy.id;
         delete policy.status;
         policy.owner = policyOwner;
-
+        
         await Promise.all([
             guardians.importTokens(tokens),
-            guardians.importSchemes(schemas),
+            schemasIds.forEach(async id => await guardians.loadSchema(id, policyOwner)),
             policyRepository.save(policyRepository.create(policy))
         ]);
 
         return await policyRepository.find({owner: policyOwner});
     }
-    */
 }

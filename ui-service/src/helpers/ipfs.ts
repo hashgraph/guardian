@@ -47,6 +47,8 @@ export class IPFS {
             throw new Error(res.error);
         }
 
-        return res.body;
+        return responseType === 'raw' 
+            ? res.body.data 
+            : res.body;
     }
 }

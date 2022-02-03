@@ -51,10 +51,9 @@ export class ImportPolicyDialog {
       const topicId = this.dataForm.get('timestamp')?.value;
 
       this.policyEngineService.topicPreview(topicId)
-        .subscribe( policy => {
+        .subscribe( result => {
           this.dialogRef.close({
-            policy: policy,
-            topicId: topicId
+            policy: result
           });
         });
     }

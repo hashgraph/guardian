@@ -448,6 +448,11 @@ export class Guardians {
      * @returns {any} Schema preview
      */
     public async getSchemaPreview(messageId: string, owner: string): Promise<any> {
-        return await this.request(MessageAPI.PREVIEW_SCHEMA, { messageId, owner });
+        const res = (await this.channel.request(this.target, MessageAPI.PREVIEW_SCHEMA, { messageId, owner })).payload
+        if (res.error) {
+            throw new Error(res.error);
+        }
+
+        return res.body;
     }
 }

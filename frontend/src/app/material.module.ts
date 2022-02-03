@@ -23,6 +23,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ClipboardModule } from '@angular/cdk/clipboard';
 
 @NgModule({
     declarations: [],
@@ -75,7 +76,8 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatCheckboxModule,
         MatTreeModule,
         MatTooltipModule,
-        MatSlideToggleModule
+        MatSlideToggleModule,
+        ClipboardModule
     ]
 })
 export class MaterialModule { }

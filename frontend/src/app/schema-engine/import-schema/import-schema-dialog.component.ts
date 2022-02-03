@@ -72,7 +72,6 @@ export class ImportSchemaDialog {
 
       this.schemaService.topicPreview(topicId)
         .subscribe(schema => {
-            console.log(schema);
             this.dialogRef.close(null);
             this.callbackIpfsImport(schema, topicId);
           });

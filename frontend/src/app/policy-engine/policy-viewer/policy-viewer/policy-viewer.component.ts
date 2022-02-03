@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser } from 'interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
+import { ExportModelDialog } from 'src/app/components/export-model-dialog/export-model-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -229,18 +230,12 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     exportPolicy(element: any) {
-        this.loading = true;
-        this.policyEngineService.exportPolicy(element.id).subscribe((result: any) => {
-            let downloadLink = document.createElement('a');
-            downloadLink.href = window.URL.createObjectURL(result);
-            downloadLink.setAttribute('download', 'policy.zip');
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        }, (e) => {
-            this.loading = false;
+        this.dialog.open(ExportModelDialog, {
+            width: '700px',
+            data: {
+                models: [element]
+            },
+            autoFocus: false
         });
     }
 
@@ -275,13 +270,13 @@ export class PolicyViewerComponent implements OnInit {
           autoFocus: false
       });
       dialogRef.afterClosed().subscribe(async (result) => {
-          if (result && result.policy && result.topicId) {
-            this.importPolicyDetails(result.policy, result.topicId);
+          if (result && result.policy) {
+            this.importPolicyDetails(result.policy);
           }
       });
   }
 
-    importPolicyDetails(policy: any, topicId: string = "") {
+    importPolicyDetails(policy: any) {
         const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -292,23 +287,12 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-
-                if (!topicId){
-                    this.policyEngineService.importUpload(policy).subscribe((policies) => {
-                        this.updatePolicy(policies);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
-                    });
-                }
-                else {
-                    this.policyEngineService.topicImport(topicId).subscribe((policies) => {
-                        this.updatePolicy(policies);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
-                    });
-                }
+                this.policyEngineService.topicImport(policy.policy.messageId).subscribe((policies) => {
+                    this.updatePolicy(policies);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                });
             }
         });
     }

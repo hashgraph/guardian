@@ -10,7 +10,7 @@ import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-s
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from 'src/app/schema-engine/schema-view-dialog/schema-view-dialog.component';
-import { ExportSchemaDialog } from 'src/app/schema-engine/export-schema-dialog/export-schema-dialog.component';
+import { ExportModelDialog } from 'src/app/components/export-model-dialog/export-model-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -266,10 +266,10 @@ export class SchemaConfigComponent implements OnInit {
     exportSchemes() {
         const selectedSchemas = this.schemes.filter((schema:any) => schema._selected).map(schema=>schema.id);
         this.schemaService.export(selectedSchemas)
-            .subscribe(res => this.dialog.open(ExportSchemaDialog, {
+            .subscribe(res => this.dialog.open(ExportModelDialog, {
                 width: '700px',
                 data: {
-                    schemas: res
+                    models: res
                 },
                 autoFocus: false
             }));

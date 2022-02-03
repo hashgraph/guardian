@@ -246,7 +246,7 @@ export const schemaAPI = async function (
             });
 
             if (schema) {
-                res.send(new MessageError('Schema not found'));
+                res.send(new MessageResponse(schema));
                 return;
             }
 
