@@ -23,6 +23,6 @@ export class ExportSchemaDialog {
     }
 
     getSchemaTitle(schema: any) {
-        return `${schema.uuid} (${schema.name})`;
+        return `${schema.name} (${schema.version}): ${schema.messageId}`;
     }
 }

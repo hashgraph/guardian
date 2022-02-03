@@ -390,8 +390,14 @@ export class Guardians {
      * 
      * @returns {any[]} - Exported schemas
      */
-    public async exportSchemes(ids: string[]): Promise<{id:string, uuid: string, name: string, messageId: string}[]> {
-        return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
+    public async exportSchemes(ids: string[]): Promise<{name: string, version: string, messageId: string}[]> {
+        const res = (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
+        if (res.error)
+        {
+            throw new Error(res.error);
+        }
+
+        return res.body;
     }
 
     /**
