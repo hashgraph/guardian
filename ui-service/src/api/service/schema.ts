@@ -171,50 +171,53 @@ schemaAPI.put('/:schemaId/unpublish', permissionHelper(UserRole.ROOT_AUTHORITY),
 //     }
 // });
 
-// schemaAPI.post('/import/topic', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-//     try {
-//         const importHelper = new Import();
-//         const guardians = new Guardians();
-//         const messageId = req.body.messageId;
-//         const topicMessage = await importHelper.getTopicMessage(messageId);
-//         const schemaToImport = await importHelper.getSchema(topicMessage.cid);
+schemaAPI.post('/import/topic', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const guardians = new Guardians();
+        const messageId = req.body.messageId;
+        const schemaToPreview = await guardians.loadSchema(messageId, req.user.did);
 
-//         delete schemaToImport.owner;
-//         delete schemaToImport.id;
-//         delete schemaToImport.status;
+        if (!schemaToPreview) {
+            throw new Error('Cannot load schema');
+        }
 
-//         await guardians.importSchemes([schemaToImport]);
-//         const schemes = (await guardians.getSchemes(null));
-//         res.status(201).json(schemes);
-//     } catch (error) {
-//         res.status(500).json({ code: 500, message: error.message });
-//     }
-// });
+        res.status(201).json(schemaToPreview);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
 
-// schemaAPI.get('/import/preview/:messageId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-//     try {
-//         const importHelper = new Import();
-//         const messageId = req.params.messageId;
-//         const topicMessage = await importHelper.getTopicMessage(messageId);
-//         const schemaToImport = await importHelper.getSchema(topicMessage.cid);
-//         res.status(200).json(schemaToImport);
-//     } catch (error) {
-//         res.status(500).json({ code: 500, message: error.message });
-//     }
-// });
+schemaAPI.get('/import/preview/:messageId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+    try {
+        const guardians = new Guardians();
+        const messageId = req.params.messageId;
+        const schemaToPreview = await guardians.getSchemaPreview(messageId);
+        res.status(200).json(schemaToPreview);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
 
-// schemaAPI.post('/export', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-//     try {
-//         const guardians = new Guardians();
-//         const refs = req.body.refs as string[];
-//         const schemes = (await guardians.exportSchemes(refs));
-//         schemes.forEach((s: ISchema) => {
-//             delete s.id;
-//             delete s.status;
-//         });
-//         const json = schemes;
-//         res.status(200).json({ schemes: json });
-//     } catch (error) {
-//         res.status(500).json({ code: 500, message: error.message });
-//     }
-// });
+schemaAPI.post('/export', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+    try {
+        if (!req.body?.ids || req.body.ids.length === 0) {
+            throw new Error("No schemas to export");
+        }
+
+        const guardians = new Guardians();
+        const ids = req.body.ids as string[];
+        
+        const schemes = (await guardians.exportSchemes(ids));
+        console.log(schemes);
+        const exportedSchemas = schemes.map(schema => schema.id);
+        const notExportedSchemas = ids.filter(id => !exportedSchemas.includes(id));
+
+        if (notExportedSchemas.length !== 0) {
+            throw new Error(`Cannot export schemas: ${notExportedSchemas.join(' ,')}`);
+        }
+
+        res.status(200).json(schemes);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});

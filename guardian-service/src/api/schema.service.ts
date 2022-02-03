@@ -177,8 +177,8 @@ export const schemaAPI = async function (
 
             const { topicId, message } = await HederaMirrorNodeHelper.getTopicMessage(messageId);
             const topicMessage = JSON.parse(message) as ISchemaSubmitMessage;
-            const documentObject = await IPFS.getFile(topicMessage.document_cid, "string") as string;
-            const contextObject = await IPFS.getFile(topicMessage.context_cid, "string") as string;
+            const documentObject = await IPFS.getFile(topicMessage.document_cid, "str") as string;
+            const contextObject = await IPFS.getFile(topicMessage.context_cid, "str") as string;
             const schemaToImport: any = {
                 uuid: topicMessage.uuid,
                 hash: "",
@@ -199,10 +199,48 @@ export const schemaAPI = async function (
                 iri: null
             }
             updateIRI(schemaToImport);
-            schema = schemaRepository.create(schemaToImport) as any;
+            schema = await schemaRepository.create(schemaToImport) as any;
+            await schemaRepository.save(schema);
             res.send(schema);
         }
         catch (error) {
+            res.send(null);
+        }
+    });
+
+    /**
+     * Preview schema by message identifier
+     * 
+     * @param {string} [payload.messageId] Message identifier
+     * 
+     * @returns {Schema} Found or uploaded schema
+     */
+    channel.response(MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
+        try {
+            if (!msg.payload) {
+                res.send(null);
+                return;
+            }
+
+            const messageId = msg.payload as string;
+
+            const { message } = await HederaMirrorNodeHelper.getTopicMessage(messageId);
+            const topicMessage = JSON.parse(message) as ISchemaSubmitMessage;
+            const documentObject = await IPFS.getFile(topicMessage.document_cid, "str") as string;
+            const contextObject = await IPFS.getFile(topicMessage.context_cid, "str") as string;
+            const schemaToImport: any = {
+                uuid: topicMessage.uuid,
+                name: topicMessage.name,
+                description: topicMessage.description,
+                document: documentObject,
+                context: contextObject,
+                version: topicMessage.version,
+            }
+
+            res.send(schemaToImport);
+        }
+        catch (error) {
+            console.log(error);
             res.send(null);
         }
     });
@@ -486,59 +524,34 @@ export const schemaAPI = async function (
     //     }
     // });
 
-    // /**
-    //  * Export schemes
-    //  * 
-    //  * @param {Object} payload - filters
-    //  * @param {string[]} payload.ids - schema ids
-    //  * 
-    //  * @returns {ISchema[]} - array of selected and nested schemas
-    //  */
-    // channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
-    //     try {
-    //         const refs = msg.payload as string[];
-    //         const allSchemes = await schemaRepository.find();
-    //         const schemes = allSchemes.map(s => new SchemaModel(s));
-    //         const mapType: any = {};
-    //         const mapSchemes: any = {};
-    //         const result = [];
-    //         for (let i = 0; i < schemes.length; i++) {
-    //             const schema = schemes[i];
-    //             mapType[schema.ref] = false;
-    //             mapSchemes[schema.ref] = schema;
-    //             if (refs.indexOf(schema.ref) != -1) {
-    //                 mapType[schema.ref] = true;
-    //                 result.push(schema);
-    //             }
-    //         }
-    //         let index = 0;
-    //         while (index < result.length) {
-    //             const relationships = getRelationships(result[index]);
-    //             for (let i = 0; i < relationships.length; i++) {
-    //                 const id = relationships[i];
-    //                 if (mapType[id] === false) {
-    //                     mapType[id] = true;
-    //                     result.push(mapSchemes[id]);
-    //                 }
-    //             }
-    //             result[index].relationships = relationships;
-    //             index++;
-    //         }
-    //         const documents = [];
-    //         for (let i = 0; i < result.length; i++) {
-    //             const element = result[i];
-    //             documents.push({
-    //                 name: element.name,
-    //                 uuid: element.uuid,
-    //                 entity: element.entity,
-    //                 document: element.document,
-    //                 relationships: element.relationships,
-    //             })
-    //         }
-    //         res.send(documents);
-    //     } catch (error) {
-    //         console.error(error);
-    //         res.send(null);
-    //     }
-    // });
+    /**
+     * Export schemes
+     * 
+     * @param {Object} payload - filters
+     * @param {string[]} payload.ids - schema ids
+     * 
+     * @returns {any[]} - Exported schemas
+     */
+    channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
+        try {
+            const ids = msg.payload as string[];
+            const schemas = await schemaRepository.find({ 
+                where: {
+                    messageId: { $exists: true, $nin: ["", null] }
+                } 
+            });
+            const schemasToExport = schemas.filter(schema => ids.includes(schema.id.toString())).map(schema => {
+                return {
+                    id: schema.id,
+                    uuid: schema.uuid, 
+                    name: schema.name,
+                    messageId: schema.messageId
+                }
+             });
+            res.send(schemasToExport, 'json');
+        } catch (error) {
+            console.error(error);
+            res.send(null);
+        }
+    });
 }

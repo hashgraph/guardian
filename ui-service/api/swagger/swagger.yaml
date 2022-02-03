@@ -136,10 +136,12 @@ components:
     ExportSchema:
       type: object
       properties:
-        ids:
-          type: array
-          items:
-            type: string
+        uuid:
+          type: string
+        name:
+          type: string
+        messageId:
+          type: string
     Token:
       type: object
       properties:
@@ -911,14 +913,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ExportSchema"
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ImportSchema"
+                $ref: "#/components/schemas/ExportSchema"
         401:
           description: Unauthorized.
         403:

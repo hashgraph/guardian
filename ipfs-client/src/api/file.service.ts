@@ -7,22 +7,6 @@ import axios, { ResponseType } from 'axios';
 export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
 
 /**
- * Map fastmq response type to axios response type
- * @param responseType FastMq response type
- * @returns 
- */
-function mapResponseType(responseType: string): ResponseType {
-    switch (responseType) {
-        case 'raw':
-            return 'arraybuffer';
-        case 'string':
-            return 'text';
-        default:
-            return 'json';
-    }
-}
-
-/**
  * Connecting to the message broker methods of working with IPFS.
  * 
  * @param channel - channel
@@ -66,8 +50,20 @@ export const fileAPI = async function (
                 res.send(null)
                 return;
             }
-            const file = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: mapResponseType(msg.payload.responseType) });
-            res.send(file, msg.payload.responseType);
+
+            const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: 'arraybuffer' });
+            
+            switch (msg.payload.responseType) {
+                case 'str':
+                    res.send(Buffer.from(fileRes.data, 'binary').toString());
+                    return;
+                case 'json':
+                    res.send(Buffer.from(fileRes.data, 'binary').toJSON());
+                    return;
+                default:
+                    res.send(fileRes.data, 'raw')
+                    return;
+            }
         }
         catch (e) {
             console.log(e);

@@ -235,12 +235,12 @@ export class Guardians {
     /**
      * Return Schema
      * 
-     * @param {string} uuid - schema uuid
+     * @param {string} messageId - schema uuid
      * 
      * @returns {any} - Schema Document
      */
-    public async loadSchema(uuid: string): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA, uuid)).payload;
+    public async loadSchema(messageId: string, owner: string = ""): Promise<any> {
+        return (await this.channel.request(this.target, MessageAPI.LOAD_SCHEMA, {messageId, owner})).payload;
     }
 
     /**
@@ -383,16 +383,16 @@ export class Guardians {
         });
     }
 
-    // /**
-    //  * Export schemes
-    //  * 
-    //  * @param {string[]} refs - schema refs
-    //  * 
-    //  * @returns {ISchema[]} - array of selected and nested schemas
-    //  */
-    // public async exportSchemes(refs: string[]): Promise<ISchema[]> {
-    //     return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, refs)).payload;
-    // }
+    /**
+     * Export schemes
+     * 
+     * @param {string[]} ids - schema ids
+     * 
+     * @returns {any[]} - Exported schemas
+     */
+    public async exportSchemes(ids: string[]): Promise<{id:string, uuid: string, name: string, messageId: string}[]> {
+        return (await this.channel.request(this.target, MessageAPI.EXPORT_SCHEMES, ids)).payload;
+    }
 
     /**
      * Changing the status of a schema on PUBLISHED.
@@ -425,5 +425,16 @@ export class Guardians {
      */
     public async deleteSchema(id: string): Promise<ISchema[]> {
         return (await this.channel.request(this.target, MessageAPI.DELETE_SCHEMA, id)).payload;
+    }
+
+    /**
+     * Get schema preview
+     * 
+     * @param {string} messageId Message identifier
+     * 
+     * @returns {any} Schema preview
+     */
+    public async getSchemaPreview(messageId: string): Promise<any> {
+        return (await this.channel.request(this.target, MessageAPI.PREVIEW_SCHEMA, messageId)).payload
     }
 }

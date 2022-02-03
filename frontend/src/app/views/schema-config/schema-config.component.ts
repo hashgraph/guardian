@@ -10,6 +10,7 @@ import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-s
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from 'src/app/schema-engine/schema-view-dialog/schema-view-dialog.component';
+import { ExportSchemaDialog } from 'src/app/schema-engine/export-schema-dialog/export-schema-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -263,15 +264,15 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     exportSchemes() {
-        debugger;
-        // const ids = this.schemes.filter((s: any) => s._selected).map(s => s.uuid);
-        // this.schemaService.export(ids).subscribe((data) => {
-        //     this.downloadObjectAsJson(data.schemes, 'schema');
-        //     this.loading = false;
-        // }, (e) => {
-        //     console.error(e.error);
-        //     this.loading = false;
-        // });
+        const selectedSchemas = this.schemes.filter((schema:any) => schema._selected).map(schema=>schema.id);
+        this.schemaService.export(selectedSchemas)
+            .subscribe(res => this.dialog.open(ExportSchemaDialog, {
+                width: '800px',
+                data: {
+                    schemas: res
+                },
+                autoFocus: false
+            }));
     }
 
     downloadObjectAsJson(exportObj: any, exportName: string) {

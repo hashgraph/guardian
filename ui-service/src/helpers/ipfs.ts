@@ -41,7 +41,7 @@ export class IPFS {
      * @param responseType Response type
      * @returns File
      */
-     public async getFile(cid: string, responseType: 'json' | 'raw' | 'string'): Promise<any> {
-        return (await this.channel.request(this.target, MessageAPI.IPFS_GET_FILE, {cid, responseType}, 'json')).payload;
+     public async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
+        return (await this.channel.request(this.target, MessageAPI.IPFS_GET_FILE, { cid, responseType }, 'json')).payload;
     }
 }

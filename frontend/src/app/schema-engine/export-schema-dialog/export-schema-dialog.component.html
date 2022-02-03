@@ -1,0 +1,13 @@
+<h1 mat-dialog-title>Export schemas dialog</h1>
+<div mat-dialog-content class="content">
+    <div *ngFor="let schema of schemas" class="container">
+        <mat-form-field appearance="outline" class="schema-field">
+            <input matInput readonly [value]="getSchemaTitle(schema)">
+        </mat-form-field>
+        <button mat-raised-button color="primary" [cdkCopyToClipboard]="schema.messageId">Copy message identifier</button>
+    </div>
+</div>
+<div mat-dialog-actions>
+    <button mat-button type="button" [mat-dialog-close]="true">Cancel</button>
+</div>
+  

@@ -50,7 +50,7 @@ export class SchemaService {
     return this.http.post<any[]>(`${this.url}/import`, { schemes });
   }
 
-  public export(ids: string[]): Observable<any> {
+  public export(ids: string[]): Observable<any[]> {
     return this.http.post<any[]>(`${this.url}/export`, { ids });
   }
 
