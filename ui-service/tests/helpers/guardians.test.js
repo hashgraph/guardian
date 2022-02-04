@@ -1,11 +1,16 @@
 require('module-alias/register');
-const {Guardians} = require("../../dist/helpers/guardians");
-const {assert} = require('chai');
+const { Guardians } = require("../../dist/helpers/guardians");
+const { assert } = require('chai');
 describe('Guardians', function () {
     it('Create', async function () {
         new Guardians().channel = {
             request: (args) => {
-                return {payload: args}
+                return {
+                    payload: {
+                        body: args,
+                        error: null
+                    }
+                }
             }
         };
     });
@@ -35,8 +40,28 @@ describe('Guardians', function () {
         assert.equal(ab, 'guardian.*')
     });
 
-    it('getSchemes', async function () {
-        const ab = await new Guardians().getSchemes();
+    it('getSchemesByOwner', async function () {
+        const ab = await new Guardians().getSchemesByOwner();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('getSchemesByUUID', async function () {
+        const ab = await new Guardians().getSchemesByUUID();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('getSchemaByMessage', async function () {
+        const ab = await new Guardians().getSchemaByMessage();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('getSchemaByEntity', async function () {
+        const ab = await new Guardians().getSchemaByEntity();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('getSchemaById', async function () {
+        const ab = await new Guardians().getSchemaById();
         assert.equal(ab, 'guardian.*')
     });
 
@@ -65,6 +90,21 @@ describe('Guardians', function () {
         assert.equal(ab, 'guardian.*')
     });
 
+    it('loadSchemaContext', async function () {
+        const ab = await new Guardians().loadSchemaContext();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('loadSchemaContexts', async function () {
+        const ab = await new Guardians().loadSchemaContexts();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('importSchema', async function () {
+        const ab = await new Guardians().importSchema();
+        assert.equal(ab, 'guardian.*')
+    });
+    
     it('setDidDocument', async function () {
         const ab = await new Guardians().setDidDocument();
         assert.equal(ab, 'guardian.*')
@@ -85,11 +125,11 @@ describe('Guardians', function () {
         assert.equal(ab, 'guardian.*')
     });
 
-    it('importSchemes', async function () {
-        const ab = await new Guardians().importSchemes();
+    it('importTokens', async function () {
+        const ab = await new Guardians().importTokens();
         assert.equal(ab, 'guardian.*')
     });
-
+    
     it('setToken', async function () {
         const ab = await new Guardians().setToken();
         assert.equal(ab, 'guardian.*')
@@ -117,6 +157,26 @@ describe('Guardians', function () {
 
     it('exportSchemes', async function () {
         const ab = await new Guardians().exportSchemes();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('publishSchema', async function () {
+        const ab = await new Guardians().publishSchema();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('unpublishedSchema', async function () {
+        const ab = await new Guardians().unpublishedSchema();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('deleteSchema', async function () {
+        const ab = await new Guardians().deleteSchema();
+        assert.equal(ab, 'guardian.*')
+    });
+
+    it('getSchemaPreview', async function () {
+        const ab = await new Guardians().getSchemaPreview();
         assert.equal(ab, 'guardian.*')
     });
 })
