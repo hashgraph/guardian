@@ -7,8 +7,8 @@ export class ModelHelper {
         if (!v2) {
             return 1;
         }
-        const v1parts = v1.split('.').map(e=>parseInt(e));
-        const v2parts = v2.split('.').map(e=>parseInt(e));
+        const v1parts = v1.split('.').map(e=>parseInt(e, 10));
+        const v2parts = v2.split('.').map(e=>parseInt(e, 10));
         for (let i = 0; i < v1parts.length; ++i) {
             if (v2parts.length == i) {
                 return 1;

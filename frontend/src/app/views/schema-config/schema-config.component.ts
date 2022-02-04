@@ -223,19 +223,19 @@ export class SchemaConfigComponent implements OnInit {
                 callbackIpfsImport: this.schemaPreview.bind(this)
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
-            if (result && result.schemes) {
-                this.schemaService.import(result.schemes).subscribe((data) => {
-                    this.setSchema(data);
-                    this.loading = false;
-                }, (e) => {
-                    this.loading = false;
-                });
-            }
-        });
+        // dialogRef.afterClosed().subscribe(async (result) => {
+        //     if (result && result.schemes) {
+        //         this.schemaService.import(result.schemes).subscribe((data) => {
+        //             this.setSchema(data);
+        //             this.loading = false;
+        //         }, (e) => {
+        //             this.loading = false;
+        //         });
+        //     }
+        // });
     }
 
-    schemaPreview(schema: string, topicId: string){
+    schemaPreview(schema: string, messageId: string){
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -246,7 +246,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.schemaService.topicImport(topicId).subscribe((data) => {
+                this.schemaService.importByMessage(messageId).subscribe((data) => {
                     this.setSchema(data);
                     this.loading = false;
                 }, (e) => {

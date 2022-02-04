@@ -447,7 +447,7 @@ export class Guardians {
      * 
      * @returns {any} Schema preview
      */
-    public async getSchemaPreview(messageId: string | string[]): Promise<any> {
+    public async getSchemaPreview(messageId: string | string[]): Promise<ISchema[]> {
         return await this.request(MessageAPI.PREVIEW_SCHEMA, messageId);
     }
 }

@@ -69,12 +69,12 @@ export class ImportSchemaDialog {
         return;
       }
 
-      const topicId = this.dataForm.get('timestamp')?.value;
+      const messageId = this.dataForm.get('timestamp')?.value;
 
-      this.schemaService.topicPreview(topicId)
+      this.schemaService.previewByMessage(messageId)
         .subscribe(schema => {
             this.dialogRef.close(null);
-            this.callbackIpfsImport(schema, topicId);
+            this.callbackIpfsImport(schema, messageId);
           });
     }
 

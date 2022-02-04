@@ -128,46 +128,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
     }
 });
 
-schemaAPI.put('/:schemaId/unpublish', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const user = req.user;
-        const guardians = new Guardians();
-        const schemaId = req.params.schemaId;
-        const schema = await guardians.getSchemaById(schemaId);
-        if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
-        }
-        if (schema.creator != user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
-        }
-        const schemes = (await guardians.unpublishedSchema(schemaId));
-        SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).json(schemes);
-    } catch (error) {
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
-
-// schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-//     try {
-//         const guardians = new Guardians();
-//         const newSchemes = req.body.schemes;
-//         newSchemes.forEach((s: ISchema) => {
-//             delete s.owner;
-//             delete s.id;
-//             delete s.status;
-//         });
-//         await guardians.importSchemes(newSchemes);
-//         const schemes = (await guardians.getSchemes(null));
-//         res.status(201).json(schemes);
-//     } catch (error) {
-//         res.status(500).json({ code: 500, message: error.message });
-//     }
-// });
-
-schemaAPI.post('/import/topic', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const messageId = req.body.messageId;
@@ -183,12 +144,12 @@ schemaAPI.post('/import/topic', permissionHelper(UserRole.ROOT_AUTHORITY), async
     }
 });
 
-schemaAPI.get('/import/preview/:messageId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/preview', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
-        const messageId = req.params.messageId;
+        const messageId = req.body.messageId;
         const schemaToPreview = await guardians.getSchemaPreview(messageId);
-        res.status(200).json(schemaToPreview);
+        res.status(200).json(schemaToPreview[0]);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
     }
@@ -208,3 +169,25 @@ schemaAPI.post('/export', permissionHelper(UserRole.ROOT_AUTHORITY), async (req:
         res.status(500).json({ code: 500, message: error.message });
     }
 });
+
+// schemaAPI.put('/:schemaId/unpublish', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+//     try {
+//         const user = req.user;
+//         const guardians = new Guardians();
+//         const schemaId = req.params.schemaId;
+//         const schema = await guardians.getSchemaById(schemaId);
+//         if (!schema) {
+//             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+//             return;
+//         }
+//         if (schema.creator != user.did) {
+//             res.status(500).json({ code: 500, message: 'Invalid creator.' });
+//             return;
+//         }
+//         const schemes = (await guardians.unpublishedSchema(schemaId));
+//         SchemaHelper.updatePermission(schemes, user.did);
+//         res.status(200).json(schemes);
+//     } catch (error) {
+//         res.status(500).json({ code: 500, message: error.message });
+//     }
+// });

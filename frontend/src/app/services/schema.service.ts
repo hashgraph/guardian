@@ -46,19 +46,15 @@ export class SchemaService {
     return this.http.delete<any[]>(`${this.url}/${id}`);
   }
 
-  public import(schemes: any[]): Observable<ISchema[]> {
-    return this.http.post<any[]>(`${this.url}/import`, { schemes });
-  }
-
   public export(ids: string[]): Observable<any[]> {
     return this.http.post<any[]>(`${this.url}/export`, { ids });
   }
 
-  public topicImport(messageId: string): Observable<any[]> {
-    return this.http.post<any[]>(`${this.url}/import/topic`, { messageId: messageId });
+  public importByMessage(messageId: string): Observable<ISchema[]> {
+    return this.http.post<any[]>(`${this.url}/import`, { messageId: messageId });
   }
 
-  public topicPreview(messageId: string): Observable<any> {
-    return this.http.get<any>(`${this.url}/import/preview/${messageId}`);
+  public previewByMessage(messageId: string): Observable<ISchema> {
+    return this.http.post<any>(`${this.url}/import/preview`, { messageId: messageId });
   }
 }
