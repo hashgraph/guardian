@@ -254,7 +254,9 @@ export class SchemaFormComponent implements OnInit {
     this.fileUploading = true;
     this.ipfs.addFile(file)
       .subscribe(res => {
-        control.patchValue(res.url);
+        control.patchValue(API_IPFS_GATEWAY_URL + res);
+        this.fileUploading = false;
+      }, error => {
         this.fileUploading = false;
       });
   }
