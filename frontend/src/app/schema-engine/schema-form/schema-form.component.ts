@@ -25,7 +25,8 @@ enum PlaceholderByFieldType {
   Email = "example@email.com",
   Number = "123",
   URL = "example.com",
-  String = "example string"
+  String = "example string",
+  IPFS = 'ipfs.io/ipfs/example-hash'
 }
 
 enum ErrorFieldMessageByFieldType {
@@ -75,6 +76,7 @@ export class SchemaFormComponent implements OnInit {
 
   options: FormGroup | undefined;
   fields: any[] | undefined = [];
+  fileUploading: boolean = false;
 
   @Output('change') change = new EventEmitter<Schema | null>();
   destroy$: Subject<boolean> = new Subject<boolean>();
@@ -249,9 +251,12 @@ export class SchemaFormComponent implements OnInit {
     if (!file) {
       return;
     }
-
+    this.fileUploading = true;
     this.ipfs.addFile(file)
-      .subscribe(res => control.patchValue(API_IPFS_GATEWAY_URL + res));
+      .subscribe(res => {
+        control.patchValue(res.url);
+        this.fileUploading = false;
+      });
   }
 
   GetInvalidMessageByFieldType(type: string, isArray: boolean = false): string {
@@ -283,7 +288,7 @@ export class SchemaFormComponent implements OnInit {
     }
   }
 
-  GetPlaceholderByFieldType(type: string): string {
+  GetPlaceholderByFieldType(type: string, pattern: string= ""): string {
     switch (type) {
       case 'email':
         return PlaceholderByFieldType.Email;
@@ -294,6 +299,10 @@ export class SchemaFormComponent implements OnInit {
       case 'integer':
         return PlaceholderByFieldType.Number;
       case 'url':
+        if (pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+')
+        {
+          return PlaceholderByFieldType.IPFS;
+        }
         return PlaceholderByFieldType.URL;
       case 'string':
         return PlaceholderByFieldType.String;
