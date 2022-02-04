@@ -560,13 +560,13 @@ export class HederaSDKHelper {
     }
 
     /**
-    * Submit message to the topic (TopicMessageSubmitTransaction)
-    * 
-    * @param topicId Topic identifier
-    * @param message Message to publish
-    * 
-    * @returns Message timestamp
-    */
+     * Submit message to the topic (TopicMessageSubmitTransaction)
+     * 
+     * @param topicId Topic identifier
+     * @param message Message to publish
+     * 
+     * @returns Message timestamp
+     */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async submitMessage(topicId: string, message: string): Promise<string> {
         const client = this.client;
@@ -577,6 +577,6 @@ export class HederaSDKHelper {
 
         const rec = await messageTransaction.getRecord(client);
 
-        return (rec.consensusTimestamp.seconds.toString() + '.' +  ('000000000' + rec.consensusTimestamp.nanos.toString()).slice(-9));
+        return (rec.consensusTimestamp.seconds.toString() + '.' + ('000000000' + rec.consensusTimestamp.nanos.toString()).slice(-9));
     }
 }
