@@ -86,7 +86,8 @@ export class SendToGuardianBlock {
                     type: ref.options.entityType,
                     policyId: ref.policyId,
                     tag: ref.tag,
-                    option: document.option
+                    option: document.option,
+                    schema: document.schema
                 };
             }
             case 'approve': {

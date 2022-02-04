@@ -29,7 +29,14 @@ export class IPFS {
      * @returns {string} - hash
      */
     public static async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {
-        return (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
+        const res = (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
+        if (!res) {
+            throw new Error('Invalid response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+        return res.body;
     }
 
     /**

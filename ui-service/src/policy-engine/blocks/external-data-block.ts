@@ -41,7 +41,8 @@ export class ExternalDataBlock {
             status: DocumentStatus.NEW,
             signature: signature,
             policyId: ref.policyId,
-            type: ref.options.entityType
+            type: ref.options.entityType,
+            schema: ref.options.schema
         };
         ref.runNext(null, { data: doc }).then(
             function () { },

@@ -158,7 +158,7 @@ export class SchemaConfigurationComponent implements OnInit {
         };
         this.schemaTypeMap["11"] = {
             type: 'string',
-            format: 'url',
+            format: undefined,
             pattern: '^((https):\/\/)?ipfs.io\/ipfs\/.+',
             isRef: false
         };

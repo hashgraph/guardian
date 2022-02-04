@@ -89,7 +89,6 @@ export class RequestVcDocumentBlock {
             credentialSubject.ref = documentRef;
         }
         credentialSubject.policyId = ref.policyId;
-
         const res = await this.vcHelper.verifySubject(credentialSubject);
         if (!res.ok) {
             throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
@@ -100,6 +99,7 @@ export class RequestVcDocumentBlock {
             hash: vc.toCredentialHash(),
             owner: userFull.did,
             document: vc.toJsonTree(),
+            schema: schema,
             type: schema
         };
 

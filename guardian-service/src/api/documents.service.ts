@@ -121,11 +121,7 @@ export const documentsAPI = async function (
                 reqObj.where['policyId'] = { $eq: policyId }
             }
             if (schema) {
-                if (schema.startsWith('#')) {
-                    reqObj.where['document.credentialSubject.type'] = { $eq: schema.substr(1) }
-                } else {
-                    reqObj.where['document.credentialSubject.type'] = { $eq: schema }
-                }
+                reqObj.where['schema'] = { $eq: schema }
             }
             if (typeof reqObj.where !== 'object') {
                 reqObj.where = {};

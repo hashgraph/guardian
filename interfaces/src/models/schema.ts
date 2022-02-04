@@ -34,6 +34,7 @@ export class Schema implements ISchema {
     private userDID: string;
 
     constructor(schema?: ISchema) {
+        this.userDID = null;
         if (schema) {
             this.id = schema.id || undefined;
             this.uuid = schema.uuid || ModelHelper.randomUUID();
@@ -79,7 +80,6 @@ export class Schema implements ISchema {
             this.contextURL = "";
             this.iri = "";
         }
-        this.userDID = null;
         if (this.document) {
             this.parseDocument();
         }

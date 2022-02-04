@@ -96,7 +96,7 @@ export class SchemaFormComponent implements OnInit {
     } else if (this.schema) {
       this.context = {
         type: this.schema.type,
-        context: this.schema.contextURL
+        context: [this.schema.contextURL]
       };
       this.update(this.schema.fields);
       return;
