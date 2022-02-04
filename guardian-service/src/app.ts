@@ -78,7 +78,7 @@ Promise.all([
     await schemaAPI(channel, schemaRepository, configRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await rootAuthorityAPI(channel, configRepository, didDocumentRepository, vcDocumentRepository);
+    await rootAuthorityAPI(channel, configRepository);
     await documentsAPI(
         channel,
         didDocumentRepository,
