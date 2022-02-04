@@ -49,7 +49,7 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
 
         console.log(JSON.stringify(policyToImport, null, 4));
 
-        const policies = await PolicyImportExportHelper.importPolicy(policyToImport, req.user.did);
+        const policies = await PolicyImportExportHelper.importPolicy(policyToImport, req.user.did, messageId);
         res.status(201).json(policies);
     } catch (e) {
         res.status(500).send({ code: 500, message: e.message });

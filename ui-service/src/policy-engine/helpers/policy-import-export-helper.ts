@@ -14,16 +14,20 @@ export namespace PolicyImportExportHelper {
      * @returns Zip file
      */
     export async function generateZipFile(policy: Policy): Promise<JSZip> {
+        const policyObject = {...policy};
+        delete policyObject.id;
+        delete policyObject.messageId;
+        delete policyObject.registeredUsers;
+        delete policyObject.status;
         const guardians = new Guardians();
-        const tokenIds = findAllEntities(policy.config, 'tokenId');
+        const tokenIds = findAllEntities(policyObject.config, 'tokenId');
         const tokens = await guardians.getTokens({ ids: tokenIds });
         const zip = new JSZip();
         zip.folder('tokens')
         for (let token of tokens) {
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
         }
-        zip.file(`policy.json`, JSON.stringify(policy));
-
+        zip.file(`policy.json`, JSON.stringify(policyObject));
         return zip;
     }
 
@@ -59,7 +63,7 @@ export namespace PolicyImportExportHelper {
      * @returns Policies by owner  
      */
 
-    export async function importPolicy(policyToImport: any, policyOwner: string): Promise<Policy[]> {
+    export async function importPolicy(policyToImport: any, policyOwner: string, messageId:string): Promise<Policy[]> {
         const { policy, tokens } = policyToImport;
         const guardians = new Guardians();
 
@@ -94,6 +98,7 @@ export namespace PolicyImportExportHelper {
         delete policy.id;
         policy.creator = policy.owner;
         policy.owner = policyOwner;
+        policy.messageId = messageId;
 
         const policyGenerator = new BlockTreeGenerator();
         const errors = await policyGenerator.validate(policy);

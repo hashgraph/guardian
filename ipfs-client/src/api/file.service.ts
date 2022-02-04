@@ -2,6 +2,7 @@ import { MessageAPI } from 'interfaces';
 import { NFTStorage } from 'nft.storage';
 import Blob from 'cross-blob';
 import axios, { ResponseType } from 'axios';
+import axiosRetry from 'axios-retry';
 
 
 export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
@@ -54,11 +55,16 @@ export const fileAPI = async function (
      */
     channel.response(MessageAPI.IPFS_GET_FILE, async (msg, res) => {
         try {
+            axiosRetry(axios, { retries: 2, 
+                shouldResetTimeout: true,
+                retryCondition: (error) => true
+            });
+
             if (!msg.payload || !msg.payload.cid || !msg.payload.responseType) {
                 throw 'Invalid cid';
             }
 
-            const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: 'arraybuffer' });
+            const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: 'arraybuffer', timeout: 10000 });
             switch (msg.payload.responseType) {
                 case 'str':
                     res.send({ body: Buffer.from(fileRes.data, 'binary').toString() });

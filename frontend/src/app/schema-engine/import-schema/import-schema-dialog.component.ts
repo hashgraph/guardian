@@ -13,14 +13,14 @@ import { SchemaService } from 'src/app/services/schema.service';
     styleUrls: ['./import-schema-dialog.component.css']
 })
 export class ImportSchemaDialog {
-    schemes: any[];
     valid: boolean = false;
     newSchemes!: any;
     importType?: ImportType;
     dataForm = this.fb.group({
       timestamp: ['']
     });
-    callbackIpfsImport: any
+    callbackIpfsImport: any;
+    loading: boolean = false;
 
     private _isimportTypeSelected$ = new ReplaySubject<boolean>(1);
 
@@ -30,7 +30,6 @@ export class ImportSchemaDialog {
         private schemaService: SchemaService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
-        this.schemes = data.schemes || [];
         this._isimportTypeSelected$.next(false);
     }
 
@@ -69,12 +68,15 @@ export class ImportSchemaDialog {
         return;
       }
 
+      this.loading = true;
       const messageId = this.dataForm.get('timestamp')?.value;
 
       this.schemaService.previewByMessage(messageId)
         .subscribe(schema => {
-            this.dialogRef.close(null);
-            this.callbackIpfsImport(schema, messageId);
+             this.dialogRef.close(null);
+             this.callbackIpfsImport(schema, messageId);
+          }, error => {
+              this.loading = false;
           });
     }
 

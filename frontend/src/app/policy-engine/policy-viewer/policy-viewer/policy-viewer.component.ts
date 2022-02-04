@@ -271,14 +271,13 @@ export class PolicyViewerComponent implements OnInit {
             autoFocus: false
         });
         dialogRef.afterClosed().subscribe(async (result) => {
-            if (result && result.policy) {
-                this.importPolicyDetails(result);
+            if (result && result.policy && result.messageId) {
+                this.importPolicyDetails(result.policy, result.messageId);
             }
         });
     }
 
-    importPolicyDetails(result: any) {
-        const { policy, messageId } = result;
+    importPolicyDetails(policy: any, messageId: string = "") {
         const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
