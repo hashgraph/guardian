@@ -50,7 +50,6 @@
   "private": true,
   "scripts": {
     "build": "ng build",
-    "build:deploy": "ng build --output-path ../www-data",
     "ng": "ng",
     "start": "ng serve --proxy-config ./proxy.conf.json",
     "test": "ng test",

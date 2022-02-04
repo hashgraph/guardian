@@ -5,47 +5,65 @@ services:
     restart: always
     expose:
       - 27017
+
+  api-docs:
+    build:
+      context: .
+      dockerfile: ./api-docs/Dockerfile
+    expose:
+      - 3001
+
   message-broker:
     build:
       context: .
       dockerfile: ./message-broker/Dockerfile
-    ports:
-      - 3003:3003
     expose:
       - 7500
+      - 3003
+
   ui-service:
     build:
       context: .
       dockerfile: ./ui-service/Dockerfile
-    ports:
-      - 3002:3002
+    expose:
+      - 3002
     depends_on:
       - mongo
       - message-broker
       - guardian-service
+
   guardian-service:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
-    #    ports:
-    #      - 3004:3004
     depends_on:
       - mongo
       - message-broker
+
   ipfs-client:
     build:
       context: .
       dockerfile: ./ipfs-client/Dockerfile
-    #    ports:
-    #      - 3006:3006
     depends_on:
       - message-broker
+
   mrv-sender:
     build:
       context: .
       dockerfile: ./mrv-sender/Dockerfile
+    expose:
+      - 3005
+
+  web-proxy:
+    build:
+      context: .
+      dockerfile: ./web-proxy/Dockerfile
     ports:
-      - 3005:3005
+      - "8080:80"
+    depends_on:
+      - ui-service
+      - api-docs
+      - mrv-sender
 volumes:
   mongo:
   # volume-guardian-service:

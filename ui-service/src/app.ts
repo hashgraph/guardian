@@ -2,7 +2,6 @@ import {fixtures} from '@api/fixtures';
 import {
     accountAPI,
     trustchainsAPI,
-    frontendService,
     demoAPI,
     profileAPI,
     schemaAPI,
@@ -18,14 +17,12 @@ import FastMQ from 'fastmq';
 import {createServer} from 'http';
 import {createConnection, getMongoRepository} from 'typeorm';
 import WebSocket from 'ws';
-import {authorizationHelper} from './auth/authorizationHelper';
+import {authorizationHelper} from '@auth/authorizationHelper';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
-import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
 import { IPFS } from '@helpers/ipfs';
 
 const PORT = process.env.PORT || 3002;
-const API_VERSION = 'v1';
 
 Promise.all([
     createConnection({
@@ -80,18 +77,16 @@ Promise.all([
     ////////////////////////////////////////
 
     // Config routes
-    app.use(`/api/${API_VERSION}/policies`, authorizationHelper, policyGenerator.getRouter());
-    app.use(`/api/${API_VERSION}/policies`, authorizationHelper, importExportAPI);
-    app.use(`/api/${API_VERSION}/accounts/`, accountAPI);
-    app.use(`/api/${API_VERSION}/profile/`, authorizationHelper, profileAPI);
-    app.use(`/api/${API_VERSION}/schemas`, authorizationHelper, schemaAPI);
-    app.use(`/api/${API_VERSION}/tokens`, authorizationHelper, tokenAPI);
-    app.use(`/api/${API_VERSION}/trustchains/`, authorizationHelper, trustchainsAPI);
-    app.use(`/api/${API_VERSION}/external/`, externalAPI);
-    app.use(`/api/${API_VERSION}/demo/`, demoAPI);
-    app.use(`/api/${API_VERSION}/ipfs`, authorizationHelper, ipfsAPI);
-    app.use(`/api-docs/${API_VERSION}`, swaggerAPI);
-    app.use('/', frontendService);
+    app.use('/policies', authorizationHelper, policyGenerator.getRouter());
+    app.use('/policies', authorizationHelper, importExportAPI);
+    app.use('/accounts/', accountAPI);
+    app.use('/profile/', authorizationHelper, profileAPI);
+    app.use('/schemas', authorizationHelper, schemaAPI);
+    app.use('/tokens', authorizationHelper, tokenAPI);
+    app.use('/trustchains/', authorizationHelper, trustchainsAPI);
+    app.use('/external/', externalAPI);
+    app.use('/demo/', demoAPI);
+    app.use('/ipfs', authorizationHelper, ipfsAPI);
     /////////////////////////////////////////
 
     server.listen(PORT, () => {

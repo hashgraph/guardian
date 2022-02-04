@@ -16,16 +16,6 @@ RUN npm install
 ADD ./interfaces/src ./src/.
 RUN npm run build
 
-WORKDIR /usr/frontend
-COPY ./frontend/package*.json ./
-COPY ./frontend/tsconfig.json ./
-COPY ./frontend/tsconfig.app.json ./
-RUN npm install
-COPY ./frontend/angular.json ./
-COPY ./frontend/index.html ./
-ADD ./frontend/src ./src/.
-RUN npm run build:deploy
-
 WORKDIR /usr/ui-service
 COPY ./ui-service/package*.json ./
 COPY ./ui-service/tsconfig.json ./
