@@ -1,10 +1,15 @@
 const { expect, assert } = require('chai');
 const { trustChainAPI } = require('../dist/api/trust-chain.service');
-const { createChannel, createTable } = require('./helper');
 const { did_document } = require('./dump/did_document');
 const { vc_document } = require('./dump/vc_document');
 const { vp_document } = require('./dump/vp_document');
 const { testObject1, testObject2, testObject3 } = require('./mockup/trust-chain.service');
+const { 
+    createChannel, 
+    createTable, 
+    checkMessage, 
+    checkError 
+} = require('./helper');
 
 describe('Trust Chain service', function () {
     let service, channel;
@@ -70,22 +75,22 @@ describe('Trust Chain service', function () {
     it('Test GET_CHAIN', async function () {
         let value;
         value = await channel.run(GET_CHAIN, '5d46d1fd-75ad-4073-ade7-322d6f31374c');
-        assert.deepEqual(value, testObject1);
+        checkMessage(value, testObject1);
 
         value = await channel.run(GET_CHAIN, '0123583c-ce26-407e-a079-8b72c2fe435c');
-        assert.deepEqual(value, testObject2);
+        checkMessage(value, testObject2);
 
         value = await channel.run(GET_CHAIN, '6i28MnZRhBjw7gjCn3VFeFtEZ3h6CJcrHPpmybvjsHXB');
-        assert.deepEqual(value, testObject3);
+        checkMessage(value, testObject3);
 
         testObject1[0].label= 'HASH';
         testObject1[0].id= '6FNz1t4eHNDncM1zn6J8djJLPnjuhQq3hp6EmcF1ictB';
         value = await channel.run(GET_CHAIN, '6FNz1t4eHNDncM1zn6J8djJLPnjuhQq3hp6EmcF1ictB');
-        assert.deepEqual(value, testObject1);
+        checkMessage(value, testObject1);
 
         testObject2[0].label= 'HASH';
         testObject2[0].id= '5LDizXoaXcqYmdbGUfsRrzf5PpgWmiUuarmTNgTxAYyU';
         value = await channel.run(GET_CHAIN, '5LDizXoaXcqYmdbGUfsRrzf5PpgWmiUuarmTNgTxAYyU');
-        assert.deepEqual(value, testObject2);
+        checkMessage(value, testObject2);
     });
 });

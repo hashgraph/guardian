@@ -1,15 +1,25 @@
 import { Schema } from '@entity/schema';
-import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, ISchemaSubmitMessage, ModelActionType, SchemaHelper, MessageResponse, MessageError } from 'interfaces';
+import { RootConfig } from '@entity/root-config';
+import { 
+    ISchema, 
+    MessageAPI, 
+    SchemaEntity, 
+    SchemaStatus, 
+    ISchemaSubmitMessage, 
+    ModelActionType, 
+    SchemaHelper, 
+    MessageResponse, 
+    MessageError 
+} from 'interfaces';
 import { MongoRepository } from 'typeorm';
-import { readJSON, writeJSON, readdirSync } from 'fs-extra';
+import { readJSON } from 'fs-extra';
 import path from 'path';
 import { Blob } from 'buffer';
 import { HederaHelper, HederaMirrorNodeHelper } from 'vc-modules';
-import { RootConfig } from '@entity/root-config';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
 
-const schemaCache = {};
+export const schemaCache = {};
 
 /**
  * Creation of default schemes.
@@ -226,7 +236,7 @@ export const schemaAPI = async function (
             }
 
             const schemes = await schemaRepository.find({
-                where: { messageId: { $in: messageIds } }
+                where: { messageId: { $in: ids } }
             });
             const map = {};
             for (let i = 0; i < schemes.length; i++) {
@@ -235,8 +245,8 @@ export const schemaAPI = async function (
             }
 
             const result = [];
-            for (let i = 0; i < messageIds.length; i++) {
-                const messageId = messageIds[i];
+            for (let i = 0; i < ids.length; i++) {
+                const messageId = ids[i];
                 if (map[messageId]) {
                     result.push(map[messageId]);
                 } else {
@@ -288,7 +298,6 @@ export const schemaAPI = async function (
             for (let i = 0; i < messageIds.length; i++) {
                 const messageId = messageIds[i];
                 if (map[messageId]) {
-
                     result.push(map[messageId]);
                 } else {
                     map[messageId] = await loadSchema(messageId, null);

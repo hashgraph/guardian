@@ -1,6 +1,11 @@
 const { expect, assert } = require('chai');
 const { documentsAPI } = require('../dist/api/documents.service');
-const { createChannel, createTable } = require('./helper');
+const { 
+    createChannel, 
+    createTable, 
+    checkMessage, 
+    checkError 
+} = require('./helper');
 
 describe('Documents service', function () {
     let channel;
@@ -45,12 +50,12 @@ describe('Documents service', function () {
 
     it('Test GET_DID_DOCUMENTS', async function () {
         let value = await channel.run(GET_DID_DOCUMENTS, { did: 'did' });
-        assert.deepEqual(value, { where: { did: { $eq: 'did' } } });
+        checkMessage(value, { where: { did: { $eq: 'did' } } });
     });
 
     it('Test GET_VC_DOCUMENTS', async function () {
         let value = await channel.run(GET_VC_DOCUMENTS, null);
-        assert.equal(value, null);
+        checkMessage(value, null);
 
         value = await channel.run(GET_VC_DOCUMENTS, {
             type: 'type',
@@ -60,7 +65,7 @@ describe('Documents service', function () {
             hash: 'hash',
             policyId: 'policyId',
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'where': {
                 'document.id': {
                     '$eq': 'id'
@@ -90,7 +95,7 @@ describe('Documents service', function () {
             field1: 'field1',
             field2: 'field2'
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             '_id': '1',
             'did': 'did',
             'field1': 'field1',
@@ -103,7 +108,7 @@ describe('Documents service', function () {
             field1: 'field1',
             field2: 'field2'
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'status': 'NEW',
             'where': {
                 'did': {
@@ -116,7 +121,7 @@ describe('Documents service', function () {
             did: 'did',
             operation: 'create',
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'status': 'CREATE', 'where': { 'did': { '$eq': 'did' } }
         });
 
@@ -124,7 +129,7 @@ describe('Documents service', function () {
             did: 'did',
             operation: 'delete',
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'status': 'DELETE', 'where': { 'did': { '$eq': 'did' } }
         });
 
@@ -132,7 +137,7 @@ describe('Documents service', function () {
             did: 'did',
             operation: 'update',
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'status': 'UPDATE', 'where': { 'did': { '$eq': 'did' } }
         });
     });
@@ -144,8 +149,7 @@ describe('Documents service', function () {
                 field2: 'field2'
             }
         });
-        console.log(value)
-        assert.deepEqual(value, {
+        checkMessage(value, {
             '_id': '1',
             document: {
                 field1: 'field1',
@@ -162,7 +166,7 @@ describe('Documents service', function () {
                 field2: 'field2'
             }
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'signature': 2,
             'hederaStatus': 'NEW',
             'where': {
@@ -176,7 +180,7 @@ describe('Documents service', function () {
             hash: 'hash',
             operation: 'issue',
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'signature': 2,
             'hederaStatus': 'ISSUE',
             'where': { 'hash': { '$eq': 'hash' } }
@@ -187,7 +191,7 @@ describe('Documents service', function () {
             hash: 'hash',
             operation: 'revoke',
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'signature': 2,
             'hederaStatus': 'REVOKE',
             'where': { 'hash': { '$eq': 'hash' } }
@@ -197,7 +201,7 @@ describe('Documents service', function () {
             hash: 'hash',
             operation: 'suspend',
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'signature': 2,
             'hederaStatus': 'SUSPEND',
             'where': { 'hash': { '$eq': 'hash' } }
@@ -207,7 +211,7 @@ describe('Documents service', function () {
             hash: 'hash',
             operation: 'resume',
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             'signature': 2,
             'hederaStatus': 'RESUME',
             'where': { 'hash': { '$eq': 'hash' } }
@@ -221,7 +225,7 @@ describe('Documents service', function () {
                 field2: 'field2'
             }
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             '_id': '1',
             document: {
                 field1: 'field1',
@@ -232,12 +236,12 @@ describe('Documents service', function () {
 
     it('Test GET_VP_DOCUMENTS', async function () {
         let value = await channel.run(GET_VP_DOCUMENTS, null);
-        assert.equal(value, null);
+        checkMessage(value, null);
 
         value = await channel.run(GET_VP_DOCUMENTS, {
             issuer: 'issuer',
             id: 'id',
         });
-        assert.deepEqual(value, [{ issuer: 'issuer', id: 'id' }]);
+        checkMessage(value, [{ issuer: 'issuer', id: 'id' }]);
     });
 });
