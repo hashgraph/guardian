@@ -48,12 +48,15 @@ export class Guardians {
     public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
         try {
             const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
+            if (!response) {
+                throw 'Server is not available';
+            }
             if (response.error) {
                 throw response.error;
             }
             return response.body;
         } catch (e) {
-            throw new Error(`Guardian send error ${entity} ` + e.message);
+            throw new Error(`Guardian (${entity}) send: ` + e);
         }
     }
 

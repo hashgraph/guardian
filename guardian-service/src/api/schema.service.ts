@@ -9,11 +9,17 @@ import {
     MessageResponse, 
     MessageError 
 } from 'interfaces';
+import { 
+    HederaHelper, 
+    HederaMirrorNodeHelper, 
+    HederaSenderHelper, 
+    ISchemaSubmitMessage, 
+    ModelActionType 
+} from 'vc-modules';
 import { MongoRepository } from 'typeorm';
 import { readJSON } from 'fs-extra';
 import path from 'path';
 import { Blob } from 'buffer';
-import { HederaHelper, HederaMirrorNodeHelper, HederaSenderHelper, ISchemaSubmitMessage, ModelActionType } from 'vc-modules';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
 

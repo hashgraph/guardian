@@ -14,9 +14,7 @@ import { MongoRepository } from 'typeorm';
  */
 export const rootAuthorityAPI = async function (
     channel: any,
-    configRepository: MongoRepository<RootConfig>,
-    didDocumentRepository: MongoRepository<DidDocument>,
-    vcDocumentRepository: MongoRepository<VcDocument>
+    configRepository: MongoRepository<RootConfig>
 ) {
     /**
      * Return Address books, VC Document and DID Document
@@ -28,7 +26,7 @@ export const rootAuthorityAPI = async function (
     channel.response(MessageAPI.GET_ROOT_CONFIG, async (msg, res) => {
         const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload } } });
         if (!rootConfig) {
-            res.send(new MessageError('Root not found'));
+            res.send(new MessageResponse(null));
             return;
         }
         res.send(new MessageResponse(rootConfig));
@@ -63,7 +61,7 @@ export const rootAuthorityAPI = async function (
         
         const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload.owner } } });
         if (!rootConfig) {
-            res.send(new MessageError('Root not found'));
+            res.send(new MessageResponse(null));
             return;
         }
         const config: IAddressBookConfig = {
