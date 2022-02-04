@@ -14,8 +14,8 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { IPolicySubmitMessage, ISubmitModelMessage, ModelActionType, ModelHelper, SchemaEntity, SchemaHelper, UserRole } from 'interfaces';
-import { HederaHelper } from 'vc-modules';
+import { ModelHelper, SchemaEntity, SchemaHelper, UserRole } from 'interfaces';
+import { HederaHelper, HederaSenderHelper, IPolicySubmitMessage, ModelActionType } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -429,8 +429,7 @@ export class BlockTreeGenerator {
                         uuid: model.uuid,
                         operation: ModelActionType.PUBLISH
                     }
-                    const messageId = await hederaHelper
-                        .submitMessage(model.topicId, JSON.stringify(publishPolicyMessage));
+                    const messageId = await HederaSenderHelper.SubmitPolicyMessage(hederaHelper, model.topicId, publishPolicyMessage);
                     model.messageId = messageId;
 
                     const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);  

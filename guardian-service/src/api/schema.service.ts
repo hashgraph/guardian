@@ -4,9 +4,7 @@ import {
     ISchema, 
     MessageAPI, 
     SchemaEntity, 
-    SchemaStatus, 
-    ISchemaSubmitMessage, 
-    ModelActionType, 
+    SchemaStatus,
     SchemaHelper, 
     MessageResponse, 
     MessageError 
@@ -15,7 +13,7 @@ import { MongoRepository } from 'typeorm';
 import { readJSON } from 'fs-extra';
 import path from 'path';
 import { Blob } from 'buffer';
-import { HederaHelper, HederaMirrorNodeHelper } from 'vc-modules';
+import { HederaHelper, HederaMirrorNodeHelper, HederaSenderHelper, ISchemaSubmitMessage, ModelActionType } from 'vc-modules';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
 
@@ -82,31 +80,30 @@ const loadSchema = async function (messageId: string, owner: string) {
         return schemaCache[messageId];
     }
     console.log("loadSchema: " + messageId);
-    const { topicId, message } = await HederaMirrorNodeHelper.getTopicMessage(messageId);
+    const { topicId, message } = await HederaMirrorNodeHelper.getSchemaTopicMessage(messageId);
     console.log("loadSchema message");
-    const topicMessage = JSON.parse(message) as ISchemaSubmitMessage;
-    console.log("loadSchema ipfs " + topicMessage.document_cid);
-    const documentObject = await IPFS.getFile(topicMessage.document_cid, "str") as string;
-    console.log("loadSchema ipfs " + topicMessage.context_cid);
-    const contextObject = await IPFS.getFile(topicMessage.context_cid, "str") as string;
+    console.log("loadSchema ipfs " + message.document_cid);
+    const documentObject = await IPFS.getFile(message.document_cid, "str") as string;
+    console.log("loadSchema ipfs " + message.context_cid);
+    const contextObject = await IPFS.getFile(message.context_cid, "str") as string;
     console.log("loadSchema files");
     const schemaToImport: any = {
-        uuid: topicMessage.uuid,
+        uuid: message.uuid,
         hash: "",
-        name: topicMessage.name,
-        description: topicMessage.description,
-        entity: topicMessage.entity as SchemaEntity,
+        name: message.name,
+        description: message.description,
+        entity: message.entity as SchemaEntity,
         status: SchemaStatus.PUBLISHED,
         readonly: false,
         document: documentObject,
         context: contextObject,
-        version: topicMessage.version,
-        creator: topicMessage.owner,
+        version: message.version,
+        creator: message.owner,
         owner: owner,
         topicId: topicId,
         messageId: messageId,
-        documentURL: topicMessage.document_url,
-        contextURL: topicMessage.context_url,
+        documentURL: message.document_url,
+        contextURL: message.context_url,
         iri: null
     }
     updateIRI(schemaToImport);
@@ -427,9 +424,9 @@ export const schemaAPI = async function (
                     return;
                 }
 
-                const messageId = await HederaHelper
-                    .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-                    .submitMessage(process.env.SCHEMA_TOPIC_ID, JSON.stringify(schemaPublishMessage));
+                const hederaHelper = HederaHelper
+                    .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK;
+                const messageId = await HederaSenderHelper.SubmitSchemaMessage(hederaHelper, process.env.SCHEMA_TOPIC_ID, schemaPublishMessage);
 
                 item.messageId = messageId;
 
@@ -512,7 +509,7 @@ export const schemaAPI = async function (
                     messageId: schema.messageId
                 }
             });
-            res.send(new MessageResponse({ body: schemasToExport }));
+            res.send(new MessageResponse(schemasToExport));
         } catch (error) {
             res.send(new MessageError(error));
         }

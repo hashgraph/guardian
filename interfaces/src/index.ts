@@ -28,9 +28,6 @@ export { SchemaStatus } from './type/schema-status.type';
 export { ISchemaDocument } from './interface/schema-document.interface';
 export { SchemaField } from './interface/schema-field.interface';
 export { ModelHelper } from './helpers/model-helper'
-export { ISubmitModelMessage, ModelActionType } from './interface/submit-model-message.interface';
-export { ISchemaSubmitMessage } from './interface/schema-submit-message.interface';
 export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';
-export { IPolicySubmitMessage } from './interface/policy-submit-message.interface';
 export { IMessageResponse, MessageResponse, MessageError, Response } from './models/message-response';

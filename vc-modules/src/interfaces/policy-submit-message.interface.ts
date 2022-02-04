@@ -1,4 +1,4 @@
-import { ISubmitModelMessage } from "..";
+import { ISubmitModelMessage } from "./submit-model-message.interface";
 
 export interface IPolicySubmitMessage extends ISubmitModelMessage {
     uuid: string,

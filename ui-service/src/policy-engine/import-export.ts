@@ -7,7 +7,6 @@ import { Guardians } from '@helpers/guardians';
 import { findAllEntities } from '@helpers/utils';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { HederaMirrorNodeHelper } from 'vc-modules';
-import { IPolicySubmitMessage, ISubmitModelMessage } from 'interfaces';
 import { IPFS } from '@helpers/ipfs';
 
 export const importExportAPI = Router();
@@ -42,8 +41,8 @@ importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response)
             throw new Error('Policy already exists');
         }
 
-        const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId);
-        const message = JSON.parse(topicMessage.message) as IPolicySubmitMessage;
+        const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
+        const message = topicMessage.message;
         const zip = await ipfsHelper.getFile(message.cid, "raw");
         const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
 
@@ -61,8 +60,8 @@ importExportAPI.post('/import/preview', async (req: AuthenticatedRequest, res: R
         const ipfsHelper = new IPFS();
         const guardians = new Guardians();
         const messageId = req.body.messageId;
-        const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId);
-        const message = JSON.parse(topicMessage.message) as IPolicySubmitMessage;
+        const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
+        const message = topicMessage.message;
         const zip = await ipfsHelper.getFile(message.cid, "raw");
         const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
 

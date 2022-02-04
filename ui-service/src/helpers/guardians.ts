@@ -7,7 +7,6 @@ import {
     IMessageResponse,
     IRootConfig,
     ISchema,
-    ISchemaSubmitMessage,
     IToken,
     IVCDocument,
     IVPDocument,
