@@ -1,5 +1,5 @@
 import axios from "axios";
-import { HederaHelper } from "..";
+import { HederaHelper, ISubmitModelMessage } from "..";
 import { IPolicySubmitMessage } from "../interfaces/policy-submit-message.interface";
 import { ISchemaSubmitMessage } from "../interfaces/schema-submit-message.interface";
 
@@ -111,12 +111,42 @@ export class HederaMirrorNodeHelper {
     }
 
     /**
+     * Validate basic message fields
+     * 
+     * @param message Message
+     * @returns Validation flag
+     */
+    private static validateBasicMessageFields (message: ISubmitModelMessage): boolean {
+        if (!message.name) {
+            return false;
+        }
+
+        if (!message.operation) {
+            return false;
+        }
+
+        if (!message.owner) {
+            return false;
+        }
+
+        if (!message.version) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Validate policy message fields
      * 
      * @param message Policy submit message
      * @returns Validation flag
      */
     private static validatePolicyMessageFields (message : IPolicySubmitMessage): boolean {
+        if (!this.validateBasicMessageFields(message)) {
+            return false;
+        }
+
         if (!message.cid) {
             return false;
         }
@@ -143,6 +173,10 @@ export class HederaMirrorNodeHelper {
      * @returns Validation flag
      */
     private static  validateSchemaMessageFields (message : ISchemaSubmitMessage): boolean {
+        if (!this.validateBasicMessageFields(message)) {
+            return false;
+        }
+
         if (!message.context_cid) {
             return false;
         }
