@@ -55,16 +55,18 @@ export const fileAPI = async function (
      */
     channel.response(MessageAPI.IPFS_GET_FILE, async (msg, res) => {
         try {
-            axiosRetry(axios, { retries: 2, 
+            axiosRetry(axios, { retries: 3, 
                 shouldResetTimeout: true,
-                retryCondition: (error) => true
+                retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error)
+                    || error.code === 'ECONNABORTED',
+                retryDelay: (retryCount) => 10000
             });
 
             if (!msg.payload || !msg.payload.cid || !msg.payload.responseType) {
                 throw 'Invalid cid';
             }
 
-            const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: 'arraybuffer', timeout: 10000 });
+            const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
             switch (msg.payload.responseType) {
                 case 'str':
                     res.send({ body: Buffer.from(fileRes.data, 'binary').toString() });
