@@ -271,13 +271,13 @@ export class PolicyViewerComponent implements OnInit {
           autoFocus: false
       });
       dialogRef.afterClosed().subscribe(async (result) => {
-          if (result && result.policy) {
-            this.importPolicyDetails(result.policy);
+          if (result && result.policy && result.messageId) {
+            this.importPolicyDetails(result.policy, result.messageId);
           }
       });
   }
 
-    importPolicyDetails(policy: any) {
+    importPolicyDetails(policy: any, messageId: string = "") {
         const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -288,7 +288,7 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.topicImport(policy.policy.messageId).subscribe((policies) => {
+                this.policyEngineService.topicImport(messageId).subscribe((policies) => {
                     this.updatePolicy(policies);
                     setTimeout(() => {
                         this.loading = false;

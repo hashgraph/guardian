@@ -2,41 +2,48 @@
     <h1 mat-dialog-title>{{getDialogTitle()}}</h1>
     <div mat-dialog-content class="content">
         <ng-template [ngIf]="importType===0">
-          <div>
-              <div class="load-file">
-                  <input type="file" name="file" id="file" class="input-file" (change)="onFileInput($event)">
-                  <label for="file" class="input-file-label">
-                      <mat-icon>file_upload</mat-icon>
-                      <span>Load Schemes</span>
-                  </label>
-              </div>
-          </div>
-          <div *ngIf="newSchemes" class="types">
-              <div class="types-header">
-                  Schemes:
-              </div>
-              <div class="types-body">
-                  <div *ngFor="let item of newSchemes" [title]="getTitle(item)">
-                      <div>{{item.uuid}} {{item.name}} ({{item.entity}})</div>
-                  </div>
-              </div>
-          </div>
-          <div mat-dialog-actions>
-              <button mat-raised-button color="primary" [disabled]="!valid" (click)="onSubmit()">Import</button>
-              <button mat-button type="button" (click)="onNoClick()">Cancel</button>
-          </div>
+            <div>
+                <div class="load-file">
+                    <input type="file" name="file" id="file" class="input-file" (change)="onFileInput($event)">
+                    <label for="file" class="input-file-label">
+                        <mat-icon>file_upload</mat-icon>
+                        <span>Load Schemes</span>
+                    </label>
+                </div>
+            </div>
+            <div *ngIf="newSchemes" class="types">
+                <div class="types-header">
+                    Schemes:
+                </div>
+                <div class="types-body">
+                    <div *ngFor="let item of newSchemes" [title]="getTitle(item)">
+                        <div>{{item.uuid}} {{item.name}} ({{item.entity}})</div>
+                    </div>
+                </div>
+            </div>
+            <div mat-dialog-actions>
+                <button mat-raised-button color="primary" [disabled]="!valid" (click)="onSubmit()">Import</button>
+                <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+            </div>
         </ng-template>
-        <form [formGroup]="dataForm" (ngSubmit)="onTimestampSubmit()" *ngIf="importType===1">
-          <mat-form-field class="example-full-width" appearance="outline">
-              <mat-label>Message timestamp</mat-label>
-              <input matInput type="text" placeholder="Message timestamp" formControlName="timestamp">
-          </mat-form-field>
-          <div mat-dialog-actions>
-            <button mat-raised-button color="primary" type="submit"
-                [disabled]="!dataForm.valid">Ok</button>
-            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
-          </div>
-        </form>
+        <div *ngIf="importType === 1">
+            <div *ngIf="loading; else inputForm" [ngClass]="{'loading': loading}">
+                <mat-spinner></mat-spinner>
+            </div>
+            <ng-template #inputForm>
+                <form [formGroup]="dataForm" (ngSubmit)="onTimestampSubmit()" *ngIf="importType===1">
+                    <mat-form-field class="example-full-width" appearance="outline">
+                        <mat-label>Message timestamp</mat-label>
+                        <input matInput type="text" placeholder="Message timestamp" formControlName="timestamp">
+                    </mat-form-field>
+                    <div mat-dialog-actions>
+                    <button mat-raised-button color="primary" type="submit"
+                        [disabled]="!dataForm.valid">Ok</button>
+                    <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+                    </div>
+                </form>
+            </ng-template>
+        </div>
     </div>
   </div>
   <ng-template #selectActionTemplate>

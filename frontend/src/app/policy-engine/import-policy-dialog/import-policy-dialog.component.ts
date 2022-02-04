@@ -19,6 +19,7 @@ export class ImportPolicyDialog {
       timestamp: ['']
     });
     callbackFileImport: any;
+    loading: boolean = false;
 
     private _isimportTypeSelected$ = new ReplaySubject<boolean>(1);
 
@@ -48,14 +49,17 @@ export class ImportPolicyDialog {
       {
         return;
       }
+      this.loading = true;
+      const messageId = this.dataForm.get('timestamp')?.value;
 
-      const topicId = this.dataForm.get('timestamp')?.value;
-
-      this.policyEngineService.topicPreview(topicId)
+      this.policyEngineService.topicPreview(messageId)
         .subscribe( result => {
           this.dialogRef.close({
-            policy: result
+            policy: result,
+            messageId: messageId
           });
+        }, error => {
+          this.loading = false;
         });
     }
 
