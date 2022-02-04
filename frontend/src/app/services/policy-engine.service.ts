@@ -176,24 +176,12 @@ export class PolicyEngineService {
     return this.http.get(`${this.url}/${policyId}/export`);
   }
 
-  public importUpload(policyData: any): Observable<any[]> {
-    return this.http.post<any[]>(`${this.url}/import`, policyData);
+  public importByMessage(messageId: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.url}/import`, { messageId: messageId });
   }
 
-  public importFileUpload(policyFile: any): Observable<any> {
-    return this.http.post(`${this.url}/import/preview`, policyFile, {
-      headers: {
-        'Content-Type': 'binary/octet-stream'
-      }
-    });
-  }
-
-  public topicImport(messageId: string): Observable<any[]> {
-    return this.http.post<any[]>(`${this.url}/import/topic`, { messageId: messageId });
-  }
-
-  public topicPreview(messageId: string): Observable<any> {
-    return this.http.get<any>(`${this.url}/import/preview/${messageId}`);
+  public previewByMessage(messageId: string): Observable<any> {
+    return this.http.post<any>(`${this.url}/import/preview`, { messageId: messageId });
   }
 
   public toYAML(json: any): Observable<any> {

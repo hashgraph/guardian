@@ -18,7 +18,6 @@ import { IPolicySubmitMessage, ISubmitModelMessage, ModelActionType, ModelHelper
 import { HederaHelper } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
-import * as Buffer from 'buffer';
 import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { BlockPermissions } from '@policy-engine/helpers/middleware/block-permissions';
@@ -176,16 +175,16 @@ export class BlockTreeGenerator {
      * Validate policy by id
      * @param id - policyId
      */
-    private async validate(id: string): Promise<ISerializedErrors>
+    async validate(id: string): Promise<ISerializedErrors>
 
     /**
      * Validate policy by config
      * @param config
      * @private
      */
-    private async validate(policy: Policy): Promise<ISerializedErrors>;
+    async validate(policy: Policy): Promise<ISerializedErrors>;
 
-    private async validate(arg) {
+    async validate(arg) {
         const resultsContainer = new PolicyValidationResultsContainer();
 
         let policy: Policy;

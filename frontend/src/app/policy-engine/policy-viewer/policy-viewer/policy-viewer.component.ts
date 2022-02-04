@@ -75,7 +75,7 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicy() {
         const policyId = this.route.snapshot.queryParams['policyId'];
-        if(policyId && this.policyId == policyId) {
+        if (policyId && this.policyId == policyId) {
             return;
         }
 
@@ -179,15 +179,15 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     setVersion(element: any) {
-      const dialogRef = this.dialog.open(SetVersionDialog, {
-          width: '350px',
-          data: {}
-      });
-      dialogRef.afterClosed().subscribe((version) => {
-          if (version) {
-              this.publish(element, version);
-          }
-      });
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe((version) => {
+            if (version) {
+                this.publish(element, version);
+            }
+        });
     }
 
     private publish(element: any, version: string) {
@@ -231,7 +231,7 @@ export class PolicyViewerComponent implements OnInit {
 
     exportPolicy(element: any) {
         this.policyEngineService.exportPolicy(element.id)
-            .subscribe( exportedPolicy => this.dialog.open(ExportModelDialog, {
+            .subscribe(exportedPolicy => this.dialog.open(ExportModelDialog, {
                 width: '700px',
                 data: {
                     models: [exportedPolicy]
@@ -241,43 +241,44 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     importPolicyFromFile() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.zip';
-        input.click();
-        input.onchange = (e: any) => {
-            const file = e.target.files[0];
-            const reader = new FileReader()
-            reader.readAsArrayBuffer(file);
-            reader.addEventListener('load', (e: any) => {
-                const arrayBuffer = e.target.result;
-                this.loading = true;
-                this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
-                    this.loading = false;
-                    this.importPolicyDetails(data);
-                }, (e) => {
-                    this.loading = false;
-                });
-            });
-        }
+        // const input = document.createElement('input');
+        // input.type = 'file';
+        // input.accept = '.zip';
+        // input.click();
+        // input.onchange = (e: any) => {
+        //     const file = e.target.files[0];
+        //     const reader = new FileReader()
+        //     reader.readAsArrayBuffer(file);
+        //     reader.addEventListener('load', (e: any) => {
+        //         const arrayBuffer = e.target.result;
+        //         this.loading = true;
+        //         this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
+        //             this.loading = false;
+        //             this.importPolicyDetails(data);
+        //         }, (e) => {
+        //             this.loading = false;
+        //         });
+        //     });
+        // }
     }
 
     importPolicy() {
-      const dialogRef = this.dialog.open(ImportPolicyDialog, {
-          width: '500px',
-          data: {
-              callbackFileImport: this.importPolicyFromFile.bind(this)
-          },
-          autoFocus: false
-      });
-      dialogRef.afterClosed().subscribe(async (result) => {
-          if (result && result.policy) {
-            this.importPolicyDetails(result.policy);
-          }
-      });
-  }
+        const dialogRef = this.dialog.open(ImportPolicyDialog, {
+            width: '500px',
+            data: {
+                callbackFileImport: this.importPolicyFromFile.bind(this)
+            },
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result && result.policy) {
+                this.importPolicyDetails(result);
+            }
+        });
+    }
 
-    importPolicyDetails(policy: any) {
+    importPolicyDetails(result: any) {
+        const { policy, messageId } = result;
         const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -288,7 +289,7 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.topicImport(policy.policy.messageId).subscribe((policies) => {
+                this.policyEngineService.importByMessage(messageId).subscribe((policies) => {
                     this.updatePolicy(policies);
                     setTimeout(() => {
                         this.loading = false;

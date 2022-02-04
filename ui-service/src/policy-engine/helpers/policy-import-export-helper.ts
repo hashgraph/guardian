@@ -3,6 +3,8 @@ import { Guardians } from "@helpers/guardians";
 import { findAllEntities } from "@helpers/utils";
 import JSZip from "jszip";
 import { getMongoRepository } from "typeorm";
+import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
+import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 
 export namespace PolicyImportExportHelper {
     /**
@@ -61,6 +63,16 @@ export namespace PolicyImportExportHelper {
         const { policy, tokens } = policyToImport;
         const guardians = new Guardians();
 
+        function regenerateIds(block: any) {
+            block.id = GenerateUUIDv4();
+            if (Array.isArray(block.children)) {
+                for (let child of block.children) {
+                    regenerateIds(child);
+                }
+            }
+        }
+        regenerateIds(policy.config);
+
         const schemasIds = findAllEntities(policy.config, 'schema');
         if (schemasIds) {
             await guardians.importSchema(schemasIds, policyOwner);
@@ -80,12 +92,20 @@ export namespace PolicyImportExportHelper {
         }
 
         delete policy.id;
-        policy.status = 'PUBLISH';
         policy.creator = policy.owner;
         policy.owner = policyOwner;
 
-        await policyRepository.save(policyRepository.create(policy))
+        const policyGenerator = new BlockTreeGenerator();
+        const errors = await policyGenerator.validate(policy);
+        const isValid = !errors.blocks.some(block => !block.isValid);
+
+        policy.status = isValid ? 'PUBLISH' : 'INVALID';
+
+        let model = policyRepository.create(policy as Policy);
+        model = await policyRepository.save(model);
+        if (isValid) {
+            await policyGenerator.generate(model.id.toString());
+        }
         return await policyRepository.find({ owner: policyOwner });
     }
-
 }

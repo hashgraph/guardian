@@ -52,10 +52,13 @@
     color: #2196f3;
 }
 
-
 .status-publish {
     font-weight: 500;
     color: #4caf50;
+}
+.status-invalid {
+    font-weight: 500;
+    color: #ff0000;
 }
 
 .btn-settings {

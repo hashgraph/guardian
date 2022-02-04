@@ -42,6 +42,9 @@ export class IPFS {
      */
     public async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
         const res = (await this.channel.request(this.target, MessageAPI.IPFS_GET_FILE, { cid, responseType }, 'json')).payload;
+        if (!res) {
+            throw new Error('Invalid IPFS response');
+        }
         if (res.error) {
             throw new Error(res.error);
         }

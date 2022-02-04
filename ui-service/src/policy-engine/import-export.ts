@@ -5,7 +5,6 @@ import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Guardians } from '@helpers/guardians';
 import { findAllEntities } from '@helpers/utils';
-import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { HederaMirrorNodeHelper } from 'vc-modules';
 import { IPolicySubmitMessage, ISubmitModelMessage } from 'interfaces';
@@ -30,16 +29,7 @@ importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: 
     }
 });
 
-// importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response) => {
-//     try {
-//         const policies = await PolicyImportExportHelper.importPolicy(req.body, req.user.did);
-//         res.status(201).json(policies);
-//     } catch (e) {
-//         res.status(500).send({code: 500, message: e.message});
-//     }
-// });
-
-importExportAPI.post('/import/topic', async (req: AuthenticatedRequest, res: Response) => {
+importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const ipfsHelper = new IPFS();
         const messageId = req.body.messageId;
@@ -56,6 +46,9 @@ importExportAPI.post('/import/topic', async (req: AuthenticatedRequest, res: Res
         const message = JSON.parse(topicMessage.message) as IPolicySubmitMessage;
         const zip = await ipfsHelper.getFile(message.cid, "raw");
         const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
+
+        console.log(JSON.stringify(policyToImport, null, 4));
+
         const policies = await PolicyImportExportHelper.importPolicy(policyToImport, req.user.did);
         res.status(201).json(policies);
     } catch (e) {
@@ -63,28 +56,22 @@ importExportAPI.post('/import/topic', async (req: AuthenticatedRequest, res: Res
     }
 });
 
-importExportAPI.get('/import/preview/:messageId', async (req: AuthenticatedRequest, res: Response) => {
+importExportAPI.post('/import/preview', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const ipfsHelper = new IPFS();
         const guardians = new Guardians();
-        const messageId = req.params.messageId;
+        const messageId = req.body.messageId;
         const topicMessage = await HederaMirrorNodeHelper.getTopicMessage(messageId);
         const message = JSON.parse(topicMessage.message) as IPolicySubmitMessage;
         const zip = await ipfsHelper.getFile(message.cid, "raw");
         const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
+
+        console.log(JSON.stringify(policyToImport, null, 4));
+
         const schemasIds = findAllEntities(policyToImport.policy.config, 'schema');
         const schemas = await guardians.getSchemaPreview(schemasIds);
         res.status(200).json({ ...policyToImport, schemas });
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
     }
-})
-
-
-// importExportAPI.post('/import/preview', async (req: AuthenticatedRequest, res: Response) => {
-//     try {
-//         res.json(await PolicyImportExportHelper.parseZipFile(req.body));
-//     } catch (e) {
-//         res.status(500).send({code: 500, message: e.message});
-//     }
-// })
+});

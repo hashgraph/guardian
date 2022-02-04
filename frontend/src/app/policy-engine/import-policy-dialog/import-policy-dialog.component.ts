@@ -49,11 +49,12 @@ export class ImportPolicyDialog {
         return;
       }
 
-      const topicId = this.dataForm.get('timestamp')?.value;
+      const messageId = this.dataForm.get('timestamp')?.value;
 
-      this.policyEngineService.topicPreview(topicId)
+      this.policyEngineService.previewByMessage(messageId)
         .subscribe( result => {
           this.dialogRef.close({
+            messageId: messageId,
             policy: result
           });
         });

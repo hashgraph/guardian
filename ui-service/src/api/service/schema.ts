@@ -130,6 +130,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
 
 schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
+        const user = req.user;
         const guardians = new Guardians();
         const messageId = req.body.messageId;
         const schemaToPreview = await guardians.importSchema(messageId, req.user.did);
@@ -138,7 +139,9 @@ schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req:
             throw new Error('Cannot load schema');
         }
 
-        res.status(201).json(schemaToPreview);
+        const schemes = await guardians.getSchemesByOwner(user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
+        res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
     }
