@@ -99,9 +99,6 @@ export const documentsAPI = async function (
         if (msg.payload) {
             const reqObj: any = { where: {} };
             const { type, owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
-            if (type) {
-                reqObj.where['type'] = { $eq: type }
-            }
             if (owner) {
                 reqObj.where['owner'] = { $eq: owner }
             }

@@ -62,7 +62,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.loadData();
         }
     }
-
+    
     loadData() {
         this.loading = true;
         if (this.static) {
