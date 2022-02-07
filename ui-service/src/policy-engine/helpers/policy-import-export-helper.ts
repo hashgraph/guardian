@@ -90,7 +90,7 @@ export namespace PolicyImportExportHelper {
 
         const dateNow = '_' + Date.now();
         const policyRepository = getMongoRepository(Policy);
-        policy.policyTag = policy.tag + dateNow;
+        policy.policyTag = policy.policyTag + dateNow;
         if (await policyRepository.findOne({ name: policy.name })) {
             policy.name = policy.name + dateNow;
         }

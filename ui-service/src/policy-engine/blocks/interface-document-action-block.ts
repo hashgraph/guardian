@@ -96,7 +96,7 @@ export class InterfaceDocumentActionBlock {
             const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
             const schemaObject = await this.guardians.getSchemaByMessage(ref.options.schema);
-            const schema = schemaObject ? new Schema(schemaObject) : null;
+            const schema = new Schema(schemaObject);
             return {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
@@ -108,7 +108,7 @@ export class InterfaceDocumentActionBlock {
                     'did': sensorDid,
                     'key': sensorKey,
                     'type': schema.type,
-                    'schema': await this.guardians.loadSchemaDocument(ref.options.schema),
+                    'schema': JSON.parse(schema.context),
                     'policyId': ref.policyId,
                     'policyTag': policy.policyTag
                 }

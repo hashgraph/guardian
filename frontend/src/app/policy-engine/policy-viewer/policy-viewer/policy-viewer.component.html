@@ -30,11 +30,11 @@
     </ng-container>
 
     <ng-container *ngIf="isConfirmed && !policyId && policies">
-        <div *ngIf="role == 'ROOT_AUTHORITY'" class="actions">
+        <div class="actions-container" [attr.role]="role">
             <button mat-raised-button color="primary" (click)="newPolicy()" style="margin: 15px;min-width: 100px">Create Policy</button>
             <button mat-raised-button color="primary" (click)="importPolicy()" style="margin: 15px;min-width: 100px">Import</button>
         </div>
-        <div class="table-container">
+        <div class="table-container" [attr.role]="role">
             <table mat-table [dataSource]="policies" class="table">
                 <ng-container matColumnDef="id">
                     <th mat-header-cell *matHeaderCellDef> Hedera Topic Id </th>
