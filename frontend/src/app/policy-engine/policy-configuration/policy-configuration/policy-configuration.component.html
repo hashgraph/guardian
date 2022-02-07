@@ -59,6 +59,14 @@
                             <mat-icon>arrow_drop_down</mat-icon>
                         </div>
                     </div>
+
+                    <div class="delimiter"></div>
+
+                    <div *ngIf="readonly" class="btn-new-block btn-status-all" 
+                        [routerLink]="['/policy-viewer']" [queryParams]="{ policyId: policyId }">
+                        <mat-icon>login</mat-icon>
+                        <span>Open</span>
+                    </div>
                 </div>
 
                 <div class="view-menu">

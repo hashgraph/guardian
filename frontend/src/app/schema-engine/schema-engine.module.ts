@@ -12,6 +12,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
 import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
+import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 
 @NgModule({
     declarations: [
@@ -22,7 +23,8 @@ import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
         SchemaFormViewComponent,
         DocumentViewComponent,
         SetVersionDialog,
-        VCViewerDialog
+        VCViewerDialog,
+        SchemaViewDialog
     ],
     imports: [
         CommonModule,

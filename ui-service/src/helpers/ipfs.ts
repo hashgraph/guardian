@@ -28,10 +28,35 @@ export class IPFS {
      * Return hash of added file
      * @param {ArrayBuffer} file file to upload on IPFS
      * 
-     * @returns {string} - hash
+     * @returns {{ cid: string, url: string }} - hash
      */
-    public async addFile(file: ArrayBuffer): Promise<string>
-    {
-        return (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
+    public async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {
+        const res = (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;;
+        if (!res) {
+            throw new Error('Invalid response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+        return res.body;
+    }
+
+    /**
+     * Returns file by IPFS CID
+     * @param cid IPFS CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
+        const res = (await this.channel.request(this.target, MessageAPI.IPFS_GET_FILE, { cid, responseType }, 'json')).payload;
+        if (!res) {
+            throw new Error('Invalid IPFS response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+        return responseType === 'raw'
+            ? res.body.data
+            : res.body;
     }
 }

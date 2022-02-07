@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IVC, Schema } from 'interfaces';
+import { IVC, Schema, SchemaHelper } from 'interfaces';
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
@@ -93,7 +93,7 @@ export class TrustChainComponent implements OnInit {
                 const documents:any = value[0];
                 const schemes = value[1];
 
-                this.schemas = Schema.mapRef(schemes);
+                this.schemas = SchemaHelper.map(schemes);
 
                 const { chain, userMap } = documents;
                 this.userMap = {};

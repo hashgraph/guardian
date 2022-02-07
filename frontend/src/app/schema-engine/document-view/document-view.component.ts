@@ -50,7 +50,7 @@ export class DocumentViewComponent implements OnInit {
     }
   }
 
-  GetSchema(id: any): any {
-    return this.schemas.find((schema) => schema?.context?.type === id);
+  getSchema(type: string): any {
+    return this.schemas.find((schema) => schema.type === type);
   }
 }

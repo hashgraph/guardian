@@ -4,6 +4,8 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } fro
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaField } from 'interfaces';
 import * as moment from 'moment';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
@@ -23,7 +25,8 @@ enum PlaceholderByFieldType {
   Email = "example@email.com",
   Number = "123",
   URL = "example.com",
-  String = "example string"
+  String = "example string",
+  IPFS = 'ipfs.io/ipfs/example-hash'
 }
 
 enum ErrorFieldMessageByFieldType {
@@ -64,14 +67,19 @@ export class SchemaFormComponent implements OnInit {
   @Input('private-fields') hide!: { [x: string]: boolean };
   @Input('schema') schema!: Schema;
   @Input('fields') schemaFields!: SchemaField[];
-  @Input('context') context!: any;
+  @Input('context') context!: {
+    type: any;
+    context: any;
+  };
   @Input('formGroup') group!: FormGroup;
   @Input('delimiter-hide') delimiterHide: boolean = false;
 
   options: FormGroup | undefined;
   fields: any[] | undefined = [];
+  fileUploading: boolean = false;
 
   @Output('change') change = new EventEmitter<Schema | null>();
+  destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     private ipfs: IPFSService,
@@ -88,7 +96,10 @@ export class SchemaFormComponent implements OnInit {
       this.update(this.schemaFields);
       return;
     } else if (this.schema) {
-      this.context = this.schema.context;
+      this.context = {
+        type: this.schema.type,
+        context: [this.schema.contextURL]
+      };
       this.update(this.schema.fields);
       return;
     }
@@ -240,9 +251,14 @@ export class SchemaFormComponent implements OnInit {
     if (!file) {
       return;
     }
-
+    this.fileUploading = true;
     this.ipfs.addFile(file)
-      .subscribe(res => control.patchValue(API_IPFS_GATEWAY_URL + res));
+      .subscribe(res => {
+        control.patchValue(API_IPFS_GATEWAY_URL + res);
+        this.fileUploading = false;
+      }, error => {
+        this.fileUploading = false;
+      });
   }
 
   GetInvalidMessageByFieldType(type: string, isArray: boolean = false): string {
@@ -274,7 +290,7 @@ export class SchemaFormComponent implements OnInit {
     }
   }
 
-  GetPlaceholderByFieldType(type: string): string {
+  GetPlaceholderByFieldType(type: string, pattern: string= ""): string {
     switch (type) {
       case 'email':
         return PlaceholderByFieldType.Email;
@@ -285,6 +301,10 @@ export class SchemaFormComponent implements OnInit {
       case 'integer':
         return PlaceholderByFieldType.Number;
       case 'url':
+        if (pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+')
+        {
+          return PlaceholderByFieldType.IPFS;
+        }
         return PlaceholderByFieldType.URL;
       case 'string':
         return PlaceholderByFieldType.String;
@@ -296,6 +316,7 @@ export class SchemaFormComponent implements OnInit {
   private subscribeFormatDateValue(control: FormControl, format: string) {
     if (format === 'date') {
       control.valueChanges
+        .pipe(takeUntil(this.destroy$))
         .subscribe((val: any) => {
           let momentDate = moment(val);
           let valueToSet = "";
@@ -313,6 +334,7 @@ export class SchemaFormComponent implements OnInit {
 
     if (format === 'date-time') {
       control.valueChanges
+        .pipe(takeUntil(this.destroy$))
         .subscribe((val: any) => {
           let momentDate = moment(val);
           let valueToSet = "";
@@ -387,5 +409,10 @@ export class SchemaFormComponent implements OnInit {
     }
 
     return validators;
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
   }
 }

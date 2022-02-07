@@ -1,6 +1,11 @@
 const { expect, assert } = require('chai');
 const { tokenAPI } = require('../dist/api/token.service');
-const { createChannel, createTable } = require('./helper');
+const { 
+    createChannel, 
+    createTable, 
+    checkMessage, 
+    checkError 
+} = require('./helper');
 
 describe('Token service', function () {
     let service, channel;
@@ -50,7 +55,7 @@ describe('Token service', function () {
             wipeKey: 'wipeKey',
             supplyKey: 'supplyKey'
         });
-        assert.deepEqual(value, [{
+        checkMessage(value, [{
             _id: '1',
             tokenId: 'tokenId',
             tokenName: 'tokenName',
@@ -69,7 +74,7 @@ describe('Token service', function () {
 
     it('Test GET_TOKENS', async function () {
         let value = await channel.run(GET_TOKENS, null);
-        assert.deepEqual(value, [{
+        checkMessage(value, [{
             _id: '1',
             tokenId: 'tokenId',
             tokenName: 'tokenName',
@@ -86,6 +91,6 @@ describe('Token service', function () {
         }]);
 
         value = await channel.run(GET_TOKENS, { tokenId: 'tokenId' });
-        assert.deepEqual(value, { where: { tokenId: { '$eq': 'tokenId' } } });
+        checkMessage(value, { where: { tokenId: { '$eq': 'tokenId' } } });
     });
 });

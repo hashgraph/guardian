@@ -6,7 +6,7 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature } from 'interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
@@ -103,28 +103,29 @@ export class MintBlock {
     private async createMintVC(root, token, data: number | number[]): Promise<HcsVcDocument<VcSubject>> {
         const vcHelper = new VcHelper();
 
-        let vcSubject: any, schema: string;
+        let vcSubject: any;
         if (token.tokenType == 'non-fungible') {
+            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_NFTOKEN);  
             const serials = data as number[];
             vcSubject = {
+                ...SchemaHelper.getContext(policySchema),
                 date: (new Date()).toISOString(),
                 tokenId: token.tokenId,
                 serials: serials
             }
-            schema = 'MintNFToken';
         } else {
+            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_TOKEN);  
             const amount = data as number;
             vcSubject = {
+                ...SchemaHelper.getContext(policySchema),
                 date: (new Date()).toISOString(),
                 tokenId: token.tokenId,
                 amount: amount.toString()
             }
-            schema = 'MintToken';
         }
         const mintVC = await vcHelper.createVC(
             root.did,
             root.hederaAccountKey,
-            schema,
             vcSubject
         );
         return mintVC;

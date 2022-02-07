@@ -19,9 +19,6 @@ export class InterfaceDocumentsSource {
     @Inject()
     private users: Users;
 
-    @Inject()
-    private guardians: Guardians;
-
     @BlockStateUpdate()
     async update(state, user) {
     }

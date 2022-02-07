@@ -58,10 +58,11 @@ const PORT = process.env.PORT || 3005;
                     }
                 }
             }
+            vcSubject.type = type;
             vcSubject.policyId = policyId;
             vcSubject.accountId = hederaAccountId;
 
-            vc = await vcHelper.createVC(did, key, type, vcSubject);
+            vc = await vcHelper.createVC(did, key, vcSubject);
             document = vc.toJsonTree();
 
             console.log("created vc");

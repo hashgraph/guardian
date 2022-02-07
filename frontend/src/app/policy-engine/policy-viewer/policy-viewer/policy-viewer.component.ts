@@ -4,12 +4,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser } from 'interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
+import { ExportModelDialog } from 'src/app/components/export-model-dialog/export-model-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../helpers/export-import-dialog/export-import-dialog.component';
 import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
+import { ImportPolicyDialog } from '../../import-policy-dialog/import-policy-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -73,7 +75,7 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicy() {
         const policyId = this.route.snapshot.queryParams['policyId'];
-        if(policyId && this.policyId == policyId) {
+        if (policyId && this.policyId == policyId) {
             return;
         }
 
@@ -177,15 +179,15 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     setVersion(element: any) {
-      const dialogRef = this.dialog.open(SetVersionDialog, {
-          width: '350px',
-          data: {}
-      });
-      dialogRef.afterClosed().subscribe((version) => {
-          if (version) {
-              this.publish(element, version);
-          }
-      });
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe((version) => {
+            if (version) {
+                this.publish(element, version);
+            }
+        });
     }
 
     private publish(element: any, version: string) {
@@ -228,44 +230,54 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     exportPolicy(element: any) {
-        this.loading = true;
-        this.policyEngineService.exportPolicy(element.id).subscribe((result: any) => {
-            let downloadLink = document.createElement('a');
-            downloadLink.href = window.URL.createObjectURL(result);
-            downloadLink.setAttribute('download', 'policy.zip');
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        }, (e) => {
-            this.loading = false;
-        });
+        this.policyEngineService.exportPolicy(element.id)
+            .subscribe(exportedPolicy => this.dialog.open(ExportModelDialog, {
+                width: '700px',
+                data: {
+                    models: [exportedPolicy]
+                },
+                autoFocus: false
+            }));
+    }
+
+    importPolicyFromFile() {
+        // const input = document.createElement('input');
+        // input.type = 'file';
+        // input.accept = '.zip';
+        // input.click();
+        // input.onchange = (e: any) => {
+        //     const file = e.target.files[0];
+        //     const reader = new FileReader()
+        //     reader.readAsArrayBuffer(file);
+        //     reader.addEventListener('load', (e: any) => {
+        //         const arrayBuffer = e.target.result;
+        //         this.loading = true;
+        //         this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
+        //             this.loading = false;
+        //             this.importPolicyDetails(data);
+        //         }, (e) => {
+        //             this.loading = false;
+        //         });
+        //     });
+        // }
     }
 
     importPolicy() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.zip';
-        input.click();
-        input.onchange = (e: any) => {
-            const file = e.target.files[0];
-            const reader = new FileReader()
-            reader.readAsArrayBuffer(file);
-            reader.addEventListener('load', (e: any) => {
-                const arrayBuffer = e.target.result;
-                this.loading = true;
-                this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
-                    this.loading = false;
-                    this.importPolicyDetails(data);
-                }, (e) => {
-                    this.loading = false;
-                });
-            });
-        }
+        const dialogRef = this.dialog.open(ImportPolicyDialog, {
+            width: '500px',
+            data: {
+                callbackFileImport: this.importPolicyFromFile.bind(this)
+            },
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result && result.policy && result.messageId) {
+                this.importPolicyDetails(result.policy, result.messageId);
+            }
+        });
     }
 
-    importPolicyDetails(policy: any) {
+    importPolicyDetails(policy: any, messageId: string = "") {
         const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -276,11 +288,13 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.importUpload(policy).subscribe((policies) => {
+                this.policyEngineService.importByMessage(messageId).subscribe((policies) => {
                     this.updatePolicy(policies);
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
+                }, (e) => {
+                    this.loading = false;
                 });
             }
         });

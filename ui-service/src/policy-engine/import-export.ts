@@ -5,38 +5,24 @@ import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Guardians } from '@helpers/guardians';
 import { findAllEntities } from '@helpers/utils';
-import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
+import { HederaMirrorNodeHelper } from 'vc-modules';
+import { IPFS } from '@helpers/ipfs';
 
 export const importExportAPI = Router();
 
 importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
-        const guardians = new Guardians();
-
-        const refs = findAllEntities(policy.config, 'schema');
-        const tokenIds = findAllEntities(policy.config, 'tokenId');
-
-        const [schemas, tokens] = await Promise.all([
-            guardians.exportSchemes(refs),
-            guardians.getTokens({ids: tokenIds})
-        ]);
-
-        const zip = new JSZip();
-        zip.folder('schemas')
-        for (let schema of schemas) {
-            zip.file(`schemas/${schema.name}.json`, JSON.stringify(schema));
+        if (!policy) {
+            throw new Error(`Cannot export policy ${req.params.policyId}`);
         }
 
-        zip.folder('tokens')
-        for (let token of tokens) {
-            zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
-        }
-        zip.file(`policy.json`, JSON.stringify(policy));
-        const arcStream = zip.generateNodeStream();
-        res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
-        res.setHeader('Content-type', 'application/zip');
-        arcStream.pipe(res);
+        res.status(200).send({
+            name: policy.name,
+            version: policy.version,
+            messageId: policy.messageId
+        })
     } catch(e) {
         res.status(500).send({code: 500, message: e.message});
     }
@@ -44,67 +30,47 @@ importExportAPI.get('/:policyId/export', async (req: AuthenticatedRequest, res: 
 
 importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response) => {
     try {
-        let {policy, tokens, schemas} = req.body
-        const guardians = new Guardians();
-
-        const dateNow = '_' + Date.now();
-
-        for (let token of tokens) {
-            delete token.id;
-            delete token.selected;
-        }
-        for (let schema of schemas) {
-            delete schema.owner;
-            delete schema.id;
-            delete schema.status;
+        const ipfsHelper = new IPFS();
+        const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new Error('Policy ID in body is empty');
         }
 
-        const policyRepository = getMongoRepository(Policy);
-        policy.policyTag = policy.tag + dateNow;
-        if (await policyRepository.findOne({name: policy.name})) {
-            policy.name = policy.name + dateNow;
+        const existingPolicy = await getMongoRepository(Policy).findOne({ messageId: messageId });
+        if (existingPolicy) {
+            throw new Error('Policy already exists');
         }
 
-        delete policy.id;
-        delete policy.status;
-        policy.owner = req.user.did;
+        const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
+        const message = topicMessage.message;
+        const zip = await ipfsHelper.getFile(message.cid, "raw");
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
 
-        await Promise.all([
-            guardians.importTokens(tokens),
-            guardians.importSchemes(schemas),
-            policyRepository.save(policyRepository.create(policy))
-        ]);
+        console.log(JSON.stringify(policyToImport, null, 4));
 
-        res.status(201).json(await policyRepository.find({owner: req.user.did}));
+        const policies = await PolicyImportExportHelper.importPolicy(policyToImport, req.user.did, messageId);
+        res.status(201).json(policies);
     } catch (e) {
-        res.status(500).send({code: 500, message: e.message});
+        res.status(500).send({ code: 500, message: e.message });
     }
 });
 
 importExportAPI.post('/import/preview', async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const zip = new JSZip();
+        const ipfsHelper = new IPFS();
+        const guardians = new Guardians();
+        const messageId = req.body.messageId;
+        const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
+        const message = topicMessage.message;
+        const zip = await ipfsHelper.getFile(message.cid, "raw");
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
 
-        const content = await zip.loadAsync(req.body);
+        console.log(JSON.stringify(policyToImport, null, 4));
 
-        let policyString = await content.files['policy.json'].async('string');
-        const schemaStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^schemas\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
-
-        const tokensStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^tokens\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
-
-        const policy = JSON.parse(policyString);
-        const tokens = tokensStringArray.map(item => JSON.parse(item));
-        const schemas = schemaStringArray.map(item => JSON.parse(item));
-
-
-        res.json({policy, tokens, schemas});
-    } catch (e) {
-        res.status(500).send({code: 500, message: e.message});
+        const schemasIds = findAllEntities(policyToImport.policy.config, 'schema');
+        const schemas = await guardians.getSchemaPreview(schemasIds);
+        res.status(200).json({ ...policyToImport, schemas });
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
     }
-})
+});

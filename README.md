@@ -141,6 +141,21 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
+   **From the IPFS Client folder**
+
+   To build the service:
+
+   ```
+   npm install
+   npm run build
+   ```
+
+   To start the service:
+
+   ```
+   npm start
+   ```
+
    **From the UI Service folder**
 
    To build the service:

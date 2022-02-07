@@ -1,6 +1,11 @@
 const { expect, assert } = require('chai');
 const { configAPI } = require('../dist/api/config.service');
-const { createChannel, createTable } = require('./helper');
+const { 
+    createChannel, 
+    createTable, 
+    checkMessage, 
+    checkError 
+} = require('./helper');
 
 describe('Config service', function () {
     let service, channel, fileContent;
@@ -23,7 +28,7 @@ describe('Config service', function () {
 
     it('Test GET_ROOT_ADDRESS_BOOK', async function () {
         let value = await channel.run(GET_ROOT_ADDRESS_BOOK);
-        assert.deepEqual(value, {
+        checkMessage(value, {
             owner: null,
             addressBook: 'ADDRESS_BOOK',
             vcTopic: 'VC_TOPIC_ID',

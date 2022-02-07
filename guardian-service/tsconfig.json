@@ -17,6 +17,7 @@
             "@entity/*": ["entity/*"],
             "@api/*": ["api/*"],
             "@subscribers/*": ["subscribers/*"],
+            "@helpers/*": ["helpers/*"],
         }
     },
     "include": [

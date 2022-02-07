@@ -34,6 +34,9 @@ export class Policy {
     status: string;
 
     @Column()
+    creator: string;
+
+    @Column()
     owner: string;
 
     @Column()
@@ -49,6 +52,9 @@ export class Policy {
         unique: true
     })
     policyTag: string;
+    
+    @Column()
+    messageId: string;
 
     @BeforeInsert()
     setDefaults() {

@@ -128,14 +128,13 @@ export class DocumentsSourceAddon {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schemas = await this.guardians.getSchemes() || [];
-            const schema = schemas.find(s => s.iri === ref.options.schema)
+            const schema = await this.guardians.getSchemaByMessage(ref.options.schema);
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;
             }
             if (schema.status != SchemaStatus.PUBLISHED) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not published`);
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" is not published`);
                 return;
             }
         }

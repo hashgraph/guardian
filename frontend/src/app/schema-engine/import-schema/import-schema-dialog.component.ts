@@ -1,7 +1,9 @@
 import { Component, Inject } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Schema } from 'interfaces';
-
+import { ImportType, Schema, SchemaHelper } from 'interfaces';
+import { Observable, ReplaySubject } from 'rxjs';
+import { SchemaService } from 'src/app/services/schema.service';
 /**
  * Dialog allowing you to select a file and load schemes.
  */
@@ -11,27 +13,75 @@ import { Schema } from 'interfaces';
     styleUrls: ['./import-schema-dialog.component.css']
 })
 export class ImportSchemaDialog {
-    schemes: any[];
     valid: boolean = false;
     newSchemes!: any;
+    importType?: ImportType;
+    dataForm = this.fb.group({
+      timestamp: ['']
+    });
+    callbackIpfsImport: any;
+    loading: boolean = false;
+
+    private _isimportTypeSelected$ = new ReplaySubject<boolean>(1);
 
     constructor(
         public dialogRef: MatDialogRef<ImportSchemaDialog>,
+        private fb: FormBuilder,
+        private schemaService: SchemaService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
-        this.schemes = data.schemes || [];
+        this._isimportTypeSelected$.next(false);
+    }
+
+    public get isImportTypeSelected$(): Observable<boolean> {
+      return this._isimportTypeSelected$;
+    }
+
+    setImportType(importType: ImportType) {
+      this.importType = importType;
+      this._isimportTypeSelected$.next(true);
+    }
+
+    getDialogTitle() {
+      switch (this.importType){
+        case ImportType.FILE:
+          return "Import Schemes";
+        case ImportType.IPFS:
+          return "Enter hedera message timestamp";
+        default:
+          return "";
+      }
     }
 
     ngOnInit() {
-
+        this.callbackIpfsImport = this.data.callbackIpfsImport;
+        this.setImportType(ImportType.IPFS);
     }
 
     onNoClick(): void {
         this.dialogRef.close(null);
     }
 
+    onTimestampSubmit() {
+      if (!this.dataForm.valid)
+      {
+        return;
+      }
+
+      this.loading = true;
+      const messageId = this.dataForm.get('timestamp')?.value;
+
+      this.schemaService.previewByMessage(messageId)
+        .subscribe(schema => {
+             this.dialogRef.close(null);
+             this.callbackIpfsImport(schema, messageId);
+          }, error => {
+              this.loading = false;
+          });
+    }
+
     onSubmit() {
-        if(this.valid ) {
+        if (this.valid) {
             this.dialogRef.close({ schemes: this.newSchemes });
         }
     }
@@ -89,7 +139,7 @@ export class ImportSchemaDialog {
     validationSchema(schemes: any[]) {
         for (let i = 0; i < schemes.length; i++) {
             const schema = schemes[i];
-            if (!Schema.validate(schema)) {
+            if (!SchemaHelper.validate(schema)) {
                 return null;
             }
         }

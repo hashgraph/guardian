@@ -35,13 +35,29 @@ class _DocumentLoader {
 }
 
 class _SchemaLoader {
+    context = null;
     document = null;
 
-    constructor(document) {
+    constructor(context, document) {
+        this.context = context;
         this.document = document;
     }
 
-    get(type) {
+    has(context, iri, type) {
+        if (Array.isArray(context)) {
+            for (let i = 0; i < context.length; i++) {
+                const element = context[i];
+                if (element.startsWith(this.context)) {
+                    return true;
+                }
+            }
+        } else {
+            return context && context.startsWith(this.context);
+        }
+        return false;
+    }
+
+    get(context, iri, type) {
         return this.document;
     }
 }
@@ -262,8 +278,9 @@ describe('VCHelper', function () {
         vcHelper.addDocumentLoader(new DefaultDocumentLoader());
         vcHelper.addDocumentLoader(new _DocumentLoader(context, schemaDocument));
         vcHelper.addDocumentLoader(new _DocumentLoader('did:hedera:', didDoc));
-        vcHelper.addSchemaLoader(new _SchemaLoader(schema));
+        vcHelper.addSchemaLoader(new _SchemaLoader('https://localhost/schema', schema));
         vcHelper.buildDocumentLoader();
+        vcHelper.buildSchemaLoader();
         assert.exists(vcHelper.loader);
     });
 
@@ -308,7 +325,7 @@ describe('VCHelper', function () {
     });
 
     it('Test issueCredential', async function () {
-        const credential = await vcHelper.createCredential(did, 'Test', data);
+        const credential = await vcHelper.createCredential(did, null, data);
         const vc = await vcHelper.issueCredential(did, privateKey, credential);
         assert.exists(vc);
         assert.exists(vc.getProof());
@@ -338,7 +355,7 @@ describe('VCHelper', function () {
     });
 
     it('Test createVC', async function () {
-        const vc = await vcHelper.createVC(did, privateKey, 'Test', data);
+        const vc = await vcHelper.createVC(did, privateKey, data);
         assert.exists(vc);
         assert.exists(vc.getProof());
         const root = vc.toJsonTree();
@@ -367,7 +384,7 @@ describe('VCHelper', function () {
     });
 
     it('Test createVP', async function () {
-        const vc = await vcHelper.createVC(did, privateKey, 'Test', data);
+        const vc = await vcHelper.createVC(did, privateKey, data);
         const vp = await vcHelper.createVP(did, privateKey, [vc], 'f5630d9a-3c27-4ccc-a371-f4d30c2da4e1');
         assert.exists(vp);
         assert.exists(vp.getProof());
@@ -412,7 +429,7 @@ describe('VCHelper', function () {
     });
 
     it('Test verifyVC', async function () {
-        const vc = await vcHelper.createVC(did, privateKey, 'Test', data);
+        const vc = await vcHelper.createVC(did, privateKey, data);
 
         let verify = await vcHelper.verifyVC(vc);
         assert.equal(verify, true);
@@ -422,7 +439,7 @@ describe('VCHelper', function () {
     });
 
     it('Test verifySchema', async function () {
-        let vc = await vcHelper.createVC(did, privateKey, 'Test', data);
+        let vc = await vcHelper.createVC(did, privateKey, data);
 
         let verify = await vcHelper.verifySchema(vc);
         assert.deepEqual(verify, { ok: true });
@@ -430,14 +447,13 @@ describe('VCHelper', function () {
         verify = await vcHelper.verifySchema(vc.toJsonTree());
         assert.deepEqual(verify, { ok: true });
 
-        vc = await vcHelper.createVC(did, privateKey, 'Test', {
+        vc = await vcHelper.createVC(did, privateKey, {
             '@context': ['https://localhost/schema'],
             'type': 'Test',
             'field1': 'field1'
         });
 
         verify = await vcHelper.verifySchema(vc);
-        console.log(verify)
         assert.deepEqual(verify, {
             "ok": false,
             "error": {
