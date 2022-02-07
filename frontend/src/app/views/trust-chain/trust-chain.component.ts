@@ -105,13 +105,13 @@ export class TrustChainComponent implements OnInit {
                 this.vp = this.mapData(chain).find(d => d.type === 'VP');
 
                 if(this.vp) {
-                    const vcMint: IVC = this.vp.document.verifiableCredential.find((vc: IVC) => vc.type.includes('MintToken') || vc.type.includes('MintNFToken'));
+                    const vcMint: IVC = this.vp.document.verifiableCredential.find((vc: IVC) => vc.type.includes('MintToken&1.0.0') || vc.type.includes('MintNFToken&1.0.0'));
                     if (vcMint) {
                         this.vpMint = {
                             ...vcMint.credentialSubject[0],
                             issuer: vcMint.issuer,
                             document: vcMint,
-                            schema: vcMint.type.includes('MintToken') ? 'MintToken' : 'MintNFToken',
+                            schema: vcMint.type.includes('MintToken') ? 'MintToken&1.0.0' : 'MintNFToken&1.0.0',
                             tag: 'Mint Token'
                         };
                         this.chain.push(this.vpMint);
@@ -122,7 +122,7 @@ export class TrustChainComponent implements OnInit {
                     this.vpMint = null;
                 }
 
-                const vcPolicy: any = this.chain.find((vc: any) => vc.type === 'VC' && vc.schema === 'Policy');
+                const vcPolicy: any = this.chain.find((vc: any) => vc.type === 'VC' && vc.schema === 'Policy&1.0.0');
                 if (vcPolicy) {
                     this.vpPolicy = {
                         ...vcPolicy.document.credentialSubject[0],

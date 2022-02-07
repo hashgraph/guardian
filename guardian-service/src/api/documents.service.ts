@@ -246,12 +246,8 @@ export const documentsAPI = async function (
      */
     channel.response(MessageAPI.GET_VP_DOCUMENTS, async (msg, res) => {
         if (msg.payload) {
-            const document: IVPDocument = await vpDocumentRepository.findOne(msg.payload);
-            if (document) {
-                res.send(new MessageResponse([document]));
-            } else {
-                res.send(new MessageResponse([]));
-            }
+            const document: IVPDocument[] = await vpDocumentRepository.find(msg.payload);
+            res.send(new MessageResponse(document));
         } else {
             const documents: IVPDocument[] = await vpDocumentRepository.find();
             res.send(new MessageResponse(documents));

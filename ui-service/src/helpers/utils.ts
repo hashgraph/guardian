@@ -13,5 +13,10 @@ export function findAllEntities(obj: {[key:string]: any}, name: string): string[
         }
     }
     finder(obj);
-    return result;
+
+    const map = {};
+    for (let index = 0; index < result.length; index++) {
+        map[result[index]] = result[index];
+    }
+    return Object.values(map);
 }

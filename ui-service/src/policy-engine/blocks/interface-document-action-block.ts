@@ -108,7 +108,11 @@ export class InterfaceDocumentActionBlock {
                     'did': sensorDid,
                     'key': sensorKey,
                     'type': schema.type,
-                    'schema': JSON.parse(schema.context),
+                    'schema': schema.contextObject,
+                    'context': {
+                        'type': schema.type,
+                        '@context': [schema.contextURL]
+                    },
                     'policyId': ref.policyId,
                     'policyTag': policy.policyTag
                 }

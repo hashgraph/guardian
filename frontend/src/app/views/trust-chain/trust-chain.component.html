@@ -87,11 +87,11 @@
                         <div class="chain-item item-type-{{item.type}}">
                             <div class="chain-title">
                                 <ng-container [ngSwitch]="item.schema">
-                                    <mat-icon *ngSwitchCase="'Policy'">format_list_bulleted</mat-icon>
-                                    <mat-icon *ngSwitchCase="'Inverter'" svgIcon="iot"></mat-icon>
-                                    <mat-icon *ngSwitchCase="'MRV'" svgIcon="mrv"></mat-icon>
-                                    <mat-icon *ngSwitchCase="'MintToken'" svgIcon="token"></mat-icon>
-                                    <mat-icon *ngSwitchCase="'MintNFToken'" svgIcon="token"></mat-icon>
+                                    <mat-icon *ngSwitchCase="'Policy&1.0.0'">format_list_bulleted</mat-icon>
+                                    <mat-icon *ngSwitchCase="'Inverter&1.0.0'" svgIcon="iot"></mat-icon>
+                                    <mat-icon *ngSwitchCase="'MRV&1.0.0'" svgIcon="mrv"></mat-icon>
+                                    <mat-icon *ngSwitchCase="'MintToken&1.0.0'" svgIcon="token"></mat-icon>
+                                    <mat-icon *ngSwitchCase="'MintNFToken&1.0.0'" svgIcon="token"></mat-icon>
                                     <mat-icon *ngSwitchDefault>account_circle</mat-icon>
                                 </ng-container>
 
