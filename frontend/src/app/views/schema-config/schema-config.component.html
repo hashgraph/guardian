@@ -82,6 +82,10 @@
                             <mat-icon>add</mat-icon>
                             <span>New Version</span>
                         </div>
+                        <div *ngIf="element.status !='DRAFT' && !element.isCreator" class="btn-settings" (click)="newDocument(element)">
+                            <mat-icon>add</mat-icon>
+                            <span>Copy Schema</span>
+                        </div>
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="delete">

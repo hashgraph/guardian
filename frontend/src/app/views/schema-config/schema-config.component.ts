@@ -169,6 +169,39 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
+    newDocument(element: Schema) {
+        const newDocument:any = {...element};
+        delete newDocument.id;
+        delete newDocument.uuid;
+        delete newDocument.creator;
+        delete newDocument.owner;
+        delete newDocument.version;
+        delete newDocument.previousVersion;
+        const dialogRef = this.dialog.open(SchemaDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                type: 'version',
+                schemes: this.publishSchemes,
+                scheme: newDocument
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+            if (schema) {
+                this.loading = true;
+                this.schemaService.create(schema).subscribe((data) => {
+                    this.setSchema(data);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
     publish(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
