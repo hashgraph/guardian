@@ -58,7 +58,6 @@ describe('Documents service', function () {
         checkMessage(value, null);
 
         value = await channel.run(GET_VC_DOCUMENTS, {
-            type: 'type',
             owner: 'owner',
             issuer: 'issuer',
             id: 'id',
@@ -81,9 +80,6 @@ describe('Documents service', function () {
                 },
                 'policyId': {
                     '$eq': 'policyId'
-                },
-                'type': {
-                    '$eq': 'type'
                 }
             }
         });
@@ -242,6 +238,6 @@ describe('Documents service', function () {
             issuer: 'issuer',
             id: 'id',
         });
-        checkMessage(value, [{ issuer: 'issuer', id: 'id' }]);
+        checkMessage(value, { issuer: 'issuer', id: 'id' });
     });
 });

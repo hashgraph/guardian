@@ -56,7 +56,7 @@ describe('Root Authority service', function () {
 
     it('Test GET_ROOT_CONFIG', async function () {
         let value = await channel.run(GET_ROOT_CONFIG, null);
-        checkError(value, 'Root not found');
+        checkMessage(value, null);
 
         value = await channel.run(GET_ROOT_CONFIG, 'did');
         checkMessage(value, {
