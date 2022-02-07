@@ -14,7 +14,6 @@ const PORT = process.env.PORT || 3005;
     const vcHelper = new VCHelper();
     const defaultDocumentLoader = new DefaultDocumentLoader();
     const vcDocumentLoader = new VCDocumentLoader('https://localhost/schema', '');
-    vcHelper.addContext('https://localhost/schema');
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(vcDocumentLoader);
     vcHelper.buildDocumentLoader();
@@ -31,11 +30,13 @@ const PORT = process.env.PORT || 3005;
             key,
             policyId,
             type,
+            context,
             schema,
             policyTag
         } = config;
 
         vcDocumentLoader.setDocument(schema);
+        vcDocumentLoader.setContext(context);
 
         const hederaHelper = HederaHelper
             .setOperator(hederaAccountId, hederaAccountKey)
@@ -44,7 +45,9 @@ const PORT = process.env.PORT || 3005;
         let document, vc;
         try {
             const date = (new Date()).toISOString();
-            const vcSubject: any = {};
+            const vcSubject: any = {
+                ...context
+            };
             if (setting) {
                 const keys = Object.keys(setting);
                 for (let i = 0; i < keys.length; i++) {
@@ -58,7 +61,6 @@ const PORT = process.env.PORT || 3005;
                     }
                 }
             }
-            vcSubject.type = type;
             vcSubject.policyId = policyId;
             vcSubject.accountId = hederaAccountId;
 
