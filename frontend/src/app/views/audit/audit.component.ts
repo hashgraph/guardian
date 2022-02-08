@@ -5,7 +5,7 @@ import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
-import { Schema } from 'interfaces';
+import { Schema, SchemaHelper } from 'interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
@@ -56,7 +56,7 @@ export class AuditComponent implements OnInit {
 
             this.loading = false;
             this.dataSource = data;
-            this.schemas = Schema.mapRef(schemes);
+            this.schemas = SchemaHelper.map(schemes);
         }, (error) => {
             this.loading = false;
             console.error(error);

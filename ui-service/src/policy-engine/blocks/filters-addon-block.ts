@@ -19,9 +19,6 @@ export class FiltersAddonBlock {
     @Inject()
     private users: Users;
 
-    @Inject()
-    private guardians: Guardians;
-
     private init(): void {
         const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
         if (!ref.options.canBeEmpty) {

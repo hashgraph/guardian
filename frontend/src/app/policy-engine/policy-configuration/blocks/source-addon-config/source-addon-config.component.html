@@ -5,9 +5,9 @@
         <td class="propRowCell cellName">Data Type</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.dataType" [disabled]="readonly">
-                <mat-option value="vc-documents">VC</mat-option>
-                <mat-option value="did-documents">DID</mat-option>
-                <mat-option value="approve">Approve</mat-option>
+                <mat-option value="vc-documents">Collection (VC)</mat-option>
+                <mat-option value="did-documents">Collection (DID)</mat-option>
+                <mat-option value="approve">Collection (Approve)</mat-option>
             </mat-select>
         </td>
     </tr>
@@ -16,7 +16,7 @@
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.schema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemes" [value]="schema.ref">{{schema.name}}</mat-option>
+                <mat-option *ngFor="let schema of schemes" [value]="schema.messageId">{{schema.name}} ({{schema.version}})</mat-option>
             </mat-select>
         </td>
     </tr>

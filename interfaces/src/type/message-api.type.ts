@@ -12,6 +12,7 @@ export enum MessageAPI {
     IMPORT_TOKENS = 'import-tokens',
     LOAD_DID_DOCUMENT = 'load-did-document',
     LOAD_SCHEMA_DOCUMENT = 'load-schema-document',
+    LOAD_SCHEMA_CONTEXT = 'load-schema-context',
     GET_ROOT_CONFIG = 'get-root-config',
     SET_ROOT_CONFIG = 'set-root-config',
     SET_APPROVE_DOCUMENTS = 'set-approve-documents',
@@ -25,6 +26,8 @@ export enum MessageAPI {
     PUBLISH_SCHEMA = 'publish-schema',
     UNPUBLISHED_SCHEMA = 'unpublished-schema',
     DELETE_SCHEMA = 'delete-schema',
-    LOAD_SCHEMA = 'load-schema',
-    IPFS_ADD_FILE = 'ipfs-add-file'
+    PREVIEW_SCHEMA = 'preview-schema',
+    IPFS_ADD_FILE = 'ipfs-add-file',
+    IPFS_GET_FILE = 'ipfs-get-file',
+    GET_SCHEMA = 'get-schema'
 }

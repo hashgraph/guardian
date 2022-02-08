@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IVC, Schema } from 'interfaces';
+import { IVC, Schema, SchemaHelper } from 'interfaces';
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
@@ -93,7 +93,7 @@ export class TrustChainComponent implements OnInit {
                 const documents:any = value[0];
                 const schemes = value[1];
 
-                this.schemas = Schema.mapRef(schemes);
+                this.schemas = SchemaHelper.map(schemes);
 
                 const { chain, userMap } = documents;
                 this.userMap = {};
@@ -105,13 +105,13 @@ export class TrustChainComponent implements OnInit {
                 this.vp = this.mapData(chain).find(d => d.type === 'VP');
 
                 if(this.vp) {
-                    const vcMint: IVC = this.vp.document.verifiableCredential.find((vc: IVC) => vc.type.includes('MintToken') || vc.type.includes('MintNFToken'));
+                    const vcMint: IVC = this.vp.document.verifiableCredential.find((vc: IVC) => vc.type.includes('MintToken&1.0.0') || vc.type.includes('MintNFToken&1.0.0'));
                     if (vcMint) {
                         this.vpMint = {
                             ...vcMint.credentialSubject[0],
                             issuer: vcMint.issuer,
                             document: vcMint,
-                            schema: vcMint.type.includes('MintToken') ? 'MintToken' : 'MintNFToken',
+                            schema: vcMint.type.includes('MintToken') ? 'MintToken&1.0.0' : 'MintNFToken&1.0.0',
                             tag: 'Mint Token'
                         };
                         this.chain.push(this.vpMint);
@@ -122,7 +122,7 @@ export class TrustChainComponent implements OnInit {
                     this.vpMint = null;
                 }
 
-                const vcPolicy: any = this.chain.find((vc: any) => vc.type === 'VC' && vc.schema === 'Policy');
+                const vcPolicy: any = this.chain.find((vc: any) => vc.type === 'VC' && vc.schema === 'Policy&1.0.0');
                 if (vcPolicy) {
                     this.vpPolicy = {
                         ...vcPolicy.document.credentialSubject[0],

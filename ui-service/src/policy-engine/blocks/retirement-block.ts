@@ -6,7 +6,7 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature } from 'interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
@@ -103,7 +103,9 @@ export class RetirementBlock {
     private async createWipeVC(root, token, data: number): Promise<HcsVcDocument<VcSubject>> {
         const vcHelper = new VcHelper();
 
+        const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.WIPE_TOKEN); 
         const vcSubject = {
+            ...SchemaHelper.getContext(policySchema),
             date: (new Date()).toISOString(),
             tokenId: token.tokenId,
             amount: data.toString()
@@ -112,7 +114,6 @@ export class RetirementBlock {
         const wipeVC = await vcHelper.createVC(
             root.did,
             root.hederaAccountKey,
-            "WipeToken",
             vcSubject
         );
         return wipeVC;

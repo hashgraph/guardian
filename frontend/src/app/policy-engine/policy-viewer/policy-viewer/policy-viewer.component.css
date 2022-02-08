@@ -26,15 +26,6 @@
     width: 100%;
 }
 
-.table-container {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 10px;
-    top: 77px;
-    overflow: auto;
-}
-
 .btn-approve {
     background: #4caf50;
     border-radius: 6px;
@@ -52,10 +43,13 @@
     color: #2196f3;
 }
 
-
 .status-publish {
     font-weight: 500;
     color: #4caf50;
+}
+.status-invalid {
+    font-weight: 500;
+    color: #ff0000;
 }
 
 .btn-settings {
@@ -168,4 +162,27 @@ a.go-back-link mat-icon {
 .table-container .mat-column-open,
 .table-container .mat-column-operation {
     padding-left: 8px;
+}
+
+.actions-container {
+    display: none;
+    z-index: 1;
+}
+
+.table-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    top: 0px;
+    overflow: auto;
+    z-index: 1;
+}
+
+.actions-container[role='ROOT_AUTHORITY'] {
+    display: block;
+}
+
+.table-container[role='ROOT_AUTHORITY'] {
+    top: 77px;
 }

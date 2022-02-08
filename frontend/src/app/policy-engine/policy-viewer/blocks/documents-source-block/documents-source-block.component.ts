@@ -6,7 +6,7 @@ import { DialogBlock } from '../../dialog-block/dialog-block.component';
 import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
-import { Schema } from 'interfaces';
+import { Schema, SchemaHelper } from 'interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
@@ -80,7 +80,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             ]).subscribe((value) => {
                 const data: any = value[0];
                 const schemes = value[1];
-                this.schemas = Schema.mapRef(schemes);
+                this.schemas = SchemaHelper.map(schemes);
                 this.setData(data).then(() => {
                     setTimeout(() => {
                         this.loading = false;

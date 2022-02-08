@@ -22,7 +22,6 @@ export class Utils {
     }
 }
 
-
 export function timeout(timeoutValue: number) {
     return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: any[]) => Promise<any>>) => {
         let oldFunc = descriptor.value;

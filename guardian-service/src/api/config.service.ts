@@ -1,5 +1,5 @@
 import {readJSON, writeJSON} from 'fs-extra';
-import {IAddressBookConfig, MessageAPI} from 'interfaces';
+import {IAddressBookConfig, MessageAPI, MessageResponse} from 'interfaces';
 import path from 'path';
 import {HederaHelper} from 'vc-modules';
 import {AccountId, PrivateKey} from "@hashgraph/sdk";
@@ -81,6 +81,6 @@ export const configAPI = async function (
             vcTopic: fileContent['VC_TOPIC_ID'],
             didTopic: fileContent['DID_TOPIC_ID']
         }
-        res.send(config);
+        res.send(new MessageResponse(config));
     });
 }

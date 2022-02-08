@@ -67,7 +67,7 @@ async function createRootAuthorityProfile(profile: IUser) {
     const vc: any = profile.vcDocument || {};
     vc.id = did;
 
-    const vcDocument = await vcHelper.createVC(did, profile.hederaAccountKey, null, vc);
+    const vcDocument = await vcHelper.createVC(did, profile.hederaAccountKey, vc);
 
     await guardians.setVcDocument({
         hash: vcDocument.toCredentialHash(),

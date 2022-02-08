@@ -19,6 +19,7 @@ export enum PolicyAction {
 export class SavePolicyDialog {
     action?: PolicyAction;
     dataForm = this.fb.group({});
+    isNewVersionDisabled: boolean = false;
 
     private _isActionSelected$ = new ReplaySubject<boolean>(1);
 
@@ -32,6 +33,8 @@ export class SavePolicyDialog {
           else {
             this._isActionSelected$.next(false);
           }
+
+          this.isNewVersionDisabled = data.policy.owner !== data.policy.creator;
     }
 
     public get isActionSelected$(): Observable<boolean> {

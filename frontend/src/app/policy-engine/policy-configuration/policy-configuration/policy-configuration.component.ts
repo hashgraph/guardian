@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, SchemaStatus, Token } from 'interfaces';
+import { Schema, SchemaHelper, SchemaStatus, Token } from 'interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -98,7 +98,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const schemes = data[0] || [];
             const tokens = data[1] || [];
             const policy = data[2];
-            this.schemes = Schema.mapRef(schemes) || [];
+            this.schemes = SchemaHelper.map(schemes) || [];
             this.schemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
             this.schemes.unshift({
                 type: ""

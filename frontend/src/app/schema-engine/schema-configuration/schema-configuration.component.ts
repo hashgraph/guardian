@@ -158,7 +158,7 @@ export class SchemaConfigurationComponent implements OnInit {
         };
         this.schemaTypeMap["11"] = {
             type: 'string',
-            format: 'url',
+            format: undefined,
             pattern: '^((https):\/\/)?ipfs.io\/ipfs\/.+',
             isRef: false
         };
@@ -191,7 +191,7 @@ export class SchemaConfigurationComponent implements OnInit {
                         value: index
                     });
                     this.schemaTypeMap[index] = {
-                        type: this.schemes[i].ref,
+                        type: this.schemes[i].iri,
                         format: undefined,
                         pattern: undefined,
                         isRef: true,
@@ -347,6 +347,7 @@ export class SchemaConfigurationComponent implements OnInit {
             });
         }
         schema.update(fields);
+        schema.updateRefs(this.schemes);
         return schema;
     }
 

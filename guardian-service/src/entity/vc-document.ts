@@ -47,6 +47,9 @@ export class VcDocument implements IVCDocument {
     @Column()
     option: any;
 
+    @Column()
+    schema: string;
+
     @BeforeInsert()
     setDefaults() {
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;

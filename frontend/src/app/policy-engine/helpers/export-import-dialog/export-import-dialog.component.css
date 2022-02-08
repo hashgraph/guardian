@@ -38,9 +38,9 @@ form {
 }
 
 .delimiter {
-    padding: 50px 50px;
+    padding: 30px 30px;
     width: 100%;
-    height: 100px;
+    height: 60px;
     box-sizing: border-box;
     position: relative;
 }
@@ -49,7 +49,7 @@ form {
     content: '';
     position: absolute;
     height: 2px;
-    top: 50px;
+    top: 30px;
     left: 0px;
     right: 0px;
     border-top: 1px solid #c8c8c8;

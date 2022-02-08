@@ -1,4 +1,4 @@
-import { ISchema, SchemaEntity, SchemaStatus, Schema as SchemaModel } from 'interfaces';
+import { ISchema, ModelHelper, SchemaEntity, SchemaStatus } from 'interfaces';
 import { BeforeInsert, BeforeUpdate, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
@@ -31,10 +31,28 @@ export class Schema implements ISchema {
     document: string;
 
     @Column()
-    owner: string;
+    context: string;
 
     @Column()
     version: string;
+
+    @Column()
+    creator: string;
+
+    @Column()
+    owner: string;
+
+    @Column()
+    topicId: string;
+
+    @Column()
+    messageId: string;
+
+    @Column()
+    documentURL: string;
+
+    @Column()
+    contextURL: string;
 
     @Column()
     iri: string;
@@ -44,7 +62,7 @@ export class Schema implements ISchema {
         this.entity = this.entity || SchemaEntity.NONE;
         this.status = this.status || SchemaStatus.DRAFT;
         this.readonly = !!this.readonly;
-        this.uuid = this.uuid || SchemaModel.randomUUID();
+        this.uuid = this.uuid || ModelHelper.randomUUID();
         this.iri = this.iri || null;
     }
 }

@@ -5,10 +5,12 @@ import { ProfileService } from '../../services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
 import { SchemaDialog } from '../../schema-engine/schema-dialog/schema-dialog.component';
-import { ISchema, IUser, Schema, SchemaStatus } from 'interfaces';
+import { ISchema, IUser, Schema, SchemaHelper, SchemaStatus } from 'interfaces';
 import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { SchemaViewDialog } from 'src/app/schema-engine/schema-view-dialog/schema-view-dialog.component';
+import { ExportModelDialog } from 'src/app/components/export-model-dialog/export-model-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -107,7 +109,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
-                document: element.schema,
+                document: element.documentObject,
                 title: 'Schema',
                 type: 'JSON',
             }
@@ -155,6 +157,39 @@ export class SchemaConfigComponent implements OnInit {
             if (schema) {
                 this.loading = true;
                 this.schemaService.newVersion(schema, element.id).subscribe((data) => {
+                    this.setSchema(data);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
+    newDocument(element: Schema) {
+        const newDocument:any = {...element};
+        delete newDocument.id;
+        delete newDocument.uuid;
+        delete newDocument.creator;
+        delete newDocument.owner;
+        delete newDocument.version;
+        delete newDocument.previousVersion;
+        const dialogRef = this.dialog.open(SchemaDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                type: 'version',
+                schemes: this.publishSchemes,
+                scheme: newDocument
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+            if (schema) {
+                this.loading = true;
+                this.schemaService.create(schema).subscribe((data) => {
                     this.setSchema(data);
                     setTimeout(() => {
                         this.loading = false;
@@ -215,14 +250,36 @@ export class SchemaConfigComponent implements OnInit {
 
     async importSchemes() {
         const dialogRef = this.dialog.open(ImportSchemaDialog, {
-            width: '850px',
+            width: '500px',
             data: {
-                schemes: this.schemes
+                schemes: this.schemes,
+                callbackIpfsImport: this.schemaPreview.bind(this)
+            }
+        });
+        // dialogRef.afterClosed().subscribe(async (result) => {
+        //     if (result && result.schemes) {
+        //         this.schemaService.import(result.schemes).subscribe((data) => {
+        //             this.setSchema(data);
+        //             this.loading = false;
+        //         }, (e) => {
+        //             this.loading = false;
+        //         });
+        //     }
+        // });
+    }
+
+    schemaPreview(schema: string, messageId: string){
+        const dialogRef = this.dialog.open(SchemaViewDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                schema: schema
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
-            if (result && result.schemes) {
-                this.schemaService.import(result.schemes).subscribe((data) => {
+            if (result) {
+                this.loading = true;
+                this.schemaService.importByMessage(messageId).subscribe((data) => {
                     this.setSchema(data);
                     this.loading = false;
                 }, (e) => {
@@ -233,20 +290,22 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     setSchema(data: ISchema[]) {
-        this.schemes = Schema.mapRef(data) || [];
+        this.schemes = SchemaHelper.map(data);
         this.schemes =  this.schemes.filter(s=>!s.readonly);
         this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
+        
     }
 
     exportSchemes() {
-        const ids = this.schemes.filter((s: any) => s._selected).map(s => s.uuid);
-        this.schemaService.export(ids).subscribe((data) => {
-            this.downloadObjectAsJson(data.schemes, 'schema');
-            this.loading = false;
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        const selectedSchemas = this.schemes.filter((schema:any) => schema._selected).map(schema=>schema.id);
+        this.schemaService.export(selectedSchemas)
+            .subscribe(res => this.dialog.open(ExportModelDialog, {
+                width: '700px',
+                data: {
+                    models: res
+                },
+                autoFocus: false
+            }));
     }
 
     downloadObjectAsJson(exportObj: any, exportName: string) {
@@ -263,7 +322,10 @@ export class SchemaConfigComponent implements OnInit {
         this.selectedAll = selectedAll;
         for (let i = 0; i < this.schemes.length; i++) {
             const element: any = this.schemes[i];
-            element._selected = selectedAll;
+            if (element.messageId)
+            {
+                element._selected = selectedAll;
+            }
         }
         this.schemes = this.schemes.slice();
     }
