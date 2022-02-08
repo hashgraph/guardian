@@ -42,9 +42,9 @@ describe('Tests', async function() {
                     shell: true,
                 })
             )
-            await sleep(5000);
+            await sleep(15000);
         }
-        await sleep(15000);
+        await sleep(35000);
     })
 
     beforeEach(GenerateTokens);
