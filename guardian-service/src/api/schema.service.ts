@@ -1,20 +1,20 @@
 import { Schema } from '@entity/schema';
 import { RootConfig } from '@entity/root-config';
-import { 
-    ISchema, 
-    MessageAPI, 
-    SchemaEntity, 
+import {
+    ISchema,
+    MessageAPI,
+    SchemaEntity,
     SchemaStatus,
-    SchemaHelper, 
-    MessageResponse, 
-    MessageError 
+    SchemaHelper,
+    MessageResponse,
+    MessageError
 } from 'interfaces';
-import { 
-    HederaHelper, 
-    HederaMirrorNodeHelper, 
-    HederaSenderHelper, 
-    ISchemaSubmitMessage, 
-    ModelActionType 
+import {
+    HederaHelper,
+    HederaMirrorNodeHelper,
+    HederaSenderHelper,
+    ISchemaSubmitMessage,
+    ModelActionType
 } from 'vc-modules';
 import { MongoRepository } from 'typeorm';
 import { readJSON } from 'fs-extra';
@@ -60,25 +60,30 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
     }
 
     const messages = Object.values(fileContent);
-    const existingSchemes = await schemaRepository.find({ where: { messageId: { $in: messages } } });
-
-    console.log("Load Schemes...");
-    for (let i = 0; i < messages.length; i++) {
-        const messageId = messages[i] as string;
-        const existingItem = existingSchemes.find(s => s.messageId === messageId);
-        if (existingItem) {
-            console.log("Skip " + existingItem.messageId);
-            continue;
+    const fn = async () => {
+        try {
+            const existingSchemes = await schemaRepository.find({ where: { messageId: { $in: messages } } });
+            for (let i = 0; i < messages.length; i++) {
+                const messageId = messages[i] as string;
+                const existingItem = existingSchemes.find(s => s.messageId === messageId);
+                if (existingItem) {
+                    console.log(`Skip schema: ${existingItem.messageId}`);
+                    continue;
+                }
+                const schema = await loadSchema(messageId, null) as ISchema;
+                schema.owner = null;
+                schema.creator = null;
+                schema.readonly = true;
+                console.log(`Start loading schema: ${messageId}`);
+                const item: any = schemaRepository.create(schema);
+                await schemaRepository.save(item);
+                console.log(`Created schema: ${item.messageId}`);
+            }
+        } catch (error) {
+            await fn();
         }
-        const schema = await loadSchema(messageId, null) as ISchema;
-        schema.owner = null;
-        schema.creator = null;
-        schema.readonly = true;
-        console.log("Load " + messageId);
-        const item: any = schemaRepository.create(schema);
-        await schemaRepository.save(item);
-        console.log(`Created schema: ${item.messageId}`);
     }
+    await fn();
 }
 
 const loadSchema = async function (messageId: string, owner: string) {
