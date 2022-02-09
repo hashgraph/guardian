@@ -37,7 +37,7 @@ There is a new feature as of version 1.0.2 which allows for the *Importing of Po
 4. Next, we move over to the **Schemas** tab. Schemas are the structure of which Verifiable Credentials will be filled out. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create the following schemas: iRec registration applicant details, Inveter, and MRV Schemas. The current version of the solution allows you to either build schemas from scratch or import schemas. Please note, that when you build schemas from scratch and publish them, they will be uploaded into IPFS and then the message containing the IPFS CID is sent into the corresponding Hedera topic. In this guide, we have already uploaded sample schemas for you to use. To import the sample schemas, please click on the **Import** button and paste the following Hedera message IDs one by one:
 
 
-![Schema step 2](https://user-images.githubusercontent.com/40637665/153241294-2eba49a5-0e8a-4dbc-8879-2760c34b3184.png)
+![Schema step 2](https://user-images.githubusercontent.com/84465157/153246591-80933214-a742-42cd-bce2-a1c8de71bf53.png)
 
 
 - `1643997352.894020620` 
