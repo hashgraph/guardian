@@ -71,6 +71,7 @@ To get a local copy up and running, follow these simple example steps. When buil
 - [Docker](https://www.docker.com/) (To build with one command)
 - [MongoDB](https://www.mongodb.com/) and [NodeJS](https://nodejs.org/) (If you would like to manually build every component)
 - [Hedera Testnet Account](https://portal.hedera.com/)
+- [NFT.Storage Account](https://nft.storage/#getting-started)
 
 ### Installation
 
@@ -120,11 +121,11 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
    ``` 
-4. If you want to build with Docker (Once this step you are finished)
+4. If you want to build with Docker. Please note that the Docker build is meant to be used in production and will not contain any debug information. (Once this step you are finished)
    ```
    docker-compose up -d --build
    ```
-5. If you want to manually build every component, then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly, the MRV Sender Service. See below for commands.
+5. If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
    **From the Message broker folder (Need to run first)**
 
@@ -155,6 +156,21 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    npm start
    ```
+ 
+ **From the Guardian Service folder**
+
+   To build the service:
+
+   ```
+   npm install
+   npm run build
+   ```
+
+   To start the service (found on http://localhost:3004):
+
+   ```
+   npm start
+   ```
 
    **From the UI Service folder**
 
@@ -166,21 +182,6 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
 
    To start the service (found on http://localhost:3002):
-
-   ```
-   npm start
-   ```
-
-   **From the Guardian Service folder**
-
-   To build the service:
-
-   ```
-   npm install
-   npm run build
-   ```
-
-   To start the service (found on http://localhost:3004):
 
    ```
    npm start
@@ -239,6 +240,7 @@ cd message-broker
 npm run test
 ```
 
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Swagger API
@@ -252,6 +254,15 @@ After successfully launching your application, you can find the generated Swagge
 Postman Collection that covers all available API endpoints could be found [here](https://github.com/hashgraph/guardian/tree/main/ui-service/api/Guardian.postman_collection.json).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+## API Tests
+
+```
+cd api-tests
+npm install
+npm run test
+
+```
 
 ## Demo Usage Guide
 
@@ -286,6 +297,7 @@ The Guardian solution is built with the following major frameworks/libraries.
 - [TypeORM](https://typeorm.io/)
 - [Hedera-DID-JS-SDK](https://github.com/hashgraph/did-sdk-js)
 - [W3C VC-JS-HTTP](https://w3c.github.io/vc-data-model/)
+- [IPFS](https://nft.storage/#getting-started)
 
 ### Frontend
 
