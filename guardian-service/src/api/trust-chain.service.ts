@@ -73,6 +73,7 @@ export const trustChainAPI = async function (
             type: 'VC',
             id: vc.hash,
             document: vc.document,
+            entity: vc.type,
             owner: vc.owner,
             schema: schema,
             tag: vc.tag,
@@ -88,6 +89,7 @@ export const trustChainAPI = async function (
             owner: issuer,
             schema: null,
             label: 'DID',
+            entity: 'DID',
             tag: null
         });
 
@@ -130,6 +132,7 @@ export const trustChainAPI = async function (
                     owner: policy.owner,
                     schema: getField(policy, 'type'),
                     label: 'HASH',
+                    entity: 'Policy',
                     tag: "Policy Created"
                 });
                 const issuer = getIssuer(policy);
@@ -143,6 +146,7 @@ export const trustChainAPI = async function (
                     owner: issuer,
                     schema: null,
                     label: 'DID',
+                    entity: 'DID',
                     tag: null
                 });
 
@@ -160,6 +164,7 @@ export const trustChainAPI = async function (
                         owner: rootAuthority.owner,
                         schema: getField(rootAuthority, 'type'),
                         label: 'HASH',
+                        entity: 'RootAuthority',
                         tag: "Account Creation"
                     });
                 }
@@ -199,6 +204,7 @@ export const trustChainAPI = async function (
                     owner: root.owner,
                     schema: 'VerifiablePresentation',
                     label: 'HASH',
+                    entity: 'VP',
                     tag: root.tag
                 });
                 const vpDocument = HcsVpDocument.fromJsonTree(root.document);
@@ -221,6 +227,7 @@ export const trustChainAPI = async function (
                     owner: root.owner,
                     schema: 'VerifiablePresentation',
                     label: 'ID',
+                    entity: 'VP',
                     tag: root.tag
                 });
                 const vpDocument = HcsVpDocument.fromJsonTree(root.document);

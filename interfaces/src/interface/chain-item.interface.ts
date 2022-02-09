@@ -6,4 +6,5 @@ export interface IChainItem {
     schema: string;
     label: string;
     tag: string;
+    entity: string;
 }

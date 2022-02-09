@@ -90,7 +90,7 @@ export class TrustChainComponent implements OnInit {
                 this.auditService.searchHash(value),
                 this.schemaService.getSchemes()
             ]).subscribe((value) => {
-                const documents:any = value[0];
+                const documents: any = value[0];
                 const schemes = value[1];
 
                 this.schemas = SchemaHelper.map(schemes);
@@ -104,14 +104,15 @@ export class TrustChainComponent implements OnInit {
                 this.chain = this.mapData(chain).filter(d => d.type === 'VC').reverse();
                 this.vp = this.mapData(chain).find(d => d.type === 'VP');
 
-                if(this.vp) {
-                    const vcMint: IVC = this.vp.document.verifiableCredential.find((vc: IVC) => vc.type.includes('MintToken&1.0.0') || vc.type.includes('MintNFToken&1.0.0'));
+                if (this.vp) {
+                    const vcMint: IVC = this.vp.document.verifiableCredential[this.vp.document.verifiableCredential.length - 1];
                     if (vcMint) {
                         this.vpMint = {
                             ...vcMint.credentialSubject[0],
                             issuer: vcMint.issuer,
                             document: vcMint,
-                            schema: vcMint.type.includes('MintToken') ? 'MintToken&1.0.0' : 'MintNFToken&1.0.0',
+                            schema: vcMint.credentialSubject[0].type,
+                            entity: 'Mint',
                             tag: 'Mint Token'
                         };
                         this.chain.push(this.vpMint);
@@ -122,7 +123,7 @@ export class TrustChainComponent implements OnInit {
                     this.vpMint = null;
                 }
 
-                const vcPolicy: any = this.chain.find((vc: any) => vc.type === 'VC' && vc.schema === 'Policy&1.0.0');
+                const vcPolicy: any = this.chain.find((vc: any) => vc.entity === 'Policy');
                 if (vcPolicy) {
                     this.vpPolicy = {
                         ...vcPolicy.document.credentialSubject[0],
