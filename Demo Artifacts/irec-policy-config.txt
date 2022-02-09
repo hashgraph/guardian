@@ -1,13 +1,13 @@
 {
   "blockType": "interfaceContainerBlock",
-  "id": "44e4d880-c453-4ac2-81a1-2aa7a3d9e9fe",
+  "id": "36425bbc-8a45-41bd-88ba-c80d0c0ffa2b",
   "permissions": [
     "ANY_ROLE"
   ],
   "defaultActive": true,
   "children": [
     {
-      "id": "00e1439f-406c-4a6a-a6e8-5cadea0cac2c",
+      "id": "78f149fe-63b0-4045-9385-39310cc413de",
       "tag": "choose_role",
       "blockType": "policyRolesBlock",
       "defaultActive": true,
@@ -24,13 +24,13 @@
       ]
     },
     {
-      "id": "4fbdea63-6c2a-4f9a-aafc-01a8897e4b5f",
+      "id": "bdfb763b-950e-463e-a7af-43b8353ef816",
       "tag": "init_installer_steps",
       "blockType": "interfaceStepBlock",
       "defaultActive": true,
       "children": [
         {
-          "id": "bdca11a4-a0c0-4daf-842d-5ad30316d265",
+          "id": "42a91a0c-26d5-4217-82b9-3904a7e43d48",
           "tag": "add_new_installer_request",
           "blockType": "requestVcDocument",
           "defaultActive": true,
@@ -48,7 +48,7 @@
           "schema": "1643997352.894020620"
         },
         {
-          "id": "310ca8ed-4aa6-4999-b361-43413fce7b3d",
+          "id": "afc3c09b-c149-4be7-9fbb-77e537415d5f",
           "tag": "save_new_approve_document",
           "blockType": "sendToGuardian",
           "defaultActive": false,
@@ -61,7 +61,7 @@
           "entityType": "Installer"
         },
         {
-          "id": "cfd4705d-8f38-4d5f-8156-611ad16c3ed2",
+          "id": "4dda9e8a-c98a-4d0e-a9d3-afd27107b58a",
           "tag": "wait_fo_approve",
           "blockType": "informationBlock",
           "defaultActive": true,
@@ -77,7 +77,7 @@
           "stopPropagation": true
         },
         {
-          "id": "dd7c85d7-09eb-4332-ae42-7302355e917a",
+          "id": "2636988f-cbd2-4c53-bb65-960a74b5191e",
           "tag": "update_approve_document_status",
           "blockType": "sendToGuardian",
           "defaultActive": false,
@@ -90,7 +90,7 @@
           "entityType": "Installer"
         },
         {
-          "id": "c3a3d4da-84ec-4fee-a4c6-0fffca643253",
+          "id": "9937df86-0035-4eff-a824-aaecb06dee5b",
           "tag": "send_installer_vc_to_hedera",
           "blockType": "sendToGuardian",
           "defaultActive": false,
@@ -103,7 +103,7 @@
           "dataType": "hedera"
         },
         {
-          "id": "7a46415e-c36d-4006-b869-0632efdf075b",
+          "id": "4094b77f-4b6d-4aeb-b0ad-ca5c342a3e94",
           "tag": "Submission_of_CSD01_Documentation",
           "blockType": "sendToGuardian",
           "defaultActive": false,
@@ -116,25 +116,25 @@
           "entityType": "Installer"
         },
         {
-          "id": "e6c4f9b2-7391-406e-a059-1c0430756bb3",
+          "id": "222f0fa5-0fd7-460c-9706-a699218c4b95",
           "tag": "installer_header",
           "blockType": "interfaceContainerBlock",
           "defaultActive": true,
           "children": [
             {
-              "id": "840b5ae2-61b5-4eb3-9669-8ac7c5f01dd3",
+              "id": "c70b3213-db7e-4bae-a2f5-da97f48179c3",
               "tag": "sensors_page",
               "blockType": "interfaceContainerBlock",
               "defaultActive": true,
               "children": [
                 {
-                  "id": "37d0830e-d0c9-4564-861f-25b74267b6a4",
+                  "id": "f1fc20b1-14f4-451a-b351-7cf1055b8c6e",
                   "tag": "sensors_grid",
                   "blockType": "interfaceDocumentsSource",
                   "defaultActive": true,
                   "children": [
                     {
-                      "id": "6c1554de-b84d-4320-816f-b4ae89fa2495",
+                      "id": "af64afb4-f0c7-4e8f-912e-5554ae606a2c",
                       "tag": "sensors_grid_source",
                       "blockType": "documentsSourceAddon",
                       "defaultActive": true,
@@ -201,7 +201,7 @@
                   ]
                 },
                 {
-                  "id": "4008c4be-a13f-4aca-9859-a502328eda01",
+                  "id": "54a39d18-fc75-4988-a342-98e6aa1680ff",
                   "tag": "download_config_btn",
                   "blockType": "interfaceAction",
                   "defaultActive": false,
@@ -219,13 +219,13 @@
                   "schema": "1643997257.576274198"
                 },
                 {
-                  "id": "e37b4873-ffb1-4f87-9a06-2c053ec8f5cd",
+                  "id": "bd273bf5-510a-474f-9f5d-683936081422",
                   "tag": "create_new_sensor_steps",
                   "blockType": "interfaceStepBlock",
                   "defaultActive": true,
                   "children": [
                     {
-                      "id": "62370be5-4a0d-402a-b6f8-3b9fd98c5b7b",
+                      "id": "0f424cc7-3e2c-44c2-9eb0-343fce70e40b",
                       "tag": "add_sensor_bnt",
                       "blockType": "requestVcDocument",
                       "defaultActive": true,
@@ -244,7 +244,7 @@
                       "schema": "1643997099.474610000"
                     },
                     {
-                      "id": "0f7ecfa1-b4fb-40b8-838d-c5e4a0a8fe53",
+                      "id": "6f6d36ce-7846-478f-b12e-d01ca7002ce6",
                       "tag": "send_sensor_vc_to_hedera",
                       "blockType": "sendToGuardian",
                       "defaultActive": true,
@@ -257,7 +257,7 @@
                       "entityType": "Inverter"
                     },
                     {
-                      "id": "7207c016-2ef9-468d-9cb4-40010489b3ea",
+                      "id": "da927309-0cff-439a-afcc-a6bc9046b964",
                       "tag": "CSD02_device_registration",
                       "blockType": "sendToGuardian",
                       "defaultActive": true,
@@ -288,19 +288,19 @@
               }
             },
             {
-              "id": "102723fd-fa61-4d56-94ba-10a45f575246",
+              "id": "386c056b-c490-4754-a80d-c8ee3eec341a",
               "tag": "mrv_page",
               "blockType": "interfaceContainerBlock",
               "defaultActive": true,
               "children": [
                 {
-                  "id": "f8b5cbbe-597b-41d5-aaa8-bafa0e5c5d12",
+                  "id": "74a90ccf-c1a7-4a66-aa2b-efb789d39f75",
                   "tag": "mrv_grid",
                   "blockType": "interfaceDocumentsSource",
                   "defaultActive": true,
                   "children": [
                     {
-                      "id": "0f4cc2fb-412c-4469-88a1-3c61dcb4c086",
+                      "id": "066740ce-9072-4dcb-8473-c5ec72611a84",
                       "tag": "mrv_grid_source",
                       "blockType": "documentsSourceAddon",
                       "defaultActive": true,
@@ -319,7 +319,6 @@
                         }
                       ],
                       "dataType": "vc-documents",
-                      "schema": "1643997257.576274198",
                       "onlyOwnDocuments": true
                     }
                   ],
@@ -374,7 +373,7 @@
           }
         },
         {
-          "id": "ca09f274-a456-4240-b547-5a6bd28a4a68",
+          "id": "43b9fda3-94e8-43fe-bd99-7e58f1328291",
           "tag": "rejected_approve_document_status",
           "blockType": "sendToGuardian",
           "defaultActive": false,
@@ -387,7 +386,7 @@
           "entityType": "Installer"
         },
         {
-          "id": "046f079a-e0da-40d7-9dfe-5da1828833cf",
+          "id": "dba6192c-1489-46f2-8484-ca88d79f7f1b",
           "tag": "installer_rejected",
           "blockType": "informationBlock",
           "defaultActive": true,
@@ -411,25 +410,25 @@
       }
     },
     {
-      "id": "2d1bc029-ccf7-4a3c-a409-74af349ff7bb",
+      "id": "9afff85d-2d4a-4874-9a1d-e9c5ec35e923",
       "tag": "root_authority_header",
       "blockType": "interfaceContainerBlock",
       "defaultActive": true,
       "children": [
         {
-          "id": "1a8c3bf1-b2e3-433d-a3d6-082adcf67c8a",
+          "id": "9ef41e8f-af46-47f9-bd1b-a6d3c693d1a9",
           "tag": "approve_page",
           "blockType": "interfaceContainerBlock",
           "defaultActive": true,
           "children": [
             {
-              "id": "c5d7e1cb-2f4f-4772-8087-bfc25710bd5a",
+              "id": "e48a1947-7c46-4f10-9dd3-7d5225fbea21",
               "tag": "approve_documents_grid",
               "blockType": "interfaceDocumentsSource",
               "defaultActive": true,
               "children": [
                 {
-                  "id": "4290dc36-2000-44c1-b2d7-63d9e05dabef",
+                  "id": "46b47948-ae2f-44b9-b7ae-1f22a2d8262c",
                   "tag": "approve_documents_grid_source",
                   "blockType": "documentsSourceAddon",
                   "defaultActive": true,
@@ -502,7 +501,7 @@
               ]
             },
             {
-              "id": "fbeebc36-ed76-4296-9038-b2563217480e",
+              "id": "c2916df4-6987-4aac-81ba-34705388bcfa",
               "tag": "approve_documents_btn",
               "blockType": "interfaceAction",
               "defaultActive": false,
@@ -548,13 +547,13 @@
       }
     },
     {
-      "id": "608bc99a-b175-40ff-87d8-239f36b08e8e",
+      "id": "4752a038-acf3-4519-a8b6-e69446dd9af2",
       "tag": "mint_events",
       "blockType": "interfaceContainerBlock",
       "defaultActive": false,
       "children": [
         {
-          "id": "2effac48-3d55-4822-a928-54c384d64c49",
+          "id": "f96616a7-863d-441b-9bfd-57f5274f82d3",
           "tag": "mrv_source",
           "blockType": "externalDataBlock",
           "defaultActive": true,
@@ -563,7 +562,7 @@
           "uiMetaData": {}
         },
         {
-          "id": "733bd6bc-68ee-443d-a260-c7441780da49",
+          "id": "148e1e66-47f0-4736-a932-7f5606d0b417",
           "tag": "CSD04_requesting_i_Rec_issuance",
           "blockType": "sendToGuardian",
           "defaultActive": true,
@@ -574,7 +573,7 @@
           "dataType": "vc-documents"
         },
         {
-          "id": "1692672d-8a7f-436b-9ef9-35fd981100e4",
+          "id": "802d9209-35b6-4851-864f-1c425e5fae81",
           "tag": "mint_token",
           "blockType": "mintDocument",
           "defaultActive": true,
