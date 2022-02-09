@@ -60,6 +60,11 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
     }
 
     const messages = Object.values(fileContent);
+    const wait = async (timeout:number) => {
+        return new Promise(function (resolve, reject) {
+            setTimeout(function () { resolve(true) }, timeout);
+        });
+    }
     const fn = async () => {
         try {
             const existingSchemes = await schemaRepository.find({ where: { messageId: { $in: messages } } });
@@ -80,6 +85,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 console.log(`Created schema: ${item.messageId}`);
             }
         } catch (error) {
+            console.error('ERROR: Unable to access ipfs');
+            await wait(10000);
             await fn();
         }
     }
