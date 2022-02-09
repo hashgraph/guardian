@@ -25,29 +25,40 @@ There is also a *Custom Role* which is called *User*. This role can be used to c
 
 ![Guardian step 3](https://user-images.githubusercontent.com/40637665/137956842-d9b3d0a3-7021-4304-9d1b-83d06ac115e2.png)
 
-4. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Download the `iRec_Application_Details.json` file found within this folder. Then click on the **Import** button and upload the `iRec_Application_Details.json` file.
 
 ---
 **NOTE**
 
-There is a new feature as of version 1.0.2 which allows for the *Importing of Policies* from the Root Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch. We have added a .zip folder with the iRec policy for you to import in the Demo Artifacts folder.
+There is a new feature as of version 1.0.2 which allows for the *Importing of Policies* from the Root Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch. As of release 1.0.5 we have implemented the functionality to import a policy that has been uploaded to IPFS. This is done via a Hedera message ID. You will need to find the Hedera message ID for the demo policy in step 0 below. Temporarily, the importing of a policy .zip folder has been disable and will be restored in a future release.
 
 ---
 
----
-**NOTE**
+4. Next, we move over to the **Schemas** tab. Schemas are the structure of which Verifiable Credentials will be filled out. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create the following schemas: iRec registration applicant details, Inveter, and MRV Schemas. The current version of the solution allows you to either build schemas from scratch or import schemas. Please note, that when you build schemas from scratch and publish them, they will be uploaded into IPFS and then the message containing the IPFS CID is sent into the corresponding Hedera topic. In this guide, we have already uploaded sample schemas for you to use. To import the sample schemas, please click on the **Import** button and paste the following Hedera message IDs one by one:
 
-Created or imported schema needs to be published via the **Publish** button after. This makes it available for inclusion in a policy.
 
----
+![Schema step 2](https://user-images.githubusercontent.com/40637665/153241294-2eba49a5-0e8a-4dbc-8879-2760c34b3184.png)
 
-![Guardian step 4](https://user-images.githubusercontent.com/40637665/137962816-b2791931-552e-4cbc-8290-002909421abb.png)
+
+- `1643997352.894020620` 
+- `1643997099.474610000`
+- `1643997257.576274198`
+
+Those Hedera message IDs correspond respectively to the iRec Application Details, Inveter, and MRV Schemas. 
+
+Again this step is not needed if you import the policy as discussed above.
+
 
 5. The next step of the flow is to create a token. Click the **Tokens** tab and click on **Create Token.** Here, we can fill out the necessary token information and token parameters such as Fungible/Non-Fungible (for this demo flow we will select Non-Fungible), Freeze, KYC, etc. For purposes of this demo, let us keep everything selected. When you click "OK", this action triggers Hedera Token Service to create the token on Hedera's Testnet. Clicking on the "Token ID" will bring you to the Dragon Glass Hedera Testnet explorer to track all token activity.
 
 ![Guardian step 5](https://user-images.githubusercontent.com/40637665/137963264-09779e4a-2127-4e4b-949f-f9c510350634.png)
 
-6. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. In our case, we will mimic the iRec Policy. Click **Create Policy** and fill the required information in the dialog box. Please note that you will need to create new **Tag** and **Version** numbers for each policy. identical Tags and Versions will cause an error. Once the Policy is complete, we have just **_created our first Policy Workflow and Policy Action Execution instance!_**
+6. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, as noted above, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the **import** button and enter the following Hedera message ID `1644000145.704011000`
+
+![Step2(1)](https://user-images.githubusercontent.com/40637665/153242444-c16f357f-d12c-4b92-a9f9-b50788c47b2c.png)
+
+Once you have done that, you can move onto steop 8. If you'd like to build a policy from scratch, please continue reading below.
+
+Click **Create Policy** and fill the required information in the dialog box. Please note that you will need to create new **Tag** and **Version** numbers for each policy. identical Tags and Versions will cause an error. Once the Policy is complete, we have just **_created our first Policy Workflow and Policy Action Execution instance!_**
 
 ![image](https://user-images.githubusercontent.com/40637665/148996500-7760ee19-872f-4e10-a549-376e05949fd9.png)
 
