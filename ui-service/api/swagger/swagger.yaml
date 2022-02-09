@@ -766,7 +766,7 @@ paths:
     put:
       tags:
         - schemas
-      description: Publishes the schema with the provided schema ID.
+      description: Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -811,7 +811,7 @@ paths:
     put:
       tags:
         - schemas
-      description: Updates the schema with the provided schema ID.
+      description: Updates the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -852,7 +852,7 @@ paths:
     delete:
       tags:
         - schemas
-      description: Deletes the schema with the provided schema ID.
+      description: Deletes the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -887,12 +887,12 @@ paths:
     post:
       tags:
         - schemas
-      description: Imports new schema from IPFS. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Imports new schema from IPFS.
       requestBody:
-        description: Object that contains topic message identifier.
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
         required: true
         content:
           application/json:
@@ -925,12 +925,12 @@ paths:
     post:
       tags:
         - schemas
-      description: Schema preview by topic message. Only users with the Root Authority role are allowed to make the request.
+      description: Previews the schema from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Schema preview.
       requestBody:
-        description: Object that contains topic message identifier.
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
         required: true
         content:
           application/json:
@@ -961,10 +961,10 @@ paths:
     post:
       tags:
         - schemas
-      description: Exports selected schemas. Only users with the Root Authority role are allowed to make the request.
+      description: Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of schema files. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Exports selected schemas.
+      summary: List Hedera message IDs of published schemas.
       requestBody:
         description: Object that contains IDs of schemas.
         required: true
@@ -1537,7 +1537,7 @@ paths:
     put:
       tags:
         - policies
-      description: Publishes selected policy. Only users with the Root Authority role are allowed to make the request.
+      description: Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -1555,7 +1555,7 @@ paths:
                 properties:
                   policyVersion:
                     type: string
-      summary: Publishes policy.
+      summary: Publishes the policy onto IPFS.
       security:
       - bearerAuth: []
       responses:
@@ -1767,7 +1767,7 @@ paths:
     get:
       tags:
         - policies
-      description: Exports selected policy as a zip file.
+      description: Returns the Hedera message ID for the policy previously published onto IPFS. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -1777,7 +1777,7 @@ paths:
           description: Selected policy ID.
       security:
       - bearerAuth: []
-      summary: Policy export.
+      summary: Return Heder message ID for the published policy.
       responses:
         200:
           description: Successful operation.
@@ -1800,12 +1800,12 @@ paths:
     post:
       tags:
         - policies
-      description: Imports new policy from IPFS.
+      description: Imports new policy from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Imports new policy from IPFS.
       requestBody:
-        description: Object that contains topic message identifier.
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy.
         required: true
         content:
           application/json:
@@ -1838,12 +1838,12 @@ paths:
     post:
       tags:
         - policies
-      description: Policy preview by topic message.
+      description: Previews the policy from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
       summary: Policy preview.
       security:
       - bearerAuth: []
       requestBody:
-        description: Object that contains topic message identifier.
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the policy.
         required: true
         content:
           application/json:
