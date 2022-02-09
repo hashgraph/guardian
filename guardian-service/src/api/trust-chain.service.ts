@@ -119,7 +119,7 @@ export const trustChainAPI = async function (
         if (policyId) {
             const policy = await vcDocumentRepository.findOne({
                 where: {
-                    type: { $eq: SchemaEntity.POLICY },
+                    entity: { $eq: SchemaEntity.POLICY },
                     policyId: { $eq: policyId }
                 }
             });
@@ -152,7 +152,7 @@ export const trustChainAPI = async function (
 
                 const rootAuthority = await vcDocumentRepository.findOne({
                     where: {
-                        type: { $eq: SchemaEntity.ROOT_AUTHORITY },
+                        entity: { $eq: SchemaEntity.ROOT_AUTHORITY },
                         owner: { $eq: issuer }
                     }
                 });
