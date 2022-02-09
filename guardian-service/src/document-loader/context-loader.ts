@@ -12,8 +12,8 @@ export class ContextDocumentLoader extends DocumentLoader {
     private readonly context: string;
 
     constructor(
-        context: string,
-        schemaRepository: MongoRepository<Schema>
+        schemaRepository: MongoRepository<Schema>,
+        context: string  
     ) {
         super();
         this.context = context;
@@ -48,7 +48,7 @@ export class ContextDocumentLoader extends DocumentLoader {
 
     private async loadSchemaContext(context: string): Promise<ISchema> {
         try {
-            if (context) {
+            if (!context) {
                 return null;
             }
             const schema = await this.schemaRepository.findOne({

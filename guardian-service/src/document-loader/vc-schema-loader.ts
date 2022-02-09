@@ -54,12 +54,13 @@ export class VCSchemaLoader extends SchemaLoader {
                 return this.vcSchema(document);
             }
         }
-        throw new Error('Schema not found');
+
+        throw new Error('IRI Schema not found');
     }
 
     private async loadSchemaContexts(context: string[]): Promise<ISchema[]> {
         try {
-            if (context) {
+            if (!context) {
                 return null;
             }
             const schema = await this.schemaRepository.find({

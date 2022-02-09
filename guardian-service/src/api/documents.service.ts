@@ -98,7 +98,7 @@ export const documentsAPI = async function (
     channel.response(MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
         if (msg.payload) {
             const reqObj: any = { where: {} };
-            const { type, owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
+            const { owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
             if (owner) {
                 reqObj.where['owner'] = { $eq: owner }
             }
