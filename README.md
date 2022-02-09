@@ -96,6 +96,15 @@ To get a local copy up and running, follow these simple example steps. When buil
    OPERATOR_ID=0.0.123456789
    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
    ```
+   
+   in `guardian-service/.env.docker`:
+   
+   ```
+    OPERATOR_ID=0.0.123456789
+    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+    SCHEMA_TOPIC_ID="0.0.29614911"
+   ```
+   Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
 
    in `guardian-service/config.json`:
 
