@@ -422,6 +422,19 @@ components:
     ExportPolicy:
       type: object
       required:
+        - name
+        - version
+        - messageId
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        tokens:
+          type: string
+    PreviewPolicy
+      type: object
+      required:
         - policy
         - schemas
         - tokens
@@ -764,6 +777,16 @@ paths:
       security:
       - bearerAuth: []
       summary: Publishes the schema.
+      requestBody:
+        description: Object that contains policy version.
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
       responses:
         200:
           description: Successful operation.
@@ -1761,7 +1784,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportSchema'
+                $ref: '#/components/schemas/ExportPolicy'
         401:
           description: Unauthorized.
         403:
@@ -1835,7 +1858,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportPolicy'
+                $ref: '#/components/schemas/PreviewPolicy'
         401:
           description: Unauthorized.
         403:
