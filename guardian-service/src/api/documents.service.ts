@@ -190,6 +190,7 @@ export const documentsAPI = async function (
     channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
         const vpDocumentObject = vpDocumentRepository.create(msg.payload);
         const result: any = await vpDocumentRepository.save(vpDocumentObject);
+        console.log('create VP', vpDocumentObject, result);
         res.send(result);
     });
 
@@ -223,6 +224,7 @@ export const documentsAPI = async function (
      */
     channel.response(MessageAPI.FIND_VP_DOCUMENTS, async (msg, res) => {
         try {
+            console.log('FIND_VP_DOCUMENTS', msg.payload);
             const pageSize = Number(msg.payload.pageSize);
             const currentPage = Number(msg.payload.page) === 0 ? 1 : Number(msg.payload.page);
             const skip = pageSize * (currentPage - 1);
@@ -251,7 +253,7 @@ export const documentsAPI = async function (
                 startDate.setHours(startDate.getHours() - 24);
                 reqObj.where['createDate'] = { $gt: startDate }
             }
-
+            console.log('getvpdocuments reqObj', reqObj);
             const documents: [IVPDocument[], number] = await vpDocumentRepository.findAndCount(reqObj);
             const lastPage = Math.ceil(documents[1] / pageSize);
             const response  = {
@@ -263,6 +265,7 @@ export const documentsAPI = async function (
                 hasPrevPage: currentPage > 1,
                 data: documents[0]
             };
+            console.log('documents', documents);
             res.send(response);
         } catch (error) {
             console.error(error);
