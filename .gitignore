@@ -28,3 +28,4 @@ ui-service/.vs/
 ipfs-client/package-lock.json
 /api-tests/node_modules/
 /api-tests/package-lock.json
+guardian-service/config.json
