@@ -452,4 +452,13 @@ export class Guardians {
     public async getSchemaPreview(messageId: string | string[]): Promise<ISchema[]> {
         return await this.request(MessageAPI.PREVIEW_SCHEMA, messageId);
     }
+
+    /**
+     * Generate Demo Key
+     * 
+     * @returns {any} Demo Key
+     */
+     public async generateDemoKey(): Promise<any> {
+        return await this.request(MessageAPI.GENERATE_DEMO_KEY, null);
+    }
 }

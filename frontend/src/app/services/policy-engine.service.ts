@@ -172,16 +172,38 @@ export class PolicyEngineService {
     return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}/parents`);
   }
 
-  public exportPolicy(policyId: string): Observable<any> {
-    return this.http.get(`${this.url}/${policyId}/export`);
+  public exportInFile(policyId: string): Observable<any> {
+    return this.http.get(`${this.url}/${policyId}/export/file`, {
+      responseType: 'blob'
+    });
+  }
+
+  public exportInMessage(policyId: string): Observable<any> {
+    return this.http.get(`${this.url}/${policyId}/export/message`);
   }
 
   public importByMessage(messageId: string): Observable<any[]> {
-    return this.http.post<any[]>(`${this.url}/import`, { messageId: messageId });
+    return this.http.post<any[]>(`${this.url}/import/message`, messageId);
+  }
+
+  public importByFile(policyFile: any): Observable<any[]> {
+    return this.http.post<any[]>(`${this.url}/import/file`, policyFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
   }
 
   public previewByMessage(messageId: string): Observable<any> {
-    return this.http.post<any>(`${this.url}/import/preview`, { messageId: messageId });
+    return this.http.post<any>(`${this.url}/import/message/preview`, messageId);
+  }
+
+  public previewByFile(policyFile: any): Observable<any> {
+    return this.http.post<any[]>(`${this.url}/import/file/preview`, policyFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
   }
 
   public toYAML(json: any): Observable<any> {

@@ -37,6 +37,7 @@ form {
 
 .content {
     overflow: visible;
+    position: relative;
 }
 
 
@@ -107,4 +108,11 @@ form {
     justify-items: center;
     justify-content: center;
     align-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 30px;
+    bottom: 0;
+    background: #fff;
+    z-index: 1;
 }

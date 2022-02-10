@@ -18,7 +18,6 @@ export class ImportPolicyDialog {
   dataForm = this.fb.group({
     timestamp: ['']
   });
-  callbackFileImport: any;
   loading: boolean = false;
 
   private _isimportTypeSelected$ = new ReplaySubject<boolean>(1);
@@ -36,15 +35,14 @@ export class ImportPolicyDialog {
   }
 
   ngOnInit() {
-    this.callbackFileImport = this.data.callbackFileImport;
-    this.setImportType(ImportType.IPFS);
+    // this.setImportType(ImportType.IPFS);
   }
 
   onNoClick(): void {
     this.dialogRef.close(null);
   }
 
-  onSubmit() {
+  importFromMessage() {
     if (!this.dataForm.valid) {
       return;
     }
@@ -53,8 +51,10 @@ export class ImportPolicyDialog {
 
     this.policyEngineService.previewByMessage(messageId)
       .subscribe(result => {
+        this.loading = false;
         this.dialogRef.close({
-          messageId: messageId,
+          type: 'message',
+          data: messageId,
           policy: result
         });
       }, error => {
@@ -68,7 +68,29 @@ export class ImportPolicyDialog {
   }
 
   importFromFile() {
-    this.dialogRef.close();
-    this.callbackFileImport();
+    this.loading = true;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.zip';
+    input.click();
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      const reader = new FileReader()
+      reader.readAsArrayBuffer(file);
+      reader.addEventListener('load', (e: any) => {
+        const arrayBuffer = e.target.result;
+        this.loading = true;
+        this.policyEngineService.previewByFile(arrayBuffer).subscribe((result) => {
+          this.loading = false;
+          this.dialogRef.close({
+            type: 'file',
+            data: arrayBuffer,
+            policy: result
+          });
+        }, (e) => {
+          this.loading = false;
+        });
+      });
+    }
   }
 }

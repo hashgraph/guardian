@@ -126,7 +126,9 @@
             <td class="propRowCell cellName">Schema</td>
             <td class="propRowCell">
                 <mat-select [(value)]="block.schema" [disabled]="readonly">
-                    <mat-option *ngFor="let schema of schemes" [value]="schema.messageId">{{schema.name}} ({{schema.version}})</mat-option>
+                    <mat-option *ngFor="let schema of schemes" [value]="schema.messageId">
+                        {{schema.name}}<span *ngIf="schema.version">({{schema.version}})</span>
+                    </mat-option>
                 </mat-select>
             </td>
         </tr>

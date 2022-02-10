@@ -94,40 +94,44 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 }
 
 const loadSchema = async function (messageId: string, owner: string) {
-    if (schemaCache[messageId]) {
-        return schemaCache[messageId];
+    try {
+        if (schemaCache[messageId]) {
+            return schemaCache[messageId];
+        }
+        console.log("loadSchema: " + messageId);
+        const { topicId, message } = await HederaMirrorNodeHelper.getSchemaTopicMessage(messageId);
+        console.log("loadSchema message");
+        console.log("loadSchema ipfs " + message.document_cid);
+        const documentObject = await IPFS.getFile(message.document_cid, "str") as string;
+        console.log("loadSchema ipfs " + message.context_cid);
+        const contextObject = await IPFS.getFile(message.context_cid, "str") as string;
+        console.log("loadSchema files");
+        const schemaToImport: any = {
+            uuid: message.uuid,
+            hash: "",
+            name: message.name,
+            description: message.description,
+            entity: message.entity as SchemaEntity,
+            status: SchemaStatus.PUBLISHED,
+            readonly: false,
+            document: documentObject,
+            context: contextObject,
+            version: message.version,
+            creator: message.owner,
+            owner: owner,
+            topicId: topicId,
+            messageId: messageId,
+            documentURL: message.document_url,
+            contextURL: message.context_url,
+            iri: null
+        }
+        updateIRI(schemaToImport);
+        console.log("loadSchema end: " + messageId);
+        schemaCache[messageId] = { ...schemaToImport };
+        return schemaToImport;
+    } catch (error) {
+        throw new Error(`Cannot load schema ${messageId}`);
     }
-    console.log("loadSchema: " + messageId);
-    const { topicId, message } = await HederaMirrorNodeHelper.getSchemaTopicMessage(messageId);
-    console.log("loadSchema message");
-    console.log("loadSchema ipfs " + message.document_cid);
-    const documentObject = await IPFS.getFile(message.document_cid, "str") as string;
-    console.log("loadSchema ipfs " + message.context_cid);
-    const contextObject = await IPFS.getFile(message.context_cid, "str") as string;
-    console.log("loadSchema files");
-    const schemaToImport: any = {
-        uuid: message.uuid,
-        hash: "",
-        name: message.name,
-        description: message.description,
-        entity: message.entity as SchemaEntity,
-        status: SchemaStatus.PUBLISHED,
-        readonly: false,
-        document: documentObject,
-        context: contextObject,
-        version: message.version,
-        creator: message.owner,
-        owner: owner,
-        topicId: topicId,
-        messageId: messageId,
-        documentURL: message.document_url,
-        contextURL: message.context_url,
-        iri: null
-    }
-    updateIRI(schemaToImport);
-    console.log("loadSchema end: " + messageId);
-    schemaCache[messageId] = { ...schemaToImport };
-    return schemaToImport;
 }
 
 const updateIRI = function (schema: ISchema) {

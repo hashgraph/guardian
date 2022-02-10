@@ -58,6 +58,12 @@ form {
 .field-value {  
     color: #000;
     font-size: 20px;
+    margin-bottom: 20px;
+    max-width: 600px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-left: 8px;
 }
 
 .field-name {  

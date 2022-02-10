@@ -63,7 +63,7 @@ export namespace PolicyImportExportHelper {
      * @returns Policies by owner  
      */
 
-    export async function importPolicy(policyToImport: any, policyOwner: string, messageId:string): Promise<Policy[]> {
+    export async function importPolicy(policyToImport: any, policyOwner: string): Promise<Policy[]> {
         const { policy, tokens } = policyToImport;
         const guardians = new Guardians();
 
@@ -96,21 +96,26 @@ export namespace PolicyImportExportHelper {
         }
 
         delete policy.id;
-        policy.creator = policy.owner;
+        delete policy.uuid;
+        delete policy.messageId;
+        delete policy.topicId;
+        delete policy.version;
+        delete policy.previousVersion;
+        delete policy.registeredUsers;
+
+        policy.uuid = GenerateUUIDv4();
+        policy.creator = policyOwner;
         policy.owner = policyOwner;
-        policy.messageId = messageId;
+        policy.status = 'DRAFT';
 
-        const policyGenerator = new BlockTreeGenerator();
-        const errors = await policyGenerator.validate(policy);
-        const isValid = !errors.blocks.some(block => !block.isValid);
-
-        policy.status = isValid ? 'PUBLISH' : 'INVALID';
-
+        // const policyGenerator = new BlockTreeGenerator();
+        // const errors = await policyGenerator.validate(policy);
+        // const isValid = !errors.blocks.some(block => !block.isValid);
         let model = policyRepository.create(policy as Policy);
         model = await policyRepository.save(model);
-        if (isValid) {
-            await policyGenerator.generate(model.id.toString());
-        }
+        // if (isValid) {
+        //     await policyGenerator.generate(model.id.toString());
+        // }
         return await policyRepository.find({ owner: policyOwner });
     }
 }

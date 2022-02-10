@@ -97,6 +97,14 @@ To get a local copy up and running, follow these simple example steps. When buil
    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
    ```
    
+   in `guardian-service/.env`:
+   
+   ```
+    OPERATOR_ID=0.0.123456789
+    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+    SCHEMA_TOPIC_ID="0.0.29614911"
+   ```
+
    in `guardian-service/.env.docker`:
    
    ```
@@ -104,17 +112,9 @@ To get a local copy up and running, follow these simple example steps. When buil
     OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
     SCHEMA_TOPIC_ID="0.0.29614911"
    ```
+   
    Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
 
-   in `guardian-service/config.json`:
-
-   ```
-   {"OPERATOR_ID":"0.0.123456789","OPERATOR_KEY":"302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6"}
-   ```
- 
-   - The `OPERATOR_ID` is the Hedera account's `accountId`
-   - The `OPERATOR_KEY` is the Hedera account's `privateKey`
-   - The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, delete the `TOPIC_ID` line.
 3. Update the following files with your NFT.Storage API KEY. Please follow the steps from https://nft.storage/#getting-started to obtain it.
 
    For example:
