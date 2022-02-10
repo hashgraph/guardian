@@ -38,6 +38,5 @@ Also, note, that this step does not create a new document, so the “Force New D
       "stopPropagation": false,
       "uiMetaData": {}
     },
-```
 
-\
+```
