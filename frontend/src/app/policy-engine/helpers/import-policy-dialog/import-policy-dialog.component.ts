@@ -1,7 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder } from '@angular/forms';
-import { Observable, ReplaySubject } from 'rxjs';
+import { FormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ImportType } from 'interfaces';
 
@@ -16,26 +15,22 @@ import { ImportType } from 'interfaces';
 export class ImportPolicyDialog {
   importType?: ImportType;
   dataForm = this.fb.group({
-    timestamp: ['']
+    timestamp: ['', Validators.required]
   });
   loading: boolean = false;
 
-  private _isimportTypeSelected$ = new ReplaySubject<boolean>(1);
+  public isImportTypeSelected: boolean = false;
 
   constructor(
     public dialogRef: MatDialogRef<ImportPolicyDialog>,
     private fb: FormBuilder,
     private policyEngineService: PolicyEngineService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
-    this._isimportTypeSelected$.next(false);
   }
 
-  public get isImportTypeSelected$(): Observable<boolean> {
-    return this._isimportTypeSelected$;
-  }
-
-  ngOnInit() {
-    // this.setImportType(ImportType.IPFS);
+  setImportType(importType: ImportType) {
+    this.importType = importType;
+    this.isImportTypeSelected = true;
   }
 
   onNoClick(): void {
@@ -46,6 +41,7 @@ export class ImportPolicyDialog {
     if (!this.dataForm.valid) {
       return;
     }
+
     this.loading = true;
     const messageId = this.dataForm.get('timestamp')?.value;
 
@@ -60,11 +56,6 @@ export class ImportPolicyDialog {
       }, error => {
         this.loading = false;
       });
-  }
-
-  setImportType(importType: ImportType) {
-    this.importType = importType;
-    this._isimportTypeSelected$.next(true);
   }
 
   importFromFile() {
