@@ -1,6 +1,6 @@
 # Step Workflow Block
 
-#### Available Step Workflow Block Properties
+### Available Step Workflow Block Properties
 
 | Block Property | Definition                                                                                                  | Example Input                                   |
 | -------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -11,7 +11,7 @@
 | Dependancies   | Establish workflow dependancies that need to be completed prior.                                            | Select the apprioriate block from the dropdown. |
 | Cyclic         | Go back one step to enable the creation of the previous object.                                             | Checked or unchecked.                           |
 
-#### Available Step Workflow Block UI Properties
+### Available Step Workflow Block UI Properties
 
 | UI Property | Definition                                                                                                         |
 | ----------- | ------------------------------------------------------------------------------------------------------------------ |
