@@ -234,6 +234,28 @@ export class SchemaHelper {
         return `${contextURL}${ref}`;
     }
 
+    public static getVersion(data: ISchema) {
+        try {
+            const document = JSON.parse(data.document);
+            const { version } = SchemaHelper.parseRef(document.$id);
+            const { previousVersion } = SchemaHelper.parseComment(document.$comment);
+            return { version, previousVersion };
+        } catch (error) {
+            return { version: null, previousVersion: null }
+        }
+    }
+
+    public static setVersion(data: ISchema, version: string, previousVersion: string) {
+        const document = JSON.parse(data.document);
+        const uuid = data.uuid;
+        data.version = version;
+        const type = SchemaHelper.buildType(uuid, version);
+        const ref = SchemaHelper.buildRef(type);
+        document.$id = ref;
+        document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
+        data.document = JSON.stringify(document);
+        return data;
+    }
 
     public static updateVersion(data: ISchema, newVersion: string) {
         const document = JSON.parse(data.document);
@@ -363,5 +385,30 @@ export class SchemaHelper {
         } catch (error) {
             return null;
         }
+    }
+
+    public static incrementVersion(previousVersion: string, versions: string[]) {
+        const map = {};
+        versions.push(previousVersion);
+        for (let i = 0; i < versions.length; i++) {
+            const element = versions[i];
+            if (!element) {
+                continue
+            }
+            const index = element.lastIndexOf('.');
+            const max = element.slice(0, index);
+            const min = parseInt(element.slice(index + 1), 10);
+            if (map[max]) {
+                map[max] = Math.max(map[max], min);
+            } else {
+                map[max] = min;
+            }
+        }
+        if (!previousVersion) {
+            previousVersion = '1.0.0';
+        }
+        const index = previousVersion.lastIndexOf('.');
+        const max = previousVersion.slice(0, index);
+        return max + '.' + (map[max] + 1);
     }
 }

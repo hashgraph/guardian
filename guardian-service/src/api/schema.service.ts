@@ -148,13 +148,13 @@ const updateIRI = function (schema: ISchema) {
     }
 }
 
-const getDefs = function(schema: ISchema) {
+const getDefs = function (schema: ISchema) {
     try {
         const document = JSON.parse(schema.document);
-        if(!document.$defs) {
+        if (!document.$defs) {
             return [];
         }
-        const keys = Object.keys(document.$defs); 
+        const keys = Object.keys(document.$defs);
     } catch (error) {
         return [];
     }
@@ -187,14 +187,15 @@ export const schemaAPI = async function (
                 item.description = msg.payload.description;
                 item.entity = msg.payload.entity;
                 item.document = msg.payload.document;
-                item.version = msg.payload.version;
                 item.status = SchemaStatus.DRAFT;
+                SchemaHelper.setVersion(item, null, item.version);
                 updateIRI(item);
                 await schemaRepository.update(item.id, item);
             }
         } else {
             const schemaObject = schemaRepository.create(msg.payload as ISchema);
             schemaObject.status = SchemaStatus.DRAFT;
+            SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
             updateIRI(schemaObject);
             await schemaRepository.save(schemaObject);
         }
@@ -328,12 +329,13 @@ export const schemaAPI = async function (
                 if (uuid) {
                     result[uuid] = newUUID;
                 }
+                SchemaHelper.setVersion(file, '', '');
                 file.messageId = null;
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
                 file.creator = owner;
                 file.owner = owner;
-                file.status = SchemaStatus.DRAFT;
+                file.status = SchemaStatus.DRAFT;   
             }
 
             const uuids = Object.keys(result);
@@ -394,6 +396,7 @@ export const schemaAPI = async function (
                 if (uuid) {
                     result[uuid] = newUUID;
                 }
+                SchemaHelper.setVersion(file, '', '');
                 file.messageId = null;
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
@@ -619,4 +622,42 @@ export const schemaAPI = async function (
             res.send(new MessageError(error.message));
         }
     });
+
+    channel.response(MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg, res) => {
+        try {
+            const { owner, iri } = msg.payload as { owner: string, iri: string };
+            if (!owner || !iri) {
+                res.send(new MessageError('Schema not found'));
+                return;
+            }
+            const schema = await schemaRepository.findOne({
+                where: { iri: { $eq: iri } }
+            });
+
+            if (!schema) {
+                res.send(new MessageError('Schema not found'));
+                return;
+            }
+
+            const { version, previousVersion } = SchemaHelper.getVersion(schema);
+            let newVersion = '1.0.0';
+            if (previousVersion) {
+                const schemes = await schemaRepository.find({
+                    where: { uuid: { $eq: schema.uuid } }
+                });
+                const versions = [];
+                for (let i = 0; i < schemes.length; i++) {
+                    const element = schemes[i];
+                    const { version, previousVersion } = SchemaHelper.getVersion(element);
+                    versions.push(version, previousVersion);
+                }
+                newVersion = SchemaHelper.incrementVersion(previousVersion, versions);
+            }
+            schema.version = newVersion;
+            res.send(new MessageResponse(schema));
+        } catch (error) {
+            res.send(new MessageError(error.message));
+        }
+    });
+
 }

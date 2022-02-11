@@ -275,10 +275,6 @@ export class BlockTreeGenerator {
         }
     }
 
-    private async publishSchemes(schemaIds: string[]) {
-
-    }
-
     /**
      * Register endpoints for policy engine
      * @private
@@ -306,12 +302,12 @@ export class BlockTreeGenerator {
             try {
                 const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
-                if(model.uuid) {
+                if (model.uuid) {
                     const old = await getMongoRepository(Policy).findOne({ uuid: model.uuid });
-                    if( model.creator != user.did) {
+                    if (model.creator != user.did) {
                         throw 'Invalid owner';
                     }
-                    if( old.creator != user.did) {
+                    if (old.creator != user.did) {
                         throw 'Invalid owner';
                     }
                     model.creator = user.did;
@@ -401,17 +397,20 @@ export class BlockTreeGenerator {
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
-                    const schemaIds = findAllEntities(model.config, 'schema');
-
-                    await this.publishSchemes(schemaIds);
-                    this.regenerateIds(model.config);
-
                     const guardians = new Guardians();
                     const user = await getMongoRepository(User).findOne({
                         where: {
                             username: { $eq: req.user.username }
                         }
                     });
+
+                    const schemaIRIs = findAllEntities(model.config, 'schema');
+                    for (let i = 0; i < schemaIRIs.length; i++) {
+                        const schemaIRI = schemaIRIs[i];
+                        const schema = await guardians.incrementSchemaVersion(schemaIRI, user.did);
+                        await guardians.publishSchema(schema.id, schema.version, user.did);
+                    }
+                    this.regenerateIds(model.config);
 
                     const root = await guardians.getRootConfig(user.did);
                     const hederaHelper = HederaHelper
@@ -441,7 +440,7 @@ export class BlockTreeGenerator {
                     const messageId = await HederaSenderHelper.SubmitPolicyMessage(hederaHelper, model.topicId, publishPolicyMessage);
                     model.messageId = messageId;
 
-                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);  
+                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
                         ...publishPolicyMessage,

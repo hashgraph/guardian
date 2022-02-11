@@ -494,4 +494,9 @@ export class Guardians {
     public async exportSchemes(ids: string[]): Promise<ISchema[]> {
         return await this.request(MessageAPI.EXPORT_SCHEMES, ids);
     }
+
+
+    public async incrementSchemaVersion(iri: string, owner: string): Promise<ISchema> {
+        return await this.request(MessageAPI.INCREMENT_SCHEMA_VERSION, { iri, owner });
+    }
 }
