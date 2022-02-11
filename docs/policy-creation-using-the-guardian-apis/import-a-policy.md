@@ -1,6 +1,6 @@
 # Import a Policy
 
-### IMPORT OF A POLICY
+### IMPORT A POLICY
 
 **Policy import (unzip content)**
 

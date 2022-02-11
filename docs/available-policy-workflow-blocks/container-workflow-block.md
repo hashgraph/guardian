@@ -1,6 +1,6 @@
 # Container Workflow Block
 
-### Available Container Workflow Block Properties
+#### Available Container Workflow Block Properties
 
 | Block Property | Definition                                                                        | Example Input                                   |
 | -------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -10,7 +10,7 @@
 | Default Active | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |
 | Dependancies   | Establish workflow dependancies that need to be completed prior.                  | Select the apprioriate block from the dropdown. |
 
-### **Available Container Workflow Block UI Properties**
+#### **Available Container Workflow Block UI Properties**
 
 | UI Property | Definition                                                                                                         |
 | ----------- | ------------------------------------------------------------------------------------------------------------------ |
