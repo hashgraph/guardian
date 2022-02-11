@@ -11,14 +11,14 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 })
 export class SchemaViewDialog {
     loading = true;
-    schema!: any;
+    schemes!: any[];
 
     constructor(
         public dialogRef: MatDialogRef<SchemaViewDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any) { }
 
     ngOnInit() {
-        this.schema = this.data.schema;
+        this.schemes = this.data.schemes || [];
         this.loading = false;
     }
 

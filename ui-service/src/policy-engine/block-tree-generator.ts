@@ -14,7 +14,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { ModelHelper, SchemaEntity, SchemaHelper, UserRole } from 'interfaces';
+import { ISchema, ModelHelper, SchemaEntity, SchemaHelper, UserRole } from 'interfaces';
 import { HederaHelper, HederaSenderHelper, IPolicySubmitMessage, ModelActionType } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
@@ -23,6 +23,7 @@ import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { BlockPermissions } from '@policy-engine/helpers/middleware/block-permissions';
 import { IPFS } from '@helpers/ipfs';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
+import { findAllEntities } from '@helpers/utils';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -265,6 +266,19 @@ export class BlockTreeGenerator {
         });
     }
 
+    private regenerateIds(block: any) {
+        block.id = GenerateUUIDv4();
+        if (Array.isArray(block.children)) {
+            for (let child of block.children) {
+                this.regenerateIds(child);
+            }
+        }
+    }
+
+    private async publishSchemes(schemaIds: string[]) {
+
+    }
+
     /**
      * Register endpoints for policy engine
      * @private
@@ -387,15 +401,10 @@ export class BlockTreeGenerator {
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
-                    function regenerateIds(block: any) {
-                        block.id = GenerateUUIDv4();
-                        if (Array.isArray(block.children)) {
-                            for (let child of block.children) {
-                                regenerateIds(child);
-                            }
-                        }
-                    }
-                    regenerateIds(model.config);
+                    const schemaIds = findAllEntities(model.config, 'schema');
+
+                    await this.publishSchemes(schemaIds);
+                    this.regenerateIds(model.config);
 
                     const guardians = new Guardians();
                     const user = await getMongoRepository(User).findOne({

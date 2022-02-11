@@ -47,16 +47,16 @@
                     <div class="field-value">Root Authority, {{policyRoles}}</div>
                 </div>
 
-                <div class="delimiter"></div>
+                <div *ngIf="schemes" class="delimiter"></div>
 
-                <div class="field-last">
+                <div *ngIf="schemes" class="field-last">
                     <div class="field-name">Schemes Overview</div>
                     <div class="field-value">{{schemes}}</div>
                 </div>
 
-                <div class="delimiter"></div>
+                <div *ngIf="tokens" class="delimiter"></div>
 
-                <div class="field-last">
+                <div *ngIf="tokens" class="field-last">
                     <div class="field-name">Tokens</div>
                     <div class="field-value">{{tokens}}</div>
                 </div>

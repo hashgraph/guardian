@@ -24,11 +24,20 @@ export class PreviewPolicyDialog {
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.policyId = data.policyId;
 
-        if(data.policy) {
+        if (data.policy) {
             this.policy = data.policy.policy;
-            this.policyRoles = (this.policy.policyRoles||[]).join(', ');
-            this.schemes = data.policy.schemas.map((s:any)=>`${s.name} (${s.version})`).join(', ');
-            this.tokens = data.policy.tokens.map((s:any)=>s.tokenName).join(', ');
+            this.policyRoles = (this.policy.policyRoles || []).join(', ');
+
+            const schemes = data.policy.schemes || [];
+            const tokens = data.policy.tokens || [];
+
+            this.schemes = schemes.map((s: any) => {
+                if (s.version) {
+                    return `${s.name} (${s.version})`;
+                }
+                return s.name;
+            }).join(', ');
+            this.tokens = tokens.map((s: any) => s.tokenName).join(', ');
         }
     }
 

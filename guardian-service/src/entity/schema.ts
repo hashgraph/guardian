@@ -63,6 +63,9 @@ export class Schema implements ISchema {
         this.status = this.status || SchemaStatus.DRAFT;
         this.readonly = !!this.readonly;
         this.uuid = this.uuid || ModelHelper.randomUUID();
-        this.iri = this.iri || null;
+        this.iri = this.iri || `${this.uuid}`;
+        if(this.status == SchemaStatus.DRAFT) {
+            this.messageId = null;
+        }
     }
 }

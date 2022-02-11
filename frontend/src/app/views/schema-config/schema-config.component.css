@@ -169,6 +169,11 @@ a {
     padding-left: 10px;
 }
 
+.schemes-table .mat-column-export {
+    width: 110px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
 
 .not-exist {
     position: absolute;

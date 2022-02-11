@@ -29,7 +29,7 @@ export class SchemaService {
     const data = Object.assign({}, schema, { id: id || schema.id });
     return this.http.post<any[]>(`${this.url}`, data);
   }
-  
+
   public getSchemes(): Observable<ISchema[]> {
     return this.http.get<any[]>(`${this.url}`);
   }
@@ -46,15 +46,37 @@ export class SchemaService {
     return this.http.delete<any[]>(`${this.url}/${id}`);
   }
 
-  public export(ids: string[]): Observable<any[]> {
-    return this.http.post<any[]>(`${this.url}/export`, { ids });
+  public exportInFile(id: string): Observable<Blob> {
+    return this.http.get(`${this.url}/${id}/export/file`, {
+      responseType: 'blob'
+    });
+  }
+
+  public exportInMessage(id: string): Observable<ISchema[]> {
+    return this.http.get<any[]>(`${this.url}/${id}/export/message`);
   }
 
   public importByMessage(messageId: string): Observable<ISchema[]> {
-    return this.http.post<any[]>(`${this.url}/import`, { messageId: messageId });
+    return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
+  }
+
+  public importByFile(schemesFile: any): Observable<ISchema[]> {
+    return this.http.post<any[]>(`${this.url}/import/file`, schemesFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
   }
 
   public previewByMessage(messageId: string): Observable<ISchema> {
-    return this.http.post<any>(`${this.url}/import/preview`, { messageId: messageId });
+    return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+  }
+
+  public previewByFile(schemesFile: any): Observable<ISchema[]> {
+    return this.http.post<any[]>(`${this.url}/import/file/preview`, schemesFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
   }
 }

@@ -183,7 +183,7 @@ export class PolicyEngineService {
   }
 
   public importByMessage(messageId: string): Observable<any[]> {
-    return this.http.post<any[]>(`${this.url}/import/message`, messageId);
+    return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
   }
 
   public importByFile(policyFile: any): Observable<any[]> {
@@ -195,7 +195,7 @@ export class PolicyEngineService {
   }
 
   public previewByMessage(messageId: string): Observable<any> {
-    return this.http.post<any>(`${this.url}/import/message/preview`, messageId);
+    return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
   }
 
   public previewByFile(policyFile: any): Observable<any> {

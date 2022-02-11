@@ -50,7 +50,7 @@ importExportAPI.get('/:policyId/export/message', async (req: AuthenticatedReques
 
 importExportAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const messageId = req.body;
+        const messageId = req.body.messageId;
         if (!messageId) {
             throw new Error('Policy ID in body is empty');
         }
@@ -88,7 +88,7 @@ importExportAPI.post('/import/file', async (req: AuthenticatedRequest, res: Resp
 
 importExportAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const messageId = req.body;
+        const messageId = req.body.messageId;
         if (!messageId) {
             throw new Error('Policy ID in body is empty');
         }
@@ -105,8 +105,8 @@ importExportAPI.post('/import/message/preview', async (req: AuthenticatedRequest
         const guardians = new Guardians();
         const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
         const schemasIds = findAllEntities(policyToImport.policy.config, 'schema');
-        const schemas = await guardians.getSchemaPreview(schemasIds);
-        res.status(200).json({ ...policyToImport, schemas });
+        // const schemas = await guardians.getSchemaPreview(schemasIds);
+        // res.status(200).json({ ...policyToImport, schemas });
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
     }
@@ -118,11 +118,8 @@ importExportAPI.post('/import/file/preview', async (req: AuthenticatedRequest, r
         if (!zip) {
             throw new Error('file in body is empty');
         }
-        const guardians = new Guardians();
         const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
-        const schemasIds = findAllEntities(policyToImport.policy.config, 'schema');
-        const schemas = await guardians.getSchemaPreview(schemasIds);
-        res.status(200).json({ ...policyToImport, schemas });
+        res.status(200).json(policyToImport);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
     }

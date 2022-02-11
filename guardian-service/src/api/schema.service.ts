@@ -7,7 +7,8 @@ import {
     SchemaStatus,
     SchemaHelper,
     MessageResponse,
-    MessageError
+    MessageError,
+    ModelHelper
 } from 'interfaces';
 import {
     HederaHelper,
@@ -60,7 +61,7 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
     }
 
     const messages = Object.values(fileContent);
-    const wait = async (timeout:number) => {
+    const wait = async (timeout: number) => {
         return new Promise(function (resolve, reject) {
             setTimeout(function () { resolve(true) }, timeout);
         });
@@ -136,7 +137,7 @@ const loadSchema = async function (messageId: string, owner: string) {
 
 const updateIRI = function (schema: ISchema) {
     try {
-        if (schema.status != SchemaStatus.DRAFT && schema.document) {
+        if (schema.document) {
             const document = JSON.parse(schema.document);
             schema.iri = document.$id || null;
         } else {
@@ -144,6 +145,18 @@ const updateIRI = function (schema: ISchema) {
         }
     } catch (error) {
         schema.iri = null;
+    }
+}
+
+const getDefs = function(schema: ISchema) {
+    try {
+        const document = JSON.parse(schema.document);
+        if(!document.$defs) {
+            return [];
+        }
+        const keys = Object.keys(document.$defs); 
+    } catch (error) {
+        return [];
     }
 }
 
@@ -213,6 +226,13 @@ export const schemaAPI = async function (
                     res.send(new MessageResponse(schema));
                     return;
                 }
+                if (msg.payload.iri) {
+                    const schema = await schemaRepository.findOne({
+                        where: { iri: { $eq: msg.payload.iri } }
+                    });
+                    res.send(new MessageResponse(schema));
+                    return;
+                }
                 if (msg.payload.entity) {
                     const schema = await schemaRepository.findOne({
                         where: { entity: { $eq: msg.payload.entity } }
@@ -229,53 +249,182 @@ export const schemaAPI = async function (
     });
 
     /**
+     * Return schemes
+     * 
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.type] - schema type 
+     * @param {string} [payload.entity] - schema entity type
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
+    channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
+        if (msg.payload && msg.payload.uuid) {
+            const schemes = await schemaRepository.find({
+                where: { uuid: { $eq: msg.payload.uuid } }
+            });
+            res.send(new MessageResponse(schemes));
+            return;
+        }
+        if (msg.payload && msg.payload.iris) {
+            const schemes = await schemaRepository.find({
+                where: { iri: { $in: msg.payload.iris } }
+            });
+            res.send(new MessageResponse(schemes));
+            return;
+        }
+        if (msg.payload && msg.payload.owner) {
+            const schemes = await schemaRepository.find({
+                where: {
+                    $or: [
+                        {
+                            status: { $eq: SchemaStatus.PUBLISHED },
+                        },
+                        {
+                            owner: { $eq: msg.payload.owner }
+                        },
+                    ]
+                }
+            });
+            res.send(new MessageResponse(schemes));
+            return;
+        }
+        const schemes = await schemaRepository.find({
+            where: { status: { $eq: SchemaStatus.PUBLISHED } }
+        });
+        res.send(new MessageResponse(schemes));
+    });
+
+    /**
      * Load schema by message identifier
      * 
      * @param {string} [payload.messageId] Message identifier
      * 
      * @returns {Schema} Found or uploaded schema
      */
-    channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
+    channel.response(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Schema not found'));
                 return;
             }
-            const { owner, messageIds } = msg.payload;
+            const { owner, messageIds } = msg.payload as { owner: string, messageIds: string[] };
             if (!owner || !messageIds) {
                 res.send(new MessageError('Schema not found'));
                 return;
             }
 
-            let ids: string[];
-            if (Array.isArray(messageIds)) {
-                ids = messageIds;
-            } else {
-                ids = [messageIds];
+            const files: any[] = [];
+            for (let i = 0; i < messageIds.length; i++) {
+                const messageId = messageIds[i];
+                const newSchema = await loadSchema(messageId, null);
+                files.push(newSchema);
             }
 
-            const schemes = await schemaRepository.find({
-                where: { messageId: { $in: ids } }
-            });
-            const map = {};
-            for (let i = 0; i < schemes.length; i++) {
-                const element = schemes[i];
-                map[element.messageId] = element;
-            }
-
-            const result = [];
-            for (let i = 0; i < ids.length; i++) {
-                const messageId = ids[i];
-                if (map[messageId]) {
-                    result.push(map[messageId]);
-                } else {
-                    map[messageId] = await loadSchema(messageId, null);
-                    const schema = schemaRepository.create(map[messageId]) as any;
-                    await schemaRepository.save(schema);
-                    result.push(map[messageId]);
+            const result: any = {};
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i] as ISchema;
+                const newUUID = ModelHelper.randomUUID();
+                const uuid = file.iri ? file.iri.substring(1) : null;
+                if (uuid) {
+                    result[uuid] = newUUID;
                 }
+                file.messageId = null;
+                file.uuid = newUUID;
+                file.iri = '#' + newUUID;
+                file.creator = owner;
+                file.owner = owner;
+                file.status = SchemaStatus.DRAFT;
             }
-            res.send(new MessageResponse(result));
+
+            const uuids = Object.keys(result);
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                for (let j = 0; j < uuids.length; j++) {
+                    const uuid = uuids[j];
+                    file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
+                    file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
+                }
+                const schema = schemaRepository.create(file);
+                await schemaRepository.save(schema);
+            }
+
+            const schemesMap = [];
+            for (let j = 0; j < uuids.length; j++) {
+                const uuid = uuids[j];
+                schemesMap.push({
+                    oldUUID: uuid,
+                    newUUID: result[uuid],
+                    oldIRI: `#${uuid}`,
+                    newIRI: `#${result[uuid]}`
+                })
+            }
+            res.send(new MessageResponse(schemesMap));
+        }
+        catch (error) {
+            console.error(error);
+            res.send(new MessageError(error.message));
+        }
+    });
+
+
+    /**
+     * Load schema by files
+     * 
+     * @param {string} [payload.files] files
+     * 
+     * @returns {Schema} Found or uploaded schema
+     */
+    channel.response(MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
+        try {
+            if (!msg.payload) {
+                res.send(new MessageError('Schema not found'));
+                return;
+            }
+            const { owner, files } = msg.payload as { owner: string, files: ISchema[] };
+            if (!owner || !files) {
+                res.send(new MessageError('Schema not found'));
+                return;
+            }
+
+            const result: any = {};
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const newUUID = ModelHelper.randomUUID();
+                const uuid = file.iri ? file.iri.substring(1) : null;
+                if (uuid) {
+                    result[uuid] = newUUID;
+                }
+                file.messageId = null;
+                file.uuid = newUUID;
+                file.iri = '#' + newUUID;
+                file.creator = owner;
+                file.owner = owner;
+                file.status = SchemaStatus.DRAFT;
+            }
+
+            const uuids = Object.keys(result);
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                for (let j = 0; j < uuids.length; j++) {
+                    const uuid = uuids[j];
+                    file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
+                    file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
+                }
+                const schema = schemaRepository.create(file);
+                await schemaRepository.save(schema);
+            }
+
+            const schemesMap = [];
+            for (let j = 0; j < uuids.length; j++) {
+                const uuid = uuids[j];
+                schemesMap.push({
+                    oldUUID: uuid,
+                    newUUID: result[uuid],
+                    oldIRI: `#${uuid}`,
+                    newIRI: `#${result[uuid]}`
+                })
+            }
+            res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
             console.error(error);
@@ -296,79 +445,23 @@ export const schemaAPI = async function (
                 res.send(new MessageError('Schema not found'));
                 return;
             }
-
-            let messageIds: string[];
-            if (Array.isArray(msg.payload)) {
-                messageIds = msg.payload;
-            } else {
-                messageIds = [msg.payload];
+            const { messageIds } = msg.payload as { messageIds: string[] };
+            if (!messageIds) {
+                res.send(new MessageError('Schema not found'));
+                return;
             }
-
-            const schemes = await schemaRepository.find({
-                where: { messageId: { $in: messageIds } }
-            });
-            const map = {};
-            for (let i = 0; i < schemes.length; i++) {
-                const element = schemes[i];
-                map[element.messageId] = element;
-            }
-
             const result = [];
             for (let i = 0; i < messageIds.length; i++) {
                 const messageId = messageIds[i];
-                if (map[messageId]) {
-                    result.push(map[messageId]);
-                } else {
-                    map[messageId] = await loadSchema(messageId, null);
-                    result.push(map[messageId]);
-                }
+                const schema = await loadSchema(messageId, null);
+                result.push(schema);
             }
-
             res.send(new MessageResponse(result));
         }
         catch (error) {
             console.error(error);
             res.send(new MessageError(error.message));
         }
-    });
-
-    /**
-     * Return schemes
-     * 
-     * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
-     * @param {string} [payload.entity] - schema entity type
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
-        if (msg.payload && msg.payload.owner) {
-            const schemes = await schemaRepository.find({
-                where: {
-                    $or: [
-                        {
-                            status: { $eq: SchemaStatus.PUBLISHED },
-                        },
-                        {
-                            owner: { $eq: msg.payload.owner }
-                        },
-                    ]
-                }
-            });
-            res.send(new MessageResponse(schemes));
-            return;
-        }
-        if (msg.payload && msg.payload.uuid) {
-            const schemes = await schemaRepository.find({
-                where: { uuid: { $eq: msg.payload.uuid } }
-            });
-            res.send(new MessageResponse(schemes));
-            return;
-        }
-        const schemes = await schemaRepository.find({
-            where: { status: { $eq: SchemaStatus.PUBLISHED } }
-        });
-        res.send(new MessageResponse(schemes));
     });
 
     /**
@@ -466,28 +559,6 @@ export const schemaAPI = async function (
     });
 
     /**
-     * Change the status of a schema on UNPUBLISHED.
-     * 
-     * @param {Object} payload - filters
-     * @param {string} payload.id - schema id 
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    channel.response(MessageAPI.UNPUBLISHED_SCHEMA, async (msg, res) => {
-        if (msg.payload) {
-            const id = msg.payload as string;
-            const item = await schemaRepository.findOne(id);
-            if (item) {
-                item.status = SchemaStatus.UNPUBLISHED;
-                updateIRI(item);
-                await schemaRepository.update(item.id, item);
-            }
-        }
-        const schemes = await schemaRepository.find();
-        res.send(new MessageResponse(schemes));
-    });
-
-    /**
      * Delete a schema.
      * 
      * @param {Object} payload - filters
@@ -496,15 +567,19 @@ export const schemaAPI = async function (
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
-        if (msg.payload) {
-            const id = msg.payload as string;
-            const item = await schemaRepository.findOne(id);
-            if (item) {
-                await schemaRepository.delete(item.id);
+        try {
+            if (msg.payload) {
+                const id = msg.payload as string;
+                const item = await schemaRepository.findOne(id);
+                if (item) {
+                    await schemaRepository.delete(item.id);
+                }
             }
+            const schemes = await schemaRepository.find();
+            res.send(new MessageResponse(schemes));
+        } catch (error) {
+            res.send(new MessageError(error.message));
         }
-        const schemes = await schemaRepository.find();
-        res.send(new MessageResponse(schemes));
     });
 
     /**
@@ -519,21 +594,29 @@ export const schemaAPI = async function (
         try {
             const ids = msg.payload as string[];
             const schemas = await schemaRepository.findByIds(ids);
-            const notExported = schemas.filter(schema => !schema.messageId);
-            if (notExported.length > 0) {
-                throw new Error(`Cannot export schemas: ${notExported.map(schema => `${schema.name}`).join(', ')}`);
-            }
-
-            const schemasToExport = schemas.map(schema => {
-                return {
-                    name: schema.name,
-                    version: schema.version,
-                    messageId: schema.messageId
+            const map: any = {};
+            const relationships: ISchema[] = [];
+            for (let index = 0; index < schemas.length; index++) {
+                const schema = schemas[index];
+                if (!map[schema.iri]) {
+                    map[schema.iri] = schema;
+                    relationships.push(schema);
+                    const keys = getDefs(schema);
+                    const defs = await schemaRepository.find({
+                        where: { iri: { $in: keys } }
+                    });
+                    for (let j = 0; j < defs.length; j++) {
+                        const element = defs[j];
+                        if (!map[element.iri]) {
+                            map[element.iri] = element;
+                            relationships.push(element);
+                        }
+                    }
                 }
-            });
-            res.send(new MessageResponse(schemasToExport));
+            }
+            res.send(new MessageResponse(relationships));
         } catch (error) {
-            res.send(new MessageError(error));
+            res.send(new MessageError(error.message));
         }
     });
 }

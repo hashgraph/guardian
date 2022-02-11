@@ -31,7 +31,6 @@ import { PolicyHelper } from './services/policy-helper.service';
 import { MaterialModule } from './material.module';
 import { PolicyEngineModule } from './policy-engine/policy-engine.module';
 import { IPFSService } from './services/ipfs.service';
-import { ExportModelDialog } from './components/export-model-dialog/export-model-dialog.component';
 
 @NgModule({
     declarations: [
@@ -47,8 +46,7 @@ import { ExportModelDialog } from './components/export-model-dialog/export-model
         SchemaConfigComponent,
         AuditComponent,
         TrustChainComponent,
-        NewPolicyDialog,
-        ExportModelDialog
+        NewPolicyDialog
     ],
     imports: [
         BrowserModule,
