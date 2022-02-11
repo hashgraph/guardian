@@ -5,10 +5,28 @@
 * [Guardian Glossary](README.md)
 * [Policy Glossary](user-guide-glossary/policy-glossary.md)
 
+## Available Schema Types
+
+* [Available Schema Types](available-schema-types/available-schema-types.md)
+
+## Available Policy Workflow Blocks
+
+* [Container Workflow Block](available-policy-workflow-blocks/container-workflow-block.md)
+* [Roles Workflow Block](available-policy-workflow-blocks/roles-workflow-block.md)
+* [Step Workflow Block](available-policy-workflow-blocks/step-workflow-block.md)
+* [Request Workflow Block](available-policy-workflow-blocks/request-workflow-block.md)
+* [Send Workflow Block](available-policy-workflow-blocks/send-workflow-block.md)
+* [Information Workflow Block](available-policy-workflow-blocks/information-workflow-block.md)
+* [Documents Workflow Block](available-policy-workflow-blocks/documents-workflow-block.md)
+* [Action Workflow Block](available-policy-workflow-blocks/action-workflow-block.md)
+* [External Data Workflow Block](available-policy-workflow-blocks/external-data-workflow-block.md)
+* [Token Mint Workflow Block](available-policy-workflow-blocks/token-mint-workflow-block.md)
+* [Token Wipe Workflow Block](available-policy-workflow-blocks/token-wipe-workflow-block.md)
+* [Aggregate Data Workflow Block](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
+
 ## Policy Workflow
 
 * [Getting Started with the Policy Workflows](policy-workflow/getting-started-with-the-policy-workflows.md)
-* [Policy Workflow Step 1](policy-workflow/policy-workflow-step-1.md)
 * [Policy Workflow Step 2](policy-workflow/policy-workflow-step-2.md)
 * [Policy Workflow Step 3](policy-workflow/policy-workflow-step-3.md)
 * [Policy Workflow Step 4](policy-workflow/policy-workflow-step-4.md)
@@ -34,7 +52,4 @@
 * [Policy Workflow Step 24](policy-workflow/policy-workflow-step-24.md)
 * [Policy Workflow Step 24](policy-workflow/policy-workflow-step-24-1.md)
 * [Policy Workflow Wrap Up](policy-workflow/policy-workflow-wrap-up.md)
-
-## Available Schema Types
-
-* [Available Schema Types](available-schema-types/available-schema-types.md)
+* [Policy Workflow Step 1](policy-workflow/policy-workflow-step-1.md)
