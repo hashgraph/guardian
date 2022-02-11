@@ -51,7 +51,7 @@
 * [Policy Workflow Step 22](policy-workflow-creation-using-the-guardian-user-interface/policy-workflow-step-22.md)
 * [Policy Workflow Step 23](policy-workflow-creation-using-the-guardian-user-interface/policy-workflow-step-23.md)
 * [Policy Workflow Step 24](policy-workflow-creation-using-the-guardian-user-interface/policy-workflow-step-24.md)
-* [Policy Workflow Step 24](policy-workflow-creation-using-the-guardian-user-interface/policy-workflow-step-24-1.md)
+* [Policy Workflow Step 25](policy-workflow-creation-using-the-guardian-user-interface/policy-workflow-step-24-1.md)
 * [Policy Workflow Wrap Up](policy-workflow-creation-using-the-guardian-user-interface/policy-workflow-wrap-up.md)
 
 ## Policy Creation using the Guardian APIs
@@ -60,6 +60,7 @@
 * [Creation of a Policy](policy-creation-using-the-guardian-apis/creation-of-a-policy.md)
 * [Publish a Policy](policy-creation-using-the-guardian-apis/publish-a-policy.md)
 * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
+* [Page 1](policy-creation-using-the-guardian-apis/page-1.md)
 
 ## Guardian Repo Demo Usage Guide
 
