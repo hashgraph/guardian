@@ -1,8 +1,9 @@
 # Table of contents
 
-## Policy Creation
+## User Guide Glossary
 
-* [Page 2](README.md)
+* [Guardian Glossary](README.md)
+* [Policy Glossary](user-guide-glossary/policy-glossary.md)
 
 ## Policy Workflow
 
@@ -33,3 +34,7 @@
 * [Policy Workflow Step 24](policy-workflow/policy-workflow-step-24.md)
 * [Policy Workflow Step 24](policy-workflow/policy-workflow-step-24-1.md)
 * [Policy Workflow Wrap Up](policy-workflow/policy-workflow-wrap-up.md)
+
+## Available Schema Types
+
+* [Available Schema Types](available-schema-types/available-schema-types.md)
