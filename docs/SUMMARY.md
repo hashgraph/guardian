@@ -60,3 +60,7 @@
 * [Creation of a Policy](policy-creation-using-the-guardian-apis/creation-of-a-policy.md)
 * [Publish a Policy](policy-creation-using-the-guardian-apis/publish-a-policy.md)
 * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
+
+## Guardian Repo Demo Usage Guide
+
+* [Demo Usage Guide](guardian-repo-demo-usage-guide/demo-usage-guide.md)
