@@ -1,18 +1,18 @@
-# Import new schema from IPFS file
+# Import Policy from IPFS
 
-### IMPORT OF NEW SCHEMA&#x20;
+### IMPORT OF NEW POLICY&#x20;
 
-**Schema import ()**
+**Description:** Imports new policy from IPFS into the local DB.&#x20;
 
-**Description:** Imports new schema from IPFS into the local DB.&#x20;
+**Note:** **Only users with the Root Authority role are allowed to make the request.**
 
-**Note:** Only users with the Root Authority role are allowed to make the request.
-
-`POST /schemas/import`
+`POST /policies/import`
 
 **Request body:**
 
 ```
+description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy.
+required: true
 Content:
    application/json:
             schema:
@@ -30,14 +30,14 @@ content:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Schema'
+                  $ref: '#/components/schemas/PolicyConfig'
 ```
 
-### Imported schema preview
+### Imported policy preview
 
 `/schemas/import/preview`
 
-**Description:** Previews the schema from IPFS without loading it into the local DB
+**Description:** Previews the policy from IPFS without loading it into the local DB
 
 #### **Request body:**
 
@@ -51,7 +51,7 @@ content:
                   type: string
 ```
 
-#### **Request body:**
+#### **Response body:**
 
 ```
       200:
@@ -59,7 +59,7 @@ content:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Schema'
+                $ref: '#/components/schemas/PreviewPolicy'
         401:
           description: Unauthorized.
         403:

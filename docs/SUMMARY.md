@@ -60,7 +60,8 @@
 * [Creation of a Policy](policy-creation-using-the-guardian-apis/creation-of-a-policy.md)
 * [Publish a Policy](policy-creation-using-the-guardian-apis/publish-a-policy.md)
 * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
-* [Import new schema from IPFS file](policy-creation-using-the-guardian-apis/import-new-schema-from-ipfs-file.md)
+* [Adding file to IPFS](policy-creation-using-the-guardian-apis/adding-file-to-ipfs.md)
+* [Import Policy from IPFS](policy-creation-using-the-guardian-apis/import-policy-from-ipfs.md)
 
 ## Guardian Repo Demo Usage Guide
 
