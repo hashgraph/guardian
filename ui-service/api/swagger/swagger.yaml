@@ -894,13 +894,6 @@ paths:
       requestBody:
         description: zip file
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
       responses:
         201:
           description: Successful operation.
@@ -983,7 +976,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Schema'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1006,20 +1001,15 @@ paths:
       requestBody:
         description: zip file.
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Schema'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1039,18 +1029,13 @@ paths:
       security:
       - bearerAuth: []
       summary: List Hedera message IDs of published schemas.
-      requestBody:
-        description: Object that contains IDs of schemas.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                ids:
-                  type: array
-                  items:
-                    type: string
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Selected schema ID.
       responses:
         200:
           description: Successful operation.
@@ -1076,26 +1061,17 @@ paths:
       description: Returns schema files. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: List Hedera message IDs of published schemas.
-      requestBody:
-        description: Object that contains IDs of schemas.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                ids:
-                  type: array
-                  items:
-                    type: string
+      summary: zip file.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Selected schema ID.
       responses:
         200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ExportSchema"
+          description: Successful operation. Response zip file
         401:
           description: Unauthorized.
         403:
@@ -1982,20 +1958,13 @@ paths:
     post:
       tags:
         - policies
-      description: Imports new policy from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new policy from zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Imports new policy from IPFS.
+      summary: Imports policy from zip file.
       requestBody:
-        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy.
+        description: zip file.
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
       responses:
         201:
           description: Successful operation.
@@ -2056,20 +2025,13 @@ paths:
     post:
       tags:
         - policies
-      description: Previews the policy from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Previews the policy from zip file without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
       summary: Policy preview.
       security:
       - bearerAuth: []
       requestBody:
-        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the policy.
+        description: zip file.
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
       responses:
         200:
           description: Successful operation.
