@@ -115,3 +115,7 @@
 * [Revoke KYC of the user](token-apis/revoke-kyc-of-the-user.md)
 * [Freeze Tokens of a user](token-apis/freeze-tokens-of-a-user.md)
 * [UnFreeze Tokens of a user](token-apis/unfreeze-tokens-of-a-user.md)
+
+## TrustChains APIs
+
+* [Page 1](trustchains-apis/page-1.md)
