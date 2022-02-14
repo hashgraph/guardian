@@ -91,3 +91,9 @@
 * [User Session](account-apis/user-session.md)
 * [User Login](account-apis/user-login.md)
 * [Registering new account](account-apis/registering-new-account.md)
+
+## PROFILE APIS
+
+* [User Account Balance](profile-apis/user-account-balance.md)
+* [User Account Information](profile-apis/user-account-information.md)
+* [Setting User Credentials](profile-apis/setting-user-credentials.md)

@@ -4,7 +4,7 @@
 
 **Description:** Registers a new user account.
 
-GET  /accounts/register
+POST  /accounts/register
 
 **Request body:**
 

@@ -4,7 +4,7 @@
 
 **Description:** Logs user into the system
 
-GET  /accounts/login
+POST /accounts/login
 
 **Request body:**
 
