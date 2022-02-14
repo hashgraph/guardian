@@ -113,3 +113,5 @@
 * [Disassociates the user with token](token-apis/disassociates-the-user-with-token.md)
 * [Grants KYC for the user](token-apis/grants-kyc-for-the-user.md)
 * [Revoke KYC of the user](token-apis/revoke-kyc-of-the-user.md)
+* [Freeze Tokens of a user](token-apis/freeze-tokens-of-a-user.md)
+* [UnFreeze Tokens of a user](token-apis/unfreeze-tokens-of-a-user.md)

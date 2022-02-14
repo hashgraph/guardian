@@ -1,17 +1,17 @@
-# Revoke KYC of the user
+# Freeze Tokens of a user
 
-### GRANTS KYC FLAG FOR THE USER
+### FREEZE TRANSFER OF TOKENS OF A USER
 
-**Description:** Unsets the KYC flag for the user.&#x20;
+**Description:** Freezes transfers of the specified token for the user.&#x20;
 
 Only users with the Root Authority role are allowed to make the request.
 
-PUT  /tokens/{tokenId}/{username}/revokeKyc
+PUT  /tokens/{tokenId}/{username}/freeze
 
 **Request body:**
 
 ```
-  parameters:
+ parameters:
         - in: path
           name: tokenId
           schema:
@@ -53,4 +53,5 @@ PUT  /tokens/{tokenId}/{username}/revokeKyc
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
 ```
