@@ -33,99 +33,126 @@ To get a local copy up and running, follow these simple example steps. When buil
     ```
     git clone https://github.com/hashgraph/guardian.git
     ```
-2.  Update the following files with your Hedera Testnet account info as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2.  Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
     For example:
 
-    in `ui-service/.env`:
+    in `guardian-service/.env`:
 
     ```
-    OPERATOR_ID=0.0.123456789
-    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+    OPERATOR_ID="0.0.29676495"
+    OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+    SCHEMA_TOPIC_ID="0.0.29614911"
     ```
 
-    in `ui-service/.env.docker`:
+    in `guardian-service/.env.docker`:
 
     ```
-    OPERATOR_ID=0.0.123456789
-    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+    OPERATOR_ID="0.0.29676495"
+    OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+    SCHEMA_TOPIC_ID="0.0.29614911"
     ```
 
-    in `guardian-service/config.json`:
+    Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
 
-    ```
-    {"OPERATOR_ID":"0.0.123456789","OPERATOR_KEY":"302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6"}
-    ```
+3. Update the following files with your NFT.Storage API KEY. Please follow the steps from https://nft.storage/#getting-started to obtain it.
 
-    * The `OPERATOR_ID` is the Hedera account's `accountId`
-    * The `OPERATOR_KEY` is the Hedera account's `privateKey`
-    * The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, delete the `TOPIC_ID` line.
-3.  If you want to build with Docker (Once this step you are finished)
+   For example:
 
-    ```
-    docker-compose up -d --build
-    ```
-4.  If you want to manually build every component, then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly, the MRV Sender Service. See below for commands.
+   in `ipfs-client/.env`:
+
+   ```
+   NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+   ```
+
+   in `ipfs-client/.env.docker`:
+
+   ```
+   NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+   ``` 
+4. If you want to build with Docker. Please note that the Docker build is meant to be used in production and will not contain any debug information. (Once this step you are finished)
+   ```
+   docker-compose up -d --build
+   ```
+5. If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
     **From the Message broker folder (Need to run first)**
 
-    To build the service:
+   To build the service:
 
-    ```
-    npm install
-    npm run build
-    ```
+   ```
+   npm install
+   npm run build
+   ```
 
-    To start the service:
+   To start the service:
 
-    ```
-    npm start
-    ```
+   ```
+   npm start
+   ```
 
-    **From the UI Service folder**
+   **From the IPFS Client folder**
 
-    To build the service:
+   To build the service:
 
-    ```
-    npm install
-    npm run build
-    ```
+   ```
+   npm install
+   npm run build
+   ```
 
-    To start the service (found on http://localhost:3002):
+   To start the service:
 
-    ```
-    npm start
-    ```
+   ```
+   npm start
+   ```
+ 
+ **From the Guardian Service folder**
 
-    **From the Guardian Service folder**
+   To build the service:
 
-    To build the service:
+   ```
+   npm install
+   npm run build
+   ```
 
-    ```
-    npm install
-    npm run build
-    ```
+   To start the service (found on http://localhost:3004):
 
-    To start the service (found on http://localhost:3004):
+   ```
+   npm start
+   ```
 
-    ```
-    npm start
-    ```
+   **From the UI Service folder**
 
-    **From the MRV Sender Service folder**
+   To build the service:
 
-    To build the service:
+   ```
+   npm install
+   npm run build
+   ```
 
-    ```
-    npm install
-    npm run build
-    ```
+   To start the service (found on http://localhost:3002):
 
-    To start the service (found on http://localhost:3005):
+   ```
+   npm start
+   ```
 
-    ```
-    npm start
-    ```
+   **From the MRV Sender Service folder**
+
+   To build the service:
+
+   ```
+   npm install
+   npm run build
+   ```
+
+   To start the service (found on http://localhost:3005):
+
+   ```
+   npm start
+   ```
+
+<p align="right">(<a href="#top">back to top</a>)</p> 
+  
 
 ([back to top](broken-reference))
 
