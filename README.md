@@ -2,6 +2,6 @@
 ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/ui-service?label=version)
 <!-- PROJECT LOGO -->
 
-For Complete documentation. Please refer https://github.com/hashgraph/guardian/tree/main/docs/getting-started
+For complete documentation. Please refer https://github.com/hashgraph/guardian/tree/main/docs/getting-started
 
 [license-url]: https://github.com/hashgraph/guardian/blob/main/LICENSE
