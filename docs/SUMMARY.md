@@ -89,3 +89,5 @@
 
 * [User listing except Root Authority and Auditor](account-apis/user-listing-except-root-authority-and-auditor.md)
 * [User Session](account-apis/user-session.md)
+* [User Login](account-apis/user-login.md)
+* [Registering new account](account-apis/registering-new-account.md)

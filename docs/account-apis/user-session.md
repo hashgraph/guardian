@@ -6,7 +6,7 @@
 
 GET  /accounts/session
 
-**Request body:**
+**Response body:**
 
 ```
    200:

@@ -8,7 +8,7 @@
 
 GET  /accounts
 
-**Request body:**
+**Response body:**
 
 ```
 responses:
