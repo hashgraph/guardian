@@ -1,7 +1,5 @@
 # Installation
 
-
-
 1.  Clone the repo
 
     ```
@@ -9,21 +7,19 @@
     ```
 2.  Update the following files with your Hedera Testnet account info as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
+
+
     For example:
 
-    in `ui-service/.env`:
+    in `guardian-service/.env`:
 
     ```
-    OPERATOR_ID=0.0.123456789
-    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+     OPERATOR_ID=0.0.123456789
+     OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+     SCHEMA_TOPIC_ID="0.0.29614911"
     ```
 
-    in `ui-service/.env.docker`:
 
-    ```
-    OPERATOR_ID=0.0.123456789
-    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
-    ```
 
     in `guardian-service/.env.docker`:
 
@@ -33,68 +29,65 @@
      SCHEMA_TOPIC_ID="0.0.29614911"
     ```
 
+
+
     Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
 
-    in `guardian-service/config.json`:
 
-    ```
-    {"OPERATOR_ID":"0.0.123456789","OPERATOR_KEY":"302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6"}
-    ```
 
-    * The `OPERATOR_ID` is the Hedera account's `accountId`
-    * The `OPERATOR_KEY` is the Hedera account's `privateKey`
-    * The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, delete the `TOPIC_ID` line.
-3.  Update the following files with your NFT.Storage API KEY. Please follow the steps from [https://nft.storage/#getting-started](https://nft.storage/#getting-started) to obtain it.
+3\. Update the following files with your NFT.Storage API KEY. Please follow the steps from [https://nft.storage/#getting-started](https://nft.storage/#getting-started) to obtain it.
 
-    For example:
+For example:
 
-    in `ipfs-client/.env`:
+in `ipfs-client/.env`:
 
-    ```
-    NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
-    ```
+```
+NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+```
 
-    in `ipfs-client/.env.docker`:
+in `ipfs-client/.env.docker`:
 
-    ```
-    NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
-    ```
-4.  If you want to build with Docker. Please note that the Docker build is meant to be used in production and will not contain any debug information. (Once this step you are finished)
+```
+NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+```
 
-    ```
-    docker-compose up -d --build
-    ```
-5.  If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+4\. If you want to build with Docker. Please note that the Docker build is meant to be used in production and will not contain any debug information. (Once this step you are finished)
 
-    **From the Message broker folder (Need to run first)**
+```
+docker-compose up -d --build
+```
 
-    To build the service:
+5\. If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
-    ```
-    npm install
-    npm run build
-    ```
+**From the Message broker folder (Need to run first)**
 
-    To start the service:
+To build the service:
 
-    ```
-    npm start
-    ```
+```
+npm install
+npm run build
+```
 
-    **From the IPFS Client folder**
+To start the service:
 
-    To build the service:
+```
+npm start
+```
 
-    ```
-    npm install
-    npm run build
-    ```
+**From the IPFS Client folder**
 
-    To start the service:
+To build the service:
 
-    ```
-    npm start
-    ```
+```
+npm install
+npm run build
+```
+
+To start the service:
+
+```
+npm start
+```
 
 **From the Guardian Service folder**
 

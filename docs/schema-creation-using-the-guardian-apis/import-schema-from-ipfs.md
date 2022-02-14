@@ -2,24 +2,17 @@
 
 ### IMPORTING SCHEMA FROM IPFS FILE
 
-**Description:** Imports new schema from IPFS into the local DB.&#x20;
+**Description:** Imports new schema from a zip file into the local DB.
 
 Only users with the Root Authority role are allowed to make the request.
 
-POST /schemas/import
+POST /schemas/import/file
 
 **Request body:**
 
 ```
-description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
+description: A zip file containing schema to be imported.
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
 ```
 
 **Response body:**
@@ -43,14 +36,15 @@ description: Object that contains the identifier of the Hedera message which con
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
 ```
 
 ### IMPORT PREVIEW
 
-**Description:** Previews the schema from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
+**Description:** Previews the schema from a zip file.&#x20;
 
+Only users with the Root Authority role are allowed to make the request.
 
+POST /schemas/import/message/preview:
 
 **Request body:**
 
@@ -60,7 +54,9 @@ description: Object that contains the identifier of the Hedera message which con
         content:
           application/json:
             schema:
-              type: object
+              type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
               properties:
                 messageId:
                   type: string
@@ -74,7 +70,9 @@ description: Object that contains the identifier of the Hedera message which con
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Schema'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
 401:
           description: Unauthorized.
 403:

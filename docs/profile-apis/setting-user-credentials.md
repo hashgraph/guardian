@@ -2,7 +2,7 @@
 
 ### SETS HEDERA CREDENTIALS
 
-**Description:** Sets Hedera credentials for the user. For users with the Root Autority role it also creates an address book.
+**Description:** Sets Hedera credentials for the user. For users with the Root Authority role it also creates an address book.
 
 **Request body:**
 

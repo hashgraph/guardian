@@ -1,9 +1,45 @@
 # Publish a Policy
 
-**Policy publish**
+### PUBLISH POLICY USING SPECIFIED POLICY ID
 
-`PUT /api/v1/policies/61ee81f65d8b6b0017811510/publish`
+**Description**: Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+
+`PUT` /policies/{policyId}/publish
 
 **Request body:**
 
-`{"policyVersion":"1.0.0"}`
+```
+description: Object that contains policy version.
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  policyVersion:
+                    type: string
+      summary: Publishes the policy onto IPFS.
+      security:
+      - bearerAuth: []
+```
+
+#### Response body:
+
+```
+200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishPolicy'
+401:
+          description: Unauthorized.
+403:
+          description: Forbidden.
+500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+```
