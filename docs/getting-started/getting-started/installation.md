@@ -1,5 +1,7 @@
 # Installation
 
+
+
 1.  Clone the repo
 
     ```
@@ -23,6 +25,16 @@
     OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
     ```
 
+    in `guardian-service/.env.docker`:
+
+    ```
+     OPERATOR_ID=0.0.123456789
+     OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+     SCHEMA_TOPIC_ID="0.0.29614911"
+    ```
+
+    Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
+
     in `guardian-service/config.json`:
 
     ```
@@ -32,12 +44,27 @@
     * The `OPERATOR_ID` is the Hedera account's `accountId`
     * The `OPERATOR_KEY` is the Hedera account's `privateKey`
     * The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, delete the `TOPIC_ID` line.
-3.  If you want to build with Docker (Once this step you are finished)
+3.  Update the following files with your NFT.Storage API KEY. Please follow the steps from [https://nft.storage/#getting-started](https://nft.storage/#getting-started) to obtain it.
+
+    For example:
+
+    in `ipfs-client/.env`:
+
+    ```
+    NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+    ```
+
+    in `ipfs-client/.env.docker`:
+
+    ```
+    NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+    ```
+4.  If you want to build with Docker. Please note that the Docker build is meant to be used in production and will not contain any debug information. (Once this step you are finished)
 
     ```
     docker-compose up -d --build
     ```
-4.  If you want to manually build every component, then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly, the MRV Sender Service. See below for commands.
+5.  If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
     **From the Message broker folder (Need to run first)**
 
@@ -54,7 +81,7 @@
     npm start
     ```
 
-    **From the UI Service folder**
+    **From the IPFS Client folder**
 
     To build the service:
 
@@ -63,43 +90,60 @@
     npm run build
     ```
 
-    To start the service (found on [http://localhost:3002](http://localhost:3002)):
+    To start the service:
 
     ```
     npm start
     ```
 
-    **From the Guardian Service folder**
+**From the Guardian Service folder**
 
-    To build the service:
+To build the service:
 
-    ```
-    npm install
-    npm run build
-    ```
+```
+npm install
+npm run build
+```
 
-    To start the service (found on [http://localhost:3004](http://localhost:3004)):
+To start the service (found on [http://localhost:3004](http://localhost:3004)):
 
-    ```
-    npm start
-    ```
+```
+npm start
+```
 
-    **From the MRV Sender Service folder**
+**From the UI Service folder**
 
-    To build the service:
+To build the service:
 
-    ```
-    npm install
-    npm run build
-    ```
+```
+npm install
+npm run build
+```
 
-    To start the service (found on [http://localhost:3005](http://localhost:3005)):
+To start the service (found on [http://localhost:3002](http://localhost:3002)):
 
-    ```
-    npm start
-    ```
+```
+npm start
+```
 
-#### Unit Tests
+**From the MRV Sender Service folder**
+
+To build the service:
+
+```
+npm install
+npm run build
+```
+
+To start the service (found on [http://localhost:3005](http://localhost:3005)):
+
+```
+npm start
+```
+
+([back to top](https://github.com/hashgraph/guardian/tree/develop#top))
+
+### Unit Tests
 
 To run **guardian-service** unit tests, following commands needs to be executed:
 
@@ -141,10 +185,3 @@ cd message-broker
 npm run test
 ```
 
-#### Swagger API
-
-After successfully launching your application, you can find the generated Swagger API by [following this link](http://localhost:3002/api-docs).
-
-#### Postman Collection
-
-Postman Collection that covers all available API endpoints could be found [here](https://github.com/hashgraph/guardian/tree/main/ui-service/api/Guardian%20API.postman\_collection.json).

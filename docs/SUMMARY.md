@@ -12,11 +12,11 @@
   * [Contribute a New Policy](getting-started/contributing/contribute-a-new-policy.md)
 * [Reference Implementation](getting-started/reference-implementation.md)
 * [Built With](getting-started/built-with.md)
-* [Roadmap](getting-started/roadmap.md)
-* [Change Log](getting-started/change-log.md)
+* [Change Log](getting-started/change-log/README.md)
+  * [Roadmap](getting-started/change-log/roadmap.md)
 * [License](getting-started/license.md)
-* [Security](getting-started/security.md)
 * [Contact](getting-started/contact.md)
+* [Security](getting-started/security.md)
 
 ## User Guide Glossary
 
@@ -80,3 +80,12 @@
 * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
 * [Adding file to IPFS](policy-creation-using-the-guardian-apis/adding-file-to-ipfs.md)
 * [Import Policy from IPFS](policy-creation-using-the-guardian-apis/import-policy-from-ipfs.md)
+
+## SCHEMA CREATION USING THE GUARDIAN APIS
+
+* [Page 1](schema-creation-using-the-guardian-apis/page-1.md)
+
+## ACCOUNT APIS
+
+* [User listing except Root Authority and Auditor](account-apis/user-listing-except-root-authority-and-auditor.md)
+* [User Session](account-apis/user-session.md)
