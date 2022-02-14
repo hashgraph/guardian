@@ -103,3 +103,10 @@
 * [User Account Balance](profile-apis/user-account-balance.md)
 * [User Account Information](profile-apis/user-account-information.md)
 * [Setting User Credentials](profile-apis/setting-user-credentials.md)
+
+## TOKEN APIS
+
+* [Token Listing](token-apis/token-listing.md)
+* [Creation of new token](token-apis/creation-of-new-token.md)
+* [User Info for selected token](token-apis/user-info-for-selected-token.md)
+* [Associates the user with token](token-apis/associates-the-user-with-token.md)
