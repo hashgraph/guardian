@@ -150,10 +150,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    npm start
    ```
-
-<p align="right">(<a href="#top">back to top</a>)</p> 
   
-
 ([back to top](broken-reference))
 
 ### Unit Tests
