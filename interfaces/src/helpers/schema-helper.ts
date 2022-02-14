@@ -213,9 +213,9 @@ export class SchemaHelper {
 
     public static buildComment(type: string, url: string, version?: string): string {
         if (version) {
-            return `{ "term": "${type}", "@id": "${url}", "previousVersion": "${version}" }`;
+            return `{"term": "${type}", "@id": "${url}", "previousVersion": "${version}"}`;
         }
-        return `{ "term": "${type}", "@id": "${url}" }`;
+        return `{"term": "${type}", "@id": "${url}"}`;
     }
 
     public static buildType(uuid: string, version?: string): string {

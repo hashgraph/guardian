@@ -11,18 +11,18 @@ const {
 describe('Schema service', function () {
     let service, channel;
 
-    const localSchema = 'https://localhost/schema';
+    const localSchema = 'undefined';
 
-    const PUBLISH_SCHEMA = 'publish-schema';
-    const UNPUBLISHED_SCHEMA = 'unpublished-schema';
-    const DELETE_SCHEMA = 'delete-schema';
     const SET_SCHEMA = 'set-schema';
-    const GET_SCHEMES = 'get-schemes';
     const GET_SCHEMA = 'get-schema';
+    const GET_SCHEMES = 'get-schemes';
+    const IMPORT_SCHEMES_BY_MESSAGES = 'IMPORT_SCHEMES_BY_MESSAGES';
+    const IMPORT_SCHEMES_BY_FILE = 'IMPORT_SCHEMES_BY_FILE';
     const PREVIEW_SCHEMA = 'preview-schema';
-    const IMPORT_SCHEMA = 'import-schema';
+    const PUBLISH_SCHEMA = 'publish-schema';
+    const DELETE_SCHEMA = 'delete-schema';
     const EXPORT_SCHEMES = 'export-schema';
-
+    const INCREMENT_SCHEMA_VERSION = 'INCREMENT_SCHEMA_VERSION';
 
     const DRAFT = 'DRAFT';
     const PUBLISHED = 'PUBLISHED';
@@ -30,9 +30,10 @@ describe('Schema service', function () {
 
     const s1 = {
         'uuid': '0fae2a20-0db2-4835-bab9-99b4effbe03e',
+        'iri': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
         'document': JSON.stringify({
             '$id': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
-            '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "https://localhost/schema#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
+            '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "undefined#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -93,7 +94,7 @@ describe('Schema service', function () {
         'uuid': '59b934e2-9eb6-4395-9b85-ad3624f1f752',
         'document': JSON.stringify({
             '$id': '#59b934e2-9eb6-4395-9b85-ad3624f1f752',
-            '$comment': '{"term": "59b934e2-9eb6-4395-9b85-ad3624f1f752", "@id": "https://localhost/schema#59b934e2-9eb6-4395-9b85-ad3624f1f752"}',
+            '$comment': '{"term": "59b934e2-9eb6-4395-9b85-ad3624f1f752", "@id": "undefined#59b934e2-9eb6-4395-9b85-ad3624f1f752"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -134,7 +135,7 @@ describe('Schema service', function () {
                     'items': {
                         '$ref': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f'
                     },
-                    '$comment': '{"term": "f3", "@id": "https://localhost/schema#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}'
+                    '$comment': '{"term": "f3", "@id": "undefined#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}'
                 },
                 'f4': {
                     'title': '',
@@ -157,7 +158,7 @@ describe('Schema service', function () {
         'uuid': 'ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
         'document': JSON.stringify({
             '$id': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
-            '$comment': '{"term": "ad2de08d-a43c-43c7-a458-3f0e8db65e8f", "@id": "https://localhost/schema#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}',
+            '$comment': '{"term": "ad2de08d-a43c-43c7-a458-3f0e8db65e8f", "@id": "undefined#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -294,12 +295,13 @@ describe('Schema service', function () {
         assert.exists(channel.map[SET_SCHEMA]);
         assert.exists(channel.map[GET_SCHEMA]);
         assert.exists(channel.map[GET_SCHEMES]);
+        assert.exists(channel.map[IMPORT_SCHEMES_BY_MESSAGES]);
+        assert.exists(channel.map[IMPORT_SCHEMES_BY_FILE]);
         assert.exists(channel.map[PREVIEW_SCHEMA]);
-        assert.exists(channel.map[IMPORT_SCHEMA]);
-        assert.exists(channel.map[EXPORT_SCHEMES]);
         assert.exists(channel.map[PUBLISH_SCHEMA]);
-        assert.exists(channel.map[UNPUBLISHED_SCHEMA]);
         assert.exists(channel.map[DELETE_SCHEMA]);
+        assert.exists(channel.map[EXPORT_SCHEMES]);
+        assert.exists(channel.map[INCREMENT_SCHEMA_VERSION]);
     });
 
     it('Test SET_SCHEMA', async function () {
@@ -311,7 +313,7 @@ describe('Schema service', function () {
             status: PUBLISHED,
             document: JSON.stringify({
                 '$id': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
-                '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "https://localhost/schema#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
+                '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "undefined#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
                 'title': '',
                 'description': '',
                 'type': 'object',
@@ -365,7 +367,7 @@ describe('Schema service', function () {
                 'additionalProperties': false
             })
         });
-        checkMessage(value, [{ ...s1db, status: DRAFT, iri: null }]);
+        checkMessage(value, [{ ...s1db, status: DRAFT, iri: '#0fae2a20-0db2-4835-bab9-99b4effbe03e', version: null }]);
     });
 
     it('Test GET_SCHEMA', async function () {
@@ -423,32 +425,30 @@ describe('Schema service', function () {
         });
     });
 
+    it('Test IMPORT_SCHEMES_BY_MESSAGES', async function () {
+        let value = await channel.run(IMPORT_SCHEMES_BY_MESSAGES, null);
+        checkError(value, 'Schema not found');
+
+        value = await channel.run(IMPORT_SCHEMES_BY_MESSAGES, { messageIds: "messageIds" });
+        checkError(value, 'Schema not found');
+
+        value = await channel.run(IMPORT_SCHEMES_BY_MESSAGES, { owner: "owner" });
+        checkError(value, 'Schema not found');
+
+        value = await channel.run(IMPORT_SCHEMES_BY_MESSAGES, { messageIds: ["0fae2a20-0db2-4835-bab9-99b4effbe03e"], owner: "owner" });
+        checkMessage(value, [{
+            "newIRI": value.body[0].newIRI,
+            "newUUID": value.body[0].newUUID,
+            "oldIRI": "#0fae2a20-0db2-4835-bab9-99b4effbe03e",
+            "oldUUID": "0fae2a20-0db2-4835-bab9-99b4effbe03e"
+        }]);
+    });
+
     it('Test PREVIEW_SCHEMA', async function () {
         let value = await channel.run(PREVIEW_SCHEMA, null);
         checkError(value, 'Schema not found');
 
-        value = await channel.run(PREVIEW_SCHEMA, '0fae2a20-0db2-4835-bab9-99b4effbe03e');
-        checkMessage(value, [s1]);
-
-        value = await channel.run(PREVIEW_SCHEMA, ['0fae2a20-0db2-4835-bab9-99b4effbe03e']);
-        checkMessage(value, [s1]);
-    });
-
-
-    it('Test IMPORT_SCHEMA', async function () {
-        let value = await channel.run(IMPORT_SCHEMA, null);
-        checkError(value, 'Schema not found');
-
-        value = await channel.run(IMPORT_SCHEMA, { messageIds: "messageIds" });
-        checkError(value, 'Schema not found');
-
-        value = await channel.run(IMPORT_SCHEMA, { owner: "owner" });
-        checkError(value, 'Schema not found');
-
-        value = await channel.run(IMPORT_SCHEMA, { messageIds: "0fae2a20-0db2-4835-bab9-99b4effbe03e", owner: "owner" });
-        checkMessage(value, [s1]);
-
-        value = await channel.run(IMPORT_SCHEMA, { messageIds: ["0fae2a20-0db2-4835-bab9-99b4effbe03e"], owner: "owner" });
+        value = await channel.run(PREVIEW_SCHEMA, { messageIds: ['0fae2a20-0db2-4835-bab9-99b4effbe03e'] });
         checkMessage(value, [s1]);
     });
 
