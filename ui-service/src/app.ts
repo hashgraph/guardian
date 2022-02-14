@@ -7,7 +7,8 @@ import {
     profileAPI,
     schemaAPI,
     tokenAPI,
-    externalAPI
+    externalAPI,
+    ipfsAPI
 } from '@api/service';
 import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
@@ -18,9 +19,10 @@ import {createServer} from 'http';
 import {createConnection, getMongoRepository} from 'typeorm';
 import WebSocket from 'ws';
 import {authorizationHelper} from './auth/authorizationHelper';
-import {StateContainer} from '@policy-engine/state-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
+import { IPFS } from '@helpers/ipfs';
 
 const PORT = process.env.PORT || 3002;
 const API_VERSION = 'v1';
@@ -62,8 +64,10 @@ Promise.all([
     new Guardians().setChannel(channel);
     new Guardians().registerMRVReceiver(async (data) => {
         console.log(data);
-        await StateContainer.ReceiveExternalData(data);
+        await PolicyComponentsStuff.ReceiveExternalData(data);
     });
+
+    new IPFS().setChannel(channel);
 
     const server = createServer(app);
     const policyGenerator = new BlockTreeGenerator();
@@ -85,6 +89,7 @@ Promise.all([
     app.use(`/api/${API_VERSION}/trustchains/`, authorizationHelper, trustchainsAPI);
     app.use(`/api/${API_VERSION}/external/`, externalAPI);
     app.use(`/api/${API_VERSION}/demo/`, demoAPI);
+    app.use(`/api/${API_VERSION}/ipfs`, authorizationHelper, ipfsAPI);
     app.use(`/api-docs/${API_VERSION}`, swaggerAPI);
     app.use('/', frontendService);
     /////////////////////////////////////////
@@ -93,4 +98,3 @@ Promise.all([
         console.log('UI service started on', PORT);
     });
 });
-

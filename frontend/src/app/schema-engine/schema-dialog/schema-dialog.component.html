@@ -1,0 +1,31 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div *ngIf="type=='new'" class="g-dialog-title">
+            New Schema
+        </div>
+        <div *ngIf="type=='edit'" class="g-dialog-title">
+            Edit Schema
+        </div>
+        <div *ngIf="type=='version'" class="g-dialog-title">
+            New Version
+        </div>
+        <div class="g-dialog-actions">
+            <div *ngIf="!scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(schemaControl?.valid && started)">
+                Create
+            </div>
+            <div *ngIf="scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(schemaControl?.valid && started)">
+                Save
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div style="padding: 70px 70px 30px 70px;">
+            <app-schema-configuration [value]="scheme" [schemes]="schemes" [type]="type" #document></app-schema-configuration>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+<div class="content">
+    <ng-container *ngIf="isImportTypeSelected">
+        <h1 mat-dialog-title>
+            Enter hedera message timestamp
+        </h1>
+        <div mat-dialog-content>
+            <form [formGroup]="dataForm" (ngSubmit)="importFromMessage()">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>Message timestamp</mat-label>
+                    <input matInput type="text" placeholder="Message timestamp" formControlName="timestamp">
+                </mat-form-field>
+                <div mat-dialog-actions>
+                    <button mat-raised-button color="primary" type="submit"
+                        [disabled]="!dataForm.valid">Ok</button>
+                    <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isImportTypeSelected">
+        <div class="action-select-step">
+            <div class="login-header">
+                Select action
+            </div>
+            <button mat-button (click)="importFromFile()">
+                <span class="action-name">Import from file</span>
+            </button>
+            <button mat-button (click)="setImportType(1)">
+                <span class="action-name">Import from IPFS</span>
+            </button>
+        </div>
+    </ng-container>
+    
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+</div>

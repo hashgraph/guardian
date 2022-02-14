@@ -1,0 +1,73 @@
+<form>
+  <div>
+    <div class="form-field">
+      <div class="label-field">Id</div>
+      <mat-form-field class="example-full-width" appearance="outline">
+        <input matInput readonly [value]="this.document.id || ''">
+      </mat-form-field>
+    </div>
+
+    <div class="delimiter"></div>
+
+    <ng-template [ngIf]="this.type === 'VC'">
+      <div class="form-field">
+        <div class="label-field">Issuer</div>
+        <mat-form-field class="example-full-width" appearance="outline">
+          <input matInput readonly [value]="this.document.issuer || ''">
+
+        </mat-form-field>
+      </div>
+      <div class="delimiter"></div>
+      <div class="form-field">
+        <div class="label-field">Issuance Date</div>
+        <mat-form-field class="example-full-width" appearance="outline">
+          <input matInput [matDatepicker]="dateItem" [value]="this.document.issuanceDate" readonly>
+          <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
+          <mat-datepicker disabled #dateItem></mat-datepicker>
+        </mat-form-field>
+      </div>
+      <div class="delimiter"></div>
+    </ng-template>
+
+    <div class="form-field">
+      <div class="label-field">Proof</div>
+      <mat-form-field class="example-full-width" appearance="outline">
+        <textarea cdkTextareaAutosize cdkAutosizeMinRows="1" cdkAutosizeMaxRows="5" matInput readonly
+          [value]="this.proofJson || ''"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="delimiter"></div>
+
+    <div *ngIf="this.schemas" class="form-field-group schema-form-field-array-group" [ngSwitch]="this.type">
+      <ng-template [ngSwitchCase]="'VC'">
+        <div class="label-field">Credential Subject</div>
+        <div *ngFor="let credentialSubject of this.subjects" class="form-field-array-item"
+          [attr.index]="this.subjects.indexOf(credentialSubject)">
+          <div class="form-field-group">
+            <app-schema-form-view [private-fields]="hideFields" [schema]="getSchema(credentialSubject.type)"
+              [delimiter-hide]="true" [values]="credentialSubject">
+            </app-schema-form-view>
+          </div>
+          <div class="short-delimiter-container">
+            <div class="delimiter"></div>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template [ngSwitchCase]="'VP'">
+        <div class="label-header">Verifiable Credential</div>
+        <div *ngFor="let vcDocument of this.subjects" class="form-field-array-item"
+          [attr.index]="this.subjects.indexOf(vcDocument)">
+          <div class="form-field-group">
+            <app-document-view [document]="vcDocument" [schemas]="schemas" [hide-fields]="this.hideFields" type="VC">
+            </app-document-view>
+          </div>
+          <div class="short-delimiter-container">
+            <div class="delimiter"></div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</form>

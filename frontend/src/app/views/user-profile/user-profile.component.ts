@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
-import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.component';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
 import { IUser, Token, IToken } from 'interfaces';
 import { DemoService } from 'src/app/services/demo.service';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 interface IHederaForm {
     id: string,
@@ -162,12 +162,14 @@ export class UserProfileComponent implements OnInit {
     }
 
     openDocument(document: any) {
-        const dialogRef = this.dialog.open(JsonDialog, {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
                 document: JSON.parse(document),
-                title: "DID"
+                title: "DID",
+                type: 'JSON',
             }
+
         });
 
         dialogRef.afterClosed().subscribe(async (result) => {

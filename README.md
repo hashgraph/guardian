@@ -10,29 +10,6 @@ The Guardian is a modular open-source solution that includes best-in-class ident
 \
 [HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](https://github.com/hashgraph/guardian/issues) · [Request a Policy or a Feature](https://github.com/hashgraph/guardian/issues)
 
-<details>
-
-<summary>Table of Contents</summary>
-
-1. [Discovering ESG assets on Hedera](broken-reference)
-2. [Getting Started](broken-reference)
-   * [Prerequisites](broken-reference)
-   * [Installation](broken-reference)
-3. [Demo Usage Guide](broken-reference)
-4. [Contributing](broken-reference)
-5.
-   * [Contribute a New Policy](broken-reference)
-   * [Request a New Policy or Feature](broken-reference)
-6. [Reference Implementation](broken-reference)
-7. [Built With](broken-reference)
-8. [Roadmap](broken-reference)
-9. [Change Log](broken-reference)
-10. [License](broken-reference)
-11. [Security](broken-reference)
-12. [Contact](broken-reference)
-
-</details>
-
 ### Discovering ESG assets on Hedera
 
 As identified in Hedera Improvement Proposal 19 (HIP-19), each transaction on the Hedera network must contain a specific identifier in the memo field for discoverability. The Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of newly minted tokens, you will find a [Verifiable Link](https://github.com/InterWorkAlliance/Sustainability/blob/2d07029cade3050d76f716034593cb067d1c4e7f/vem/supply/verification.md) which will allow users to discover the published standard the token is following and the entire history of the ESG asset and corresponding data to be publicly discoverable. This is further defined in Hedera Improvement Proposal 28 (HIP-28)
@@ -48,6 +25,7 @@ To get a local copy up and running, follow these simple example steps. When buil
 * [Docker](https://www.docker.com) (To build with one command)
 * [MongoDB](https://www.mongodb.com) and [NodeJS](https://nodejs.org) (If you would like to manually build every component)
 * [Hedera Testnet Account](https://portal.hedera.com)
+* [NFT.Storage Account](https://nft.storage/#getting-started)
 
 #### Installation
 
@@ -56,100 +34,124 @@ To get a local copy up and running, follow these simple example steps. When buil
     ```
     git clone https://github.com/hashgraph/guardian.git
     ```
-2.  Update the following files with your Hedera Testnet account info as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2.  Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
     For example:
 
-    in `ui-service/.env`:
+    in `guardian-service/.env`:
 
     ```
-    OPERATOR_ID=0.0.123456789
-    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+    OPERATOR_ID="0.0.29676495"
+    OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+    SCHEMA_TOPIC_ID="0.0.29614911"
     ```
 
-    in `ui-service/.env.docker`:
+    in `guardian-service/.env.docker`:
 
     ```
-    OPERATOR_ID=0.0.123456789
-    OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+    OPERATOR_ID="0.0.29676495"
+    OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+    SCHEMA_TOPIC_ID="0.0.29614911"
     ```
 
-    in `guardian-service/config.json`:
+    Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
 
-    ```
-    {"OPERATOR_ID":"0.0.123456789","OPERATOR_KEY":"302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6"}
-    ```
+3. Update the following files with your NFT.Storage API KEY. Please follow the steps from https://nft.storage/#getting-started to obtain it.
 
-    * The `OPERATOR_ID` is the Hedera account's `accountId`
-    * The `OPERATOR_KEY` is the Hedera account's `privateKey`
-    * The `TOPIC_ID` is used when connecting to an existing topic. If you don't have one, delete the `TOPIC_ID` line.
-3.  If you want to build with Docker (Once this step you are finished)
+   For example:
 
-    ```
-    docker-compose up -d --build
-    ```
-4.  If you want to manually build every component, then build and run the services in the following sequence: Message Broker, UI Service, Guardian Service, and lastly, the MRV Sender Service. See below for commands.
+   in `ipfs-client/.env`:
+
+   ```
+   NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+   ```
+
+   in `ipfs-client/.env.docker`:
+
+   ```
+   NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+   ``` 
+4. If you want to build with Docker. Please note that the Docker build is meant to be used in production and will not contain any debug information. (Once this step you are finished)
+   ```
+   docker-compose up -d --build
+   ```
+5. If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
     **From the Message broker folder (Need to run first)**
 
-    To build the service:
+   To build the service:
 
-    ```
-    npm install
-    npm run build
-    ```
+   ```
+   npm install
+   npm run build
+   ```
 
-    To start the service:
+   To start the service:
 
-    ```
-    npm start
-    ```
+   ```
+   npm start
+   ```
 
-    **From the UI Service folder**
+   **From the IPFS Client folder**
 
-    To build the service:
+   To build the service:
 
-    ```
-    npm install
-    npm run build
-    ```
+   ```
+   npm install
+   npm run build
+   ```
 
-    To start the service (found on http://localhost:3002):
+   To start the service:
 
-    ```
-    npm start
-    ```
+   ```
+   npm start
+   ```
+ 
+ **From the Guardian Service folder**
 
-    **From the Guardian Service folder**
+   To build the service:
 
-    To build the service:
+   ```
+   npm install
+   npm run build
+   ```
 
-    ```
-    npm install
-    npm run build
-    ```
+   To start the service (found on http://localhost:3004):
 
-    To start the service (found on http://localhost:3004):
+   ```
+   npm start
+   ```
 
-    ```
-    npm start
-    ```
+   **From the UI Service folder**
 
-    **From the MRV Sender Service folder**
+   To build the service:
 
-    To build the service:
+   ```
+   npm install
+   npm run build
+   ```
 
-    ```
-    npm install
-    npm run build
-    ```
+   To start the service (found on http://localhost:3002):
 
-    To start the service (found on http://localhost:3005):
+   ```
+   npm start
+   ```
 
-    ```
-    npm start
-    ```
+   **From the MRV Sender Service folder**
 
+   To build the service:
+
+   ```
+   npm install
+   npm run build
+   ```
+
+   To start the service (found on http://localhost:3005):
+
+   ```
+   npm start
+   ```
+  
 ([back to top](broken-reference))
 
 ### Unit Tests
@@ -196,98 +198,19 @@ npm run test
 
 ([back to top](broken-reference))
 
-### Swagger API
+For complete documentation on following points. Please refer https://github.com/hashgraph/guardian/tree/main/docs/getting-started
 
-After successfully launching your application, you can find the generated Swagger API by [following this link](http://localhost:3002/api-docs).
-
-([back to top](broken-reference))
-
-### Postman Collection
-
-Postman Collection that covers all available API endpoints could be found [here](https://github.com/hashgraph/guardian/tree/main/ui-service/api/Guardian%20API.postman\_collection.json).
-
-([back to top](broken-reference))
-
-### Demo Usage Guide
-
-Navigate to the `/demo artifacts` folder for the Demo Usage Guide or [click here](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts).
-
-([back to top](broken-reference))
-
-### Contribute a New Policy
-
-We welcome all methodologies and workflow to be contributed to this repo as an open-source token template and Policy Workflow & Policy Action Execution instance. To do so, please follow the CONTRIBUTING.md instructions to submit a pull request.
-
-This is critical to scaling the [Hedera Sustainability Ecosystem](https://github.com/dubgeis/HederaSustainabilityEcosystem/).
-
-### Reference Implementation
-
-This repo contains a reference implementation of the Guardian to learn how to use the components for various applications. This reference implementation is designed with modularity so that different components may be swapped out based on various implementation requirements. Please see the Guardian's architecture diagram below:
-
-![Open Source Guardian Architecture](https://user-images.githubusercontent.com/40637665/137059380-94303137-b9e4-402c-bb67-9212b6f1c4f4.png)
-
-([back to top](broken-reference))
-
-### Built With
-
-The Guardian solution is built with the following major frameworks/libraries.
-
-#### Backend
-
-* [NodeJS](https://nodejs.org)
-* [MongoDB](https://www.mongodb.com)
-* [Express](https://expressjs.com)
-* [FastMQ](https://www.npmjs.com/package/fastmq)
-* [TypeORM](https://typeorm.io)
-* [Hedera-DID-JS-SDK](https://github.com/hashgraph/did-sdk-js)
-* [W3C VC-JS-HTTP](https://w3c.github.io/vc-data-model/)
-
-#### Frontend
-
-* [Angular](https://angular.io)
-* [crypto-browserify](https://www.npmjs.com/package/crypto-browserify)
-
-([back to top](broken-reference))
-
-### Roadmap
-
-Roadmap TBA
-
-* \[] Feature 1
-  * \[] Nested Feature
-
-See the [open issues](https://github.com/hashgraph/guardian/issues) for a full list of proposed features (and known issues).
-
-([back to top](broken-reference))
-
-### Change Log
-
-All notable changes to this project will be documented in this CHANGELOG.md file.
-
-([back to top](broken-reference))
-
-### Contributing
-
-Thank you for your interest in contributing to the Guardian!
-
-We appreciate your interest in helping the rest of our community and us. We welcome bug reports, feature requests, and code contributions.
-
-For contributing guidelines, please see the CONTRIBUTING.md here
-
-([back to top](broken-reference))
-
-### License
-
-This repo is under Apache 2.0 License. See LICENSE for more information.
-
-([back to top](broken-reference))
-
-### Security
-
-Please do not file a public ticket mentioning the vulnerability. Refer to the security policy defined in the SECURITY.md.
-
-([back to top](broken-reference))
-
+* Swagger API
+* Postman Collection
+* Demo Usage guide
+* Contribute a New Policy
+* Reference Implementation
+* Technologies Built on
+* Roadmap
+* Change Log
+* Contributing
+* License
+* Security
 ### Contact
 
 For any questions, please reach out to the Envision Blockchain Solutions team at:
@@ -296,3 +219,6 @@ For any questions, please reach out to the Envision Blockchain Solutions team at
 * Email: [info@envisionblockchain.com](mailto:info@envisionblockchain.com)
 
 ([back to top](broken-reference))
+
+
+[license-url]: https://github.com/hashgraph/guardian/blob/main/LICENSE

@@ -47,34 +47,34 @@ function getTokenInfo(info: any, token: any) {
 export const tokenAPI = Router();
 
 tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    const guardians = new Guardians();
-
-    const user = req.user;
-    const root = await guardians.getRootConfig(user.did);
-
-    const {
-        changeSupply,
-        decimals,
-        enableAdmin,
-        enableFreeze,
-        enableKYC,
-        enableWipe,
-        initialSupply,
-        tokenName,
-        tokenSymbol,
-        tokenType
-    } = req.body;
-
-    if (!tokenName) {
-        res.status(400).send({ code: 400, message: 'Invalid Token Name' });
-    }
-
-    if (!tokenSymbol) {
-        res.status(400).send({ code: 400, message: 'Invalid Token Symbol' });
-    }
-
-    let treasury: any, tokenId: string, newToken: any;
     try {
+        const guardians = new Guardians();
+        const user = req.user;
+        const root = await guardians.getRootConfig(user.did);
+
+        const {
+            changeSupply,
+            decimals,
+            enableAdmin,
+            enableFreeze,
+            enableKYC,
+            enableWipe,
+            initialSupply,
+            tokenName,
+            tokenSymbol,
+            tokenType
+        } = req.body;
+
+        if (!tokenName) {
+            res.status(400).send({ code: 400, message: 'Invalid Token Name' });
+        }
+
+        if (!tokenSymbol) {
+            res.status(400).send({ code: 400, message: 'Invalid Token Symbol' });
+        }
+
+        let treasury: any, tokenId: string, newToken: any;
+
         const hederaHelper = HederaHelper
             .setOperator(root.hederaAccountId, root.hederaAccountKey);
 
@@ -118,36 +118,36 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
             wipeKey: wipeKey ? wipeKey.toString() : null,
             supplyKey: supplyKey ? supplyKey.toString() : null,
         }
+
+        const tokens = (await guardians.setToken(newToken));
+
+        res.status(201).json(tokens);
     } catch (error) {
         res.status(500).send({ code: 500, message: error.message });
-        return;
     }
-
-    const tokens = (await guardians.setToken(newToken));
-
-    res.status(201).json(tokens);
 });
 
 tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
-    const guardians = new Guardians();
-    const user = req.user;
-    const tokens = (await guardians.getTokens()) as any[];
+    try {
+        const guardians = new Guardians();
+        const user = req.user;
+        const tokens = (await guardians.getTokens()) as any[];
 
-    if (user.role === UserRole.ROOT_AUTHORITY) {
-        res.status(200).json(tokens || []);
-        return;
-    } else {
-        if (!user.hederaAccountId) {
-            res.status(200).json([]);
+        if (user.role === UserRole.ROOT_AUTHORITY) {
+            res.status(200).json(tokens || []);
             return;
-        }
+        } else {
+            if (!user.hederaAccountId) {
+                res.status(200).json([]);
+                return;
+            }
 
-        const wallet = new Wallet();
-        const userID = user.hederaAccountId;
-        const userDID = user.did;
-        const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+            const wallet = new Wallet();
+            const userID = user.hederaAccountId;
+            const userDID = user.did;
+            const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
 
-        try {
+
             const info = await HederaHelper
                 .setOperator(userID, userKey).SDK
                 .accountInfo(user.hederaAccountId);
@@ -155,22 +155,21 @@ tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), asyn
                 tokens[i] = getTokenInfo(info, tokens[i]);
             }
             res.json(tokens as ITokenInfo[]);
-        } catch (error) {
-            res.status(500).send({ code: 500, message: error.message });
         }
+    } catch (error) {
+        res.status(500).send({ code: 500, message: error.message });
     }
 });
 
 tokenAPI.put('/:tokenId/associate', permissionHelper(UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
-    const wallet = new Wallet();
-
-    const tokenId = req.params.tokenId;
-    const user = req.user;
-    const userDID = user.did;
-    const userID = user.hederaAccountId;
-    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
-
     try {
+        const wallet = new Wallet();
+
+        const tokenId = req.params.tokenId;
+        const user = req.user;
+        const userDID = user.did;
+        const userID = user.hederaAccountId;
+        const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
         const status = await HederaHelper.setOperator(userID, userKey).SDK.associate(tokenId, userID, userKey);
         res.status(200).json(status);
     } catch (error) {
@@ -179,15 +178,13 @@ tokenAPI.put('/:tokenId/associate', permissionHelper(UserRole.USER), async (req:
 });
 
 tokenAPI.put('/:tokenId/dissociate', permissionHelper(UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
-    const wallet = new Wallet();
-
-    const tokenId = req.params.tokenId;
-    const user = req.user;
-    const userDID = user.did;
-    const userID = user.hederaAccountId;
-    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
-
     try {
+        const wallet = new Wallet();
+        const tokenId = req.params.tokenId;
+        const user = req.user;
+        const userDID = user.did;
+        const userID = user.hederaAccountId;
+        const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
         const status = await HederaHelper.setOperator(userID, userKey).SDK.dissociate(tokenId, userID, userKey);
         res.status(200).json(status);
     } catch (error) {
@@ -196,33 +193,33 @@ tokenAPI.put('/:tokenId/dissociate', permissionHelper(UserRole.USER), async (req
 });
 
 tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const tokenId = req.params.tokenId;
-    const username = req.params.username;
-    const rootUser = req.user;
-
-    const root = await guardians.getRootConfig(rootUser.did);
-
-    const token = (await guardians.getTokens({ tokenId }))[0];
-    if (!token) {
-        res.status(400).json({ code: 400, message: 'Token not found' });
-        return
-    }
-    const kycKey = token.kycKey;
-
-    const user = await users.getUser(username);
-    if (!user) {
-        res.status(400).json({ code: 400, message: 'User not found' });
-        return
-    }
-    if (!user.hederaAccountId) {
-        res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
-        return
-    }
-
     try {
+        const guardians = new Guardians();
+        const users = new Users();
+
+        const tokenId = req.params.tokenId;
+        const username = req.params.username;
+        const rootUser = req.user;
+
+        const root = await guardians.getRootConfig(rootUser.did);
+
+        const token = (await guardians.getTokens({ tokenId }))[0];
+        if (!token) {
+            res.status(400).json({ code: 400, message: 'Token not found' });
+            return
+        }
+        const kycKey = token.kycKey;
+
+        const user = await users.getUser(username);
+        if (!user) {
+            res.status(400).json({ code: 400, message: 'User not found' });
+            return
+        }
+        if (!user.hederaAccountId) {
+            res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
+            return
+        }
+
         const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
         await hederaHelper.SDK.grantKyc(tokenId, user.hederaAccountId, kycKey);
         const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
@@ -234,33 +231,33 @@ tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTH
 });
 
 tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const tokenId = req.params.tokenId;
-    const username = req.params.username;
-    const rootUser = req.user;
-
-    const root = await guardians.getRootConfig(rootUser.did);
-
-    const token = (await guardians.getTokens({ tokenId }))[0];
-    if (!token) {
-        res.status(400).json({ code: 400, message: 'Token not found' });
-        return
-    }
-    const kycKey = token.kycKey;
-
-    const user = await users.getUser(username);
-    if (!user) {
-        res.status(400).json({ code: 400, message: 'User not found' });
-        return
-    }
-    if (!user.hederaAccountId) {
-        res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
-        return
-    }
-
     try {
+        const guardians = new Guardians();
+        const users = new Users();
+
+        const tokenId = req.params.tokenId;
+        const username = req.params.username;
+        const rootUser = req.user;
+
+        const root = await guardians.getRootConfig(rootUser.did);
+
+        const token = (await guardians.getTokens({ tokenId }))[0];
+        if (!token) {
+            res.status(400).json({ code: 400, message: 'Token not found' });
+            return
+        }
+        const kycKey = token.kycKey;
+
+        const user = await users.getUser(username);
+        if (!user) {
+            res.status(400).json({ code: 400, message: 'User not found' });
+            return
+        }
+        if (!user.hederaAccountId) {
+            res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
+            return
+        }
+
         const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
         await hederaHelper.SDK.revokeKyc(tokenId, user.hederaAccountId, kycKey);
         const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
@@ -272,33 +269,33 @@ tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUT
 });
 
 tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const tokenId = req.params.tokenId;
-    const username = req.params.username;
-    const rootUser = req.user;
-
-    const root = await guardians.getRootConfig(rootUser.did);
-
-    const token = (await guardians.getTokens({ tokenId }))[0];
-    if (!token) {
-        res.status(400).json({ code: 400, message: 'Token not found' });
-        return
-    }
-    const kycKey = token.kycKey;
-
-    const user = await users.getUser(username);
-    if (!user) {
-        res.status(400).json({ code: 400, message: 'User not found' });
-        return
-    }
-    if (!user.hederaAccountId) {
-        res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
-        return
-    }
-
     try {
+        const guardians = new Guardians();
+        const users = new Users();
+
+        const tokenId = req.params.tokenId;
+        const username = req.params.username;
+        const rootUser = req.user;
+
+        const root = await guardians.getRootConfig(rootUser.did);
+
+        const token = (await guardians.getTokens({ tokenId }))[0];
+        if (!token) {
+            res.status(400).json({ code: 400, message: 'Token not found' });
+            return
+        }
+        const kycKey = token.kycKey;
+
+        const user = await users.getUser(username);
+        if (!user) {
+            res.status(400).json({ code: 400, message: 'User not found' });
+            return
+        }
+        if (!user.hederaAccountId) {
+            res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
+            return
+        }
+
         const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
         await hederaHelper.SDK.freeze(tokenId, user.hederaAccountId, kycKey);
         const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
@@ -310,33 +307,33 @@ tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHOR
 });
 
 tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const tokenId = req.params.tokenId;
-    const username = req.params.username;
-    const rootUser = req.user;
-
-    const root = await guardians.getRootConfig(rootUser.did);
-
-    const token = (await guardians.getTokens({ tokenId }))[0];
-    if (!token) {
-        res.status(400).json({ code: 400, message: 'Token not found' });
-        return
-    }
-    const kycKey = token.kycKey;
-
-    const user = await users.getUser(username);
-    if (!user) {
-        res.status(400).json({ code: 400, message: 'User not found' });
-        return
-    }
-    if (!user.hederaAccountId) {
-        res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
-        return
-    }
-
     try {
+        const guardians = new Guardians();
+        const users = new Users();
+
+        const tokenId = req.params.tokenId;
+        const username = req.params.username;
+        const rootUser = req.user;
+
+        const root = await guardians.getRootConfig(rootUser.did);
+
+        const token = (await guardians.getTokens({ tokenId }))[0];
+        if (!token) {
+            res.status(400).json({ code: 400, message: 'Token not found' });
+            return
+        }
+        const kycKey = token.kycKey;
+
+        const user = await users.getUser(username);
+        if (!user) {
+            res.status(400).json({ code: 400, message: 'User not found' });
+            return
+        }
+        if (!user.hederaAccountId) {
+            res.status(400).json({ code: 400, message: 'User is not linked to an Hedera Account' });
+            return
+        }
+
         const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
         await hederaHelper.SDK.unfreeze(tokenId, user.hederaAccountId, kycKey);
         const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
@@ -348,25 +345,26 @@ tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTH
 });
 
 tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const tokenId = req.params.tokenId;
-    const username = req.params.username;
-
-    const user = await users.getUser(username);
-    if (!user) {
-        res.status(400).json({ code: 400, message: 'User not found' });
-        return
-    }
-    if (!user.hederaAccountId) {
-        res.status(200).json(null);
-        return
-    }
-
-    const rootUser = req.user;
-    const root = await guardians.getRootConfig(rootUser.did);
     try {
+        const guardians = new Guardians();
+        const users = new Users();
+
+        const tokenId = req.params.tokenId;
+        const username = req.params.username;
+
+        const user = await users.getUser(username);
+        if (!user) {
+            res.status(400).json({ code: 400, message: 'User not found' });
+            return
+        }
+        if (!user.hederaAccountId) {
+            res.status(200).json(null);
+            return
+        }
+
+        const rootUser = req.user;
+        const root = await guardians.getRootConfig(rootUser.did);
+
         const info = await HederaHelper
             .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
             .accountInfo(user.hederaAccountId);

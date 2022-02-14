@@ -1,0 +1,41 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Schema Import Preview
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onImport()">
+                Import
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <div *ngIf="loading" class="loading">
+                <mat-spinner></mat-spinner>
+            </div>
+            <div *ngFor="let schema of schemes">
+                <div class="schema">
+                    <div class="schema-header">{{schema.name}}</div>
+    
+                    <div class="delimiter"></div>
+    
+                    <div *ngIf="schema.version" class="field">
+                        <div class="field-name">Version</div>
+                        <div class="field-value">{{schema.version}}</div>
+                    </div>
+    
+                    <div *ngIf="schema.description" class="field-last">
+                        <div class="field-name">Description</div>
+                        <div class="field-value">{{schema.description}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

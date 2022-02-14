@@ -1,5 +1,7 @@
 'use strict';
 
+const { assert } = require('chai');
+
 function createChannel() {
     let channel;
     channel = {
@@ -42,5 +44,31 @@ function createTable() {
     };
 }
 
+function checkMessage(result, value, text) {
+    if(!result) {
+        assert.fail(text);
+    }
+    if(result.error) {
+        assert.fail(result.error);
+    }
+    if(result.body != value) {
+        assert.deepEqual(result.body, value, text);
+    }
+}
+
+function checkError(result, value, text) {
+    if(!result) {
+        assert.fail(text || value);
+    }
+    if(!result.error) {
+        assert.fail(text || value);
+    }
+    if(result.error != value) {
+        assert.equal(result.error, value, text);
+    }
+}
+
 module.exports.createChannel = createChannel;
 module.exports.createTable = createTable;
+module.exports.checkMessage = checkMessage;
+module.exports.checkError = checkError;

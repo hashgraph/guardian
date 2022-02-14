@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
-import { TokenDialog } from '../../components/dialogs/token-dialog/token-dialog.component';
+import { TokenDialog } from '../../components/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Token } from 'interfaces';
 

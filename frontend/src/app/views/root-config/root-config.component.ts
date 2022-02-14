@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
-import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { IUser, Schema, SchemaEntity } from 'interfaces';
+import { IUser, Schema, SchemaEntity, SchemaHelper } from 'interfaces';
 import { DemoService } from 'src/app/services/demo.service';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * RootAuthority profile settings page.
@@ -41,6 +41,7 @@ export class RootConfigComponent implements OnInit {
     schema: any;
     hideVC: any;
     formValid: boolean = false;
+    schemas!: Schema[];
 
     constructor(
         private auth: AuthService,
@@ -98,8 +99,8 @@ export class RootConfigComponent implements OnInit {
 
             const profile = value[0];
             const balance = value[1];
-            const schemes = Schema.mapRef(value[2]);
-            this.schema = schemes
+            this.schemas = SchemaHelper.map(value[2]);
+            this.schema = this.schemas
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
 
             this.isConfirmed = !!(profile.confirmed);
@@ -147,12 +148,28 @@ export class RootConfigComponent implements OnInit {
         }
     }
 
-    openDocument(document: any) {
-        const dialogRef = this.dialog.open(JsonDialog, {
+    openVCDocument(document: any, title: string) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
-                document: document,
-                title: "DID"
+                document: document.document,
+                title: title,
+                type: 'VC',
+                schemas: this.schemas,
+                viewDocument: true
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+        });
+    }
+
+    openDIDDocument(document: any, title: string) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
+            width: '850px',
+            data: {
+                document: document.document,
+                title: title,
+                type: 'JSON',
             }
         });
 

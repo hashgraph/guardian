@@ -1,19 +1,28 @@
+require('module-alias/register');
 const { expect, assert } = require('chai');
-const { schemaAPI } = require('../dist/api/schema.service');
-const { createChannel, createTable } = require('./helper');
+const { schemaAPI, schemaCache } = require('../dist/api/schema.service');
+const {
+    createChannel,
+    createTable,
+    checkMessage,
+    checkError
+} = require('./helper');
 
 describe('Schema service', function () {
     let service, channel;
 
-    const localSchema = 'https://localhost/schema';
+    const localSchema = 'undefined';
 
-    const PUBLISH_SCHEMA = 'publish-schema';
-    const UNPUBLISHED_SCHEMA = 'unpublished-schema';
-    const DELETE_SCHEMA = 'delete-schema';
     const SET_SCHEMA = 'set-schema';
+    const GET_SCHEMA = 'get-schema';
     const GET_SCHEMES = 'get-schemes';
-    const IMPORT_SCHEMA = 'import-schema';
+    const IMPORT_SCHEMES_BY_MESSAGES = 'IMPORT_SCHEMES_BY_MESSAGES';
+    const IMPORT_SCHEMES_BY_FILE = 'IMPORT_SCHEMES_BY_FILE';
+    const PREVIEW_SCHEMA = 'preview-schema';
+    const PUBLISH_SCHEMA = 'publish-schema';
+    const DELETE_SCHEMA = 'delete-schema';
     const EXPORT_SCHEMES = 'export-schema';
+    const INCREMENT_SCHEMA_VERSION = 'INCREMENT_SCHEMA_VERSION';
 
     const DRAFT = 'DRAFT';
     const PUBLISHED = 'PUBLISHED';
@@ -21,9 +30,10 @@ describe('Schema service', function () {
 
     const s1 = {
         'uuid': '0fae2a20-0db2-4835-bab9-99b4effbe03e',
+        'iri': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
         'document': JSON.stringify({
             '$id': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
-            '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "https://localhost/schema#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
+            '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -84,7 +94,7 @@ describe('Schema service', function () {
         'uuid': '59b934e2-9eb6-4395-9b85-ad3624f1f752',
         'document': JSON.stringify({
             '$id': '#59b934e2-9eb6-4395-9b85-ad3624f1f752',
-            '$comment': '{"term": "59b934e2-9eb6-4395-9b85-ad3624f1f752", "@id": "https://localhost/schema#59b934e2-9eb6-4395-9b85-ad3624f1f752"}',
+            '$comment': '{"term": "59b934e2-9eb6-4395-9b85-ad3624f1f752", "@id": "#59b934e2-9eb6-4395-9b85-ad3624f1f752"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -125,7 +135,7 @@ describe('Schema service', function () {
                     'items': {
                         '$ref': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f'
                     },
-                    '$comment': '{"term": "f3", "@id": "https://localhost/schema#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}'
+                    '$comment': '{"term": "f3", "@id": "#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}'
                 },
                 'f4': {
                     'title': '',
@@ -148,7 +158,7 @@ describe('Schema service', function () {
         'uuid': 'ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
         'document': JSON.stringify({
             '$id': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
-            '$comment': '{"term": "ad2de08d-a43c-43c7-a458-3f0e8db65e8f", "@id": "https://localhost/schema#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}',
+            '$comment': '{"term": "ad2de08d-a43c-43c7-a458-3f0e8db65e8f", "@id": "#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -250,12 +260,17 @@ describe('Schema service', function () {
             return param;
         }
 
-        schemaRepository.findOne = async function (id) {
-            const item = schemas.find(e => e._id == id);
-            if (item) {
-                return Object.assign({}, item);
+        schemaRepository.findOne = async function (param) {
+            if (param === 0) {
+                return schemas[0];
             }
-            return item;
+            if (param === 1) {
+                return null;
+            }
+            if (!param) {
+                return schemas;
+            }
+            return param;
         }
 
         schemaRepository.update = async function (id, item) {
@@ -272,16 +287,21 @@ describe('Schema service', function () {
         service = schemaAPI(channel,
             schemaRepository
         );
+
+        schemaCache['0fae2a20-0db2-4835-bab9-99b4effbe03e'] = s1;
     });
 
     it('Config service init', async function () {
         assert.exists(channel.map[SET_SCHEMA]);
+        assert.exists(channel.map[GET_SCHEMA]);
         assert.exists(channel.map[GET_SCHEMES]);
-        assert.exists(channel.map[IMPORT_SCHEMA]);
-        assert.exists(channel.map[EXPORT_SCHEMES]);
+        assert.exists(channel.map[IMPORT_SCHEMES_BY_MESSAGES]);
+        assert.exists(channel.map[IMPORT_SCHEMES_BY_FILE]);
+        assert.exists(channel.map[PREVIEW_SCHEMA]);
         assert.exists(channel.map[PUBLISH_SCHEMA]);
-        assert.exists(channel.map[UNPUBLISHED_SCHEMA]);
         assert.exists(channel.map[DELETE_SCHEMA]);
+        assert.exists(channel.map[EXPORT_SCHEMES]);
+        assert.exists(channel.map[INCREMENT_SCHEMA_VERSION]);
     });
 
     it('Test SET_SCHEMA', async function () {
@@ -293,7 +313,7 @@ describe('Schema service', function () {
             status: PUBLISHED,
             document: JSON.stringify({
                 '$id': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
-                '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "https://localhost/schema#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
+                '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
                 'title': '',
                 'description': '',
                 'type': 'object',
@@ -347,264 +367,104 @@ describe('Schema service', function () {
                 'additionalProperties': false
             })
         });
-        assert.deepEqual(value, [s1db]);
+        checkMessage(value, [{ ...s1db, status: DRAFT, iri: '#0fae2a20-0db2-4835-bab9-99b4effbe03e', version: null }]);
     });
 
+    it('Test GET_SCHEMA', async function () {
+        let value = await channel.run(GET_SCHEMA, null);
+        checkError(value, 'Schema not found');
 
+        value = await channel.run(GET_SCHEMA, { id: "id" });
+        checkMessage(value, "id");
+
+        value = await channel.run(GET_SCHEMA, { messageId: "messageId" });
+        checkMessage(value, {
+            where: {
+                messageId: { '$eq': 'messageId' },
+            }
+        });
+
+        value = await channel.run(GET_SCHEMA, { entity: "entity" });
+        checkMessage(value, {
+            where: {
+                entity: { '$eq': 'entity' }
+            }
+        });
+    });
 
     it('Test GET_SCHEMES', async function () {
         let value = await channel.run(GET_SCHEMES, null);
-        assert.deepEqual(value, [s1db]);
-
-        value = await channel.run(GET_SCHEMES, { type: 'type', entity: 'entity' });
-        assert.deepEqual(value, { where: { type: { '$eq': 'type' } } });
-
-        value = await channel.run(GET_SCHEMES, { entity: 'entity' });
-        assert.deepEqual(value, { where: { entity: { '$eq': 'entity' } } });
-    });
-
-
-    it('Test IMPORT_SCHEMA|EXPORT_SCHEMES', async function () {
-        await channel.run(SET_SCHEMA, {
-            uuid: '59b934e2-9eb6-4395-9b85-ad3624f1f752',
-            name: 'type2',
-            entity: 'entity2',
-            readonly: false,
-            status: PUBLISHED,
-            document: JSON.stringify({
-                '$id': '#59b934e2-9eb6-4395-9b85-ad3624f1f752',
-                '$comment': '{"term": "59b934e2-9eb6-4395-9b85-ad3624f1f752", "@id": "https://localhost/schema#59b934e2-9eb6-4395-9b85-ad3624f1f752"}',
-                'title': '',
-                'description': '',
-                'type': 'object',
-                'properties': {
-                    '@context': {
-                        'oneOf': [
-                            {
-                                'type': 'string'
-                            },
-                            {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'string'
-                                }
-                            }
-                        ]
-                    },
-                    'type': {
-                        'oneOf': [
-                            {
-                                'type': 'string'
-                            },
-                            {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'string'
-                                }
-                            }
-                        ]
-                    },
-                    'id': {
-                        'type': 'string'
-                    },
-                    'f3': {
-                        'title': '',
-                        'description': '',
-                        'type': 'array',
-                        'items': {
-                            '$ref': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f'
-                        },
-                        '$comment': '{"term": "f3", "@id": "https://localhost/schema#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}'
-                    },
-                    'f4': {
-                        'title': '',
-                        'description': '',
-                        '$comment': '{"term": "f4", "@id": "https://www.schema.org/text"}',
-                        'type': 'string'
-                    }
-                },
-                'required': [
-                    '@context',
-                    'type',
-                    'f3'
-                ],
-                'additionalProperties': false
-            })
-        });
-        await channel.run(SET_SCHEMA, {
-            uuid: 'ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
-            name: 'type3',
-            entity: 'entity3',
-            readonly: false,
-            status: PUBLISHED,
-            document: JSON.stringify({
-                '$id': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
-                '$comment': '{"term": "ad2de08d-a43c-43c7-a458-3f0e8db65e8f", "@id": "https://localhost/schema#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}',
-                'title': '',
-                'description': '',
-                'type': 'object',
-                'properties': {
-                    '@context': {
-                        'oneOf': [
-                            {
-                                'type': 'string'
-                            },
-                            {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'string'
-                                }
-                            }
-                        ]
-                    },
-                    'type': {
-                        'oneOf': [
-                            {
-                                'type': 'string'
-                            },
-                            {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'string'
-                                }
-                            }
-                        ]
-                    },
-                    'id': {
-                        'type': 'string'
-                    },
-                    'f5': {
-                        'title': '',
-                        'description': '',
-                        '$comment': '{"term": "f5", "@id": "https://www.schema.org/text"}',
-                        'type': 'integer'
-                    },
-                    'f6': {
-                        'title': '',
-                        'description': '',
-                        '$comment': '{"term": "f6", "@id": "https://www.schema.org/text"}',
-                        'type': 'string',
-                        'format': 'date'
-                    }
-                },
-                'required': [
-                    '@context',
-                    'type'
-                ],
-                'additionalProperties': false
-            })
+        checkMessage(value, {
+            where: {
+                status: { "$eq": PUBLISHED }
+            }
         });
 
-        const s1e = {
-            ...s1,
-            'relationships': []
-        }
+        value = await channel.run(GET_SCHEMES, { uuid: 'uuid' });
+        checkMessage(value, {
+            where: {
+                uuid: { '$eq': 'uuid' }
+            }
+        });
 
-        const export1 = await channel.run(EXPORT_SCHEMES, ['0fae2a20-0db2-4835-bab9-99b4effbe03e']);
-        assert.deepEqual(export1, [s1e], 'Export 1');
-
-        const s2e = {
-            ...s2,
-            'relationships': ['#ad2de08d-a43c-43c7-a458-3f0e8db65e8f']
-        }
-
-        const s3e = {
-            ...s3,
-            'relationships': []
-        }
-
-        const export2 = await channel.run(EXPORT_SCHEMES, ['0fae2a20-0db2-4835-bab9-99b4effbe03e', '59b934e2-9eb6-4395-9b85-ad3624f1f752']);
-        assert.deepEqual(export2, [s1e, s2e, s3e], 'Export 2');
-
-        schemas.length = 0;
-
-        const s1i = {
-            ...s1,
-            '_id': '4',
-            'id': '4',
-            'relationships': []
-        }
-        const s2i = {
-            ...s2,
-            '_id': '5',
-            'id': '5',
-            'relationships': ['#ad2de08d-a43c-43c7-a458-3f0e8db65e8f']
-        }
-        const s3i = {
-            ...s3,
-            '_id': '6',
-            'id': '6',
-            'relationships': []
-        }
-        const import1 = await channel.run(IMPORT_SCHEMA, export1);
-        assert.deepEqual(import1, [s1i], 'Import 1');
-
-        const import2 = await channel.run(IMPORT_SCHEMA, export2);
-        assert.deepEqual(import2, [s1i, s2i, s3i], 'Import 2');
+        value = await channel.run(GET_SCHEMES, { owner: 'owner1' });
+        checkMessage(value, {
+            where: {
+                "$or": [
+                    {
+                        status: {
+                            "$eq": "PUBLISHED"
+                        }
+                    }, {
+                        owner: {
+                            "$eq": "owner1"
+                        }
+                    }
+                ]
+            }
+        });
     });
 
+    it('Test IMPORT_SCHEMES_BY_MESSAGES', async function () {
+        let value = await channel.run(IMPORT_SCHEMES_BY_MESSAGES, null);
+        checkError(value, 'Schema not found');
+
+        value = await channel.run(IMPORT_SCHEMES_BY_MESSAGES, { messageIds: "messageIds" });
+        checkError(value, 'Schema not found');
+
+        value = await channel.run(IMPORT_SCHEMES_BY_MESSAGES, { owner: "owner" });
+        checkError(value, 'Schema not found');
+
+        value = await channel.run(IMPORT_SCHEMES_BY_MESSAGES, { messageIds: ["0fae2a20-0db2-4835-bab9-99b4effbe03e"], owner: "owner" });
+        checkMessage(value, [{
+            "newIRI": value.body[0].newIRI,
+            "newUUID": value.body[0].newUUID,
+            "oldIRI": "#0fae2a20-0db2-4835-bab9-99b4effbe03e",
+            "oldUUID": "0fae2a20-0db2-4835-bab9-99b4effbe03e"
+        }]);
+    });
+
+    it('Test PREVIEW_SCHEMA', async function () {
+        let value = await channel.run(PREVIEW_SCHEMA, null);
+        checkError(value, 'Schema not found');
+
+        value = await channel.run(PREVIEW_SCHEMA, { messageIds: ['0fae2a20-0db2-4835-bab9-99b4effbe03e'] });
+        checkMessage(value, [s1]);
+    });
 
     it('Test PUBLISH_SCHEMA', async function () {
-        index = 0;
-        schemas.length = 0;
-        await channel.run(SET_SCHEMA, {
-            ...s1,
-            'readonly': false,
-            'status': DRAFT,
-        });
-        await channel.run(SET_SCHEMA, {
-            ...s2,
-            'readonly': false,
-            'status': DRAFT,
-        });
-        let value = await channel.run(PUBLISH_SCHEMA, '2');
+        let value = await channel.run(PUBLISH_SCHEMA, null);
+        checkError(value, 'Invalid id');
 
-        const s1i = {
-            ...s1,
-            '_id': '1',
-            'id': '1',
-            'readonly': false,
-            'status': DRAFT,
-        }
-        const s2i = {
-            ...s2,
-            '_id': '2',
-            'id': '2',
-            'readonly': false,
-            'status': PUBLISHED,
-        }
-        assert.deepEqual(value, [s1i, s2i]);
-    });
+        value = await channel.run(PUBLISH_SCHEMA, { id: 1 });
+        checkError(value, 'Schema not found');
 
-
-    it('Test UNPUBLISHED_SCHEMA', async function () {
-        let value = await channel.run(UNPUBLISHED_SCHEMA, '2');
-        const s1i = {
-            ...s1,
-            '_id': '1',
-            'id': '1',
-            'readonly': false,
-            'status': DRAFT,
-        }
-        const s2i = {
-            ...s2,
-            '_id': '2',
-            'id': '2',
-            'readonly': false,
-            'status': UNPUBLISHED,
-        }
-        assert.deepEqual(value, [s1i, s2i]);
+        value = await channel.run(PUBLISH_SCHEMA, { id: 0, owner: "owner" });
+        checkError(value, 'Invalid owner');
     });
 
     it('Test DELETE_SCHEMA', async function () {
         let value = await channel.run(DELETE_SCHEMA, '2');
-        const s1i = {
-            ...s1,
-            '_id': '1',
-            'id': '1',
-            'readonly': false,
-            'status': DRAFT,
-        }
-        assert.deepEqual(value, [s1i]);
+        checkMessage(value, schemas);
     });
 });

@@ -23,12 +23,13 @@ export enum SchemaDataFormat {
 
 export interface ISchemaDocument {
     $id?: string;
+    $comment?: string;
     title?: string;
     description?: string;
     type?: SchemaDataTypes;
     format?: SchemaDataFormat;
     pattern?: string;
-    readOnly?: string;
+    readOnly?: boolean;
     properties?: {
         [x: string]: ISchemaDocument;
     }

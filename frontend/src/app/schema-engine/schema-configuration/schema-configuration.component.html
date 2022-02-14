@@ -1,0 +1,70 @@
+<form class="context" [formGroup]="dataForm">
+
+    <div class="optional-row">
+        <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
+            <mat-label>* Schema Name</mat-label>
+            <input matInput type="text" placeholder="Schema Name" formControlName="name" [tabindex]='value ? -1 : 0'>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
+            <mat-label>For (Entity)</mat-label>
+            <mat-select formControlName="entity" tabindex='-1'>
+                <mat-option value="NONE">NONE</mat-option>
+                <mat-option value="VC">VC</mat-option>
+                <mat-option value="MRV">MRV</mat-option>            
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+        <mat-label>Description for Schema (optional)</mat-label>
+        <input matInput type="text" placeholder="Description for Schema (optional)" formControlName="description">
+    </mat-form-field>
+
+    <div class="delimiter"></div>
+
+    <div *ngIf="fields && fields.length" class="fields">
+        <div class="custom-fields">
+            <div *ngFor="let field of fields" class="custom-field">
+                <div class="custom-field-name">
+                    <mat-form-field class="example-full-width" appearance="outline">
+                        <mat-label>* Field name</mat-label>
+                        <input matInput placeholder="Field name" [formControl]="field.controlName">
+                    </mat-form-field>
+                </div>
+                <div class="custom-field-type">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Field type</mat-label>
+                        <mat-select [formControl]="field.controlType" #controlType>
+                            <mat-optgroup  label="Simple Types">
+                                <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
+                            </mat-optgroup>
+                            <mat-optgroup *ngIf="schemaTypes" label="Objects">
+                                <mat-option *ngFor="let type of schemaTypes" [value]="type.value">{{type.name}}</mat-option>
+                            </mat-optgroup>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="custom-field-required">
+                    <mat-checkbox color="primary" [formControl]="field.controlRequired">Required Field</mat-checkbox>
+                </div>
+                <div class="custom-field-isArray">
+                    <mat-checkbox color="primary" [formControl]="field.controlArray" [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
+                </div>
+                <div class="custom-field-remove">
+                    <div class="custom-fields-remove" (click)="onRemove(field)">
+                        <mat-icon>delete</mat-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="add-btn" (click)="onAdd($event)">
+            <span>
+                <mat-icon>add</mat-icon> Add Field
+            </span>
+        </div>
+    </div>
+</form>

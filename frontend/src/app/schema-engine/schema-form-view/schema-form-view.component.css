@@ -1,0 +1,135 @@
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.group-label {
+    color: rgba(0,0,0,.6);
+}
+
+.group-form {
+    margin-left: 16px;
+    margin-top: 10px;
+}
+
+.form-field {
+    display: block;
+    width: 100%;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.form-field mat-form-field {
+    width: 100%;
+}
+
+.form-field-group,
+.form-field-array {
+    display: block;
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.group-label,
+.array-label {
+    color: rgba(0,0,0,.6);
+    background: #fff;
+    top: -10px;
+    left: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.form-field-array-item {
+    padding-right: 5px;
+    position: relative;
+    display: table;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 50px;
+}
+
+.group-label {
+    color: gray;
+    font-size: 14px;
+}
+
+.label-field {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.delimiter {
+    padding: 30px 50px 50px 50px;
+    width: 100%;
+    height: 80px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.delimiter::after {
+    content: '';
+    position: absolute;
+    height: 2px;
+    top: 30px;
+    left: 0px;
+    right: 0px;
+    border-top: 1px solid #c8c8c8;
+}
+
+.short-delimiter-container {
+    width: 50%;
+    margin: 0 auto;
+}
+
+:host .mat-input-element {
+    font-size: 18px;
+}
+
+:host ::ng-deep mat-radio-button {
+    margin-right: 20px;
+}
+
+.form-field-array-item > .form-field-group {
+    padding-left: 40px;
+}
+
+.schema-form-field-array-group > .form-field-array-item > .form-field-group,
+.form-field-array-item > .form-field-group {
+    border-left: 2px dashed #c8c8c8;
+}
+
+.form-field-group {
+  margin-bottom: 15px;
+}
+
+.form-field-group > .form-field-array-item {
+    padding-right: 0;
+}
+
+.boolean-form-field {
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.ipfs-image {
+    margin: 20px auto;
+    width: auto;
+    display: block;
+    max-height: 300px;
+}
+
+:host mat-form-field {
+    cursor: not-allowed;
+}
+
+.image-action-buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+.hidden-item {
+    display: none;
+}

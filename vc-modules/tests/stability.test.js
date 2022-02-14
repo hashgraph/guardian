@@ -5,7 +5,9 @@ const {
     AccountCreateTransaction,
     Hbar,
     TokenCreateTransaction,
-    AccountInfoQuery
+    AccountInfoQuery,
+    TopicCreateTransaction,
+    FileCreateTransaction
 } = require('@hashgraph/sdk');
 const { expect, assert } = require('chai');
 
@@ -22,7 +24,7 @@ async function wait(timeout) {
 }
 
 describe('Stability test', function () {
-    this.timeout(10 * 60 * 1000);
+    this.timeout(20 * 60 * 1000);
 
     const OPERATOR_ID = '0.0.1548173';
     const OPERATOR_KEY = '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc';
@@ -45,6 +47,7 @@ describe('Stability test', function () {
     });
 
     it('AccountBalanceQuery', async function () {
+        const logs = [];
         let success = 0, failed = 0;
         for (let i = 0; i < maxTransaction; i++) {
             try {
@@ -52,17 +55,20 @@ describe('Stability test', function () {
                 const accountBalance = await query.execute(client);
                 await wait(1000);
                 ++success;
+                logs.push(true);
             } catch (error) {
-                console.error(error);
+                console.error('AccountBalanceQuery', error);
                 ++failed;
+                logs.push(false);
             }
         }
-        console.log('end', 'success:', success, 'failed:', failed);
+        console.log('AccountBalanceQuery', logs);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('AccountInfoQuery', async function () {
+        const logs = [];
         let success = 0, failed = 0;
         for (let i = 0; i < maxTransaction; i++) {
             try {
@@ -71,16 +77,69 @@ describe('Stability test', function () {
                     .execute(client);
                 await wait(1000);
                 ++success;
+                logs.push(true);
             } catch (error) {
-                console.error(error);
+                console.error('AccountInfoQuery', error);
                 ++failed;
+                logs.push(false);
             }
         }
+        console.log('AccountInfoQuery', logs);
+        assert.equal(success, maxTransaction);
+        assert.equal(failed, 0);
+    });
+
+    it('TopicCreateTransaction', async function () {
+        const logs = [];
+        let success = 0, failed = 0;
+        for (let i = 0; i < maxTransaction; i++) {
+            try {
+                const transaction = new TopicCreateTransaction();
+                const txResponse = await transaction.execute(client);
+                const receipt = await txResponse.getReceipt(client);
+                const topicId = receipt.topicId;
+                await wait(1000);
+                ++success;
+                logs.push(true);
+            } catch (error) {
+                console.error('TopicCreateTransaction', error);
+                ++failed;
+                logs.push(false);
+            }
+        }
+        console.log('TopicCreateTransaction', logs);
+        assert.equal(success, maxTransaction);
+        assert.equal(failed, 0);
+    });
+
+    it('FileCreateTransaction', async function () {
+        const logs = [];
+        let success = 0, failed = 0;
+        for (let i = 0; i < maxTransaction; i++) {
+            try {
+                const transaction = new FileCreateTransaction()
+                    .setContents("the file contents")
+                    .setMaxTransactionFee(new Hbar(2))
+                    .freezeWith(client);
+                const txResponse = await transaction.execute(client);
+                const receipt = await txResponse.getReceipt(client);
+                const fileId = receipt.fileId;
+                await wait(1000);
+                ++success;
+                logs.push(true);
+            } catch (error) {
+                console.error('FileCreateTransaction', error);
+                ++failed;
+                logs.push(false);
+            }
+        }
+        console.log('FileCreateTransaction', logs);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('AccountCreateTransaction', async function () {
+        const logs = [];
         let success = 0, failed = 0;
         for (let i = 0; i < maxTransaction; i++) {
             try {
@@ -93,18 +152,21 @@ describe('Stability test', function () {
                 const newAccountId = receipt.accountId;
                 await wait(1000);
                 ++success;
+                logs.push(true);
             } catch (error) {
-                console.error(error);
+                console.error('AccountCreateTransaction', error);
                 ++failed;
+                logs.push(false);
             }
         }
+        console.log('AccountCreateTransaction', logs);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('TokenCreateTransaction', async function () {
+        const logs = [];
         let success = 0, failed = 0;
-
         const newPrivateKey = PrivateKey.generate();
         for (let i = 0; i < maxTransaction; i++) {
             try {
@@ -128,12 +190,14 @@ describe('Stability test', function () {
                 const tokenId = receipt.tokenId;
                 await wait(1000);
                 ++success;
+                logs.push(true);
             } catch (error) {
-                console.error(error);
+                console.error('TokenCreateTransaction', error);
                 ++failed;
+                logs.push(false);
             }
         }
-
+        console.log('TokenCreateTransaction', logs);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });

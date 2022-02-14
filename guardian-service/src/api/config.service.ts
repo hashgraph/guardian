@@ -1,37 +1,32 @@
-import {readJSON, writeJSON} from 'fs-extra';
-import {IAddressBookConfig, MessageAPI} from 'interfaces';
+import { readJSON, writeJSON, pathExists } from 'fs-extra';
+import { IAddressBookConfig, MessageAPI, MessageResponse } from 'interfaces';
 import path from 'path';
-import {HederaHelper} from 'vc-modules';
-import {AccountId, PrivateKey} from "@hashgraph/sdk";
+import { HederaHelper } from 'vc-modules';
 
 /**
  * Create or read default address book.
  */
 export const readConfig = async function (): Promise<any> {
     const fileName = path.join(process.cwd(), 'config.json');
-    let fileContent: any;
-    try {
-        fileContent = await readJSON(fileName);
-    } catch (error) {
-        throw ('you need to create a file \'config.json\'');
-    }
-    if (!fileContent.hasOwnProperty('OPERATOR_ID') || fileContent['OPERATOR_ID'].length < 5) {
-        throw ('You need to fill OPERATOR_ID field in config.json file');
-    }
-    if (!fileContent.hasOwnProperty('OPERATOR_KEY') || fileContent['OPERATOR_KEY'].length < 5) {
-        throw ('You need to fill OPERATOR_KEY field in config.json file');
-    }
-    try {
-        const accountId = AccountId.fromString(fileContent['OPERATOR_ID']);
-    } catch (error) {
-        throw ('OPERATOR_ID field in .env file: ' + error.message);
-    }
-    try {
-        const accountKey = PrivateKey.fromString(fileContent['OPERATOR_KEY']);
-    } catch (error) {
-        throw ('OPERATOR_KEY field in .env file: ' + error.message);
-    }
+    let fileContent: any = {};
+
     let regenerate = false;
+    try {
+        const exists = await pathExists(fileName);
+        if (exists) {
+            fileContent = await readJSON(fileName);
+        } else {
+            regenerate = true;
+        }
+    } catch (error) {
+        regenerate = true;
+    }
+    if (!fileContent.hasOwnProperty('OPERATOR_ID')) {
+        regenerate = true;
+    }
+    if (!fileContent.hasOwnProperty('OPERATOR_KEY')) {
+        regenerate = true;
+    }
     if (!fileContent.hasOwnProperty('ADDRESS_BOOK')) {
         regenerate = true;
     }
@@ -43,6 +38,8 @@ export const readConfig = async function (): Promise<any> {
     }
     if (regenerate) {
         try {
+            fileContent['OPERATOR_ID'] = process.env.OPERATOR_ID;
+            fileContent['OPERATOR_KEY'] = process.env.OPERATOR_KEY;
             const net = await HederaHelper.newNetwork(
                 fileContent['OPERATOR_ID'],
                 fileContent['OPERATOR_KEY'],
@@ -54,6 +51,7 @@ export const readConfig = async function (): Promise<any> {
         } catch (error) {
             throw ('Failed to create Address Book: \n' + error);
         }
+        console.log('Regenerate config.json')
         await writeJSON(fileName, fileContent);
     }
     return fileContent;
@@ -81,6 +79,6 @@ export const configAPI = async function (
             vcTopic: fileContent['VC_TOPIC_ID'],
             didTopic: fileContent['DID_TOPIC_ID']
         }
-        res.send(config);
+        res.send(new MessageResponse(config));
     });
 }

@@ -3,7 +3,7 @@ import {
     TimestampUtils,
     HcsDidRootKey
 } from '@hashgraph/did-sdk-js';
-import { check } from '@transmute/jsonld-schema';
+import { check, CheckResult } from '@transmute/jsonld-schema';
 
 import { VcSubject } from '../vc/vc-subject';
 import { HcsVcDocument } from '../vc/vc-document';
@@ -12,20 +12,29 @@ import { DocumentLoader } from '../document-loader/document-loader';
 import { DocumentLoaderFunction } from '../document-loader/document-loader-function';
 import { Utils } from './utils';
 import { HcsVpDocument } from '../vc/vp-document';
-import { SchemaLoader } from '../document-loader/schema-loader';
+import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader';
+
+interface ISubject {
+    id?: string;
+    type?: string;
+    '@context'?: string | string[];
+    [x: string]: any;
+}
 
 /**
  * Methods for creating and verifying VC and VP documents
  */
 export class VCHelper {
     private documentLoaders: DocumentLoader[];
+    private schemaLoaders: SchemaLoader[];
     private schemaContext: string[];
     private loader: DocumentLoaderFunction;
-    private schemaLoader: (type: string) => Promise<any>;
+    private schemaLoader: SchemaLoaderFunction;
 
     constructor() {
         this.schemaContext = [];
         this.documentLoaders = [];
+        this.schemaLoaders = [];
     }
 
     /**
@@ -51,9 +60,6 @@ export class VCHelper {
     /**
      * Build Document Loader
      * Builded loader is used to sign and verify documents
-     * 
-     * @param {DocumentLoader} documentLoader - Document Loader
-     * 
      */
     public buildDocumentLoader(): void {
         this.loader = DocumentLoader.build(this.documentLoaders);
@@ -66,11 +72,15 @@ export class VCHelper {
      * 
      */
     public addSchemaLoader(schemaLoader: SchemaLoader): void {
-        if(schemaLoader) {
-            this.schemaLoader = schemaLoader.get.bind(schemaLoader);
-        } else {
-            this.schemaLoader = null;
-        }
+        this.schemaLoaders.push(schemaLoader);
+    }
+
+    /**
+     * Build Schema Loader
+     * Builded loader is used to sign and verify documents
+     */
+    public buildSchemaLoader(): void {
+        this.schemaLoader = SchemaLoader.build(this.schemaLoaders);
     }
 
     /**
@@ -150,16 +160,16 @@ export class VCHelper {
      * 
      * @param {string} did - DID
      * @param {PrivateKey | string} privateKey - Private Key
-     * @param {string} schema - schema id
      * @param {any} data - Credential Object
+     * @param {string} schema - schema id
      * 
      * @returns {HcsVcDocument<VcSubject>} - VC Document
      */
     public async createVC(
         did: string,
         key: string | PrivateKey,
-        schema: string,
-        data: any
+        subject: ISubject,
+        schema?: string
     ): Promise<HcsVcDocument<VcSubject>> {
         const document = await this.getSuite(did, key);
         const id = Utils.randomUUID();
@@ -168,7 +178,7 @@ export class VCHelper {
         const privateKey = document.privateKey;
         const suite = await VCJS.createSuite(didRootId, didId, privateKey);
 
-        const vcSubject = new VcSubject(schema, data);
+        const vcSubject = new VcSubject(schema, subject);
         for (let i = 0; i < this.schemaContext.length; i++) {
             const element = this.schemaContext[i];
             vcSubject.addContext(element);
@@ -177,12 +187,9 @@ export class VCHelper {
         let vc = new HcsVcDocument<VcSubject>();
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
-        // vc.addType(vcSubject.getType());
         vc.addCredentialSubject(vcSubject);
         vc.setIssuer(didId);
-
         vc = await VCJS.issue(vc, suite, this.loader);
-
         return vc;
     }
 
@@ -239,9 +246,9 @@ export class VCHelper {
      * 
      * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
      * 
-     * @returns {boolean} - is verified
+     * @returns {CheckResult} - is verified
      */
-    public async verifySchema(vcDocument: HcsVcDocument<VcSubject> | any) {
+    public async verifySchema(vcDocument: HcsVcDocument<VcSubject> | any): Promise<CheckResult> {
         let vc: any;
         if (vcDocument && typeof vcDocument.toJsonTree === 'function') {
             vc = vcDocument.toJsonTree();
@@ -260,21 +267,43 @@ export class VCHelper {
             throw new Error('Schema Loader not found');
         }
 
-        const schema = await this.schemaLoader(subject.type);
+        const schema = await this.schemaLoader(subject["@context"], subject.type, "vc");
 
         if (!schema) {
             throw new Error('Schema not found');
         }
 
-        try {
-            const res = await check({
-                input: vc,
-                schema: schema,
-                documentLoader: this.loader as any,
-            });
-            return res.ok;
-        } catch (error) {
-            return false;
+        const res = await check({
+            input: vc,
+            schema: schema,
+            documentLoader: this.loader as any,
+        });
+        return res;
+    }
+
+    /**
+     * Verify Subject
+     * 
+     * @param {any} subject - subject
+     * 
+     * @returns {CheckResult} - is verified
+     */
+    public async verifySubject(subject: any): Promise<CheckResult> {
+        if (!this.schemaLoader) {
+            throw new Error('Schema Loader not found');
         }
+
+        const schema = await this.schemaLoader(subject["@context"], subject.type, "subject");
+
+        if (!schema) {
+            throw new Error('Schema not found');
+        }
+
+        const res = await check({
+            input: subject,
+            schema: schema,
+            documentLoader: this.loader as any,
+        });
+        return res;
     }
 }

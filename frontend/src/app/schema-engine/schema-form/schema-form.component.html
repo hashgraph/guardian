@@ -1,0 +1,210 @@
+<form *ngIf="options" [formGroup]="options">
+  <ng-container *ngFor="let item of fields">
+
+    <div *ngIf="!item.hide" class="form-field-container">
+      <div *ngIf="!item.isArray && !item.isRef" class="form-field">
+        <div class="invalid-field-label" *ngIf="options.controls[item.name] && !options.controls[item.name].valid">
+          <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+          <span>
+            <b>{{GetInvalidMessageByFieldType(item.format || item.type)}}</b>
+          </span>
+        </div>
+        <div *ngIf="item.required" class="required-field">* Required</div>
+        <div class="label-field">{{item.description}}</div>
+
+        <mat-form-field
+          *ngIf="(item.type === 'string' || item.type === 'number' || item.type === 'integer') && (item.format !== 'date' && item.format !== 'time' && item.format !== 'date-time')"
+          class="example-full-width required-form-field" appearance="outline"
+          [ngClass]="{'ipfs-url' : item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'}">
+          <input matInput [formControlName]="item.name"
+            [placeholder]="GetPlaceholderByFieldType(item.format || item.type, item.pattern)">
+
+          <div *ngIf="item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'">
+            <input type="file" class="file-input" style="display:none;" accept="image/*"
+              (change)="onFileSelected($event, options.controls[item.name], item)" #fileUpload>
+            <div class="file-upload" style="position: absolute; right:0; top:0;">
+                <ng-container [ngSwitch]="item.fileUploading">
+                  <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
+                  <button mat-icon-button *ngSwitchCase="false" class="upload-btn" (click)="fileUpload.click()">
+                    <mat-icon>attach_file</mat-icon>
+                  </button>
+                </ng-container>
+            </div>
+          </div>
+        </mat-form-field>
+
+        <mat-form-field *ngIf="item.type ==='string' && item.format === 'time'"
+          class="example-full-width required-form-field" appearance="outline">
+          <input matInput type="time" step="1" [formControlName]="item.name"
+            [placeholder]="GetPlaceholderByFieldType(item.format || item.type)">
+        </mat-form-field>
+
+        <mat-form-field *ngIf="item.type ==='string' && item.format === 'date-time'"
+          class="example-full-width required-form-field" appearance="outline">
+          <mat-label>Choose a date & time</mat-label>
+          <input matInput [ngxMatDatetimePicker]="dateTimePicker" [formControlName]="item.name">
+          <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
+        </mat-form-field>
+
+        <mat-form-field *ngIf="item.type === 'string' && item.format === 'date'"
+          class="example-full-width required-form-field" appearance="outline">
+          <mat-label>Choose a date</mat-label>
+          <input [formControlName]="item.name" matInput [matDatepicker]="dateItem">
+          <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
+          <mat-datepicker #dateItem></mat-datepicker>
+        </mat-form-field>
+
+        <div *ngIf="item.type === 'boolean'" class="boolean-form-field"
+          [ngClass]="{'required-boolean-field': item.required && !options.controls[item.name].valid}">
+          <mat-radio-group [formControlName]="item.name">
+            <mat-radio-button color="primary" value="true">True</mat-radio-button>
+            <mat-radio-button color="primary" value="false">False</mat-radio-button>
+            <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
+          </mat-radio-group>
+        </div>
+      </div>
+
+      <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
+        <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
+          <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+          <span>
+            <b>Please make sure all fields in schema contain a valid value</b>
+          </span>
+        </div>
+        <div *ngIf="item.required" class="required-field">* Required</div>
+        <div class="label-field">{{item.description}}</div>
+        <div *ngIf="item.control" class="form-field-array-item">
+          <div class="form-field-group" [ngClass]="{'schema-form-field-group' : !item.required}">
+            <app-schema-form [formGroup]="item.control" [fields]="item.fields" [context]="item.context"
+              [private-fields]="hide" [delimiter-hide]="true">
+            </app-schema-form>
+          </div>
+        </div>
+        <div *ngIf="!item.control" class="add-btn" (click)="addGroup(item)">
+          <span>
+            <mat-icon>add</mat-icon> Add Entity
+          </span>
+        </div>
+        <div *ngIf="item.control && !item.required" class="remove-btn" (click)="removeGroup(item)">
+          <span>
+            <mat-icon>remove</mat-icon> Remove Entity
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
+        <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
+          <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+          <span>
+            <b>{{GetInvalidMessageByFieldType(item.format || item.type, true)}}</b>
+          </span>
+        </div>
+        <div *ngIf="item.required" class="required-field">* Required</div>
+        <div class="label-field">{{item.description}}</div>
+        <div *ngFor="let listItem of item.list" class="form-field-array-item" [attr.index]="listItem.index"
+          [attr.required]="item.required" [formGroup]="item.control">
+          <div class="form-field">
+
+            <mat-form-field
+              *ngIf="(item.type === 'string' || item.type === 'number' || item.type === 'integer') && (item.format !== 'date' && item.format !== 'time' && item.format !== 'date-time')"
+              class="example-full-width required-form-field" appearance="outline"
+              [ngClass]="{'ipfs-url' : item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'}">
+              <input matInput [formControl]="listItem.control"
+                [placeholder]="GetPlaceholderByFieldType(item.format || item.type)">
+
+              <div *ngIf="item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'">
+                <input type="file" class="file-input" style="display:none;" accept="image/*"
+                  (change)="onFileSelected($event, listItem.control, listItem)" #fileUpload>
+                <div class="file-upload" style="position: absolute; right:0; top:0;">
+                  <ng-container [ngSwitch]="listItem.fileUploading">
+                    <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
+                    <button mat-icon-button *ngSwitchCase="false" class="upload-btn" (click)="fileUpload.click()">
+                      <mat-icon>attach_file</mat-icon>
+                    </button>
+                  </ng-container>
+                </div>
+              </div>
+            </mat-form-field>
+
+            <mat-form-field *ngIf="item.type ==='string' && item.format === 'time'"
+              class="example-full-width required-form-field" appearance="outline">
+              <input matInput type="time" step="1" [formControl]="listItem.control"
+                [placeholder]="GetPlaceholderByFieldType(item.format || item.type)">
+            </mat-form-field>
+
+            <mat-form-field *ngIf="item.type ==='string' && item.format === 'date-time'"
+              class="example-full-width required-form-field" appearance="outline">
+              <mat-label>Choose a date & time</mat-label>
+              <input matInput [ngxMatDatetimePicker]="dateTimePicker" [formControl]="listItem.control">
+              <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
+              <ngx-mat-datetime-picker #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
+            </mat-form-field>
+
+            <mat-form-field *ngIf="item.type === 'string' && item.format === 'date'"
+              class="example-full-width required-form-field" appearance="outline">
+              <mat-label>Choose a date</mat-label>
+              <input [formControl]="listItem.control" matInput [matDatepicker]="dateItem">
+              <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
+              <mat-datepicker #dateItem></mat-datepicker>
+            </mat-form-field>
+
+            <div *ngIf="item.type === 'boolean'" class="boolean-form-field"
+              [ngClass]="{'required-boolean-field': item.required && !listItem.control.valid}">
+              <mat-radio-group [formControl]="listItem.control">
+                <mat-radio-button color="primary" value="true">True</mat-radio-button>
+                <mat-radio-button color="primary" value="false">False</mat-radio-button>
+                <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+          </div>
+          <div class="fields-remove" (click)="onRemove(item, listItem)">
+            <mat-icon>delete</mat-icon>
+          </div>
+        </div>
+        <div class="add-btn" (click)="addItem(item)">
+          <span>
+            <mat-icon>add</mat-icon> Add Field
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
+        <div class="invalid-field-label" *ngIf="!options.controls[item.name].valid">
+          <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
+          <span>
+            <b>Please make sure all fields in schemas contain a valid value</b>
+          </span>
+        </div>
+        <div *ngIf="item.required" class="required-field">* Required</div>
+        <div class="label-field">{{item.description}}</div>
+        <div *ngFor="let listItem of item.list" class="form-field-array-item" [attr.index]="listItem.index"
+          [attr.required]="item.required">
+          <div class="form-field-group">
+            <app-schema-form [formGroup]="listItem.control" [fields]="item.fields" [context]="item.context"
+              [private-fields]="hide" [delimiter-hide]="true">
+            </app-schema-form>
+            <div class="remove-btn" (click)="onRemove(item, listItem)">
+              <span>
+                <mat-icon>remove</mat-icon> Remove Entity
+              </span>
+            </div>
+          </div>
+          <div class="short-delimiter-container">
+            <div class="delimiter"></div>
+          </div>
+        </div>
+        <div class="add-btn" (click)="addItem(item)">
+          <span>
+            <mat-icon>add</mat-icon> Add Entity
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <div *ngIf="!delimiterHide" class="delimiter"></div>
+
+  </ng-container>
+</form>

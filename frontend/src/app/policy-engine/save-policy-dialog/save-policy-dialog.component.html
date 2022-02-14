@@ -1,0 +1,45 @@
+<div mat-dialog-content>
+  <div *ngIf="isActionSelected$ | async; else selectActionTemplate">
+    <h1 mat-dialog-title *ngIf="isActionSelected$ | async">{{getTitle()}}</h1>
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>* NAME:</mat-label>
+            <input matInput type="text" placeholder="Policy name" formControlName="name">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>* TAG:</mat-label>
+            <input matInput type="text" placeholder="policyTag" formControlName="policyTag">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>TOPIC DESCRIPTION:</mat-label>
+            <input matInput type="text" placeholder="Topic description" formControlName="topicDescription" maxlength="50">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>DESCRIPTION:</mat-label>
+            <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>
+        </mat-form-field>
+
+        <div mat-dialog-actions>
+            <button mat-raised-button color="primary" type="submit"
+                [disabled]="!dataForm.valid">Ok</button>
+            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+        </div>
+    </form>
+  </div>
+  <ng-template #selectActionTemplate>
+    <div class="action-select-step">
+        <div class="login-header">
+            Select action
+        </div>
+        <button mat-button (click)="setAction(1)">
+            <span class="action-name">Create new policy</span>
+        </button>
+        <button mat-button (click)="setAction(2)" *ngIf="!isNewVersionDisabled">
+            <span class="action-name">Create new version</span>
+        </button>
+    </div>
+  </ng-template>
+</div>

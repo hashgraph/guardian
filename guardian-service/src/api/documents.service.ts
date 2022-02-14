@@ -9,14 +9,16 @@ import {
     IDidDocument,
     IVCDocument,
     IVPDocument,
-    MessageAPI
+    MessageAPI,
+    MessageError,
+    MessageResponse
 } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { VCHelper } from 'vc-modules';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
- * 
+ *
  * @param channel - channel
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
@@ -68,67 +70,75 @@ export const documentsAPI = async function (
 
     /**
      * Return DID Documents by DID
-     * 
+     *
      * @param {Object} payload - filters
      * @param {string} payload.did - DID
-     * 
+     *
      * @returns {IDidDocument[]} - DID Documents
      */
     channel.response(MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
         const reqObj = { where: { did: { $eq: msg.payload.did } } };
         const didDocuments: IDidDocument[] = await didDocumentRepository.find(reqObj);
-        res.send(didDocuments);
+        res.send(new MessageResponse(didDocuments));
     });
 
     /**
      * Return VC Documents
-     * 
+     *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.id] - filter by id 
-     * @param {string} [payload.type] - filter by type 
-     * @param {string} [payload.owner] - filter by owner 
-     * @param {string} [payload.issuer] - filter by issuer 
-     * @param {string} [payload.hash] - filter by hash 
-     * @param {string} [payload.policyId] - filter by policy id 
-     * 
+     * @param {string} [payload.id] - filter by id
+     * @param {string} [payload.type] - filter by type
+     * @param {string} [payload.owner] - filter by owner
+     * @param {string} [payload.issuer] - filter by issuer
+     * @param {string} [payload.hash] - filter by hash
+     * @param {string} [payload.policyId] - filter by policy id
+     *
      * @returns {IVCDocument[]} - VC Documents
      */
     channel.response(MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
         if (msg.payload) {
             const reqObj: any = { where: {} };
-            if (msg.payload.type) {
-                reqObj.where['type'] = { $eq: msg.payload.type }
+            const { owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
+            if (owner) {
+                reqObj.where['owner'] = { $eq: owner }
             }
-            if (msg.payload.owner) {
-                reqObj.where['owner'] = { $eq: msg.payload.owner }
+            if (assign) {
+                reqObj.where['assign'] = { $eq: assign }
             }
-            if (msg.payload.issuer) {
-                reqObj.where['document.issuer'] = { $eq: msg.payload.issuer }
+            if (issuer) {
+                reqObj.where['document.issuer'] = { $eq: issuer }
             }
-            if (msg.payload.id) {
-                reqObj.where['document.id'] = { $eq: msg.payload.id }
+            if (id) {
+                reqObj.where['document.id'] = { $eq: id }
             }
-            if (msg.payload.hash) {
-                reqObj.where['hash'] = { $in: msg.payload.hash }
+            if (hash) {
+                reqObj.where['hash'] = { $in: hash }
             }
-            if (msg.payload.policyId) {
-                reqObj.where['policyId'] = { $eq: msg.payload.policyId }
+            if (policyId) {
+                reqObj.where['policyId'] = { $eq: policyId }
             }
+            if (schema) {
+                reqObj.where['schema'] = { $eq: schema }
+            }
+            if (typeof reqObj.where !== 'object') {
+                reqObj.where = {};
+            }
+            Object.assign(reqObj.where, otherArgs);
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
-            res.send(vcDocuments);
+            res.send(new MessageResponse(vcDocuments));
         } else {
             const vcDocuments: IVCDocument[] = await vcDocumentRepository.find();
-            res.send(vcDocuments);
+            res.send(new MessageResponse(vcDocuments));
         }
     });
 
     /**
      * Create or update DID Documents
-     * 
+     *
      * @param {IDidDocument} payload - document
      * @param {string} [payload.did] - did
      * @param {string} [payload.operation] - document status
-     * 
+     *
      * @returns {IDidDocument} - new DID Document
      */
     channel.response(MessageAPI.SET_DID_DOCUMENT, async (msg, res) => {
@@ -139,44 +149,69 @@ export const documentsAPI = async function (
             if (item) {
                 item.status = getDIDOperation(operation);
                 const result: IDidDocument = await didDocumentRepository.save(item);
-                res.send(result);
+                res.send(new MessageResponse(result));
             } else {
-                res.send(null);
+                res.send(new MessageError('Document not found'));
             }
         } else {
             const didDocumentObject = didDocumentRepository.create(msg.payload);
             const result: IDidDocument[] = await didDocumentRepository.save(didDocumentObject);
-            res.send(result);
+            res.send(new MessageResponse(result));
         }
     });
 
     /**
      * Create or update VC Documents
-     * 
+     *
      * @param {IVCDocument} payload - document
      * @param {string} [payload.hash] - hash
      * @param {string} [payload.operation] - document status
-     * 
+     *
      * @returns {IVCDocument} - new VC Document
      */
     channel.response(MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
-        let result: IVCDocument
-        if (msg.payload.hash && msg.payload.operation) {
-            const hash = msg.payload.hash;
-            const operation = msg.payload.operation;
+        let result: IVCDocument;
+
+        const hash = msg.payload.hash;
+        if (hash) {
             result = await vcDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
-            if (result) {
-                result.status = getVCOperation(operation);
+        }
+
+        if (result) {
+            const operation = msg.payload.operation;
+            if (operation) {
+                result.hederaStatus = getVCOperation(operation);
+            }
+
+            const assign = msg.payload.assign;
+            if (assign) {
+                result.assign = assign;
+            }
+
+            const type = msg.payload.type;
+            if (type) {
+                result.type = type;
+            }
+
+            const option = msg.payload.option;
+            if (option) {
+                result.option = option;
+            }
+        }
+
+        if (!result) {
+            if (msg.payload.document) {
+                result = vcDocumentRepository.create(msg.payload as VcDocument);
             } else {
-                res.send(null);
+                res.send(new MessageError('Invalid document'));
                 return;
             }
-        } else {
-            result = vcDocumentRepository.create(msg.payload as VcDocument);
         }
+
         let verify: boolean;
         try {
-            verify = await vc.verifySchema(result.document);
+            const res = await vc.verifySchema(result.document);
+            verify = res.ok;
             if (verify) {
                 verify = await vc.verifyVC(result.document);
             }
@@ -184,41 +219,38 @@ export const documentsAPI = async function (
             verify = false;
         }
         result.signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
+
         result = await vcDocumentRepository.save(result);
-        res.send(result);
+        res.send(new MessageResponse(result));
     });
 
     /**
      * Create new VP Document
-     * 
+     *
      * @param {IVPDocument} payload - document
-     * 
+     *
      * @returns {IVPDocument} - new VP Document
      */
     channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
         const vpDocumentObject = vpDocumentRepository.create(msg.payload);
         const result: any = await vpDocumentRepository.save(vpDocumentObject);
-        res.send(result);
+        res.send(new MessageResponse(result));
     });
 
     /**
      * Return VP Documents
-     * 
+     *
      * @param {Object} [payload] - filters
-     * 
+     *
      * @returns {IVPDocument[]} - VP Documents
      */
     channel.response(MessageAPI.GET_VP_DOCUMENTS, async (msg, res) => {
         if (msg.payload) {
-            const document: IVPDocument = await vpDocumentRepository.findOne(msg.payload);
-            if (document) {
-                res.send([document]);
-            } else {
-                res.send([]);
-            }
+            const document: IVPDocument[] = await vpDocumentRepository.find(msg.payload);
+            res.send(new MessageResponse(document));
         } else {
             const documents: IVPDocument[] = await vpDocumentRepository.find();
-            res.send(documents);
+            res.send(new MessageResponse(documents));
         }
     });
 }

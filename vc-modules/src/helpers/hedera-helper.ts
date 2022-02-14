@@ -40,6 +40,7 @@ export interface IHederaHelper {
  */
 export class HederaHelper {
     public static MAX_TIMEOUT: number = 60000;
+    public static readonly HEDERA_MESSAGE_API: string = "https://testnet.mirrornode.hedera.com/api/v1/topics/messages";
 
     public DID: HederaDIDHelper;
     public SDK: HederaSDKHelper;

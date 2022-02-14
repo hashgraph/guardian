@@ -4,11 +4,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser } from 'interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
+import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
-import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../export-import-dialog/export-import-dialog.component';
-import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
+import { ExportPolicyDialog } from '../../helpers/export-policy-dialog/export-policy-dialog.component';
+import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
+import { ImportPolicyDialog } from '../../helpers/import-policy-dialog/import-policy-dialog.component';
+import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview-policy-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -72,6 +75,10 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicy() {
         const policyId = this.route.snapshot.queryParams['policyId'];
+        if (policyId && this.policyId == policyId) {
+            return;
+        }
+
         this.policyId = policyId;
         this.policies = null;
         this.policy = null;
@@ -171,9 +178,21 @@ export class PolicyViewerComponent implements OnInit {
         });
     }
 
-    publish(element: any) {
+    setVersion(element: any) {
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe((version) => {
+            if (version) {
+                this.publish(element, version);
+            }
+        });
+    }
+
+    private publish(element: any, version: string) {
         this.loading = true;
-        this.policyEngineService.publish(element.id).subscribe((data: any) => {
+        this.policyEngineService.publish(element.id, version).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (!isValid) {
                 let text = [];
@@ -211,54 +230,61 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     exportPolicy(element: any) {
-        this.loading = true;
-        this.policyEngineService.exportPolicy(element.id).subscribe((result: any) => {
-            let downloadLink = document.createElement('a');
-            downloadLink.href = window.URL.createObjectURL(result);
-            downloadLink.setAttribute('download', 'policy.zip');
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        }, (e) => {
-            this.loading = false;
-        });
+        this.policyEngineService.exportInMessage(element.id)
+            .subscribe(exportedPolicy => this.dialog.open(ExportPolicyDialog, {
+                width: '700px',
+                panelClass: 'g-dialog',
+                data: {
+                    policy: exportedPolicy
+                },
+                autoFocus: false
+            }));
     }
 
     importPolicy() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.click();
-        input.onchange = (e: any) => {
-            const file = e.target.files[0];
-            const reader = new FileReader()
-            reader.readAsArrayBuffer(file);
-            reader.addEventListener('load', (e: any) => {
-                const arrayBuffer = e.target.result;
+        const dialogRef = this.dialog.open(ImportPolicyDialog, {
+            width: '500px',
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.importPolicyDetails(result);
+            }
+        });
+    }
+
+    importPolicyDetails(result: any) {
+        const { type, data, policy } = result;
+        const dialogRef = this.dialog.open(PreviewPolicyDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                policy: policy
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
                 this.loading = true;
-                this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
-                    this.loading = false;
-                    const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
-                        width: '950px',
-                        panelClass: 'g-dialog',
-                        data: {
-                            policy: data
-                        }
+                if (type == 'message') {
+                    this.policyEngineService.importByMessage(data).subscribe((policies) => {
+                        this.updatePolicy(policies);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        this.loading = false;
                     });
-                    dialogRef.afterClosed().subscribe(async (result) => {
-                        if (result) {
-                            this.loading = true;
-                            this.policyEngineService.importUpload(data).subscribe((policies) => {
-                                this.updatePolicy(policies);
-                                setTimeout(() => {
-                                    this.loading = false;
-                                }, 500);
-                            });
-                        }
+                } else if (type == 'file') {
+                    this.policyEngineService.importByFile(data).subscribe((policies) => {
+                        this.updatePolicy(policies);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        this.loading = false;
                     });
-                });
-            });
-        }
+                }
+            }
+        });
     }
 }

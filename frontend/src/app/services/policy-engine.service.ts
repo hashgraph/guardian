@@ -142,8 +142,8 @@ export class PolicyEngineService {
     return this.http.put<any>(`${this.url}/${policyId}`, policy);
   }
 
-  public publish(policyId: string): Observable<any> {
-    return this.http.put<any>(`${this.url}/${policyId}/publish`, null);
+  public publish(policyId: string, policyVersion: string): Observable<any> {
+    return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
   }
 
   public validate(policy: any): Observable<any> {
@@ -154,8 +154,10 @@ export class PolicyEngineService {
     return this.http.get<any>(`${this.url}/${policyId}/blocks`);
   }
 
-  public getBlockData(blockId: string, policyId: string): Observable<any> {
-    return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`);
+  public getBlockData(blockId: string, policyId: string, filters?: any): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`, {
+      params: filters
+    });
   }
 
   public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {
@@ -166,18 +168,38 @@ export class PolicyEngineService {
     return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}`);
   }
 
-  public exportPolicy(policyId: string): Observable<Blob> {
-    return this.http.get(`${this.url}/${policyId}/export`, {
+  public getParents(blockId: string, policyId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}/parents`);
+  }
+
+  public exportInFile(policyId: string): Observable<any> {
+    return this.http.get(`${this.url}/${policyId}/export/file`, {
       responseType: 'blob'
     });
   }
 
-  public importUpload(policyData: any): Observable<any[]> {
-    return this.http.post<any[]>(`${this.url}/import`, policyData);
+  public exportInMessage(policyId: string): Observable<any> {
+    return this.http.get(`${this.url}/${policyId}/export/message`);
   }
 
-  public importFileUpload(policyFile: any): Observable<any> {
-    return this.http.post(`${this.url}/import/preview`, policyFile, {
+  public importByMessage(messageId: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
+  }
+
+  public importByFile(policyFile: any): Observable<any[]> {
+    return this.http.post<any[]>(`${this.url}/import/file`, policyFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
+  }
+
+  public previewByMessage(messageId: string): Observable<any> {
+    return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+  }
+
+  public previewByFile(policyFile: any): Observable<any> {
+    return this.http.post<any[]>(`${this.url}/import/file/preview`, policyFile, {
       headers: {
         'Content-Type': 'binary/octet-stream'
       }

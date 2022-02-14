@@ -1,5 +1,4 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { HcsVcDocument, HcsVpDocument, HederaHelper, HederaUtils, VcSubject } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
@@ -7,8 +6,9 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature } from 'interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -103,7 +103,9 @@ export class RetirementBlock {
     private async createWipeVC(root, token, data: number): Promise<HcsVcDocument<VcSubject>> {
         const vcHelper = new VcHelper();
 
+        const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.WIPE_TOKEN); 
         const vcSubject = {
+            ...SchemaHelper.getContext(policySchema),
             date: (new Date()).toISOString(),
             tokenId: token.tokenId,
             amount: data.toString()
@@ -112,7 +114,6 @@ export class RetirementBlock {
         const wipeVC = await vcHelper.createVC(
             root.did,
             root.hederaAccountKey,
-            "WipeToken",
             vcSubject
         );
         return wipeVC;
@@ -157,10 +158,12 @@ export class RetirementBlock {
         let status = false;
         status = await this.saveVC(wipeVC, user.did, ref);
         status = await this.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
+
+        return vp;
     }
 
     async runAction(state, user) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const {
             tokenId,
             rule
@@ -198,14 +201,18 @@ export class RetirementBlock {
         }
 
         try {
-            await this.retirementProcessing(token, vcs, rule, root, curUser, ref);
+            const doc = await this.retirementProcessing(token, vcs, rule, root, curUser, ref);
+            ref.runNext(null, { data: doc }).then(
+                function () { },
+                function (error: any) { console.error(error); }
+            );
         } catch (e) {
             throw e;
         }
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         if (!ref.options.tokenId) {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
