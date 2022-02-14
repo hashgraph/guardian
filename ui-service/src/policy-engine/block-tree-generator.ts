@@ -14,7 +14,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { ModelHelper, SchemaEntity, SchemaHelper, UserRole } from 'interfaces';
+import { ISchema, ModelHelper, SchemaEntity, SchemaHelper, SchemaStatus, UserRole } from 'interfaces';
 import { HederaHelper, HederaSenderHelper, IPolicySubmitMessage, ModelActionType } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
@@ -23,6 +23,7 @@ import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { BlockPermissions } from '@policy-engine/helpers/middleware/block-permissions';
 import { IPFS } from '@helpers/ipfs';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
+import { findAllEntities, replaceAllEntities } from '@helpers/utils';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -265,6 +266,15 @@ export class BlockTreeGenerator {
         });
     }
 
+    private regenerateIds(block: any) {
+        block.id = GenerateUUIDv4();
+        if (Array.isArray(block.children)) {
+            for (let child of block.children) {
+                this.regenerateIds(child);
+            }
+        }
+    }
+
     /**
      * Register endpoints for policy engine
      * @private
@@ -292,12 +302,12 @@ export class BlockTreeGenerator {
             try {
                 const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
                 const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
-                if(model.uuid) {
+                if (model.uuid) {
                     const old = await getMongoRepository(Policy).findOne({ uuid: model.uuid });
-                    if( model.creator != user.did) {
+                    if (model.creator != user.did) {
                         throw 'Invalid owner';
                     }
-                    if( old.creator != user.did) {
+                    if (old.creator != user.did) {
                         throw 'Invalid owner';
                     }
                     model.creator = user.did;
@@ -309,6 +319,11 @@ export class BlockTreeGenerator {
                     delete model.previousVersion;
                     delete model.topicId;
                     delete model.version;
+                }
+                if (!model.config) {
+                    model.config = {
+                        "blockType": "interfaceContainerBlock",
+                    }
                 }
                 await getMongoRepository(Policy).save(model);
                 const policies = await getMongoRepository(Policy).find({ owner: user.did })
@@ -387,22 +402,24 @@ export class BlockTreeGenerator {
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
-                    function regenerateIds(block: any) {
-                        block.id = GenerateUUIDv4();
-                        if (Array.isArray(block.children)) {
-                            for (let child of block.children) {
-                                regenerateIds(child);
-                            }
-                        }
-                    }
-                    regenerateIds(model.config);
-
                     const guardians = new Guardians();
                     const user = await getMongoRepository(User).findOne({
                         where: {
                             username: { $eq: req.user.username }
                         }
                     });
+
+                    const schemaIRIs = findAllEntities(model.config, 'schema');
+                    for (let i = 0; i < schemaIRIs.length; i++) {
+                        const schemaIRI = schemaIRIs[i];
+                        const schema = await guardians.incrementSchemaVersion(schemaIRI, user.did);
+                        if (schema.status == SchemaStatus.PUBLISHED) {
+                            continue;
+                        }
+                        const newSchema = await guardians.publishSchema(schema.id, schema.version, user.did);
+                        replaceAllEntities(model.config, 'schema', schemaIRI, newSchema.iri);
+                    }
+                    this.regenerateIds(model.config);
 
                     const root = await guardians.getRootConfig(user.did);
                     const hederaHelper = HederaHelper
@@ -432,7 +449,7 @@ export class BlockTreeGenerator {
                     const messageId = await HederaSenderHelper.SubmitPolicyMessage(hederaHelper, model.topicId, publishPolicyMessage);
                     model.messageId = messageId;
 
-                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);  
+                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
                         ...publishPolicyMessage,

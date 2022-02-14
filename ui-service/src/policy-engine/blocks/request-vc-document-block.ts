@@ -31,13 +31,6 @@ export class RequestVcDocumentBlock {
 
     private schema: Schema | null;
 
-    // private init(): void {
-    //     const { options, blockType, uuid } = PolicyComponentsStuff.GetBlockRef(this);
-    //     if (!options.schema) {
-    //         throw new BlockInitError(`Field "schema" is required`, blockType, uuid);
-    //     }
-    // }
-
     constructor() {
     }
 
@@ -46,7 +39,7 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsStuff.GetBlockRef(this);
 
         if (!this.schema) {
-            const schema = await this.guardians.getSchemaByMessage(ref.options.schema);
+            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
             this.schema = schema ? new Schema(schema) : null;
         }
         if (!this.schema) {
@@ -155,13 +148,9 @@ export class RequestVcDocumentBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
             return;
         }
-        const schema = await this.guardians.getSchemaByMessage(ref.options.schema);
+        const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-            return;
-        }
-        if (schema.status != SchemaStatus.PUBLISHED) {
-            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" is not published`);
             return;
         }
     }

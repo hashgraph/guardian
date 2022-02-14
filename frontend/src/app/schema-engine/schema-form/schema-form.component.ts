@@ -76,7 +76,6 @@ export class SchemaFormComponent implements OnInit {
 
   options: FormGroup | undefined;
   fields: any[] | undefined = [];
-  fileUploading: boolean = false;
 
   @Output('change') change = new EventEmitter<Schema | null>();
   destroy$: Subject<boolean> = new Subject<boolean>();
@@ -114,6 +113,7 @@ export class SchemaFormComponent implements OnInit {
     if (item.isRef) {
       listItem.control = new FormGroup({});
     } else {
+      listItem.fileUploading = false;
       let validators = this.getValidators(item);
       listItem.control = new FormControl("", validators);
 
@@ -191,6 +191,7 @@ export class SchemaFormComponent implements OnInit {
         pattern: field.pattern
       }
       if (!field.isArray && !field.isRef) {
+        item.fileUploading = false;
         let validators = this.getValidators(item);
         item.control = new FormControl("", validators);
 
@@ -244,20 +245,20 @@ export class SchemaFormComponent implements OnInit {
     this.changeDetectorRef.detectChanges();
   }
 
-  onFileSelected(event: any, control: AbstractControl) {
+  onFileSelected(event: any, control: AbstractControl, item: any) {
     control.patchValue("");
     const file = event?.target?.files[0];
 
     if (!file) {
       return;
     }
-    this.fileUploading = true;
+    item.fileUploading = true;
     this.ipfs.addFile(file)
       .subscribe(res => {
         control.patchValue(API_IPFS_GATEWAY_URL + res);
-        this.fileUploading = false;
+        item.fileUploading = false;
       }, error => {
-        this.fileUploading = false;
+        item.fileUploading = false;
       });
   }
 
@@ -353,6 +354,7 @@ export class SchemaFormComponent implements OnInit {
 
   private subscribeFormatNumberValue(control: FormControl, type: string) {
     control.valueChanges
+      .pipe(takeUntil(this.destroy$))
       .subscribe((val: any) => {
         let valueToSet: any = val;
         try {

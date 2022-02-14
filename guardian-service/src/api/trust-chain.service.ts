@@ -117,45 +117,68 @@ export const trustChainAPI = async function (
      */
     async function getPolicyInfo(chain: IChainItem[], policyId: any) {
         if (policyId) {
-            const policy = await vcDocumentRepository.findOne({
+            let issuer: string;
+
+            const policyCreated = await vcDocumentRepository.findOne({
                 where: {
-                    entity: { $eq: SchemaEntity.POLICY },
+                    type: { $eq: SchemaEntity.POLICY },
                     policyId: { $eq: policyId }
                 }
             });
 
-            if (policy) {
+            const policyImported = await vcDocumentRepository.findOne({
+                where: {
+                    type: { $eq: SchemaEntity.POLICY_IMPORTED },
+                    policyId: { $eq: policyId }
+                }
+            });
+
+            if (policyCreated) {
+                issuer = getIssuer(policyCreated);
                 chain.push({
                     type: 'VC',
-                    id: policy.hash,
-                    document: policy.document,
-                    owner: policy.owner,
-                    schema: getField(policy, 'type'),
+                    id: policyCreated.hash,
+                    document: policyCreated.document,
+                    owner: policyCreated.owner,
+                    schema: getField(policyCreated, 'type'),
                     label: 'HASH',
                     entity: 'Policy',
                     tag: "Policy Created"
                 });
-                const issuer = getIssuer(policy);
-
-                const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
-
+            } else if (policyImported) {
+                issuer = getIssuer(policyImported);
                 chain.push({
-                    type: 'DID',
-                    id: issuer,
-                    document: didDocuments,
-                    owner: issuer,
-                    schema: null,
-                    label: 'DID',
-                    entity: 'DID',
-                    tag: null
+                    type: 'VC',
+                    id: policyImported.hash,
+                    document: policyImported.document,
+                    owner: policyImported.owner,
+                    schema: getField(policyImported, 'type'),
+                    label: 'HASH',
+                    entity: 'Policy',
+                    tag: "Policy Imported"
                 });
-
+            }
+            
+            if (issuer) {
+                const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
                 const rootAuthority = await vcDocumentRepository.findOne({
                     where: {
-                        entity: { $eq: SchemaEntity.ROOT_AUTHORITY },
+                        type: { $eq: SchemaEntity.ROOT_AUTHORITY },
                         owner: { $eq: issuer }
                     }
                 });
+                if (didDocuments) {
+                    chain.push({
+                        type: 'DID',
+                        id: issuer,
+                        document: didDocuments,
+                        owner: issuer,
+                        schema: null,
+                        label: 'DID',
+                        entity: 'DID',
+                        tag: null
+                    });
+                }
                 if (rootAuthority) {
                     chain.push({
                         type: 'VC',

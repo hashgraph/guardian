@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import { getMongoRepository } from 'typeorm';
 import { User } from '@entity/user';
 import { HederaHelper } from 'vc-modules';
+import { Guardians } from '@helpers/guardians';
 
 /**
  * Route for demo api
@@ -22,14 +23,10 @@ demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
 
 demoAPI.get('/randomKey', async (req: Request, res: Response) => {
     try {
-        const OPERATOR_ID = process.env.OPERATOR_ID;
-        const OPERATOR_KEY = process.env.OPERATOR_KEY;
-        const treasury = await HederaHelper.setOperator(OPERATOR_ID, OPERATOR_KEY).SDK.newAccount(30);
-        res.status(200).json({
-            id: treasury.id.toString(),
-            key: treasury.key.toString()
-        });
+        const guardians = new Guardians();
+        const demoKey = await guardians.generateDemoKey();
+        res.status(200).json(demoKey);
     } catch (error) {
-        res.status(500).json({ code: 500, message: error });
+        res.status(500).json({ code: 500, message: error.message });
     }
 });

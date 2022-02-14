@@ -13,6 +13,7 @@ import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
+import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
 
 @NgModule({
     declarations: [
@@ -24,7 +25,8 @@ import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.compon
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
-        SchemaViewDialog
+        SchemaViewDialog,
+        ExportSchemaDialog
     ],
     imports: [
         CommonModule,
@@ -43,7 +45,8 @@ import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.compon
         SchemaFormViewComponent,
         DocumentViewComponent,
         SetVersionDialog,
-        VCViewerDialog
+        VCViewerDialog,
+        ExportSchemaDialog
     ]
 })
 export class SchemaEngineModule {

@@ -6,13 +6,9 @@
             </div>
         </div>
         <div class="g-dialog-title">
-            Policy Import Preview
+            Export dialog
         </div>
-        <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onImport()">
-                Import
-            </div>
-        </div>
+        <div class="g-dialog-actions"></div>
     </div>
     <div class="g-dialog-body">
         <div class="context">
@@ -25,14 +21,14 @@
 
                 <div class="delimiter"></div>
 
-                <div class="field-last">
+                <div *ngIf="policy.description">
                     <div class="field-name">Description</div>
                     <div class="field-value">{{policy.description}}</div>
                 </div>
-
-                <div class="field">
-                    <div class="field-name">Tag</div>
-                    <div class="field-value">{{policy.policyTag}}</div>
+                
+                <div *ngIf="policy.version">
+                    <div class="field-name">Version</div>
+                    <div class="field-value">{{policy.version}}</div>
                 </div>
 
                 <div class="field">
@@ -42,23 +38,9 @@
 
                 <div class="delimiter"></div>
 
-                <div class="field-last">
-                    <div class="field-name">Involved Roles</div>
-                    <div class="field-value">Root Authority, {{policyRoles}}</div>
-                </div>
-
-                <div class="delimiter"></div>
-
-                <div class="field-last">
-                    <div class="field-name">Schemes Overview</div>
-                    <div class="field-value">{{schemes}}</div>
-                </div>
-
-                <div class="delimiter"></div>
-
-                <div class="field-last">
-                    <div class="field-name">Tokens</div>
-                    <div class="field-value">{{tokens}}</div>
+                <div class="container">
+                    <button mat-raised-button color="primary" [cdkCopyToClipboard]="policy.messageId" [disabled]="!policy.messageId">Copy message identifier</button>
+                    <button mat-raised-button color="primary" (click)="saveToFile()">Save to file</button>
                 </div>
             </div>
         </div>

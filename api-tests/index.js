@@ -19,8 +19,7 @@ const processes = [];
 describe('Tests', async function() {
     before(async function() {
         const configs = [
-            {from: path.resolve(path.join('configs', 'guardian-service', 'config.json')) , to:path.resolve(path.join('..', 'guardian-service', 'config.json'))},
-            {from: path.resolve(path.join('configs', 'ui-service', '.env')) , to:path.resolve(path.join('..', 'ui-service', '.env'))},
+            {from: path.resolve(path.join('configs', 'guardian-service', '.env')) , to:path.resolve(path.join('..', 'guardian-service', '.env'))},
             {from: path.resolve(path.join('configs', 'ipfs-client', '.env')) , to:path.resolve(path.join('..', 'ipfs-client', '.env'))},
         ]
 
@@ -42,6 +41,7 @@ describe('Tests', async function() {
                     shell: true,
                 })
             )
+            console.log(p, 'was started');
             await sleep(15000);
         }
         await sleep(35000);

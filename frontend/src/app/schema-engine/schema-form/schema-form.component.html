@@ -21,9 +21,9 @@
 
           <div *ngIf="item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'">
             <input type="file" class="file-input" style="display:none;" accept="image/*"
-              (change)="onFileSelected($event, options.controls[item.name])" #fileUpload>
+              (change)="onFileSelected($event, options.controls[item.name], item)" #fileUpload>
             <div class="file-upload" style="position: absolute; right:0; top:0;">
-                <ng-container [ngSwitch]="fileUploading">
+                <ng-container [ngSwitch]="item.fileUploading">
                   <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
                   <button mat-icon-button *ngSwitchCase="false" class="upload-btn" (click)="fileUpload.click()">
                     <mat-icon>attach_file</mat-icon>
@@ -115,11 +115,14 @@
 
               <div *ngIf="item.pattern==='^((https):\/\/)?ipfs.io\/ipfs\/.+'">
                 <input type="file" class="file-input" style="display:none;" accept="image/*"
-                  (change)="onFileSelected($event, listItem.control)" #fileUpload>
+                  (change)="onFileSelected($event, listItem.control, listItem)" #fileUpload>
                 <div class="file-upload" style="position: absolute; right:0; top:0;">
-                  <button mat-icon-button class="upload-btn" (click)="fileUpload.click()">
-                    <mat-icon>attach_file</mat-icon>
-                  </button>
+                  <ng-container [ngSwitch]="listItem.fileUploading">
+                    <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
+                    <button mat-icon-button *ngSwitchCase="false" class="upload-btn" (click)="fileUpload.click()">
+                      <mat-icon>attach_file</mat-icon>
+                    </button>
+                  </ng-container>
                 </div>
               </div>
             </mat-form-field>

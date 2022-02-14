@@ -26,13 +26,11 @@ import { TokenDialog } from './components/token-dialog/token-dialog.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
 import { NewPolicyDialog } from './policy-engine/helpers/new-policy-dialog/new-policy-dialog.component';
-import { ExportPolicyDialog } from './policy-engine/helpers/export-import-dialog/export-import-dialog.component';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
 import { MaterialModule } from './material.module';
 import { PolicyEngineModule } from './policy-engine/policy-engine.module';
 import { IPFSService } from './services/ipfs.service';
-import { ExportModelDialog } from './components/export-model-dialog/export-model-dialog.component';
 
 @NgModule({
     declarations: [
@@ -48,9 +46,7 @@ import { ExportModelDialog } from './components/export-model-dialog/export-model
         SchemaConfigComponent,
         AuditComponent,
         TrustChainComponent,
-        NewPolicyDialog,
-        ExportPolicyDialog,
-        ExportModelDialog
+        NewPolicyDialog
     ],
     imports: [
         BrowserModule,

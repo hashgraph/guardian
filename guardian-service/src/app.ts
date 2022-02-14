@@ -22,6 +22,7 @@ import { ContextDocumentLoader } from './document-loader/context-loader';
 import { VCSchemaLoader } from './document-loader/vc-schema-loader';
 import { SubjectSchemaLoader } from './document-loader/subject-schema-loader';
 import { IPFS } from '@helpers/ipfs';
+import { demoAPI } from '@api/demo';
 
 const PORT = process.env.PORT || 3001;
 
@@ -86,6 +87,7 @@ Promise.all([
         vpDocumentRepository,
         vcHelper
     );
+    await demoAPI(channel);
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);

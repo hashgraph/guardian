@@ -1,8 +1,27 @@
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { SchemaHelper, UserRole } from 'interfaces';
+import { ISchema, SchemaHelper, UserRole } from 'interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
+import JSZip from "jszip";
+
+export async function parseZipFile(zipFile: any): Promise<any[]> {
+    const zip = new JSZip();
+    const content = await zip.loadAsync(zipFile);
+    const schemaStringArray = await Promise.all(Object.entries(content.files)
+        .filter(file => !file[1].dir)
+        .map(file => file[1].async('string')));
+    const schemes = schemaStringArray.map(item => JSON.parse(item));
+    return schemes;
+}
+
+export async function generateZipFile(schemes: ISchema[]): Promise<JSZip> {
+    const zip = new JSZip();
+    for (let schema of schemes) {
+        zip.file(`${schema.iri}.json`, JSON.stringify(schema));
+    }
+    return zip;
+}
 
 /**
  * Schema route
@@ -128,17 +147,12 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
     }
 });
 
-schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
-        const messageId = req.body.messageId;
-        const schemaToPreview = await guardians.importSchema(messageId, req.user.did);
-
-        if (!schemaToPreview) {
-            throw new Error('Cannot load schema');
-        }
-
+        const messageId = req.body.messageId as string;
+        const map = await guardians.importSchemesByMessages([messageId], req.user.did);
         const schemes = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
@@ -147,50 +161,96 @@ schemaAPI.post('/import', permissionHelper(UserRole.ROOT_AUTHORITY), async (req:
     }
 });
 
-schemaAPI.post('/import/preview', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
+        const user = req.user;
         const guardians = new Guardians();
-        const messageId = req.body.messageId;
-        const schemaToPreview = await guardians.getSchemaPreview(messageId);
-        res.status(200).json(schemaToPreview[0]);
-    } catch (error) {
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
-
-schemaAPI.post('/export', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
-    try {
-        if (!req.body?.ids || req.body.ids.length === 0) {
-            throw new Error("No schemas to export");
+        const zip = req.body;
+        if (!zip) {
+            throw new Error('file in body is empty');
         }
-
-        const guardians = new Guardians();
-        const ids = req.body.ids as string[];
-        const schemes = (await guardians.exportSchemes(ids));
+        const files = await parseZipFile(zip);
+        const map = await guardians.importSchemesByFile(files, req.user.did);
+        const schemes = await guardians.getSchemesByOwner(user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
     }
 });
 
-// schemaAPI.put('/:schemaId/unpublish', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
-//     try {
-//         const user = req.user;
-//         const guardians = new Guardians();
-//         const schemaId = req.params.schemaId;
-//         const schema = await guardians.getSchemaById(schemaId);
-//         if (!schema) {
-//             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-//             return;
-//         }
-//         if (schema.creator != user.did) {
-//             res.status(500).json({ code: 500, message: 'Invalid creator.' });
-//             return;
-//         }
-//         const schemes = (await guardians.unpublishedSchema(schemaId));
-//         SchemaHelper.updatePermission(schemes, user.did);
-//         res.status(200).json(schemes);
-//     } catch (error) {
-//         res.status(500).json({ code: 500, message: error.message });
-//     }
-// });
+schemaAPI.post('/import/message/preview', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new Error('Schema ID in body is empty');
+        }
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaToPreview = await guardians.previewSchemesByMessages([messageId]);
+        res.status(200).json(schemaToPreview);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.post('/import/file/preview', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const zip = req.body;
+        if (!zip) {
+            throw new Error('file in body is empty');
+        }
+        const user = req.user;
+        const guardians = new Guardians();
+        const files = await parseZipFile(zip);
+        const schemaToPreview = await guardians.previewSchemesByFile(files);
+        res.status(200).json(schemaToPreview);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+    try {
+        if (!req.params.schemaId) {
+            throw new Error("No schemas to export");
+        }
+        const guardians = new Guardians();
+        const id = req.params.schemaId as string;
+        const schemes = await guardians.exportSchemes([id]);
+        const scheme = schemes[0];
+        if (!scheme) {
+            throw new Error(`Cannot export policy ${req.params.schemaId}`);
+        }
+        res.status(200).send({
+            id: scheme.id,
+            name: scheme.name,
+            description: scheme.description,
+            version: scheme.version,
+            messageId: scheme.messageId,
+            owner: scheme.owner
+        });
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        if (!req.params.schemaId) {
+            throw new Error("No schemas to export");
+        }
+        const guardians = new Guardians();
+        const id = req.params.schemaId as string;
+        const schemes = await guardians.exportSchemes([id]);
+        const name = `${Date.now()}`;
+        const zip = await generateZipFile(schemes);
+        const arcStream = zip.generateNodeStream();
+        res.setHeader('Content-disposition', `attachment; filename=${name}`);
+        res.setHeader('Content-type', 'application/zip');
+        arcStream.pipe(res);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
