@@ -83,7 +83,8 @@
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
-* [Page 1](schema-creation-using-the-guardian-apis/page-1.md)
+* [Creation of a Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
+* [Listing of Schema](schema-creation-using-the-guardian-apis/listing-of-schema.md)
 
 ## ACCOUNT APIS
 
