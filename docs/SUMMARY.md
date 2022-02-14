@@ -76,6 +76,7 @@
 
 * [Prerequesite Steps](policy-creation-using-the-guardian-apis/prerequesite-steps.md)
 * [Creation of a Policy](policy-creation-using-the-guardian-apis/creation-of-a-policy.md)
+* [Policy Listing](policy-creation-using-the-guardian-apis/policy-listing.md)
 * [Publish a Policy](policy-creation-using-the-guardian-apis/publish-a-policy.md)
 * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
 * [Adding file to IPFS](policy-creation-using-the-guardian-apis/adding-file-to-ipfs.md)

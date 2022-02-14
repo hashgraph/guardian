@@ -2,6 +2,8 @@
 
 ### IMPORT A POLICY
 
+**Description**: Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+
 **Policy import (unzip content)**
 
 `POST /api/v1/policies/import/preview`

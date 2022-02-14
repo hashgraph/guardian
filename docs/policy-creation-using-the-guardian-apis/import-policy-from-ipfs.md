@@ -2,7 +2,7 @@
 
 ### IMPORT OF NEW POLICY&#x20;
 
-**Description:** Imports new policy from IPFS into the local DB.&#x20;
+**Description:** Imports new policy and all associated artifacts from IPFS into the local DB
 
 **Note:** **Only users with the Root Authority role are allowed to make the request.**
 
@@ -37,37 +37,35 @@ content:
 
 `/schemas/import/preview`
 
-**Description:** Previews the policy from IPFS without loading it into the local DB
+**Description:** Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.
 
 #### **Request body:**
 
 ```
-content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
+description: A zip file that contains the policy and associated schemas and VCs to be imported.
+required: true
 ```
 
 #### **Response body:**
 
 ```
-      200:
+201:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PreviewPolicy'
-        401:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyConfig'
+401:
           description: Unauthorized.
-        403:
+403:
           description: Forbidden.
-        500:
+500:
           description: Internal server error.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
 ```
