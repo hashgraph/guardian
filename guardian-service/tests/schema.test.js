@@ -33,7 +33,7 @@ describe('Schema service', function () {
         'iri': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
         'document': JSON.stringify({
             '$id': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
-            '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "undefined#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
+            '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -94,7 +94,7 @@ describe('Schema service', function () {
         'uuid': '59b934e2-9eb6-4395-9b85-ad3624f1f752',
         'document': JSON.stringify({
             '$id': '#59b934e2-9eb6-4395-9b85-ad3624f1f752',
-            '$comment': '{"term": "59b934e2-9eb6-4395-9b85-ad3624f1f752", "@id": "undefined#59b934e2-9eb6-4395-9b85-ad3624f1f752"}',
+            '$comment': '{"term": "59b934e2-9eb6-4395-9b85-ad3624f1f752", "@id": "#59b934e2-9eb6-4395-9b85-ad3624f1f752"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -135,7 +135,7 @@ describe('Schema service', function () {
                     'items': {
                         '$ref': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f'
                     },
-                    '$comment': '{"term": "f3", "@id": "undefined#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}'
+                    '$comment': '{"term": "f3", "@id": "#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}'
                 },
                 'f4': {
                     'title': '',
@@ -158,7 +158,7 @@ describe('Schema service', function () {
         'uuid': 'ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
         'document': JSON.stringify({
             '$id': '#ad2de08d-a43c-43c7-a458-3f0e8db65e8f',
-            '$comment': '{"term": "ad2de08d-a43c-43c7-a458-3f0e8db65e8f", "@id": "undefined#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}',
+            '$comment': '{"term": "ad2de08d-a43c-43c7-a458-3f0e8db65e8f", "@id": "#ad2de08d-a43c-43c7-a458-3f0e8db65e8f"}',
             'title': '',
             'description': '',
             'type': 'object',
@@ -313,7 +313,7 @@ describe('Schema service', function () {
             status: PUBLISHED,
             document: JSON.stringify({
                 '$id': '#0fae2a20-0db2-4835-bab9-99b4effbe03e',
-                '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "undefined#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
+                '$comment': '{"term": "0fae2a20-0db2-4835-bab9-99b4effbe03e", "@id": "#0fae2a20-0db2-4835-bab9-99b4effbe03e"}',
                 'title': '',
                 'description': '',
                 'type': 'object',
