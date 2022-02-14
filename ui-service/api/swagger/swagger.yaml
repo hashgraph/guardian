@@ -674,7 +674,7 @@ paths:
     put:
       tags:
         - profiles
-      description: Sets Hedera credentials for the user. For users with the Root Autority role it also creates an address book.
+      description: Sets Hedera credentials for the user. For users with the Root Authority role it also creates an address book.
       parameters:
         - in: path
           name: username
@@ -1964,7 +1964,7 @@ paths:
       - bearerAuth: []
       summary: Imports new policy from a zip file.
       requestBody:
-        description: A zip file that contains the policy and assicoated schemas and VCs to be imported.
+        description: A zip file that contains the policy and associated schemas and VCs to be imported.
         required: true
       responses:
         201:
@@ -2031,7 +2031,7 @@ paths:
       security:
       - bearerAuth: []
       requestBody:
-        description: A zip file that contains the policy and assicoated schemas and VCs to be viewed.
+        description: A zip file that contains the policy and associated schemas and VCs to be viewed.
         required: true
       responses:
         200:
