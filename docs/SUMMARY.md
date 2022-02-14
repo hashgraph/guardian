@@ -85,6 +85,8 @@
 
 * [Creation of a Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
 * [Listing of Schema](schema-creation-using-the-guardian-apis/listing-of-schema.md)
+* [Publishing Schema based on Schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
+* [Updating Schema](schema-creation-using-the-guardian-apis/updating-schema.md)
 
 ## ACCOUNT APIS
 
