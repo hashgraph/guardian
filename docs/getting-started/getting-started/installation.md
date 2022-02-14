@@ -5,7 +5,7 @@
     ```
     git clone https://github.com/hashgraph/guardian.git
     ```
-2.  Update the following files with your Hedera Testnet account info as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2.  Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
 
 
@@ -14,8 +14,8 @@
     in `guardian-service/.env`:
 
     ```
-     OPERATOR_ID=0.0.123456789
-     OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+     OPERATOR_ID="0.0.29676495"
+     OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
      SCHEMA_TOPIC_ID="0.0.29614911"
     ```
 
@@ -24,8 +24,8 @@
     in `guardian-service/.env.docker`:
 
     ```
-     OPERATOR_ID=0.0.123456789
-     OPERATOR_KEY=302e020100300506032b657004220420f4361ec73dc43e568f1620a7b7ecb7330790b8a1c7620f1ce353aa1de4f0eaa6
+     OPERATOR_ID="0.0.29676495"
+     OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
      SCHEMA_TOPIC_ID="0.0.29614911"
     ```
 
