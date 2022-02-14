@@ -639,6 +639,11 @@ export const schemaAPI = async function (
                 return;
             }
 
+            if (schema.status == SchemaStatus.PUBLISHED) {
+                res.send(new MessageResponse(schema));
+                return;
+            }
+
             const { version, previousVersion } = SchemaHelper.getVersion(schema);
             let newVersion = '1.0.0';
             if (previousVersion) {
