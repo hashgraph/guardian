@@ -1,12 +1,12 @@
-# Associates the user with token
+# Disassociates the user with token
 
-### ASSOCIATES USER WITH TOKEN
+### DISASSOCIATES USER WITH TOKEN
 
-**Description:** Associates the user with the provided Hedera token.&#x20;
+**Description:** Disassociates the user with the provided Hedera token.&#x20;
 
 Only users with the Installer role are allowed to make the request.
 
-PUT  /tokens/{tokenId}/associate
+PUT  /tokens/{tokenId}/disassociate
 
 **Request body:**
 

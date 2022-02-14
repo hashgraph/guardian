@@ -110,3 +110,6 @@
 * [Creation of new token](token-apis/creation-of-new-token.md)
 * [User Info for selected token](token-apis/user-info-for-selected-token.md)
 * [Associates the user with token](token-apis/associates-the-user-with-token.md)
+* [Disassociates the user with token](token-apis/disassociates-the-user-with-token.md)
+* [Grants KYC for the user](token-apis/grants-kyc-for-the-user.md)
+* [Revoke KYC of the user](token-apis/revoke-kyc-of-the-user.md)
