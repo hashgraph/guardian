@@ -62,6 +62,7 @@ function Profiles() {
                 }
             }
         );
+
         result = await axios.put(
             GetURL('profile'),
             {"hederaAccountId": result.data.id, "hederaAccountKey":result.data.key},
