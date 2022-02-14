@@ -121,14 +121,14 @@ export const trustChainAPI = async function (
 
             const policyCreated = await vcDocumentRepository.findOne({
                 where: {
-                    entity: { $eq: SchemaEntity.POLICY },
+                    type: { $eq: SchemaEntity.POLICY },
                     policyId: { $eq: policyId }
                 }
             });
 
             const policyImported = await vcDocumentRepository.findOne({
                 where: {
-                    entity: { $eq: SchemaEntity.POLICY_IMPORTED },
+                    type: { $eq: SchemaEntity.POLICY_IMPORTED },
                     policyId: { $eq: policyId }
                 }
             });
@@ -158,12 +158,12 @@ export const trustChainAPI = async function (
                     tag: "Policy Imported"
                 });
             }
-
+            
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
                 const rootAuthority = await vcDocumentRepository.findOne({
                     where: {
-                        entity: { $eq: SchemaEntity.ROOT_AUTHORITY },
+                        type: { $eq: SchemaEntity.ROOT_AUTHORITY },
                         owner: { $eq: issuer }
                     }
                 });
