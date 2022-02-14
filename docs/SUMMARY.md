@@ -80,7 +80,6 @@
 * [Retrieves Policy Configuration](policy-creation-using-the-guardian-apis/retrieves-policy-configuration.md)
 * [Updates Policy Configuration](policy-creation-using-the-guardian-apis/updates-policy-configuration.md)
 * [Publish a Policy](policy-creation-using-the-guardian-apis/publish-a-policy.md)
-* [Page 1](policy-creation-using-the-guardian-apis/page-1.md)
 * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
 * [Adding file to IPFS](policy-creation-using-the-guardian-apis/adding-file-to-ipfs.md)
 * [Import Policy from IPFS](policy-creation-using-the-guardian-apis/import-policy-from-ipfs.md)
