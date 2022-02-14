@@ -1,8 +1,28 @@
 # Table of contents
 
+## Getting Started
+
+* [Guardian Introduction](README.md)
+* [Discovering ESG assets on Hedera](getting-started/discovering-esg-assets-on-hedera.md)
+* [Getting Started](getting-started/getting-started/README.md)
+  * [Prerequisites](getting-started/getting-started/prerequisites.md)
+  * [Installation](getting-started/getting-started/installation.md)
+* [Demo Usage Guide](getting-started/demo-usage-guide.md)
+* [Contributing](getting-started/contributing.md)
+* [New Policy](getting-started/new-policy/README.md)
+  * [Contribute a New Policy](getting-started/new-policy/contribute-a-new-policy.md)
+  * [Request a New Policy or Feature](getting-started/new-policy/request-a-new-policy-or-feature.md)
+* [Reference Implementation](getting-started/reference-implementation.md)
+* [Built With](getting-started/built-with.md)
+* [Roadmap](getting-started/roadmap.md)
+* [Change Log](getting-started/change-log.md)
+* [License](getting-started/license.md)
+* [Security](getting-started/security.md)
+* [Contact](getting-started/contact.md)
+
 ## User Guide Glossary
 
-* [Guardian Glossary](README.md)
+* [Guardian Glossary](<README (1).md>)
 * [Policy Glossary](user-guide-glossary/policy-glossary.md)
 
 ## Available Schema Types

@@ -9,11 +9,11 @@
 
 There is also a _Custom Role_ which is called _User_. This role can be used to create any role which is neccessary in a specific policy. For the reference implement below, we created a custom role called _Installer_ (later explained when we create a policy down below).
 
-![1234](https://user-images.githubusercontent.com/40637665/148966434-b35f04eb-e14d-4bd1-a574-5a50aa3b181e.png)
+![Guardian Step 1](https://user-images.githubusercontent.com/40637665/148966434-b35f04eb-e14d-4bd1-a574-5a50aa3b181e.png)
 
 1. After running the installation commands, open a tab on your browser and navigate to http://localhost:3002/. Typically the way we start the reference implementation demonstration is by logging in as the Root Authority. Click the **Demo Admin Panel** drop-down located in the upper right-hand corner of the login screen and select the **Root Authority** user.
 
-![image](https://user-images.githubusercontent.com/40637665/148996412-61e1b2eb-80b2-4bbd-8317-fcdbcf3d24f6.png)
+![Guardian Step 2](https://user-images.githubusercontent.com/40637665/148996412-61e1b2eb-80b2-4bbd-8317-fcdbcf3d24f6.png)
 
 1. You'll now be prompted to configure your Root Authority account. Press the **Generate** button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
@@ -21,21 +21,13 @@ There is also a _Custom Role_ which is called _User_. This role can be used to c
 
 1. Next, we move over to the **Schemas** tab. Some schemas are populated during the build of the solution. These schemas are the structure of which Verifiable Credentials will be filled out. You can click on the **document** link on the right-hand side and notice fields that correlate to business requirements. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create an iRec registration applicant form. The current version of the solution allows you to either build schemas from scratch or import schemas. Download the `iRec_Application_Details.json` file found within this folder. Then click on the **Import** button and upload the `iRec_Application_Details.json` file.
 
-***
-
 **NOTE**
 
 There is a new feature as of version 1.0.2 which allows for the _Importing of Policies_ from the Root Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch. We have added a .zip folder with the iRec policy for you to import in the Demo Artifacts folder.
 
-***
-
-***
-
 **NOTE**
 
 Created or imported schema needs to be published via the **Publish** button after. This makes it available for inclusion in a policy.
-
-***
 
 ![Guardian step 4](https://user-images.githubusercontent.com/40637665/137962816-b2791931-552e-4cbc-8290-002909421abb.png)
 
@@ -45,7 +37,7 @@ Created or imported schema needs to be published via the **Publish** button afte
 
 1. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. In our case, we will mimic the iRec Policy. Click **Create Policy** and fill the required information in the dialog box. Please note that you will need to create new **Tag** and **Version** numbers for each policy. identical Tags and Versions will cause an error. Once the Policy is complete, we have just _**created our first Policy Workflow and Policy Action Execution instance!**_
 
-![image](https://user-images.githubusercontent.com/40637665/148996500-7760ee19-872f-4e10-a549-376e05949fd9.png)
+![Guardian Step 6](https://user-images.githubusercontent.com/40637665/148996500-7760ee19-872f-4e10-a549-376e05949fd9.png)
 
 1.  On the right-hand side of the Policies tab, click the **Edit** button. This will open the Guardian's Policy workflow editor. As described in the Hedera Improvement Proposal 28 (HIP-28), a Policy Workflow contains:
 
@@ -62,13 +54,13 @@ Created or imported schema needs to be published via the **Publish** button afte
 
     If you build and run the Guardian manually (without using Docker containers), you need to replace the entry `http://message-broker:3003/mrv` with `http://localhost:3003/mrv` in the pasted text.
 
-    ***
 
-    ![Guardian step 7](https://user-images.githubusercontent.com/40637665/137964384-6e05ee6e-1e5a-41c3-801b-ec94a50de916.png)
 
     Click on the "block" icon that is just to the right of the "code" icon. You'll notice that the Policy configuration editor now visually shows the Policy Workflow with all of the necessary Workgroups, Actions, State Objects, and Transactions. Click through on several blocks, and you'll notice that you can edit some elements on the right-hand side. Depending on what you are clicking on, different properties will display on the right-bottom box. You can edit properties from permissions, dependencies, tags, UI elements, etc.
 
     In step 1 we discussed creating a custom role called installer. There is a default Policy Property box in the upper right corner of the UI. Here we will be able to add the name of our custom role. Click on add role and you can add the customer role of _Installer_
+
+![](https://user-images.githubusercontent.com/40637665/137964384-6e05ee6e-1e5a-41c3-801b-ec94a50de916.png)
 
 ![Guardian step 7 3](https://user-images.githubusercontent.com/40637665/148967965-8c633248-c16f-4fe8-9d0a-8855849de23f.png)
 
