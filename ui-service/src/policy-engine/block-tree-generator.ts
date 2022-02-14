@@ -320,6 +320,11 @@ export class BlockTreeGenerator {
                     delete model.topicId;
                     delete model.version;
                 }
+                if (!model.config) {
+                    model.config = {
+                        "blockType": "interfaceContainerBlock",
+                    }
+                }
                 await getMongoRepository(Policy).save(model);
                 const policies = await getMongoRepository(Policy).find({ owner: user.did })
                 res.json(policies);
