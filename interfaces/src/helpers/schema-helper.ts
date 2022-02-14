@@ -231,7 +231,7 @@ export class SchemaHelper {
     }
 
     public static buildUrl(contextURL: string, ref: string): string {
-        return `${contextURL}${ref}`;
+        return `${contextURL || ''}${ref || ''}`;
     }
 
     public static getVersion(data: ISchema) {
