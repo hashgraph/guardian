@@ -248,11 +248,11 @@ export class SchemaHelper {
     public static setVersion(data: ISchema, version: string, previousVersion: string) {
         const document = JSON.parse(data.document);
         const uuid = data.uuid;
-        data.version = version;
         const type = SchemaHelper.buildType(uuid, version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
+        data.version = version;
         data.document = JSON.stringify(document);
         return data;
     }

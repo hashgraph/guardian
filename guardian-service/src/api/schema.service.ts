@@ -154,7 +154,7 @@ const getDefs = function (schema: ISchema) {
         if (!document.$defs) {
             return [];
         }
-        const keys = Object.keys(document.$defs);
+        return Object.keys(document.$defs);
     } catch (error) {
         return [];
     }
@@ -328,14 +328,9 @@ export const schemaAPI = async function (
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
                     result[uuid] = newUUID;
-                }
-                SchemaHelper.setVersion(file, '', '');
-                file.messageId = null;
+                }  
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
-                file.creator = owner;
-                file.owner = owner;
-                file.status = SchemaStatus.DRAFT;   
             }
 
             const uuids = Object.keys(result);
@@ -345,7 +340,12 @@ export const schemaAPI = async function (
                     const uuid = uuids[j];
                     file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
                     file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
-                }
+                }    
+                file.messageId = null;
+                file.creator = owner;
+                file.owner = owner;
+                file.status = SchemaStatus.DRAFT; 
+                SchemaHelper.setVersion(file, '', '');
                 const schema = schemaRepository.create(file);
                 await schemaRepository.save(schema);
             }
@@ -395,14 +395,9 @@ export const schemaAPI = async function (
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
                     result[uuid] = newUUID;
-                }
-                SchemaHelper.setVersion(file, '', '');
-                file.messageId = null;
+                }    
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
-                file.creator = owner;
-                file.owner = owner;
-                file.status = SchemaStatus.DRAFT;
             }
 
             const uuids = Object.keys(result);
@@ -413,6 +408,11 @@ export const schemaAPI = async function (
                     file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
                     file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
                 }
+                file.messageId = null;
+                file.creator = owner;
+                file.owner = owner;
+                file.status = SchemaStatus.DRAFT;
+                SchemaHelper.setVersion(file, '', '');
                 const schema = schemaRepository.create(file);
                 await schemaRepository.save(schema);
             }
@@ -636,6 +636,11 @@ export const schemaAPI = async function (
 
             if (!schema) {
                 res.send(new MessageError('Schema not found'));
+                return;
+            }
+
+            if (schema.status == SchemaStatus.PUBLISHED) {
+                res.send(new MessageResponse(schema));
                 return;
             }
 

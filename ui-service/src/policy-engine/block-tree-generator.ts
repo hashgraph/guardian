@@ -14,7 +14,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { ISchema, ModelHelper, SchemaEntity, SchemaHelper, UserRole } from 'interfaces';
+import { ISchema, ModelHelper, SchemaEntity, SchemaHelper, SchemaStatus, UserRole } from 'interfaces';
 import { HederaHelper, HederaSenderHelper, IPolicySubmitMessage, ModelActionType } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
@@ -23,7 +23,7 @@ import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { BlockPermissions } from '@policy-engine/helpers/middleware/block-permissions';
 import { IPFS } from '@helpers/ipfs';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { findAllEntities } from '@helpers/utils';
+import { findAllEntities, replaceAllEntities } from '@helpers/utils';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -408,7 +408,11 @@ export class BlockTreeGenerator {
                     for (let i = 0; i < schemaIRIs.length; i++) {
                         const schemaIRI = schemaIRIs[i];
                         const schema = await guardians.incrementSchemaVersion(schemaIRI, user.did);
-                        await guardians.publishSchema(schema.id, schema.version, user.did);
+                        if (schema.status == SchemaStatus.PUBLISHED) {
+                            continue;
+                        }
+                        const newSchema = await guardians.publishSchema(schema.id, schema.version, user.did);
+                        replaceAllEntities(model.config, 'schema', schemaIRI, newSchema.iri);
                     }
                     this.regenerateIds(model.config);
 

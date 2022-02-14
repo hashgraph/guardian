@@ -90,11 +90,7 @@ export class Schema implements ISchema {
 
     private parseDocument(): void {
         this.documentObject = JSON.parse(this.document);
-        const { iri, type, uuid, version } = SchemaHelper.parseRef(this.documentObject.$id);
-        this.iri = iri;
-        this.uuid = uuid;
-        this.version = version;
-        this.type = type;
+        this.type = SchemaHelper.buildType(this.uuid, this.version);
         const { previousVersion } = SchemaHelper.parseComment(this.documentObject.$comment);
         this.previousVersion = previousVersion;
         this.fields = SchemaHelper.parseFields(this.documentObject, this.contextURL);
