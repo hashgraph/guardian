@@ -118,4 +118,5 @@
 
 ## TrustChains APIs
 
-* [Page 1](trustchains-apis/page-1.md)
+* [Requesting](trustchains-apis/requesting.md)
+* [Building and returning](trustchains-apis/building-and-returning.md)
