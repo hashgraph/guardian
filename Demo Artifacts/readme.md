@@ -2,7 +2,7 @@
 
 This folder contains sample files that are referenced in the Demo Usage Guide from previous versions of the Guardian. As of version 1.0.5 the following files will not be needed to follow the guide:
 
-1. Sample Schema (`iRec_Application_Details.json`)
+1. Sample Schema (`iRec Application Details.zip`)
 2. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
 
 We are keeping them in the repo as they may be relevant in future releases.
@@ -40,9 +40,9 @@ There is a new feature as of version 1.0.2 which allows for the *Importing of Po
 ![Schema step 2](https://user-images.githubusercontent.com/84465157/153246591-80933214-a742-42cd-bce2-a1c8de71bf53.png)
 
 
-- `1643997352.894020620` 
-- `1643997099.474610000`
-- `1643997257.576274198`
+- `1644847084.945541771` (iRec Application Details)
+- `1644847093.979895804` (Inverter)
+- `1644847107.415192828` (MRV)
 
 Those Hedera message IDs correspond respectively to the iRec Application Details, Inveter, and MRV Schemas. 
 
@@ -55,7 +55,7 @@ Again this step is not needed if you import the policy as discussed above.
 
 6. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, as noted above, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the **import** button and enter the following Hedera message ID:
 
-- `1644435181.742485802`
+- `1644847114.111298000` (iRec Policy)
 
 ![Step2(1)](https://user-images.githubusercontent.com/40637665/153242444-c16f357f-d12c-4b92-a9f9-b50788c47b2c.png)
 
