@@ -1,5 +1,7 @@
 # Introduction
 
+Starting with the [Wikipedia definition](https://en.wikipedia.org/wiki/Workflow\_engine), a Policy Workflow Engine (PWE) is  a software application that manages business processes based on business rules and business data which are defined within the context of a specific policy. A PWE, therefore, manages and monitors the state of required policy actions and the required information flow in a policy grouped into a policy workflow, and determines which are the next policy actions based on the state of a policy workflow. The policy actions may be anything from saving an application form in a document management system to sending a reminder e-mail to users or escalating overdue items to management. Policy Workflow Blocks enable different business logic to exist within the Guardian’s PWE.
+
 ### Available Policy Workflows Blocks
 
 |          Block          |                                                  Definition                                                 |                               Documentation Link                               |
