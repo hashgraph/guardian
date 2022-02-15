@@ -78,12 +78,15 @@
 * [Prerequesite Steps](policy-creation-using-the-guardian-apis/prerequesite-steps.md)
 * [Creation of a Policy](policy-creation-using-the-guardian-apis/creation-of-a-policy.md)
 * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
-* [Import Policy from IPFS](policy-creation-using-the-guardian-apis/import-policy-from-ipfs.md)
 * [Policy Listing](policy-creation-using-the-guardian-apis/policy-listing.md)
 * [Retrieves Policy Configuration](policy-creation-using-the-guardian-apis/retrieves-policy-configuration.md)
 * [Updates Policy Configuration](policy-creation-using-the-guardian-apis/updates-policy-configuration.md)
 * [Publish a Policy](policy-creation-using-the-guardian-apis/publish-a-policy.md)
 * [Adding file to IPFS](policy-creation-using-the-guardian-apis/adding-file-to-ipfs.md)
+* [Policy Validation](policy-creation-using-the-guardian-apis/policy-validation.md)
+* [Retrieval of Data from Root Policy Block](policy-creation-using-the-guardian-apis/retrieval-of-data-from-root-policy-block.md)
+* [Request Block Data](policy-creation-using-the-guardian-apis/request-block-data.md)
+* [Sends Data to Specified Block](policy-creation-using-the-guardian-apis/sends-data-to-specified-block.md)
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 

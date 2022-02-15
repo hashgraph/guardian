@@ -1,27 +1,23 @@
-# Updates Policy Configuration
+# Retrieval of Data from Root Policy Block
 
-### UPDATES **POLICY CONFIGURATION**
+### RETRIEVING DATA FROM ROOT POLICY BLOCK
 
-{% swagger method="put" path="" baseUrl="/policies/{policyId}" summary="Updates policy configuration" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks" summary="Retrieves data for the policy root block" %}
 {% swagger-description %}
-Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+Returns data from the root policy block. Only users with the Root Authority and Installer role are allowed to make the request
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}
 Selected policy ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" type="application/json" required="true" %}
-Object that contains policy configuration
-{% endswagger-parameter %}
-
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
-    content:
+   content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyConfig'
+                $ref: '#/components/schemas/PolicyBlock'
 }
 ```
 {% endswagger-response %}

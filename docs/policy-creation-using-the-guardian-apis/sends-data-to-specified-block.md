@@ -1,27 +1,24 @@
-# Updates Policy Configuration
+# Sends Data to Specified Block
 
-### UPDATES **POLICY CONFIGURATION**
+### SENDING BLOCK DATA
 
-{% swagger method="put" path="" baseUrl="/policies/{policyId}" summary="Updates policy configuration" %}
+{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="Sends data to the specified block" %}
 {% swagger-description %}
-Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+Sends data to the specified block
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}
 Selected policy ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" type="application/json" required="true" %}
-Object that contains policy configuration
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Selected block UUID
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PolicyConfig'
+    // Response
 }
 ```
 {% endswagger-response %}

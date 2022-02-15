@@ -1,17 +1,13 @@
-# Updates Policy Configuration
+# Policy Validation
 
-### UPDATES **POLICY CONFIGURATION**
+### VALIDATES POLICY
 
-{% swagger method="put" path="" baseUrl="/policies/{policyId}" summary="Updates policy configuration" %}
+{% swagger method="post" path="" baseUrl="/policies/validate" summary="Validates policy" %}
 {% swagger-description %}
-Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+Validates selected policy. Only users with the Root Authority role are allowed to make the request
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-Selected policy ID
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" type="application/json" required="true" %}
+{% swagger-parameter in="body" type="application/jsonn" required="true" %}
 Object that contains policy configuration
 {% endswagger-parameter %}
 
@@ -21,7 +17,7 @@ Object that contains policy configuration
     content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyConfig'
+                $ref: '#/components/schemas/ValidatePolicy'
 }
 ```
 {% endswagger-response %}

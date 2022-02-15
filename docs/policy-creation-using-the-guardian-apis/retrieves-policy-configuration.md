@@ -2,44 +2,50 @@
 
 ### **RETRIEVES POLICY CONFIGURATION**
 
-**Description:** Retrieves policy configuration for the specified policy ID.&#x20;
+{% swagger method="get" path="/policies/{policyId}" baseUrl="/" summary="Retrieves policy configuration" %}
+{% swagger-description %}
+Retrieves policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+{% endswagger-description %}
 
-Only users with the Root Authority role are allowed to make the request.
+{% swagger-parameter in="query" name="policyID" type="String" required="true" %}
+Selected policy ID
+{% endswagger-parameter %}
 
-`GET` /policies/{policyId}
-
-**Request body:**
-
-```
-- in: path
-          name: policyId
-          schema:
-            type: string
-          required: true
-          description: Selected policy ID.
-      summary: Retrieves policy configuration.
-      security:
-      - bearerAuth: []
-```
-
-**Response body:**
-
-```
-200:
-          description: Successful operation.
-          content:
+{% swagger-response status="200: OK" description="" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyConfig'
-401:
-          description: Unauthorized.
-403:
-          description: Forbidden.
-500:
-          description: Internal server error.
-          content:
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="401: Unauthorized" description="" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+}
 ```
+{% endswagger-response %}
+{% endswagger %}

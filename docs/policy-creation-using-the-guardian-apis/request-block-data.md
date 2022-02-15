@@ -1,18 +1,18 @@
-# Updates Policy Configuration
+# Request Block Data
 
-### UPDATES **POLICY CONFIGURATION**
+### REQUESTING BLOCK DATA
 
-{% swagger method="put" path="" baseUrl="/policies/{policyId}" summary="Updates policy configuration" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="Requests block data" %}
 {% swagger-description %}
-Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+Requests block data. Only users with a role that described in block are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}
 Selected policy ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" type="application/json" required="true" %}
-Object that contains policy configuration
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Selected block UUID
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -21,7 +21,7 @@ Object that contains policy configuration
     content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyConfig'
+                $ref: '#/components/schemas/PolicyBlockData'
 }
 ```
 {% endswagger-response %}
