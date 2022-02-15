@@ -1,6 +1,6 @@
 # Documents Workflow Block
 
-#### Available Documents Workflow Block Properties
+### Available Documents Workflow Block Properties
 
 | Block Property | Definition                                                                                             | Example Input                                                        |
 | -------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
@@ -11,7 +11,7 @@
 | Dependancies   | Automatic update. The block is automatically re-rendered if any of the linked components gets updated. | Select the apprioriate block from the dropdown.                      |
 | Data Type      | Specificy the table to request the data from.                                                          | Current options are: Verifiable Credential, DID, Approve, or Hedera. |
 
-#### Available Documents Workflow Block UI Properties
+### Available Documents Workflow Block UI Properties
 
 | UI Property        | Definition                                                                                                                                                                             |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -28,7 +28,7 @@
 | Dialogue Class     | Dialog style. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                                                       |
 | Bind Block         | Specifying a "bindBlock" field would result in the display of the linked block in side the dialog.. Needs for the field type to be a BLOCK or BUTTON with the Action type as DIALOGUE. |
 
-#### Available Documents Workflow Block Filter Properties
+### Available Documents Workflow Block Filter Properties
 
 | Filter Property    | Definition                                                                                  | Example Input                                                                                |
 | ------------------ | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |

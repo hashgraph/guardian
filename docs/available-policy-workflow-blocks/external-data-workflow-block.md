@@ -1,6 +1,6 @@
 # External Data Workflow Block
 
-#### Available External Data Workflow Block Properties
+### Available External Data Workflow Block Properties
 
 | Block Property | Definition                                                                                                                     | Example Input                                   |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |

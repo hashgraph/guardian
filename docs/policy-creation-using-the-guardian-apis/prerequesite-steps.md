@@ -2,7 +2,7 @@
 
 Prior to creating a policy there are a few steps that need to be done first. Please see below for the prerequesite steps:
 
-**New Root Authority registration**
+### **New Root Authority registration**
 
 `POST /api/v1/accounts/register`
 

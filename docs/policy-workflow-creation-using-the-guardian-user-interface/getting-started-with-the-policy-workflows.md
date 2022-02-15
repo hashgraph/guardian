@@ -1,4 +1,4 @@
-# Getting started
+# Getting Started with the Policy Workflows
 
 First, note that we are in the Policies Configuration Tab of the Guardian interface, and we have the role of the RootAuthority since only the RootAuthority can create a new policy.
 
@@ -8,7 +8,9 @@ Second, you click on the blue **Create Policy** button!
 
 When the pop-up appears on the screen, fill out all the fields and then click on “Ok”.
 
-**Note that the “tag” field is important to be able to reference this policy in possibly other policies as a dependent policy!**
+{% hint style="info" %}
+**Note :** The "tag" field is important to be able to reference this policy in possibly other policies as a dependent policy
+{% endhint %}
 
 ![](../.gitbook/assets/image.png)
 

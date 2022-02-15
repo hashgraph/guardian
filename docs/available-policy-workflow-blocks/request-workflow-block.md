@@ -1,6 +1,6 @@
 # Request Workflow Block
 
-#### Available Request Workflow Block Properties
+### Available Request Workflow Block Properties
 
 | Block Property   | Definition                                                                                                                                                   | Example Input                                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -13,7 +13,7 @@
 | ID Type          | Select the type of ID that is populated in the ID field of the Verifiable Credential document.                                                               | Current Options are: DID (creates a new DID), UUID (creates a new UUID), and Owner (which uses the DID of the current user). |
 | Stop Propagation | End processing here, don't pass control to the next block.                                                                                                   | Checked or Unchecked.                                                                                                        |
 
-#### Available Request Workflow Block UI Properties
+### Available Request Workflow Block UI Properties
 
 | UI Property          | Definition                                                                                                                                                                    |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
