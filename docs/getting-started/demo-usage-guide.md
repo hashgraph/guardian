@@ -27,7 +27,7 @@ There is also a _Custom Role_ which is called _User_. This role can be used to c
 
 **NOTE**
 
-There is a new feature as of version 1.0.2 which allows for the _Importing of Policies_ from the Root Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch. As of release 1.0.5 we have implemented the functionality to import a policy that has been uploaded to IPFS. This is done via a Hedera message ID. You will need to find the Hedera message ID for the demo policy in step 0 below. Temporarily, the importing of a policy .zip folder has been disable and will be restored in a future release.
+There is a new feature as of version 1.0.2 which allows for the _Importing of Policies_ from the Root Authority Policy Tab. When you import a policy you will be able to skip steps 4, 5, 6, and 7. The steps 4 through 7 will be applicable if you want to create a policy from scratch. As of release 1.0.5 we have implemented the functionality to import a policy that has been uploaded to IPFS. This is done via a Hedera message ID. You will need to find the Hedera message ID for the demo policy in step 6 below.
 
 4\. Next, we move over to the **Schemas** tab. Schemas are the structure of which Verifiable Credentials will be filled out. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create the following schemas: iRec registration applicant details, Inveter, and MRV Schemas. The current version of the solution allows you to either build schemas from scratch or import schemas. Please note, that when you build schemas from scratch and publish them, they will be uploaded into IPFS and then the message containing the IPFS CID is sent into the corresponding Hedera topic. In this guide, we have already uploaded sample schemas for you to use. To import the sample schemas, please click on the **Import** button and paste the following Hedera message IDs one by one:
 
@@ -39,7 +39,7 @@ There is a new feature as of version 1.0.2 which allows for the _Importing of Po
 
 Those Hedera message IDs correspond respectively to the iRec Application Details, Inveter, and MRV Schemas.
 
-Again this step is not needed if you import the policy as discussed above.
+Again this step is not needed if you import the entire policy (see step 6 and the discussion above).
 
 5\. The next step of the flow is to create a token. Click the **Tokens** tab and click on **Create Token.** Here, we can fill out the necessary token information and token parameters such as Fungible/Non-Fungible (for this demo flow we will select Non-Fungible), Freeze, KYC, etc. For purposes of this demo, let us keep everything selected. When you click "OK", this action triggers Hedera Token Service to create the token on Hedera's Testnet. Clicking on the "Token ID" will bring you to the Dragon Glass Hedera Testnet explorer to track all token activity.
 
