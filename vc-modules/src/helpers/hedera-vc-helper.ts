@@ -230,7 +230,7 @@ export class VCHelper {
      * 
      * @returns {boolean} - is verified
      */
-    public async verifyVC(vcDocument: HcsVcDocument<VcSubject> | any) {
+    public async verifyVC(vcDocument: HcsVcDocument<VcSubject> | any): Promise<boolean> {
         let vc: any;
         if (vcDocument && typeof vcDocument.toJsonTree === 'function') {
             vc = vcDocument.toJsonTree();

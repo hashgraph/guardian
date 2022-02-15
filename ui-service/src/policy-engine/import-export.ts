@@ -23,8 +23,8 @@ importExportAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, 
         res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
         res.setHeader('Content-type', 'application/zip');
         arcStream.pipe(res);
-    } catch(e) {
-        res.status(500).send({code: 500, message: e.message});
+    } catch (e) {
+        res.status(500).send({ code: 500, message: e.message });
     }
 });
 
@@ -101,12 +101,9 @@ importExportAPI.post('/import/message/preview', async (req: AuthenticatedRequest
         if (!zip) {
             throw new Error('file in body is empty');
         }
-
-        const guardians = new Guardians();
+        
         const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
-        const schemasIds = findAllEntities(policyToImport.policy.config, 'schema');
-        // const schemas = await guardians.getSchemaPreview(schemasIds);
-        // res.status(200).json({ ...policyToImport, schemas });
+        res.status(200).json(policyToImport);
     } catch (error) {
         res.status(500).json({ code: 500, message: error.message });
     }
