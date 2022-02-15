@@ -16,7 +16,9 @@ Prior to creating a policy there are a few steps that need to be done first. Ple
 }
 ```
 
-### **Login**
+****
+
+**Login**
 
 `POST /api/v1/accounts/login`
 
@@ -40,7 +42,9 @@ Prior to creating a policy there are a few steps that need to be done first. Ple
 }
 ```
 
-### **Hedera account creation**
+****
+
+**Hedera account creation**
 
 `GET /api/v1/demo/randomKey`
 
@@ -53,7 +57,9 @@ Prior to creating a policy there are a few steps that need to be done first. Ple
 }
 ```
 
-### **Address book creation**
+****
+
+**Address book creation**
 
 `PUT /api/v1/profile`
 
@@ -77,7 +83,9 @@ Prior to creating a policy there are a few steps that need to be done first. Ple
 }
 ```
 
-### **iRec schema creation**
+
+
+**iRec schema creation**
 
 `POST /api/v1/schemas`
 
@@ -109,7 +117,9 @@ Prior to creating a policy there are a few steps that need to be done first. Ple
 ]
 ```
 
-### **iRec schema publish**
+****
+
+**iRec schema publish**
 
 `PUT /api/v1/schemas/61ee7ecd9c02660014fa662e/publish`
 
@@ -119,7 +129,9 @@ Prior to creating a policy there are a few steps that need to be done first. Ple
 {"version":"1.0.0"}
 ```
 
-### **Token creation**
+****
+
+**Token creation**
 
 `POST /api/v1/tokens`
 
