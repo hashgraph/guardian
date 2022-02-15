@@ -1,6 +1,6 @@
 # Information Workflow Block
 
-#### Available Information Workflow Block Properties
+### Properties
 
 | Block Property   | Definition                                                                        | Example Input                                   |
 | ---------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -11,9 +11,7 @@
 | Dependancies     | Establish workflow dependancies that need to be completed prior.                  | Select the apprioriate block from the dropdown. |
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or Unchecked.                           |
 
-### Information Workflow Block
-
-#### Available Information Workflow Block UI Properties
+### UI Properties
 
 | UI Property | Definition                                                                                            |
 | ----------- | ----------------------------------------------------------------------------------------------------- |

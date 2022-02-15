@@ -6,32 +6,43 @@
 
 Only users with the Root Authority role are allowed to make the request.
 
-`POST /policies`
+{% swagger method="post" path="" baseUrl="/policies" summary="Creates a new policy" %}
+{% swagger-description %}
+Creates a new policy. Only users with the Root Authority role are allowed to make the request
+{% endswagger-description %}
 
-**Request body:**
+{% swagger-parameter in="body" type="application/json" required="true" %}
+Object that contains policy configuration.
+{% endswagger-parameter %}
 
+{% swagger-response status="200: OK" description="Successful operation" %}
+
+{% endswagger-response %}
+
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+```javascript
+{
+    // Response
+}
 ```
-description: Object that contains policy configuration.
-required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PolicyConfig"
-```
+{% endswagger-response %}
 
-**Response body:**
-
+{% swagger-response status="403: Forbidden" description="Forbidden" %}
+```javascript
+{
+    // Response
+}
 ```
-200:
-         description: Successful operation.
-401:
-          description: Unauthorized.
-403:
-          description: Forbidden.
-500:
-          description: Internal server error.
-          content:
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal server error" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}

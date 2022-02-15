@@ -1,6 +1,6 @@
 # Action Workflow Block
 
-#### Available Action Workflow Block Properties
+### Properties
 
 | Block Property   | Definition                                                                        | Example Input                                                                   |
 | ---------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -12,7 +12,7 @@
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                                                           |
 | Type             | Specific the type of action workflow action block.                                | Current options are: SELECTOR (select an action) and DOWNLOAD (download files). |
 
-#### Available Action Workflow Block UI Properties
+### UI Properties
 
 | UI Property    | Definition                                                                                                                                                                                                                                                                                      |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

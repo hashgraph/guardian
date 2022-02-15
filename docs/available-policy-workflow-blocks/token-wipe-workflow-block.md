@@ -1,6 +1,6 @@
 # Token Wipe Workflow Block
 
-#### Available Mint Workflow Block Properties
+### Properties
 
 | Block Property   | Definition                                                                        | Example Input                                   |
 | ---------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -11,7 +11,7 @@
 | Dependancies     | Establish workflow dependancies that need to be completed prior.                  | Select the apprioriate block from the dropdown. |
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                           |
 
-#### Available Token Wipe Workflow Block UI Properties
+### UI Properties
 
 | UI Property | Definition                                                                 |
 | ----------- | -------------------------------------------------------------------------- |
