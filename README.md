@@ -196,6 +196,14 @@ cd message-broker
 npm run test
 ```
 
+### API Tests
+
+To run the API tests you need to build the application as described in the Installation section and fill
+all .env files in the api-tests/configs folder. Then run this command in the api-tests directory:
+```
+npm run test
+```
+
 ([back to top](broken-reference))
 
 For complete documentation on following points. Please refer https://github.com/hashgraph/guardian/tree/main/docs
