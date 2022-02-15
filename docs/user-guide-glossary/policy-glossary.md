@@ -1,0 +1,17 @@
+# Policy Glossary
+
+Next, we discuss the terms that need to be understood to create Policies within the Guardian framework:
+
+| Term               | Definition                                                                                             | Example                                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Block              | Either a Policy Workflow or a Policy Action                                                            | MRVDataVerification (Policy Workflow)                                                                                           |
+| `children`         | Defines a list of Blocks that are grouped into a Policy Workflow                                       | List of Blocks                                                                                                                  |
+| `defaultActive`    | Determines if Policy Workflow or a Policy Action can be executed                                       | `true`                                                                                                                          |
+| `permissions`      | Security Policy associated with a specific role                                                        | `ROOT_AUTHORITY`                                                                                                                |
+| `blockType`        | Specifies the type of Policy Workflow or Policy Action                                                 | `interfaceContainerBlock` (policy workflow name)                                                                                |
+| `uiMetaData`       | Specifies the data of the policy workflow and/or Policy Action to be displayed                         | `type: header___` `fields:___________` `name: document.issuer` `title: Owner_____` `type: text`                                 |
+| `tag`              | Specifies the ID of a policy action which can be referenced in other blocks as a dependency            | `Request`                                                                                                                       |
+| `schema`           | Defines the data schema for a block                                                                    | `Installer` or `MRV`                                                                                                            |
+| `dataType`         | Specifies the Type of data used in the Block                                                           | `source`                                                                                                                        |
+| `dependencies`     | Specifies which blocks `tag` or state transition rules `stateMutation`                                 | See `tag` for referecning other Policy actions and `stateMutation` is a specific example of the name of a state transition rule |
+| `onlyOwnDocuments` | Specifies whether a block applies to only those documents owned by the role specified in `permissions` | `true` or `false`                                                                                                               |

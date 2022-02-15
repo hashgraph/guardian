@@ -1,13 +1,14 @@
 import { Guardians } from '@helpers/guardians';
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { HcsVcDocument, HederaHelper, VcSubject } from 'vc-modules';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { StateContainer } from '@policy-engine/state-container';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
 
 @BasicBlock({
     blockType: 'sendToGuardian',
@@ -24,19 +25,19 @@ export class SendToGuardianBlock {
     private users: Users;
 
     async documentSender(state, user): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
-       
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
+
         let document = state.data;
         document.policyId = ref.policyId;
         document.tag = ref.tag;
 
-        if (ref.options.forceNew) { 
+        if (ref.options.forceNew) {
             document = { ...document };
             document.id = undefined;
             state.data = document;
         }
 
-        let result;
+        let result:any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const doc = this.convertDocument(document, 'vc-documents', ref)
@@ -63,34 +64,11 @@ export class SendToGuardianBlock {
     }
 
     async runAction(state, user) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
-
+        console.log("send-to-guardian-block runAction");
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyBlock>(this);
         await this.documentSender(state, user);
-
-        if (ref.options.stopPropagation) {
-            return;
-        }
-        const currentIndex = ref.parent.children.findIndex(el => this === el);
-        const nextBlock = ref.parent.children[currentIndex + 1];
-        if (nextBlock) {
-            if(user) {
-                const target = ref.parent;
-                const _state = StateContainer.GetBlockState(target.uuid, user);
-                _state.index = currentIndex + 1;
-                await StateContainer.SetBlockState(target.uuid, _state, user, null); 
-            }
-            if (nextBlock.runAction) {
-                await nextBlock.runAction(state, user);
-            } else {
-
-            }
-        } else {
-            console.log("last block")
-            const target = ref.parent;
-            const _state = StateContainer.GetBlockState(target.uuid, user);
-            _state.index = 0;
-            await StateContainer.SetBlockState(target.uuid, _state, user, null);
-        }
+        await ref.runNext(user, state);
+        ref.updateBlock(state, user, '');
     }
 
     convertDocument(document: any, newType: string, ref: any) {
@@ -101,12 +79,15 @@ export class SendToGuardianBlock {
                 return {
                     hash: vc.toCredentialHash(),
                     owner: document.owner,
+                    assign: document.assign,
                     document: vc.toJsonTree(),
-                    status: document.status || DocumentStatus.NEW,
+                    hederaStatus: document.status || DocumentStatus.NEW,
                     signature: document.signature || DocumentSignature.NEW,
                     type: ref.options.entityType,
                     policyId: ref.policyId,
-                    tag: ref.tag
+                    tag: ref.tag,
+                    option: document.option,
+                    schema: document.schema
                 };
             }
             case 'approve': {
@@ -127,10 +108,16 @@ export class SendToGuardianBlock {
             .setOperator(userID, userKey)
             .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
         const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
-        console.log("vcTopic", addressBook.vcTopic, vc.toCredentialHash());
         const result = await hederaHelper.DID.createVcTransaction(vc, userKey);
-        document.status = result.getOperation();
-        console.log("status", document.status, result.getCredentialHash());
+        document.hederaStatus = result.getOperation();
         return document;
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
+
+        if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+        }
     }
 }

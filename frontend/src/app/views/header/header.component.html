@@ -1,0 +1,56 @@
+<div class="content header">
+  <mat-toolbar color="primary">
+    <span class="btn-home" (click)="onHome()">Guardian</span>
+
+    <div *ngIf="links" class="nav-bar">
+      <nav mat-tab-nav-bar backgroundColor="primary" animationDuration="0ms">
+        <a mat-tab-link *ngFor="let link of links" (click)="rout(link)" [disabled]="link.disabled"
+          [active]="isActive(link)" [attr.hidden]="isHidden(link)"> {{link.name}} </a>
+      </nav>
+    </div>
+
+    <span class="example-spacer"></span>
+
+    <button mat-icon-button class="user-content" [matMenuTriggerFor]="menu">
+      <div class="user-info">
+        <div *ngIf="username; else notLogged" class="example-icon user-name">
+          <span>{{username}}</span>
+        </div>
+        <ng-template #notLogged>
+          <div class="example-icon admin-panel">
+            <span>Demo Admin Panel</span>
+          </div>
+        </ng-template>
+        <div class="user-info-icon">
+          <mat-icon>{{menuIcon}}</mat-icon>
+        </div>
+      </div>
+    </button>
+
+    <mat-menu #menu="matMenu">
+      <!-- <button *ngIf="!isLogin" mat-menu-item (click)="logIn()">Log in</button> -->
+      <!-- <button *ngIf="isLogin" mat-menu-item (click)="profile()">Profile</button> -->
+      <button *ngIf="isLogin" mat-menu-item (click)="logOut()">Log out</button>
+      <div *ngIf="!isLogin" mat-menu-item style="
+          background: white;
+          height: 270px;
+          width: 409px;
+          border-radius: 30px;
+          overflow: scroll;">
+        <div class="debug-user">
+          <button mat-raised-button (click)="authState.doLogin('RootAuthority','test')">Root Authority</button>
+          <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>
+          <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
+          <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>
+        </div>
+        <div class="debug-user">
+          <div class="current-user" *ngFor="let user of testUsers$ | async"
+            (click)="authState.doLogin(user.username, 'test')">
+            <div class="current-user-name">{{user.username}}</div>
+            <div class="current-user-role">{{user.role}}</div>
+          </div>
+        </div>
+      </div>
+    </mat-menu>
+  </mat-toolbar>
+</div>

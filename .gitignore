@@ -1,6 +1,8 @@
 authentication-service/node_modules/
 guardian-service/node_modules/
 guardian-service/dist/
+ipfs-client/node_modules/
+ipfs-client/dist/
 message-broker/node_modules/
 ui-service/node_modules/
 ui-service/dist/
@@ -23,3 +25,7 @@ interfaces/node_modules/
 www-data/
 ui-service/.vs/
 /test_results/
+ipfs-client/package-lock.json
+/api-tests/node_modules/
+/api-tests/package-lock.json
+guardian-service/config.json

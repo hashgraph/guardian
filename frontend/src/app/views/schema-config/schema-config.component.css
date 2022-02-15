@@ -9,7 +9,7 @@
 .loading {
     background: #fff;
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     top: 0;
     left: 0;
     bottom: 0;
@@ -102,7 +102,7 @@ a {
     cursor: pointer;
     padding-left: 22px;
     position: relative;
-    width: 40px;
+    width: 125px;
     display: inline-block;
 }
 .btn-settings:hover {
@@ -130,6 +130,7 @@ a {
 
 .schemes-table .mat-column-uuid,
 .schemes-table .mat-column-type,
+.schemes-table .mat-column-version,
 .schemes-table .mat-column-entity {
     padding-left: 10px;
 }
@@ -166,4 +167,19 @@ a {
 .schemes-table .mat-column-delete {
     width: 90px;
     padding-left: 10px;
+}
+
+.schemes-table .mat-column-export {
+    width: 110px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
 }

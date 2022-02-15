@@ -1,0 +1,34 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Available Roles</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.roles" [disabled]="readonly" multiple>
+                <mat-option *ngFor="let item of roles" [value]="item">{{item}}</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+            <mat-icon>expand_more</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">UI</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Title</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Description</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
+        </td>
+    </tr>
+</table>

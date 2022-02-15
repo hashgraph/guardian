@@ -1,7 +1,8 @@
-import {ContainerBlock, DependenciesUpdateHandler} from '@policy-engine/helpers/decorators';
-import {PolicyBlockHelpers} from '@policy-engine/helpers/policy-block-helpers';
-import {BlockInitError} from '@policy-engine/errors';
-import {StateContainer} from '@policy-engine/state-container';
+import {ContainerBlock, StateField} from '@policy-engine/helpers/decorators';
+import {BlockActionError} from '@policy-engine/errors';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {AnyBlockType, IPolicyContainerBlock} from '@policy-engine/policy-engine.interface';
+import {IAuthUser} from '@auth/auth.interface';
 
 /**
  * Step block
@@ -11,38 +12,61 @@ import {StateContainer} from '@policy-engine/state-container';
     commonBlock: false
 })
 export class InterfaceStepBlock {
-    private init(): void {
-        const {options, uuid, blockType} = PolicyBlockHelpers.GetBlockRef(this);
+    @StateField()
+    state: {[key: string]: any} = {index: 0};
 
-        if (!options.uiMetaData) {
-            throw new BlockInitError(`Fileld "uiMetaData" is required`, blockType, uuid);
+    async changeStep(user, data, target) {
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        let blockState;
+        if (!this.state.hasOwnProperty(user.did)) {
+            blockState = {};
+            this.state[user.did] = blockState;
+        } else {
+            blockState = this.state[user.did];
         }
 
-    }
-
-    @DependenciesUpdateHandler()
-    async handler(uuid, state, user, tag) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
-        const blockState = StateContainer.GetBlockState(ref.uuid, user);
-        blockState.index = (blockState.index || 0) + 1;
-        blockState.data = {};
-        if (
-            ref.options.cyclic &&
-            (blockState.index >= ref.children.length)
-        ) {
-            blockState.index = 0;
+        if (target) {
+            blockState.index = ref.children.indexOf(target);
+            if (blockState.index === -1) {
+                throw new BlockActionError('Bad child block', ref.blockType, ref.uuid);
+            }
+        } else {
+            blockState.index = ref.options.cyclic ? 0 : ref.children.length - 1;
+            blockState.data = {};
         }
-        await StateContainer.SetBlockState(ref.uuid, blockState, user, null, true);
 
+        ref.updateBlock(blockState, user);
     }
 
     async getData(user): Promise<any> {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
-        const state = StateContainer.GetBlockState(ref.uuid, user);
-        if (state.index === undefined) {
-            state.index = 0;
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        let blockState;
+        if (!this.state.hasOwnProperty(user.did)) {
+            blockState = {};
+            this.state[user.did] = blockState;
+        } else {
+            blockState = this.state[user.did];
+        }
+        if (blockState.index === undefined) {
+            blockState.index = 0;
         }
         const {options} = ref;
-        return {uiMetaData: options.uiMetaData, index: state.index};
+        return {uiMetaData: options.uiMetaData, index: blockState.index};
+    }
+
+    public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyContainerBlock>(this);
+        const childIndex = ref.children.indexOf(child);
+        if (childIndex === -1) {
+            throw new BlockActionError('Bad block child', ref.blockType, ref.uuid);
+        }
+
+        let index = 0;
+        const state = this.state[user.did];
+        if (state) {
+            index = state.index;
+        }
+        return index === childIndex;
+
     }
 }

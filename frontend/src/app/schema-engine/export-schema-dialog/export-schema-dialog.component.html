@@ -1,0 +1,48 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Export dialog
+        </div>
+        <div class="g-dialog-actions"></div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <div *ngIf="loading" class="loading">
+                <mat-spinner></mat-spinner>
+            </div>
+
+            <div *ngIf="schema" class="policy">
+                <div class="policy-header">{{schema.name}}</div>
+
+                <div class="delimiter"></div>
+
+                <div *ngIf="schema.description">
+                    <div class="field-name">Description</div>
+                    <div class="field-value">{{schema.description}}</div>
+                </div>
+                
+                <div *ngIf="schema.version">
+                    <div class="field-name">Version</div>
+                    <div class="field-value">{{schema.version}}</div>
+                </div>
+
+                <div class="field">
+                    <div class="field-name">Creator</div>
+                    <div class="field-value">{{schema.owner}}</div>
+                </div>
+
+                <div class="delimiter"></div>
+
+                <div class="container">
+                    <button mat-raised-button color="primary" [cdkCopyToClipboard]="schema.messageId" [disabled]="!schema.messageId">Copy message identifier</button>
+                    <button mat-raised-button color="primary" (click)="saveToFile()">Save to file</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

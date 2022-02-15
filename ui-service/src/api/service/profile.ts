@@ -1,288 +1,249 @@
-import {Guardians} from '@helpers/guardians';
-import {Users} from '@helpers/users';
-import {VcHelper} from '@helpers/vcHelper';
-import {KeyType, Wallet} from '@helpers/wallet';
-import {Request, Response, Router} from 'express';
-import {SchemaEntity, UserRole, UserState} from 'interfaces';
-import {HederaHelper} from 'vc-modules';
+import { Guardians } from '@helpers/guardians';
+import { Users } from '@helpers/users';
+import { VcHelper } from '@helpers/vcHelper';
+import { KeyType, Wallet } from '@helpers/wallet';
+import { Request, Response, Router } from 'express';
+import { DidDocumentStatus, IUser, SchemaEntity, UserRole } from 'interfaces';
+import { HederaHelper } from 'vc-modules';
+
+async function wait(s: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve();
+        }, s * 1000);
+    })
+}
+
+async function createUserProfile(profile: IUser) {
+    const guardians = new Guardians();
+
+    const addressBook = await guardians.getRootAddressBook();
+    const hederaHelper = HederaHelper
+        .setOperator(profile.hederaAccountId, profile.hederaAccountKey)
+        .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
+
+    const { hcsDid, did, document } = await hederaHelper.DID.createDid(profile.hederaAccountKey);
+
+    await guardians.setDidDocument({ did, document });
+
+    hederaHelper.DID.createDidTransaction(hcsDid).then(function (message: any) {
+        const did = message.getDid();
+        const operation = message.getOperation();
+        guardians.setDidDocument({ did, operation });
+    }, function (error) {
+        console.error('createDidTransaction:', error);
+        guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
+    });
+
+    return did;
+}
+
+async function createRootAuthorityProfile(profile: IUser) {
+    const guardians = new Guardians();
+    const vcHelper = new VcHelper();
+
+    const addressBook = await HederaHelper
+        .newNetwork(
+            profile.hederaAccountId,
+            profile.hederaAccountKey,
+            profile.addressBook.appnetName,
+            profile.addressBook.didServerUrl,
+            profile.addressBook.didTopicMemo,
+            profile.addressBook.vcTopicMemo,
+        );
+
+    await wait(15);
+
+    const hederaHelper = HederaHelper
+        .setOperator(profile.hederaAccountId, profile.hederaAccountKey)
+        .setAddressBook(
+            addressBook.addressBookId,
+            addressBook.didTopicId,
+            addressBook.vcTopicId,
+        );
+
+    const { hcsDid, did, document } = await hederaHelper.DID.createDid(profile.hederaAccountKey);
+
+    const vc: any = profile.vcDocument || {};
+    vc.id = did;
+
+    const vcDocument = await vcHelper.createVC(did, profile.hederaAccountKey, vc);
+
+    await guardians.setVcDocument({
+        hash: vcDocument.toCredentialHash(),
+        owner: did,
+        document: vcDocument.toJsonTree(),
+        type: SchemaEntity.ROOT_AUTHORITY
+    });
+
+    await guardians.setRootConfig({
+        hederaAccountId: profile.hederaAccountId,
+        hederaAccountKey: profile.hederaAccountKey,
+        addressBook: addressBook.addressBookId,
+        didTopic: addressBook.didTopicId,
+        vcTopic: addressBook.vcTopicId,
+        appnetName: profile.addressBook.appnetName,
+        didServerUrl: profile.addressBook.didServerUrl,
+        didTopicMemo: profile.addressBook.didTopicMemo,
+        vcTopicMemo: profile.addressBook.vcTopicMemo,
+        did: did,
+        state: 1
+    });
+
+    await guardians.setDidDocument({ did, document });
+
+    hederaHelper.DID.createVcTransaction(vcDocument, profile.hederaAccountKey).then(function (message: any) {
+        const hash = message.getCredentialHash();
+        const operation = message.getOperation();
+        guardians.setVcDocument({ hash, operation });
+    }, function (error: any) {
+        console.error("createVcTransaction:", error);
+    });
+
+    hederaHelper.DID.createDidTransaction(hcsDid).then(function (message: any) {
+        const did = message.getDid();
+        const operation = message.getOperation();
+        guardians.setDidDocument({ did, operation });
+    }, function (error: any) {
+        console.error('createDidTransaction:', error);
+        guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
+    });
+
+    await wait(15);
+
+    return did;
+}
 
 /**
  * User profile route
  */
 export const profileAPI = Router();
 
-profileAPI.get('/user-balance', async (req: Request, res: Response) => {
-    const users = new Users();
-    const wallet = new Wallet();
-
-    const user = await users.currentUser(req);
-    if (!(await users.permission(user, [UserRole.INSTALLER, UserRole.ORIGINATOR]))) {
-        console.log(user)
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-    }
-
-    if (!user.hederaAccountId) {
-        res.json('null');
-        return;
-    }
-
-    const installerKey = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-
-    try {
-        const balance = await HederaHelper
-            .setOperator(user.hederaAccountId, installerKey).SDK
-            .balance(user.hederaAccountId);
-        res.json(balance);
-    } catch (error) {
-        res.json('null');
-    }
-});
-
-profileAPI.get('/user-state', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    const user = await users.currentUser(req);
-    if (!user) {
-        res.status(500).json({code: 500, message: 'Bad user'});
-        return;
-    }
-
-
-    let state = user.state;
-    if (state == UserState.HEDERA_FILLED) {
-        const didDocuments = await guardians.getDidDocuments({
-            did: user.did
-        });
-        const didDocument = didDocuments[0];
-        if (didDocument && didDocument.status == 'CREATE') {
-            state = UserState.HEDERA_CONFIRMED;
-        }
-    }
-
-    if (state == UserState.PROFILE_FILLED) {
-        const vcDocuments = await guardians.getVcDocuments({
-            owner: user.did,
-            type: SchemaEntity.INSTALLER
-        });
-        const vcDocument = vcDocuments[0];
-        if (vcDocument && vcDocument.status == 'ISSUE') {
-            state = UserState.CONFIRMED;
-        }
-    }
-
-    if (user.state != state) {
-        user.state = state;
-        await users.save(user);
-    }
-
-    res.json({
-        username: user.username,
-        did: user.did,
-        state: user.state,
-        role: user.role
-    });
-});
-
 profileAPI.get('/', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
+    try {
+        const guardians = new Guardians();
+        const users = new Users();
 
-    const user = await users.currentUser(req);
-    if (!(await users.permission(user, [UserRole.INSTALLER, UserRole.ORIGINATOR]))) {
-        res.status(403).send();
-        return;
-    }
+        const user = await users.currentUser(req);
 
-    let didDocument: any, vcDocuments: any[];
-
-    const index = {}
-    index[UserState.CREATED] = 1;
-    index[UserState.WALLET_FILLED] = 2;
-    //
-    index[UserState.HEDERA_FILLED] = 3;
-    index[UserState.HEDERA_CONFIRMED] = 4;
-    //
-    index[UserState.PROFILE_FILLED] = 5;
-    index[UserState.CONFIRMED] = 6;
-
-    if (index[user.state] > 4) {
-        const _vcDocuments = await guardians.getVcDocuments({
-            owner: user.did,
-            type: SchemaEntity.INSTALLER
-        });
-        vcDocuments = [];
-        for (let i = 0; i < _vcDocuments.length; i++) {
-            const vcDocument = _vcDocuments[i];
-            if (vcDocument.status == 'ISSUE') {
-                vcDocuments.push(vcDocument);
+        let didDocument: any = null;
+        if (user.did) {
+            const didDocuments = await guardians.getDidDocuments({
+                did: user.did
+            });
+            if (didDocuments) {
+                didDocument = didDocuments[didDocuments.length - 1];
             }
         }
-        if (!vcDocuments.length) {
-            user.state = UserState.PROFILE_FILLED;
-            vcDocuments = null;
-        } else if (index[user.state] < 7) {
-            user.state = UserState.CONFIRMED;
+
+        let vcDocument: any = null;
+        if (user.did) {
+            const vcDocuments = await guardians.getVcDocuments({
+                owner: user.did,
+                type: SchemaEntity.ROOT_AUTHORITY
+            });
+            if (vcDocuments) {
+                vcDocument = vcDocuments[vcDocuments.length - 1];
+            }
         }
-    }
 
-    if (index[user.state] > 2) {
-        const didDocuments = await guardians.getDidDocuments({
-            did: user.did
-        });
-        didDocument = didDocuments[0];
-
-        if (!didDocument || didDocument.status != 'CREATE') {
-            user.state = UserState.HEDERA_FILLED;
-            didDocument = null;
-        } else if (index[user.state] < 5) {
-            user.state = UserState.HEDERA_CONFIRMED;
+        let addressBook: any = null;
+        if (user.role === UserRole.ROOT_AUTHORITY) {
+            const root = await guardians.getRootConfig(user.did);
+            if (root) {
+                addressBook = {
+                    appnetName: root.appnetName,
+                    addressBook: root.addressBook,
+                    didTopic: root.didTopic,
+                    vcTopic: root.vcTopic,
+                    didServerUrl: root.didServerUrl,
+                    didTopicMemo: root.didTopicMemo,
+                    vcTopicMemo: root.vcTopicMemo,
+                }
+            }
         }
-    }
 
-    const result = {
-        username: user.username,
-        did: user.did,
-        state: user.state,
-        role: user.role,
-        walletToken: user.walletToken,
-        hederaAccountId: user.hederaAccountId,
-        didDocument: didDocument,
-        vcDocuments: vcDocuments
+        const result: IUser = {
+            confirmed: !!(didDocument && didDocument.status == DidDocumentStatus.CREATE),
+            failed: !!(didDocument && didDocument.status == DidDocumentStatus.FAILED),
+            username: user.username,
+            role: user.role,
+            hederaAccountId: user.hederaAccountId,
+            hederaAccountKey: null,
+            did: user.did,
+            didDocument: didDocument,
+            vcDocument: vcDocument,
+            addressBook: addressBook
+        };
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ code: 500, message: error });
     }
-
-    res.json(result)
 });
 
-profileAPI.post('/set-hedera-profile', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-    const wallet = new Wallet();
-
+profileAPI.put('/', async (req: Request, res: Response) => {
     try {
+        const users = new Users();
+        const wallet = new Wallet();
+
+        const profile: IUser = req.body;
         const user = await users.currentUser(req);
-        if (!(await users.permission(user, [UserRole.INSTALLER, UserRole.ORIGINATOR]))) {
-            res.status(403).send();
+
+        if (!profile.hederaAccountId) {
+            res.status(500).json({ code: 403, message: 'Invalid Hedera Account Id' });
+            return;
+        }
+        if (!profile.hederaAccountKey) {
+            res.status(500).json({ code: 403, message: 'Invalid Hedera Account Key' });
             return;
         }
 
-        const root = await guardians.getRootAddressBook()
-
-        const {hederaAccountId, hederaAccountKey} = req.body;
-        const hederaHelper = HederaHelper
-            .setOperator(hederaAccountId, hederaAccountKey)
-            .setAddressBook(root.addressBook, root.didTopic, root.vcTopic);
-
-        const {hcsDid, did, document} = await hederaHelper.DID.createDid(hederaAccountKey);
+        let did: string;
+        if (user.role === UserRole.ROOT_AUTHORITY) {
+            if (!profile.addressBook) {
+                res.status(500).json({ code: 403, message: 'Invalid Address Book' });
+                return;
+            }
+            did = await createRootAuthorityProfile(profile);
+        } else if (user.role === UserRole.USER) {
+            did = await createUserProfile(profile);
+        }
 
         await users.updateCurrentUser(req, {
             did: did,
-            hederaAccountId: hederaAccountId,
-            state: UserState.HEDERA_FILLED
+            hederaAccountId: profile.hederaAccountId
         });
 
-        await wallet.setKey(user.walletToken, KeyType.KEY, did, hederaAccountKey);
+        await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
 
-        const result = await guardians.setDidDocument({did, document});
-
-        hederaHelper.DID.createDidTransaction(hcsDid).then(function (message: any) {
-            const did = message.getDid();
-            const operation = message.getOperation();
-            console.log(did, operation);
-            guardians.setDidDocument({ did, operation });
-        }, function (error) {
-            console.error(error);
-        });
-
-        res.json(result);
+        res.status(200).json(null);
     } catch (error) {
-        res.status(500).json({code: 500, message: String(error)});
+        console.error(error);
+        res.status(500).json({ code: 500, message: error });
     }
 });
 
-profileAPI.get('/get-root-authority', async (req: Request, res: Response) => {
-    const users = new Users();
-
+profileAPI.get('/balance', async (req: Request, res: Response) => {
     try {
-        const rootAuthorities = await users.getUsersByRole(UserRole.ROOT_AUTHORITY);
-        const map = rootAuthorities.map((e) => ({
-            username: e.username,
-            did: e.did
-        }));
-        res.status(200).json(map);
-    } catch (error) {
-        res.status(500).json({code: 500, message: String(error)});
-    }
-});
+        const users = new Users();
+        const wallet = new Wallet();
 
-profileAPI.post('/set-vc-profile', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-    const wallet = new Wallet();
-    const vcHelper = new VcHelper();
-
-
-    try {
         const user = await users.currentUser(req);
-        if (!(await users.permission(user, [UserRole.INSTALLER, UserRole.ORIGINATOR]))) {
-            res.status(403).send();
+        if (!user.hederaAccountId) {
+            res.json('Invalid Hedera Account Id');
             return;
         }
 
-        const {
-            schema,
-            options,
-            rootAuthority,
-            policyId,
-        } = req.body;
+        const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
 
-        const schemaDocument: any = (await guardians.getSchemes({type: schema}))[0];
-        if (!schemaDocument || schemaDocument.entity != SchemaEntity.INSTALLER) {
-            res.status(500).json({code: 500, message: 'Invalid scheme'});
-            return;
-        }
-
-        const installerDID = user.did;
-        const installerKey = await wallet.getKey(user.walletToken, KeyType.KEY, installerDID);
-
-        // did generation
-        const installer = options;
-        installer.id = installerDID;
-        installer.policyId = policyId;
-
-        const vc = await vcHelper.createCredential(installerDID, schema, installer);
-
-        const documents = [{
-            owner: installerDID,
-            approver: rootAuthority,
-            policyId: policyId,
-            type: SchemaEntity.INSTALLER,
-            document: vc
-        }];
-
-        await guardians.setApproveDocuments(documents);
-
-        user.state = UserState.PROFILE_FILLED;
-        await users.save(user);
-
-        res.status(200).send(user);
+        const balance = await HederaHelper
+            .setOperator(user.hederaAccountId, key).SDK
+            .balance(user.hederaAccountId);
+        res.json(balance);
     } catch (error) {
-        console.log(error);
-        res.status(500).json({code: 500, message: String(error)});
+        console.error(error);
+        res.json('null');
     }
 });
 
-profileAPI.get('/random-key', async (req: Request, res: Response) => {
-    try {
-        const OPERATOR_ID = process.env.OPERATOR_ID;
-        const OPERATOR_KEY = process.env.OPERATOR_KEY;
-        const treasury = await HederaHelper.setOperator(OPERATOR_ID, OPERATOR_KEY).SDK.newAccount(40);
-        res.status(200).json({
-            id: treasury.id.toString(),
-            key: treasury.key.toString()
-        });
-    } catch (error) {
-        res.status(500).json({code: 500, message: error});
-    }
-});

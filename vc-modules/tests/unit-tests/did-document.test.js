@@ -2,22 +2,21 @@ const {
     HcsDidDocument
 } = require('../../dist/did-document');
 const {FileId} = require('@hashgraph/sdk');
-const {HcsDidRootKey, HcsDid, AddressBook} = require('did-sdk-js');
+const {HcsDidRootKey, HcsDid, AddressBook} = require('@hashgraph/did-sdk-js');
 const {expect, assert} = require('chai');
 const network = 'testnet';
 
 describe('HcsDidDocument', function() {
-    let didTopicId;
+    let addressBookFileId, didTopicId;
 
     before(async function () {
-        const ab = new AddressBook();
-        ab.setFileId('0.0.1');
-        didTopicId = ab.getFileId();
+        const ab = AddressBook.fromJson('{}', '0.0.1');
+        addressBookFileId = ab.getFileId();
     });
 
     it('Test fromDocumentBase', async function() {
         const privateKey = HcsDid.generateDidRootKey();
-        const did = new HcsDid(network, privateKey.publicKey, didTopicId);
+        const did = new HcsDid(network, privateKey.publicKey, addressBookFileId, didTopicId);
         const doc = did.generateDidDocument();
         const hcsDidDoc = HcsDidDocument.fromDocumentBase(doc);
 
@@ -32,11 +31,10 @@ describe('HcsDidDocument', function() {
 
     it('Test fromJson', async function() {
         const privateKey = HcsDid.generateDidRootKey();
-        const did = new HcsDid(network, privateKey.publicKey, didTopicId);
+        const did = new HcsDid(network, privateKey.publicKey, addressBookFileId, didTopicId);
         const doc = did.generateDidDocument();
         const didJson2 = doc.toJSON();
         const root2 = JSON.parse(didJson2);
-
 
         const hcsDidDoc = HcsDidDocument.fromJson(didJson2);
         const didJson = hcsDidDoc.toJSON();
@@ -47,7 +45,7 @@ describe('HcsDidDocument', function() {
 
     it('Test getDidDocument', async function() {
         const privateKey = HcsDid.generateDidRootKey();
-        const did = new HcsDid(network, privateKey.publicKey, didTopicId);
+        const did = new HcsDid(network, privateKey.publicKey, addressBookFileId, didTopicId);
         const doc = did.generateDidDocument();
         const hcsDidDoc = HcsDidDocument.fromDocumentBase(doc);
         const document = hcsDidDoc.getDidDocument();

@@ -5,159 +5,122 @@ import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Guardians } from '@helpers/guardians';
 import { findAllEntities } from '@helpers/utils';
-import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
+import { HederaMirrorNodeHelper } from 'vc-modules';
+import { IPFS } from '@helpers/ipfs';
 
 export const importExportAPI = Router();
 
-importExportAPI.get('/export/:policyId', async (req: AuthenticatedRequest, res: Response) => {
-    const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
-    const guardians = new Guardians();
-
-    const uuid = findAllEntities(policy.config, 'schema');
-    const tokenIds = findAllEntities(policy.config, 'tokenId');
-
-    const [schemas, tokens] = await Promise.all([
-        guardians.exportSchemes(uuid),
-        guardians.getTokens({ ids: tokenIds })
-    ]);
-
-    const schemaObjects:any[] = schemas.filter(s=> uuid.indexOf(s.uuid) != -1).map(s=> {
-        return {
-            uuid: s.uuid,
-            name: s.name,
-            relationships: s.relationships
-        }
-    });
-    const tokenObjects:any[] = tokens.map(s=> {
-        return {
-            tokenId: s.tokenId,
-            tokenName: s.tokenName,
-            tokenSymbol: s.tokenSymbol,
-        }
-    });
-
-    res.json({
-        schemas: schemaObjects,
-        tokens: tokenObjects,
-        policy
-    })
-});
-
-
-importExportAPI.post('/export/:policyId/download', async (req: AuthenticatedRequest, res: Response) => {
-    const guardians = new Guardians();
-    const zip = new JSZip();
-    const {schemas, tokens} = req.body;
-    const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
-
-    const [readySchemas, readyTokens] = await Promise.all([
-        guardians.exportSchemes(schemas.filter(item => item.selected).map(item => item.uuid)),
-        guardians.getTokens({ ids: tokens.filter(item => item.selected).map(item => item.tokenId) })
-    ]);
-
-    zip.folder('schemas')
-    for (let schema of readySchemas) {
-        zip.file(`schemas/${schema.name}.json`, JSON.stringify(schema));
-    }
-
-    zip.folder('tokens')
-    for (let token of tokens) {
-        zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
-    }
-    zip.file(`policy.json`, JSON.stringify(policy));
-
-    const arcStream = zip.generateNodeStream();
-
-    res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
-    res.setHeader('Content-type', 'application/zip');
-    arcStream.pipe(res);
-
-    // const data = {
-    //     schemas: [
-    //         {
-    //             id: ".......",
-    //             selected: true,
-    //         }
-    //     ],
-    //     tokens: [
-    //         {
-    //             id: ".......",
-    //             selected: true,
-    //             adminKey: true,
-    //             kycKey: true,
-    //             freezeKey: true,
-    //             wipeKey: true,
-    //             supplyKey: true,
-    //         }
-    //     ]
-    // }
-});
-
-importExportAPI.post('/import', async (req: AuthenticatedRequest, res: Response) => {
+importExportAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: Response) => {
     try {
-        let {policy, tokens, schemas} = req.body
-        const guardians = new Guardians();
-
-        const dateNow = '_' + Date.now();
-
-        const existingTokens = await guardians.getTokens({});
-        const existingSchemas = await guardians.getSchemes({});
-        for (let token of tokens) {
-            delete token.selected;
-        }
-        tokens = tokens.filter(token => existingTokens.includes(token.tokenId));
-        tokens = tokens.map(t => existingTokens.find(_t => t.tokenId === _t.tokenId));
-
-        for (let schema of schemas) {
-            const oldUUID = schema.uuid;
-            const newUUID = GenerateUUIDv4();
-            if (existingSchemas.map(schema => schema.uuid).includes(oldUUID)) {
-                schema.name = schema.name + dateNow;
-            }
-            schema.uuid = newUUID;
-            policy = JSON.parse(JSON.stringify(policy).replace(new RegExp(oldUUID, 'g'), newUUID));
+        const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
+        if (!policy) {
+            throw new Error(`Cannot export policy ${req.params.policyId}`);
         }
 
-        const policyRepository = getMongoRepository(Policy);
-        policy.policyTag = policy.tag + dateNow;
-        if (await policyRepository.findOne({name: policy.name})) {
-            policy.name = policy.name + dateNow;
-        }
-
-        delete policy.id;
-        delete policy.status;
-        await Promise.all([
-            Promise.all(tokens.map(token => guardians.setToken(token))),
-            guardians.importSchemes(schemas),
-            policyRepository.save(policyRepository.create(policy))
-        ]);
-
-        res.json(await policyRepository.find());
-    } catch (e) {
-        res.status(500).send(e);
+        const zip = await PolicyImportExportHelper.generateZipFile(policy);
+        const arcStream = zip.generateNodeStream();
+        res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
+        res.setHeader('Content-type', 'application/zip');
+        arcStream.pipe(res);
+    } catch(e) {
+        res.status(500).send({code: 500, message: e.message});
     }
 });
 
-importExportAPI.put('/import/upload', async (req: AuthenticatedRequest, res: Response) => {
-    const zip = new JSZip();
+importExportAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const policy = await getMongoRepository(Policy).findOne(req.params.policyId);
+        if (!policy) {
+            throw new Error(`Cannot export policy ${req.params.policyId}`);
+        }
 
-    const content = await zip.loadAsync(req.body);
+        res.status(200).send({
+            id: policy.id,
+            name: policy.name,
+            description: policy.description,
+            version: policy.version,
+            messageId: policy.messageId,
+            owner: policy.owner
+        })
+    } catch (e) {
+        res.status(500).send({ code: 500, message: e.message });
+    }
+});
 
-    let policyString = await content.files['policy.json'].async('string');
-    const schemaStringArray = await Promise.all(Object.entries(content.files)
-        .filter(file => !file[1].dir)
-        .filter(file => /^schemas\/.+/.test(file[0]))
-        .map(file => file[1].async('string')));
+importExportAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new Error('Policy ID in body is empty');
+        }
 
-    const tokensStringArray = await Promise.all(Object.entries(content.files)
-        .filter(file => !file[1].dir)
-        .filter(file => /^tokens\/.+/.test(file[0]))
-        .map(file => file[1].async('string')));
+        const ipfsHelper = new IPFS();
+        const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
+        const message = topicMessage.message;
+        const zip = await ipfsHelper.getFile(message.cid, "raw");
 
-    const policy = JSON.parse(policyString);
-    const tokens = tokensStringArray.map(item => JSON.parse(item));
-    const schemas = schemaStringArray.map(item => JSON.parse(item));
+        if (!zip) {
+            throw new Error('file in body is empty');
+        }
 
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
+        const policies = await PolicyImportExportHelper.importPolicy(policyToImport, req.user.did);
+        res.status(201).json(policies);
+    } catch (e) {
+        res.status(500).send({ code: 500, message: e.message });
+    }
+});
 
-    res.json({policy, tokens, schemas});
-})
+importExportAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const zip = req.body;
+        if (!zip) {
+            throw new Error('file in body is empty');
+        }
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
+        const policies = await PolicyImportExportHelper.importPolicy(policyToImport, req.user.did);
+        res.status(201).json(policies);
+    } catch (e) {
+        res.status(500).send({ code: 500, message: e.message });
+    }
+});
+
+importExportAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const messageId = req.body.messageId;
+        if (!messageId) {
+            throw new Error('Policy ID in body is empty');
+        }
+
+        const ipfsHelper = new IPFS();
+        const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
+        const message = topicMessage.message;
+        const zip = await ipfsHelper.getFile(message.cid, "raw");
+
+        if (!zip) {
+            throw new Error('file in body is empty');
+        }
+
+        const guardians = new Guardians();
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
+        const schemasIds = findAllEntities(policyToImport.policy.config, 'schema');
+        // const schemas = await guardians.getSchemaPreview(schemasIds);
+        // res.status(200).json({ ...policyToImport, schemas });
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+importExportAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const zip = req.body;
+        if (!zip) {
+            throw new Error('file in body is empty');
+        }
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
+        res.status(200).json(policyToImport);
+    } catch (error) {
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});

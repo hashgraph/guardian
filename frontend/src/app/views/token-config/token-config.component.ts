@@ -3,9 +3,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
-import { TokenDialog } from '../../components/dialogs/token-dialog/token-dialog.component';
+import { TokenDialog } from '../../components/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserState, Token } from 'interfaces';
+import { Token } from 'interfaces';
 
 /**
  * Page for creating tokens.
@@ -62,7 +62,7 @@ export class TokenConfigComponent implements OnInit {
             this.tokenId = "";
         }
         if (this.tokenId) {
-            this.tokenService.getUsers().subscribe((users) => {
+            this.auth.getUsers().subscribe((users) => {
                 this.users = users;
                 this.refreshAll(this.users);
                 setTimeout(() => {
@@ -85,9 +85,8 @@ export class TokenConfigComponent implements OnInit {
 
     loadProfile() {
         this.loading = true;
-        this.profileService.getCurrentState().subscribe((value) => {
-            const profile = value;
-            this.isConfirmed = !!profile && profile.state == UserState.CONFIRMED;
+        this.profileService.getProfile().subscribe((profile) => {
+            this.isConfirmed = !!(profile && profile.confirmed);
             if (this.isConfirmed) {
                 this.queryChange();
             } else {
@@ -107,7 +106,7 @@ export class TokenConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.tokenService.createToken(result).subscribe((data) => {
+                this.tokenService.create(result).subscribe((data) => {
                     this.tokens = data.map(e => new Token(e));
                     this.loading = false;
                 }, (e) => {
@@ -138,7 +137,7 @@ export class TokenConfigComponent implements OnInit {
 
     refresh(user: any) {
         user.loading = true;
-        this.tokenService.getAssociatedUsers(this.tokenId, user.username).subscribe((res) => {
+        this.tokenService.info(this.tokenId, user.username).subscribe((res) => {
             this.refreshUser(user, res);
             user.loading = false;
         }, (e) => {
@@ -158,14 +157,13 @@ export class TokenConfigComponent implements OnInit {
     getColor(status: string, reverseLogic: boolean) {
         if (!status) return "na";
         if (status === "n/a") return "na";
-        // if (status === "n/a") return "grey";
         else if (status === "Yes") return reverseLogic ? "red" : "green";
         else return reverseLogic ? "green" : "red";
     }
 
     freeze(user: any, freeze: boolean) {
         this.loading = true;
-        this.tokenService.getFreezeUser(this.tokenId, user.username, freeze).subscribe((res) => {
+        this.tokenService.freeze(this.tokenId, user.username, freeze).subscribe((res) => {
             this.refreshUser(user, res);
             this.loading = false;
         }, (e) => {
@@ -176,7 +174,7 @@ export class TokenConfigComponent implements OnInit {
 
     kyc(user: any, grantKYC: boolean) {
         this.loading = true;
-        this.tokenService.grantKYC(this.tokenId, user.username, grantKYC).subscribe((res) => {
+        this.tokenService.kyc(this.tokenId, user.username, grantKYC).subscribe((res) => {
             this.refreshUser(user, res);
             this.loading = false;
         }, (e) => {

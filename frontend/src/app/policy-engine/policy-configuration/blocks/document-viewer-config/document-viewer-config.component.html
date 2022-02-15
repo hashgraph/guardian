@@ -1,0 +1,197 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+
+
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+            <mat-icon>expand_more</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">UI</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Title</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'fieldsGroup')" [attr.collapse]="propHidden.fieldsGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Fields</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addField()">
+                <mat-icon>add</mat-icon>
+                <span>Add Field</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let field of block.uiMetaData.fields; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.fields, i)" [attr.collapse]="propHidden.fields[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">Field {{i}}</td>
+            <td class="propRowCell">{{field.name}}</td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Name</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.name" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Type</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="field.type" (selectionChange)="onSelectFieldType(field)" [disabled]="readonly">
+                    <mat-option value="text">TEXT</mat-option>
+                    <mat-option value="button">BUTTON</mat-option>
+                    <mat-option value="block">BLOCK</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                <mat-icon class="icon-link">
+                    add_link
+                </mat-icon>
+                Bind Group
+            </td>
+            <td class="propRowCell">
+                <mat-select [(value)]="field.bindGroup" [disabled]="readonly">
+                    <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Title</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.title" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Tooltip</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.tooltip" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Cell Content</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.content" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">UI Class</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.uiClass" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">width</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.width" [readonly]="readonly">
+            </td>
+        </tr>
+        <ng-container *ngIf="field.type=='button'">
+            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">
+                    <mat-icon class="icon-event">
+                        flash_on
+                    </mat-icon>
+                    Action
+                </td>
+                <td class="propRowCell">
+                    <mat-select [(value)]="field.action" [disabled]="readonly">
+                        <mat-option value="link">LINK</mat-option>
+                        <mat-option value="dialog">DIALOG</mat-option>
+                    </mat-select>
+                </td>
+            </tr>
+            <ng-container *ngIf="field.action=='link'">
+                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">
+                        <mat-icon class="icon-link">
+                            add_link
+                        </mat-icon>
+                        Bind Block
+                    </td>
+                    <td class="propRowCell">
+                        <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
+                            <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                        </mat-select>
+                    </td>
+                </tr>
+            </ng-container>
+            <ng-container *ngIf="field.action=='dialog'">
+                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Dialog Type</td>
+                    <td class="propRowCell">
+                        <input [(ngModel)]="field.dialogType" [readonly]="readonly">
+                    </td>
+                </tr>
+                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Dialog Content</td>
+                    <td class="propRowCell">
+                        <input [(ngModel)]="field.dialogContent" [readonly]="readonly">
+                    </td>
+                </tr>
+                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Dialog Class</td>
+                    <td class="propRowCell">
+                        <input [(ngModel)]="field.dialogClass" [readonly]="readonly">
+                    </td>
+                </tr>
+                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">
+                        <mat-icon class="icon-link">
+                            add_link
+                        </mat-icon>
+                        Bind Block
+                    </td>
+                    <td class="propRowCell">
+                        <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
+                            <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                        </mat-select>
+                    </td>
+                </tr>
+            </ng-container>
+        </ng-container>
+        <ng-container *ngIf="field.type=='block'">
+            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">
+                    <mat-icon class="icon-link">
+                        add_link
+                    </mat-icon>
+                    Bind Block
+                </td>
+                <td class="propRowCell">
+                    <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
+                        <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                    </mat-select>
+                </td>
+            </tr>
+        </ng-container>
+    </ng-container>
+</table>

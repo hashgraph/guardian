@@ -23,9 +23,9 @@
 
 .loading {
     background: #fff;
-    position: absolute;
-    z-index: 999;
-    top: 0;
+    position: fixed;
+    z-index: 99;
+    top: 125px;
     left: 0;
     bottom: 0;
     right: 0;
@@ -122,4 +122,56 @@ a {
     font-size: 40px;
     font-weight: bold;
     margin-bottom: 40px;
+}
+
+.error-list {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    padding: 20px 20px 20px 20px;
+    margin: 20px;
+    /*border: 1px solid #c7c7c7;*/
+    border-radius: 6px;
+    position: relative;
+    color: #3f51b5;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+}
+
+.error-list p {
+    font-size: 20px;
+    margin: 0 0 16px 0;
+    color: #000000;
+}
+
+.error-list button {
+    margin: 30px 0 0 0;
+}
+
+.error-schema {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 125px;
+    bottom: 0;
+    background: #fff;
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+}
+
+.error-schema p {
+    font-size: 20px;
+    margin: 0 0 16px 0;
+    color: #000000;
+    font-weight: 500;
 }

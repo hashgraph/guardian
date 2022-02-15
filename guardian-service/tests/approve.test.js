@@ -1,6 +1,11 @@
 const { expect, assert } = require('chai');
 const { approveAPI } = require('../dist/api/approve.service');
-const { createChannel, createTable } = require('./helper');
+const { 
+    createChannel, 
+    createTable, 
+    checkMessage, 
+    checkError 
+} = require('./helper');
 
 describe('Approve service', function () {
     let service, channel, approvalDocumentRepository;
@@ -30,14 +35,14 @@ describe('Approve service', function () {
             approver: 'approver',
             policyId: 'policyId'
         });
-        assert.deepEqual(value, ['id']);
+        checkMessage(value, ['id']);
 
         value = await channel.run(GET_APPROVE_DOCUMENTS, {
             owner: 'owner',
             approver: 'approver',
             policyId: 'policyId'
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             where: {
                 owner: { '$eq': 'owner' },
                 approver: { '$eq': 'approver' },
@@ -54,7 +59,7 @@ describe('Approve service', function () {
             field1: 'field1',
             field2: 'field2'
         });
-        assert.deepEqual(value, ['id', {
+        checkMessage(value, ['id', {
             field1: 'field1',
             field2: 'field2'
         }]);
@@ -63,7 +68,7 @@ describe('Approve service', function () {
             field1: 'field1',
             field2: 'field2'
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             '_id': '1',
             field1: 'field1',
             field2: 'field2'
@@ -76,7 +81,7 @@ describe('Approve service', function () {
             field1: 'field1',
             field2: 'field2'
         });
-        assert.deepEqual(value, ['id', {
+        checkMessage(value, ['id', {
             field1: 'field1',
             field2: 'field2'
         }]);

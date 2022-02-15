@@ -7,8 +7,7 @@
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.8",
     "@transmute/security-context": "0.7.0-unstable.8",
     "@transmute/vc.js": "0.7.0-unstable.8",
-    "axios": "^0.21.1",
-    "did-sdk-js": "git+https://github.com/EnvisionBlockchain/did-sdk-js.git",
+    "axios": "^0.25.0",
     "express": "^4.17.1",
     "vc-modules": "file:../vc-modules"
   },
@@ -16,7 +15,7 @@
   "devDependencies": {
     "@types/express": "^4.17.13",
     "nodemon": "^2.0.12",
-    "typescript": "^4.3.5"
+    "typescript": "^4.5.5"
   },
   "license": "Apache-2.0",
   "main": "dist/index.js",
@@ -27,5 +26,5 @@
     "start": "node dist/index.js",
     "debug": "nodemon dist/index.js"
   },
-  "version": "1.0.0-beta.2"
+  "version": "1.0.5"
 }

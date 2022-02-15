@@ -22,61 +22,50 @@
 
                     <div class="delimiter"></div>
 
-                    <div class="btn-new-block btn-status-edit" (click)="publishPolicy()" title="Publish Policy">
+                    <div class="btn-new-block btn-status-edit" (click)="validationPolicy()" title="Validation Policy"
+                        [attr.errors-count]="errorsCount" [attr.readonly]="currentView != 'blocks'">
+                        <mat-icon>task_alt</mat-icon>
+                        <span>Validation</span>
+                        <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
+                    </div>
+
+                    <div class="delimiter"></div>
+
+                    <div class="btn-new-block btn-status-edit" (click)="setVersion()" title="Publish Policy">
                         <mat-icon>public</mat-icon>
                         <span>Publish</span>
                     </div>
 
                     <div class="delimiter"></div>
 
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceContainerBlock')"
-                        title="Add 'Container' Block">
-                        <mat-icon>tab</mat-icon>
-                        <span>Container</span>
+                    <div *ngFor="let item of registeredBlocks.groups.Main" class="btn-new-block btn-status-edit"
+                        (click)="onAdd(item.type)" [title]="item.title">
+                        <mat-icon>{{item.icon}}</mat-icon>
+                        <span>{{item.name}}</span>
                     </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceStepBlock')"
-                        title="Add 'Step' Block">
-                        <mat-icon>vertical_split</mat-icon>
-                        <span>Step</span>
+
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="vcMenu">
+                        <mat-icon>description</mat-icon>
+                        <span>Verifiable Credential</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
                     </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('informationBlock')"
-                        title="Add 'Information' Block">
-                        <mat-icon>info</mat-icon>
-                        <span>Information</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceDocumentsSource')"
-                        title="Add 'Documents Source' Block">
-                        <mat-icon>table_view</mat-icon>
-                        <span>Documents</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('requestVcDocument')"
-                        title="Add 'Request' Block">
-                        <mat-icon>dynamic_form</mat-icon>
-                        <span>Request</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('sendToGuardian')"
-                        title="Add 'Send' Block">
-                        <mat-icon>send</mat-icon>
-                        <span>Send</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('interfaceAction')"
-                        title="Add 'Action' Block">
-                        <mat-icon>flash_on</mat-icon>
-                        <span>Action</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('externalDataBlock')"
-                        title="Add 'Action' Block">
-                        <mat-icon>cloud</mat-icon>
-                        <span>External Data</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" (click)="onAdd('aggregateDocument')"
-                        title="Add 'Aggregate' Block">
-                        <mat-icon>merge_type</mat-icon>
-                        <span>Aggregate Data</span>
-                    </div>
-                    <div class="btn-new-block btn-status-edit" [matMenuTriggerFor]="tokensMenu">
+
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="tokensMenu">
                         <mat-icon>paid</mat-icon>
                         <span>Tokens</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <div class="delimiter"></div>
+
+                    <div *ngIf="readonly" class="btn-new-block btn-status-all" 
+                        [routerLink]="['/policy-viewer']" [queryParams]="{ policyId: policyId }">
+                        <mat-icon>login</mat-icon>
+                        <span>Open</span>
                     </div>
                 </div>
 
@@ -96,15 +85,17 @@
                 </div>
 
                 <div class="tree-container code-container-{{currentView}}">
-                    <textarea class="textarea-code" *ngIf="currentView !== 'blocks'" [(ngModel)]="code" [readonly]="readonly">
-                    </textarea>
-                    <tree-flat-overview
-                        *ngIf="currentView == 'blocks'"
-                        [blocks]="blocks"
-                        (delete)="onDelete($event)"
-                        (select)="onSelect($event)"
-                        (reorder)="onReorder($event)"
-                    ></tree-flat-overview>
+                    <div *ngIf="currentView !== 'blocks'" class="textarea-code">
+                        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"></ngx-codemirror>
+                    </div>
+                    <div *ngIf="currentView !== 'blocks' && errors && errors.length" class="json-errors">
+                        <div *ngFor="let item of errors" class="errors-property">
+                            <span></span>{{item}}
+                        </div>
+                    </div>
+                    <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" [errors]="errorsMap"
+                        (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)">
+                    </tree-flat-overview>
                 </div>
             </div>
         </div>
@@ -130,22 +121,34 @@
                     </div>
                 </div>
                 <div class="group-body">
-                    <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                        [permissions]="permissions" [readonly]="readonly" [tokens]="tokens">
-                    </common-properties>
+                    <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
+                        <div *ngFor="let item of errorsMap[currentBlock.id]" class="errors-property">
+                            <span></span>{{item}}
+                        </div>
+                    </div>
+                    <div class="common-properties">
+                        <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
+                            [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles">
+                        </common-properties>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<mat-menu #tokensMenu="matMenu">
-    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('mintDocument')" title="Add 'Mint' Block">
-        <mat-icon>paid</mat-icon>
-        <span>Mint</span>
+<mat-menu #vcMenu="matMenu">
+    <div *ngFor="let item of registeredBlocks.groups.Documents" class="btn-new-block-menu btn-status-edit"
+        (click)="onAdd(item.type)" [title]="item.title">
+        <mat-icon>{{item.icon}}</mat-icon>
+        <span>{{item.name}}</span>
     </div>
-    <div class="btn-new-block-menu btn-status-edit" (click)="onAdd('wipeDocument')" title="Add 'Wipe' Block">
-        <mat-icon>delete</mat-icon>
-        <span>Wipe</span>
+</mat-menu>
+
+<mat-menu #tokensMenu="matMenu">
+    <div *ngFor="let item of registeredBlocks.groups.Tokens" class="btn-new-block-menu btn-status-edit"
+        (click)="onAdd(item.type)" [title]="item.title">
+        <mat-icon>{{item.icon}}</mat-icon>
+        <span>{{item.name}}</span>
     </div>
 </mat-menu>

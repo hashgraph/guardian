@@ -1,7 +1,7 @@
 import { DidDocument } from '@entity/did-document';
 import { RootConfig } from '@entity/root-config';
 import { VcDocument } from '@entity/vc-document';
-import { IAddressBookConfig, IFullConfig, IRootConfig, MessageAPI, SchemaEntity } from 'interfaces';
+import { IAddressBookConfig, IRootConfig, MessageAPI, MessageError, MessageResponse, SchemaEntity } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 
 /**
@@ -14,9 +14,7 @@ import { MongoRepository } from 'typeorm';
  */
 export const rootAuthorityAPI = async function (
     channel: any,
-    configRepository: MongoRepository<RootConfig>,
-    didDocumentRepository: MongoRepository<DidDocument>,
-    vcDocumentRepository: MongoRepository<VcDocument>
+    configRepository: MongoRepository<RootConfig>
 ) {
     /**
      * Return Address books, VC Document and DID Document
@@ -28,32 +26,10 @@ export const rootAuthorityAPI = async function (
     channel.response(MessageAPI.GET_ROOT_CONFIG, async (msg, res) => {
         const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload } } });
         if (!rootConfig) {
-            res.send(null);
+            res.send(new MessageResponse(null));
             return;
         }
-        const didDocument = await didDocumentRepository.findOne({ where: { did: { $eq: msg.payload } } });
-        const vcDocument = await vcDocumentRepository.findOne({
-            where: {
-                owner: { $eq: msg.payload },
-                type: { $eq: SchemaEntity.ROOT_AUTHORITY }
-            }
-        });
-
-        const config: IFullConfig = {
-            appnetName: rootConfig.appnetName,
-            hederaAccountId: rootConfig.hederaAccountId,
-            hederaAccountKey: rootConfig.hederaAccountKey,
-            addressBook: rootConfig.addressBook,
-            vcTopic: rootConfig.vcTopic,
-            didTopic: rootConfig.didTopic,
-            didServerUrl: rootConfig.didServerUrl,
-            didTopicMemo: rootConfig.didTopicMemo,
-            vcTopicMemo: rootConfig.vcTopicMemo,
-            did: rootConfig.did,
-            didDocument: didDocument,
-            vcDocument: vcDocument
-        }
-        res.send(config);
+        res.send(new MessageResponse(rootConfig));
     })
 
     /**
@@ -66,7 +42,7 @@ export const rootAuthorityAPI = async function (
     channel.response(MessageAPI.SET_ROOT_CONFIG, async (msg, res) => {
         const rootObject = configRepository.create(msg.payload as RootConfig);
         const result: IRootConfig = await configRepository.save(rootObject);
-        res.send(result);
+        res.send(new MessageResponse(result));
     });
     
     /**
@@ -79,13 +55,13 @@ export const rootAuthorityAPI = async function (
      */
     channel.response(MessageAPI.GET_ADDRESS_BOOK, async (msg, res) => {
         if(!msg.payload) {
-            res.send(null);
+            res.send(new MessageError('Address book not found'));
             return;
         }
         
         const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload.owner } } });
         if (!rootConfig) {
-            res.send(null);
+            res.send(new MessageResponse(null));
             return;
         }
         const config: IAddressBookConfig = {
@@ -94,6 +70,6 @@ export const rootAuthorityAPI = async function (
             vcTopic: rootConfig.vcTopic,
             didTopic: rootConfig.didTopic
         }
-        res.send(config);
+        res.send(new MessageResponse(config));
     });
 }

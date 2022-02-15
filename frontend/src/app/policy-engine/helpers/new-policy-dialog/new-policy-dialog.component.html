@@ -1,0 +1,30 @@
+<h1 mat-dialog-title>New Policy</h1>
+<div mat-dialog-content>
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>* NAME:</mat-label>
+            <input matInput type="text" placeholder="Policy name" formControlName="name">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>* TAG:</mat-label>
+            <input matInput type="text" placeholder="policyTag" formControlName="policyTag">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>TOPIC DESCRIPTION:</mat-label>
+            <input matInput type="text" placeholder="Topic description" formControlName="topicDescription" maxlength="50">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>DESCRIPTION:</mat-label>
+            <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>
+        </mat-form-field>
+
+        <div mat-dialog-actions>
+            <button mat-raised-button color="primary" type="submit" [attr.started]="started"
+                [disabled]="!dataForm.valid">Ok</button>
+            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+        </div>
+    </form>
+</div>

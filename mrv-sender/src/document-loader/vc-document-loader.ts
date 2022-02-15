@@ -56,11 +56,11 @@ export class VCDocumentLoader extends DocumentLoader {
     }
 
     public async has(iri: string): Promise<boolean> {
-        return iri == this.context;
+        return this.context.indexOf(iri) != -1;
     }
 
     public async get(iri: string): Promise<IDocumentFormat> {
-        if (iri == this.context) {
+        if (this.context.indexOf(iri) != -1) {  
             return {
                 documentUrl: iri,
                 document: await this.getDocument(),
@@ -77,6 +77,12 @@ export class VCDocumentLoader extends DocumentLoader {
 
     public async getDocument(): Promise<any> {
         return this.document;
+    }
+
+    public setContext(context: any): void {
+        if (context && context['@context']) {
+            this.context = context['@context'];
+        }
     }
 }
 

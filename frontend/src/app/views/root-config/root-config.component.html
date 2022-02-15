@@ -1,4 +1,4 @@
-<div class="content installer-profile">
+<div class="content user-profile">
 
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
@@ -11,18 +11,18 @@
         </div>
     </div>
 
-    <div class="root-config" *ngIf="root; else elseTemplate">
+    <div class="root-config" *ngIf="isConfirmed && profile">
         <div class="config-display">
             <div class="list-item">
                 <h4 mat-line>DID Document</h4>
                 <p mat-line class="root-field">
-                    <a (click)="openDocument(root.didDocument)">View Document</a>
+                    <a (click)="openDIDDocument(profile.didDocument, 'DID')">View Document</a>
                 </p>
             </div>
             <div class="list-item">
                 <h4 mat-line>VC Document</h4>
                 <p mat-line class="root-field">
-                    <a (click)="openDocument(root.vcDocument)">View Document</a>
+                    <a (click)="openVCDocument(profile.vcDocument, 'VC')">View Document</a>
                 </p>
             </div>
             <div class="list-item">
@@ -31,105 +31,117 @@
             </div>
             <div class="list-item">
                 <h4 mat-line>Appnet Name</h4>
-                <p mat-line class="root-field"> {{root.appnetName}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.appnetName}} </p>
                 <mat-divider></mat-divider>
             </div>
             <div class="list-item">
                 <h4 mat-line>Address Book</h4>
-                <p mat-line class="root-field"> {{root.addressBook}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.addressBook}} </p>
                 <mat-divider></mat-divider>
             </div>
 
             <div class="list-item">
                 <h4 mat-line>DID Server Url</h4>
-                <p mat-line class="root-field"> {{root.didServerUrl}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.didServerUrl}} </p>
                 <mat-divider></mat-divider>
             </div>
             <div class="list-item">
                 <h4 mat-line>DID Topic Memo</h4>
-                <p mat-line class="root-field"> {{root.didTopicMemo}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.didTopicMemo}} </p>
                 <mat-divider></mat-divider>
             </div>
 
             <div class="list-item">
                 <h4 mat-line>VC Topic Memo</h4>
-                <p mat-line class="root-field"> {{root.vcTopicMemo}} </p>
+                <p mat-line class="root-field"> {{profile.addressBook?.vcTopicMemo}} </p>
                 <mat-divider></mat-divider>
             </div>
         </div>
         <div class="config-display">
             <div class="list-item">
                 <h4 mat-line>Hedera Account Id</h4>
-                <p mat-line class="root-field"> {{root.hederaAccountId}} </p>
+                <p mat-line class="root-field"> {{profile.hederaAccountId}} </p>
                 <mat-divider></mat-divider>
             </div>
 
             <div class="list-item">
                 <h4 mat-line>DID</h4>
-                <p mat-line class="root-field"> {{root.did}} </p>
+                <p mat-line class="root-field"> {{profile.did}} </p>
                 <mat-divider></mat-divider>
             </div>
-            
+
         </div>
     </div>
-    <ng-template #elseTemplate>
-        <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
-            <div class="list">
-                <h3>Finish Setup</h3>
-                <div class="list-item">
-                    <app-schema-form
-                        [formGroup]="vcForm" 
-                        [schema]="schema" 
-                        [private-fields]="hideVC"
-                        (change)="onChangeForm()"
-                    >
-                    </app-schema-form>
-                    <mat-divider></mat-divider>
-                </div>
 
-                <div class="list-item">
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>Appnet Name:</mat-label>
-                        <input matInput placeholder="Test Identity SDK appnet" formControlName="appnetName">
-                    </mat-form-field>
-
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>DID Server Url:</mat-label>
-                        <input matInput placeholder="http://localhost:3000/api/v1" formControlName="didServerUrl">
-                    </mat-form-field>
-
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>DID Topic Memo:</mat-label>
-                        <input matInput placeholder="Test Identity SDK appnet DID topic" formControlName="didTopicMemo">
-                    </mat-form-field>
-
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>VC Topic Memo:</mat-label>
-                        <input matInput placeholder="Test Identity SDK appnet VC topic" formControlName="vcTopicMemo">
-                    </mat-form-field>
-                    <mat-divider></mat-divider>
-                </div>
-
-                <div class="list-item">
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>OPERATOR ID (Hedera Account):</mat-label>
-                        <input matInput placeholder="0.0.1548173" formControlName="hederaAccountId">
-                    </mat-form-field>
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>OPERATOR KEY (Hedera Account Private Key):</mat-label>
-                        <input matInput
-                            placeholder="302e020100300506032b657004220420e..."
-                            formControlName="hederaAccountKey">
-                    </mat-form-field>
-                </div>
+    <form *ngIf="!isConfirmed && isNewAccount" [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
+        <div class="list">
+            <h3>Finish Setup</h3>
+            <div class="list-item">
+                <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
+                    (change)="onChangeForm()">
+                </app-schema-form>
+                <mat-divider></mat-divider>
             </div>
-            <div class="list-button">
-                <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="randomKey()">Generate</button>
-            </div>
-            <div class="list-button">
-                <button mat-raised-button type="submit" [disabled]="!formValid">Connect</button>
-            </div>
-        </form>
 
-    </ng-template>
+            <div class="list-item">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>Appnet Name:</mat-label>
+                    <input matInput placeholder="Test Identity SDK appnet" formControlName="appnetName">
+                </mat-form-field>
+
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>DID Server Url:</mat-label>
+                    <input matInput placeholder="http://localhost:3000/api/v1" formControlName="didServerUrl">
+                </mat-form-field>
+
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>DID Topic Memo:</mat-label>
+                    <input matInput placeholder="Test Identity SDK appnet DID topic" formControlName="didTopicMemo">
+                </mat-form-field>
+
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>VC Topic Memo:</mat-label>
+                    <input matInput placeholder="Test Identity SDK appnet VC topic" formControlName="vcTopicMemo">
+                </mat-form-field>
+                <mat-divider></mat-divider>
+            </div>
+
+            <div class="list-item">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>OPERATOR ID (Hedera Account):</mat-label>
+                    <input matInput placeholder="0.0.1548173" formControlName="hederaAccountId">
+                </mat-form-field>
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>OPERATOR KEY (Hedera Account Private Key):</mat-label>
+                    <input matInput placeholder="302e020100300506032b657004220420e..."
+                        formControlName="hederaAccountKey">
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="list-button">
+            <button mat-raised-button type="button" color="primary" class="generate-btn"
+                (click)="randomKey()">Generate</button>
+        </div>
+        <div class="list-button">
+            <button mat-raised-button type="submit" [disabled]="!formValid">Connect</button>
+        </div>
+    </form>
+
+    <div *ngIf="!isConfirmed && !isNewAccount && !isFailed" class="loading">
+        <div class="progress">
+            <span>Finishing Setup</span>
+            <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+        </div>
+    </div>
+
+    <div *ngIf="!isConfirmed && isFailed" class="error-list">
+        <p>An error occurred while creating the document.</p>
+        <p>Please try again later.</p>
+        <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="retry()">Retry</button>
+    </div>
+
+    <div *ngIf="errorLoadSchema" class="error-schema">
+        <p>Failed to load system schemes.</p>
+    </div>
+
 </div>

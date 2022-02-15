@@ -1,12 +1,13 @@
 import { Request } from "express";
 import WebSocket from "ws";
-import { UserRole, UserState } from "interfaces";
+import { UserRole } from "interfaces";
 
 export interface IAuthUser {
     username: string;
-    did: string;
-    state: UserState
-    role: UserRole
+    role: UserRole;
+    did?: string;
+    hederaAccountId?: string;
+    walletToken?: string;
 }
 
 interface AdditionalFields {

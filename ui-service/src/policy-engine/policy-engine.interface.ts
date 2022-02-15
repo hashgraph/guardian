@@ -1,5 +1,6 @@
-import {UserRole} from 'interfaces';
+import {PolicyRole, UserRole} from 'interfaces';
 import {IAuthUser} from '../auth/auth.interface';
+import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 
 export interface IPolicyRoles {
     [policyId: string]: string;
@@ -20,8 +21,8 @@ export interface ISerializedBlockExtend extends ISerializedBlock {
 }
 
 export interface IPolicyBlock {
-    parent?: IPolicyBlock;
-    children?: IPolicyBlock[];
+    parent?: AnyBlockType;
+    children?: AnyBlockType[];
     blockType?: string;
     uuid?: string;
     tag?: string | null;
@@ -29,18 +30,30 @@ export interface IPolicyBlock {
     defaultActive?: boolean;
     options: any;
     blockClassName: string;
+    policyId: string;
+    policyOwner: string;
 
     serialize(): ISerializedBlock;
 
-    updateBlock(state: any, user: IAuthUser, tag: string): any;
+    updateBlock(state: any, user: IAuthUser, tag?: string): any;
 
-    hasPermission(role: UserRole);
+    hasPermission(role: PolicyRole | null, user: IAuthUser | null);
 
     registerChild(child: IPolicyBlock): void;
 
-    registerSubscriptions(): void;
-
     destroy();
+
+    validate(resultsContainer: PolicyValidationResultsContainer);
+
+    changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
+
+    runNext(user: IAuthUser, data: any);
+
+    runTarget(user: IAuthUser, data: any, target: AnyBlockType)
+
+    isChildActive(child: AnyBlockType, user: IAuthUser): boolean;
+
+    isActive(user: IAuthUser): boolean;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {
@@ -48,5 +61,35 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
 
     setData(user: IAuthUser | null, data: any): Promise<any>;
 
-    getData(user: IAuthUser | null, uuid: string): Promise<any>;
+    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
 }
+
+export interface IPolicyContainerBlock extends IPolicyBlock {
+    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+}
+
+export interface IPolicySourceBlock extends IPolicyBlock {
+    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+
+    getFiltersAddons(): IPolicyBlock[];
+
+    getSources(user: IAuthUser): Promise<any[]>
+}
+
+export interface IPolicyAddonBlock extends IPolicyBlock {
+    filters: {[key: string]: string};
+
+    setData(user: IAuthUser | null, data: any): Promise<any>;
+
+    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+
+    getSources(user: IAuthUser): any;
+
+    getFromSource(user: IAuthUser): any;
+
+    getFilters(): {[key: string]: string};
+
+    setFilters(filters: {[key: string]: string}): void
+}
+
+export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock;

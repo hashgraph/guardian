@@ -1,6 +1,10 @@
-import {AuthenticatedRequest} from '../../../auth/auth.interface';
+import {AuthenticatedRequest} from '@auth/auth.interface';
 import {Response} from 'express';
-import {StateContainer} from '../../state-container';
+import {PolicyComponentsStuff} from '../../policy-components-stuff';
+import {getMongoRepository} from 'typeorm';
+import {Policy} from '@entity/policy';
+import {PolicyOtherError} from '@policy-engine/errors';
+import {IPolicyInterfaceBlock} from '@policy-engine/policy-engine.interface';
 
 /**
  * Block permissions middleware
@@ -9,10 +13,26 @@ import {StateContainer} from '../../state-container';
  * @param next
  */
 export async function BlockPermissions(req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
-    if (StateContainer.IfUUIDRegistered(req.params.uuid) &&
-        StateContainer.IfHasPermission(req.params.uuid, req.user.role)) {
-        next();
-    } else {
-        res.sendStatus(404);
+    try {
+        const block = PolicyComponentsStuff.GetBlockByUUID(req.params.uuid) as any;
+        if (!block) {
+            const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+            res.status(err.errorObject.code).send(err.errorObject);
+            return;
+        }
+
+        const currentPolicy = await getMongoRepository(Policy).findOne(block.policyId);
+        const role = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[req.user.did] : null;
+
+        if (PolicyComponentsStuff.IfHasPermission(req.params.uuid, role, req.user)) {
+            req['block'] = block;
+            next();
+        } else {
+            const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+            res.status(err.errorObject.code).send(err.errorObject);
+        }
+    } catch (e) {
+        const err = new PolicyOtherError(e.message, req.params.uuid, 404);
+        res.status(err.errorObject.code).send(err.errorObject);
     }
 }

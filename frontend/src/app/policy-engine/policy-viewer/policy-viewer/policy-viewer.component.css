@@ -10,7 +10,7 @@
 .loading {
     background: #fff;
     position: fixed;
-    z-index: 999;
+    z-index: 99;
     top: var(--header-height);
     left: 0;
     bottom: 0;
@@ -43,10 +43,13 @@
     color: #2196f3;
 }
 
-
 .status-publish {
     font-weight: 500;
     color: #4caf50;
+}
+.status-invalid {
+    font-weight: 500;
+    color: #ff0000;
 }
 
 .btn-settings {
@@ -107,28 +110,33 @@ a.go-back-link {
 a.go-back-link mat-icon {
     color: #707070;
     position: absolute;
-    top: 2px;
-    left: 1px;
+    top: 12px;
+    left: 10px;
+    font-size: 30px;
 }
 
 .policy-header {
-    position: absolute;
-    top: 0;
+    position: fixed;
+    top: 125px;
     left: 0;
     right: 0;
-    height: 30px;
+    height: 50px;
     color: #707070;
-    font-size: 14px;
     border-bottom: 1px solid #f7f7f7;
     display: flex;
     box-sizing: border-box;
     justify-content: space-between;
+    box-shadow: 0px 0px 5px 0px rgb(0 0 0 / 50%);
+    z-index: 100;
+    background: #ffffff;
+    padding: 12px 30px;
+    font-size: 20px;
 }
 
 .policy-container {
     position: absolute;
     left: 0;
-    top: 30px;
+    top: 50px;
     right: 0;
     bottom: 0;
 }
@@ -154,4 +162,27 @@ a.go-back-link mat-icon {
 .table-container .mat-column-open,
 .table-container .mat-column-operation {
     padding-left: 8px;
+}
+
+.actions-container {
+    display: none;
+    z-index: 1;
+}
+
+.table-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    top: 0px;
+    overflow: auto;
+    z-index: 1;
+}
+
+.actions-container[role='ROOT_AUTHORITY'] {
+    display: block;
+}
+
+.table-container[role='ROOT_AUTHORITY'] {
+    top: 77px;
 }

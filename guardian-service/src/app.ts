@@ -18,8 +18,11 @@ import { Token } from '@entity/token';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { DIDDocumentLoader } from './document-loader/did-document-loader';
-import { SchemaDocumentLoader } from './document-loader/vc-document-loader';
-import { SchemaObjectLoader } from './document-loader/schema-loader';
+import { ContextDocumentLoader } from './document-loader/context-loader';
+import { VCSchemaLoader } from './document-loader/vc-schema-loader';
+import { SubjectSchemaLoader } from './document-loader/subject-schema-loader';
+import { IPFS } from '@helpers/ipfs';
+import { demoAPI } from '@api/demo';
 
 const PORT = process.env.PORT || 3001;
 
@@ -44,6 +47,8 @@ Promise.all([
     const [db, channel, fileConfig] = values;
     const app = express();
 
+    IPFS.setChannel(channel);
+
     const didDocumentRepository = db.getMongoRepository(DidDocument);
     const vcDocumentRepository = db.getMongoRepository(VcDocument);
     const vpDocumentRepository = db.getMongoRepository(VpDocument);
@@ -55,24 +60,26 @@ Promise.all([
     // <-- Document Loader
     const vcHelper = new VCHelper()
     const defaultDocumentLoader = new DefaultDocumentLoader();
-    const schemaDocumentLoader = new SchemaDocumentLoader('https://localhost/schema', schemaRepository);
+    const schemaDocumentLoader = new ContextDocumentLoader(schemaRepository, 'https://ipfs.io/ipfs/');
     const didDocumentLoader = new DIDDocumentLoader(didDocumentRepository);
-    const schemaObjectLoader = new SchemaObjectLoader(schemaRepository);
-    
-    vcHelper.addContext('https://localhost/schema');
+    const vcSchemaObjectLoader = new VCSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
+    const subjectSchemaObjectLoader = new SubjectSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
+
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(schemaDocumentLoader);
     vcHelper.addDocumentLoader(didDocumentLoader);
-    vcHelper.addSchemaLoader(schemaObjectLoader);
+    vcHelper.addSchemaLoader(vcSchemaObjectLoader);
+    vcHelper.addSchemaLoader(subjectSchemaObjectLoader);
     vcHelper.buildDocumentLoader();
+    vcHelper.buildSchemaLoader();
     // Document Loader -->
 
     await setDefaultSchema(schemaRepository);
     await configAPI(channel, fileConfig);
-    await schemaAPI(channel, schemaRepository);
+    await schemaAPI(channel, schemaRepository, configRepository);
     await tokenAPI(channel, tokenRepository);
-    await loaderAPI(channel, didDocumentLoader, schemaDocumentLoader, schemaObjectLoader);
-    await rootAuthorityAPI(channel, configRepository, didDocumentRepository, vcDocumentRepository);
+    await loaderAPI(channel, didDocumentRepository, schemaRepository);
+    await rootAuthorityAPI(channel, configRepository);
     await documentsAPI(
         channel,
         didDocumentRepository,
@@ -80,6 +87,7 @@ Promise.all([
         vpDocumentRepository,
         vcHelper
     );
+    await demoAPI(channel);
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);

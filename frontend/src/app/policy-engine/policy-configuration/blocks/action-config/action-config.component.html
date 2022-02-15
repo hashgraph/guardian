@@ -1,0 +1,199 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Stop Propagation</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.type" [disabled]="readonly">
+                <mat-option value="selector">Selector</mat-option>
+                <mat-option value="download">Download</mat-option>
+                <mat-option value="dropdown">Dropdown</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+            <mat-icon>expand_more</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">UI</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Title</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+        </td>
+    </tr>
+
+    <ng-container *ngIf="block.type == 'selector'">
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Field</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.field" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol" (click)="onHide(propHidden, 'optionsGroup')"
+                [attr.collapse]="propHidden.optionsGroup">
+                <mat-icon *ngIf="block.uiMetaData.options.length">expand_more</mat-icon>
+            </td>
+            <td class="propRowCell cellName">Options</td>
+            <td class="propRowCell">
+                <div class="propAdd" (click)="addOptions()">
+                    <mat-icon>add</mat-icon>
+                    <span>Add Options</span>
+                </div>
+            </td>
+        </tr>
+        <ng-container *ngFor="let option of block.uiMetaData.options; let i=index">
+            <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup">
+                <td class="propRowCol" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
+                    <mat-icon>expand_more</mat-icon>
+                </td>
+                <td class="propRowCell cellName">Options {{i}}</td>
+                <td class="propRowCell">{{option.name}}</td>
+            </tr>
+            <tr class="propRow subRow-2"
+                [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Name</td>
+                <td class="propRowCell">
+                    <input [(ngModel)]="option.name" [readonly]="readonly">
+                </td>
+            </tr>
+            <tr class="propRow subRow-2"
+                [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Value</td>
+                <td class="propRowCell">
+                    <input [(ngModel)]="option.value" [readonly]="readonly">
+                </td>
+            </tr>
+            <tr class="propRow subRow-2"
+                [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">
+                    <mat-icon class="icon-link">
+                        add_link
+                    </mat-icon>
+                    Bind Block
+                </td>
+                <td class="propRowCell">
+                    <mat-select [(value)]="option.bindBlock" [disabled]="readonly">
+                        <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                    </mat-select>
+                </td>
+            </tr>
+            <tr class="propRow subRow-2"
+                [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">UI Class</td>
+                <td class="propRowCell">
+                    <input [(ngModel)]="option.uiClass" [readonly]="readonly">
+                </td>
+            </tr>
+        </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="block.type == 'download'">
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Button Content</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol" (click)="onHide(propHidden, 'fileGroup')" [attr.collapse]="propHidden.fileGroup">
+                <mat-icon>expand_more</mat-icon>
+            </td>
+            <td class="propRowCell cellName">File Options</td>
+            <td class="propRowCell">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Schema</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="block.schema" [disabled]="readonly">
+                    <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                        {{schema.name}}
+                        <span *ngIf="schema.version"> ({{schema.version}})</span>
+                        <span *ngIf="schema.status"> ({{schema.status}})</span>
+                    </mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Target Url</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.targetUrl" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+
+    <ng-container *ngIf="block.type == 'dropdown'">
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Button Content</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol" (click)="onHide(propHidden, 'dropdownGroup')"
+                [attr.collapse]="propHidden.dropdownGroup">
+                <mat-icon>expand_more</mat-icon>
+            </td>
+            <td class="propRowCell cellName">Dropdown Options</td>
+            <td class="propRowCell">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Name</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.name" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Value</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.value" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Field</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.field" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                <mat-icon class="icon-link">
+                    add_link
+                </mat-icon>
+                Bind Block
+            </td>
+            <td class="propRowCell">
+                <mat-select [(value)]="block.bindBlock" [disabled]="readonly">
+                    <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+    </ng-container>
+</table>

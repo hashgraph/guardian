@@ -1,6 +1,11 @@
 const { expect, assert } = require('chai');
 const { rootAuthorityAPI } = require('../dist/api/root-authority.service');
-const { createChannel, createTable } = require('./helper');
+const { 
+    createChannel, 
+    createTable, 
+    checkMessage, 
+    checkError 
+} = require('./helper');
 
 describe('Root Authority service', function () {
     let service, channel;
@@ -51,10 +56,10 @@ describe('Root Authority service', function () {
 
     it('Test GET_ROOT_CONFIG', async function () {
         let value = await channel.run(GET_ROOT_CONFIG, null);
-        assert.equal(value, null);
+        checkMessage(value, null);
 
         value = await channel.run(GET_ROOT_CONFIG, 'did');
-        assert.deepEqual(value, {
+        checkMessage(value, {
             appnetName: 'appnetName',
             hederaAccountId: 'hederaAccountId',
             hederaAccountKey: 'hederaAccountKey',
@@ -65,17 +70,7 @@ describe('Root Authority service', function () {
             didTopicMemo: 'didTopicMemo',
             vcTopicMemo: 'vcTopicMemo',
             did: 'did',
-            didDocument: {
-                where: {
-                    did: { '$eq': 'did' }
-                }
-            },
-            vcDocument: {
-                where: {
-                    owner: { '$eq': 'did' },
-                    type: { '$eq': 'ROOT_AUTHORITY' }
-                }
-            }
+            state: 0
         });
     });
 
@@ -93,7 +88,7 @@ describe('Root Authority service', function () {
             did: 'did',
             state: 0
         });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             '_id': '1',
             hederaAccountId: 'hederaAccountId',
             hederaAccountKey: 'hederaAccountKey',
@@ -111,9 +106,9 @@ describe('Root Authority service', function () {
 
     it('Test GET_ADDRESS_BOOK', async function () {
         let value = await channel.run(GET_ADDRESS_BOOK, null);
-        assert.equal(value, null);
+        checkError(value, 'Address book not found');
         value = await channel.run(GET_ADDRESS_BOOK, { owner: 'did' });
-        assert.deepEqual(value, {
+        checkMessage(value, {
             owner: 'did',
             addressBook: 'addressBook',
             vcTopic: 'vcTopic',

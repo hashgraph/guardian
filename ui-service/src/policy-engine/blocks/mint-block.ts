@@ -1,5 +1,4 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyBlockHelpers } from '@policy-engine/helpers/policy-block-helpers';
 import { HcsVcDocument, HcsVpDocument, HederaHelper, HederaUtils, VcSubject } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
@@ -7,7 +6,9 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature } from 'interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -20,8 +21,6 @@ function evaluate(formula: string, scope: any) {
 }
 
 enum DataTypes {
-    INSTALLER = 'installer',
-    SENSOR = 'sensor',
     MRV = 'mrv',
     REPORT = 'report',
     MINT = 'mint',
@@ -104,28 +103,29 @@ export class MintBlock {
     private async createMintVC(root, token, data: number | number[]): Promise<HcsVcDocument<VcSubject>> {
         const vcHelper = new VcHelper();
 
-        let vcSubject: any, schema: string;
+        let vcSubject: any;
         if (token.tokenType == 'non-fungible') {
+            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_NFTOKEN);  
             const serials = data as number[];
             vcSubject = {
+                ...SchemaHelper.getContext(policySchema),
                 date: (new Date()).toISOString(),
                 tokenId: token.tokenId,
                 serials: serials
             }
-            schema = 'MintNFToken';
         } else {
+            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_TOKEN);  
             const amount = data as number;
             vcSubject = {
+                ...SchemaHelper.getContext(policySchema),
                 date: (new Date()).toISOString(),
                 tokenId: token.tokenId,
                 amount: amount.toString()
             }
-            schema = 'MintToken';
         }
         const mintVC = await vcHelper.createVC(
             root.did,
             root.hederaAccountKey,
-            schema,
             vcSubject
         );
         return mintVC;
@@ -174,10 +174,12 @@ export class MintBlock {
         let status = false;
         status = await this.saveVC(mintVC, user.did, ref);
         status = await this.saveVP(vp, user.did, DataTypes.MINT, ref);
+
+        return vp;
     }
 
     async runAction(state, user) {
-        const ref = PolicyBlockHelpers.GetBlockRef(this);
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
         const {
             tokenId,
             rule
@@ -216,9 +218,31 @@ export class MintBlock {
         }
 
         try {
-            await this.mintProcessing(token, vcs, rule, root, curUser, ref);
+            const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
+            ref.runNext(null, { data: doc }).then(
+                function () { },
+                function (error: any) { console.error(error); }
+            );
         } catch (e) {
             throw e;
+        }
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyComponentsStuff.GetBlockRef(this);
+
+        if (!ref.options.tokenId) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+        } else if (typeof ref.options.tokenId !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+        } else if (!(await this.guardians.getTokens({ tokenId: ref.options.tokenId }))[0]) {
+            resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+        }
+
+        if (!ref.options.rule) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+        } else if (typeof ref.options.rule !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
         }
     }
 }

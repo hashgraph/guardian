@@ -1,0 +1,24 @@
+.content {
+    /* position: absolute; */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+    background: #fff;
+}
+
+.loading {
+    background: #fff;
+    position: fixed;
+    z-index: 99;
+    top: var(--header-height-policy);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}

@@ -4,6 +4,7 @@ import { Observable, Subject, Subscription, of } from 'rxjs';
 import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from policy and separate blocks.
@@ -19,6 +20,8 @@ export class PolicyEngineService {
   private connectionStatus: boolean = false;
   private reconnectInterval: number = 5000;  /// pause between connections
   private reconnectAttempts: number = 10;  /// number of connection attempts
+
+  private readonly url: string = `${API_BASE_URL}/policies`;
 
   constructor(
     private http: HttpClient,
@@ -114,26 +117,6 @@ export class PolicyEngineService {
     }, this.reconnectInterval);
   }
 
-  public getAllPolicy(): Observable<any[]> {
-    return this.http.get<any[]>(`/api/get-policy-list`);
-  }
-
-  public getPolicy(policyId: string): Observable<any> {
-    return this.http.get<any>(`/policy/${policyId}`);
-  }
-
-  public getData(blockId: string, policyId: string): Observable<any> {
-    return this.http.get<any>(`/policy/block/${blockId}`);
-  }
-
-  public getGetIdByName(blockName: string, policyId: string): Observable<any> {
-    return this.http.get<any>(`/policy/block/tag/${policyId}/${blockName}`);
-  }
-
-  public setData(blockId: string, policyId: string, data: any): Observable<any> {
-    return this.http.post<void>(`/policy/block/${blockId}`, data);
-  }
-
   public subscribe(
     next?: ((id: any) => void),
     error?: ((error: any) => void),
@@ -142,48 +125,92 @@ export class PolicyEngineService {
     return this.websocketSubject.subscribe(next, error, complete);
   }
 
-  public loadPolicy(policyId: string): Observable<any> {
-    return this.http.get<any>(`/policy/edit/${policyId}`);
+
+  public all(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.url}/`);
   }
 
-  public savePolicy(policyId: string, policy: any): Observable<void> {
-    return this.http.post<any>(`/policy/edit/${policyId}`, policy);
+  public create(policy: any): Observable<void> {
+    return this.http.post<any>(`${this.url}/`, policy);
   }
 
-  public createPolicy(policy: any): Observable<void> {
-    return this.http.post<any>(`/policy/create`, policy);
+  public policy(policyId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}`);
   }
 
-  public publishPolicy(policyId: string): Observable<void> {
-    return this.http.post<any>(`/policy/publish/${policyId}`, null);
+  public update(policyId: string, policy: any): Observable<void> {
+    return this.http.put<any>(`${this.url}/${policyId}`, policy);
   }
 
-  public toYAML(json: any): Observable<any> {
-    return this.http.post<any>(`/policy/to-yaml`, { json });
+  public publish(policyId: string, policyVersion: string): Observable<any> {
+    return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
   }
 
-  public fromYAML(yaml: string): Observable<any> {
-    return this.http.post<any>(`/policy/from-yaml`, { yaml });
+  public validate(policy: any): Observable<any> {
+    return this.http.post<any>(`${this.url}/validate`, policy);
   }
 
-  public exportPolicy(policyId: string): Observable<void> {
-    return this.http.get<any>(`/api/package/export/${policyId}`);
+  public policyBlock(policyId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}/blocks`);
   }
 
-  public exportPolicyDownload(policyId: string, data: any): Observable<Blob> {
-    return this.http.post(`/api/package/export/${policyId}/download`, data, {
+  public getBlockData(blockId: string, policyId: string, filters?: any): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`, {
+      params: filters
+    });
+  }
+
+  public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {
+    return this.http.post<void>(`${this.url}/${policyId}/blocks/${blockId}`, data);
+  }
+
+  public getGetIdByName(blockName: string, policyId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}`);
+  }
+
+  public getParents(blockId: string, policyId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}/parents`);
+  }
+
+  public exportInFile(policyId: string): Observable<any> {
+    return this.http.get(`${this.url}/${policyId}/export/file`, {
       responseType: 'blob'
     });
   }
 
-  public importFileUpload(policyFile: any): Observable<any> {
-    return this.http.put('/api/package/import/upload', policyFile, {
+  public exportInMessage(policyId: string): Observable<any> {
+    return this.http.get(`${this.url}/${policyId}/export/message`);
+  }
+
+  public importByMessage(messageId: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
+  }
+
+  public importByFile(policyFile: any): Observable<any[]> {
+    return this.http.post<any[]>(`${this.url}/import/file`, policyFile, {
       headers: {
         'Content-Type': 'binary/octet-stream'
       }
     });
   }
-  public importUpload(policyData: any): Observable<any[]> {
-    return this.http.post<any[]>('/api/package/import', policyData);
+
+  public previewByMessage(messageId: string): Observable<any> {
+    return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+  }
+
+  public previewByFile(policyFile: any): Observable<any> {
+    return this.http.post<any[]>(`${this.url}/import/file/preview`, policyFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
+  }
+
+  public toYAML(json: any): Observable<any> {
+    return this.http.post<any>(`${this.url}/to-yaml`, { json });
+  }
+
+  public fromYAML(yaml: string): Observable<any> {
+    return this.http.post<any>(`${this.url}/from-yaml`, { yaml });
   }
 }

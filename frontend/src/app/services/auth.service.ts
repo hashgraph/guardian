@@ -1,7 +1,8 @@
-import {HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {ISession, IUser} from 'interfaces';
-import {Observable, of, Subject, Subscription} from 'rxjs';
+import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { ISession, IUser } from 'interfaces';
+import { Observable, of, Subject, Subscription } from 'rxjs';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from accounts.
@@ -9,7 +10,8 @@ import {Observable, of, Subject, Subscription} from 'rxjs';
 @Injectable()
 export class AuthService {
   private accessTokenSubject: Subject<string | null>;
-  
+  private readonly url: string = `${API_BASE_URL}/accounts`;
+
   constructor(
     private http: HttpClient
   ) {
@@ -17,27 +19,22 @@ export class AuthService {
   }
 
   public login(username: string, password: string): Observable<any> {
-    return this.http.post<string>('/api/account/login', {username, password});
-  }
-
-  public logout(): Observable<any> {
-    return this.http.get<any>('/api/account/logout');
-  }
-
-  public getCurrentUser(force:boolean=false): Observable<ISession | null> {
-    if (localStorage.getItem('accessToken')) {
-      return this.http.get<any>(`/api/account/current-user?force=${{force}}`);
-    } else {
-      return of(null);
-    }
+    return this.http.post<string>(`${this.url}/login`, { username, password });
   }
 
   public createUser(username: string, password: string, role: string): Observable<any> {
-    return this.http.post<any>('/api/account/register', {username, password, role})
+    return this.http.post<any>(`${this.url}/register`, { username, password, role })
   }
 
-  public getCurrentUsers(): Observable<IUser[]> {
-    return this.http.get<any>('/api/account/get-all-users');
+  public sessions(): Observable<ISession | null> {
+    if (!localStorage.getItem('accessToken')) {
+      return of(null);
+    }
+    return this.http.get<ISession>(`${this.url}/session`);
+  }
+
+  public getUsers(): Observable<IUser[]> {
+    return this.http.get<any[]>(`${this.url}/`);
   }
 
   public setAccessToken(accessToken: string) {
@@ -74,5 +71,4 @@ export class AuthInterceptor implements HttpInterceptor {
       headers: req.headers.set('Authorization', `Bearer ${token}`),
     }));
   }
-
 }

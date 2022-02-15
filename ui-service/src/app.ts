@@ -1,13 +1,14 @@
 import {fixtures} from '@api/fixtures';
 import {
     accountAPI,
-    auditAPI,
+    trustchainsAPI,
     frontendService,
-    otherAPI,
+    demoAPI,
     profileAPI,
-    rootAPI,
     schemaAPI,
-    tokenAPI
+    tokenAPI,
+    externalAPI,
+    ipfsAPI
 } from '@api/service';
 import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
@@ -18,11 +19,13 @@ import {createServer} from 'http';
 import {createConnection, getMongoRepository} from 'typeorm';
 import WebSocket from 'ws';
 import {authorizationHelper} from './auth/authorizationHelper';
-import {StateContainer} from '@policy-engine/state-container';
+import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 import {swaggerAPI} from '@api/service/swagger';
 import {importExportAPI} from '@policy-engine/import-export';
+import { IPFS } from '@helpers/ipfs';
 
 const PORT = process.env.PORT || 3002;
+const API_VERSION = 'v1';
 
 Promise.all([
     createConnection({
@@ -61,8 +64,10 @@ Promise.all([
     new Guardians().setChannel(channel);
     new Guardians().registerMRVReceiver(async (data) => {
         console.log(data);
-        await StateContainer.ReceiveExternalData(data);
+        await PolicyComponentsStuff.ReceiveExternalData(data);
     });
+
+    new IPFS().setChannel(channel);
 
     const server = createServer(app);
     const policyGenerator = new BlockTreeGenerator();
@@ -70,19 +75,22 @@ Promise.all([
     for (let policy of await getMongoRepository(Policy).find(
         {where: {status: {$eq: 'PUBLISH'}}}
     )) {
-        await policyGenerator.generate(policy.id);
+        await policyGenerator.generate(policy.id.toString());
     }
     ////////////////////////////////////////
 
     // Config routes
-    app.use('/policy/', authorizationHelper, policyGenerator.getRouter());
-    app.use('/api/account/', accountAPI);
-    app.use('/api/profile/', authorizationHelper, profileAPI);
-    app.use('/api/schema', authorizationHelper, schemaAPI);
-    app.use('/api/tokens', authorizationHelper, tokenAPI);
-    app.use('/api/package', importExportAPI);
-    app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
-    app.use('/api-docs/', swaggerAPI);
+    app.use(`/api/${API_VERSION}/policies`, authorizationHelper, policyGenerator.getRouter());
+    app.use(`/api/${API_VERSION}/policies`, authorizationHelper, importExportAPI);
+    app.use(`/api/${API_VERSION}/accounts/`, accountAPI);
+    app.use(`/api/${API_VERSION}/profile/`, authorizationHelper, profileAPI);
+    app.use(`/api/${API_VERSION}/schemas`, authorizationHelper, schemaAPI);
+    app.use(`/api/${API_VERSION}/tokens`, authorizationHelper, tokenAPI);
+    app.use(`/api/${API_VERSION}/trustchains/`, authorizationHelper, trustchainsAPI);
+    app.use(`/api/${API_VERSION}/external/`, externalAPI);
+    app.use(`/api/${API_VERSION}/demo/`, demoAPI);
+    app.use(`/api/${API_VERSION}/ipfs`, authorizationHelper, ipfsAPI);
+    app.use(`/api-docs/${API_VERSION}`, swaggerAPI);
     app.use('/', frontendService);
     /////////////////////////////////////////
 

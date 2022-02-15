@@ -1,4 +1,4 @@
-import { CredentialSubject, Hashing, HcsVcDocumentBase, HcsVcDocumentJsonProperties, JsonClass } from 'did-sdk-js';
+import { Hashing, HcsVcDocumentJsonProperties } from '@hashgraph/did-sdk-js';
 import { HcsVcDocument, VcSubject } from '..';
 
 const VERIFIABLE_CREDENTIAL = 'verifiableCredential';

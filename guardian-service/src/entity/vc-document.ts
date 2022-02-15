@@ -9,6 +9,9 @@ export class VcDocument implements IVCDocument {
     @Column()
     owner: string;
 
+    @Column()
+    assign: string;
+
     @Column({
         unique: true
     })
@@ -24,7 +27,7 @@ export class VcDocument implements IVCDocument {
     updateDate: Date;
 
     @Column()
-    status: DocumentStatus;
+    hederaStatus: DocumentStatus;
 
     @Column()
     signature: DocumentSignature;
@@ -41,9 +44,16 @@ export class VcDocument implements IVCDocument {
     @Column()
     tag: string;
 
+    @Column()
+    option: any;
+
+    @Column()
+    schema: string;
+
     @BeforeInsert()
     setDefaults() {
-        this.status = this.status || DocumentStatus.NEW;
+        this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
+        this.option = this.option || {};
     }
 }

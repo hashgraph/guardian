@@ -21,3 +21,17 @@ export class Utils {
         return new Uint8Array(Buffer.from(text));
     }
 }
+
+export function timeout(timeoutValue: number) {
+    return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: any[]) => Promise<any>>) => {
+        let oldFunc = descriptor.value;
+        descriptor.value = async function () {
+            const timeoutPromise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    reject('Transaction timeout exceeded');
+                }, timeoutValue);
+            })
+            return Promise.race([oldFunc.apply(this, arguments), timeoutPromise]);
+        }
+    }
+}

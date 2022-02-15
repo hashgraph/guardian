@@ -5,7 +5,7 @@
 .loading {
     background: #fff;
     position: absolute;
-    z-index: 999;
+    z-index: 99;
     top: 0;
     left: 0;
     bottom: 0;
@@ -98,13 +98,30 @@ a[disabled="true"]{
     cursor: pointer;
 }
 
+.scroll-right {
+    flex: 0 0 80px;
+    user-select: none;
+    cursor: pointer;
+    height: 220px;
+    margin-top: 80px;
+}
+
+.scroll-right:hover {
+    box-shadow: inset 0px 0px 5px 0px rgb(0 0 0 / 10%);
+}
+
+.scroll-right mat-icon {
+    font-size: 50px;
+    margin-top: 80px;
+}
+
 .chain-container {
     /* display: flex;
     flex-direction: column;
     align-content: center;
     align-items: center; */
     margin-top: 60px;
-    margin-left: 20px;
+    margin-left: 00px;
     margin-right: 20px;
     padding-top: 20px;
     white-space: nowrap;
@@ -156,10 +173,12 @@ a[disabled="true"]{
 .chain-document {
     position: absolute;
     right: 42px;
-    top: 25px;
+    top: 23px;
     font-size: 16px;
     color: #0B73F8;
     font-weight: bold;
+    padding: 0px 0px 0px 10px;
+    background: #fff;
 }
 
 .chain-document a {

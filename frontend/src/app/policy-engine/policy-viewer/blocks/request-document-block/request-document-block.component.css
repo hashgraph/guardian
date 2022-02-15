@@ -1,0 +1,75 @@
+.content-page {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+    background: #fff;
+    margin: 10px 5px 5px 5px;
+    box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);
+}
+
+.content-dialog {
+    display: block;
+    background: #fff;
+    margin: 10px 5px 5px 5px;
+}
+
+.loading {
+    background: #fff;
+    position: fixed;
+    z-index: 99;
+    top: var(--header-height-policy);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.form-page {
+    width: 650px;
+    margin: 40px auto;
+    padding: 10px;
+    border: 1px solid #c3c3c3;
+    border-radius: 4px;
+}
+
+.form-dialog {
+    padding: 10px 40px 20px 40px;
+    max-height: 65vh;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+.body-dialog-template {
+    padding-bottom: 25px;
+    max-height: 70vh !important;
+}
+
+.description {
+    margin-bottom: 10px;
+}
+
+.schema-form {
+    max-height: 50vh;
+    overflow: auto;
+    margin-bottom: 24px;
+    padding: 40px 40px 0px 40px;
+}
+
+.form-page h1 {
+    padding: 40px 40px 0px 40px;
+}
+
+.form-page .description {
+    padding: 0 40px;
+}
+
+.form-page  .page-btns {
+    padding: 0px 40px 40px 40px;
+}

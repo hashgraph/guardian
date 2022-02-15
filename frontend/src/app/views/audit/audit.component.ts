@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { JsonDialog } from 'src/app/components/dialogs/vc-dialog/vc-dialog.component';
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
+import { forkJoin } from 'rxjs';
+import { SchemaService } from 'src/app/services/schema.service';
+import { Schema, SchemaHelper } from 'interfaces';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * Page with the list of VP Documents.
@@ -24,15 +27,17 @@ export class AuditComponent implements OnInit {
         'vp',
     ];
     dataSource: any[] = [];
+    schemas: Schema[] = [];
 
     constructor(
         private auth: AuthService,
         private auditService: AuditService,
+        private schemaService: SchemaService,
         private route: ActivatedRoute,
         private router: Router,
-        public dialog: MatDialog) { 
-            
-        }
+        public dialog: MatDialog) {
+
+    }
 
 
     ngOnInit() {
@@ -42,33 +47,42 @@ export class AuditComponent implements OnInit {
 
     loadData() {
         this.loading = true;
-        this.auditService.getVpDocuments().subscribe((data: any[]) => {
-            console.log(data)
+        forkJoin([
+            this.auditService.getVpDocuments(),
+            this.schemaService.getSchemes()
+        ]).subscribe((value) => {
+            const data: any = value[0];
+            const schemes = value[1];
+
             this.loading = false;
             this.dataSource = data;
+            this.schemas = SchemaHelper.map(schemes);
         }, (error) => {
             this.loading = false;
             console.error(error);
-        });;
+        });
     }
 
-    openVC(document: any) {
-        const dialogRef = this.dialog.open(JsonDialog, {
+    openVP(document: any) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
                 document: document,
-                title: "VP"
+                title: 'VP',
+                type: 'VP',
+                schemas: this.schemas,
+                viewDocument: true
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => { });
     }
 
     setFilter(type: string, value: string) {
-        if(type=='id') {
-            this.router.navigate(['/trust-chain'], { queryParams: { search : value } });
+        if (type == 'id') {
+            this.router.navigate(['/trust-chain'], { queryParams: { search: value } });
         }
-        if(type=='hash') {
-            this.router.navigate(['/trust-chain'], { queryParams: { search : value } });
+        if (type == 'hash') {
+            this.router.navigate(['/trust-chain'], { queryParams: { search: value } });
         }
     }
 }

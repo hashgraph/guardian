@@ -2,13 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
-import { RootConfigService } from '../../services/root-config.service';
-import { JsonDialog } from '../../components/dialogs/vc-dialog/vc-dialog.component';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { SchemaFormComponent } from 'src/app/components/schema-form/schema-form.component';
-import { IFullConfig, Schema, SchemaEntity } from 'interfaces';
+import { IUser, Schema, SchemaEntity, SchemaHelper } from 'interfaces';
+import { DemoService } from 'src/app/services/demo.service';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * RootAuthority profile settings page.
@@ -20,6 +19,9 @@ import { IFullConfig, Schema, SchemaEntity } from 'interfaces';
 })
 export class RootConfigComponent implements OnInit {
     isConfirmed: boolean = false;
+    isFailed: boolean = false;
+    isNewAccount: boolean = true;
+    errorLoadSchema: boolean = false;
     loading: boolean = true;
     progress: number = 0;
 
@@ -31,7 +33,7 @@ export class RootConfigComponent implements OnInit {
         hederaAccountId: ['', Validators.required],
         hederaAccountKey: ['', Validators.required],
     });
-    root: IFullConfig | null;
+    profile: IUser | null;
     balance: string | null;
     progressInterval: any;
 
@@ -39,15 +41,17 @@ export class RootConfigComponent implements OnInit {
     schema: any;
     hideVC: any;
     formValid: boolean = false;
+    schemas!: Schema[];
 
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
-        private rootConfigService: RootConfigService,
         private schemaService: SchemaService,
+        private otherService: DemoService,
         private fb: FormBuilder,
         public dialog: MatDialog) {
-        this.root = null;
+
+        this.profile = null;
         this.balance = null;
         this.vcForm = new FormGroup({});
         this.hederaForm.addControl('vc', this.vcForm);
@@ -58,7 +62,7 @@ export class RootConfigComponent implements OnInit {
             (result) => {
                 setTimeout(() => {
                     this.formValid = result == 'VALID';
-                });  
+                });
             }
         );
     }
@@ -79,26 +83,34 @@ export class RootConfigComponent implements OnInit {
 
     loadProfile() {
         this.loading = true;
-        this.root = null;
+        this.profile = null;
         this.balance = null;
 
         forkJoin([
-            this.rootConfigService.getRootBalance(),
-            this.rootConfigService.getRootConfig(),
+            this.profileService.getProfile(),
+            this.profileService.getBalance(),
             this.schemaService.getSchemes()
         ]).subscribe((value) => {
-            const balance: string | null = value[0];
-            const root: IFullConfig | null = value[1];
-            const schemes = Schema.mapRef(value[2]);
-
-            this.isConfirmed = !!root;
-            if (this.isConfirmed) {
-                this.balance = balance;
-                this.root = root;
+            if(!value[2]) {
+                this.errorLoadSchema = true;
+                this.loading = false;
+                return;
             }
 
-            this.schema = schemes
+            const profile = value[0];
+            const balance = value[1];
+            this.schemas = SchemaHelper.map(value[2]);
+            this.schema = this.schemas
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
+
+            this.isConfirmed = !!(profile.confirmed);
+            this.isFailed = !!(profile.failed);
+            this.isNewAccount = !!(!profile.didDocument);
+
+            if (this.isConfirmed) {
+                this.balance = balance;
+                this.profile = profile;
+            }
 
             setTimeout(() => {
                 this.loading = false;
@@ -112,18 +124,20 @@ export class RootConfigComponent implements OnInit {
     onHederaSubmit() {
         if (this.hederaForm.valid) {
             const value = this.hederaForm.value;
-            const data = {
-                vc: value.vc,
+            const data: any = {
                 hederaAccountId: value.hederaAccountId,
                 hederaAccountKey: value.hederaAccountKey,
-                appnetName: value.appnetName,
-                didServerUrl: value.didServerUrl,
-                didTopicMemo: value.didTopicMemo,
-                vcTopicMemo: value.vcTopicMemo,
+                vcDocument: value.vc,
+                addressBook: {
+                    appnetName: value.appnetName,
+                    didServerUrl: value.didServerUrl,
+                    didTopicMemo: value.didTopicMemo,
+                    vcTopicMemo: value.vcTopicMemo,
+                }
             }
             this.loading = true;
             this.setProgress(true);
-            this.rootConfigService.createRoot(data).subscribe(() => {
+            this.profileService.setProfile(data).subscribe(() => {
                 this.setProgress(false);
                 this.loadProfile();
             }, (error) => {
@@ -134,12 +148,28 @@ export class RootConfigComponent implements OnInit {
         }
     }
 
-    openDocument(document: any) {
-        const dialogRef = this.dialog.open(JsonDialog, {
+    openVCDocument(document: any, title: string) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
-                document: document,
-                title: "DID"
+                document: document.document,
+                title: title,
+                type: 'VC',
+                schemas: this.schemas,
+                viewDocument: true
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+        });
+    }
+
+    openDIDDocument(document: any, title: string) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
+            width: '850px',
+            data: {
+                document: document.document,
+                title: title,
+                type: 'JSON',
             }
         });
 
@@ -165,7 +195,7 @@ export class RootConfigComponent implements OnInit {
     randomKey() {
         this.loading = true;
         const value = this.hederaForm.value;
-        this.profileService.getRandomKey().subscribe((account) => {
+        this.otherService.getRandomKey().subscribe((account) => {
             this.loading = false;
             this.hederaForm.setValue({
                 appnetName: value.appnetName,
@@ -183,5 +213,12 @@ export class RootConfigComponent implements OnInit {
 
     onChangeForm() {
         this.vcForm.updateValueAndValidity();
+    }
+
+    retry() {
+        this.isConfirmed = false;
+        this.isFailed = false;
+        this.isNewAccount = true;
+        clearInterval(this.progressInterval);
     }
 }

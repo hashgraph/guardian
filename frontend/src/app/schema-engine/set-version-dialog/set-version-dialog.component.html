@@ -1,0 +1,13 @@
+<h1 mat-dialog-title>Enter version</h1>
+<div mat-dialog-content class="content">
+    <div>
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Version:</mat-label>
+            <input matInput type="text" placeholder="1.0.0" [formControl]="versionControl">
+        </mat-form-field>
+    </div>
+    <div mat-dialog-actions>
+        <button mat-raised-button color="primary" [disabled]="!versionControl.valid" (click)="onSubmit()">Publish</button>
+        <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+    </div>
+</div>

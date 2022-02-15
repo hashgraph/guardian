@@ -1,13 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IToken } from 'interfaces';
+import { IToken, IUser } from 'interfaces';
+import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
-import { AuthService } from 'src/app/services/auth.service';
+import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
-import { ExportPolicyDialog as ExportImportPolicyDialog } from '../../export-import-dialog/export-import-dialog.component';
-import { NewPolicyDialog } from '../../new-policy-dialog/new-policy-dialog.component';
+import { ExportPolicyDialog } from '../../helpers/export-policy-dialog/export-policy-dialog.component';
+import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
+import { ImportPolicyDialog } from '../../helpers/import-policy-dialog/import-policy-dialog.component';
+import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview-policy-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -43,19 +47,20 @@ export class PolicyViewerComponent implements OnInit {
             'open',
         ]
     };
-    role!: string;
+    role!: any;
     tokens!: IToken[];
 
     loading: boolean = true;
     isConfirmed: boolean = false;
 
     constructor(
-        private auth: AuthService,
+        private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private tokenService: TokenService,
         private route: ActivatedRoute,
         private router: Router,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private toastr: ToastrService
     ) {
         this.policies = null;
         this.policy = null;
@@ -70,15 +75,18 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicy() {
         const policyId = this.route.snapshot.queryParams['policyId'];
+        if (policyId && this.policyId == policyId) {
+            return;
+        }
+
         this.policyId = policyId;
         this.policies = null;
         this.policy = null;
         this.isConfirmed = false;
         this.loading = true;
-        this.auth.getCurrentUser(true).subscribe((user: any) => {
-            const isLogin = !!user;
-            this.isConfirmed = isLogin ? user.did : false;
-            this.role = isLogin ? user.role : null;
+        this.profileService.getProfile().subscribe((profile: IUser | null) => {
+            this.isConfirmed = !!(profile && profile.confirmed);
+            this.role = profile ? profile.role : null;
             if (this.isConfirmed) {
                 if (this.policyId) {
                     this.loadPolicyById(this.policyId);
@@ -97,8 +105,8 @@ export class PolicyViewerComponent implements OnInit {
 
     loadPolicyById(policyId: string) {
         forkJoin([
-            this.policyEngineService.getPolicy(policyId),
-            this.policyEngineService.getAllPolicy()
+            this.policyEngineService.policyBlock(policyId),
+            this.policyEngineService.all()
         ]).subscribe((value) => {
             this.policy = value[0];
             if (value[1]) {
@@ -118,7 +126,7 @@ export class PolicyViewerComponent implements OnInit {
         if (this.role == 'ROOT_AUTHORITY') {
             this.columns = this.columnsRole['ROOT_AUTHORITY'];
             forkJoin([
-                this.policyEngineService.getAllPolicy(),
+                this.policyEngineService.all(),
                 this.tokenService.getTokens()
             ]).subscribe((value) => {
                 const policies: any[] = value[0];
@@ -134,7 +142,7 @@ export class PolicyViewerComponent implements OnInit {
         } else {
             this.columns = this.columnsRole['USER'];
             forkJoin([
-                this.policyEngineService.getAllPolicy(),
+                this.policyEngineService.all(),
             ]).subscribe((value) => {
                 const policies: any[] = value[0];
                 this.updatePolicy(policies);
@@ -158,7 +166,7 @@ export class PolicyViewerComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.createPolicy(result).subscribe((policies: any) => {
+                this.policyEngineService.create(result).subscribe((policies: any) => {
                     this.updatePolicy(policies);
                     setTimeout(() => {
                         this.loading = false;
@@ -170,9 +178,40 @@ export class PolicyViewerComponent implements OnInit {
         });
     }
 
-    publish(element: any) {
+    setVersion(element: any) {
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe((version) => {
+            if (version) {
+                this.publish(element, version);
+            }
+        });
+    }
+
+    private publish(element: any, version: string) {
         this.loading = true;
-        this.policyEngineService.publishPolicy(element.id).subscribe((policies: any) => {
+        this.policyEngineService.publish(element.id, version).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (!isValid) {
+                let text = [];
+                const blocks = errors.blocks;
+                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
+                for (let i = 0; i < invalidBlocks.length; i++) {
+                    const block = invalidBlocks[i];
+                    for (let j = 0; j < block.errors.length; j++) {
+                        const error = block.errors[j];
+                        text.push(`<div>${block.id}: ${error}</div>`);
+                    }
+                }
+                this.toastr.error(text.join(''), 'The policy is invalid', {
+                    timeOut: 30000,
+                    closeButton: true,
+                    positionClass: 'toast-bottom-right',
+                    enableHtml: true
+                });
+            }
             this.updatePolicy(policies);
             setTimeout(() => {
                 this.loading = false;
@@ -191,60 +230,61 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     exportPolicy(element: any) {
-        this.loading = true;
-        this.policyEngineService.exportPolicy(element.id).subscribe((data: any) => {
-            data.schemas.forEach((s: any) => { s.selected = true });
-            data.tokens.forEach((s: any) => { s.selected = true });
-            this.policyEngineService.exportPolicyDownload(element.id, data).subscribe((result: any) => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(result);
-                downloadLink.setAttribute('download', 'policy.zip');
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                this.loading = false;
-            });
-        }, (e) => {
-            this.loading = false;
-        });
+        this.policyEngineService.exportInMessage(element.id)
+            .subscribe(exportedPolicy => this.dialog.open(ExportPolicyDialog, {
+                width: '700px',
+                panelClass: 'g-dialog',
+                data: {
+                    policy: exportedPolicy
+                },
+                autoFocus: false
+            }));
     }
 
     importPolicy() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.click();
-        input.onchange = (e: any) => {
-            const file = e.target.files[0];
-            const reader = new FileReader()
-            reader.readAsArrayBuffer(file);
-            reader.addEventListener('load', (e: any) => {
-                const arrayBuffer = e.target.result;
+        const dialogRef = this.dialog.open(ImportPolicyDialog, {
+            width: '500px',
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.importPolicyDetails(result);
+            }
+        });
+    }
+
+    importPolicyDetails(result: any) {
+        const { type, data, policy } = result;
+        const dialogRef = this.dialog.open(PreviewPolicyDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                policy: policy
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
                 this.loading = true;
-                this.policyEngineService.importFileUpload(arrayBuffer).subscribe((data) => {
-                    this.loading = false;
-                    const dialogRef = this.dialog.open(ExportImportPolicyDialog, {
-                        width: '950px',
-                        panelClass: 'g-dialog',
-                        data: {
-                            policy: data
-                        }
+                if (type == 'message') {
+                    this.policyEngineService.importByMessage(data).subscribe((policies) => {
+                        this.updatePolicy(policies);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        this.loading = false;
                     });
-                    dialogRef.afterClosed().subscribe(async (result) => {
-                        if (result) {
-                            this.loading = true;
-                            this.policyEngineService.importUpload(data).subscribe((policies) => {
-                                this.updatePolicy(policies);
-                                setTimeout(() => {
-                                    this.loading = false;
-                                }, 500);
-                            });
-                        }
+                } else if (type == 'file') {
+                    this.policyEngineService.importByFile(data).subscribe((policies) => {
+                        this.updatePolicy(policies);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        this.loading = false;
                     });
-                });
-            });
-        }
+                }
+            }
+        });
     }
 }

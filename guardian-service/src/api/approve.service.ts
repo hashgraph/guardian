@@ -1,5 +1,5 @@
 import {ApprovalDocument} from '@entity/approval-document';
-import {IApprovalDocument, MessageAPI} from 'interfaces';
+import {IApprovalDocument, MessageAPI, MessageResponse} from 'interfaces';
 import {MongoRepository} from 'typeorm';
 
 /**
@@ -26,7 +26,7 @@ export const approveAPI = async function (
     channel.response(MessageAPI.GET_APPROVE_DOCUMENTS, async (msg, res) => {
         if (msg.payload.id) {
             const document = await approvalDocumentRepository.findOne(msg.payload.id);
-            res.send([document]);
+            res.send(new MessageResponse([document]));
         } else {
             const reqObj: any = {where: {}};
             if (msg.payload.owner) {
@@ -39,7 +39,7 @@ export const approveAPI = async function (
                 reqObj.where['policyId'] = {$eq: msg.payload.policyId}
             }
             const documents: IApprovalDocument[] = await approvalDocumentRepository.find(reqObj);
-            res.send(documents);
+            res.send(new MessageResponse(documents));
         }
     });
 
@@ -62,7 +62,7 @@ export const approveAPI = async function (
             const documentObject = approvalDocumentRepository.create(msg.payload);
             result = await approvalDocumentRepository.save(documentObject)
         }
-        res.send(result);
+        res.send(new MessageResponse(result));
     })
 
     /**
@@ -77,6 +77,6 @@ export const approveAPI = async function (
         const id = documentObject.id;
         delete documentObject.id;
         const result = await approvalDocumentRepository.update(id, documentObject);
-        res.send(result);
+        res.send(new MessageResponse(result));
     })
 }

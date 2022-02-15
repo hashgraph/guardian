@@ -1,11 +1,15 @@
-import {Component, ComponentFactoryResolver, Input, ViewContainerRef} from '@angular/core';
-import {IBlock} from '../../data-source/block';
-import {ActionBlockComponent} from '../action-block/action-block.component';
-import {ContainerBlockComponent} from '../container-block/container-block.component';
-import {DocumentsSourceBlockComponent} from '../documents-source-block/documents-source-block.component';
-import {InformationBlockComponent} from '../information-block/information-block.component';
-import {RequestDocumentBlockComponent} from '../request-document-block/request-document-block.component';
-import {StepBlockComponent} from '../step-block/step-block.component';
+import {
+  ChangeDetectorRef,
+  Component,
+  ComponentFactoryResolver,
+  ComponentRef,
+  Input,
+  TemplateRef,
+  ViewChild,
+  ViewContainerRef
+} from '@angular/core';
+import { IBlock } from '../../helpers/tree-data-source/block';
+import { RegisteredBlocks } from '../../registered-blocks';
 
 /**
  * Component for display all blocks.
@@ -20,15 +24,41 @@ export class RenderBlockComponent {
   @Input('static') static!: any;
   @Input('policyId') policyId!: any;
 
-  id: any;
-  blockType: any;
+  @ViewChild('target', { read: ViewContainerRef }) target!: ViewContainerRef;
+  @ViewChild('empty', { read: TemplateRef }) empty!: TemplateRef<any>;
+
+  private id: any;
+  private blockType: any;
+  private componentRef!: ComponentRef<any>;
+  private isViewInitialized: boolean = false;
 
   constructor(
+    public registeredBlocks: RegisteredBlocks,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private viewContainerRef: ViewContainerRef) {
-  }
+    private viewContainerRef: ViewContainerRef,
+    private cdRef: ChangeDetectorRef
+  ) { }
 
   ngOnChanges() {
+    this.render();
+  }
+
+  ngAfterViewInit() {
+    this.isViewInitialized = true;
+    this.render();
+  }
+
+  ngOnDestroy() {
+    if (this.componentRef) {
+      this.componentRef.destroy();
+    }
+  }
+
+  render() {
+    if (!this.isViewInitialized) {
+      return;
+    }
+
     if (this.block && this.block.id) {
       if (this.id != this.block.id) {
         this.id = this.block.id;
@@ -36,49 +66,28 @@ export class RenderBlockComponent {
         this.loadComponent();
       }
     } else {
-      if (this.id != null) {
-        this.id = null;
-        this.blockType = null;
-        this.viewContainerRef.clear();
-      }
+      this.target.clear();
     }
+
+    this.cdRef.detectChanges();
   }
 
   loadComponent() {
-    this.viewContainerRef.clear();
-    let componentFactory: any = null;
-    switch (this.blockType) {
-      case 'interfaceContainerBlock': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(ContainerBlockComponent);
-        break;
-      }
-      case 'interfaceDocumentsSource': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(DocumentsSourceBlockComponent);
-        break;
-      }
-      case 'requestVcDocument': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(RequestDocumentBlockComponent);
-        break;
-      }
-      case 'interfaceAction': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(ActionBlockComponent);
-        break;
-      }
-      case 'interfaceStepBlock': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(StepBlockComponent);
-        break;
-      }
-      case 'informationBlock': {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(InformationBlockComponent);
-        break;
-      }
+    if (this.componentRef) {
+      this.componentRef.destroy();
     }
-    if (componentFactory) {
-      console.log('render: ', this.blockType);
-      let componentRef: any = this.viewContainerRef.createComponent(componentFactory);
-      componentRef.instance.id = this.id;
-      componentRef.instance.static = this.static;
-      componentRef.instance.policyId = this.policyId;
+    this.target.clear();
+    const factory: any = this.registeredBlocks.getFactory(this.blockType);
+    if (factory) {
+      let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
+      this.componentRef = this.target.createComponent(componentFactory);
+      this.componentRef.instance.id = this.id;
+      this.componentRef.instance.static = this.static;
+      this.componentRef.instance.policyId = this.policyId;
+      this.componentRef.changeDetectorRef.detectChanges();
+    } else if (this.empty) {
+      this.target.createEmbeddedView(this.empty);
     }
   }
 }
+

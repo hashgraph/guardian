@@ -2,61 +2,81 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, Schema, SchemaEntity } from 'interfaces';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from Schemes.
  */
 @Injectable()
 export class SchemaService {
+  private readonly url: string = `${API_BASE_URL}/schemas`;
+
   constructor(
     private http: HttpClient
   ) {
   }
 
-  public createSchema(schema: Schema): Observable<ISchema[]> {
-    const data = {
-      uuid: schema.uuid,
-      hash: schema.hash,
-      name: schema.name,
-      entity: schema.entity,
-      document: schema.document
-    }
-    return this.http.post<any[]>('/api/schema/create', data);
+  public create(schema: Schema): Observable<ISchema[]> {
+    return this.http.post<any[]>(`${this.url}`, schema);
   }
 
-  public updateSchema(schema: Schema, id?: string): Observable<ISchema[]> {
-    const data = {
-      id: id || schema.id,
-      uuid: schema.uuid,
-      hash: schema.hash,
-      name: schema.name,
-      entity: schema.entity,
-      document: schema.document
-    }
-    return this.http.post<any[]>('/api/schema/update', data);
+  public update(schema: Schema, id?: string): Observable<ISchema[]> {
+    const data = Object.assign({}, schema, { id: id || schema.id });
+    return this.http.put<any[]>(`${this.url}`, data);
+  }
+
+  public newVersion(schema: Schema, id?: string): Observable<ISchema[]> {
+    const data = Object.assign({}, schema, { id: id || schema.id });
+    return this.http.post<any[]>(`${this.url}`, data);
   }
 
   public getSchemes(): Observable<ISchema[]> {
-    return this.http.get<any[]>('/api/schema');
+    return this.http.get<any[]>(`${this.url}`);
   }
 
-  public importSchemes(schemes: any[]): Observable<ISchema[]> {
-    return this.http.post<any[]>(`/api/schema/import`, { schemes });
+  public publish(id: string, version: string): Observable<ISchema[]> {
+    return this.http.put<any[]>(`${this.url}/${id}/publish`, { version });
   }
 
-  public exportSchemes(ids: string[]): Observable<any> {
-    return this.http.post<any[]>(`/api/schema/export`, { ids });
+  public unpublished(id: string): Observable<ISchema[]> {
+    return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
   }
 
-  public publishSchema(id: string): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/publish', { id });
+  public delete(id: string): Observable<ISchema[]> {
+    return this.http.delete<any[]>(`${this.url}/${id}`);
   }
 
-  public unpublishedSchema(id: string): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/unpublished', { id });
+  public exportInFile(id: string): Observable<Blob> {
+    return this.http.get(`${this.url}/${id}/export/file`, {
+      responseType: 'blob'
+    });
   }
 
-  public deleteSchema(id: string): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/delete', { id });
+  public exportInMessage(id: string): Observable<ISchema[]> {
+    return this.http.get<any[]>(`${this.url}/${id}/export/message`);
+  }
+
+  public importByMessage(messageId: string): Observable<ISchema[]> {
+    return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
+  }
+
+  public importByFile(schemesFile: any): Observable<ISchema[]> {
+    return this.http.post<any[]>(`${this.url}/import/file`, schemesFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
+  }
+
+  public previewByMessage(messageId: string): Observable<ISchema> {
+    return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+  }
+
+  public previewByFile(schemesFile: any): Observable<ISchema[]> {
+    return this.http.post<any[]>(`${this.url}/import/file/preview`, schemesFile, {
+      headers: {
+        'Content-Type': 'binary/octet-stream'
+      }
+    });
   }
 }

@@ -1,0 +1,81 @@
+.block {
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 4px 12px;
+  margin: 8px;
+  cursor: pointer;
+  position: relative;
+  height: 22px;
+  user-select: none;
+}
+
+.block[selected="true"] {
+  border-color: #3f51b5;
+  box-shadow: 0px 0px 3px 1px #3f51b5;
+}
+
+.block[error="true"] {
+  border-color: #ff0000;
+  box-shadow: 0px 0px 4px 2px #ff0000;
+}
+
+.block[selected="true"][error="true"] {
+  border-color: #ff0000;
+  box-shadow: 0px 0px 4px 2px #ff0000;
+}
+
+.block[fixed="true"] {
+  margin-left: 32px;
+  background: #ececec;
+}
+
+.block mat-icon {
+  display: none;
+}
+
+.block[fixed="true"] mat-icon {
+  display: block;
+  position: absolute;
+  left: -36px;
+  top: 1px;
+  color: #7d7d7d;
+}
+.block-icon {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 16px;
+  overflow: hidden;
+  height: 16px;
+  position: relative;
+  top: 3px;
+}
+.block-icon mat-icon {
+  display: block;
+  font-size: 16px;
+  width: 22px;
+  height: 16px;
+  line-height: 16px;
+}
+.cdk-drag-placeholder {
+  opacity: 0.2;
+}
+.mat-tree {
+  background: transparent;
+}
+.btn-delete {
+  position: absolute;
+  top: 5px;
+  right: -26px;
+  width: 20px;
+  height: 20px;
+  color: #f11000;
+  font-size: 19px;
+}
+.btn-delete mat-icon {
+  display: block;
+  font-size: 20px;
+}
+*[readonly="true"] .btn-delete {
+  display: none;
+}

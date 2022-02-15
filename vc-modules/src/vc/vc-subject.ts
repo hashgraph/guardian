@@ -1,4 +1,4 @@
-import { CredentialSubject, HcsVcDocumentJsonProperties } from 'did-sdk-js';
+import { CredentialSubject, HcsVcDocumentJsonProperties } from '@hashgraph/did-sdk-js';
 
 /**
  * A verifiable credential contains claims about one or more subjects. 
