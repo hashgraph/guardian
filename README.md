@@ -198,7 +198,7 @@ npm run test
 
 ([back to top](broken-reference))
 
-For complete documentation on following points. Please refer https://github.com/hashgraph/guardian/tree/main/docs/getting-started
+For complete documentation on following points. Please refer https://github.com/hashgraph/guardian/tree/main/docs
 
 * Swagger API
 * Postman Collection
