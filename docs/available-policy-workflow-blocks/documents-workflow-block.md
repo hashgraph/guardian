@@ -1,6 +1,6 @@
 # Documents Workflow Block
 
-### Available Documents Workflow Block Properties
+### Properties
 
 | Block Property | Definition                                                                                             | Example Input                                                        |
 | -------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
@@ -11,7 +11,7 @@
 | Dependancies   | Automatic update. The block is automatically re-rendered if any of the linked components gets updated. | Select the apprioriate block from the dropdown.                      |
 | Data Type      | Specificy the table to request the data from.                                                          | Current options are: Verifiable Credential, DID, Approve, or Hedera. |
 
-### Available Documents Workflow Block UI Properties
+### UI Properties
 
 | UI Property        | Definition                                                                                                                                                                             |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

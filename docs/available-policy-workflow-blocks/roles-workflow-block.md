@@ -1,6 +1,6 @@
 # Roles Workflow Block
 
-### Available Container Workflow Block Properties
+### Properties
 
 | Block Property | Definition                                                                        | Example Input                                   |
 | -------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -11,7 +11,7 @@
 | Dependancies   | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. |
 | Roles          | Available roles from which the user can choose.                                   | Select the appropriate roles from the dropdown. |
 
-### Available Roles Workflow Block UI Properties
+### UI Properties
 
 | UI Property | Definition                                   |
 | ----------- | -------------------------------------------- |
