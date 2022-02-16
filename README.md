@@ -4,10 +4,8 @@
 
 ## Guardian
 
-The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation.\
+The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation.
 
-
-\
 [HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](https://github.com/hashgraph/guardian/issues) · [Request a Policy or a Feature](https://github.com/hashgraph/guardian/issues)
 
 ### Discovering ESG assets on Hedera
@@ -223,7 +221,7 @@ For complete documentation on following points. Please refer https://github.com/
 
 For any questions, please reach out to the Envision Blockchain Solutions team at:
 
-* Website: \<www.envisionblockchain.com>
+* Website: <www.envisionblockchain.com>
 * Email: [info@envisionblockchain.com](mailto:info@envisionblockchain.com)
 
 ([back to top](broken-reference))
