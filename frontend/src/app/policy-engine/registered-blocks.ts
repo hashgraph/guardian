@@ -21,6 +21,7 @@ import { RolesBlockComponent } from "./policy-viewer/blocks/roles-block/roles-bl
 import { StepBlockComponent } from "./policy-viewer/blocks/step-block/step-block.component";
 import { CalculateConfigComponent } from './policy-configuration/blocks/calculate/calculate-config/calculate-config.component';
 import { CalculateMathConfigComponent } from './policy-configuration/blocks/calculate/calculate-math-config/calculate-math-config.component';
+import { BlockNode } from "./helpers/tree-data-source/tree-data-source";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -174,5 +175,23 @@ export class RegisteredBlocks {
 
     public getProperties(blockType: string): any {
         return this.properties[blockType];
+    }
+
+    public newBlock(type: BlockType, permissions: any, index: any): BlockNode {
+        return {
+            id: this.generateUUIDv4(),
+            tag: `Block_${index}`,
+            blockType: type,
+            defaultActive: !!this.factories[type],
+            children: [],
+            permissions: permissions
+        };
+    }
+
+    public generateUUIDv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 }
