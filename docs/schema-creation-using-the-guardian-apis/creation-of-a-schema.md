@@ -1,37 +1,50 @@
-# Creation of a Schema
+# Creation of a schema
 
 ### SCHEMA CREATION
 
-**Description:** Creates new schema. Only users with the Root Authority role are allowed to make the request.
+{% swagger method="post" path="" baseUrl="/schemas" summary="Create new schema" %}
+{% swagger-description %}
+Creates new schema. Only users with the Root Authority role are allowed to make the request.
+{% endswagger-description %}
 
-`POST /schemas`
+{% swagger-parameter in="body" type="Object" required="true" %}
+Object that contains a valid schema
+{% endswagger-parameter %}
 
-**Request body:**
-
+{% swagger-response status="201: Created" description="Successful Operation" %}
+```javascript
+{
+    
+}
 ```
-description: Object that contains a valid schema.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Schema"
-```
+{% endswagger-response %}
 
-**Response body:**
-
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+```javascript
+{
+    // Response
+}
 ```
-201:
-          description: Successful operation.
-401:
-          description: Unauthorized.
-403:
-          description: Forbidden.
-500:
-          description: Internal server error.
-          content:
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="Forbidden" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}
 
 ****

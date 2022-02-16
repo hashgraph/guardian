@@ -91,16 +91,19 @@
 * [Exporting Message ID](policy-creation-using-the-guardian-apis/exporting-message-id.md)
 * [Export to zip file](policy-creation-using-the-guardian-apis/export-to-zip-file.md)
 * [Import from zip file](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
-* [Policy Preview](policy-creation-using-the-guardian-apis/policy-preview.md)
+* [Policy Preview from IPFS](policy-creation-using-the-guardian-apis/policy-preview-from-ipfs.md)
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
 * [Creation of a schema](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
-* [Listing of schema](schema-creation-using-the-guardian-apis/listing-of-schema.md)
+* [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
 * [Publishing schema based on schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
 * [Updating schema](schema-creation-using-the-guardian-apis/updating-schema.md)
 * [Deleting a schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
-* [Import schema from IPFS](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
+* [Import schema from Zip](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
+* [Import schema from IPFS](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
+* [Schema Preview from IPFS](schema-creation-using-the-guardian-apis/schema-preview-from-ipfs.md)
+* [Schema Preview from Zip](schema-creation-using-the-guardian-apis/schema-preview-from-zip.md)
 * [Export a schema](schema-creation-using-the-guardian-apis/export-a-schema.md)
 
 ## ACCOUNT APIS

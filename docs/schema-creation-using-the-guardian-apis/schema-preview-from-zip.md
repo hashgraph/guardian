@@ -1,18 +1,14 @@
-# Publishing schema based on schema ID
+# Schema Preview from Zip
 
-### PUBLISHING SCHEMA BASED ON SCHEMA ID
+### PREVIEWING SCHEMA FROM ZIP FILE
 
-{% swagger method="put" path="" baseUrl="/schemas/{schemaId}/publish" summary="Publishes the schema" %}
+{% swagger method="post" path="" baseUrl="/schemas/import/file/preview" summary="Schema preview from a zip file" %}
 {% swagger-description %}
-Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+Previews the schema from a zip file. Only users with the Root Authority role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" type="Object" required="true" name="version" %}
-Object that contains policy version
+{% swagger-parameter in="body" name="" type="" required="true" %}
+A zip file containing the schema to be viewed
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}

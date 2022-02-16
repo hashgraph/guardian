@@ -1,18 +1,14 @@
-# Publishing schema based on schema ID
+# Schema Preview from IPFS
 
-### PUBLISHING SCHEMA BASED ON SCHEMA ID
+### PREVIEWING SCHEMA FROM IPFS FILE
 
-{% swagger method="put" path="" baseUrl="/schemas/{schemaId}/publish" summary="Publishes the schema" %}
+{% swagger method="post" path="" baseUrl="/schemas/import/message/preview" summary="Schema preview from IPFS" %}
 {% swagger-description %}
-Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+Previews the schema from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" type="Object" required="true" name="version" %}
-Object that contains policy version
+{% swagger-parameter in="body" name="" type="Object" required="true" %}
+ Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}

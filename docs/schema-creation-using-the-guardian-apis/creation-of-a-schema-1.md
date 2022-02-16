@@ -1,21 +1,13 @@
-# Publishing schema based on schema ID
+# Listing of Schema
 
-### PUBLISHING SCHEMA BASED ON SCHEMA ID
+### SCHEMA LISTING
 
-{% swagger method="put" path="" baseUrl="/schemas/{schemaId}/publish" summary="Publishes the schema" %}
+{% swagger method="get" path="" baseUrl="/schemas" summary="Returns all schemas" %}
 {% swagger-description %}
-Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+Returns all schemas
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" type="Object" required="true" name="version" %}
-Object that contains policy version
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="201: Created" description="Successful Operation" %}
 ```javascript
 {
     content:
@@ -55,3 +47,5 @@ Object that contains policy version
 ```
 {% endswagger-response %}
 {% endswagger %}
+
+****
