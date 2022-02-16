@@ -313,9 +313,28 @@ export class SchemaHelper {
         }
     }
 
+    private static getFields(schemes: Schema[], schema: Schema): void {
+        const ids: any = {};
+        for (let i = 0; i < schemes.length; i++) {
+            const schema = schemes[i];
+            ids[schema.iri] = schema;
+        }
+
+        for (let j = 0; j < schema.fields.length; j++) {
+            const field = schema.fields[j];
+            if (field.isRef && ids[field.type]) {
+                field.fields = ids[field.type].fields;
+            }
+        }
+    }
+
     public static map(data: ISchema[]): Schema[] {
         if (data) {
-            return data.map(e => new Schema(e));
+            const schemes = data.map(e => new Schema(e));
+            for (let i=0;i<schemes.length;i++) {
+                this.getFields(schemes, schemes[i]);
+            }
+            return schemes;
         }
         return [];
     }
