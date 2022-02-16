@@ -1,0 +1,90 @@
+import { DocumentSignature, SchemaHelper } from 'interfaces';
+import { CalculateBlock } from '@policy-engine/helpers/decorators';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
+import { BlockActionError } from '@policy-engine/errors';
+import { HcsVcDocument, VcSubject } from 'vc-modules';
+import { VcHelper } from '@helpers/vcHelper';
+import { Guardians } from '@helpers/guardians';
+import { Inject } from '@helpers/decorators/inject';
+
+@CalculateBlock({
+    blockType: 'calculateContainerBlock',
+    commonBlock: true
+})
+export class CalculateContainerBlock {
+    @Inject()
+    private guardians: Guardians;
+
+    async calculate(document: any) {
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyCalculateBlock>(this);
+        if (document.signature === DocumentSignature.INVALID) {
+            throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
+        }
+
+        const VC = HcsVcDocument.fromJsonTree(document.document, null, VcSubject);
+        const json = VC.getCredentialSubject()[0].toJsonTree();
+
+        let scope = {};
+        if (ref.options.inputFields) {
+            for (let i = 0; i < ref.options.inputFields.length; i++) {
+                const field = ref.options.inputFields[i];
+                scope[field.value] = json[field.name];
+            }
+        }
+        const addons = ref.getAddons();
+        for (let i = 0; i < addons.length; i++) {
+            const addon = addons[i];
+            scope = addon.run(scope);
+        }
+        let newJson = {};
+        if (ref.options.outputFields) {
+            for (let i = 0; i < ref.options.outputFields.length; i++) {
+                const field = ref.options.outputFields[i];
+                newJson[field.name] = scope[field.value];
+            }
+        }
+        
+        const outputSchema = await this.guardians.getSchemaByIRI(ref.options.outputSchema);
+        const vcSubject = {
+            ...SchemaHelper.getContext(outputSchema),
+            ...newJson
+        }
+        const root = await this.guardians.getRootConfig(ref.policyOwner);
+        const vcHelper = new VcHelper();
+        const newVC = await vcHelper.createVC(
+            root.did,
+            root.hederaAccountKey,
+            vcSubject
+        );
+        const item = {
+            hash: newVC.toCredentialHash(),
+            owner:  document.owner,
+            document: newVC.toJsonTree(),
+            schema: outputSchema.iri,
+            type: outputSchema.iri,
+            policyId: ref.policyId,
+            tag: ref.tag
+        };
+        return item;
+    }
+
+    public async runAction(state, user) {
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyCalculateBlock>(this);
+        let document = null;
+        if (Array.isArray(state.data)) {
+            document = state.data[0];
+        } else {
+            document = state.data;
+        }
+        const newDocument = await this.calculate(document);
+        state.data = newDocument;
+        await ref.runNext(user, state);
+        ref.updateBlock(state, user, '');
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+
+    }
+}

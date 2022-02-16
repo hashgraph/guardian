@@ -38,7 +38,7 @@ export enum BlockType {
     Wipe = 'wipeDocument',
     FiltersAddon = 'filtersAddon',
     DocumentsSourceAddon = 'documentsSourceAddon',
-    Calculate = 'calculateBlock',
+    Calculate = 'calculateContainerBlock',
     CalculateMathAddon = 'calculateMathAddon',
 }
 
