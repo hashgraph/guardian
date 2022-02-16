@@ -1,19 +1,19 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
-import { BlockNode } from '../../../helpers/tree-data-source/tree-data-source';
+import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
- * Settings for block of 'sendToGuardian' type.
+ * Settings for block of 'policyRolesBlock' type.
  */
 @Component({
-    selector: 'source-addon-config',
-    templateUrl: './source-addon-config.component.html',
+    selector: 'calculate-math-config',
+    templateUrl: './calculate-math-config.component.html',
     styleUrls: [
-        './../../common-properties/common-properties.component.css',
-        './source-addon-config.component.css'
+        './../../../common-properties/common-properties.component.css',
+        './calculate-math-config.component.css'
     ]
 })
-export class SourceAddonConfigComponent implements OnInit {
+export class CalculateMathConfigComponent implements OnInit {
     @Input('target') target!: BlockNode;
     @Input('all') all!: BlockNode[];
     @Input('schemes') schemes!: Schema[];
@@ -23,9 +23,8 @@ export class SourceAddonConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
-        main: false,
-        filtersGroup: false,
-        filters: {},
+        equationsGroup: false,
+        equations: {},
     };
 
     block!: BlockNode;
@@ -44,19 +43,21 @@ export class SourceAddonConfigComponent implements OnInit {
 
     load(block: BlockNode) {
         this.block = block;
-        this.block.filters = this.block.filters || [];
+        this.block.equations = this.block.equations || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
 
-    addField() {
-        this.block.filters.push({
-            title: '',
-            name: '',
-            tooltip: '',
-            type: 'text',
+    addEquation() {
+        this.block.equations.push({
+            variable: '',
+            role: ''
         })
+    }
+
+    onRemoveEquation(i:number) {
+        this.block.equations.splice(i, 1);
     }
 }

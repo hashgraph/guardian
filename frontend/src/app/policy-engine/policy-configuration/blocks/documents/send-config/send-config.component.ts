@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
-import { BlockNode } from '../../../helpers/tree-data-source/tree-data-source';
+import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -9,7 +9,7 @@ import { BlockNode } from '../../../helpers/tree-data-source/tree-data-source';
     selector: 'send-config',
     templateUrl: './send-config.component.html',
     styleUrls: [
-        './../../common-properties/common-properties.component.css',
+        './../../../common-properties/common-properties.component.css',
         './send-config.component.css'
     ]
 })

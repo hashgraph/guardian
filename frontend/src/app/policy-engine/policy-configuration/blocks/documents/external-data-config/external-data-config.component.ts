@@ -1,19 +1,19 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
-import { BlockNode } from '../../../helpers/tree-data-source/tree-data-source';
+import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
- * Settings for block of 'mintDocument' and 'wipeDocument' types.
+ * Settings for block of 'externalDataBlock' type.
  */
 @Component({
-    selector: 'mint-config',
-    templateUrl: './mint-config.component.html',
+    selector: 'external-data-config',
+    templateUrl: './external-data-config.component.html',
     styleUrls: [
-        './../../common-properties/common-properties.component.css',
-        './mint-config.component.css'
+        './../../../common-properties/common-properties.component.css',
+        './external-data-config.component.css'
     ]
 })
-export class MintConfigComponent implements OnInit {
+export class ExternalDataConfigComponent implements OnInit {
     @Input('target') target!: BlockNode;
     @Input('all') all!: BlockNode[];
     @Input('schemes') schemes!: Schema[];

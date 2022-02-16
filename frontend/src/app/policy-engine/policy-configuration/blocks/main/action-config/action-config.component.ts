@@ -1,19 +1,19 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
-import { BlockNode } from '../../../helpers/tree-data-source/tree-data-source';
+import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
- * Settings for block of 'interfaceSelector' type.
+ * Settings for block of 'interfaceAction' type.
  */
 @Component({
-    selector: 'filters-addon-config',
-    templateUrl: './filters-addon-config.component.html',
+    selector: 'action-config',
+    templateUrl: './action-config.component.html',
     styleUrls: [
-        './../../common-properties/common-properties.component.css',
-        './filters-addon-config.component.css'
+        './../../../common-properties/common-properties.component.css',
+        './action-config.component.css'
     ]
 })
-export class FiltersAddonConfigComponent implements OnInit {
+export class ActionConfigComponent implements OnInit {
     @Input('target') target!: BlockNode;
     @Input('all') all!: BlockNode[];
     @Input('schemes') schemes!: Schema[];
@@ -27,10 +27,7 @@ export class FiltersAddonConfigComponent implements OnInit {
         optionsGroup: false,
         fileGroup: false,
         options: {},
-        filterGroup: false,
-        filters: {},
-        dropdownGroup: false,
-        unelectedGroup: false
+        dropdownGroup: false
     };
 
     block!: BlockNode;
@@ -51,7 +48,6 @@ export class FiltersAddonConfigComponent implements OnInit {
         this.block = block;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.options = this.block.uiMetaData.options || [];
-        this.block.type = 'dropdown';
     }
 
     onHide(item: any, prop: any) {

@@ -1,19 +1,19 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
-import { BlockNode } from '../../../helpers/tree-data-source/tree-data-source';
+import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
- * Settings for block of 'aggregateDocument' type.
+ * Settings for block of 'sendToGuardian' type.
  */
 @Component({
-    selector: 'aggregate-config',
-    templateUrl: './aggregate-config.component.html',
+    selector: 'source-addon-config',
+    templateUrl: './source-addon-config.component.html',
     styleUrls: [
-        './../../common-properties/common-properties.component.css',
-        './aggregate-config.component.css'
+        './../../../common-properties/common-properties.component.css',
+        './source-addon-config.component.css'
     ]
 })
-export class AggregateConfigComponent implements OnInit {
+export class SourceAddonConfigComponent implements OnInit {
     @Input('target') target!: BlockNode;
     @Input('all') all!: BlockNode[];
     @Input('schemes') schemes!: Schema[];
@@ -24,6 +24,8 @@ export class AggregateConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
+        filtersGroup: false,
+        filters: {},
     };
 
     block!: BlockNode;
@@ -42,10 +44,19 @@ export class AggregateConfigComponent implements OnInit {
 
     load(block: BlockNode) {
         this.block = block;
-        this.block.uiMetaData = this.block.uiMetaData || {}
+        this.block.filters = this.block.filters || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    addField() {
+        this.block.filters.push({
+            title: '',
+            name: '',
+            tooltip: '',
+            type: 'text',
+        })
     }
 }
