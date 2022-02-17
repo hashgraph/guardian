@@ -4,7 +4,7 @@
 
 | Block Property | Definition                                                                                                  | Example Input                                   |
 | -------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Type           | Similar to the InterfaceContainerBlock, with the difference that it can only render a single child element. | InterfaceStepBlock (Can't be changed).          |
+| Type           | Similar to the interfaceContainerBlock, with the difference that it can only render a single child element. | InterfaceStepBlock (Can't be changed).          |
 | Tag            | Unique name for the logic block.                                                                            | CSD01 Document.                                 |
 | Permissions    | Which entity has rights to interact at this part of the workflow.                                           | Root Authority.                                 |
 | Default Active | Shows whether this block is active at this time and whether it needs to be shown.                           | Checked or unchecked.                           |

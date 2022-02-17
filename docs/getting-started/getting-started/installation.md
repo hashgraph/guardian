@@ -5,35 +5,27 @@
     ```
     git clone https://github.com/hashgraph/guardian.git
     ```
-2.  Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
+For example:
 
+in `guardian-service/.env`:
 
-    For example:
+```
+ OPERATOR_ID="0.0.29676495"
+ OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+ SCHEMA_TOPIC_ID="0.0.29614911"
+```
 
-    in `guardian-service/.env`:
+in `guardian-service/.env.docker`:
 
-    ```
-     OPERATOR_ID="0.0.29676495"
-     OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
-     SCHEMA_TOPIC_ID="0.0.29614911"
-    ```
+```
+ OPERATOR_ID="0.0.29676495"
+ OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+ SCHEMA_TOPIC_ID="0.0.29614911"
+```
 
-
-
-    in `guardian-service/.env.docker`:
-
-    ```
-     OPERATOR_ID="0.0.29676495"
-     OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
-     SCHEMA_TOPIC_ID="0.0.29614911"
-    ```
-
-
-
-    Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
-
-
+Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
 
 3\. Update the following files with your NFT.Storage API KEY. Please follow the steps from [https://nft.storage/#getting-started](https://nft.storage/#getting-started) to obtain it.
 
@@ -177,4 +169,3 @@ To run **message-broker** unit tests, following commands needs to be executed:
 cd message-broker
 npm run test
 ```
-
