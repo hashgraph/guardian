@@ -2,7 +2,7 @@
 
 ### **RETRIEVES POLICY CONFIGURATION**
 
-{% swagger method="get" path="/policies/{policyId}" baseUrl="/" summary="Retrieves policy configuration" %}
+{% swagger method="get" path="policies/{policyId}" baseUrl="/" summary="Retrieves policy configuration" %}
 {% swagger-description %}
 Retrieves policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
 {% endswagger-description %}

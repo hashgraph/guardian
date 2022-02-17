@@ -2,10 +2,6 @@
 
 ### **POLICY CREATION**
 
-**Description:** Creates a new policy.&#x20;
-
-Only users with the Root Authority role are allowed to make the request.
-
 {% swagger method="post" path="" baseUrl="/policies" summary="Creates a new policy" %}
 {% swagger-description %}
 Creates a new policy. Only users with the Root Authority role are allowed to make the request
