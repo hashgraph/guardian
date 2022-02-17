@@ -37,7 +37,7 @@ Username
 ```
 {% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="" %}
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
 ```javascript
 {
     // Response
