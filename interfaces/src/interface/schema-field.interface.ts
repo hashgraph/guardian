@@ -1,3 +1,4 @@
+import { SchemaCondition } from "..";
 
 export interface SchemaField {
     name: string;
@@ -11,6 +12,7 @@ export interface SchemaField {
     pattern?: string;
     readOnly: boolean;
     fields?: SchemaField[];
+    conditions?: SchemaCondition[];
     context?: {
         type: string;
         context: string;
