@@ -1,4 +1,4 @@
-# Import a Policy
+# Import a Policy from IPFS
 
 ### IMPORT A POLICY
 
@@ -9,10 +9,6 @@ Imports new policy and all associated artifacts from IPFS into the local DB. Onl
 
 {% swagger-parameter in="body" type="Object" required="true" name="schema" %}
 Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="messageID" type="String" required="true" %}
-
 {% endswagger-parameter %}
 
 {% swagger-response status="201: Created" description="Successful Operation" %}

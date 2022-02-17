@@ -11,7 +11,7 @@ Retrieves policy configuration for the specified policy ID. Only users with the 
 Selected policy ID
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="" %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     content:
@@ -22,7 +22,7 @@ Selected policy ID
 ```
 {% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="" %}
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
 ```javascript
 {
     // Response
