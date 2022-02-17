@@ -123,7 +123,7 @@
 ## TOKEN APIS
 
 * [Token Listing](token-apis/token-listing.md)
-* [Creation of new token](token-apis/creation-of-new-token.md)
+* [Creation of Token](token-apis/token-listing-1.md)
 * [User Info for selected token](token-apis/user-info-for-selected-token.md)
 * [Associates the user with token](token-apis/associates-the-user-with-token.md)
 * [Disassociates the user with token](token-apis/disassociates-the-user-with-token.md)

@@ -1,18 +1,14 @@
-# User Info for selected token
+# Creation of Token
 
-### DISPLAYS USER INFORMATION FOR SELECTED TOKEN
+### CREATION OF A TOKEN
 
-{% swagger method="get" path="" baseUrl="/tokens/{tokenId}/{username}/info" summary="Returns User information" %}
+{% swagger method="post" path="" baseUrl="/tokens" summary="Creates a new token" %}
 {% swagger-description %}
-Returns user information for the selected token. Only users with the Root Authority role are allowed to make the request.
+Creates a new token. Only users with the Root Authority role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
-Token ID
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="username" required="true" %}
-Username
+{% swagger-parameter in="body" required="true" %}
+Object that contains token information
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -21,7 +17,9 @@ Username
     content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenInfo'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TokenInfo'
 }
 ```
 {% endswagger-response %}
