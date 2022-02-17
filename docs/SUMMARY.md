@@ -104,7 +104,8 @@
 * [Import schema from IPFS](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
 * [Schema Preview from IPFS](schema-creation-using-the-guardian-apis/schema-preview-from-ipfs.md)
 * [Schema Preview from Zip](schema-creation-using-the-guardian-apis/schema-preview-from-zip.md)
-* [Export a schema](schema-creation-using-the-guardian-apis/export-a-schema.md)
+* [Export message IDs of Schema](schema-creation-using-the-guardian-apis/export-a-schema.md)
+* [Export Files from Schema](schema-creation-using-the-guardian-apis/export-a-schema-1.md)
 
 ## ACCOUNT APIS
 

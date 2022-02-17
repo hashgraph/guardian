@@ -1,10 +1,10 @@
-# Export message IDs of Schema
+# Export Files from Schema
 
-### EXPORTING HEDERA MESSAGED IDS OF PUBLISHED SCHEMA
+### EXPORTING SCHEMA FILES FOR THE SCHEMA
 
-{% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/message" summary="Hedera message IDs of published schemas" %}
+{% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/file" summary="Return zip file with schemas" %}
 {% swagger-description %}
-Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Root Authority role are allowed to make the request.
+Returns schema files for the schemas. Only users with the Root Authority role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
@@ -14,10 +14,7 @@ Selected schema ID
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
-    content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ExportSchema"
+   
 }
 ```
 {% endswagger-response %}
