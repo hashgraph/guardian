@@ -15,7 +15,7 @@ Token ID
 Username
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="" %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     content:
@@ -26,7 +26,7 @@ Username
 ```
 {% endswagger-response %}
 
-{% swagger-response status="400: Bad Request" description="" %}
+{% swagger-response status="400: Bad Request" description="Bad Request" %}
 ```javascript
 {
     content:
@@ -53,7 +53,7 @@ Username
 ```
 {% endswagger-response %}
 
-{% swagger-response status="500: Internal Server Error" description="" %}
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {
     content:
