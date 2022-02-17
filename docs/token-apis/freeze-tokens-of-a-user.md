@@ -2,56 +2,65 @@
 
 ### FREEZE TRANSFER OF TOKENS OF A USER
 
-**Description:** Freezes transfers of the specified token for the user.&#x20;
+{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/{username}/freeze" summary="Freeze transfers of the specified token for the user" %}
+{% swagger-description %}
+Freezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request
+{% endswagger-description %}
 
-Only users with the Root Authority role are allowed to make the request.
+{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
+Token ID
+{% endswagger-parameter %}
 
-PUT  /tokens/{tokenId}/{username}/freeze
+{% swagger-parameter in="path" name="username" type="String" required="true" %}
+Username
+{% endswagger-parameter %}
 
-**Request body:**
-
-```
- parameters:
-        - in: path
-          name: tokenId
-          schema:
-            type: string
-          required: true
-          description: Token ID.
-        - in: path
-          name: username
-          schema:
-            type: string
-          required: true
-          description: Username.
-      security:
-      - bearerAuth: []
-```
-
-#### Response body:
-
-```
-200:
-          description: Successful operation.
-          content:
+{% swagger-response status="200: OK" description="" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenInfo'
-400:
-          description: Bad Request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-401:
-          description: Unauthorized.
-403:
-          description: Forbidden.
-500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
+}
 ```
+{% endswagger-response %}
+
+{% swagger-response status="400: Bad Request" description="Bad Request" %}
+```javascript
+{
+    content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="Forbidden" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="" %}
+```javascript
+{
+    content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+}
+```
+{% endswagger-response %}
+{% endswagger %}

@@ -1,66 +1,56 @@
 # Revoke KYC of the user
 
-### UNSETS KYC FLAG FOR THE USER
+### GRANTS KYC FLAG FOR THE USER
 
-{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/{username}/revokeKyc" summary="Unsets the KYC flag for the user." %}
-{% swagger-description %}
-Unsets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request.
-{% endswagger-description %}
+**Description:** Unsets the KYC flag for the user.&#x20;
 
-{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
-Token ID
-{% endswagger-parameter %}
+Only users with the Root Authority role are allowed to make the request.
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-Username
-{% endswagger-parameter %}
+PUT  /tokens/{tokenId}/{username}/revokeKyc
 
-{% swagger-response status="200: OK" description="" %}
-```javascript
-{
-    content:
+**Request body:**
+
+```
+  parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      security:
+      - bearerAuth: []
+```
+
+#### Response body:
+
+```
+200:
+          description: Successful operation.
+          content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenInfo'
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="400: Bad Request" description="" %}
-```javascript
-{
-    content:
+400:
+          description: Bad Request.
+          content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="" %}
-```javascript
-{
-    content:
+401:
+          description: Unauthorized.
+403:
+          description: Forbidden.
+500:
+          description: Internal server error.
+          content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-}
 ```
-{% endswagger-response %}
-{% endswagger %}
