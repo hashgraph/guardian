@@ -53,7 +53,7 @@ Username
 ```
 {% endswagger-response %}
 
-{% swagger-response status="500: Internal Server Error" description="" %}
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {
     content:
