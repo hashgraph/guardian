@@ -2,7 +2,7 @@
 
 ### ASSOCIATES USER WITH TOKEN
 
-{% swagger method="get" path="" baseUrl="/tokens/{tokenId}/associate" summary="Associates the user with the provided Hedera token" %}
+{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/associate" summary="Associates the user with the provided Hedera token" %}
 {% swagger-description %}
 Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request
 {% endswagger-description %}
