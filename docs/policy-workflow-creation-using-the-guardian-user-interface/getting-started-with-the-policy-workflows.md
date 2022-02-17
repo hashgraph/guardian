@@ -69,7 +69,9 @@ Then we select the “type” of UI we want to utilize. In our example, we choos
   "children": [
 ```
 
-**Note: In Guardian Version 1.0.2 there was new functionality implemented that allows for custom roles. To perform this programmatically:**
+{% hint style="info" %}
+**Note:** In Guardian Version 1.0.2 there was new functionality implemented that allows for custom roles. To perform this programmatically:
+{% endhint %}
 
 ```
 //children - list of child blocks in a container block.

@@ -4,7 +4,7 @@
 
 | Block Property | Definition                                                                        | Example Input                                   |
 | -------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Type           | A block which determines a role for the user.                                     | policyRolesBlock (Can't be changed).            |
+| Type           | A block which determines a role for the user.                                     | **PolicyRoles**Block (Can't be changed).        |
 | Tag            | Unique name for the logic block.                                                  | choose\_role.                                   |
 | Permissions    | Which entity has rights to interact at this part of the workflow.                 | Installer.                                      |
 | Default Active | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |
