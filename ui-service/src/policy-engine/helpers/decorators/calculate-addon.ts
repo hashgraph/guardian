@@ -10,7 +10,7 @@ export function CalculateAddon(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public readonly blockClassName = 'CalculateAddon';
 
-            async run(scope: any): Promise<any> {
+            public async run(scope: any): Promise<any> {
                 if (typeof super.run === 'function') {
                     return super.run(scope);
                 }
@@ -25,6 +25,24 @@ export function CalculateAddon(options: Partial<PolicyBlockDecoratorOptions>) {
                         return 'Incorrect formula';
                     }
                 }).call(mathjs, formula, scope);
+            }
+
+            public parse(formula: string): boolean {
+                return (function (formula: string) {
+                    try {
+                        const tree = this.parse(formula);
+                        return true;
+                    } catch (error) {
+                        return false;
+                    }
+                }).call(mathjs, formula);
+            }
+
+            public getVariables(variables: any): any {
+                if (typeof super.getVariables === 'function') {
+                    return super.getVariables(variables);
+                }
+                return variables;
             }
         }
     }

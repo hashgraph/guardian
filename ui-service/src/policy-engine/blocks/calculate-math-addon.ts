@@ -20,7 +20,27 @@ export class CalculateMathAddon {
         return scope;
     }
 
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+    public getVariables(variables: any): any {
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyCalculateAddon>(this);
+        if (ref.options.equations) {
+            for (let index = 0; index < ref.options.equations.length; index++) {
+                const equation = ref.options.equations[index];
+                variables[equation.variable] = equation.role;
+            }
+        }
+        return variables;
+    }
 
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyCalculateAddon>(this);
+        if (ref.options.equations) {
+            for (let index = 0; index < ref.options.equations.length; index++) {
+                const equation = ref.options.equations[index];
+                if(!ref.parse(equation.role)) {
+                    resultsContainer.addBlockError(ref.uuid, `Incorrect formula: ${equation.role}`);
+                    return;
+                }
+            }
+        }
     }
 }

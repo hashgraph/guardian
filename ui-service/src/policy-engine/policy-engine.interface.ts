@@ -100,9 +100,11 @@ export interface IPolicyCalculateBlock extends IPolicyBlock {
 export interface IPolicyCalculateAddon extends IPolicyBlock {
     run(scope: any): Promise<any>;
 
+    getVariables(variables: any): any;
+
     evaluate(formula: string, scope: any): any;
+
+    parse(formula: string): boolean;
 }
-
-
 
 export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock | IPolicyCalculateBlock | IPolicyCalculateAddon;

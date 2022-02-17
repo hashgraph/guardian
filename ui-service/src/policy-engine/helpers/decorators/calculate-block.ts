@@ -16,15 +16,11 @@ export function CalculateBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
             protected getAddons(): IPolicyCalculateAddon[] {
                 const addons: IPolicyCalculateAddon[] = [];
-
                 for (let child of this.children) {
                     if (child.blockClassName === 'CalculateAddon') {
-                        for (let filter of child.children) {
-                            addons.push(filter);
-                        }
+                        addons.push(child);
                     }
                 }
-
                 return addons;
             }
         }

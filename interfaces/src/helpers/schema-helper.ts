@@ -95,6 +95,7 @@ export class SchemaHelper {
                     type: type,
                     context: [contextURL]
                 };
+                const subSchema = document.$defs[property.$ref];
             }
             const format = isRef || !property.format ? null : String(property.format);
             const pattern = isRef || !property.pattern ? null : String(property.pattern);
