@@ -15,7 +15,7 @@ Token ID
 Username
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="" %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     content:
