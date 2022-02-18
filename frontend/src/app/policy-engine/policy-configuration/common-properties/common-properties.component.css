@@ -121,6 +121,10 @@
     width: 125px;
 }
 
+.cellTitle {
+    font-weight: 500;
+}
+
 .propRowCol {
     background: #e5e5e5;
     width: 18px;

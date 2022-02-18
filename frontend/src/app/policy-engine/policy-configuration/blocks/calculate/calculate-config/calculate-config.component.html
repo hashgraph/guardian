@@ -17,6 +17,13 @@
             </mat-select>
         </td>
     </tr>
+    <ng-container *ngIf="block.inputSchema">
+        <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName cellTitle">Description</td>
+            <td class="propRowCell cellTitle">Alias</td>
+        </tr>
+    </ng-container>
     <ng-container *ngFor="let field of block.inputFields; let i=index">
         <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
             <td class="propRowCol"></td>
@@ -45,6 +52,13 @@
             </mat-select>
         </td>
     </tr>
+    <ng-container *ngIf="block.outputFields">
+        <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName cellTitle">Description</td>
+            <td class="propRowCell cellTitle">Variable</td>
+        </tr>
+    </ng-container>
     <ng-container *ngFor="let field of block.outputFields; let i=index">
         <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
             <td class="propRowCol"></td>

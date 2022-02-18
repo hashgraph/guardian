@@ -14,7 +14,7 @@ export class CalculateMathAddon {
         if (ref.options.equations) {
             for (let index = 0; index < ref.options.equations.length; index++) {
                 const equation = ref.options.equations[index];
-                scope[equation.variable] = ref.evaluate(equation.role, scope);
+                scope[equation.variable] = ref.evaluate(equation.formula, scope);
             }
         }
         return scope;
@@ -25,7 +25,7 @@ export class CalculateMathAddon {
         if (ref.options.equations) {
             for (let index = 0; index < ref.options.equations.length; index++) {
                 const equation = ref.options.equations[index];
-                variables[equation.variable] = equation.role;
+                variables[equation.variable] = equation.formula;
             }
         }
         return variables;
@@ -36,8 +36,8 @@ export class CalculateMathAddon {
         if (ref.options.equations) {
             for (let index = 0; index < ref.options.equations.length; index++) {
                 const equation = ref.options.equations[index];
-                if(!ref.parse(equation.role)) {
-                    resultsContainer.addBlockError(ref.uuid, `Incorrect formula: ${equation.role}`);
+                if(!ref.parse(equation.formula)) {
+                    resultsContainer.addBlockError(ref.uuid, `Incorrect formula: ${equation.formula}`);
                     return;
                 }
             }
