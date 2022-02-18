@@ -21,9 +21,9 @@
         <td class="propRowCell">
             <mat-select [(value)]="block.idType" [disabled]="readonly" >
                 <mat-option value=""></mat-option>
-                <mat-option value="DID">DID</mat-option>
-                <mat-option value="UUID">UUID</mat-option>
-                <mat-option value="OWNER">Owner</mat-option>
+                <mat-option value="DID">DID (New DID)</mat-option>
+                <mat-option value="UUID">UUID (New UUID)</mat-option>
+                <mat-option value="OWNER">Owner (Owner DID)</mat-option>
             </mat-select>
         </td>
     </tr>
@@ -107,29 +107,6 @@
             <td class="propRowCell cellName">Dialog Class</td>
             <td class="propRowCell">
                 <input [(ngModel)]="block.uiMetaData.dialogClass" [readonly]="readonly">
-            </td>
-        </tr>
-    </ng-container>
-
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol" (click)="onHide(propHidden, 'privateFieldsGroup')"
-            [attr.collapse]="propHidden.privateFieldsGroup">
-            <mat-icon *ngIf="block.uiMetaData.privateFields.length">expand_more</mat-icon>
-        </td>
-        <td class="propRowCell cellName">Fields</td>
-        <td class="propRowCell">
-            <div class="propAdd" (click)="addField()">
-                <mat-icon>add</mat-icon>
-                <span>Add Field</span>
-            </div>
-        </td>
-    </tr>
-    <ng-container *ngFor="let privateField of block.uiMetaData.privateFields; let i=index">
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.privateFieldsGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Field {{i}}</td>
-            <td class="propRowCell">
-                <input [(ngModel)]="block.uiMetaData.privateFields[i]" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>

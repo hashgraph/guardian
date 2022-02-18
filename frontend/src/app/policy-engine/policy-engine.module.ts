@@ -42,6 +42,7 @@ import { PreviewPolicyDialog } from './helpers/preview-policy-dialog/preview-pol
 import { ExportPolicyDialog } from './helpers/export-policy-dialog/export-policy-dialog.component';
 import { CalculateConfigComponent } from './policy-configuration/blocks/calculate/calculate-config/calculate-config.component';
 import { CalculateMathConfigComponent } from './policy-configuration/blocks/calculate/calculate-math-config/calculate-math-config.component';
+import { JsonPropertiesComponent } from './policy-configuration/json-properties/json-properties.component';
 
 @NgModule({
     declarations: [
@@ -79,7 +80,8 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
         PreviewPolicyDialog,
         ExportPolicyDialog,
         CalculateConfigComponent,
-        CalculateMathConfigComponent
+        CalculateMathConfigComponent,
+        JsonPropertiesComponent
     ],
     imports: [
         CommonModule,
@@ -126,7 +128,8 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
         PreviewPolicyDialog,
         ExportPolicyDialog,
         CalculateConfigComponent,
-        CalculateMathConfigComponent
+        CalculateMathConfigComponent,
+        JsonPropertiesComponent
     ],
     providers: [
         RegisteredBlocks

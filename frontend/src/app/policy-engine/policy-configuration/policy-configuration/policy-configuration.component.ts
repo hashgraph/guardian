@@ -38,8 +38,9 @@ export class PolicyConfigurationComponent implements OnInit {
     errorsCount: number = -1;
     errorsMap: any;
 
-    colGroup1 = false;
+    colGroup1 = true;
     colGroup2 = false;
+    colGroup3 = true;
 
     indexBlock: number = 0;
 
@@ -61,6 +62,7 @@ export class PolicyConfigurationComponent implements OnInit {
         readOnly: false,
         viewportMargin: Infinity
     };
+    propTab: string = 'Properties';
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -335,8 +337,10 @@ export class PolicyConfigurationComponent implements OnInit {
     onColGroup(n: number) {
         if (n == 1) {
             this.colGroup1 = !this.colGroup1;
-        } else {
+        } else if (n == 2) {
             this.colGroup2 = !this.colGroup2;
+        } else {
+            this.colGroup3 = !this.colGroup3;
         }
     }
 

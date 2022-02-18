@@ -44,14 +44,10 @@ export class RequestConfigComponent implements OnInit {
     load(block: BlockNode) {
         this.block = block;
         this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.privateFields = this.block.uiMetaData.privateFields || [];
+        this.block.uiMetaData.type =  this.block.uiMetaData.type || 'page';
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
-    }
-
-    addField() {
-        this.block.uiMetaData.privateFields.push('');
     }
 }

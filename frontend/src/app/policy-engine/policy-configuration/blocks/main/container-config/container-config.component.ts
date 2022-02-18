@@ -43,6 +43,7 @@ export class ContainerConfigComponent implements OnInit {
     load(block: BlockNode) {
         this.block = block;
         this.block.uiMetaData = this.block.uiMetaData || {}
+        this.block.uiMetaData.type =  this.block.uiMetaData.type || 'blank';
     }
 
     onHide(item: any, prop: any) {

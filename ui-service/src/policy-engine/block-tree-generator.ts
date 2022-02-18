@@ -323,6 +323,9 @@ export class BlockTreeGenerator {
                 if (!model.config) {
                     model.config = {
                         "blockType": "interfaceContainerBlock",
+                        "permissions": [
+                            "ANY_ROLE"
+                        ]
                     }
                 }
                 await getMongoRepository(Policy).save(model);
