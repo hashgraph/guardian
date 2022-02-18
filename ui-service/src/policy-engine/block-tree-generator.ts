@@ -105,7 +105,16 @@ export class BlockTreeGenerator {
             config: ConfigPolicyTest,
             policyRoles: ['INSTALLER'],
             owner: ra.did,
-            policyTag: 'TestPolicy'
+            policyTag: 'TestPolicy',
+            creator: ra.did,
+            topicId: '',
+            messageId: '',
+            uuid: '',
+            version: '',
+            previousVersion: '',
+            description: '',
+            topicDescription: '',
+            registeredUsers: {}
         });
         await policyRepository.save(newPolicyEntity);
     }
@@ -185,7 +194,7 @@ export class BlockTreeGenerator {
      */
     async validate(policy: Policy): Promise<ISerializedErrors>;
 
-    async validate(arg) {
+    async validate(arg: any) {
         const resultsContainer = new PolicyValidationResultsContainer();
 
         let policy: Policy;
@@ -231,7 +240,7 @@ export class BlockTreeGenerator {
      * @param id
      * @param policy
      */
-    public static async savePolicyToDb(id: string | null, policy: any): Promise<void> {
+    public static async savePolicyToDb(id: string | null, policy: Policy): Promise<void> {
         const connection = getConnection();
         if (id) {
             const policyRepository = connection.getMongoRepository(Policy);
