@@ -251,3 +251,7 @@ form {
 .choose-field {
     flex: 1;
 }
+
+.boolean-option {
+    margin-right: 20px;
+}

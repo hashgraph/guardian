@@ -643,6 +643,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.ifFormatValue(condition, field);
         }));
         condition.ifControl.changeEvents.push(field.controlType.valueChanges.subscribe(() => {
+            condition.ifControl.fieldValue.patchValue('');
             this.ifFormatValue(condition, field);
         }));
         condition.ifControl.changeEvents.push(field.controlArray.valueChanges.subscribe(() => {

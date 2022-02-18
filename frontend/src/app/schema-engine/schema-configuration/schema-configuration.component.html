@@ -122,11 +122,11 @@
                             </mat-form-field>
 
                             <div *ngIf="condition.ifControl.field?.value
-                             && schemaTypeMap[condition.ifControl.field.value.controlType.value].type === 'boolean'" class="boolean-form-field">
+                             && schemaTypeMap[condition.ifControl.field.value.controlType.value].type === 'boolean'">
                                 <mat-radio-group [formControl]="condition.ifControl.fieldValue">
-                                    <mat-radio-button color="primary" value="true">True</mat-radio-button>
-                                    <mat-radio-button color="primary" value="false">False</mat-radio-button>
-                                    <mat-radio-button color="primary" *ngIf="!condition.ifControl.field.value.required" value="">Unset</mat-radio-button>
+                                    <mat-radio-button color="primary" class="boolean-option" value="true">True</mat-radio-button>
+                                    <mat-radio-button color="primary" class="boolean-option" value="false">False</mat-radio-button>
+                                    <mat-radio-button color="primary" class="boolean-option" *ngIf="!condition.ifControl.field.value.controlRequired.value" value="">Unset</mat-radio-button>
                                 </mat-radio-group>
                             </div>
 
