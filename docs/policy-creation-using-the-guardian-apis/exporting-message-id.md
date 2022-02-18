@@ -11,7 +11,7 @@ Returns the Hedera message ID for the specified policy published onto IPFS. Only
 Selected policy ID
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="200: OK" description="" %}
 ```javascript
 {
     content:
