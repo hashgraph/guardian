@@ -569,7 +569,7 @@ export class BlockTreeGenerator {
             try {
                 const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
                 if (!block) {
-                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+                    const err = new PolicyOtherError('Block does not exist', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
                 }
