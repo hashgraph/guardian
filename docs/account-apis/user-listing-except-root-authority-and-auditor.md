@@ -2,34 +2,50 @@
 
 ### DISPLAYING USERS&#x20;
 
-**Description:** Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make the request.
+{% swagger method="get" path="" baseUrl="/accounts" summary="Returns a list of users, excluding Root Authority and Auditors" %}
+{% swagger-description %}
+Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make the request.
+{% endswagger-description %}
 
-**Note:** **Only users with the Root Authority role are allowed to make the request.**
-
-GET  /accounts
-
-**Response body:**
-
-```
-responses:
-        200:
-          description: Successful operation.
-          content:
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Account'
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="401: Unauthorized" description="" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}
 
 ****

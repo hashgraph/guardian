@@ -2,34 +2,34 @@
 
 ### REGISTERING NEW ACCOUNT
 
-**Description:** Registers a new user account.
+{% swagger method="post" path="" baseUrl="/accounts/register" summary="Registers a new user account" %}
+{% swagger-description %}
 
-POST  /accounts/register
+{% endswagger-description %}
 
-**Request body:**
+{% swagger-parameter in="body" required="true" %}
+Object that contain username, password and role (optional) fields
+{% endswagger-parameter %}
 
-```
-   description: Object that contain username, password and role (optional) fields.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Credentials"
-```
-
-#### Response body:
-
-```
-   201:
-          description: Successful operation.
-          content:
+{% swagger-response status="201: Created" description="Successful Operation" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Account'
-   500:
-          description: Internal server error.
-          content:
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}

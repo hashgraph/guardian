@@ -2,34 +2,34 @@
 
 ### LOGS USER INTO THE SYSTEM
 
-**Description:** Logs user into the system
+{% swagger method="post" path="" baseUrl="/accounts/login" summary="Logs user into the system" %}
+{% swagger-description %}
 
-POST /accounts/login
+{% endswagger-description %}
 
-**Request body:**
+{% swagger-parameter in="body" required="true" %}
+Object that contains username and password fields
+{% endswagger-parameter %}
 
-```
-    description: Object that contains username and password fields.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Credentials"
-```
-
-#### Response body:
-
-```
-   200:
-          description: Successful operation.
-          content:
+{% swagger-response status="200: OK" description="" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
-        500:
-          description: Internal server error.
-          content:
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}
