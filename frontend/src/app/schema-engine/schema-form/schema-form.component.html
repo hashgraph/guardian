@@ -171,7 +171,7 @@
       </div>
 
       <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
-        <div class="invalid-field-label" *ngIf="!options.controls[item.name].valid">
+        <div class="invalid-field-label" *ngIf="!item.control.valid">
           <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
           <span>
             <b>Please make sure all fields in schemas contain a valid value</b>
@@ -208,9 +208,9 @@
 
     <ng-template [ngIf]="getConditions(item).length > 0">
       <div *ngFor="let condition of getConditions(item)">
-        <app-schema-form *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition" [fields]="condition.thenFields" [formGroup]="item.conditionForm"></app-schema-form>
+        <app-schema-form *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition" [fields]="condition.thenFields" [formGroup]="condition.conditionForm" (destroy)="removeConditionFields(condition.thenFields, condition)"></app-schema-form>
         <ng-template #elseCondition>
-          <app-schema-form *ngIf="condition.elseFields && condition.elseFields.length > 0" [fields]="condition.elseFields" [formGroup]="item.conditionForm"></app-schema-form>
+          <app-schema-form *ngIf="condition.elseFields && condition.elseFields.length > 0" [fields]="condition.elseFields" [formGroup]="condition.conditionForm" (destroy)="removeConditionFields(condition.elseFields, condition)"></app-schema-form>
         </ng-template>
       </div>
     </ng-template>

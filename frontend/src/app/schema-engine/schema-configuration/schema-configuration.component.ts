@@ -4,6 +4,8 @@ import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaCondition, SchemaField } from 'interfaces';
 import * as moment from 'moment';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 
 /**
@@ -35,6 +37,7 @@ export class SchemaConfigurationComponent implements OnInit {
     conditions!: any[];
     schemaTypes!: any;
     schemaTypeMap!: any;
+    destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private fb: FormBuilder
@@ -616,7 +619,6 @@ export class SchemaConfigurationComponent implements OnInit {
                 elseFields.push(schemaField);
             }
 
-            console.log(fieldsWithNames, conditionValue.ifCondition.field.controlName.value);
             conditions.push({
                 ifCondition: {
                     field: fieldsWithNames.find(item => item.name === conditionValue.ifCondition.field.fieldName).field,
@@ -639,14 +641,20 @@ export class SchemaConfigurationComponent implements OnInit {
         condition.ifControl.changeEvents?.forEach((item: any) => item.unsubscribe());
         
         condition.ifControl.changeEvents = []
-        condition.ifControl.changeEvents.push(field.controlRequired.valueChanges.subscribe(() => {
+        condition.ifControl.changeEvents.push(field.controlRequired.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
             this.ifFormatValue(condition, field);
         }));
-        condition.ifControl.changeEvents.push(field.controlType.valueChanges.subscribe(() => {
+        condition.ifControl.changeEvents.push(field.controlType.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
             condition.ifControl.fieldValue.patchValue('');
             this.ifFormatValue(condition, field);
         }));
-        condition.ifControl.changeEvents.push(field.controlArray.valueChanges.subscribe(() => {
+        condition.ifControl.changeEvents.push(field.controlArray.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
             (condition.ifControl.field as FormControl).patchValue(null);
         }));
 
@@ -657,7 +665,7 @@ export class SchemaConfigurationComponent implements OnInit {
     private ifFormatValue(condition: any, field: any) {
         (condition.ifControl.fieldValue as FormControl).clearValidators();
         condition.ifControl.fieldValue.updateValueAndValidity();
-        (condition.ifControl.fieldValue as FormControl).setValidators(field.controlRequired.value ? Validators.required : null); //= new FormControl('', field.controlRequired.value ? Validators.required : null)
+        (condition.ifControl.fieldValue as FormControl).setValidators(field.controlRequired.value ? Validators.required : null);
         condition.ifControl.fieldValue.updateValueAndValidity();
         condition.ifControl.fieldChange?.unsubscribe();
 
@@ -666,14 +674,15 @@ export class SchemaConfigurationComponent implements OnInit {
         if (['date', 'date-time'].includes(type.format)) {
             condition.ifControl.fieldChange = this.subscribeFormatDateValue(condition.ifControl.fieldValue, type.format);
         }
-        if (['number', 'integer', 'duration'].includes(type.format)) {
-            condition.ifControl.fieldChange = this.subscribeFormatNumberValue(condition.ifControl.fieldValue, type.format);
+        if (['number', 'integer'].includes(type.type) || type.format === 'duration') {
+            condition.ifControl.fieldChange = this.subscribeFormatNumberValue(condition.ifControl.fieldValue, type.format || type.type);
         }
     }
 
     private subscribeFormatDateValue(control: FormControl, format: string) {
         if (format === 'date') {
           return control.valueChanges
+            .pipe(takeUntil(this.destroy$))
             .subscribe((val: any) => {
                 let momentDate = moment(val);
                 let valueToSet = "";
@@ -691,6 +700,7 @@ export class SchemaConfigurationComponent implements OnInit {
     
         if (format === 'date-time') {
           return control.valueChanges
+            .pipe(takeUntil(this.destroy$))
             .subscribe((val: any) => {
               let momentDate = moment(val);
               let valueToSet = "";
@@ -713,6 +723,7 @@ export class SchemaConfigurationComponent implements OnInit {
     
       private subscribeFormatNumberValue(control: FormControl, type: string) {
         return control.valueChanges
+          .pipe(takeUntil(this.destroy$))
           .subscribe((val: any) => {
             let valueToSet: any = val;
             try {
@@ -738,5 +749,10 @@ export class SchemaConfigurationComponent implements OnInit {
 
       getNotObjectAndArrayFields() {
         return this.fields.filter(item => !item.controlArray.value && !this.schemaTypeMap[item.controlType.value].isRef);
+      }
+
+      ngOnDestroy() {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
       }
 }

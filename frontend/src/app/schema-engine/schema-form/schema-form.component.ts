@@ -80,6 +80,7 @@ export class SchemaFormComponent implements OnInit {
   conditionFields: SchemaField[] = [];
 
   @Output('change') change = new EventEmitter<Schema | null>();
+  @Output('destroy') destroy = new EventEmitter<void>();
   destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
@@ -94,19 +95,19 @@ export class SchemaFormComponent implements OnInit {
   ngOnChanges() {
     this.hide = this.hide || {};
     this.conditionFields = [];
+    this.conditions = this.conditions || this.schema?.conditions;
+
+    this.conditions?.forEach((cond: any) => {
+      cond.conditionForm = new FormGroup({});
+      this.subscribeCondition(cond.conditionForm);
+      this.conditionFields.push(...cond.thenFields);
+      this.conditionFields.push(...cond.elseFields);
+    });
 
     if (this.schemaFields) {
-      this.conditions?.forEach((cond: any) => {
-        this.conditionFields.push(...cond.thenFields);
-        this.conditionFields.push(...cond.elseFields);
-      });
       this.update(this.schemaFields);
       return;
     } else if (this.schema) {
-      this.schema.conditions.forEach((cond: any) =>  {
-        this.conditionFields.push(...cond.thenFields);
-        this.conditionFields.push(...cond.elseFields);
-      });
       this.context = {
         type: this.schema.type,
         context: [this.schema.contextURL]
@@ -132,7 +133,7 @@ export class SchemaFormComponent implements OnInit {
       if (['date', 'date-time'].includes(item.format)) {
         this.subscribeFormatDateValue(listItem.control, item.format);
       }
-      if (['number', 'integer', 'duration'].includes(item.type)) {
+      if (['number', 'integer'].includes(item.type) || item.format === 'duration') {
         this.subscribeFormatNumberValue(item.control, item.type);
       }
     }
@@ -187,8 +188,7 @@ export class SchemaFormComponent implements OnInit {
     const fields: any[] = [];
     for (let i = 0; i < schemaFields.length; i++) {
       const field = schemaFields[i];
-      if (this.hide[field.name] || this.conditionFields.find(elem => elem.name === field.name) 
-        || (this.conditions?.find((elem: any) => elem.name === field.name))) {
+      if (this.hide[field.name] || this.conditionFields.find(elem => elem.name === field.name)) {
         continue
       }
       const item: any = {
@@ -202,11 +202,10 @@ export class SchemaFormComponent implements OnInit {
         type: field.type,
         format: field.format,
         pattern: field.pattern,
-        conditionForm: new FormGroup({}),
         conditions: field.conditions
       }
       if (!field.isArray && !field.isRef) {
-        this.subscribeCondition(item.conditionForm);
+        
         item.fileUploading = false;
         let validators = this.getValidators(item);
         item.control = new FormControl("", validators);
@@ -258,6 +257,7 @@ export class SchemaFormComponent implements OnInit {
       this.options.addControl("type", new FormControl(this.context.type));
       this.options.addControl("@context", new FormControl(this.context.context));
     }
+    this.options?.updateValueAndValidity();
     this.changeDetectorRef.detectChanges();
   }
 
@@ -396,33 +396,29 @@ export class SchemaFormComponent implements OnInit {
       });
   }
 
-  private subscribeCondition(control: FormGroup) {
+  private subscribeCondition(controlCondition: FormGroup) {
     let oldValue: string[] = [];
-    control.valueChanges
+    controlCondition.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(val => {
         let newControls = Object.keys(val);
         if (newControls.length !== oldValue.length) {
-          oldValue.forEach(field => {
+          let newControlsExceptOld = newControls.filter(item=> !oldValue.includes(item));
+          let oldControlsExceptNew = oldValue.filter(item=> !newControls.includes(item));
+
+          oldControlsExceptNew.forEach(field => {
             this.options?.removeControl(field, {
               emitEvent: false
             });
-            control.removeControl(field, {
-              emitEvent: false
-            });
           });
-          newControls = newControls.filter(item => oldValue.indexOf(item) === -1);
+
           oldValue = newControls;
-          this.setConditionControlToOption(control);
+
+          newControlsExceptOld.forEach(name => {
+            setTimeout(() => this.options?.addControl(name, controlCondition.get(name)!));
+          });
         }
       }); 
-  }
-
-  private setConditionControlToOption(condControl: FormGroup) {
-    let fields = Object.keys(condControl.controls);
-    for (let i=0;i<fields.length;i++) {
-      this.options?.addControl(fields[i], condControl.get(fields[i])!);
-    }
   }
 
 
@@ -462,20 +458,24 @@ export class SchemaFormComponent implements OnInit {
   }
 
   getConditions(field: any) {
-    if (!this.schema) {
-      if (!this.conditions) {
-        return [];
-      }
-      else {
-        return this.conditions!.filter((item: any)=> item.ifCondition.field.name === field.name);
-      }
+    if (!this.conditions) {
+      return [];
     }
     else {
-      return this.schema.conditions.filter(item=> item.ifCondition.field.name === field.name);
+      return this.conditions!.filter((item: any)=> item.ifCondition.field.name === field.name);
     }
   }
 
+  removeConditionFields(fields: SchemaField[], condition: any) {
+    condition.conditionForm = new FormGroup({});
+    this.subscribeCondition(condition.conditionForm);
+    fields.forEach(item => {
+      setTimeout(() => this.options?.removeControl(item.name, {emitEvent:false}));
+    });
+  }
+
   ngOnDestroy() {
+    this.destroy.emit();
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
   }
