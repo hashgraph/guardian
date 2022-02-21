@@ -9,100 +9,103 @@
         </table>
         <div class="table-body" #body>
             <table class="properties">
-                <tr class="propHeader">
-                    <td class="propRowCol" (click)="onHide(propHidden, 'metaData')"
-                        [attr.collapse]="propHidden.metaData">
-                        <mat-icon>
-                            expand_more
-                        </mat-icon>
-                    </td>
-                    <td class="propHeaderCell cellName">Policy</td>
-                    <td class="propHeaderCell"></td>
-                </tr>
-
-                <!-- Meta Data  -->
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">ID</td>
-                    <td class="propRowCell">
-                        <span class="readonly-prop">{{policy.id}}</span>
-                    </td>
-                </tr>
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Status</td>
-                    <td class="propRowCell">
-                        <span class="readonly-prop">{{policy.status}}</span>
-                    </td>
-                </tr>
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Name</td>
-                    <td class="propRowCell">
-                        <input [(ngModel)]="policy.name" [readonly]="readonly">
-                    </td>
-                </tr>
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Policy Tag</td>
-                    <td class="propRowCell">
-                        <input [(ngModel)]="policy.policyTag" [readonly]="readonly">
-                    </td>
-                </tr>
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Previous Version</td>
-                    <td class="propRowCell">
-                        <input [(ngModel)]="policy.previousVersion" readonly>
-                    </td>
-                </tr>
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Version</td>
-                    <td class="propRowCell">
-                        <input [(ngModel)]="policy.version" readonly>
-                    </td>
-                </tr>
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Topic Description</td>
-                    <td class="propRowCell">
-                        <input [(ngModel)]="policy.topicDescription" [readonly]="readonly" maxlength="50">
-                    </td>
-                </tr>
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Description</td>
-                    <td class="propRowCell">
-                        <textarea [(ngModel)]="policy.description" style="width: 325px" [readonly]="readonly"></textarea>
-                    </td>
-                </tr>
-
-                <!-- Roles  -->
-                <tr class="propHeader">
-                    <td class="propRowCol" (click)="onHide(propHidden, 'rolesGroup')"
-                        [attr.collapse]="propHidden.rolesGroup">
-                        <mat-icon *ngIf="policy.policyRoles && policy.policyRoles.length">expand_more</mat-icon>
-                    </td>
-                    <td class="propHeaderCell cellName">Roles</td>
-                    <td class="propHeaderCell">
-                        <div class="propAdd" (click)="addRoles()">
-                            <mat-icon>add</mat-icon>
-                            <span>Add Role</span>
-                        </div>
-                    </td>
-                </tr>
-                <ng-container *ngFor="let item of roles; let i=index">
-                    <tr class="propRow subRow" [attr.collapse]="propHidden.rolesGroup">
+                <ng-container *ngIf="type == 'Main' || !type">
+                    <tr class="propHeader">
+                        <td class="propRowCol" (click)="onHide(propHidden, 'metaData')"
+                            [attr.collapse]="propHidden.metaData">
+                            <mat-icon>
+                                expand_more
+                            </mat-icon>
+                        </td>
+                        <td class="propHeaderCell cellName">Policy</td>
+                        <td class="propHeaderCell"></td>
+                    </tr>
+                    <!-- Meta Data  -->
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Role {{i}}</td>
-                        <td class="propRowCell remove-cell">
-                            <input [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditRole(i)">
-                            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveRole(i)">
-                                <mat-icon>delete</mat-icon>
-                            </span>
+                        <td class="propRowCell cellName">ID</td>
+                        <td class="propRowCell">
+                            <span class="readonly-prop">{{policy.id}}</span>
                         </td>
                     </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Status</td>
+                        <td class="propRowCell">
+                            <span class="readonly-prop">{{policy.status}}</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Name</td>
+                        <td class="propRowCell">
+                            <input [(ngModel)]="policy.name" [readonly]="readonly">
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Policy Tag</td>
+                        <td class="propRowCell">
+                            <input [(ngModel)]="policy.policyTag" [readonly]="readonly">
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Previous Version</td>
+                        <td class="propRowCell">
+                            <input [(ngModel)]="policy.previousVersion" readonly>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Version</td>
+                        <td class="propRowCell">
+                            <input [(ngModel)]="policy.version" readonly>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Topic Description</td>
+                        <td class="propRowCell">
+                            <input [(ngModel)]="policy.topicDescription" [readonly]="readonly" maxlength="50">
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Description</td>
+                        <td class="propRowCell">
+                            <textarea [(ngModel)]="policy.description" style="width: 325px"
+                                [readonly]="readonly"></textarea>
+                        </td>
+                    </tr>
+                </ng-container>
+                <ng-container *ngIf="type == 'Role' || !type">
+                    <!-- Roles  -->
+                    <tr class="propHeader">
+                        <td class="propRowCol" (click)="onHide(propHidden, 'rolesGroup')"
+                            [attr.collapse]="propHidden.rolesGroup">
+                            <mat-icon *ngIf="policy.policyRoles && policy.policyRoles.length">expand_more</mat-icon>
+                        </td>
+                        <td class="propHeaderCell cellName">Roles</td>
+                        <td class="propHeaderCell">
+                            <div class="propAdd" (click)="addRoles()">
+                                <mat-icon>add</mat-icon>
+                                <span>Add Role</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <ng-container *ngFor="let item of roles; let i=index">
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.rolesGroup">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Role {{i}}</td>
+                            <td class="propRowCell remove-cell">
+                                <input [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditRole(i)">
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveRole(i)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                    </ng-container>
                 </ng-container>
             </table>
         </div>

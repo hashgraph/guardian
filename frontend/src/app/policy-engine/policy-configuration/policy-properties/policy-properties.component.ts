@@ -14,6 +14,7 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChang
 export class PolicyPropertiesComponent implements OnInit {
     @Input('policy') policy!: any;
     @Input('readonly') readonly!: boolean;
+    @Input('type') type!: string;
 
     @Output() onInit = new EventEmitter();
 

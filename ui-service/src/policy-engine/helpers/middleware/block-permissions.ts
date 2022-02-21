@@ -16,19 +16,20 @@ export async function BlockPermissions(req: AuthenticatedRequest, res: Response,
     try {
         const block = PolicyComponentsStuff.GetBlockByUUID(req.params.uuid) as any;
         if (!block) {
-            const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+            const err = new PolicyOtherError('Block does not exist', req.params.uuid, 404);
             res.status(err.errorObject.code).send(err.errorObject);
             return;
         }
 
         const currentPolicy = await getMongoRepository(Policy).findOne(block.policyId);
         const role = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[req.user.did] : null;
+        const tag = block.tag || req.params.uuid;
 
         if (PolicyComponentsStuff.IfHasPermission(req.params.uuid, role, req.user)) {
             req['block'] = block;
             next();
         } else {
-            const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+            const err = new PolicyOtherError(`'${tag}': Insufficient permissions`, req.params.uuid, 403);
             res.status(err.errorObject.code).send(err.errorObject);
         }
     } catch (e) {

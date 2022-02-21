@@ -105,7 +105,16 @@ export class BlockTreeGenerator {
             config: ConfigPolicyTest,
             policyRoles: ['INSTALLER'],
             owner: ra.did,
-            policyTag: 'TestPolicy'
+            policyTag: 'TestPolicy',
+            creator: ra.did,
+            topicId: '',
+            messageId: '',
+            uuid: '',
+            version: '',
+            previousVersion: '',
+            description: '',
+            topicDescription: '',
+            registeredUsers: {}
         });
         await policyRepository.save(newPolicyEntity);
     }
@@ -185,7 +194,7 @@ export class BlockTreeGenerator {
      */
     async validate(policy: Policy): Promise<ISerializedErrors>;
 
-    async validate(arg) {
+    async validate(arg: any) {
         const resultsContainer = new PolicyValidationResultsContainer();
 
         let policy: Policy;
@@ -231,7 +240,7 @@ export class BlockTreeGenerator {
      * @param id
      * @param policy
      */
-    public static async savePolicyToDb(id: string | null, policy: any): Promise<void> {
+    public static async savePolicyToDb(id: string | null, policy: Policy): Promise<void> {
         const connection = getConnection();
         if (id) {
             const policyRepository = connection.getMongoRepository(Policy);
@@ -323,6 +332,9 @@ export class BlockTreeGenerator {
                 if (!model.config) {
                     model.config = {
                         "blockType": "interfaceContainerBlock",
+                        "permissions": [
+                            "ANY_ROLE"
+                        ]
                     }
                 }
                 await getMongoRepository(Policy).save(model);
@@ -566,7 +578,7 @@ export class BlockTreeGenerator {
             try {
                 const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
                 if (!block) {
-                    const err = new PolicyOtherError('Unexisting block', req.params.uuid, 404);
+                    const err = new PolicyOtherError('Block does not exist', req.params.uuid, 404);
                     res.status(err.errorObject.code).send(err.errorObject);
                     return;
                 }
