@@ -2,7 +2,7 @@
 
 ### RETURNS USER'S ACCOUNT BALANCE
 
-{% swagger method="get" path="" baseUrl="" summary="Returns user's Hedera account balance" %}
+{% swagger method="get" path="" baseUrl="/profiles/{username}/balance" summary="Returns user's Hedera account balance" %}
 {% swagger-description %}
 Requests Hedera account balance. Only users with the Installer role are allowed to make the request
 {% endswagger-description %}
