@@ -180,43 +180,72 @@ VC
 
 ### **iRec schema publish**
 
-`PUT /api/v1/schemas/61ee7ecd9c02660014fa662e/publish`
+{% swagger method="put" path="" baseUrl="/api/v1/schemas/61ee7ecd9c02660014fa662e/publish" summary="" %}
+{% swagger-description %}
 
-**Request body:**
+{% endswagger-description %}
 
-```
+{% swagger-parameter in="body" name="version" required="true" %}
 {"version":"1.0.0"}
-```
+{% endswagger-parameter %}
+{% endswagger %}
 
 ### **Token creation**
 
-`POST /api/v1/tokens`
+{% swagger method="post" path="" baseUrl="" summary="" %}
+{% swagger-description %}
 
-**Request body:**
+{% endswagger-description %}
 
-```
+{% swagger-parameter in="body" name="tokenName" type="String" required="true" %}
+iRec
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="tokenSymbol" type="String" required="true" %}
+iRec
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="tokenType" type="String" required="true" %}
+fungible
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="decimals" type="String" required="true" %}
+2
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="initialsupply" type="String" required="true" %}
+0
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="enableAdmin" type="Boolean" %}
+true
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="changeSupply" type="Boolean" %}
+true
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="enableFreeze" type="Boolean" %}
+true
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="enableKYC" type="Boolean" %}
+true
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="enableWipe" type="Boolean" %}
+true
+{% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="" %}
+```javascript
 {
-	"tokenName":"iRec",
-	"tokenSymbol":"iRec",
-	"tokenType":"fungible",
-	"decimals":"2",
-	"initialSupply":"0",
-	"enableAdmin":true,
-	"changeSupply":true,
-	"enableFreeze":true,
-	"enableKYC":true,
-	"enableWipe":true
-}
-```
-
-**Response body:**
-
-```
-[
-	{
+    
 		"id":"61ee817b9c02660014fa662f",
 		"tokenId":"0.0.29511821",
 		...
-	}
-]
+	
+}
 ```
+{% endswagger-response %}
+{% endswagger %}
