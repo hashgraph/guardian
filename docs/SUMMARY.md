@@ -30,18 +30,19 @@
 ## Available Policy Workflow Blocks
 
 * [Introduction](available-policy-workflow-blocks/introduction.md)
-* [Container Workflow Block](available-policy-workflow-blocks/container-workflow-block.md)
-* [Roles Workflow Block](available-policy-workflow-blocks/roles-workflow-block.md)
-* [Step Workflow Block](available-policy-workflow-blocks/step-workflow-block.md)
-* [Request Workflow Block](available-policy-workflow-blocks/request-workflow-block.md)
-* [Send Workflow Block](available-policy-workflow-blocks/send-workflow-block.md)
-* [Information Workflow Block](available-policy-workflow-blocks/information-workflow-block.md)
-* [Documents Workflow Block](available-policy-workflow-blocks/documents-workflow-block.md)
-* [Action Workflow Block](available-policy-workflow-blocks/action-workflow-block.md)
-* [External Data Workflow Block](available-policy-workflow-blocks/external-data-workflow-block.md)
-* [Token Mint Workflow Block](available-policy-workflow-blocks/token-mint-workflow-block.md)
-* [Token Wipe Workflow Block](available-policy-workflow-blocks/token-wipe-workflow-block.md)
-* [Aggregate Data Workflow Block](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
+* [InterfaceContainerBlock](available-policy-workflow-blocks/container-workflow-block.md)
+* [RolesBlock](available-policy-workflow-blocks/roles-workflow-block.md)
+* [InterfaceStepBlock](available-policy-workflow-blocks/step-workflow-block.md)
+* [requestVCDocumentBlock](available-policy-workflow-blocks/request-workflow-block.md)
+* [sendToGuardianBlock](available-policy-workflow-blocks/send-workflow-block.md)
+* [InformationBlock](available-policy-workflow-blocks/information-workflow-block.md)
+* [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/documents-workflow-block.md)
+* [DocumentsSourceAddOnBlock](available-policy-workflow-blocks/documents-workflow-block-1.md)
+* [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
+* [externalDataBlock](available-policy-workflow-blocks/external-data-workflow-block.md)
+* [mintDocumentBlock](available-policy-workflow-blocks/token-mint-workflow-block.md)
+* [wipeDocumentBlock](available-policy-workflow-blocks/token-wipe-workflow-block.md)
+* [aggregateDocumentBlock](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 

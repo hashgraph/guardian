@@ -1,10 +1,10 @@
-# Request Workflow Block
+# requestVCDocumentBlock
 
 ### Properties
 
 | Block Property   | Definition                                                                                                                                                   | Example Input                                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| Type             | A type of the block which creates a form from the schema, and sends the document to the server.                                                              | **request**VCDocumentBlock (Can't be changed).                                                                               |
+| Type             | A type of the block which creates a form from the schema, and sends the document to the server.                                                              | **requestVCDocument**Block (Can't be changed).                                                                               |
 | Tag              | Unique name for the logic block.                                                                                                                             | add\_new\_installer\_request.                                                                                                |
 | Permissions      | Which entity has rights to interact at this part of the workflow.                                                                                            | Root Authority.                                                                                                              |
 | Default Active   | Shows whether this block is active at this time and whether it needs to be shown.                                                                            | Checked or unchecked.                                                                                                        |
