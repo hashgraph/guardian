@@ -82,10 +82,18 @@ function GetURL(service, ...methods) {
     return [BASE_URL, service, ...methods].join('/');
 }
 
+function GenerateUUIDv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 module.exports = {
     sleep,
     GetURL,
     SaveToken,
     GetToken,
-    GenerateTokens
+    GenerateTokens,
+    GenerateUUIDv4
 }

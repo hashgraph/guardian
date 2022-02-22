@@ -19,7 +19,6 @@ RUN npm run build
 WORKDIR /usr/guardian-service
 COPY ./guardian-service/package*.json ./
 COPY ./guardian-service/tsconfig.json ./
-COPY ./guardian-service/config.json ./
 COPY ./guardian-service/.env.docker ./.env
 COPY ./guardian-service/system-schemes ./system-schemes/.
 RUN npm install

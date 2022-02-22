@@ -40,9 +40,10 @@ function Profiles() {
                 }
             }
         );
+
         result = await axios.put(
             GetURL('profile'),
-            {"hederaAccountId": result.data.id, "hederaAccountKey":result.data.key, "vcDocument":{"name":"1234","type":"RootAuthority","@context":["https://localhost/schema"]},"addressBook":{"appnetName":"Test Identity SDK appnet","didServerUrl":"http://localhost:3000/api/v1","didTopicMemo":"Test Identity SDK appnet DID topic","vcTopicMemo":"Test Identity SDK appnet VC topic"}},
+            {"hederaAccountId": result.data.id, "hederaAccountKey":result.data.key, "vcDocument":{"name":"1234","type":"RootAuthority&1.0.0","@context":["https://ipfs.io/ipfs/bafkreibzihfnj67xgs74xfv2ap7rallevyce6uj5sg73j3p2cxlm2qx6ru"]},"addressBook":{"appnetName":"Test Identity SDK appnet","didServerUrl":"http://localhost:3000/api/v1","didTopicMemo":"Test Identity SDK appnet DID topic","vcTopicMemo":"Test Identity SDK appnet VC topic"}},
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -50,6 +51,7 @@ function Profiles() {
                 }
             }
         );
+
         assert.equal(result.data, null);
 
         result = await axios.get(
@@ -60,6 +62,7 @@ function Profiles() {
                 }
             }
         );
+
         result = await axios.put(
             GetURL('profile'),
             {"hederaAccountId": result.data.id, "hederaAccountKey":result.data.key},

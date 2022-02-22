@@ -4,7 +4,7 @@ const assert = require("assert");
 
 function Policies() {
     let policyId, policyTag, policyOwner;
-    let policy, policyBuffer, policyImportObject;
+    let policy, policyMessageId, policyImportObject, policyBlob;
     let blockId, blockTag;
 
     it('/policies', async function() {
@@ -21,9 +21,114 @@ function Policies() {
         );
         assert.equal(Array.isArray(result.data), true);
 
+        const schema = (await axios.get(
+            GetURL('schemas'),
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                }
+            }
+        )).data.find(s => s.entity === 'ROOT_AUTHORITY');
+
         result = await axios.post(
             GetURL('policies'),
-            {"uuid":"bfb7dacb-13b9-4958-8939-7cd5045a8a5c","name":"e2e", "description":"","topicDescription":"","config":{"blockType":"interfaceContainerBlock","id":"476cb893-1de6-4daa-aaec-b0ef3e556cab","children":[{"id":"bb2e5ee1-79e4-473d-b6d9-007bff6dd886","tag":"Block4","blockType":"interfaceContainerBlock","defaultActive":true,"children":[{"id":"33a892f7-ad5b-45de-b512-9cff9448c5f3","tag":"Block2","blockType":"policyRolesBlock","defaultActive":true,"children":[],"permissions":["NO_ROLE"],"uiMetaData":{"title":"Test"},"roles":["Test_role"]},{"id":"8a164762-a4bc-45ad-b846-10dba5987915","tag":"Block5","blockType":"informationBlock","defaultActive":true,"children":[],"uiMetaData":{"type":"text","title":"Test","description":"Test"},"permissions":["Test_role"]},{"id":"bd348401-6955-4964-850e-6a5d6e0cfd32","tag":"Block6","blockType":"interfaceDocumentsSource","defaultActive":true,"children":[{"id":"ec4aff17-38a4-43d0-942a-eb107d0869da","tag":"Block7","blockType":"documentsSourceAddon","defaultActive":true,"children":[],"permissions":["OWNER","ANY_ROLE"],"filters":[],"dataType":"vc-documents","schema":"#e5c2ddb2-c2d2-48e0-98a2-d61fd3c022bf&1.0.0"}],"permissions":["OWNER","ANY_ROLE"],"uiMetaData":{"fields":[{"title":"","name":"document.id","tooltip":"","type":"text"}]}},{"id":"44973d3a-ac0f-43d5-8b2b-cea4a7290342","tag":"Block9","blockType":"interfaceStepBlock","defaultActive":true,"children":[{"id":"70a43732-3b6c-4eca-8f13-c02583878a6a","tag":"Block8","blockType":"requestVcDocument","defaultActive":true,"children":[],"permissions":["OWNER","ANY_ROLE"],"uiMetaData":{"privateFields":[],"type":"page","title":"Test"},"schema":"#e5c2ddb2-c2d2-48e0-98a2-d61fd3c022bf&1.0.0"},{"id":"d42c2739-dc87-46a4-8b6e-54beb6838293","tag":"Block10","blockType":"sendToGuardian","defaultActive":true,"children":[],"permissions":["OWNER","ANY_ROLE"],"uiMetaData":{},"dataType":"vc-documents","entityType":"test"}],"permissions":["OWNER","ANY_ROLE"],"uiMetaData":{},"cyclic":true}],"uiMetaData":{"type":"tabs"},"permissions":["OWNER","ANY_ROLE"]}],"uiMetaData":{"type":"blank"},"permissions":["ANY_ROLE"],"defaultActive":true},"owner":"did:hedera:testnet:CWfVb5bREzxcgAWuoJ1AMrFMvhJhcj9Ynv7HkNeSkxHF;hedera:testnet:fid=0.0.29515157","policyRoles":["Test_role"],"registeredUsers":{"did:hedera:testnet:CWfVb5bREzxcgAWuoJ1AMrFMvhJhcj9Ynv7HkNeSkxHF;hedera:testnet:fid=0.0.29515157":"Test_role"},"topicId":"0.0.29592526","policyTag":"e2e"},
+            {
+                "name": "e2e",
+                "description": "",
+                "topicDescription": "",
+                "config": {
+                    "blockType": "interfaceContainerBlock",
+                    "id": "476cb893-1de6-4daa-aaec-b0ef3e556cab",
+                    "children": [{
+                        "id": "bb2e5ee1-79e4-473d-b6d9-007bff6dd886",
+                        "tag": "Block4",
+                        "blockType": "interfaceContainerBlock",
+                        "defaultActive": true,
+                        "children": [{
+                            "id": "33a892f7-ad5b-45de-b512-9cff9448c5f3",
+                            "tag": "Block2",
+                            "blockType": "policyRolesBlock",
+                            "defaultActive": true,
+                            "children": [],
+                            "permissions": ["NO_ROLE"],
+                            "uiMetaData": { "title": "Test" },
+                            "roles": ["Test_role"]
+                        }, {
+                            "id": "8a164762-a4bc-45ad-b846-10dba5987915",
+                            "tag": "Block5",
+                            "blockType": "informationBlock",
+                            "defaultActive": true,
+                            "children": [],
+                            "uiMetaData": { "type": "text", "title": "Test", "description": "Test" },
+                            "permissions": ["Test_role"]
+                        }, {
+                            "id": "bd348401-6955-4964-850e-6a5d6e0cfd32",
+                            "tag": "Block6",
+                            "blockType": "interfaceDocumentsSource",
+                            "defaultActive": true,
+                            "children": [{
+                                "id": "ec4aff17-38a4-43d0-942a-eb107d0869da",
+                                "tag": "Block7",
+                                "blockType": "documentsSourceAddon",
+                                "defaultActive": true,
+                                "children": [],
+                                "permissions": ["OWNER", "ANY_ROLE"],
+                                "filters": [],
+                                "dataType": "vc-documents",
+                                "schema": schema.iri
+                            }],
+                            "permissions": ["OWNER", "ANY_ROLE"],
+                            "uiMetaData": {
+                                "fields": [{
+                                    "title": "",
+                                    "name": "document.id",
+                                    "tooltip": "",
+                                    "type": "text"
+                                }]
+                            }
+                        }, {
+                            "id": "44973d3a-ac0f-43d5-8b2b-cea4a7290342",
+                            "tag": "Block9",
+                            "blockType": "interfaceStepBlock",
+                            "defaultActive": true,
+                            "children": [{
+                                "id": "70a43732-3b6c-4eca-8f13-c02583878a6a",
+                                "tag": "Block8",
+                                "blockType": "requestVcDocument",
+                                "defaultActive": true,
+                                "children": [],
+                                "permissions": ["OWNER", "ANY_ROLE"],
+                                "uiMetaData": { "privateFields": [], "type": "page", "title": "Test" },
+                                "schema": schema.iri
+                            }, {
+                                "id": "d42c2739-dc87-46a4-8b6e-54beb6838293",
+                                "tag": "Block10",
+                                "blockType": "sendToGuardian",
+                                "defaultActive": true,
+                                "children": [],
+                                "permissions": ["OWNER", "ANY_ROLE"],
+                                "uiMetaData": {},
+                                "dataType": "vc-documents",
+                                "entityType": "test"
+                            }],
+                            "permissions": ["OWNER", "ANY_ROLE"],
+                            "uiMetaData": {},
+                            "cyclic": true
+                        }],
+                        "uiMetaData": { "type": "tabs" },
+                        "permissions": ["OWNER", "ANY_ROLE"]
+                    }],
+                    "uiMetaData": { "type": "blank" },
+                    "permissions": ["ANY_ROLE"],
+                    "defaultActive": true
+                },
+                "owner": "did:hedera:testnet:CWfVb5bREzxcgAWuoJ1AMrFMvhJhcj9Ynv7HkNeSkxHF;hedera:testnet:fid=0.0.29515157",
+                "policyRoles": ["Test_role"],
+                "registeredUsers": { "did:hedera:testnet:CWfVb5bREzxcgAWuoJ1AMrFMvhJhcj9Ynv7HkNeSkxHF;hedera:testnet:fid=0.0.29515157": "Test_role" },
+                "topicId": "0.0.29592526",
+                "policyTag": "e2e"
+            },
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -34,7 +139,7 @@ function Policies() {
         policyId = result.data[0].id;
         policyTag = result.data[0].policyTag;
         policyOwner = result.data[0].owner;
-        // assert.equal(Array.isArray(result.data), true);
+        assert.equal(Array.isArray(result.data), true);
     })
 
     it('/policies/{policyId}', async function() {
@@ -160,29 +265,28 @@ function Policies() {
         assert.equal(result.data.config.blockType, 'interfaceContainerBlock')
     });
 
-    it('/policies/{policyId}/export', async function() {
+    it('/policies/{policyId}/export/file', async function() {
         this.timeout(60000);
         let result;
         result = await axios.get(
-            GetURL('policies', policyId, 'export'),
+            GetURL('policies', policyId, 'export', 'file'),
             {
-                responseType: 'arraybuffer',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${GetToken('RootAuthority')}`,
-                }
+                },
+                responseType: 'arraybuffer'
             }
         );
-        policyBuffer = result.data;
-        assert.equal(Math.floor(policyBuffer.length / 10), 388);
+        policyBlob = result.data;
     });
 
-    it('/policies/import/preview', async function() {
+    it('/policies/import/file/preview', async function() {
         this.timeout(60000);
         let result;
         result = await axios.post(
-            GetURL('policies', 'import', 'preview'),
-            policyBuffer,
+            GetURL('policies', 'import', 'file', 'preview'),
+            policyBlob,
             {
                 headers: {
                     'Content-Type': 'binary/octet-stream',
@@ -191,20 +295,20 @@ function Policies() {
             }
         );
         policyImportObject = result.data;
-        assert.equal(result.data.policy.uuid, policy.uuid);
+        assert.equal(result.data.policy.name, "e2e");
     });
 
-    it('/policies/import', async function() {
+    it('/policies/import/file', async function() {
         this.timeout(60000);
         let result;
         policyImportObject.policy.version = '2.0.0';
 
         result = await axios.post(
-            GetURL('policies', 'import'),
-            policyImportObject,
+            GetURL('policies', 'import', 'file'),
+            policyBlob,
             {
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'binary/octet-stream',
                     'Authorization': `Bearer ${GetToken('RootAuthority')}`,
                 }
             }

@@ -95,7 +95,7 @@ export class InterfaceDocumentActionBlock {
             const userDID = userFull.did;
             const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
-            const schemaObject = await this.guardians.getSchemaByMessage(ref.options.schema);
+            const schemaObject = await this.guardians.getSchemaByIRI(ref.options.schema);
             const schema = new Schema(schemaObject);
             return {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
@@ -108,7 +108,11 @@ export class InterfaceDocumentActionBlock {
                     'did': sensorDid,
                     'key': sensorKey,
                     'type': schema.type,
-                    'schema': JSON.parse(schema.context),
+                    'schema': schema.contextObject,
+                    'context': {
+                        'type': schema.type,
+                        '@context': [schema.contextURL]
+                    },
                     'policyId': ref.policyId,
                     'policyTag': policy.policyTag
                 }
@@ -185,13 +189,9 @@ export class InterfaceDocumentActionBlock {
                         break;
                     }
 
-                    const schema = await this.guardians.getSchemaByMessage(ref.options.schema);
+                    const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
                     if (!schema) {
                         resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                        break;
-                    }
-                    if (schema.status != SchemaStatus.PUBLISHED) {
-                        resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" is not published`);
                         break;
                     }
                     break;

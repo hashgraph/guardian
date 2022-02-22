@@ -22,6 +22,7 @@ import { ContextDocumentLoader } from './document-loader/context-loader';
 import { VCSchemaLoader } from './document-loader/vc-schema-loader';
 import { SubjectSchemaLoader } from './document-loader/subject-schema-loader';
 import { IPFS } from '@helpers/ipfs';
+import { demoAPI } from '@api/demo';
 
 const PORT = process.env.PORT || 3001;
 
@@ -59,18 +60,18 @@ Promise.all([
     // <-- Document Loader
     const vcHelper = new VCHelper()
     const defaultDocumentLoader = new DefaultDocumentLoader();
-    const schemaDocumentLoader = new ContextDocumentLoader('https://localhost/schema', schemaRepository);
+    const schemaDocumentLoader = new ContextDocumentLoader(schemaRepository, 'https://ipfs.io/ipfs/');
     const didDocumentLoader = new DIDDocumentLoader(didDocumentRepository);
     const vcSchemaObjectLoader = new VCSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
     const subjectSchemaObjectLoader = new SubjectSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
 
-    vcHelper.addContext('https://localhost/schema');
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(schemaDocumentLoader);
     vcHelper.addDocumentLoader(didDocumentLoader);
     vcHelper.addSchemaLoader(vcSchemaObjectLoader);
     vcHelper.addSchemaLoader(subjectSchemaObjectLoader);
     vcHelper.buildDocumentLoader();
+    vcHelper.buildSchemaLoader();
     // Document Loader -->
 
     await setDefaultSchema(schemaRepository);
@@ -86,6 +87,7 @@ Promise.all([
         vpDocumentRepository,
         vcHelper
     );
+    await demoAPI(channel);
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);

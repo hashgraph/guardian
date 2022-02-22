@@ -422,6 +422,19 @@ components:
     ExportPolicy:
       type: object
       required:
+        - name
+        - version
+        - messageId
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        tokens:
+          type: string
+    PreviewPolicy:
+      type: object
+      required:
         - policy
         - schemas
         - tokens
@@ -661,7 +674,7 @@ paths:
     put:
       tags:
         - profiles
-      description: Sets Hedera credentials for the user. For users with the Root Autority role it also creates an address book.
+      description: Sets Hedera credentials for the user. For users with the Root Authority role it also creates an address book.
       parameters:
         - in: path
           name: username
@@ -753,7 +766,7 @@ paths:
     put:
       tags:
         - schemas
-      description: Publishes the schema with the provided schema ID.
+      description: Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -764,6 +777,16 @@ paths:
       security:
       - bearerAuth: []
       summary: Publishes the schema.
+      requestBody:
+        description: Object that contains policy version.
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
       responses:
         200:
           description: Successful operation.
@@ -788,7 +811,7 @@ paths:
     put:
       tags:
         - schemas
-      description: Updates the schema with the provided schema ID.
+      description: Updates the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -829,7 +852,7 @@ paths:
     delete:
       tags:
         - schemas
-      description: Deletes the schema with the provided schema ID.
+      description: Deletes the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -860,16 +883,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /schemas/import:
+  /schemas/import/file:
     post:
       tags:
         - schemas
-      description: Imports new schema from IPFS. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Imports new schema from a zip file.
+      requestBody:
+        description: A zip file containing schema to be imported.
+        required: true
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/import/message:
+    post:
+      tags:
+        - schemas
+      description: Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Imports new schema from IPFS.
       requestBody:
-        description: Object that contains topic message identifier.
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
         required: true
         content:
           application/json:
@@ -898,16 +952,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /schemas/import/preview:
+  /schemas/import/message/preview:
     post:
       tags:
         - schemas
-      description: Schema preview by topic message. Only users with the Root Authority role are allowed to make the request.
+      description: Previews the schema from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Schema preview.
+      summary: Schema preview from IPFS.
       requestBody:
-        description: Object that contains topic message identifier.
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
         required: true
         content:
           application/json:
@@ -922,7 +976,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Schema'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /schemas/import/file/preview:
+    post:
+      tags:
+        - schemas
+      description: Previews the schema from a zip file. Only users with the Root Authority role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Schema preview from a zip file.
+      requestBody:
+        description: A zip file containing the schema to be viewed.
+        required: true
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -934,26 +1021,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /schemas/export:
+  /schemas/{schemaId}/export/message:
     post:
       tags:
         - schemas
-      description: Exports selected schemas. Only users with the Root Authority role are allowed to make the request.
+      description: Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Exports selected schemas.
-      requestBody:
-        description: Object that contains IDs of schemas.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                ids:
-                  type: array
-                  items:
-                    type: string
+      summary: List Hedera message IDs of published schemas.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Selected schema ID.
       responses:
         200:
           description: Successful operation.
@@ -961,6 +1043,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExportSchema"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/{schemaId}/export/file:
+    post:
+      tags:
+        - schemas
+      description: Returns schema files for the schemas. Only users with the Root Authority role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Return zip file with schemas.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Selected schema ID.
+      responses:
+        200:
+          description: Successful operation. Response zip file
         401:
           description: Unauthorized.
         403:
@@ -1514,7 +1625,7 @@ paths:
     put:
       tags:
         - policies
-      description: Publishes selected policy. Only users with the Root Authority role are allowed to make the request.
+      description: Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -1532,7 +1643,7 @@ paths:
                 properties:
                   policyVersion:
                     type: string
-      summary: Publishes policy.
+      summary: Publishes the policy onto IPFS.
       security:
       - bearerAuth: []
       responses:
@@ -1740,11 +1851,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /policies/{policyId}/export:
+  /policies/{policyId}/export/message:
     get:
       tags:
         - policies
-      description: Exports selected policy as a zip file.
+      description: Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Root Authority role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -1754,14 +1865,47 @@ paths:
           description: Selected policy ID.
       security:
       - bearerAuth: []
-      summary: Policy export.
+      summary: Return Heder message ID for the specified published policy.
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportSchema'
+                $ref: '#/components/schemas/ExportPolicy'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/export/file:
+    get:
+      tags:
+        - policies
+      description: Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Selected policy ID.
+      security:
+      - bearerAuth: []
+      summary: Return policy and its artifacts in a zip file format for the specified policy.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportPolicy'
         401:
           description: Unauthorized.
         403:
@@ -1773,16 +1917,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   
-  /policies/import:
+  /policies/import/message:
     post:
       tags:
         - policies
-      description: Imports new policy from IPFS.
+      description: Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Imports new policy from IPFS.
       requestBody:
-        description: Object that contains topic message identifier.
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy.
         required: true
         content:
           application/json:
@@ -1811,16 +1955,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /policies/import/preview:
+  /policies/import/file:
     post:
       tags:
         - policies
-      description: Policy preview by topic message.
-      summary: Policy preview.
+      description: Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Imports new policy from a zip file.
+      requestBody:
+        description: A zip file that contains the policy and associated schemas and VCs to be imported.
+        required: true
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyConfig'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/import/message/preview:
+    post:
+      tags:
+        - policies
+      description: Previews the policy from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
+      summary: Policy preview from IPFS.
       security:
       - bearerAuth: []
       requestBody:
-        description: Object that contains topic message identifier.
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the policy.
         required: true
         content:
           application/json:
@@ -1835,7 +2010,36 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportPolicy'
+                $ref: '#/components/schemas/PreviewPolicy'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/import/file/preview:
+    post:
+      tags:
+        - policies
+      description: Previews the policy from a zip file without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
+      summary: Policy preview from a zip file.
+      security:
+      - bearerAuth: []
+      requestBody:
+        description: A zip file that contains the policy and associated schemas and VCs to be viewed.
+        required: true
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewPolicy'
         401:
           description: Unauthorized.
         403:

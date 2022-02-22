@@ -60,10 +60,18 @@
                         </div>
                     </div>
 
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="calculateMenu">
+                        <mat-icon>calculate</mat-icon>
+                        <span>Calculate</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
                     <div class="delimiter"></div>
 
-                    <div *ngIf="readonly" class="btn-new-block btn-status-all" 
-                        [routerLink]="['/policy-viewer']" [queryParams]="{ policyId: policyId }">
+                    <div *ngIf="readonly" class="btn-new-block btn-status-all" [routerLink]="['/policy-viewer']"
+                        [queryParams]="{ policyId: policyId }">
                         <mat-icon>login</mat-icon>
                         <span>Open</span>
                     </div>
@@ -103,19 +111,30 @@
         <div class="setting">
             <div class="group policy-config" [attr.col-group]="colGroup1">
                 <div class="group-header">
-                    <div class="group-title">Policy</div>
+                    <div class="group-title">Policy Properties</div>
                     <div class="group-col" (click)="onColGroup(1)">
                         <mat-icon>expand_more</mat-icon>
                     </div>
                 </div>
                 <div class="group-body">
-                    <policy-properties [policy]="policy" [readonly]="readonly"></policy-properties>
+                    <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Main'"></policy-properties>
+                </div>
+            </div>
+            <div class="group policy-role" [attr.col-group]="colGroup3">
+                <div class="group-header">
+                    <div class="group-title">Policy Roles</div>
+                    <div class="group-col" (click)="onColGroup(3)">
+                        <mat-icon>expand_more</mat-icon>
+                    </div>
+                </div>
+                <div class="group-body">
+                    <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Role'"></policy-properties>
                 </div>
             </div>
             <div class="group properties-config" *ngIf="currentBlock" [attr.col-group]="colGroup2"
                 [attr.hide]="currentView !== 'blocks'">
                 <div class="group-header">
-                    <div class="group-title">Properties</div>
+                    <div class="group-title">Block Properties</div>
                     <div class="group-col" (click)="onColGroup(2)">
                         <mat-icon>expand_more</mat-icon>
                     </div>
@@ -127,9 +146,24 @@
                         </div>
                     </div>
                     <div class="common-properties">
-                        <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                            [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles">
-                        </common-properties>
+                        <ng-container *ngIf="propTab=='Properties'">
+                            <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles">
+                            </common-properties>
+                        </ng-container>
+                        <ng-container *ngIf="propTab=='JSON'">
+                            <json-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles">
+                            </json-properties>
+                        </ng-container>
+                    </div>
+                </div>
+                <div class="group-tab">
+                    <div class="group-tab-item" [attr.active]="propTab=='Properties'" (click)="propTab='Properties'">
+                        Properties
+                    </div>
+                    <div class="group-tab-item" [attr.active]="propTab=='JSON'" (click)="propTab='JSON'">
+                        JSON
                     </div>
                 </div>
             </div>
@@ -147,6 +181,14 @@
 
 <mat-menu #tokensMenu="matMenu">
     <div *ngFor="let item of registeredBlocks.groups.Tokens" class="btn-new-block-menu btn-status-edit"
+        (click)="onAdd(item.type)" [title]="item.title">
+        <mat-icon>{{item.icon}}</mat-icon>
+        <span>{{item.name}}</span>
+    </div>
+</mat-menu>
+
+<mat-menu #calculateMenu="matMenu">
+    <div *ngFor="let item of registeredBlocks.groups.Calculate" class="btn-new-block-menu btn-status-edit"
         (click)="onAdd(item.type)" [title]="item.title">
         <mat-icon>{{item.icon}}</mat-icon>
         <span>{{item.name}}</span>

@@ -87,6 +87,7 @@ module.exports.testObject1 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
         'schema': 'VerifiablePresentation',
+        'entity': 'VP',
         'label': 'ID',
         'tag': 'mint_token'
     },
@@ -127,6 +128,7 @@ module.exports.testObject1 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
         'schema': 'MRV',
+        'entity': 'MRV',
         'tag': 'save_mrv_document',
         'label': 'HASH'
     },
@@ -169,6 +171,7 @@ module.exports.testObject1 = [
         ],
         'owner': 'did:hedera:testnet:4iCPiUyiKcHaMLrytqRHavQRCknLGg4n3BcLc5unxn5K;hedera:testnet:fid=0.0.2859201',
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -209,6 +212,7 @@ module.exports.testObject1 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
         'schema': 'Inverter',
+        'entity': 'Inverter',
         'tag': 'send_sensor_vc_to_guardian',
         'label': 'HASH'
     },
@@ -251,6 +255,7 @@ module.exports.testObject1 = [
         ],
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -288,6 +293,7 @@ module.exports.testObject1 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
         'schema': 'Installer',
+        'entity': 'Installer',
         'tag': 'send_installer_vc_to_guardian',
         'label': 'HASH'
     },
@@ -330,6 +336,7 @@ module.exports.testObject1 = [
         ],
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -370,6 +377,7 @@ module.exports.testObject1 = [
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': 'Policy',
+        'entity': 'Policy',
         'label': 'HASH',
         'tag': 'Policy Created'
     },
@@ -412,6 +420,7 @@ module.exports.testObject1 = [
         ],
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -449,6 +458,7 @@ module.exports.testObject1 = [
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': 'RootAuthority',
+        'entity': 'RootAuthority',
         'label': 'HASH',
         'tag': 'Account Creation'
     }
@@ -543,6 +553,7 @@ module.exports.testObject2 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',        
         'schema': 'VerifiablePresentation',
+        'entity': 'VP',
         'label': 'ID',
         'tag': 'mint_token'
     },
@@ -583,6 +594,7 @@ module.exports.testObject2 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',        
         'schema': 'MRV',
+        'entity': 'MRV',
         'tag': 'save_mrv_document',
         'label': 'HASH'
     },
@@ -624,6 +636,7 @@ module.exports.testObject2 = [
         ],
         'owner': 'did:hedera:testnet:8NrYtVbU9opPNYZuEA4Zie4Bjy2wmBWn9eQY4YDmfSZ;hedera:testnet:fid=0.0.2859201',
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -663,6 +676,7 @@ module.exports.testObject2 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',        
         'schema': 'Inverter',
+        'entity': 'Inverter',
         'tag': 'send_sensor_vc_to_guardian',
         'label': 'HASH'
     },
@@ -705,6 +719,7 @@ module.exports.testObject2 = [
         ],
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',        
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -742,6 +757,7 @@ module.exports.testObject2 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',        
         'schema': 'Installer',
+        'entity': 'Installer',
         'tag': 'send_installer_vc_to_guardian',
         'label': 'HASH'
     },
@@ -784,6 +800,7 @@ module.exports.testObject2 = [
         ],
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',        
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -824,6 +841,7 @@ module.exports.testObject2 = [
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': 'Policy',
+        'entity': 'Policy',
         'label': 'HASH',
         'tag': 'Policy Created'
     },
@@ -865,6 +883,7 @@ module.exports.testObject2 = [
         ],
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -901,6 +920,7 @@ module.exports.testObject2 = [
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': 'RootAuthority',
+        'entity': 'RootAuthority',
         'label': 'HASH',
         'tag': 'Account Creation'
     }
@@ -941,6 +961,7 @@ module.exports.testObject3 = [
         },
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
         'schema': 'Installer',
+        'entity': 'Installer',
         'tag': 'send_installer_vc_to_guardian',
         'label': 'HASH'
     },
@@ -983,6 +1004,7 @@ module.exports.testObject3 = [
         ],
         'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -1023,6 +1045,7 @@ module.exports.testObject3 = [
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': 'Policy',
+        'entity': 'Policy',
         'label': 'HASH',
         'tag': 'Policy Created'
     },
@@ -1065,6 +1088,7 @@ module.exports.testObject3 = [
         ],
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': null,
+        'entity': 'DID',
         'label': 'DID',
         'tag': null
     },
@@ -1102,6 +1126,7 @@ module.exports.testObject3 = [
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
         'schema': 'RootAuthority',
+        'entity': 'RootAuthority',
         'label': 'HASH',
         'tag': 'Account Creation'
     }

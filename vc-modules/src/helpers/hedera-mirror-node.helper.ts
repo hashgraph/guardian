@@ -2,17 +2,21 @@ import axios from "axios";
 import { HederaHelper, ISubmitModelMessage } from "..";
 import { IPolicySubmitMessage } from "../interfaces/policy-submit-message.interface";
 import { ISchemaSubmitMessage } from "../interfaces/schema-submit-message.interface";
+import { timeout } from "./utils";
 
 /**
  * Hedera mirror node helper
  */
 export class HederaMirrorNodeHelper {
+    public static MAX_TIMEOUT: number = 60000;
+
     /**
      * Return message by timestamp (messageId)
      * @param {string} timeStamp Message identifier
      * 
      * @returns {any} - Message
      */
+    @timeout(HederaMirrorNodeHelper.MAX_TIMEOUT)
     public static async getTopicMessage(timeStamp: string): Promise<{
         timeStamp: string,
         topicId: string,
@@ -31,6 +35,7 @@ export class HederaMirrorNodeHelper {
      * @param timeStamp Message identifier
      * @returns Message
      */
+    @timeout(HederaMirrorNodeHelper.MAX_TIMEOUT)
     public static async getSchemaTopicMessage(timeStamp: string): Promise<{
         timeStamp: string,
         topicId: string,
@@ -66,6 +71,7 @@ export class HederaMirrorNodeHelper {
      * @param timeStamp Message identifier
      * @returns Message
      */
+    @timeout(HederaMirrorNodeHelper.MAX_TIMEOUT)
     public static async getPolicyTopicMessage(timeStamp: string): Promise<{
         timeStamp: string,
         topicId: string,
@@ -116,7 +122,7 @@ export class HederaMirrorNodeHelper {
      * @param message Message
      * @returns Validation flag
      */
-    private static validateBasicMessageFields (message: ISubmitModelMessage): boolean {
+    private static validateBasicMessageFields(message: ISubmitModelMessage): boolean {
         if (!message.name) {
             return false;
         }
@@ -142,7 +148,7 @@ export class HederaMirrorNodeHelper {
      * @param message Policy submit message
      * @returns Validation flag
      */
-    private static validatePolicyMessageFields (message : IPolicySubmitMessage): boolean {
+    private static validatePolicyMessageFields(message: IPolicySubmitMessage): boolean {
         if (!this.validateBasicMessageFields(message)) {
             return false;
         }
@@ -172,7 +178,7 @@ export class HederaMirrorNodeHelper {
      * @param message Schema submit message
      * @returns Validation flag
      */
-    private static  validateSchemaMessageFields (message : ISchemaSubmitMessage): boolean {
+    private static validateSchemaMessageFields(message: ISchemaSubmitMessage): boolean {
         if (!this.validateBasicMessageFields(message)) {
             return false;
         }

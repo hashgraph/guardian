@@ -10,7 +10,7 @@ import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-s
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from 'src/app/schema-engine/schema-view-dialog/schema-view-dialog.component';
-import { ExportModelDialog } from 'src/app/components/export-model-dialog/export-model-dialog.component';
+import { ExportSchemaDialog } from 'src/app/schema-engine/export-schema-dialog/export-schema-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -26,12 +26,11 @@ export class SchemaConfigComponent implements OnInit {
     schemes: Schema[] = [];
     publishSchemes: Schema[] = [];
     schemaColumns: string[] = [
-        'selected',
-        'uuid',
         'type',
         'version',
         'entity',
         'status',
+        'export',
         'operation',
         'edit',
         'delete',
@@ -169,6 +168,39 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
+    newDocument(element: Schema) {
+        const newDocument: any = { ...element };
+        delete newDocument.id;
+        delete newDocument.uuid;
+        delete newDocument.creator;
+        delete newDocument.owner;
+        delete newDocument.version;
+        delete newDocument.previousVersion;
+        const dialogRef = this.dialog.open(SchemaDialog, {
+            width: '950px',
+            panelClass: 'g-dialog',
+            data: {
+                type: 'version',
+                schemes: this.publishSchemes,
+                scheme: newDocument
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+            if (schema) {
+                this.loading = true;
+                this.schemaService.create(schema).subscribe((data) => {
+                    this.setSchema(data);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
     publish(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
@@ -218,58 +250,63 @@ export class SchemaConfigComponent implements OnInit {
     async importSchemes() {
         const dialogRef = this.dialog.open(ImportSchemaDialog, {
             width: '500px',
-            data: {
-                schemes: this.schemes,
-                callbackIpfsImport: this.schemaPreview.bind(this)
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.importSchemesDetails(result);
             }
         });
-        // dialogRef.afterClosed().subscribe(async (result) => {
-        //     if (result && result.schemes) {
-        //         this.schemaService.import(result.schemes).subscribe((data) => {
-        //             this.setSchema(data);
-        //             this.loading = false;
-        //         }, (e) => {
-        //             this.loading = false;
-        //         });
-        //     }
-        // });
     }
 
-    schemaPreview(schema: string, messageId: string){
+    importSchemesDetails(result: any) {
+        const { type, data, schemes } = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
-                schema: schema
+                schemes: schemes
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.schemaService.importByMessage(messageId).subscribe((data) => {
-                    this.setSchema(data);
-                    this.loading = false;
-                }, (e) => {
-                    this.loading = false;
-                });
+                if (type == 'message') {
+                    this.schemaService.importByMessage(data).subscribe((schemes) => {
+                        this.setSchema(schemes);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        this.loading = false;
+                    });
+                } else if (type == 'file') {
+                    this.schemaService.importByFile(data).subscribe((schemes) => {
+                        this.setSchema(schemes);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        this.loading = false;
+                    });
+                }
             }
         });
     }
 
     setSchema(data: ISchema[]) {
         this.schemes = SchemaHelper.map(data);
-        this.schemes =  this.schemes.filter(s=>!s.readonly);
+        this.schemes = this.schemes.filter(s => !s.readonly);
         this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
-        
     }
 
-    exportSchemes() {
-        const selectedSchemas = this.schemes.filter((schema:any) => schema._selected).map(schema=>schema.id);
-        this.schemaService.export(selectedSchemas)
-            .subscribe(res => this.dialog.open(ExportModelDialog, {
+    export(element: any) {
+        this.schemaService.exportInMessage(element.id)
+            .subscribe(schema => this.dialog.open(ExportSchemaDialog, {
                 width: '700px',
+                panelClass: 'g-dialog',
                 data: {
-                    models: res
+                    schema: schema
                 },
                 autoFocus: false
             }));
@@ -289,8 +326,7 @@ export class SchemaConfigComponent implements OnInit {
         this.selectedAll = selectedAll;
         for (let i = 0; i < this.schemes.length; i++) {
             const element: any = this.schemes[i];
-            if (element.messageId)
-            {
+            if (element.messageId) {
                 element._selected = selectedAll;
             }
         }

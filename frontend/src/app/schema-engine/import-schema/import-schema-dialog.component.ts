@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ImportType, Schema, SchemaHelper } from 'interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
@@ -13,140 +13,75 @@ import { SchemaService } from 'src/app/services/schema.service';
     styleUrls: ['./import-schema-dialog.component.css']
 })
 export class ImportSchemaDialog {
-    valid: boolean = false;
-    newSchemes!: any;
-    importType?: ImportType;
-    dataForm = this.fb.group({
-      timestamp: ['']
-    });
-    callbackIpfsImport: any;
-    loading: boolean = false;
+  importType?: ImportType;
+  dataForm = this.fb.group({
+    timestamp: ['', Validators.required]
+  });
+  loading: boolean = false;
 
-    private _isimportTypeSelected$ = new ReplaySubject<boolean>(1);
+  public isImportTypeSelected: boolean = false;
 
-    constructor(
-        public dialogRef: MatDialogRef<ImportSchemaDialog>,
-        private fb: FormBuilder,
-        private schemaService: SchemaService,
-        @Inject(MAT_DIALOG_DATA) public data: any
-    ) {
-        this._isimportTypeSelected$.next(false);
+  constructor(
+    public dialogRef: MatDialogRef<ImportSchemaDialog>,
+    private fb: FormBuilder,
+    private schemaService: SchemaService,
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+  }
+
+  setImportType(importType: ImportType) {
+    this.importType = importType;
+    this.isImportTypeSelected = true;
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close(null);
+  }
+
+  importFromMessage() {
+    if (!this.dataForm.valid) {
+      return;
     }
 
-    public get isImportTypeSelected$(): Observable<boolean> {
-      return this._isimportTypeSelected$;
-    }
+    this.loading = true;
+    const messageId = this.dataForm.get('timestamp')?.value;
 
-    setImportType(importType: ImportType) {
-      this.importType = importType;
-      this._isimportTypeSelected$.next(true);
-    }
-
-    getDialogTitle() {
-      switch (this.importType){
-        case ImportType.FILE:
-          return "Import Schemes";
-        case ImportType.IPFS:
-          return "Enter hedera message timestamp";
-        default:
-          return "";
-      }
-    }
-
-    ngOnInit() {
-        this.callbackIpfsImport = this.data.callbackIpfsImport;
-        this.setImportType(ImportType.IPFS);
-    }
-
-    onNoClick(): void {
-        this.dialogRef.close(null);
-    }
-
-    onTimestampSubmit() {
-      if (!this.dataForm.valid)
-      {
-        return;
-      }
-
-      this.loading = true;
-      const messageId = this.dataForm.get('timestamp')?.value;
-
-      this.schemaService.previewByMessage(messageId)
-        .subscribe(schema => {
-             this.dialogRef.close(null);
-             this.callbackIpfsImport(schema, messageId);
-          }, error => {
-              this.loading = false;
-          });
-    }
-
-    onSubmit() {
-        if (this.valid) {
-            this.dialogRef.close({ schemes: this.newSchemes });
-        }
-    }
-
-    async onFileInput(event: any) {
-        const files = event?.target?.files as FileList;
-        const fileToUpload = files?.item(0);
-
-        this.valid = false;
-        this.newSchemes = null;
-        if (fileToUpload) {
-            const content = await this.loadObject(fileToUpload);
-            let schemes = null;
-            try {
-                schemes = this.parseFile(content)
-            } catch (error) {
-                schemes = null;
-            }
-            this.valid = !!(schemes && schemes.length);
-            this.newSchemes = schemes;
-        }
-    }
-
-    async loadObject(file: File): Promise<string> {
-        const transaction = new Promise<string>(async (resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event: any) => {
-                const configFile = event.target.result;
-                resolve(configFile);
-            }
-            reader.onerror = (error) => {
-                reject(error);
-            }
-            reader.readAsText(file);
+    this.schemaService.previewByMessage(messageId)
+      .subscribe(result => {
+        this.loading = false;
+        this.dialogRef.close({
+          type: 'message',
+          data: messageId,
+          schemes: result
         });
-        return transaction;
-    }
+      }, error => {
+        this.loading = false;
+      });
+  }
 
-    parseFile(content: string) {
-        try {
-            let schemes = JSON.parse(content);
-            if (typeof schemes == 'string') {
-                schemes = JSON.parse(schemes);
-            }
-            if (Array.isArray(schemes)) {
-                return this.validationSchema(schemes);
-            } else {
-                return this.validationSchema([schemes]);
-            }
-        } catch (error) {
-            return null;
-        }
+  importFromFile() {
+    this.loading = true;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.zip';
+    input.click();
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      const reader = new FileReader()
+      reader.readAsArrayBuffer(file);
+      reader.addEventListener('load', (e: any) => {
+        const arrayBuffer = e.target.result;
+        this.loading = true;
+        this.schemaService.previewByFile(arrayBuffer).subscribe((result) => {
+          this.loading = false;
+          this.dialogRef.close({
+            type: 'file',
+            data: arrayBuffer,
+            schemes: result
+          });
+        }, (e) => {
+          this.loading = false;
+        });
+      });
     }
-
-    validationSchema(schemes: any[]) {
-        for (let i = 0; i < schemes.length; i++) {
-            const schema = schemes[i];
-            if (!SchemaHelper.validate(schema)) {
-                return null;
-            }
-        }
-        return schemes;
-    }
-
-    getTitle(schema:any) {
-        return schema.document;
-    }
+  }
 }

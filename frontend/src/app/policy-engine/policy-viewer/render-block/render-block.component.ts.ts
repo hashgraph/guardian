@@ -59,10 +59,6 @@ export class RenderBlockComponent {
       return;
     }
 
-    if (this.componentRef) {
-      this.componentRef.destroy();
-    }
-
     if (this.block && this.block.id) {
       if (this.id != this.block.id) {
         this.id = this.block.id;
@@ -77,6 +73,9 @@ export class RenderBlockComponent {
   }
 
   loadComponent() {
+    if (this.componentRef) {
+      this.componentRef.destroy();
+    }
     this.target.clear();
     const factory: any = this.registeredBlocks.getFactory(this.blockType);
     if (factory) {

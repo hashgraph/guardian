@@ -44,6 +44,11 @@ services:
     build:
       context: .
       dockerfile: ./ipfs-client/Dockerfile
+    ports:
+      - 5001:5001
+      - 5002:5002
+      - 4001:4001
+      - 4002:4002
     depends_on:
       - message-broker
 

@@ -65,6 +65,7 @@ export class SendToGuardianBlock {
 
     async runAction(state, user) {
         console.log("send-to-guardian-block runAction");
+        console.log("send-to-guardian-block, document", JSON.stringify(state.data, null, 4));
         const ref = PolicyComponentsStuff.GetBlockRef<IPolicyBlock>(this);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
