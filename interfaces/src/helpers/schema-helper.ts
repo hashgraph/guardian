@@ -197,6 +197,7 @@ export class SchemaHelper {
             },
             required: ['@context', 'type'],
             additionalProperties: false,
+            allOf: []
         };
 
         const properties = document.properties;
@@ -204,11 +205,11 @@ export class SchemaHelper {
         
         this.getFieldsFromObject(fields, required, properties, schema);
 
-        if (conditions.length !== 0) {
-            document['allOf'] = [];
+        if (conditions.length === 0) {
+            delete document.allOf;
         }
 
-        const documentConditions = document['allOf'];
+        const documentConditions = document.allOf;
         for (let i = 0; i < conditions.length; i++) {
             const element = conditions[i];
             let ifCondition = {};
@@ -216,7 +217,9 @@ export class SchemaHelper {
             let condition = {
                 "if": {
                     "properties": ifCondition
-                }
+                },
+                "then": {},
+                "else": {}
             };
 
             let req = []
@@ -225,11 +228,14 @@ export class SchemaHelper {
             this.getFieldsFromObject(element.thenFields, req, props, schema, true);
             fields.push(...element.thenFields);
             if (Object.keys(props).length > 0) {
-                condition['then'] = {
+                condition.then = {
                     'properties': props,
                     'required': req
                 }
                 document.properties = {...document.properties, ...props};
+            }
+            else {
+                delete condition.then;
             }
 
             req = []
@@ -238,11 +244,14 @@ export class SchemaHelper {
             this.getFieldsFromObject(element.elseFields, req, props, schema, true);
             fields.push(...element.elseFields);
             if (Object.keys(props).length > 0) {
-                condition['else'] = {
+                condition.else = {
                     'properties': props,
                     'required': req
                 }
                 document.properties = {...document.properties, ...props};
+            }
+            else {
+                delete condition.else;
             }
 
             documentConditions.push(condition);
