@@ -41,4 +41,5 @@ export interface ISchemaDocument {
     $ref?: string;
     items?: ISchemaDocument;
     oneOf?: ISchemaDocument[];
+    allOf?: any[];
 }

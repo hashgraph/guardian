@@ -135,6 +135,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     onSubmit() {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
+            this.prepareDataFrom(data);
             this.policyEngineService.setBlockData(this.id, this.policyId, {
                 document: data,
                 ref: this.ref
@@ -147,6 +148,36 @@ export class RequestDocumentBlockComponent implements OnInit {
             if (this.dialogRef) {
                 this.dialogRef.close();
                 this.dialogRef = null;
+            }
+        }
+    }
+
+    prepareDataFrom(data: any) {
+        if(Array.isArray(data)) {
+            for (let j = 0; j < data.length; j++) {
+                let dataArrayElem = data[j];
+                if(dataArrayElem === "") {
+                    data.splice(j, 1);
+                }
+                if(Object.getPrototypeOf(dataArrayElem) === Object.prototype
+                    || Array.isArray(dataArrayElem)) {
+                    this.prepareDataFrom(dataArrayElem);
+                }
+            }
+        }
+
+        if (Object.getPrototypeOf(data) === Object.prototype)
+        {
+            let dataKeys = Object.keys(data);
+            for (let i = 0;i< dataKeys.length; i++) {
+                const dataElem = data[dataKeys[i]];
+                if (dataElem === "") {
+                    delete data[dataKeys[i]];
+                }
+                if (Object.getPrototypeOf(dataElem) === Object.prototype
+                    || Array.isArray(dataElem)) {
+                    this.prepareDataFrom(dataElem);
+                }
             }
         }
     }

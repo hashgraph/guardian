@@ -27,6 +27,7 @@ export { Schema } from './models/schema';
 export { SchemaStatus } from './type/schema-status.type';
 export { ISchemaDocument } from './interface/schema-document.interface';
 export { SchemaField } from './interface/schema-field.interface';
+export { SchemaCondition } from './interface/schema-condition.interface';
 export { ModelHelper } from './helpers/model-helper'
 export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';

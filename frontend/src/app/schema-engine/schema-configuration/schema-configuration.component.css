@@ -187,6 +187,13 @@ form {
 
 .add-btn {
     color: var(--button-primary-color);
+}
+
+.rmv-btn {
+    color: red;
+}
+
+.add-btn, .rmv-btn {
     margin-bottom: 5px;
     height: 56px;
     width: 100%;
@@ -201,11 +208,11 @@ form {
     margin-top: 12px;
 }
 
-.add-btn:hover {
+.add-btn:hover, .rmv-btn:hover {
     background: #fbfbfb;
 }
 
-.add-btn span {
+.add-btn span, .rmv-btn span {
     display: inline-block;
     position: relative;
     padding: 3px 30px;
@@ -214,7 +221,7 @@ form {
     font-size: 16px;
 }
 
-.add-btn span * {
+.add-btn span *, .rmv-btn span * {
     position: absolute;
     left: 0;
     top: 0;
@@ -222,4 +229,29 @@ form {
 
 *[disabled='true'] {
     pointer-events: none;
+}
+
+.condition-label {
+    color: #0c77ff;
+    font-size: 1.2em;
+    margin: 20px;
+}
+
+.condition-if-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.condition-item {
+    border-left: 2px dashed #5a5a5a;
+    padding-left: 30px;
+}
+
+.choose-field {
+    flex: 1;
+}
+
+.boolean-option {
+    margin-right: 20px;
 }

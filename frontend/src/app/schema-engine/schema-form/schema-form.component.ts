@@ -2,7 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { Schema, SchemaField } from 'interfaces';
+import { Schema, SchemaCondition, SchemaField } from 'interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -73,11 +73,14 @@ export class SchemaFormComponent implements OnInit {
   };
   @Input('formGroup') group!: FormGroup;
   @Input('delimiter-hide') delimiterHide: boolean = false;
+  @Input('conditions') conditions: any = null;
 
   options: FormGroup | undefined;
   fields: any[] | undefined = [];
+  conditionFields: SchemaField[] = [];
 
   @Output('change') change = new EventEmitter<Schema | null>();
+  @Output('destroy') destroy = new EventEmitter<void>();
   destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
@@ -91,6 +94,16 @@ export class SchemaFormComponent implements OnInit {
 
   ngOnChanges() {
     this.hide = this.hide || {};
+    this.conditionFields = [];
+    this.conditions = this.conditions || this.schema?.conditions;
+
+    this.conditions?.forEach((cond: any) => {
+      cond.conditionForm = new FormGroup({});
+      this.subscribeCondition(cond.conditionForm);
+      this.conditionFields.push(...cond.thenFields);
+      this.conditionFields.push(...cond.elseFields);
+    });
+
     if (this.schemaFields) {
       this.update(this.schemaFields);
       return;
@@ -120,7 +133,7 @@ export class SchemaFormComponent implements OnInit {
       if (['date', 'date-time'].includes(item.format)) {
         this.subscribeFormatDateValue(listItem.control, item.format);
       }
-      if (['number', 'integer', 'duration'].includes(item.type)) {
+      if (['number', 'integer'].includes(item.type) || item.format === 'duration') {
         this.subscribeFormatNumberValue(item.control, item.type);
       }
     }
@@ -175,7 +188,7 @@ export class SchemaFormComponent implements OnInit {
     const fields: any[] = [];
     for (let i = 0; i < schemaFields.length; i++) {
       const field = schemaFields[i];
-      if (this.hide[field.name]) {
+      if (this.hide[field.name] || this.conditionFields.find(elem => elem.name === field.name)) {
         continue
       }
       const item: any = {
@@ -188,9 +201,11 @@ export class SchemaFormComponent implements OnInit {
         context: field.context,
         type: field.type,
         format: field.format,
-        pattern: field.pattern
+        pattern: field.pattern,
+        conditions: field.conditions
       }
       if (!field.isArray && !field.isRef) {
+        
         item.fileUploading = false;
         let validators = this.getValidators(item);
         item.control = new FormControl("", validators);
@@ -242,6 +257,7 @@ export class SchemaFormComponent implements OnInit {
       this.options.addControl("type", new FormControl(this.context.type));
       this.options.addControl("@context", new FormControl(this.context.context));
     }
+    this.options?.updateValueAndValidity();
     this.changeDetectorRef.detectChanges();
   }
 
@@ -340,6 +356,8 @@ export class SchemaFormComponent implements OnInit {
           let momentDate = moment(val);
           let valueToSet = "";
           if (momentDate.isValid()) {
+            momentDate.seconds(0);
+            momentDate.milliseconds(0);
             valueToSet = momentDate.toISOString();
           }
 
@@ -378,6 +396,32 @@ export class SchemaFormComponent implements OnInit {
       });
   }
 
+  private subscribeCondition(controlCondition: FormGroup) {
+    let oldValue: string[] = [];
+    controlCondition.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(val => {
+        let newControls = Object.keys(val);
+        if (newControls.length !== oldValue.length) {
+          let newControlsExceptOld = newControls.filter(item=> !oldValue.includes(item));
+          let oldControlsExceptNew = oldValue.filter(item=> !newControls.includes(item));
+
+          oldControlsExceptNew.forEach(field => {
+            this.options?.removeControl(field, {
+              emitEvent: false
+            });
+          });
+
+          oldValue = newControls;
+
+          newControlsExceptOld.forEach(name => {
+            setTimeout(() => this.options?.addControl(name, controlCondition.get(name)!));
+          });
+        }
+      }); 
+  }
+
+
   private getValidators(item: any): ValidatorFn[] {
     const validators = [];
 
@@ -413,7 +457,25 @@ export class SchemaFormComponent implements OnInit {
     return validators;
   }
 
+  getConditions(field: any) {
+    if (!this.conditions) {
+      return [];
+    }
+    else {
+      return this.conditions!.filter((item: any)=> item.ifCondition.field.name === field.name);
+    }
+  }
+
+  removeConditionFields(fields: SchemaField[], condition: any) {
+    condition.conditionForm = new FormGroup({});
+    this.subscribeCondition(condition.conditionForm);
+    fields.forEach(item => {
+      setTimeout(() => this.options?.removeControl(item.name, {emitEvent:false}));
+    });
+  }
+
   ngOnDestroy() {
+    this.destroy.emit();
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
   }
