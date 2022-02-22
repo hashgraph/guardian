@@ -58,8 +58,8 @@
         <div *ngIf="item.type === 'boolean'" class="boolean-form-field"
           [ngClass]="{'required-boolean-field': item.required && !options.controls[item.name].valid}">
           <mat-radio-group [formControlName]="item.name">
-            <mat-radio-button color="primary" value="true">True</mat-radio-button>
-            <mat-radio-button color="primary" value="false">False</mat-radio-button>
+            <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
+            <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
             <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
           </mat-radio-group>
         </div>
@@ -152,8 +152,8 @@
             <div *ngIf="item.type === 'boolean'" class="boolean-form-field"
               [ngClass]="{'required-boolean-field': item.required && !listItem.control.valid}">
               <mat-radio-group [formControl]="listItem.control">
-                <mat-radio-button color="primary" value="true">True</mat-radio-button>
-                <mat-radio-button color="primary" value="false">False</mat-radio-button>
+                <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
+                <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
                 <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
               </mat-radio-group>
             </div>

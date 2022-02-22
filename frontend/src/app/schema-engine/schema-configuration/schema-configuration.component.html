@@ -89,7 +89,7 @@
                             <mat-form-field appearance="outline" *ngIf="condition.ifControl.field?.value
                                 && 'boolean' !== schemaTypeMap[condition.ifControl.field.value.controlType.value].type
                                 && !['time', 'date-time', 'date'].includes(schemaTypeMap[condition.ifControl.field.value.controlType.value].format)">
-                                <mat-label>Field value</mat-label>
+                                <mat-label>{{condition.ifControl.field.value.controlRequired.value ? "* Field value" : "Field value"}}</mat-label>
                                 <input matInput placeholder="Field value" [formControl]="condition.ifControl.fieldValue">
                             </mat-form-field>
 
@@ -124,9 +124,8 @@
                             <div *ngIf="condition.ifControl.field?.value
                              && schemaTypeMap[condition.ifControl.field.value.controlType.value].type === 'boolean'">
                                 <mat-radio-group [formControl]="condition.ifControl.fieldValue">
-                                    <mat-radio-button color="primary" class="boolean-option" value="true">True</mat-radio-button>
-                                    <mat-radio-button color="primary" class="boolean-option" value="false">False</mat-radio-button>
-                                    <mat-radio-button color="primary" class="boolean-option" *ngIf="!condition.ifControl.field.value.controlRequired.value" value="">Unset</mat-radio-button>
+                                    <mat-radio-button color="primary" class="boolean-option" [value]="true">True</mat-radio-button>
+                                    <mat-radio-button color="primary" class="boolean-option" [value]="false">False</mat-radio-button>
                                 </mat-radio-group>
                             </div>
 

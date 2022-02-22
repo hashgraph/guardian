@@ -671,6 +671,11 @@ export class SchemaConfigurationComponent implements OnInit {
 
         const type = this.schemaTypeMap[field.controlType.value];
 
+        if (type.type === 'boolean' && !field.controlRequired.value) {
+            (condition.ifControl.field as FormControl).patchValue(null);
+            return;
+        }
+
         if (['date', 'date-time'].includes(type.format)) {
             condition.ifControl.fieldChange = this.subscribeFormatDateValue(condition.ifControl.fieldValue, type.format);
         }
@@ -748,7 +753,10 @@ export class SchemaConfigurationComponent implements OnInit {
       }
 
       getNotObjectAndArrayFields() {
-        return this.fields.filter(item => !item.controlArray.value && !this.schemaTypeMap[item.controlType.value].isRef);
+        return this.fields.filter(item => 
+            !item.controlArray.value && !this.schemaTypeMap[item.controlType.value].isRef
+            && (this.schemaTypeMap[item.controlType.value].type === 'boolean' ? item.controlRequired.value : true)
+        );
       }
 
       ngOnDestroy() {
