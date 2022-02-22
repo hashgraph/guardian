@@ -1,6 +1,6 @@
-import {PolicyRole, UserRole} from 'interfaces';
-import {IAuthUser} from '../auth/auth.interface';
-import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import { PolicyRole, UserRole } from 'interfaces';
+import { IAuthUser } from '../auth/auth.interface';
+import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 export interface IPolicyRoles {
     [policyId: string]: string;
@@ -77,7 +77,7 @@ export interface IPolicySourceBlock extends IPolicyBlock {
 }
 
 export interface IPolicyAddonBlock extends IPolicyBlock {
-    filters: {[key: string]: string};
+    filters: { [key: string]: string };
 
     setData(user: IAuthUser | null, data: any): Promise<any>;
 
@@ -87,9 +87,24 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
 
     getFromSource(user: IAuthUser): any;
 
-    getFilters(): {[key: string]: string};
+    getFilters(): { [key: string]: string };
 
-    setFilters(filters: {[key: string]: string}): void
+    setFilters(filters: { [key: string]: string }): void
 }
 
-export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock;
+
+export interface IPolicyCalculateBlock extends IPolicyBlock {
+    getAddons(): IPolicyCalculateAddon[];
+}
+
+export interface IPolicyCalculateAddon extends IPolicyBlock {
+    run(scope: any): Promise<any>;
+
+    getVariables(variables: any): any;
+
+    evaluate(formula: string, scope: any): any;
+
+    parse(formula: string): boolean;
+}
+
+export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock | IPolicyCalculateBlock | IPolicyCalculateAddon;

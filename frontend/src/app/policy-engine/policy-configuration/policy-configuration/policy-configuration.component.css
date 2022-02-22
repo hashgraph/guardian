@@ -167,6 +167,7 @@
     background: #3f51b5;
     color: #fff;
     height: 30px;
+    z-index: 2;
 }
 
 .group-title {
@@ -187,6 +188,13 @@
     display: flex;
 }
 
+.policy-role {
+    min-height: 150px;
+    max-height: 15%;
+    flex: 15;
+    display: flex;
+}
+
 .properties-config {
     flex: 65;
 }
@@ -196,9 +204,33 @@
     left: 0;
     right: 0;
     top: 30px;
-    bottom: 0;
+    bottom: 24px;
     display: flex;
     flex-direction: column;
+}
+
+.group-tab {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: row;
+    height: 24px;
+    background: #647c89;
+}
+
+.group-tab-item {
+    padding: 3px 10px;
+    background: #819ba9;
+    color: #fff;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.group-tab-item[active="true"] {
+    background: #fff;
+    color: #000;
 }
 
 .group[hide="true"] .group-body {

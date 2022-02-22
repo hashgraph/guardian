@@ -39,6 +39,10 @@ export class CommonPropertiesComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
+    ngAfterViewInit(): void {
+        this.load(this.currentBlock);
+    }
+
     ngOnChanges(changes: SimpleChanges) {
         this.load(this.currentBlock);
     }
@@ -48,25 +52,29 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     load(block: BlockNode) {
-        this.block = block;
-        this.loadComponent(block);
-    }
-
-    loadComponent(block: BlockNode) {
         if (!this.configContainer) {
             return;
         }
-        this.configContainer.clear();
-        const factory: any = this.registeredBlocks.getProperties(block.blockType);
-        if (factory) {
-            let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
-            let componentRef: any = this.configContainer.createComponent(componentFactory);
-            componentRef.instance.target = this.currentBlock;
-            componentRef.instance.schemes = this.schemes;
-            componentRef.instance.all = this.allBlocks;
-            componentRef.instance.readonly = this.readonly;
-            componentRef.instance.tokens = this.tokens;
-            componentRef.instance.roles = this.roles;
+        if (this.block != block) {   
+            this.loadComponent(block);
         }
+    }
+
+    loadComponent(block: BlockNode) {
+        setTimeout(() => {
+            this.block = block;
+            this.configContainer.clear();
+            const factory: any = this.registeredBlocks.getProperties(block.blockType);
+            if (factory) {
+                let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
+                let componentRef: any = this.configContainer.createComponent(componentFactory);
+                componentRef.instance.target = this.currentBlock;
+                componentRef.instance.schemes = this.schemes;
+                componentRef.instance.all = this.allBlocks;
+                componentRef.instance.readonly = this.readonly;
+                componentRef.instance.tokens = this.tokens;
+                componentRef.instance.roles = this.roles;
+            }
+        })
     }
 }

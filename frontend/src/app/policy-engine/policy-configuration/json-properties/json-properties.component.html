@@ -1,0 +1,18 @@
+<div [attr.readonly]="readonly">
+    <div class="toolbar">
+        <div class="toolbar-btn" (click)="onSave()" style="color: #00c300">
+            <mat-icon>done</mat-icon>
+        </div>
+        <div class="toolbar-btn" (click)="onClose()" style="color: #f00">
+            <mat-icon>close</mat-icon>
+        </div>
+    </div>
+    <div *ngIf="errors && errors.length" class="json-errors">
+        <div *ngFor="let item of errors" class="errors-property">
+            <span></span>{{item}}
+        </div>
+    </div>
+    <div class="textarea-code">
+        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" ></ngx-codemirror>
+    </div>
+</div>

@@ -196,7 +196,7 @@ export class SchemaHelper {
                 }
             },
             required: ['@context', 'type'],
-            additionalProperties: false
+            additionalProperties: false,
         };
 
         const properties = document.properties;
