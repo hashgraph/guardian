@@ -42,6 +42,7 @@
 * [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
 * [externalDataBlock](available-policy-workflow-blocks/external-data-workflow-block.md)
 * [mintDocumentBlock](available-policy-workflow-blocks/token-mint-workflow-block.md)
+* [retirementDocumentBlock](available-policy-workflow-blocks/token-mint-workflow-block-1.md)
 * [wipeDocumentBlock](available-policy-workflow-blocks/token-wipe-workflow-block.md)
 * [aggregateDocumentBlock](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
 
