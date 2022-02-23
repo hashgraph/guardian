@@ -38,6 +38,7 @@
 * [InformationBlock](available-policy-workflow-blocks/information-workflow-block.md)
 * [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/documents-workflow-block.md)
 * [DocumentsSourceAddOnBlock](available-policy-workflow-blocks/documents-workflow-block-1.md)
+* [filtersAddOnBlock](available-policy-workflow-blocks/documents-workflow-block-2.md)
 * [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
 * [externalDataBlock](available-policy-workflow-blocks/external-data-workflow-block.md)
 * [mintDocumentBlock](available-policy-workflow-blocks/token-mint-workflow-block.md)
