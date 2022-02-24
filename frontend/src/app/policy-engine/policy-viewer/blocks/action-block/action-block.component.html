@@ -3,9 +3,11 @@
 </div>
 
 <div *ngIf="type == 'selector' && visible" class="content">
-    <div *ngFor="let option of options" class="btn-option {{option.uiClass}}" (click)="onSelect(option.value)">
-        {{option.name}}
-    </div>
+    <ng-container *ngFor="let option of options" >
+        <div *ngIf="option.name" class="btn-option {{option.uiClass}}" (click)="onSelect(option.value)">
+            {{option.name}}
+        </div>
+    </ng-container>
 </div>
 
 <div *ngIf="type == 'download'" class="content">

@@ -201,13 +201,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     getGroup(row: any, field: any): any | null {
         const items = this.fieldMap[field.title];
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (!item.bindGroup) {
-                return item;
-            }
-            if (row.__sourceTag__ == item.bindGroup) {
-                return item;
+        if (items) {
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (!item.bindGroup) {
+                    return item;
+                }
+                if (row.__sourceTag__ == item.bindGroup) {
+                    return item;
+                }
             }
         }
         return null;

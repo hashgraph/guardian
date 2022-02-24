@@ -73,7 +73,8 @@ export class MintBlock {
                 document: vc.toJsonTree(),
                 type: DataTypes.MINT as any,
                 policyId: ref.policyId,
-                tag: ref.tag
+                tag: ref.tag,
+                schema: `#${vc.getCredentialSubject()[0].getType()}`
             })
             return true;
         } catch (error) {
