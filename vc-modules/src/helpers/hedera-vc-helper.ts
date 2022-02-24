@@ -279,6 +279,8 @@ export class VCHelper {
         const ajv = new Ajv();
         addFormats(ajv);
 
+        this.prepareSchema(schema);
+
         const validate = ajv.compile(schema);
         const valid = validate(vc);
 
@@ -306,9 +308,30 @@ export class VCHelper {
         const ajv = new Ajv();
         addFormats(ajv);
 
+        this.prepareSchema(schema);
+
         const validate = ajv.compile(schema);
         const valid = validate(subject);
         
         return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+    }
+
+
+    /**
+     * Delete system fields from schema defs
+     * 
+     * @param schema Schema
+     */
+    private prepareSchema(schema: any) {
+        const defsObj = schema.$defs;
+        const defsKeys = Object.keys(defsObj);
+        for (let i = 0; i < defsKeys.length; i++) {
+            const nestedSchema = defsObj[defsKeys[i]];
+            const required = nestedSchema.required;
+            if (!required || required.length === 0) {
+                continue;
+            }
+            nestedSchema.required = required.filter(field => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
+        }
     }
 }

@@ -655,7 +655,7 @@ export class SchemaConfigurationComponent implements OnInit {
         condition.ifControl.changeEvents.push(field.controlArray.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
-            (condition.ifControl.field as FormControl).patchValue(null);
+            condition.ifControl.field.patchValue(null);
         }));
 
         this.ifFormatValue(condition, field);
@@ -752,9 +752,9 @@ export class SchemaConfigurationComponent implements OnInit {
           });
       }
 
-      getNotObjectAndArrayFields() {
+      getFieldsForCondition() {
         return this.fields.filter(item => 
-            !item.controlArray.value && !this.schemaTypeMap[item.controlType.value].isRef
+            !item.controlArray.value && item.controlName.value && !this.schemaTypeMap[item.controlType.value].isRef
             && (this.schemaTypeMap[item.controlType.value].type === 'boolean' ? item.controlRequired.value : true)
         );
       }
