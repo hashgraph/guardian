@@ -421,7 +421,7 @@ export class BlockTreeGenerator {
                         }
                     });
 
-                    const schemaIRIs = findAllEntities(model.config, 'schema');
+                    const schemaIRIs = findAllEntities(model.config, ['schema', 'inputSchema', 'outputSchema']);
                     for (let i = 0; i < schemaIRIs.length; i++) {
                         const schemaIRI = schemaIRIs[i];
                         const schema = await guardians.incrementSchemaVersion(schemaIRI, user.did);
@@ -429,7 +429,7 @@ export class BlockTreeGenerator {
                             continue;
                         }
                         const newSchema = await guardians.publishSchema(schema.id, schema.version, user.did);
-                        replaceAllEntities(model.config, 'schema', schemaIRI, newSchema.iri);
+                        replaceAllEntities(model.config, ['schema', 'inputSchema', 'outputSchema'], schemaIRI, newSchema.iri);
                     }
                     this.regenerateIds(model.config);
 
@@ -491,6 +491,7 @@ export class BlockTreeGenerator {
                     errors
                 });
             } catch (error) {
+                console.error(error);
                 res.status(500).send({ code: 500, message: error.message || error });
             }
         });

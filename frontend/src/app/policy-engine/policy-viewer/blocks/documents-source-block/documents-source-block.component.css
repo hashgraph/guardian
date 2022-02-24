@@ -92,3 +92,7 @@
 .col-btn {
     white-space: nowrap;
 }
+
+.table .mat-header-cell {
+    padding: 0 10px;
+}

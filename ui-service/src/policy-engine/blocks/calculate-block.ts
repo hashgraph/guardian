@@ -33,30 +33,28 @@ export class CalculateContainerBlock {
                 scope[field.value] = json[field.name];
             }
         }
-        console.log("calculate-block, scope", scope);
+ 
         const addons = ref.getAddons();
         for (let i = 0; i < addons.length; i++) {
             const addon = addons[i];
             scope = await addon.run(scope);
-            console.log("calculate-block, scope", scope);
         }
 
-        let newJson = {};
+        let newJson: any = {};
         if (ref.options.outputFields) {
             for (let i = 0; i < ref.options.outputFields.length; i++) {
                 const field = ref.options.outputFields[i];
                 newJson[field.name] = scope[field.value];
             }
         }
-        console.log("calculate-block, newJson", newJson);
+        newJson.id = json.id;
 
         const outputSchema = await this.guardians.getSchemaByIRI(ref.options.outputSchema);
         const vcSubject = {
             ...SchemaHelper.getContext(outputSchema),
             ...newJson
         }
-        console.log("calculate-block, vcSubject", vcSubject);
-
+ 
         const root = await this.guardians.getRootConfig(ref.policyOwner);
         const vcHelper = new VcHelper();
         const newVC = await vcHelper.createVC(
@@ -85,9 +83,7 @@ export class CalculateContainerBlock {
         } else {
             document = state.data;
         }
-        console.log("calculate-block, document", JSON.stringify(document, null, 4));
         const newDocument = await this.calculate(document);
-        console.log("calculate-block, newDocument", JSON.stringify(newDocument, null, 4));
         state.data = newDocument;
         await ref.runNext(user, state);
         ref.updateBlock(state, user, '');

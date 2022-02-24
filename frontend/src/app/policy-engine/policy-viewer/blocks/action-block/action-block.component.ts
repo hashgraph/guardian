@@ -81,6 +81,7 @@ export class ActionBlockComponent implements OnInit {
       if (this.type == 'selector') {
         this.field = data.field;
         this.options = this.uiMetaData.options || [];
+        this.options = this.options.filter((e: any) => e.name);
         this.value = this.getObjectValue(this.data, this.field);
         this.visible = this.options.findIndex((o: any) => o.value == this.value) == -1;
       }
@@ -90,6 +91,7 @@ export class ActionBlockComponent implements OnInit {
       if (this.type == 'dropdown') {
         this.field = data.field;
         this.options = data.options || [];
+        this.options = this.options.filter((e: any) => e.name);
         this.currentValue = this.getObjectValue(this.data, this.field);
       }
     } else {
