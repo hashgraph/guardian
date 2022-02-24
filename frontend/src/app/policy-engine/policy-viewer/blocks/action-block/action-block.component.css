@@ -75,3 +75,11 @@
     flex-wrap: nowrap;
     display: flex;
 }
+
+.content-dropdown {
+    flex-wrap: nowrap;
+    display: flex;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 1px;
+}

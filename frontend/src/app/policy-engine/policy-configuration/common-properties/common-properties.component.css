@@ -290,3 +290,28 @@ input[readonly][type="checkbox"] {
 .remove-prop[readonly="true"] {
     display: none;
 }
+
+.lvl[lvl="1"] {
+    padding-left: 0px !important;
+    width: 140px !important;
+}
+.lvl[lvl="1"] {
+    padding-left: 8px !important;
+    width: 132px !important;
+}
+.lvl[lvl="2"] {
+    padding-left: 16px !important;
+    width: 124px !important;
+}
+.lvl[lvl="3"] {
+    padding-left: 24px !important;
+    width: 116px !important;
+}
+.lvl[lvl="3"] {
+    padding-left: 32px !important;
+    width: 108px !important;
+}
+.lvl[lvl="4"] {
+    padding-left: 40px !important;
+    width: 100px !important;
+}

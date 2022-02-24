@@ -33,4 +33,50 @@
             <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
         </td>
     </tr>
+
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'optionGroup')" [attr.collapse]="propHidden.optionGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Options</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addOption()">
+                <mat-icon>add</mat-icon>
+                <span>Add Option</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let option of block.options; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.optionGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">Option {{i}}</td>
+            <td class="propRowCell">
+                {{option.name}}
+                <span *ngIf="option.value">: {{option.value}}</span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="removeOption(i)">
+                    <mat-icon>delete</mat-icon>
+                </span>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.optionGroup || propHidden.options[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Name</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="option.name" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.optionGroup || propHidden.options[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Value</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="option.value" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
 </table>
