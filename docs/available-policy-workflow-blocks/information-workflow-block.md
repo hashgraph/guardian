@@ -1,4 +1,4 @@
-# Information Workflow Block
+# InformationBlock
 
 ### Properties
 
@@ -18,3 +18,15 @@
 | Type        | Select the type of UI element for notifications. It can be either a LOADER (progress bar) or TEXT box |
 | Title       | Provides the Loader or Text box a title.                                                              |
 | Description | Provides the Loader or Text box a description.                                                        |
+
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="blockType: 'InformationBlock'" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="uiMetaData" required="true" %}
+{}
+{% endswagger-parameter %}
+{% endswagger %}

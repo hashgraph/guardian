@@ -31,7 +31,7 @@
 
 * [Introduction](available-policy-workflow-blocks/introduction.md)
 * [InterfaceContainerBlock](available-policy-workflow-blocks/container-workflow-block.md)
-* [RolesBlock](available-policy-workflow-blocks/roles-workflow-block.md)
+* [PolicyRolesBlock](available-policy-workflow-blocks/roles-workflow-block.md)
 * [InterfaceStepBlock](available-policy-workflow-blocks/step-workflow-block.md)
 * [requestVCDocumentBlock](available-policy-workflow-blocks/request-workflow-block.md)
 * [sendToGuardianBlock](available-policy-workflow-blocks/send-workflow-block.md)

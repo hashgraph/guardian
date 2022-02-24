@@ -1,4 +1,4 @@
-# Step Workflow Block
+# InterfaceStepBlock
 
 ### Properties
 
@@ -17,3 +17,32 @@
 | ----------- | ------------------------------------------------------------------------------------------------------------------ |
 | Type BLANK  | Does not contain any frame, will render all child elements one after the other.                                    |
 | Type TABS   | A container which has a tab for each of the child element. It will render the first child element as type "blank". |
+
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="blockType: 'InterfaceStepBlock'" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="id" type="String" required="true" %}
+BlockID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="blockType" type="String" required="true" %}
+Block Type
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="blocks" type="array" required="true" %}
+Contained blocks array
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uiMetaData" required="true" %}
+{}
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="index" type="number" required="true" %}
+Current Step
+{% endswagger-parameter %}
+{% endswagger %}
+

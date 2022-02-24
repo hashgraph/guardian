@@ -1,4 +1,4 @@
-# Action Workflow Block
+# InterfaceActionBlock
 
 ### Properties
 
@@ -25,3 +25,37 @@
 | Button Content | Provide the content for the button. Action workflow type needs to be DOWNLOAD.                                                                                                                                                                                                                  |
 | Schema         | Pre-configured schemas relevant for download to be selected from the drop down of available schemas in your Guardian instance. Only needed in the reference implementation of the Guardian because of the IoT Simulator that is generating MRV data. Action workflow type needs to be DOWNLOAD. |
 | Target URL     | Set the target URL where the file should be stored. Only needed in the reference implementation of the Guardian because of the IoT Simulator that is generating MRV data. Action workflow type needs to be DOWNLOAD.                                                                            |
+
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="blockType: 'InterfaceAction'" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="id" type="String" required="true" %}
+Block ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="blockType" type="String" required="true" %}
+Block Type
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="type" type="String" required="true" %}
+Action type (dropdown / selector / download)
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uiMetaData" required="true" %}
+{}
+{% endswagger-parameter %}
+{% endswagger %}
+
+{% swagger method="post" path="" baseUrl="" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="document" type="VC" required="true" %}
+VC document
+{% endswagger-parameter %}
+{% endswagger %}

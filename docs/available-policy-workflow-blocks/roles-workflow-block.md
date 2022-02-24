@@ -1,4 +1,4 @@
-# Roles Workflow Block
+# PolicyRolesBlock
 
 ### Properties
 
@@ -17,3 +17,30 @@
 | ----------- | -------------------------------------------- |
 | Title       | Provide the a title for the role selector.   |
 | Description | Provide a description on the role selection. |
+
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="blockType: 'PolicyRolesBlock'" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="roles" type="array" required="true" %}
+List of available roles
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uiMetaData" required="true" %}
+{}
+{% endswagger-parameter %}
+{% endswagger %}
+
+{% swagger method="post" path="" baseUrl="blockType: 'PolicyRolesBlock" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="role" type="String" required="true" %}
+
+{% endswagger-parameter %}
+{% endswagger %}
+

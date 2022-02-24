@@ -25,3 +25,42 @@
 | Dialogue Description | Provides a description inside the Dialogue box. Needs the dialogue box to be selected from the "Type."                                                                        |
 | Dialogue Class       | Need to fill out.                                                                                                                                                             |
 | Fields               | Need to fill out.                                                                                                                                                             |
+
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="blockType: 'requestVcDocument'" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="id" type="String" required="true" %}
+Block ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="blocktype" type="String" required="true" %}
+Type of Block
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="schema" type="Object" required="true" %}
+Schema Description
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uiMetaData" required="true" %}
+{}
+{% endswagger-parameter %}
+{% endswagger %}
+
+{% swagger method="post" path="" baseUrl="blockType: 'requestVcDocument'" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="document" type="VC" required="true" %}
+VC Document
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="ref" type="String" %}
+ID of linked VC
+{% endswagger-parameter %}
+{% endswagger %}
+

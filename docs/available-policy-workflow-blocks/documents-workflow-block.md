@@ -1,4 +1,4 @@
-# Documents Workflow Block
+# InterfaceDocumentsSourceBlock
 
 ### Properties
 
@@ -35,3 +35,23 @@
 | Schema             | Filter on the basis of schema ID.                                                           | Inverter (to be selected from the drop down of available schemas in your Guardian instance). |
 | Entity Type        | Filter on the basis of the "entityType" field in the "sendToGuardian" Block.                | Inverter.                                                                                    |
 | Only Own Documents | When checked, this filter out the documents not created by the current user when rendering. | It can be either checked or unchecked.                                                       |
+
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="blockType: 'InterfaceDocumentsSource'" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="blocks" type="array" required="true" %}
+Contained addons (filter)
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="data" type="array" required="true" %}
+Data
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="Fields" type="array" required="true" %}
+Column Description
+{% endswagger-parameter %}
+{% endswagger %}
