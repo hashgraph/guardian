@@ -20,8 +20,8 @@ export namespace PolicyImportExportHelper {
         delete policyObject.registeredUsers;
         delete policyObject.status;
         const guardians = new Guardians();
-        const tokenIds = findAllEntities(policyObject.config, 'tokenId');
-        const schemesIds = findAllEntities(policyObject.config, 'schema');
+        const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
+        const schemesIds = findAllEntities(policyObject.config, ['schema', 'inputSchema', 'outputSchema']);
 
         console.log(schemesIds);
         const tokens = await guardians.getTokens({ ids: tokenIds });
@@ -109,10 +109,10 @@ export namespace PolicyImportExportHelper {
         const schemesMap = await guardians.importSchemesByFile(schemes, policyOwner);
         for (let index = 0; index < schemesMap.length; index++) {
             const item = schemesMap[index];
-            replaceAllEntities(policy.config, 'schema', item.oldIRI, item.newIRI);
+            replaceAllEntities(policy.config, ['schema', 'inputSchema', 'outputSchema'], item.oldIRI, item.newIRI);
         }
         regenerateIds(policy.config);
-        
+
         let model = policyRepository.create(policy as Policy);
         model = await policyRepository.save(model);
         return await policyRepository.find({ owner: policyOwner });

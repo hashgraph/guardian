@@ -1,14 +1,18 @@
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 
-export function findAllEntities(obj: {[key:string]: any}, name: string): string[] {
+export function findAllEntities(obj: {[key:string]: any}, names: string[]): string[] {
     const result = [];
 
     function finder(o: {[key:string]: any}): void {
         if(!o) {
             return;
         }
-        if(o.hasOwnProperty(name)) {
-            result.push(o[name]);
+
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            if(o.hasOwnProperty(name)) {
+                result.push(o[name]);
+            }
         }
 
         if (o.hasOwnProperty('children')) {
@@ -28,22 +32,24 @@ export function findAllEntities(obj: {[key:string]: any}, name: string): string[
 
 export function replaceAllEntities(
     obj: {[key:string]: any}, 
-    name: string, 
+    names: string[], 
     oldValue: string, 
     newValue: string
 ): void {
-    function finder(o: {[key:string]: any}): void {
+    function finder(o: {[key:string]: any}, name: string): void {
         if(o.hasOwnProperty(name) && o[name] == oldValue) {
             o[name] = newValue;
         }
-
         if (o.hasOwnProperty('children')) {
             for (let child of o['children']) {
-                finder(child);
+                finder(child, name);
             }
         }
     }
-    finder(obj);
+    for (let i = 0; i < names.length; i++) {
+        const name = names[i];
+        finder(obj, name);
+    }
 }
 
 
