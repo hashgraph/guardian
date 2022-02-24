@@ -1,7 +1,7 @@
 import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { AbstractControl, FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaCondition, SchemaField } from 'interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
@@ -83,6 +83,12 @@ export class SchemaFormComponent implements OnInit {
   @Output('destroy') destroy = new EventEmitter<void>();
   destroy$: Subject<boolean> = new Subject<boolean>();
 
+  private _patternByNumberType: any = {
+      duration: /^[0-9]+$/,
+      number: /^-?\d*(\.\d+)?$/,
+      integer: /^-?\d*$/
+  };
+
   constructor(
     private ipfs: IPFSService,
     protected changeDetectorRef: ChangeDetectorRef
@@ -134,7 +140,7 @@ export class SchemaFormComponent implements OnInit {
         this.subscribeFormatDateValue(listItem.control, item.format);
       }
       if (['number', 'integer'].includes(item.type) || item.format === 'duration') {
-        this.subscribeFormatNumberValue(item.control, item.type);
+        this.subscribeFormatNumberValue(listItem.control, item.type, item.pattern);
       }
     }
     item.list.push(listItem);
@@ -213,7 +219,7 @@ export class SchemaFormComponent implements OnInit {
         if (['date', 'date-time'].includes(item.format)) {
           this.subscribeFormatDateValue(item.control, item.format);
         }
-        if (['number', 'integer', 'duration'].includes(item.type)) {
+        if (['number', 'integer'].includes(item.type) || item.format === 'duration') {
           this.subscribeFormatNumberValue(item.control, item.type);
         }
 
@@ -370,12 +376,18 @@ export class SchemaFormComponent implements OnInit {
     }
   }
 
-  private subscribeFormatNumberValue(control: FormControl, type: string) {
+  private subscribeFormatNumberValue(control: FormControl, type: string, pattern?: string) {
     control.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((val: any) => {
         let valueToSet: any = val;
         try {
+          if (
+            typeof(val) === 'string'
+            && (!pattern && !this._patternByNumberType[type].test(val) || (pattern && !val?.match(pattern)))
+          ) {
+              throw new Error();
+          }
           if (type == 'integer') {
             valueToSet = parseInt(val);
           }
@@ -439,15 +451,15 @@ export class SchemaFormComponent implements OnInit {
     }
 
     if (item.type === 'number') {
-      validators.push(Validators.pattern(/^-?\d*(\.\d+)?$/));
+      validators.push(this.isNumberOrEmptyValidator());
     }
 
     if (item.format === 'duration') {
-      validators.push(Validators.pattern(/^[0-9]+$/));
+      validators.push(this.isNumberOrEmptyValidator());
     }
 
     if (item.type === 'integer') {
-      validators.push(Validators.pattern(/^-?\d*$/));
+      validators.push(this.isNumberOrEmptyValidator());
     }
 
     if (item.format === 'url') {
@@ -455,6 +467,20 @@ export class SchemaFormComponent implements OnInit {
     }
 
     return validators;
+  }
+
+  public isNumberOrEmptyValidator() : ValidatorFn {
+      return (control: AbstractControl): ValidationErrors | null => {
+          const value = control.value; 
+          if (!value || typeof(value) === 'number') {
+              return null;
+          }
+          return {
+              isNotNumber: {
+                  valid: false
+              }
+          };
+      };
   }
 
   getConditions(field: any) {
