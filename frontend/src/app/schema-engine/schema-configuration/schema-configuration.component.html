@@ -66,7 +66,7 @@
         </span>
     </div>
 
-    <ng-template [ngIf]="fields && fields.length > 0 && this.fieldsForm.valid">
+    <ng-template [ngIf]="fields && fields.length > 0">
         <div class="delimiter" *ngIf="conditions && conditions.length"></div>
 
         <div *ngIf="conditions && conditions.length">
@@ -78,7 +78,7 @@
                             <mat-form-field appearance="outline" [ngClass]="{'choose-field': !condition.ifControl.field?.value}">
                                 <mat-label>*Field</mat-label>
                                 <mat-select [formControl]="condition.ifControl.field" (valueChange)="onIfConditionFieldChange(condition, $event)">
-                                    <mat-option *ngFor="let field of getNotObjectAndArrayFields()" [value]="field">
+                                    <mat-option *ngFor="let field of getFieldsForCondition()" [value]="field">
                                     {{field.controlName.value}}
                                     </mat-option>
                                 </mat-select>
