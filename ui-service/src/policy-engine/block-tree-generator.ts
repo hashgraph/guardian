@@ -322,12 +322,14 @@ export class BlockTreeGenerator {
                     model.creator = user.did;
                     model.owner = user.did;
                     delete model.version;
+                    delete model.messageId;
                 } else {
                     model.creator = user.did;
                     model.owner = user.did;
                     delete model.previousVersion;
                     delete model.topicId;
                     delete model.version;
+                    delete model.messageId;
                 }
                 if (!model.config) {
                     model.config = {
