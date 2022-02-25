@@ -15,6 +15,7 @@ import {
 } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { VCHelper } from 'vc-modules';
+import {VcHelper} from '@helpers/vcHelper';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
@@ -30,8 +31,8 @@ export const documentsAPI = async function (
     didDocumentRepository: MongoRepository<DidDocument>,
     vcDocumentRepository: MongoRepository<VcDocument>,
     vpDocumentRepository: MongoRepository<VpDocument>,
-    vc: VCHelper
 ): Promise<void> {
+    const vc = new VcHelper();
     const getDIDOperation = function (operation: DidMethodOperation | DidDocumentStatus) {
         switch (operation) {
             case DidMethodOperation.CREATE:

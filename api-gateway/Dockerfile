@@ -16,13 +16,12 @@ RUN npm install
 ADD ./interfaces/src ./src/.
 RUN npm run build
 
-WORKDIR /usr/ui-service
-COPY ./ui-service/package*.json ./
-COPY ./ui-service/tsconfig.json ./
-COPY ./ui-service/.env.docker ./.env
-ADD ./ui-service/api ./api/.
+WORKDIR /usr/api-gateway
+COPY ./api-gateway/package*.json ./
+COPY ./api-gateway/tsconfig.json ./
+COPY ./api-gateway/.env.docker ./.env
 RUN npm install
-ADD ./ui-service/src ./src/.
+ADD ./api-gateway/src ./src/.
 RUN npm run build
 
 CMD npm start

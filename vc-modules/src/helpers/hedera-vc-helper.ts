@@ -39,9 +39,9 @@ export class VCHelper {
 
     /**
      * Add Schema context
-     * 
+     *
      * @param {string} context - context
-     * 
+     *
      */
     public addContext(context: string): void {
         this.schemaContext.push(context);
@@ -49,9 +49,9 @@ export class VCHelper {
 
     /**
      * Add DID or Schema document loader
-     * 
+     *
      * @param {DocumentLoader} documentLoader - Document Loader
-     * 
+     *
      */
     public addDocumentLoader(documentLoader: DocumentLoader): void {
         this.documentLoaders.push(documentLoader);
@@ -67,9 +67,9 @@ export class VCHelper {
 
     /**
      * Add Schema loader
-     * 
+     *
      * @param {DocumentLoader} documentLoader - Document Loader
-     * 
+     *
      */
     public addSchemaLoader(schemaLoader: SchemaLoader): void {
         this.schemaLoaders.push(schemaLoader);
@@ -85,10 +85,10 @@ export class VCHelper {
 
     /**
      * Create Suite by DID
-     * 
+     *
      * @param {string} did - DID
      * @param {PrivateKey | string} privateKey - Private Key
-     * 
+     *
      * @returns {any} - Root Id, DID, Private Key
      */
     private async getSuite(did: string, key: string | PrivateKey): Promise<any> {
@@ -101,11 +101,11 @@ export class VCHelper {
 
     /**
      * Create Credential Object (VC without a signature)
-     * 
+     *
      * @param {string} did - DID
      * @param {string} schema - schema id
      * @param {any} data - Object
-     * 
+     *
      * @returns {any} - VC Document
      */
     public async createCredential(
@@ -131,11 +131,11 @@ export class VCHelper {
 
     /**
      * Sign Credential Object
-     * 
+     *
      * @param {string} did - DID
      * @param {PrivateKey | string} privateKey - Private Key
      * @param {any} credential - Credential Object
-     * 
+     *
      * @returns {HcsVcDocument<VcSubject>} - VC Document
      */
     public async issueCredential(
@@ -157,12 +157,12 @@ export class VCHelper {
 
     /**
      * Create VC Document
-     * 
+     *
      * @param {string} did - DID
      * @param {PrivateKey | string} privateKey - Private Key
      * @param {any} data - Credential Object
      * @param {string} schema - schema id
-     * 
+     *
      * @returns {HcsVcDocument<VcSubject>} - VC Document
      */
     public async createVC(
@@ -195,12 +195,12 @@ export class VCHelper {
 
     /**
      * Create VP Document
-     * 
+     *
      * @param {string} did - DID
      * @param {PrivateKey | string} privateKey - Private Key
      * @param {HcsVcDocument<VcSubject>[]} vcs - VC Documents
      * @param {string} [uuid] - new uuid
-     * 
+     *
      * @returns {HcsVpDocument} - VP Document
      */
     public async createVP(
@@ -225,9 +225,9 @@ export class VCHelper {
 
     /**
      * Verify VC Document
-     * 
+     *
      * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
-     * 
+     *
      * @returns {boolean} - is verified
      */
     public async verifyVC(vcDocument: HcsVcDocument<VcSubject> | any): Promise<boolean> {
@@ -243,9 +243,9 @@ export class VCHelper {
 
     /**
      * Verify Schema
-     * 
+     *
      * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
-     * 
+     *
      * @returns {CheckResult} - is verified
      */
     public async verifySchema(vcDocument: HcsVcDocument<VcSubject> | any): Promise<CheckResult> {
@@ -283,9 +283,9 @@ export class VCHelper {
 
     /**
      * Verify Subject
-     * 
+     *
      * @param {any} subject - subject
-     * 
+     *
      * @returns {CheckResult} - is verified
      */
     public async verifySubject(subject: any): Promise<CheckResult> {

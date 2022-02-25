@@ -60,7 +60,6 @@ Promise.all([
 
     new Guardians().setChannel(channel);
     new Guardians().registerMRVReceiver(async (data) => {
-        console.log(data);
         await PolicyComponentsStuff.ReceiveExternalData(data);
     });
 

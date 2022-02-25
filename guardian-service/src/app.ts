@@ -17,12 +17,9 @@ import { Schema } from '@entity/schema';
 import { Token } from '@entity/token';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { DIDDocumentLoader } from './document-loader/did-document-loader';
-import { ContextDocumentLoader } from './document-loader/context-loader';
-import { VCSchemaLoader } from './document-loader/vc-schema-loader';
-import { SubjectSchemaLoader } from './document-loader/subject-schema-loader';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
+import {VcHelper} from '@helpers/vcHelper';
 
 const PORT = process.env.PORT || 3001;
 
@@ -57,23 +54,6 @@ Promise.all([
     const configRepository = db.getMongoRepository(RootConfig);
     const schemaRepository = db.getMongoRepository(Schema);
 
-    // <-- Document Loader
-    const vcHelper = new VCHelper()
-    const defaultDocumentLoader = new DefaultDocumentLoader();
-    const schemaDocumentLoader = new ContextDocumentLoader(schemaRepository, 'https://ipfs.io/ipfs/');
-    const didDocumentLoader = new DIDDocumentLoader(didDocumentRepository);
-    const vcSchemaObjectLoader = new VCSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
-    const subjectSchemaObjectLoader = new SubjectSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
-
-    vcHelper.addDocumentLoader(defaultDocumentLoader);
-    vcHelper.addDocumentLoader(schemaDocumentLoader);
-    vcHelper.addDocumentLoader(didDocumentLoader);
-    vcHelper.addSchemaLoader(vcSchemaObjectLoader);
-    vcHelper.addSchemaLoader(subjectSchemaObjectLoader);
-    vcHelper.buildDocumentLoader();
-    vcHelper.buildSchemaLoader();
-    // Document Loader -->
-
     await setDefaultSchema(schemaRepository);
     await configAPI(channel, fileConfig);
     await schemaAPI(channel, schemaRepository, configRepository);
@@ -85,7 +65,6 @@ Promise.all([
         didDocumentRepository,
         vcDocumentRepository,
         vpDocumentRepository,
-        vcHelper
     );
     await demoAPI(channel);
 

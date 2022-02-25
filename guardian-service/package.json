@@ -3,7 +3,9 @@
     "@api": "dist/api",
     "@entity": "dist/entity",
     "@subscribers": "dist/subscribers",
-    "@helpers": "dist/helpers"
+    "@helpers": "dist/helpers",
+    "@auth": "dist/auth",
+    "@policy-engine": "dist/policy-engine"
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
@@ -28,7 +30,8 @@
     "mongodb": "^3.7.3",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.41",
-    "vc-modules": "file:../vc-modules"
+    "vc-modules": "file:../vc-modules",
+    "jszip": "^3.7.1"
   },
   "description": "",
   "devDependencies": {
@@ -41,7 +44,8 @@
     "mocha-junit-reporter": "^2.0.2",
     "nodemon": "^2.0.12",
     "tslint": "^6.1.3",
-    "typescript": "^4.5.5"
+    "typescript": "^4.5.5",
+    "@types/jszip": "^3.4.1"
   },
   "license": "Apache-2.0",
   "main": "dist/index.js",
