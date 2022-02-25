@@ -4,7 +4,6 @@ import { findAllEntities, regenerateIds, replaceAllEntities } from "@helpers/uti
 import JSZip from "jszip";
 import { getMongoRepository } from "typeorm";
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 
 export namespace PolicyImportExportHelper {
     /**
@@ -23,9 +22,8 @@ export namespace PolicyImportExportHelper {
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
         const schemesIds = findAllEntities(policyObject.config, ['schema', 'inputSchema', 'outputSchema']);
 
-        console.log(schemesIds);
         const tokens = await guardians.getTokens({ ids: tokenIds });
-        const schemes = await guardians.getSchemaByIRIs(schemesIds);
+        const schemes = await guardians.getSchemaByIRIs(schemesIds, true);
 
         const zip = new JSZip();
         zip.folder('tokens')
