@@ -30,7 +30,7 @@ Selected policy ID
 ```
 {% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="" %}
+{% swagger-response status="403: Forbidden" description="Forbidden" %}
 ```javascript
 {
     // Response
