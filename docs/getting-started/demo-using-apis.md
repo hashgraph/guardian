@@ -4,7 +4,7 @@
 
 #### 1.1 Get the list of policies.
 
-{% swagger method="get" path="" baseUrl="" summary="Displaying list of policies" %}
+{% swagger method="get" path="" baseUrl="/api/v1/policies/" summary="Displaying list of policies" %}
 {% swagger-description %}
 
 {% endswagger-description %}
@@ -32,7 +32,7 @@
 
 #### 1.3 Request the config for the root block
 
-{% swagger method="get" path="" baseUrl="" summary="Requesting configuration of root block" %}
+{% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/97379c43-2bce-4e67-9817-a79fbad3e53d" summary="Requesting configuration of root block" %}
 {% swagger-description %}
 
 {% endswagger-description %}
