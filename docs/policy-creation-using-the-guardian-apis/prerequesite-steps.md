@@ -192,7 +192,7 @@ VC
 
 ### **Token creation**
 
-{% swagger method="post" path="" baseUrl="" summary="" %}
+{% swagger method="post" path="" baseUrl="/api/v1/tokens" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
