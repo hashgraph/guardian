@@ -90,7 +90,7 @@ INSTALLER
 
 #### 1.6.1 Requesting InterfaceStepBlock
 
-{% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/97379c43-2bce-4e67-9817-a79fbad3e53d" summary="Request InterfaceStepBlock" %}
+{% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/97379c43-2bce-4e67-9817-a79fbad3e53d" summary="Requesting InterfaceStepBlock" %}
 {% swagger-description %}
 
 {% endswagger-description %}
