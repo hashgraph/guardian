@@ -3,7 +3,7 @@
   "dependencies": {
     "@hashgraph/sdk": "2.6.0",
     "@hashgraph/did-sdk-js": "0.1.1",
-    "jose": "4.3.8",
+    "jose": "4.5.1",
     "@transmute/credentials-context": "0.7.0-unstable.40",
     "@transmute/did-context": "0.7.0-unstable.40",
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.40",
