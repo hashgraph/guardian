@@ -11,13 +11,13 @@
 * [Demo Using APIs](getting-started/demo-using-apis.md)
 * [Contributing](getting-started/contributing/README.md)
   * [Contribute a New Policy](getting-started/contributing/contribute-a-new-policy.md)
-* [Reference Implementation](getting-started/reference-implementation.md)
 * [Built With](getting-started/built-with.md)
 * [Change Log](getting-started/change-log.md)
 * [Roadmap](getting-started/roadmap.md)
 * [License](getting-started/license.md)
 * [Contact](getting-started/contact.md)
 * [Security](getting-started/security.md)
+* [Reference Implementation](getting-started/reference-implementation.md)
 
 ## User Guide Glossary
 
