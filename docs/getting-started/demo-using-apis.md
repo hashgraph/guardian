@@ -2,7 +2,7 @@
 
 ## 1. Login as a User
 
-#### 1.1 Get the list of policies.
+### 1.1 Get the list of policies.
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies/" summary="Displaying list of policies" %}
 {% swagger-description %}
@@ -26,11 +26,11 @@
 {% endswagger-response %}
 {% endswagger %}
 
-#### 1.2 In the policy config there is a root block which is the top of the structure
+### 1.2 In the policy config there is a root block which is the top of the structure
 
-![](<../.gitbook/assets/image (7).png>)
+![](<../.gitbook/assets/image (14).png>)
 
-#### 1.3 Request the config for the root block
+### 1.3 Request the config for the root block
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/97379c43-2bce-4e67-9817-a79fbad3e53d" summary="Requesting configuration of root block" %}
 {% swagger-description %}
@@ -52,7 +52,7 @@
 {% endswagger-response %}
 {% endswagger %}
 
-#### 1.4 Root block contains other blocks in the 'blocks' field. Request the config for the block by the block ID. Recursively repeat this operation for all contained blocks in order to construct all components.
+### 1.4 Root block contains other blocks in the 'blocks' field. Request the config for the block by the block ID. Recursively repeat this operation for all contained blocks in order to construct all components.
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/bb342b37-8bb6-4595-93fc-98fd63a23c16 " summary="Requesting configuration of block by block ID" %}
 {% swagger-description %}
@@ -70,11 +70,9 @@
 {% endswagger-response %}
 {% endswagger %}
 
+![](<../.gitbook/assets/image (13).png>)
 
-
-![](<../.gitbook/assets/image (3).png>)
-
-#### 1.5 At present only PolicyRolesBlock is available to the user. Select the "INSTALLER" role.
+### 1.5 At present only PolicyRolesBlock is available to the user. Select the "INSTALLER" role.
 
 {% swagger method="post" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/bb342b37-8bb6-4595-93fc-98fd63a23c16" summary="Registering the role as "Installer"" %}
 {% swagger-description %}
@@ -86,9 +84,9 @@ INSTALLER
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (4).png>)
+![](<../.gitbook/assets/image (5).png>)
 
-#### 1.6 Request the root block and all contained blocks.
+### 1.6 Request the root block and all contained blocks.
 
 #### 1.6.1 Requesting InterfaceStepBlock
 
@@ -149,7 +147,7 @@ INSTALLER
 {% endswagger-response %}
 {% endswagger %}
 
-#### 1.7 Create json according to the schema and send to the requestVCDocumentBlock
+### 1.7 Create json according to the schema and send to the requestVCDocumentBlock
 
 {% swagger method="post" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/53dac8a9-b480-457e-920a-e4d4c653bfbe" summary="Creating JSON and sending it to requestVCDocumentBlock" %}
 {% swagger-description %}
@@ -239,7 +237,7 @@ Years of registration
 
 ![](<../.gitbook/assets/image (10).png>)
 
-#### 1.8 Request the root block and all contained blocks again.
+### 1.8 Request the root block and all contained blocks again.
 
 #### 1.8.1 Requesting InterfaceStepBlock
 
@@ -299,11 +297,11 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (11).png>)
+![](<../.gitbook/assets/image (4).png>)
 
-### 2. Login as a Root Authority
+## 2. Login as a Root Authority
 
-#### 2.1 Request the list of policies.
+### 2.1 Request the list of policies.
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies" summary="Request List of policies" %}
 {% swagger-description %}
@@ -325,9 +323,9 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (8).png>)
+![](<../.gitbook/assets/image (3).png>)
 
-#### 2.2 Request the root block and all contained blocks.
+### 2.2 Request the root block and all contained blocks.
 
 #### 2.2.1 Requesting InterfaceContainerBlock
 
@@ -415,7 +413,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-#### 2.3 In the 'Status Operation' field , there is a link to "approve\_documents\_btn" block, which requests the Block ID.
+### 2.3 In the 'Status Operation' field , there is a link to "approve\_documents\_btn" block, which requests the Block ID.
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/tag/approve_documents_btn" summary="Requesting BlockID" %}
 {% swagger-description %}
@@ -457,7 +455,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-#### 2.4 Approve the document
+### 2.4 Approve the document
 
 ```
 Select the VC from the grid:	
@@ -475,11 +473,11 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 
 ![](<../.gitbook/assets/image (9).png>)
 
-![](<../.gitbook/assets/image (1).png>)
+![](<../.gitbook/assets/image (2).png>)
 
-### 3. Login as the User
+## 3. Login as the User
 
-#### 3.1 Request the root block and all the contained blocks.
+### 3.1 Request the root block and all the contained blocks.
 
 #### 3.1.1 Requesting InterfaceStepBlock
 
@@ -634,7 +632,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 {% endswagger-response %}
 {% endswagger %}
 
-#### 3.2 In the fields of the grid there is a link to the "download\_config\_btn" bloc.&#x20;
+### 3.2 In the fields of the grid there is a link to the "download\_config\_btn" bloc.&#x20;
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/tag/download_config_btn" summary="Requesting BlockID" %}
 {% swagger-description %}
@@ -669,7 +667,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 {% endswagger-response %}
 {% endswagger %}
 
-#### 3.3 Create a sensor
+### 3.3 Create a sensor
 
 {% swagger method="post" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/d068b59e-eec7-4452-b866-468e9ed6c7fa" summary="Creating a Sensor" %}
 {% swagger-description %}
@@ -705,9 +703,9 @@ capacity
 
 ![](../.gitbook/assets/image.png)
 
-#### 3.4 Refresh the Blocks
+### 3.4 Refresh the Blocks
 
-#### 3.5 Download the config
+### 3.5 Download the config
 
 {% swagger method="post" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/24942cf7-fcc5-4dff-8471-d5affeb4c206" summary="Downloading the configuration" %}
 {% swagger-description %}
@@ -719,4 +717,4 @@ record in the grid (data[0])
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (5).png>)
+![](<../.gitbook/assets/image (11).png>)
