@@ -25,11 +25,16 @@ export class RequestConfigComponent implements OnInit {
     propHidden: any = {
         main: false,
         privateFieldsGroup: false,
+        preset: false,
+        presetFields: {}
     };
 
     block!: BlockNode;
 
+    presetMap: any;
+
     constructor() {
+        this.presetMap = [];
     }
 
     ngOnInit(): void {
@@ -44,10 +49,68 @@ export class RequestConfigComponent implements OnInit {
     load(block: BlockNode) {
         this.block = block;
         this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.type =  this.block.uiMetaData.type || 'page';
+        this.block.uiMetaData.type = this.block.uiMetaData.type || 'page';
+        this.block.presetFields = this.block.presetFields || [];
+        const schema = this.schemes.find(e => e.iri == this.block.schema);
+        const presetSchema = this.schemes.find(e => e.iri == this.block.presetSchema);
+        if (!schema || !presetSchema) {
+            this.block.presetFields = [];
+        }
+        this.presetMap = [];
+        if (presetSchema) {
+            for (let i = 0; i < presetSchema.fields.length; i++) {
+                const field = presetSchema.fields[i];
+                this.presetMap.push({
+                    name: field.name,
+                    title: field.description
+                })
+            }
+        }
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    onSelectInput() {
+        this.block.presetFields = [];
+        this.presetMap = [];
+
+        const schema = this.schemes.find(e => e.iri == this.block.schema);
+        const presetSchema = this.schemes.find(e => e.iri == this.block.presetSchema);
+        if (schema && presetSchema) {
+            for (let i = 0; i < schema.fields.length; i++) {
+                const field = schema.fields[i];
+                this.block.presetFields.push({
+                    name: field.name,
+                    title: field.description,
+                    value: null,
+                    readonly: false
+                })
+            }
+        }
+        if (presetSchema) {
+            this.presetMap.push({
+                name: null,
+                title: ''
+            });
+            for (let i = 0; i < presetSchema.fields.length; i++) {
+                const field = presetSchema.fields[i];
+                this.presetMap.push({
+                    name: field.name,
+                    title: field.description
+                });
+            }
+        }
+        
+        const dMap:any = {};
+        for (let i = 0; i < this.presetMap.length; i++) {
+            const f = this.presetMap[i];
+            dMap[f.title] = f.name;
+        }
+        for (let i = 0; i <this.block.presetFields.length; i++) {
+            const f = this.block.presetFields[i];
+            f.value = dMap[f.title];
+        }
     }
 }

@@ -84,7 +84,7 @@
 }
 
 .table tr.mat-row td {
-    max-width: 50vw;
+    max-width: 40vw;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -95,4 +95,12 @@
 
 .table .mat-header-cell {
     padding: 0 10px;
+}
+
+.text {
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 40vw;
+    display: inline-block;
+    text-overflow: ellipsis;
 }

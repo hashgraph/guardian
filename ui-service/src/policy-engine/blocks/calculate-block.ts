@@ -33,7 +33,7 @@ export class CalculateContainerBlock {
                 scope[field.value] = json[field.name];
             }
         }
- 
+
         const addons = ref.getAddons();
         for (let i = 0; i < addons.length; i++) {
             const addon = addons[i];
@@ -54,7 +54,14 @@ export class CalculateContainerBlock {
             ...SchemaHelper.getContext(outputSchema),
             ...newJson
         }
- 
+        
+        if (json.ref) {
+            vcSubject.ref = json.ref;
+        }
+        if (json.policyId) {
+            vcSubject.policyId = json.policyId;
+        }
+
         const root = await this.guardians.getRootConfig(ref.policyOwner);
         const vcHelper = new VcHelper();
         const newVC = await vcHelper.createVC(

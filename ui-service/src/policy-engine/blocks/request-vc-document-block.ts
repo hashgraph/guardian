@@ -79,6 +79,8 @@ export class RequestVcDocumentBlock {
             id: ref.uuid,
             blockType: 'requestVcDocument',
             schema: this.schema,
+            presetSchema: options.presetSchema,
+            presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
             active: this.getActive(user)
@@ -198,6 +200,13 @@ export class RequestVcDocumentBlock {
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
             return;
+        }
+        if (ref.options.presetSchema) {
+            const presetSchema = await this.guardians.getSchemaByIRI(ref.options.presetSchema);
+            if (!presetSchema) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
+                return;
+            }
         }
     }
 }

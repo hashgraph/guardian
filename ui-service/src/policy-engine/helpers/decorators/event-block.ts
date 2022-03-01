@@ -1,5 +1,6 @@
-import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces/block-options';
-import {BasicBlock} from './basic-block';
+import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
+import { BasicBlock } from './basic-block';
+import { BlockActionError } from '@policy-engine/errors';
 
 /**
  * Event block decorator
@@ -21,12 +22,11 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             async setData(...args) {
+                if (!this.isActive(args[0])) {
+                    throw new BlockActionError('Block not available', this.blockType, this.uuid);
+                }
                 if (typeof super.getData === 'function') {
                     return await super.setData(...args);
-                    // const result = await super.setData(...args);
-                    // const [user, data] = args;
-                    // this.updateBlock(data, user, '')
-                    // return result;
                 }
                 return {};
             }

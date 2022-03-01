@@ -247,6 +247,14 @@
     display: block;
 }
 
+.cellValue span {
+    width: 300px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+}
+
 .properties input {
     width: 325px;
 }

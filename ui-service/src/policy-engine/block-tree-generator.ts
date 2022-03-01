@@ -23,7 +23,7 @@ import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { BlockPermissions } from '@policy-engine/helpers/middleware/block-permissions';
 import { IPFS } from '@helpers/ipfs';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { findAllEntities, replaceAllEntities } from '@helpers/utils';
+import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -423,7 +423,7 @@ export class BlockTreeGenerator {
                         }
                     });
 
-                    const schemaIRIs = findAllEntities(model.config, ['schema', 'inputSchema', 'outputSchema']);
+                    const schemaIRIs = findAllEntities(model.config, SchemaFields);
                     for (let i = 0; i < schemaIRIs.length; i++) {
                         const schemaIRI = schemaIRIs[i];
                         const schema = await guardians.incrementSchemaVersion(schemaIRI, user.did);
@@ -431,7 +431,7 @@ export class BlockTreeGenerator {
                             continue;
                         }
                         const newSchema = await guardians.publishSchema(schema.id, schema.version, user.did);
-                        replaceAllEntities(model.config, ['schema', 'inputSchema', 'outputSchema'], schemaIRI, newSchema.iri);
+                        replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
                     }
                     this.regenerateIds(model.config);
 
