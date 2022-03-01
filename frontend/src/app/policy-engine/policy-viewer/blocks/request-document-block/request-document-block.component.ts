@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -18,7 +18,8 @@ export class RequestDocumentBlockComponent implements OnInit {
     @Input('static') static!: any;
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
-    isActive = false;
+    isExist = false;
+    disabled = false;
     loading: boolean = true;
     socket: any;
 
@@ -34,12 +35,14 @@ export class RequestDocumentBlockComponent implements OnInit {
 
     title: any;
     description: any;
+    presetDocument: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         this.dataForm = fb.group({});
     }
@@ -49,6 +52,9 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
         }
         this.loadData();
+        (window as any).__requestLast = this;
+        (window as any).__request =  (window as any).__request || {};
+        (window as any).__request[this.id] = this;
     }
 
     ngOnDestroy(): void {
@@ -62,7 +68,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.loadData();
         }
     }
-    
+
     loadData() {
         this.loading = true;
         if (this.static) {
@@ -103,6 +109,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             const uiMetaData = data.uiMetaData;
             const row = data.data;
             const schema = data.schema;
+            const active = data.active;
             this.ref = this.getId(row);
             this.type = uiMetaData.type;
             this.schema = schema;
@@ -123,12 +130,14 @@ export class RequestDocumentBlockComponent implements OnInit {
                 this.title = uiMetaData.title;
                 this.description = uiMetaData.description;
             }
-            this.isActive = true;
+            this.disabled = active === false;
+            this.isExist = true;
         } else {
             this.ref = null;
             this.schema = null;
             this.hideFields = null;
-            this.isActive = false;
+            this.disabled = false;
+            this.isExist = false;
         }
     }
 
@@ -153,23 +162,22 @@ export class RequestDocumentBlockComponent implements OnInit {
     }
 
     prepareDataFrom(data: any) {
-        if(Array.isArray(data)) {
+        if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++) {
                 let dataArrayElem = data[j];
-                if(dataArrayElem === "") {
+                if (dataArrayElem === "") {
                     data.splice(j, 1);
                 }
-                if(Object.getPrototypeOf(dataArrayElem) === Object.prototype
+                if (Object.getPrototypeOf(dataArrayElem) === Object.prototype
                     || Array.isArray(dataArrayElem)) {
                     this.prepareDataFrom(dataArrayElem);
                 }
             }
         }
 
-        if (Object.getPrototypeOf(data) === Object.prototype)
-        {
+        if (Object.getPrototypeOf(data) === Object.prototype) {
             let dataKeys = Object.keys(data);
-            for (let i = 0;i< dataKeys.length; i++) {
+            for (let i = 0; i < dataKeys.length; i++) {
                 const dataElem = data[dataKeys[i]];
                 if (dataElem === "") {
                     delete data[dataKeys[i]];
@@ -182,6 +190,11 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
+    preset(document: any) {
+        this.presetDocument = document;
+        this.changeDetectorRef.detectChanges();
+    }
+
     onCancel(): void {
         if (this.dialogRef) {
             this.dialogRef.close();
@@ -189,8 +202,8 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
-
     onDialog() {
+        this.presetDocument = null;
         this.dataForm.reset();
         this.dialogRef = this.dialog.open(this.dialogTemplate, {
             width: '850px',
