@@ -1,0 +1,12 @@
+/message-broker/
+/frontend/
+/ui-service/
+/guardian-service/
+/vc-modules/
+/interfaces/
+/mrv-sender/
+/node_modules/
+*.yaml
+*.yml
+*.md
+!TYMLEZ-README.md

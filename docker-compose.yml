@@ -3,12 +3,13 @@ services:
   mongo:
     image: mongo
     restart: always
-    expose:
-      - 27017
+    ports:
+      - 27017:27017
   message-broker:
     build:
       context: .
       dockerfile: ./message-broker/Dockerfile
+    image: guardian-message-broker
     ports:
       - 3003:3003
     expose:
@@ -17,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: ./ui-service/Dockerfile
+    image: guardian-ui-service
     ports:
       - 3002:3002
     depends_on:
@@ -27,8 +29,9 @@ services:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
-    #    ports:
-    #      - 3004:3004
+    image: guardian-service
+    ports:
+      - 3001:3001
     depends_on:
       - mongo
       - message-broker
@@ -47,8 +50,19 @@ services:
     build:
       context: .
       dockerfile: ./mrv-sender/Dockerfile
+    image: guardian-mrv-sender
     ports:
       - 3005:3005
+  tymlez-service:
+    build:
+      context: .
+      dockerfile: ./tymlez-service/Dockerfile
+    image: guardian-tymlez-service
+    ports:
+      - 3010:3010
+    depends_on:
+      - mongo
+      - message-broker
 volumes:
   mongo:
   # volume-guardian-service:

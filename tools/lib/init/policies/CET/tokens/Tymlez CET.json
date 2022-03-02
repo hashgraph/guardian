@@ -1,0 +1,6 @@
+{
+  "tokenId": "<%= CET_TOKEN_ID %>",
+  "tokenName": "Tymlez CET",
+  "tokenSymbol": "TYM_CET",
+  "selected": true
+}

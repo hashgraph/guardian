@@ -1,0 +1,54 @@
+# Default values for guardian-ui-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ''
+  pullPolicy: IfNotPresent
+  tag: ''
+
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+
+podAnnotations: {}
+
+podSecurityContext:
+  {}
+  # fsGroup: 2000
+
+securityContext:
+  {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  ports:
+    - port: 3002
+      targetPort: 'p3002' # named port from deployment
+      protocol: TCP
+      name: 'p3002'
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 8G
+  requests:
+    cpu: 1000m
+    memory: 4G
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+configmap:
+  data: {}

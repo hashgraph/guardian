@@ -1,0 +1,47 @@
+{
+  "name": "tymlez-guardian",
+  "version": "1.0.1",
+  "scripts": {
+    "preinstall": "./tools/bin/ensure-node16.sh",
+    "install": "lerna clean --no-private --yes && npm run bootstrap",
+    "bootstrap": "./tools/bin/bootstrap.sh",
+    "clean": "lerna run clean --stream --concurrency ${CONCURRENCY:-2} && lerna clean --no-private --yes",
+    "lint": "npm run npm7:check && tsc --noEmit && lerna run lint --stream --concurrency ${CONCURRENCY:-2}",
+    "npm7:check": "./tools/bin/ensure-npm7.sh",
+    "build": "lerna run build --stream --concurrency ${CONCURRENCY:-2} --ignore guardian && lerna run build:deploy --stream --concurrency ${CONCURRENCY:-2}",
+    "dev:docker": "npm run load-env && docker-compose up -d --build",
+    "dev:watch": "npm run load-env && ./tools/bin/dev-watch.sh",
+    "deploy": "npm run load-env && npm run tools deploy",
+    "tools": "node -r esbuild-register ./tools/bin/index.ts",
+    "load-env": "node -r esbuild-register ./tools/bin/index.ts load-env"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tymlez/guardian.git"
+  },
+  "keywords": [],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/Tymlez/guardian/issues"
+  },
+  "homepage": "https://github.com/Tymlez/guardian#readme",
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/glob": "^7.2.0",
+    "@types/lodash": "^4.14.176",
+    "@types/node": "^14.17.32",
+    "@types/yargs": "^17.0.5",
+    "aws-sdk": "^2.1021.0",
+    "axios": "^0.24.0",
+    "esbuild": "^0.13.12",
+    "esbuild-register": "^3.0.0",
+    "exec-sh": "^0.4.0",
+    "fs-extra": "^10.0.0",
+    "glob": "^7.2.0",
+    "lerna": "^4.0.0",
+    "lodash": "^4.17.21",
+    "p-limit": "^4.0.0",
+    "typescript": "^4.4.4",
+    "yargs": "^17.2.1"
+  }
+}

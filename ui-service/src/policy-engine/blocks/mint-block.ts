@@ -105,7 +105,7 @@ export class MintBlock {
 
         let vcSubject: any;
         if (token.tokenType == 'non-fungible') {
-            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_NFTOKEN);  
+            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_NFTOKEN);
             const serials = data as number[];
             vcSubject = {
                 ...SchemaHelper.getContext(policySchema),
@@ -114,7 +114,7 @@ export class MintBlock {
                 serials: serials
             }
         } else {
-            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_TOKEN);  
+            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_TOKEN);
             const amount = data as number;
             vcSubject = {
                 ...SchemaHelper.getContext(policySchema),
@@ -157,6 +157,7 @@ export class MintBlock {
         );
 
         let mintVC: HcsVcDocument<VcSubject>;
+        console.log("Minting token", { tokenId, supplyKey, tokenValue, uuid })
         if (token.tokenType == 'non-fungible') {
             const data: any = HederaUtils.decode(tokenValue.toString());
             const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], uuid);
@@ -167,14 +168,16 @@ export class MintBlock {
             await hederaHelper.SDK.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
             mintVC = await this.createMintVC(root, token, tokenValue);
         }
-
+        console.log("Creating VP after minting", { tokenId, uuid })
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
+        console.log("Saving VP", { tokenId, uuid })
         let status = false;
         status = await this.saveVC(mintVC, user.did, ref);
         status = await this.saveVP(vp, user.did, DataTypes.MINT, ref);
 
+        console.log("Completed the mint process", { tokenId, uuid })
         return vp;
     }
 

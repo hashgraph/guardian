@@ -234,6 +234,7 @@ export const documentsAPI = async function (
     channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
         const vpDocumentObject = vpDocumentRepository.create(msg.payload);
         const result: any = await vpDocumentRepository.save(vpDocumentObject);
+        console.log('create VP', vpDocumentObject, result);
         res.send(new MessageResponse(result));
     });
 
@@ -253,4 +254,63 @@ export const documentsAPI = async function (
             res.send(new MessageResponse(documents));
         }
     });
+
+    /**
+     * Return VP Documents using filters
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {IVPDocument[]} - VP Documents
+     */
+    channel.response(MessageAPI.FIND_VP_DOCUMENTS, async (msg, res) => {
+        try {
+            console.log('FIND_VP_DOCUMENTS', msg.payload);
+            const pageSize = Number(msg.payload.pageSize);
+            const currentPage = Number(msg.payload.page) === 0 ? 1 : Number(msg.payload.page);
+            const skip = pageSize * (currentPage - 1);
+            const reqObj: any = { where: {}, take: pageSize, skip };
+            if (msg.payload.type) {
+                reqObj.where['type'] = { $eq: msg.payload.type }
+            }
+            if (msg.payload.owner) {
+                reqObj.where['owner'] = { $eq: msg.payload.owner }
+            }
+            if (msg.payload.issuer) {
+                reqObj.where['document.verifiableCredential.issuer'] = msg.payload.issuer
+            }
+            if (msg.payload.id) {
+                reqObj.where['document.id'] = { $eq: msg.payload.id }
+            }
+            if (msg.payload.hash) {
+                reqObj.where['hash'] = { $in: msg.payload.hash }
+            }
+            if (msg.payload.policyId) {
+                reqObj.where['policyId'] = { $eq: msg.payload.policyId }
+            }
+
+            if (msg.payload.period === '24h') {
+                const startDate = new Date();
+                startDate.setHours(startDate.getHours() - 24);
+                reqObj.where['createDate'] = { $gt: startDate }
+            }
+            console.log('getvpdocuments reqObj', reqObj);
+            const documents: [IVPDocument[], number] = await vpDocumentRepository.findAndCount(reqObj);
+            const lastPage = Math.ceil(documents[1] / pageSize);
+            const response  = {
+                perPage: pageSize,
+                totalRecords: documents[1],
+                lastPage,
+                currentPage,
+                hasNextPage: lastPage > currentPage,
+                hasPrevPage: currentPage > 1,
+                data: documents[0]
+            };
+            console.log('documents', documents);
+            res.send(response);
+        } catch (error) {
+            console.error(error);
+            res.send({});
+        }
+    });
 }
+

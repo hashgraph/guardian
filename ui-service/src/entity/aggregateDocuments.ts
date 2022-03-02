@@ -1,4 +1,4 @@
-import {Column, Entity, ObjectIdColumn} from 'typeorm';
+import {Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn} from 'typeorm';
 
 /**
  * Documents for aggregate collection
@@ -13,4 +13,10 @@ export class AggregateVC {
 
     @Column()
     owner: string;
+
+    @CreateDateColumn()
+    createDate: Date;
+
+    @UpdateDateColumn()
+    updateDate: Date;
 }

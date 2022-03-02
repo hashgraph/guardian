@@ -4,6 +4,8 @@ import {
     trustchainsAPI,
     frontendService,
     demoAPI,
+    infoAPI,
+    otherAPI,
     profileAPI,
     schemaAPI,
     tokenAPI,
@@ -26,6 +28,21 @@ import { IPFS } from '@helpers/ipfs';
 
 const PORT = process.env.PORT || 3002;
 const API_VERSION = 'v1';
+
+console.log('Starting ui-service', {
+    now: new Date().toString(),
+    PORT,
+    DB_HOST: process.env.DB_HOST,
+    DB_DATABASE: process.env.DB_DATABASE,
+    BUILD_VERSION: process.env.BUILD_VERSION,
+    DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+    OPERATOR_ID: process.env.OPERATOR_ID,
+    MRV_ADDRESS: process.env.MRV_ADDRESS,
+    MQ_ADDRESS: process.env.MQ_ADDRESS,
+    SERVICE_CHANNEL: process.env.SERVICE_CHANNEL
+});
+
+
 
 Promise.all([
     createConnection({
@@ -80,6 +97,18 @@ Promise.all([
     ////////////////////////////////////////
 
     // Config routes
+    //Old - left incase they are hooked up - probably need to be removed
+    app.use('/policy/', authorizationHelper, policyGenerator.getRouter());
+    app.use('/api/account/', accountAPI);
+    app.use('/api/profile/', authorizationHelper, profileAPI);
+    app.use('/api/schema', authorizationHelper, schemaAPI);
+    app.use('/api/tokens', authorizationHelper, tokenAPI);
+    app.use('/api/info', infoAPI);
+    app.use('/api/package', importExportAPI);
+    app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
+    app.use('/api-docs/', swaggerAPI);
+
+    //New - these are from upstream
     app.use(`/api/${API_VERSION}/policies`, authorizationHelper, policyGenerator.getRouter());
     app.use(`/api/${API_VERSION}/policies`, authorizationHelper, importExportAPI);
     app.use(`/api/${API_VERSION}/accounts/`, accountAPI);

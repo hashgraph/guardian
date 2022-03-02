@@ -3,7 +3,7 @@
   "dependencies": {
     "@hashgraph/sdk": "2.6.0",
     "@hashgraph/did-sdk-js": "0.1.1",
-    "jose": "4.3.8",
+    "jose": "^4.4.0",
     "@transmute/credentials-context": "0.7.0-unstable.40",
     "@transmute/did-context": "0.7.0-unstable.40",
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.40",
@@ -32,10 +32,11 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "lint": "tslint --project .",
+    "lint": "tsc --noEmit --incremental false && tslint --project .",
     "test": "mocha tests/unit-tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/vc-modules.xml",
     "test:network": "mocha tests/network-tests/**/*.test.js",
-    "test:stability": "mocha tests/stability.test.js"
+    "test:stability": "mocha tests/stability.test.js",
+    "watch": "npm run dev"
   },
   "version": "1.0.5"
 }

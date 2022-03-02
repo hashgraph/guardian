@@ -4,6 +4,14 @@ import { DefaultDocumentLoader, HederaHelper, VCHelper } from 'vc-modules';
 import { VCDocumentLoader } from './document-loader/vc-document-loader';
 
 const PORT = process.env.PORT || 3005;
+
+console.log('Starting mrv-sender', {
+    now: new Date().toString(),
+    PORT,
+    BUILD_VERSION: process.env.BUILD_VERSION,
+    DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+});
+
 (async () => {
     const app = express()
 
@@ -91,7 +99,7 @@ const PORT = process.env.PORT || 3005;
         }
 
         try {
-            console.error('start Transaction');
+            console.error('start Transaction', JSON.stringify(vc, undefined,2));
             await hederaHelper.DID.createVcTransaction(vc, hederaAccountKey);
             console.error('end Transaction');
         } catch (e) {
@@ -101,6 +109,14 @@ const PORT = process.env.PORT || 3005;
         }
 
         res.status(200).json(document);
+    });
+
+    app.get('/info', async (req: Request, res: Response) => {
+        res.status(200).json({
+            NAME: 'mrv-sender',
+            BUILD_VERSION: process.env.BUILD_VERSION,
+            DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+        });
     });
 
     app.listen(PORT, () => {

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import FastMQ from 'fastmq'
 import { createConnection } from 'typeorm';
 import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
@@ -25,6 +25,15 @@ import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
 
 const PORT = process.env.PORT || 3001;
+
+console.log('Starting guardian-service', {
+    now: new Date().toString(),
+    PORT,
+    DB_HOST: process.env.DB_HOST,
+    DB_DATABASE: process.env.DB_DATABASE,
+    BUILD_VERSION: process.env.BUILD_VERSION,
+    DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+});
 
 Promise.all([
     createConnection({
@@ -65,6 +74,11 @@ Promise.all([
     const vcSchemaObjectLoader = new VCSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
     const subjectSchemaObjectLoader = new SubjectSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
 
+    // TODO: Maybe remove? This might be superfluos after merge
+    const schemaObjectLoader = new SchemaObjectLoader(schemaRepository);
+    vcHelper.addContext('https://localhost/schema');
+    //
+
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(schemaDocumentLoader);
     vcHelper.addDocumentLoader(didDocumentLoader);
@@ -91,6 +105,15 @@ Promise.all([
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
+
+    app.get('/info', async (req: Request, res: Response) => {
+        res.status(200).json({
+            NAME: 'guardian-service',
+            BUILD_VERSION: process.env.BUILD_VERSION,
+            DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+            OPERATOR_ID: fileConfig.OPERATOR_ID,
+        });
+    });
 
     app.listen(PORT, () => {
         console.log('guardian service started', PORT);

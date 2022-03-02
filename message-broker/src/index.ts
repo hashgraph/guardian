@@ -1,14 +1,32 @@
 import FastMQ from 'fastmq'
-import express, {Request, Response} from 'express'
+import express, { Request, Response } from 'express'
 
 const mqServer = FastMQ.Server.create('master', 7500, '0.0.0.0');
 
+server.onError(err => {
+    console.error('MBError: ', err);
+});
+
+server.onSocketError(err => {
+    console.error('SocketError: ', err);
+});
+
 const PORT = process.env.PORT || 3003;
+
+console.log('Starting message-broker', {
+    now: new Date().toString(),
+    PORT,
+    BUILD_VERSION: process.env.BUILD_VERSION,
+    DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+});
+
 
 // start server
 export default Promise.all([
     mqServer.start()
 ]).then(async () => {
+
+
 
     const app = express();
     app.use(express.json());
@@ -26,7 +44,17 @@ export default Promise.all([
         }
     });
 
+    app.get('/info', async (req: Request, res: Response) => {
+        res.status(200).json({
+            NAME: 'message-broker',
+            BUILD_VERSION: process.env.BUILD_VERSION,
+            DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+        });
+    });
+
     app.listen(PORT, () => {
         console.log('Message Broker server started', PORT);
     });
+}, (err) => {
+    console.error("Failed to FastMQ server", err)
 });
