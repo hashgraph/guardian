@@ -1,7 +1,7 @@
 import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaCondition, SchemaField } from 'interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
@@ -38,6 +38,12 @@ export class SchemaConfigurationComponent implements OnInit {
     schemaTypes!: any;
     schemaTypeMap!: any;
     destroy$: Subject<boolean> = new Subject<boolean>();
+
+    private _patternByNumberType: any = {
+        duration: /^[0-9]+$/,
+        number: /^-?\d*(\.\d+)?$/,
+        integer: /^-?\d*$/
+    };
 
     constructor(
         private fb: FormBuilder
@@ -638,38 +644,54 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     onIfConditionFieldChange(condition: any, field: any) {
-        condition.ifControl.changeEvents?.forEach((item: any) => item.unsubscribe());
+        if (condition.changeEvents) {
+            condition.ifControl.fieldValue.patchValue('', {
+                emitEvent: false
+            });
+        }
+
+        condition.changeEvents?.forEach((item: any) => item.unsubscribe());
         
-        condition.ifControl.changeEvents = []
-        condition.ifControl.changeEvents.push(field.controlRequired.valueChanges
+        condition.changeEvents = []
+        condition.changeEvents.push(field.controlRequired.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
-            this.ifFormatValue(condition, field);
+                this.ifFormatValue(condition, field);
         }));
-        condition.ifControl.changeEvents.push(field.controlType.valueChanges
+        condition.changeEvents.push(field.controlType.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
-            condition.ifControl.fieldValue.patchValue('');
-            this.ifFormatValue(condition, field);
+                condition.ifControl.fieldValue.patchValue('', {
+                    emitEvent: false
+                });
+                this.ifFormatValue(condition, field);
         }));
-        condition.ifControl.changeEvents.push(field.controlArray.valueChanges
+        condition.changeEvents.push(field.controlArray.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
-            condition.ifControl.field.patchValue(null);
+                condition.ifControl.field.patchValue(null);
         }));
 
         this.ifFormatValue(condition, field);
-        
     }
 
     private ifFormatValue(condition: any, field: any) {
-        (condition.ifControl.fieldValue as FormControl).clearValidators();
-        condition.ifControl.fieldValue.updateValueAndValidity();
-        (condition.ifControl.fieldValue as FormControl).setValidators(field.controlRequired.value ? Validators.required : null);
-        condition.ifControl.fieldValue.updateValueAndValidity();
-        condition.ifControl.fieldChange?.unsubscribe();
-
         const type = this.schemaTypeMap[field.controlType.value];
+        const isNumber = ['number', 'integer'].includes(type.type) || type.format === 'duration';
+
+        const validators = [];
+
+        if (field.controlRequired.value) {
+            validators.push(Validators.required);
+        }
+
+        if (isNumber) {
+            validators.push(this.isNumberOrEmptyValidator());
+        }
+        
+        (condition.ifControl.fieldValue as FormControl).clearValidators();
+        (condition.ifControl.fieldValue as FormControl).setValidators(validators);
+        condition.fieldChange?.unsubscribe();
 
         if (type.type === 'boolean' && !field.controlRequired.value) {
             (condition.ifControl.field as FormControl).patchValue(null);
@@ -677,11 +699,13 @@ export class SchemaConfigurationComponent implements OnInit {
         }
 
         if (['date', 'date-time'].includes(type.format)) {
-            condition.ifControl.fieldChange = this.subscribeFormatDateValue(condition.ifControl.fieldValue, type.format);
+            condition.fieldChange = this.subscribeFormatDateValue(condition.ifControl.fieldValue, type.format);
         }
-        if (['number', 'integer'].includes(type.type) || type.format === 'duration') {
-            condition.ifControl.fieldChange = this.subscribeFormatNumberValue(condition.ifControl.fieldValue, type.format || type.type);
+        if (isNumber) {
+            condition.fieldChange = this.subscribeFormatNumberValue(condition.ifControl.fieldValue, type.format || type.type);
         }
+
+        condition.ifControl.fieldValue.updateValueAndValidity();
     }
 
     private subscribeFormatDateValue(control: FormControl, format: string) {
@@ -726,12 +750,18 @@ export class SchemaConfigurationComponent implements OnInit {
         return null;
       }
     
-      private subscribeFormatNumberValue(control: FormControl, type: string) {
-        return control.valueChanges
+      private subscribeFormatNumberValue(control: FormControl, type: string, pattern?: string) {
+        control.valueChanges
           .pipe(takeUntil(this.destroy$))
           .subscribe((val: any) => {
             let valueToSet: any = val;
             try {
+              if (
+                typeof(val) === 'string'
+                && (!pattern && !this._patternByNumberType[type].test(val) || (pattern && !val?.match(pattern)))
+              ) {
+                  throw new Error();
+              }
               if (type == 'integer') {
                 valueToSet = parseInt(val);
               }
@@ -752,7 +782,21 @@ export class SchemaConfigurationComponent implements OnInit {
           });
       }
 
-      getFieldsForCondition() {
+      public isNumberOrEmptyValidator() : ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const value = control.value; 
+            if (!value || typeof(value) === 'number') {
+                return null;
+            }
+            return {
+                isNotNumber: {
+                    valid: false
+                }
+            };
+        };
+    }
+
+       getFieldsForCondition() {
         return this.fields.filter(item => 
             !item.controlArray.value && item.controlName.value && !this.schemaTypeMap[item.controlType.value].isRef
             && (this.schemaTypeMap[item.controlType.value].type === 'boolean' ? item.controlRequired.value : true)
