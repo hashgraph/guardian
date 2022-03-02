@@ -22,7 +22,7 @@
 
 ## User Guide Glossary
 
-* [Guardian Glossary](<README (1).md>)
+* [Guardian Glossary](user-guide-glossary/guardian-glossary.md)
 * [Policy Glossary](user-guide-glossary/policy-glossary.md)
 
 ## Available Schema Types
