@@ -69,7 +69,7 @@ export class DocumentsSourceAddon {
         }
 
         const dynFilters = {};
-        for (let [key, value] of Object.entries(ref.getFilters())) {
+        for (let [key, value] of Object.entries(ref.getFilters(user))) {
             dynFilters[key] = { $eq: value };
         }
 

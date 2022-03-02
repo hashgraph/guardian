@@ -5,7 +5,7 @@
 
     <div class="content-trust-chain">
 
-        <form *ngIf="!chainVisible" class="filters" [formGroup]="searchForm" (ngSubmit)="updateFilter()">
+        <form *ngIf="!(vpDocument || vcDocument)" class="filters" [formGroup]="searchForm" (ngSubmit)="updateFilter()">
             <mat-form-field class="search-input" appearance="outline">
                 <mat-label>HASH/ID:</mat-label>
                 <input matInput type="text" placeholder="HASH/ID" formControlName="value">
@@ -15,7 +15,7 @@
             </mat-form-field>
         </form>
 
-        <div *ngIf="chainVisible" class="display-chain">
+        <div *ngIf="vpDocument || vcDocument" class="display-chain">
             <div class="verified-presentation">
 
                 <div *ngIf="vpDocument" class="header">

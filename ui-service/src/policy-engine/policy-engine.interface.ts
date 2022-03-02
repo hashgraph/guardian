@@ -77,7 +77,7 @@ export interface IPolicySourceBlock extends IPolicyBlock {
 }
 
 export interface IPolicyAddonBlock extends IPolicyBlock {
-    filters: { [key: string]: string };
+    filters: { [key: string]: { [key: string]: string } };
 
     setData(user: IAuthUser | null, data: any): Promise<any>;
 
@@ -87,9 +87,9 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
 
     getFromSource(user: IAuthUser): any;
 
-    getFilters(): { [key: string]: string };
+    getFilters(user: IAuthUser): { [key: string]: string };
 
-    setFilters(filters: { [key: string]: string }): void
+    setFilters(filters: { [key: string]: string }, user: IAuthUser): void
 }
 
 

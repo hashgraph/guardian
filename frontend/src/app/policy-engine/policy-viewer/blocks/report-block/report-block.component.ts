@@ -106,8 +106,7 @@ export class ReportBlockComponent implements OnInit {
             this.loading = true;
             this.policyEngineService.getBlockData(
                 this.id,
-                this.policyId,
-                this.policyHelper.getParams(this.id)
+                this.policyId
             ).subscribe((data: any) => {
                 this.setData(data);
                 this.loading = false;
@@ -137,7 +136,6 @@ export class ReportBlockComponent implements OnInit {
         const uiMetaData = data.uiMetaData || {};
         const schemes = data.schemes || [];
         const report = data.data as IReport;
-
         this.vpDocument = report.vpDocument;
         this.vcDocument = report.vcDocument;
         this.mintDocument = report.mintDocument;
@@ -145,9 +143,8 @@ export class ReportBlockComponent implements OnInit {
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
         this.schemes = SchemaHelper.map(schemes);
-
         if (this.policyDocument) {
-            this.documents.unshift({
+            this.documents.push({
                 type: this.policyDocument.type,
                 icon: 'format_list_bulleted',
                 title: 'Policy',
@@ -160,10 +157,10 @@ export class ReportBlockComponent implements OnInit {
             });
         }
         if (this.policyCreatorDocument) {
-            this.documents.unshift(this.policyCreatorDocument);
+            this.documents.push(this.policyCreatorDocument);
         }
-
         this.documents = this.documents.filter(e=>e.visible);
+        this.documents = this.documents.reverse();
         this.loading = false;
     }
 
@@ -226,12 +223,22 @@ export class ReportBlockComponent implements OnInit {
     }
 
     updateFilter() {
-        this.policyHelper.setParams(this.id, { hash: this.searchForm.value.value });
-        this.loadData();
+        this.loading = true;
+        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue: this.searchForm.value.value }).subscribe(() => {
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
     }
 
     onBackClick() {
-        this.policyHelper.setParams(this.id, null);
-        this.loadData();
+        this.loading = true;
+        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue: null }).subscribe(() => {
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
     }
 }

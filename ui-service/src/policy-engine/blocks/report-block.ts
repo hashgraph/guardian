@@ -5,7 +5,7 @@ import { getVCField } from '@helpers/utils';
 import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
-import { IPolicyReport, IReport, IReportItem, ITokenReport, IVPReport, SchemaEntity } from 'interfaces';
+import { IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport, SchemaEntity } from 'interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Users } from "@helpers/users";
 
@@ -14,6 +14,9 @@ import { Users } from "@helpers/users";
     commonBlock: false
 })
 export class ReportBlock {
+    private state: { [key: string]: any } = {
+        lastValue: null
+    };
 
     @Inject()
     public guardian: Guardians;
@@ -66,34 +69,41 @@ export class ReportBlock {
         await this.itemUserMap(report.documents, map);
     }
 
-    async getData(user: IAuthUser, uuid, params): Promise<any> {
+    async getData(user: IAuthUser, uuid): Promise<any> {
         const ref = PolicyComponentsStuff.GetBlockRef<IPolicyReportBlock>(this);
         try {
-            const schemes = await this.guardian.getSchemesByOwner(null);
-
-            if (!params || !params.hash) {
+            const blockState = this.state[user.did] || {};
+            if (!blockState.lastValue) {
                 return {
                     uiMetaData: ref.options.uiMetaData,
-                    schemes: schemes,
+                    schemes: null,
                     data: null
                 };
             }
+            const hash = blockState.lastValue;
+
+            const documents: IReportItem[] = [];
+
+            const variables: any = {
+                policyId: ref.policyId,
+                owner: user.did
+            };
+
+            const report: IReport = {
+                vpDocument: null,
+                vcDocument: null,
+                mintDocument: null,
+                policyDocument: null,
+                policyCreatorDocument: null,
+                documents: documents
+            }
 
             const vp = (await this.guardian.getVpDocuments({
-                hash: params.hash
+                hash: { $eq: hash },
+                policyId: { $eq: ref.policyId }
             }))[0];
 
             if (vp) {
-                const documents: IReportItem[] = [];
-                const report: IReport = {
-                    vpDocument: null,
-                    vcDocument: null,
-                    mintDocument: null,
-                    policyDocument: null,
-                    policyCreatorDocument: null,
-                    documents: documents
-                }
-
                 const vpDocument: IVPReport = {
                     type: 'VP',
                     title: 'Verified Presentation',
@@ -124,72 +134,91 @@ export class ReportBlock {
                     }
                 }
                 report.mintDocument = mintDocument;
+                variables.actionId = mint.credentialSubject[0].id;
 
-                const policy = (await this.guardian.getVcDocuments({
-                    type: { $eq: SchemaEntity.POLICY },
-                    policyId: ref.policyId
+                const doc = vp.document.verifiableCredential[0];
+                variables.documentId = doc.credentialSubject[0].id;
+            } else {
+                const vc = (await this.guardian.getVcDocuments({
+                    hash: { $eq: hash },
+                    policyId: { $eq: ref.policyId }
+                }))[0];
+                const vcDocument: IVCReport = {
+                    type: 'VC',
+                    title: 'Verifiable Credential',
+                    tag: vc.tag,
+                    hash: vc.hash,
+                    issuer: vc.owner,
+                    username: vc.owner,
+                    document: vc
+                }
+                report.vcDocument = vcDocument;
+                variables.documentId = vc.document.credentialSubject[0].id;
+            }
+
+            const policy = (await this.guardian.getVcDocuments({
+                type: { $eq: SchemaEntity.POLICY },
+                policyId: ref.policyId
+            }))[0];
+
+            if (policy) {
+                const policyDocument: IPolicyReport = {
+                    type: 'VC',
+                    name: getVCField(policy.document, 'name'),
+                    description: getVCField(policy.document, 'description'),
+                    version: getVCField(policy.document, 'version'),
+                    tag: 'Policy Created',
+                    issuer: policy.owner,
+                    username: policy.owner,
+                    document: policy
+                }
+                report.policyDocument = policyDocument;
+
+                const policyCreator = (await this.guardian.getVcDocuments({
+                    type: { $eq: SchemaEntity.ROOT_AUTHORITY },
+                    owner: policy.owner
                 }))[0];
 
-                if (policy) {
-                    const policyDocument: IPolicyReport = {
+                if (policyCreator) {
+                    const policyCreatorDocument: IReportItem = {
                         type: 'VC',
-                        name: getVCField(policy.document, 'name'),
-                        description: getVCField(policy.document, 'description'),
-                        version: getVCField(policy.document, 'version'),
-                        tag: 'Policy Created',
+                        icon: 'account_circle',
+                        title: 'RootAuthority',
+                        description: 'Account Creation',
+                        visible: true,
+                        tag: 'Account Creation',
                         issuer: policy.owner,
                         username: policy.owner,
-                        document: policy
+                        document: policyCreator
                     }
-                    report.policyDocument = policyDocument;
-
-                    const policyCreator = (await this.guardian.getVcDocuments({
-                        type: { $eq: SchemaEntity.ROOT_AUTHORITY },
-                        owner: policy.owner
-                    }))[0];
-
-                    if (policyCreator) {
-                        const policyCreatorDocument: IReportItem = {
-                            type: 'VC',
-                            icon: 'account_circle',
-                            title: 'RootAuthority',
-                            description: 'Account Creation',
-                            visible: true,
-                            tag: 'Account Creation',
-                            issuer: policy.owner,
-                            username: policy.owner,
-                            document: policyCreator
-                        }
-                        report.policyCreatorDocument = policyCreatorDocument;
-                    }
+                    report.policyCreatorDocument = policyCreatorDocument;
                 }
-
-                const variables = {
-                    policyId: ref.policyId,
-                    owner: user.did
-                };
-                const reportItems = ref.getItems();
-                for (let i = 0; i < reportItems.length; i++) {
-                    const reportItem = reportItems[i];
-                    await reportItem.run(documents, variables);
-                }
-
-                await this.reportUserMap(report);
-
-                return {
-                    uiMetaData: ref.options.uiMetaData,
-                    schemes: schemes,
-                    data: report
-                };
-            } else {
-                return {
-                    uiMetaData: ref.options.uiMetaData,
-                    schemes: schemes,
-                    data: null
-                };
             }
+
+            const reportItems = ref.getItems();
+            for (let i = 0; i < reportItems.length; i++) {
+                const reportItem = reportItems[i];
+                await reportItem.run(documents, variables);
+            }
+
+            await this.reportUserMap(report);
+
+            const schemes = await this.guardian.getSchemesByOwner(null);
+
+            return {
+                uiMetaData: ref.options.uiMetaData,
+                schemes: schemes,
+                data: report
+            };
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+    }
+
+    async setData(user: IAuthUser, data: any) {
+        const value = data.filterValue;
+        const blockState = this.state[user.did] || {};
+        blockState.lastValue = value;
+        this.state[user.did] = blockState;
     }
 }

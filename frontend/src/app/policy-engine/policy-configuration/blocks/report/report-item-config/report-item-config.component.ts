@@ -48,6 +48,7 @@ export class ReportItemConfigComponent implements OnInit {
         this.block = block;
         this.block.filters = this.block.filters || [];
         this.block.variables = this.block.variables || [];
+        this.block.visible = block.visible !== false;
     }
 
     onHide(item: any, prop: any) {
