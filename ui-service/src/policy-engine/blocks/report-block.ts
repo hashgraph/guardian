@@ -7,6 +7,7 @@ import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyReport, IReport, IReportItem, ITokenReport, IVPReport, SchemaEntity } from 'interfaces';
 import { BlockActionError } from '@policy-engine/errors';
+import { Users } from "@helpers/users";
 
 @Report({
     blockType: 'reportBlock',
@@ -16,6 +17,54 @@ export class ReportBlock {
 
     @Inject()
     public guardian: Guardians;
+
+    @Inject()
+    public users: Users;
+
+    async getUserName(did: string, map: any): Promise<string> {
+        if (map[did]) {
+            return map[did];
+        } else {
+            const curUser = await this.users.getUserById(did);
+            if (curUser) {
+                map[did] = curUser.username;
+                return map[did];
+            } else {
+                return did;
+            }
+        }
+    }
+
+    async itemUserMap(documents: IReportItem[], map) {
+        if (!documents) {
+            return;
+        }
+        for (let i = 0; i < documents.length; i++) {
+            const element = documents[i];
+            element.username = await this.getUserName(element.username, map);
+            await this.itemUserMap(element.documents, map);
+        }
+    }
+
+    async reportUserMap(report: IReport) {
+        const map: any = {};
+        if (report.vpDocument) {
+            report.vpDocument.username = await this.getUserName(report.vpDocument.username, map);
+        }
+        if (report.vcDocument) {
+            report.vcDocument.username = await this.getUserName(report.vcDocument.username, map);
+        }
+        if (report.mintDocument) {
+            report.mintDocument.username = await this.getUserName(report.mintDocument.username, map);
+        }
+        if (report.policyDocument) {
+            report.policyDocument.username = await this.getUserName(report.policyDocument.username, map);
+        }
+        if (report.policyCreatorDocument) {
+            report.policyCreatorDocument.username = await this.getUserName(report.policyCreatorDocument.username, map);
+        }
+        await this.itemUserMap(report.documents, map);
+    }
 
     async getData(user: IAuthUser, uuid, params): Promise<any> {
         const ref = PolicyComponentsStuff.GetBlockRef<IPolicyReportBlock>(this);
@@ -59,8 +108,8 @@ export class ReportBlock {
                 const mint = vp.document.verifiableCredential[1];
                 const mintDocument: ITokenReport = {
                     type: 'VC',
-                    tokenId: getVCField(mint, 'name'),
-                    date: getVCField(mint, 'name'),
+                    tokenId: getVCField(mint, 'tokenId'),
+                    date: getVCField(mint, 'date'),
                     tag: vp.tag,
                     issuer: vp.owner,
                     username: vp.owner,
@@ -105,6 +154,7 @@ export class ReportBlock {
                             icon: 'account_circle',
                             title: 'RootAuthority',
                             description: 'Account Creation',
+                            visible: true,
                             tag: 'Account Creation',
                             issuer: policy.owner,
                             username: policy.owner,
@@ -123,6 +173,8 @@ export class ReportBlock {
                     const reportItem = reportItems[i];
                     await reportItem.run(documents, variables);
                 }
+
+                await this.reportUserMap(report);
 
                 return {
                     uiMetaData: ref.options.uiMetaData,
