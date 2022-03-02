@@ -43,6 +43,8 @@ import { ExportPolicyDialog } from './helpers/export-policy-dialog/export-policy
 import { CalculateConfigComponent } from './policy-configuration/blocks/calculate/calculate-config/calculate-config.component';
 import { CalculateMathConfigComponent } from './policy-configuration/blocks/calculate/calculate-math-config/calculate-math-config.component';
 import { JsonPropertiesComponent } from './policy-configuration/json-properties/json-properties.component';
+import { ReportBlockComponent } from './policy-viewer/blocks/report-block/report-block.component';
+import { ReportItemConfigComponent } from './policy-configuration/blocks/report/report-item-config/report-item-config.component';
 
 @NgModule({
     declarations: [
@@ -81,7 +83,9 @@ import { JsonPropertiesComponent } from './policy-configuration/json-properties/
         ExportPolicyDialog,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
-        JsonPropertiesComponent
+        JsonPropertiesComponent,
+        ReportBlockComponent,
+        ReportItemConfigComponent
     ],
     imports: [
         CommonModule,

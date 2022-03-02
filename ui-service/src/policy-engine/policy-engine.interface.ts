@@ -107,4 +107,14 @@ export interface IPolicyCalculateAddon extends IPolicyBlock {
     parse(formula: string): boolean;
 }
 
+export interface IPolicyReportBlock extends IPolicyBlock {
+    getItems(): IPolicyReportItemBlock[];
+}
+
+export interface IPolicyReportItemBlock extends IPolicyBlock {
+    run(fieldsResult: any[], mapVariables: any, userMap: any): Promise<any>;
+
+    getItems(): IPolicyReportItemBlock[];
+}
+
 export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock | IPolicyCalculateBlock | IPolicyCalculateAddon;
