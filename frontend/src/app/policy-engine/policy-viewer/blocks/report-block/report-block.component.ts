@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -25,7 +25,6 @@ export class ReportBlockComponent implements OnInit {
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
 
-    isActive = false;
     loading: boolean = true;
     socket: any;
     content: string | null = null;
@@ -40,13 +39,15 @@ export class ReportBlockComponent implements OnInit {
      */
 
      chain!: any[];
-     userMap: any = {};
      vp!: any;
      vpMint!: any;
      vpPolicy: any;
- 
-     hasParam: boolean = false;
+     userMap:any;
+     chainVisible: boolean = false;
      schemas!: Schema[];
+     searchForm = this.fb.group({
+        value: ['', Validators.required],
+    });
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -106,10 +107,9 @@ export class ReportBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockData(this.id, this.policyId, this.policyHelper.getParams(this.id)).subscribe((data: any) => {
                 this.setData(data);
                 this.loading = false;
-                console.log(data);
             }, (e) => {
                 console.error(e.error);
                 this.loading = false;
@@ -119,22 +119,18 @@ export class ReportBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
-            this.isActive = true;
+            this.chainVisible = true;
             this.loadTrustChainData(data);
         } else {
-            this.content = null;
-            this.isActive = false;
+            this.chainVisible = false;
         }
     }
 
     loadTrustChainData(documents: any) {
-        const { chain, userMap , schemas} = documents;
+        const { chain , schemas, userMap} = documents;
         this.schemas = SchemaHelper.map(schemas);
-        this.userMap = {};
-        userMap.forEach((user: any) => {
-            this.userMap[user.did] = user.username;
-        });
 
+        this.userMap = userMap;
         this.chain = this.mapData(chain).filter(d => d.type === 'VC').reverse();
         this.vp = this.mapData(chain).find(d => d.type === 'VP');
 
@@ -145,9 +141,10 @@ export class ReportBlockComponent implements OnInit {
                     ...vcMint.credentialSubject[0],
                     issuer: vcMint.issuer,
                     document: vcMint,
-                    schema: vcMint.credentialSubject[0].type,
+                    itemTitle: vcMint.credentialSubject[0].type,
                     entity: 'Mint',
-                    tag: 'Mint Token'
+                    itemDescription: 'Mint Token',
+                    itemIcon: 'token'
                 };
                 this.chain.push(this.vpMint);
             } else {
@@ -229,15 +226,24 @@ export class ReportBlockComponent implements OnInit {
         });
     }
 
-    formatFields(obj: any): string {
-        return (obj.tag ?? '').replace(/_/g, ' ');
+    updateFilter() {
+        this.policyHelper.setParams(this.id, {hash: this.searchForm.value.value});
+        this.loadData();
+    }
+
+    onBackClick() {
+        this.policyHelper.setParams(this.id, null);
+        this.loadData();
+    }
+
+    getLinkVcs(links: any) {
+        return links?.filter((item: any) => item.type === "VC");
     }
 
     getParties(item: any): string {
-        if (item.document.issuer in this.userMap) return this.userMap[item.document.issuer];
-        else if (item.owner in this.userMap) return this.userMap[item.owner];
-
-        return item.document.issuer;
+        if (item.document.issuer) {
+            return this.userMap[item.document.issuer];
+        }
+        return "";
     }
-
 }

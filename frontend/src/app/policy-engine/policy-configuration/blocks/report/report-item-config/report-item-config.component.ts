@@ -24,6 +24,10 @@ export class ReportItemConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
+        filterGroup: false,
+        filters: {},
+        variableGroup: false,
+        variables: {}
     };
 
     block!: BlockNode;
@@ -42,10 +46,27 @@ export class ReportItemConfigComponent implements OnInit {
 
     load(block: BlockNode) {
         this.block = block;
-        this.block.uiMetaData = this.block.uiMetaData || {}
+        this.block.filters = this.block.filters || [];
+        this.block.variables = this.block.variables || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    addVariable() {
+        this.block.variables.push({});
+    }
+
+    onRemoveVariable(i: number) {
+        this.block.variables.splice(i, 1);
+    }
+
+    addFilter() {
+        this.block.filters.push({});
+    }
+
+    onRemoveFilter(i: number) {
+        this.block.filters.splice(i, 1);
     }
 }
