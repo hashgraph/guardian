@@ -112,7 +112,7 @@ export interface IPolicyReportBlock extends IPolicyBlock {
 }
 
 export interface IPolicyReportItemBlock extends IPolicyBlock {
-    run(fieldsResult: any[], mapVariables: any, userMap: any): Promise<any>;
+    run(fieldsResult: any[], mapVariables: any): Promise<any>;
 
     getItems(): IPolicyReportItemBlock[];
 }

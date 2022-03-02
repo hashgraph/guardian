@@ -38,10 +38,12 @@
 
                     <div class="delimiter"></div>
 
-                    <div *ngFor="let item of registeredBlocks.groups.Main" class="btn-new-block btn-status-edit"
-                        (click)="onAdd(item.type)" [title]="item.title">
-                        <mat-icon>{{item.icon}}</mat-icon>
-                        <span>{{item.name}}</span>
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="mainMenu">
+                        <mat-icon>home</mat-icon>
+                        <span>Main</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
                     </div>
 
                     <div class="btn-group btn-status-edit" [matMenuTriggerFor]="vcMenu">
@@ -69,7 +71,7 @@
                     </div>
 
                     <div class="btn-group btn-status-edit" [matMenuTriggerFor]="reportMenu">
-                        <mat-icon>report</mat-icon>
+                        <mat-icon>addchart</mat-icon>
                         <span>Report</span>
                         <div class="expand-group">
                             <mat-icon>arrow_drop_down</mat-icon>
@@ -178,6 +180,14 @@
         </div>
     </div>
 </div>
+
+<mat-menu #mainMenu="matMenu">
+    <div *ngFor="let item of registeredBlocks.groups.Main" class="btn-new-block-menu btn-status-edit"
+        (click)="onAdd(item.type)" [title]="item.title">
+        <mat-icon>{{item.icon}}</mat-icon>
+        <span>{{item.name}}</span>
+    </div>
+</mat-menu>
 
 <mat-menu #vcMenu="matMenu">
     <div *ngFor="let item of registeredBlocks.groups.Documents" class="btn-new-block-menu btn-status-edit"

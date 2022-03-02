@@ -89,8 +89,8 @@ export class RegisteredBlocks {
         this.register(BlockType.DocumentsSourceAddon, 'source', 'Source', `Add 'DocumentsSourceAddon' Block`);
         this.register(BlockType.Calculate, 'bar_chart', 'Calculate', `Add 'Calculate' Addon`);
         this.register(BlockType.CalculateMathAddon, 'calculate', 'Math Addon', `Add 'Math' Addon`);
-        this.register(BlockType.Report, 'report', 'Report', `Add 'Report' Block`);
-        this.register(BlockType.ReportItem, 'branding_watermark', 'Report Item', `Add 'Report Item' Block`);
+        this.register(BlockType.Report, 'addchart', 'Report', `Add 'Report' Block`);
+        this.register(BlockType.ReportItem, 'list_alt', 'Report Item', `Add 'Report Item' Block`);
 
         this.registerGroup(BlockGroup.Main, BlockType.Container);
         this.registerGroup(BlockGroup.Main, BlockType.Step);
@@ -136,7 +136,6 @@ export class RegisteredBlocks {
         this.registerProperties(BlockType.FiltersAddon, FiltersAddonConfigComponent);
         this.registerProperties(BlockType.DocumentsSourceAddon, SourceAddonConfigComponent);
         this.registerProperties(BlockType.ReportItem, ReportItemConfigComponent);
-
         this.registerProperties(BlockType.Calculate, CalculateConfigComponent);
         this.registerProperties(BlockType.CalculateMathAddon, CalculateMathConfigComponent);
     }

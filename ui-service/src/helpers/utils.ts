@@ -1,4 +1,5 @@
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
+import { IVC, IVCDocument } from 'interfaces';
 
 export const SchemaFields = [
     'schema',
@@ -67,4 +68,35 @@ export function regenerateIds(block: any) {
             regenerateIds(child);
         }
     }
+}
+
+export function getVCField(vcDocument: IVC, name: string): any {
+    if (
+        vcDocument &&
+        vcDocument.credentialSubject &&
+        vcDocument.credentialSubject[0]
+    ) {
+        return vcDocument.credentialSubject[0][name];
+    }
+    return null;
+}
+
+export function getVCIssuer(vcDocument: IVCDocument | IVCDocument): string {
+    if (vcDocument && vcDocument.document) {
+        return vcDocument.document.issuer;
+    }
+    return null;
+}
+
+export function findOptions(document: any, field: any) {
+    let value: any = null;
+    if (document && field) {
+        const keys = field.split('.');
+        value = document;
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            value = value[key];
+        }
+    }
+    return value;
 }
