@@ -42,6 +42,7 @@ export class ReportBlockComponent implements OnInit {
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
 
+    hash: string = "";
     loading: boolean = true;
     socket: any;
     content: string | null = null;
@@ -129,6 +130,7 @@ export class ReportBlockComponent implements OnInit {
             this.policyDocument = undefined;
             this.documents = undefined;
             this.schemes = [];
+            this.hash = "";
         }
     }
 
@@ -136,6 +138,10 @@ export class ReportBlockComponent implements OnInit {
         const uiMetaData = data.uiMetaData || {};
         const schemes = data.schemes || [];
         const report = data.data as IReport;
+        this.hash = data.hash;
+        this.searchForm.patchValue({
+            value: this.hash
+        });
         this.vpDocument = report.vpDocument;
         this.vcDocument = report.vcDocument;
         this.mintDocument = report.mintDocument;

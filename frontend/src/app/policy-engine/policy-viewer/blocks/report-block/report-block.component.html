@@ -15,6 +15,10 @@
             </mat-form-field>
         </form>
 
+        <div class="not-exist" *ngIf="!(vpDocument || vcDocument) && this.hash">
+            Can't find document with HASH: {{this.hash}}
+        </div>
+
         <div *ngIf="vpDocument || vcDocument" class="display-chain">
             <div class="verified-presentation">
 

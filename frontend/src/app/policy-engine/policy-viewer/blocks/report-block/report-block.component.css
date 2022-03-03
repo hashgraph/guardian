@@ -393,3 +393,13 @@ a.open-vp {
 .nested-documents-value {
     margin-right: 30px;
 }
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 30vh;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+    text-align: center;
+}
