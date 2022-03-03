@@ -7,8 +7,8 @@ import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
-import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 
 @BasicBlock({
     blockType: 'sendToGuardian',
@@ -36,11 +36,31 @@ export class SendToGuardianBlock {
             document.id = undefined;
             state.data = document;
         }
+        if (ref.options.options) {
+            document.option = document.option || {};
+            for (let index = 0; index < ref.options.options.length; index++) {
+                const option = ref.options.options[index];
+                document.option[option.name] = option.value;
+            }
+        }
 
-        let result:any;
+        let result: any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
-                const doc = this.convertDocument(document, 'vc-documents', ref)
+                const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
+                const doc = {
+                    hash: vc.toCredentialHash(),
+                    owner: document.owner,
+                    assign: document.assign,
+                    option: document.option,
+                    schema: document.schema,
+                    hederaStatus: document.status || DocumentStatus.NEW,
+                    signature: document.signature || DocumentSignature.NEW,
+                    type: ref.options.entityType,
+                    policyId: ref.policyId,
+                    tag: ref.tag,
+                    document: vc.toJsonTree()
+                };
                 result = await this.guardians.setVcDocument(doc);
                 break;
             }
@@ -49,8 +69,7 @@ export class SendToGuardianBlock {
                 break;
             }
             case 'approve': {
-                const doc = this.convertDocument(document, 'approve', ref);
-                result = await this.guardians.setApproveDocuments(doc);
+                result = await this.guardians.setApproveDocuments(document);
                 break;
             }
             case 'hedera': {
@@ -60,6 +79,7 @@ export class SendToGuardianBlock {
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
+
         return result;
     }
 
@@ -70,33 +90,6 @@ export class SendToGuardianBlock {
         await this.documentSender(state, user);
         await ref.runNext(user, state);
         ref.updateBlock(state, user, '');
-    }
-
-    convertDocument(document: any, newType: string, ref: any) {
-        // need update
-        switch (newType) {
-            case 'vc-documents': {
-                const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
-                return {
-                    hash: vc.toCredentialHash(),
-                    owner: document.owner,
-                    assign: document.assign,
-                    document: vc.toJsonTree(),
-                    hederaStatus: document.status || DocumentStatus.NEW,
-                    signature: document.signature || DocumentSignature.NEW,
-                    type: ref.options.entityType,
-                    policyId: ref.policyId,
-                    tag: ref.tag,
-                    option: document.option,
-                    schema: document.schema
-                };
-            }
-            case 'approve': {
-                return document;
-            }
-            default:
-                return document;
-        }
     }
 
     async sendToHedera(document: any, ref: any) {

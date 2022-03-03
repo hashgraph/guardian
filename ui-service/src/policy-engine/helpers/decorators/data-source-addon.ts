@@ -1,7 +1,7 @@
-import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces';
-import {BasicBlock} from '@policy-engine/helpers/decorators/basic-block';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
-import {BlockActionError} from '@policy-engine/errors';
+import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
+import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
+import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { BlockActionError } from '@policy-engine/errors';
 
 export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
     return function (constructor: new (...args: any) => any): any {
@@ -9,7 +9,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
 
         return class extends basicClass {
 
-            private filters: {[key: string]: string};
+            private filters: { [key: string]: { [key: string]: string } } = {};
 
             public readonly blockClassName = 'DataSourceAddon';
 
@@ -24,12 +24,20 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
                 return data;
             }
 
-            public getFilters(): {[key: string]: string} {
-                return this.filters;
+            public getFilters(user): { [key: string]: string } {
+                if (typeof super.getFilters === 'function') {
+                    return super.getFilters(user);
+                }
+                return this.filters[user.did];
             }
 
-            protected setFilters(filters): void {
-                this.filters = filters
+            protected setFilters(filters, user): void {
+                if (typeof super.setFilters === 'function') {
+                    super.setFilters(filters, user);
+                } else {
+                    this.filters[user.did] = filters
+                }
+
             }
 
             async getData(...args: any[]): Promise<any> {

@@ -1,10 +1,9 @@
 import { Policy } from "@entity/policy";
 import { Guardians } from "@helpers/guardians";
-import { findAllEntities, regenerateIds, replaceAllEntities } from "@helpers/utils";
+import { findAllEntities, regenerateIds, replaceAllEntities, SchemaFields } from "@helpers/utils";
 import JSZip from "jszip";
 import { getMongoRepository } from "typeorm";
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 
 export namespace PolicyImportExportHelper {
     /**
@@ -20,12 +19,11 @@ export namespace PolicyImportExportHelper {
         delete policyObject.registeredUsers;
         delete policyObject.status;
         const guardians = new Guardians();
-        const tokenIds = findAllEntities(policyObject.config, 'tokenId');
-        const schemesIds = findAllEntities(policyObject.config, 'schema');
+        const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
+        const schemesIds = findAllEntities(policyObject.config, SchemaFields);
 
-        console.log(schemesIds);
         const tokens = await guardians.getTokens({ ids: tokenIds });
-        const schemes = await guardians.getSchemaByIRIs(schemesIds);
+        const schemes = await guardians.getSchemaByIRIs(schemesIds, true);
 
         const zip = new JSZip();
         zip.folder('tokens')
@@ -109,10 +107,10 @@ export namespace PolicyImportExportHelper {
         const schemesMap = await guardians.importSchemesByFile(schemes, policyOwner);
         for (let index = 0; index < schemesMap.length; index++) {
             const item = schemesMap[index];
-            replaceAllEntities(policy.config, 'schema', item.oldIRI, item.newIRI);
+            replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
         }
         regenerateIds(policy.config);
-        
+
         let model = policyRepository.create(policy as Policy);
         model = await policyRepository.save(model);
         return await policyRepository.find({ owner: policyOwner });

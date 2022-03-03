@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { Schema, SchemaField, Token } from 'interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -70,6 +70,34 @@ export class CalculateConfigComponent implements OnInit {
                 })
             }
         }
+    }
+
+    private setFields(result: any[], fields: SchemaField[], name: string, index: number, lvl: number) {
+        for (let i = 0; i < fields.length; i++) {
+            const field = fields[i];
+            const fieldName = name ? `${name}.${field.name}` : field.name;
+            if (field.isRef) {
+                result.push({
+                    lvl: lvl,
+                    name: fieldName,
+                    title: field.description,
+                    value: null,
+                    enable: false
+                })
+                if (field.fields) {
+                    index = this.setFields(result, field.fields, fieldName, index, lvl + 1);
+                }
+            } else {
+                result.push({
+                    lvl: lvl,
+                    name: fieldName,
+                    title: field.description,
+                    value: `field${index++}`,
+                    enable: true
+                })
+            }
+        }
+        return index;
     }
 
     onSelectOutput() {

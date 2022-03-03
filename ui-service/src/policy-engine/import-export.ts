@@ -1,10 +1,7 @@
 import { Response, Router } from 'express';
 import { AuthenticatedRequest } from '../auth/auth.interface';
-import JSZip from 'jszip'
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
-import { Guardians } from '@helpers/guardians';
-import { findAllEntities } from '@helpers/utils';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { HederaMirrorNodeHelper } from 'vc-modules';
 import { IPFS } from '@helpers/ipfs';

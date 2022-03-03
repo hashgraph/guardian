@@ -324,6 +324,10 @@ export class VCHelper {
      */
     private prepareSchema(schema: any) {
         const defsObj = schema.$defs;
+        if (!defsObj) {
+            return;
+        }
+
         const defsKeys = Object.keys(defsObj);
         for (let i = 0; i < defsKeys.length; i++) {
             const nestedSchema = defsObj[defsKeys[i]];

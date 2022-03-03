@@ -15,17 +15,21 @@
                     {{field.title}}
                     <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
                 </th>
-                <td mat-cell *matCellDef="let element" >
-                    <div *ngIf="getGroup(element, field)" [style.width]="field.width">
-                        <span *ngIf="field.type=='text'">{{getText(element, field)}}</span>
-                        <span *ngIf="field.type=='button'" class="col-btn">
-                            <div class="btn-field {{field.uiClass}}" (click)="onButton($event, element, field)">
-                                {{getText(element, field)}}</div>
-                        </span>
-                        <div *ngIf="field.type=='block'" class="col-btn">
-                            <render-block [block]="field._block" [static]="getConfig(element, field, field._block)"
-                                [policyId]="policyId">
-                            </render-block>
+                <td mat-cell *matCellDef="let element" let>
+                    <div [style.width]="field.width">
+                        <div *ngIf="getGroup(element, field) as option">
+                            <span *ngIf="option.type=='text'" class="text" [title]="getText(element, option)">
+                                {{getText(element, option)}}
+                            </span>
+                            <span *ngIf="option.type=='button'" class="col-btn">
+                                <div class="btn-field {{option.uiClass}}" (click)="onButton($event, element, option)">
+                                    {{getText(element, option)}}</div>
+                            </span>
+                            <div *ngIf="option.type=='block'" class="col-btn">
+                                <render-block [block]="option._block"
+                                    [static]="getConfig(element, option, option._block)" [policyId]="policyId">
+                                </render-block>
+                            </div>
                         </div>
                     </div>
                 </td>
