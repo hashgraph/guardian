@@ -135,12 +135,6 @@ form {
 }
 
 .invalid-type {
-    color: gold;
-    display: flex;
-    align-items: center;
+    color: red;
     margin-bottom: 10px;
-}
-
-.invalid-type-icon {
-    margin-right: 10px;
 }

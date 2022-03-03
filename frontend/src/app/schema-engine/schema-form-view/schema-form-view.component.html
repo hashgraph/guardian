@@ -87,7 +87,7 @@
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
                 <div class="label-field">{{item.description}}</div>
                 <div *ngIf="item.isInvalidType" class="invalid-type">
-                  <mat-icon class="invalid-type-icon">warning</mat-icon> <b>The field type does not match the field type in the schema</b>
+                   <b>The field type does not match the field type in the schema</b>
                 </div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">
