@@ -146,22 +146,20 @@ export class ReportBlock {
                     policyId: { $eq: ref.policyId }
                 }))[0];
 
-                if (!vc) {
-                    throw new Error("Can't find VC/VP");
+                if (vc) {
+                    const vcDocument: IVCReport = {
+                        type: 'VC',
+                        title: 'Verifiable Credential',
+                        tag: vc.tag,
+                        hash: vc.hash,
+                        issuer: vc.owner,
+                        username: vc.owner,
+                        document: vc
+                    }
+                    report.vcDocument = vcDocument;
+                    variables.documentId = vc.document.id;
+                    variables.documentSubjectId = vc.document.credentialSubject[0].id;
                 }
-
-                const vcDocument: IVCReport = {
-                    type: 'VC',
-                    title: 'Verifiable Credential',
-                    tag: vc.tag,
-                    hash: vc.hash,
-                    issuer: vc.owner,
-                    username: vc.owner,
-                    document: vc
-                }
-                report.vcDocument = vcDocument;
-                variables.documentId = vc.document.id;
-                variables.documentSubjectId = vc.document.credentialSubject[0].id;
             }
 
             const policy = (await this.guardian.getVcDocuments({
