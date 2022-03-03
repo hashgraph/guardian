@@ -145,6 +145,11 @@ export class ReportBlock {
                     hash: { $eq: hash },
                     policyId: { $eq: ref.policyId }
                 }))[0];
+
+                if (!vc) {
+                    throw new Error("Can't find VC/VP");
+                }
+
                 const vcDocument: IVCReport = {
                     type: 'VC',
                     title: 'Verifiable Credential',

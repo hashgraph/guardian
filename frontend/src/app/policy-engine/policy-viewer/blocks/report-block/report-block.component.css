@@ -171,7 +171,7 @@ a[disabled="true"]{
     box-sizing: border-box;
 
     width: 493px;
-    height: 206px;
+    height: 230px;
     background: #FFFFFF 0% 0% no-repeat padding-box;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 35px;
@@ -373,15 +373,23 @@ a.open-vp {
     color: #707070;
 }
 
-.parties-value {
+.parties-value, .nested-documents-value {
     font-size: 20px;
     color: #0C77FF;
     font-weight: bold;
     line-height: 25px;
 }
 
-.parties {
+.parties, .nested-documents {
     display: flex;
     gap: 10px;
     overflow-y: auto;
+}
+
+.nested-documents {
+    margin-top: 10px;
+}
+
+.nested-documents-value {
+    margin-right: 30px;
 }
