@@ -23,7 +23,6 @@ export class ReportItemBlock {
 
     public async run(resultFields: IReportItem[], variables: any): Promise<any> {
         const ref = PolicyComponentsStuff.GetBlockRef<IPolicyReportItemBlock>(this);
-
         const icon = ref.options.icon;
         const title = ref.options.title;
         const description = ref.options.description;
@@ -45,14 +44,15 @@ export class ReportItemBlock {
         if (ref.options.filters) {
             for (let index = 0; index < ref.options.filters.length; index++) {
                 const filter = ref.options.filters[index];
-                if (filter.variableType === 'value') {
+                if (filter.typeValue === 'value') {
                     filtersToVc[filter.field] = filter.value;
                 }
-                else if (filter.variableType === 'variable') {
+                else if (filter.typeValue === 'variable') {
                     filtersToVc[filter.field] = variables[filter.value];
                 }
             }
         }
+
         const vcDocument = (await this.guardians.getVcDocuments(filtersToVc))[0];
 
         if (vcDocument) {

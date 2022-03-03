@@ -134,10 +134,12 @@ export class ReportBlock {
                     }
                 }
                 report.mintDocument = mintDocument;
-                variables.actionId = mint.credentialSubject[0].id;
+                variables.actionId = mint.id;
+                variables.actionSubjectId = mint.credentialSubject[0].id;
 
                 const doc = vp.document.verifiableCredential[0];
-                variables.documentId = doc.credentialSubject[0].id;
+                variables.documentId = doc.id;
+                variables.documentSubjectId = doc.credentialSubject[0].id;
             } else {
                 const vc = (await this.guardian.getVcDocuments({
                     hash: { $eq: hash },
@@ -153,7 +155,8 @@ export class ReportBlock {
                     document: vc
                 }
                 report.vcDocument = vcDocument;
-                variables.documentId = vc.document.credentialSubject[0].id;
+                variables.documentId = vc.document.id;
+                variables.documentSubjectId = vc.document.credentialSubject[0].id;
             }
 
             const policy = (await this.guardian.getVcDocuments({

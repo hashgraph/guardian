@@ -25,13 +25,19 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             public getFilters(user): { [key: string]: string } {
-                console.log(user)
+                if (typeof super.getFilters === 'function') {
+                    return super.getFilters(user);
+                }
                 return this.filters[user.did];
             }
 
             protected setFilters(filters, user): void {
-                console.log(filters, user)
-                this.filters[user.did] = filters
+                if (typeof super.setFilters === 'function') {
+                    super.setFilters(filters, user);
+                } else {
+                    this.filters[user.did] = filters
+                }
+
             }
 
             async getData(...args: any[]): Promise<any> {
