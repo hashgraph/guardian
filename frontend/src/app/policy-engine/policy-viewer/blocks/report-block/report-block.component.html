@@ -119,13 +119,16 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="nested-documents">
+                                <ng-container *ngFor="let link of item.documents">
+                                    <a class="nested-documents-value" (click)="openVCDocument(link)" [title]="link.description">
+                                        {{link.title}}
+                                    </a>
+                                </ng-container>
+                            </div>
                             <div class="chain-document">
                                 <a (click)="openVCDocument(item)">VC Files</a>
                             </div>
-                            <!-- <ng-container *ngFor="let link of getLinkVcs(item.links)">
-                                <a (click)="openVCDocument(link)">{{item.entity}}</a>
-                                <span>{{" "}}</span>
-                            </ng-container> -->
                         </div>
                     </ng-container>
                 </div>
