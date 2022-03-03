@@ -25,6 +25,7 @@ export class SchemaFormViewComponent implements OnInit {
   @Input('values') values: any;
 
   fields: any[] | undefined = [];
+  arrayExpandStep: number = 2;
 
   constructor() { }
 
@@ -82,7 +83,7 @@ export class SchemaFormViewComponent implements OnInit {
 
       if (field.isArray && !field.isRef) {
         let value = [];
-
+        item.countElements = this.arrayExpandStep;
         if (this.values && this.values[item.name]) {
           const fieldValue = this.values[item.name];
           if (Array.isArray(fieldValue)) {
@@ -100,7 +101,7 @@ export class SchemaFormViewComponent implements OnInit {
       if (field.isArray && field.isRef) {
         item.fields = field.fields;
         let value = [];
-
+        item.countElements = this.arrayExpandStep;
         if (this.values && this.values[item.name]) {
           value = this.values[item.name];
         }
@@ -117,5 +118,21 @@ export class SchemaFormViewComponent implements OnInit {
     return matches
       ? matches[0]
       : "";
+  }
+
+  getPartOfItems(item: any) {
+    const result = [];
+    for (let i = 0; i < item.countElements && i < item.list.length; i++) {
+      result.push(item.list[i]);
+    }
+    return result;
+  }
+
+  expandArrayItems(item: any) {
+    item.countElements += this.arrayExpandStep;
+  }
+
+  hideArrayItems(item: any) {
+    item.countElements -= this.arrayExpandStep;
   }
 }

@@ -89,7 +89,7 @@
                 <div *ngIf="item.isInvalidType" class="invalid-type">
                    <b>The field type does not match the field type in the schema</b>
                 </div>
-                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                <div *ngFor="let listItem of getPartOfItems(item)" class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">
                     <div class="form-field">
 
@@ -157,12 +157,17 @@
 
                     </div>
                 </div>
+                <div class="array-expander">
+                  <a class="array-expander-action" (click)="expandArrayItems(item)" *ngIf="item.list.length > item.countElements">See more</a>
+                  <b *ngIf="item.countElements > arrayExpandStep && item.list.length > item.countElements">|</b>
+                  <a class="array-expander-action" (click)="hideArrayItems(item)" *ngIf="item.countElements > arrayExpandStep">Hide</a>
+                </div>
             </div>
 
 
             <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
                 <div class="label-field">{{item.description}}</div>
-                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                <div *ngFor="let listItem of getPartOfItems(item)" class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">
                     <div class="form-field-group">
                         <app-schema-form-view
@@ -175,6 +180,12 @@
                     <div class="short-delimiter-container">
                         <div class="delimiter"></div>
                     </div>
+                </div>
+
+                <div class="array-expander">
+                  <a class="array-expander-action" (click)="expandArrayItems(item)" *ngIf="item.list.length > item.countElements">See more</a>
+                  <b *ngIf="item.countElements > arrayExpandStep && item.list.length > item.countElements">|</b>
+                  <a class="array-expander-action" (click)="hideArrayItems(item)" *ngIf="item.countElements > arrayExpandStep">Hide</a>
                 </div>
             </div>
 
