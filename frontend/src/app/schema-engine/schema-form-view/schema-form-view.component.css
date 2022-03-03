@@ -133,3 +133,8 @@ form {
 .hidden-item {
     display: none;
 }
+
+.invalid-type {
+    color: red;
+    margin-bottom: 10px;
+}

@@ -228,8 +228,9 @@ export class RootConfigComponent implements OnInit {
         if(Array.isArray(data)) {
             for (let j = 0; j < data.length; j++) {
                 let dataArrayElem = data[j];
-                if(dataArrayElem === "") {
+                if(dataArrayElem === "" || dataArrayElem === null) {
                     data.splice(j, 1);
+                    j--;
                 }
                 if(Object.getPrototypeOf(dataArrayElem) === Object.prototype
                     || Array.isArray(dataArrayElem)) {
@@ -243,7 +244,7 @@ export class RootConfigComponent implements OnInit {
             let dataKeys = Object.keys(data);
             for (let i = 0;i< dataKeys.length; i++) {
                 const dataElem = data[dataKeys[i]];
-                if(dataElem === "") {
+                if(dataElem === "" || dataElem === null) {
                     delete data[dataKeys[i]];
                 }
                 if(Object.getPrototypeOf(dataElem) === Object.prototype
