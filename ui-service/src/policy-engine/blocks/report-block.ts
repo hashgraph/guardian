@@ -75,6 +75,7 @@ export class ReportBlock {
             const blockState = this.state[user.did] || {};
             if (!blockState.lastValue) {
                 return {
+                    hash: null,
                     uiMetaData: ref.options.uiMetaData,
                     schemes: null,
                     data: null
@@ -212,6 +213,7 @@ export class ReportBlock {
             const schemes = await this.guardian.getSchemesByOwner(null);
 
             return {
+                hash: hash,
                 uiMetaData: ref.options.uiMetaData,
                 schemes: schemes,
                 data: report
