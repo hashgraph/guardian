@@ -6,7 +6,7 @@ import { HcsVcDocument, HederaHelper, VcSubject } from 'vc-modules';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
 
@@ -25,7 +25,7 @@ export class SendToGuardianBlock {
     private users: Users;
 
     async documentSender(state, user): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         let document = state.data;
         document.policyId = ref.policyId;
@@ -66,7 +66,7 @@ export class SendToGuardianBlock {
     async runAction(state, user) {
         console.log("send-to-guardian-block runAction");
         console.log("send-to-guardian-block, document", JSON.stringify(state.data, null, 4));
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
         ref.updateBlock(state, user, '');
@@ -115,7 +115,7 @@ export class SendToGuardianBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
             resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');

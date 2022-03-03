@@ -1,4 +1,4 @@
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../../policy-components-utils';
 import {Response} from 'express';
 import {AuthenticatedRequest} from '@auth/auth.interface';
 
@@ -9,8 +9,8 @@ import {AuthenticatedRequest} from '@auth/auth.interface';
  * @param next
  */
 export function BlockAccess(req: AuthenticatedRequest, res: Response, next: Function) {
-    const block = PolicyComponentsStuff.GetBlockByUUID<any>(req.params.uuid);
-    const type = PolicyComponentsStuff.GetBlockRef(block).blockClassName;
+    const block = PolicyComponentsUtils.GetBlockByUUID<any>(req.params.uuid);
+    const type = PolicyComponentsUtils.GetBlockRef(block).blockClassName;
     let noAccsess = true;
     switch (req.method) {
         case 'GET':

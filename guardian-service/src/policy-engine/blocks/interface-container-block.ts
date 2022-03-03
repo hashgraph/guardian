@@ -1,5 +1,5 @@
 import {ContainerBlock} from '@policy-engine/helpers/decorators/container-block';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../policy-components-utils';
 
 /**
  * Container block with UI
@@ -10,7 +10,7 @@ import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
 })
 export class InterfaceContainerBlock {
     async getData(user): Promise<any> {
-        const {options} = PolicyComponentsStuff.GetBlockRef(this);
+        const {options} = PolicyComponentsUtils.GetBlockRef(this);
         return {uiMetaData: options.uiMetaData};
     }
 }

@@ -1,6 +1,5 @@
 import {BeforeInsert, Column, Entity, ObjectIdColumn} from 'typeorm';
 import {IUser, UserRole} from 'interfaces';
-import {IPolicyRoles} from '@policy-engine/policy-engine.interface';
 
 /**
  * User collection
@@ -33,7 +32,7 @@ export class User implements IUser {
     role: UserRole;
 
     @Column()
-    policyRoles: IPolicyRoles;
+    policyRoles: any;
 
     @BeforeInsert()
     setInitState() {

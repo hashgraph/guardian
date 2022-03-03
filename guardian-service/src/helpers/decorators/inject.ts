@@ -8,7 +8,7 @@ import {Wallet} from '../wallet';
  */
 export function Inject(): any {
     return (target: any, key: string, value) => {
-        const _RegisteredInjections = [Wallet, Users, Guardians, VcHelper];
+        const _RegisteredInjections = [Wallet, Users, Guardians];
 
         const injClass = _RegisteredInjections.find(item => {
             return new item() instanceof Reflect.getMetadata('design:type', target, key);

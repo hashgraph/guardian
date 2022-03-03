@@ -1,5 +1,3 @@
-import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-
 export function findAllEntities(obj: {[key:string]: any}, name: string): string[] {
     const result = [];
 
@@ -27,9 +25,9 @@ export function findAllEntities(obj: {[key:string]: any}, name: string): string[
 }
 
 export function replaceAllEntities(
-    obj: {[key:string]: any}, 
-    name: string, 
-    oldValue: string, 
+    obj: {[key:string]: any},
+    name: string,
+    oldValue: string,
     newValue: string
 ): void {
     function finder(o: {[key:string]: any}): void {
@@ -44,14 +42,4 @@ export function replaceAllEntities(
         }
     }
     finder(obj);
-}
-
-
-export function regenerateIds(block: any) {
-    block.id = GenerateUUIDv4();
-    if (Array.isArray(block.children)) {
-        for (let child of block.children) {
-            regenerateIds(child);
-        }
-    }
 }

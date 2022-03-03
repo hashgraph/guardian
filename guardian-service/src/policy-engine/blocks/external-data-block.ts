@@ -5,7 +5,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { VcHelper } from '@helpers/vcHelper';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Guardians } from '@helpers/guardians';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../policy-components-utils';
 /**
  * External data block
  */
@@ -32,7 +32,7 @@ export class ExternalDataBlock {
             verify = false;
         }
         const signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         const vc = HcsVcDocument.fromJsonTree<VcSubject>(data.document, null, VcSubject);
         const doc = {
             hash: vc.toCredentialHash(),
@@ -51,13 +51,13 @@ export class ExternalDataBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (ref.options.schema) {
             if (typeof ref.options.schema !== 'string') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            
+
             const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);

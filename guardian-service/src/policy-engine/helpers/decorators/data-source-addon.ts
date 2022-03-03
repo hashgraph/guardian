@@ -1,6 +1,6 @@
 import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces';
 import {BasicBlock} from '@policy-engine/helpers/decorators/basic-block';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../../policy-components-utils';
 import {BlockActionError} from '@policy-engine/errors';
 
 export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
@@ -53,7 +53,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
                     }
                 }
 
-                PolicyComponentsStuff.UpdateFn(parentBlock.uuid, {}, args[0], this.tag);
+                PolicyComponentsUtils.UpdateFn(parentBlock.uuid, {}, args[0], this.tag);
                 return result;
             }
         }

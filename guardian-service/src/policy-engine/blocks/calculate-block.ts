@@ -1,7 +1,7 @@
 import { DocumentSignature, Schema, SchemaHelper } from 'interfaces';
 import { CalculateBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { HcsVcDocument, VcSubject } from 'vc-modules';
@@ -18,7 +18,7 @@ export class CalculateContainerBlock {
     private guardians: Guardians;
 
     async calculate(document: any) {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyCalculateBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         if (document.signature === DocumentSignature.INVALID) {
             throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
         }
@@ -78,7 +78,7 @@ export class CalculateContainerBlock {
 
     public async runAction(state, user) {
         console.log("calculate-block, runAction")
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyCalculateBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         let document = null;
         if (Array.isArray(state.data)) {
             document = state.data[0];
@@ -94,7 +94,7 @@ export class CalculateContainerBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyCalculateBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         // Test schema options
         if (!ref.options.inputSchema) {

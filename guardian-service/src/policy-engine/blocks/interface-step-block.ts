@@ -1,6 +1,6 @@
 import {ContainerBlock, StateField} from '@policy-engine/helpers/decorators';
 import {BlockActionError} from '@policy-engine/errors';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../policy-components-utils';
 import {AnyBlockType, IPolicyContainerBlock} from '@policy-engine/policy-engine.interface';
 import {IAuthUser} from '@auth/auth.interface';
 
@@ -16,7 +16,7 @@ export class InterfaceStepBlock {
     state: {[key: string]: any} = {index: 0};
 
     async changeStep(user, data, target) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -39,7 +39,7 @@ export class InterfaceStepBlock {
     }
 
     async getData(user): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -55,7 +55,7 @@ export class InterfaceStepBlock {
     }
 
     public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyContainerBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
         const childIndex = ref.children.indexOf(child);
         if (childIndex === -1) {
             throw new BlockActionError('Bad block child', ref.blockType, ref.uuid);

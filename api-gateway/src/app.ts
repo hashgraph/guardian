@@ -11,16 +11,15 @@ import {
 } from '@api/service';
 import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
-import {BlockTreeGenerator} from '@policy-engine/block-tree-generator';
 import express from 'express';
 import FastMQ from 'fastmq';
 import {createServer} from 'http';
 import {createConnection, getMongoRepository} from 'typeorm';
 import WebSocket from 'ws';
 import {authorizationHelper} from '@auth/authorizationHelper';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
-import {importExportAPI} from '@policy-engine/import-export';
 import { IPFS } from '@helpers/ipfs';
+import {policyAPI} from '@api/service/policy';
+import {PolicyEngine} from '@helpers/policyEngine';
 
 const PORT = process.env.PORT || 3002;
 
@@ -59,25 +58,19 @@ Promise.all([
     }));
 
     new Guardians().setChannel(channel);
-    new Guardians().registerMRVReceiver(async (data) => {
-        await PolicyComponentsStuff.ReceiveExternalData(data);
-    });
+    // new Guardians().registerMRVReceiver(async (data) => {
+    //     await PolicyComponentsStuff.ReceiveExternalData(data);
+    // });
 
     new IPFS().setChannel(channel);
+    new PolicyEngine().setChannel(channel);
 
     const server = createServer(app);
-    const policyGenerator = new BlockTreeGenerator();
-    policyGenerator.registerWssServer(new WebSocket.Server({server}));
-    for (let policy of await getMongoRepository(Policy).find(
-        {where: {status: {$eq: 'PUBLISH'}}}
-    )) {
-        await policyGenerator.generate(policy.id.toString());
-    }
     ////////////////////////////////////////
 
     // Config routes
-    app.use('/policies', authorizationHelper, policyGenerator.getRouter());
-    app.use('/policies', authorizationHelper, importExportAPI);
+    app.use('/policies', authorizationHelper, policyAPI);
+    // app.use('/policies', authorizationHelper, importExportAPI);
     app.use('/accounts/', accountAPI);
     app.use('/profile/', authorizationHelper, profileAPI);
     app.use('/schemas', authorizationHelper, schemaAPI);

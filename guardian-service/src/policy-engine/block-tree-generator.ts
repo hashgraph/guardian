@@ -9,12 +9,21 @@ import { getConnection, getMongoRepository } from 'typeorm';
 import WebSocket from 'ws';
 // import { AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser } from '../auth/auth.interface';
 import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { PolicyComponentsStuff } from './policy-components-stuff';
+import { PolicyComponentsUtils } from './policy-components-utils';
 import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
-import { ISchema, ModelHelper, SchemaEntity, SchemaHelper, SchemaStatus, UserRole } from 'interfaces';
+import {
+    ISchema,
+    MessageAPI, MessageError,
+    MessageResponse,
+    ModelHelper,
+    SchemaEntity,
+    SchemaHelper,
+    SchemaStatus,
+    UserRole
+} from 'interfaces';
 import { HederaHelper, HederaSenderHelper, IPolicySubmitMessage, ModelActionType } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
@@ -30,10 +39,15 @@ export class BlockTreeGenerator {
     private models: Map<string, IPolicyBlock> = new Map();
     private router: Router;
     private wss: WebSocket.Server;
+    private channel: any;
+
+    public setChannel(channel) {
+        this.channel = channel;
+    }
 
     constructor() {
         this.router = Router();
-        PolicyComponentsStuff.UpdateFn = (...args: any[]) => {
+        PolicyComponentsUtils.UpdateFn = (...args: any[]) => {
             this.stateChangeCb.apply(this, args);
         };
     }
@@ -42,9 +56,9 @@ export class BlockTreeGenerator {
      * Register web socket server
      * @param wss
      */
-    registerWssServer(wss: WebSocket.Server): void {
-        this.wss = wss;
-        this.registerWsAuth();
+    registerWssServer(): void {
+        // this.wss = wss;
+        // this.registerWsAuth();
         this.registerRoutes();
     }
 
@@ -57,12 +71,12 @@ export class BlockTreeGenerator {
         // this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
         //     try {
         //         const dbUser = await getMongoRepository(User).findOne({ username: client.user.username });
-        //         const blockRef = PolicyComponentsStuff.GetBlockByUUID(uuid) as any;
+        //         const blockRef = PolicyComponentsUtils.GetBlockByUUID(uuid) as any;
         //
         //         const policy = await getMongoRepository(Policy).findOne(blockRef.policyId);
         //         const role = policy.registeredUsers[dbUser.did];
         //
-        //         if (PolicyComponentsStuff.IfUUIDRegistered(uuid) && PolicyComponentsStuff.IfHasPermission(uuid, role, dbUser)) {
+        //         if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, dbUser)) {
         //             client.send(uuid);
         //         }
         //     } catch (e) {
@@ -140,7 +154,7 @@ export class BlockTreeGenerator {
             policyId = arg;
         } else {
             policy = arg;
-            policyId = PolicyComponentsStuff.GenerateNewUUID();
+            policyId = PolicyComponentsUtils.GenerateNewUUID();
         }
 
         const configObject = policy.config as ISerializedBlock;
@@ -150,7 +164,7 @@ export class BlockTreeGenerator {
             if (parent) {
                 params._parent = parent;
             }
-            const blockInstance = PolicyComponentsStuff.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
+            const blockInstance = PolicyComponentsUtils.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
             blockInstance.setPolicyId(policyId.toString())
             blockInstance.setPolicyOwner(policy.owner);
             if (children && children.length) {
@@ -279,255 +293,221 @@ export class BlockTreeGenerator {
      * @private
      */
     private registerRoutes(): void {
-        // this.router.get('/', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
-        //         let result: Policy[];
-        //         if (user.role === UserRole.ROOT_AUTHORITY) {
-        //             result = await getMongoRepository(Policy).find({ owner: user.did });
-        //         } else {
-        //             result = await getMongoRepository(Policy).find({ status: 'PUBLISH' });
-        //         }
-        //         res.json(result.map(item => {
-        //             delete item.registeredUsers;
-        //             return item;
-        //         }));
-        //     } catch (e) {
-        //         res.status(500).send({ code: 500, message: 'Server error' });
-        //     }
-        // });
-        //
-        // this.router.post('/', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
-        //         const model = getMongoRepository(Policy).create(req.body as DeepPartial<Policy>);
-        //         if (model.uuid) {
-        //             const old = await getMongoRepository(Policy).findOne({ uuid: model.uuid });
-        //             if (model.creator != user.did) {
-        //                 throw 'Invalid owner';
-        //             }
-        //             if (old.creator != user.did) {
-        //                 throw 'Invalid owner';
-        //             }
-        //             model.creator = user.did;
-        //             model.owner = user.did;
-        //             delete model.version;
-        //         } else {
-        //             model.creator = user.did;
-        //             model.owner = user.did;
-        //             delete model.previousVersion;
-        //             delete model.topicId;
-        //             delete model.version;
-        //         }
-        //         if (!model.config) {
-        //             model.config = {
-        //                 "blockType": "interfaceContainerBlock",
-        //                 "permissions": [
-        //                     "ANY_ROLE"
-        //                 ]
-        //             }
-        //         }
-        //         await getMongoRepository(Policy).save(model);
-        //         const policies = await getMongoRepository(Policy).find({ owner: user.did })
-        //         res.json(policies);
-        //     } catch (e) {
-        //         res.status(500).send({ code: 500, message: e.message });
-        //     }
-        // });
-        //
-        // this.router.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-        //         delete model.registeredUsers;
-        //         res.send(model);
-        //     } catch (e) {
-        //         res.status(500).send({ code: 500, message: e.message });
-        //     }
-        // });
-        //
-        // this.router.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-        //         const policy = req.body;
-        //
-        //         model.config = policy.config;
-        //         model.name = policy.name;
-        //         model.version = policy.version;
-        //         model.description = policy.description;
-        //         model.topicDescription = policy.topicDescription;
-        //         model.policyRoles = policy.policyRoles;
-        //         delete model.registeredUsers;
-        //
-        //         const result = await getMongoRepository(Policy).save(model);
-        //
-        //         res.json(result);
-        //     } catch (e) {
-        //         console.error(e);
-        //         res.status(500).send({ code: 500, message: 'Unknown error' });
-        //     }
-        // });
-        //
-        // this.router.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         if (!req.body || !req.body.policyVersion) {
-        //             throw new Error('Policy version in body is empty');
-        //         }
-        //
-        //         const model = await getMongoRepository(Policy).findOne(req.params.policyId);
-        //         if (!model) {
-        //             throw new Error('Unknown policy');
-        //         }
-        //
-        //         if (!model.config) {
-        //             throw new Error('The policy is empty');
-        //         }
-        //
-        //         const { policyVersion } = req.body;
-        //         if (!ModelHelper.checkVersionFormat(req.body.policyVersion)) {
-        //             throw new Error('Invalid version format');
-        //         }
-        //
-        //         if (ModelHelper.versionCompare(req.body.policyVersion, model.previousVersion) <= 0) {
-        //             throw new Error('Version must be greater than ' + model.previousVersion);
-        //         }
-        //
-        //         const countModels = await getMongoRepository(Policy).count({
-        //             version: policyVersion,
-        //             uuid: model.uuid
-        //         });
-        //
-        //         if (countModels > 0) {
-        //             throw new Error('Policy with current version already was published');
-        //         };
-        //
-        //         const errors = await this.validate(req.params.policyId);
-        //         const isValid = !errors.blocks.some(block => !block.isValid);
-        //
-        //         if (isValid) {
-        //             const guardians = new Guardians();
-        //             const user = await getMongoRepository(User).findOne({
-        //                 where: {
-        //                     username: { $eq: req.user.username }
-        //                 }
-        //             });
-        //
-        //             const schemaIRIs = findAllEntities(model.config, 'schema');
-        //             for (let i = 0; i < schemaIRIs.length; i++) {
-        //                 const schemaIRI = schemaIRIs[i];
-        //                 const schema = await guardians.incrementSchemaVersion(schemaIRI, user.did);
-        //                 if (schema.status == SchemaStatus.PUBLISHED) {
-        //                     continue;
-        //                 }
-        //                 const newSchema = await guardians.publishSchema(schema.id, schema.version, user.did);
-        //                 replaceAllEntities(model.config, 'schema', schemaIRI, newSchema.iri);
-        //             }
-        //             this.regenerateIds(model.config);
-        //
-        //             const root = await guardians.getRootConfig(user.did);
-        //             const hederaHelper = HederaHelper
-        //                 .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-        //
-        //             if (!model.topicId) {
-        //                 const topicId = await hederaHelper
-        //                     .newTopic(root.hederaAccountKey, model.topicDescription);
-        //                 model.topicId = topicId;
-        //             }
-        //             model.status = 'PUBLISH';
-        //             model.version = req.body.policyVersion;
-        //             const zip = await PolicyImportExportHelper.generateZipFile(model);
-        //             const { cid, url } = await new IPFS().addFile(await zip.generateAsync({ type: 'arraybuffer' }));
-        //             const publishPolicyMessage: IPolicySubmitMessage = {
-        //                 name: model.name,
-        //                 description: model.description,
-        //                 topicDescription: model.topicDescription,
-        //                 version: model.version,
-        //                 policyTag: model.policyTag,
-        //                 owner: model.owner,
-        //                 cid: cid,
-        //                 url: url,
-        //                 uuid: model.uuid,
-        //                 operation: ModelActionType.PUBLISH
-        //             }
-        //             const messageId = await HederaSenderHelper.SubmitPolicyMessage(hederaHelper, model.topicId, publishPolicyMessage);
-        //             model.messageId = messageId;
-        //
-        //             const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);
-        //             const vcHelper = new VcHelper();
-        //             const credentialSubject = {
-        //                 ...publishPolicyMessage,
-        //                 ...SchemaHelper.getContext(policySchema),
-        //                 id: messageId
-        //             }
-        //             const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, credentialSubject);
-        //             await guardians.setVcDocument({
-        //                 hash: vc.toCredentialHash(),
-        //                 owner: user.did,
-        //                 document: vc.toJsonTree(),
-        //                 type: SchemaEntity.POLICY,
-        //                 policyId: `${model.id}`
-        //             });
-        //
-        //             await getMongoRepository(Policy).save(model);
-        //             await this.generate(model.id.toString());
-        //         }
-        //
-        //         const policies = await getMongoRepository(Policy).find() as Policy[];
-        //         res.json({
-        //             policies: policies.map(item => {
-        //                 delete item.registeredUsers;
-        //                 return item;
-        //             }),
-        //             isValid,
-        //             errors
-        //         });
-        //     } catch (error) {
-        //         res.status(500).send({ code: 500, message: error.message || error });
-        //     }
-        // });
-        //
-        // this.router.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const policy = req.body as Policy;
-        //         const results = await this.validate(policy);
-        //         res.send({
-        //             results,
-        //             policy
-        //         });
-        //     } catch (e) {
-        //         console.log(e);
-        //         res.status(500).send({ code: 500, message: e.message });
-        //     }
-        // });
-        //
-        // this.router.get('/:policyId/blocks', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const model = this.models.get(req.params.policyId) as IPolicyInterfaceBlock as any;
-        //         if (!model) {
-        //             const err = new PolicyOtherError('Unexisting policy', req.params.policyId, 404);
-        //             res.status(err.errorObject.code).send(err.errorObject);
-        //             return;
-        //         }
-        //         res.send(await model.getData(req.user) as any);
-        //     } catch (e) {
-        //         console.error(e);
-        //         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-        //     }
-        // });
-        //
-        // const blockRouter = Router();
+        this.channel.response('get-policies', async (msg, res) => {
+            res.send(new MessageResponse(await getMongoRepository(Policy).find(msg.payload)))
+        });
+
+        this.channel.response('create-policies', async (msg, res) => {
+            try {
+                const model = getMongoRepository(Policy).create(msg.payload.model as DeepPartial<Policy>);
+                console.log(msg.payload);
+                if (model.uuid) {
+                    const old = await getMongoRepository(Policy).findOne({ uuid: model.uuid });
+                    if (model.creator != msg.payload.user.did) {
+                        throw 'Invalid owner';
+                    }
+                    if (old.creator != msg.payload.user.did) {
+                        throw 'Invalid owner';
+                    }
+                    model.creator = msg.payload.user.did;
+                    model.owner = msg.payload.user.did;
+                    delete model.version;
+                } else {
+                    model.creator = msg.payload.user.did;
+                    model.owner = msg.payload.user.did;
+                    delete model.previousVersion;
+                    delete model.topicId;
+                    delete model.version;
+                }
+                if (!model.config) {
+                    model.config = {
+                        "blockType": "interfaceContainerBlock",
+                        "permissions": [
+                            "ANY_ROLE"
+                        ]
+                    }
+                }
+                await getMongoRepository(Policy).save(model);
+                const policies = await getMongoRepository(Policy).find({ owner: msg.payload.user.did })
+                res.send(new MessageResponse(policies));
+            } catch (e) {
+                res.send(new MessageError(e));
+            }
+        });
+
+        this.channel.response('save-policies', async (msg, res) => {
+            console.log(msg);
+            try {
+                const model = await getMongoRepository(Policy).findOne(msg.payload.policyId);
+                const policy = msg.payload.model;
+
+                model.config = policy.config;
+                model.name = policy.name;
+                model.version = policy.version;
+                model.description = policy.description;
+                model.topicDescription = policy.topicDescription;
+                model.policyRoles = policy.policyRoles;
+                delete model.registeredUsers;
+
+                const result = await getMongoRepository(Policy).save(model);
+
+                res.send(new MessageResponse(result));
+            } catch (e) {
+                console.error(e);
+                res.send(new MessageError(e));
+            }
+        });
+
+        this.channel.response('publish-policies', async (msg, res) => {
+            try {
+                if (!msg.payload.model || !msg.payload.model.policyVersion) {
+                    throw new Error('Policy version in body is empty');
+                }
+
+                const model = await getMongoRepository(Policy).findOne(msg.payload.policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+
+                if (!model.config) {
+                    throw new Error('The policy is empty');
+                }
+
+                const { policyVersion } = msg.payload.model;
+                if (!ModelHelper.checkVersionFormat(msg.payload.model.policyVersion)) {
+                    throw new Error('Invalid version format');
+                }
+
+                if (ModelHelper.versionCompare(msg.payload.model.policyVersion, model.previousVersion) <= 0) {
+                    throw new Error('Version must be greater than ' + model.previousVersion);
+                }
+
+                const countModels = await getMongoRepository(Policy).count({
+                    version: policyVersion,
+                    uuid: model.uuid
+                });
+
+                if (countModels > 0) {
+                    throw new Error('Policy with current version already was published');
+                };
+
+                const errors = await this.validate(msg.payload.policyId);
+                const isValid = !errors.blocks.some(block => !block.isValid);
+
+                if (isValid) {
+                    const guardians = new Guardians();
+
+                    const schemaIRIs = findAllEntities(model.config, 'schema');
+                    for (let i = 0; i < schemaIRIs.length; i++) {
+                        const schemaIRI = schemaIRIs[i];
+                        const schema = await guardians.incrementSchemaVersion(schemaIRI, msg.payload.user.did);
+                        if (schema.status == SchemaStatus.PUBLISHED) {
+                            continue;
+                        }
+                        const newSchema = await guardians.publishSchema(schema.id, schema.version, msg.payload.user.did);
+                        replaceAllEntities(model.config, 'schema', schemaIRI, newSchema.iri);
+                    }
+                    this.regenerateIds(model.config);
+
+                    const root = await guardians.getRootConfig(msg.payload.user.did);
+                    const hederaHelper = HederaHelper
+                        .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+
+                    if (!model.topicId) {
+                        const topicId = await hederaHelper
+                            .newTopic(root.hederaAccountKey, model.topicDescription);
+                        model.topicId = topicId;
+                    }
+                    model.status = 'PUBLISH';
+                    model.version = msg.payload.model.policyVersion;
+                    const zip = await PolicyImportExportHelper.generateZipFile(model);
+                    const { cid, url } = await IPFS.addFile(await zip.generateAsync({ type: 'arraybuffer' }));
+                    const publishPolicyMessage: IPolicySubmitMessage = {
+                        name: model.name,
+                        description: model.description,
+                        topicDescription: model.topicDescription,
+                        version: model.version,
+                        policyTag: model.policyTag,
+                        owner: model.owner,
+                        cid: cid,
+                        url: url,
+                        uuid: model.uuid,
+                        operation: ModelActionType.PUBLISH
+                    }
+                    const messageId = await HederaSenderHelper.SubmitPolicyMessage(hederaHelper, model.topicId, publishPolicyMessage);
+                    model.messageId = messageId;
+
+                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);
+                    const vcHelper = new VcHelper();
+                    const credentialSubject = {
+                        ...publishPolicyMessage,
+                        ...SchemaHelper.getContext(policySchema),
+                        id: messageId
+                    }
+                    const vc = await vcHelper.createVC(msg.payload.user.did, root.hederaAccountKey, credentialSubject);
+                    await guardians.setVcDocument({
+                        hash: vc.toCredentialHash(),
+                        owner: msg.payload.user.did,
+                        document: vc.toJsonTree(),
+                        type: SchemaEntity.POLICY,
+                        policyId: `${model.id}`
+                    });
+
+                    await getMongoRepository(Policy).save(model);
+                    await this.generate(model.id.toString());
+                }
+
+                const policies = await getMongoRepository(Policy).find() as Policy[];
+                res.send(new MessageResponse({
+                    policies: policies.map(item => {
+                        delete item.registeredUsers;
+                        return item;
+                    }),
+                    isValid,
+                    errors
+                }));
+            } catch (error) {
+                console.log(error);
+                console.error(error.message);
+                res.send(new MessageError(error.message));
+            }
+        });
+
+        this.channel.response('validate-policies', async (msg, res) => {
+            try {
+                const policy = msg.payload.model as Policy;
+                const results = await this.validate(policy);
+                res.send(new MessageResponse({
+                    results,
+                    policy
+                }));
+            } catch (e) {
+                res.send(new MessageError(e.message));
+            }
+        });
+
+        this.channel.response('get-policy-blocks', async (msg, res) => {
+            try {
+                const model = this.models.get(msg.payload.policyId) as IPolicyInterfaceBlock as any;
+                if (!model) {
+                    throw new Error('Unexisting policy');
+                }
+                res.send(new MessageResponse(await model.getData(msg.payload.user) as any));
+            } catch (e) {
+                console.error(e);
+                res.send(new MessageError(e.message));
+            }
+        });
+
         // blockRouter.get('/', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const data = await req['block'].getData(req.user, req['block'].uuid, req.query);
-        //         res.send(data);
-        //     } catch (e) {
-        //         try {
-        //             const err = e as BlockError;
-        //             res.status(err.errorObject.code).send(err.errorObject);
-        //         } catch (e) {
-        //             res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-        //         }
-        //     }
-        // });
+        this.channel.response('get-block-data', async (msg, res) => {
+            try {
+                // const data = await req['block'].getData(msg.payload.user, msg.payload.blockId, null);
+                // res.send(new MessageResponse(data));
+            } catch (e) {
+                res.send(new MessageError(e.message()))
+            }
+        });
         // blockRouter.post('/', async (req: AuthenticatedRequest, res: Response) => {
         //     try {
         //         const data = await req['block'].setData(req.user, req.body);
@@ -546,7 +526,7 @@ export class BlockTreeGenerator {
         //
         // this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
         //     try {
-        //         const block = PolicyComponentsStuff.GetBlockByTag(req.params.policyId, req.params.tagName);
+        //         const block = PolicyComponentsUtils.GetBlockByTag(req.params.policyId, req.params.tagName);
         //         if (!block) {
         //             const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
         //             res.status(err.errorObject.code).send(err.errorObject);
@@ -566,7 +546,7 @@ export class BlockTreeGenerator {
         //
         // this.router.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
         //     try {
-        //         const block = PolicyComponentsStuff.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
+        //         const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
         //         if (!block) {
         //             const err = new PolicyOtherError('Block does not exist', req.params.uuid, 404);
         //             res.status(err.errorObject.code).send(err.errorObject);

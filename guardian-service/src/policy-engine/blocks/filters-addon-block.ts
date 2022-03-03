@@ -6,7 +6,7 @@ import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../policy-components-utils';
 import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
 
 @DataSourceAddon({
@@ -20,7 +20,7 @@ export class FiltersAddonBlock {
     private users: Users;
 
     private init(): void {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         if (!ref.options.canBeEmpty) {
             ref.filters = {};
             this.lastData = null;
@@ -36,7 +36,7 @@ export class FiltersAddonBlock {
     }
 
     async getData(user: IAuthUser) {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const userFull = await this.users.getUser(user.username);
 
         let block: any = {
@@ -66,7 +66,7 @@ export class FiltersAddonBlock {
     }
 
     async setData(user: IAuthUser, data: any) {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
@@ -88,7 +88,7 @@ export class FiltersAddonBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!ref.options.type) {
             resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');

@@ -8,7 +8,7 @@ import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../policy-components-utils';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -105,7 +105,7 @@ export class MintBlock {
 
         let vcSubject: any;
         if (token.tokenType == 'non-fungible') {
-            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_NFTOKEN);  
+            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_NFTOKEN);
             const serials = data as number[];
             vcSubject = {
                 ...SchemaHelper.getContext(policySchema),
@@ -114,7 +114,7 @@ export class MintBlock {
                 serials: serials
             }
         } else {
-            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_TOKEN);  
+            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_TOKEN);
             const amount = data as number;
             vcSubject = {
                 ...SchemaHelper.getContext(policySchema),
@@ -179,7 +179,7 @@ export class MintBlock {
     }
 
     async runAction(state, user) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         const {
             tokenId,
             rule
@@ -229,7 +229,7 @@ export class MintBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!ref.options.tokenId) {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');

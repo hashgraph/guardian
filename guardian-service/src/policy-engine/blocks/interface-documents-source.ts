@@ -5,7 +5,7 @@ import { IAuthUser } from '../../auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../policy-components-utils';
 import {IPolicyContainerBlock, IPolicySourceBlock} from '@policy-engine/policy-engine.interface';
 
 /**
@@ -24,7 +24,7 @@ export class InterfaceDocumentsSource {
     }
 
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicySourceBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
         const userFull = await this.users.getUser(user.username);
 
         const blocks = ref.getFiltersAddons().map(addon => {
@@ -42,7 +42,7 @@ export class InterfaceDocumentsSource {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (Array.isArray(ref.options.uiMetaData.fields)) {
             for (let tag of ref.options.uiMetaData.fields.map(i => i.bindBlock).filter(item => !!item)) {
                 if (!resultsContainer.isTagExist(tag)) {

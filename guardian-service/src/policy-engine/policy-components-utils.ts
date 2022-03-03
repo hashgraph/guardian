@@ -14,7 +14,7 @@ import {STATE_KEY} from '@policy-engine/helpers/constants';
 import {GetBlockByType} from '@policy-engine/blocks/get-block-by-type';
 import {GetOtherOptions} from '@policy-engine/helpers/get-other-options';
 
-export class PolicyComponentsStuff {
+export class PolicyComponentsUtils {
     private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
     private static PolicyBlockMapObject: PolicyBlockMap = new Map();
     private static PolicyTagMapObject: Map<string, PolicyTagMap> = new Map();
@@ -30,11 +30,11 @@ export class PolicyComponentsStuff {
     public static RegisterDependencyCallback(tag: string, policyId: string, fn: Function): void {
         let policyTagsMap: Map<string, Function[]>;
 
-        if (!PolicyComponentsStuff.BlockSubscriptions.has(policyId)) {
+        if (!PolicyComponentsUtils.BlockSubscriptions.has(policyId)) {
             policyTagsMap = new Map();
-            PolicyComponentsStuff.BlockSubscriptions.set(policyId, policyTagsMap);
+            PolicyComponentsUtils.BlockSubscriptions.set(policyId, policyTagsMap);
         } else {
-            policyTagsMap = PolicyComponentsStuff.BlockSubscriptions.get(policyId);
+            policyTagsMap = PolicyComponentsUtils.BlockSubscriptions.get(policyId);
         }
 
         let subscriptionsArray: Function[];
@@ -55,7 +55,7 @@ export class PolicyComponentsStuff {
         let uuid: string;
         do {
             uuid = GenerateUUIDv4();
-        } while (PolicyComponentsStuff.PolicyBlockMapObject.has(uuid));
+        } while (PolicyComponentsUtils.PolicyBlockMapObject.has(uuid));
         return uuid;
     }
 
@@ -66,7 +66,7 @@ export class PolicyComponentsStuff {
      * @constructor
      */
     public static RegisterComponent(policyId: string, component: IPolicyBlock): void {
-        PolicyComponentsStuff.PolicyBlockMapObject.set(component.uuid, component);
+        PolicyComponentsUtils.PolicyBlockMapObject.set(component.uuid, component);
         let tagMap;
         if (!this.PolicyTagMapObject.has(policyId)) {
             tagMap = new Map();
@@ -81,12 +81,12 @@ export class PolicyComponentsStuff {
             tagMap.set(component.tag, component.uuid);
         }
         if (component.blockClassName === 'ExternalData') {
-            PolicyComponentsStuff.ExternalDataBlocks.set(component.uuid, component);
+            PolicyComponentsUtils.ExternalDataBlocks.set(component.uuid, component);
         }
 
         const componentRef = component as any;
         for (let dep of componentRef.dependencies) {
-            PolicyComponentsStuff.RegisterDependencyCallback(dep, policyId,(user) => {
+            PolicyComponentsUtils.RegisterDependencyCallback(dep, policyId,(user) => {
                 component.updateBlock({}, user, '');
             })
         }
@@ -99,8 +99,8 @@ export class PolicyComponentsStuff {
      * @param user
      */
     public static CallDependencyCallbacks(tag: string, policyId: string, user: any): void {
-        if (PolicyComponentsStuff.BlockSubscriptions.has(policyId) && PolicyComponentsStuff.BlockSubscriptions.get(policyId).has(tag)) {
-            for (let fn of PolicyComponentsStuff.BlockSubscriptions.get(policyId).get(tag)) {
+        if (PolicyComponentsUtils.BlockSubscriptions.has(policyId) && PolicyComponentsUtils.BlockSubscriptions.get(policyId).has(tag)) {
+            for (let fn of PolicyComponentsUtils.BlockSubscriptions.get(policyId).get(tag)) {
                 fn(user);
             }
         }
@@ -111,7 +111,7 @@ export class PolicyComponentsStuff {
      * @param data
      */
     public static async ReceiveExternalData(data: any): Promise<void> {
-        for (let block of PolicyComponentsStuff.ExternalDataBlocks.values()) {
+        for (let block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
             const policy = await getMongoRepository(Policy).findOne({policyTag: data.policyTag});
             if (policy.id.toString() === (block as any).policyId) {
                 await (block as any).receiveData(data);
@@ -124,7 +124,7 @@ export class PolicyComponentsStuff {
      * @param uuid
      */
     public static IfUUIDRegistered(uuid: string): boolean {
-        return PolicyComponentsStuff.PolicyBlockMapObject.has(uuid);
+        return PolicyComponentsUtils.PolicyBlockMapObject.has(uuid);
     }
 
     /**
@@ -134,7 +134,7 @@ export class PolicyComponentsStuff {
      * @param user
      */
     public static IfHasPermission(uuid: string, role: PolicyRole, user: IAuthUser | null): boolean {
-        const block = PolicyComponentsStuff.PolicyBlockMapObject.get(uuid);
+        const block = PolicyComponentsUtils.PolicyBlockMapObject.get(uuid);
         return block.isActive(user) && block.hasPermission(role, user);
     }
 
@@ -143,7 +143,7 @@ export class PolicyComponentsStuff {
      * @param uuid
      */
     public static GetBlockByUUID<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(uuid: string): T {
-        return PolicyComponentsStuff.PolicyBlockMapObject.get(uuid) as T;
+        return PolicyComponentsUtils.PolicyBlockMapObject.get(uuid) as T;
     }
 
     /**
@@ -152,7 +152,7 @@ export class PolicyComponentsStuff {
      * @param tag
      */
     public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
-        return PolicyComponentsStuff.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag));
+        return PolicyComponentsUtils.PolicyBlockMapObject.get(this.PolicyTagMapObject.get(policyId).get(tag));
     }
 
     /**
@@ -178,7 +178,7 @@ export class PolicyComponentsStuff {
         }
         const blockConstructor = GetBlockByType(blockType) as any;
         const instance = new blockConstructor(
-            options.id || PolicyComponentsStuff.GenerateNewUUID(),
+            options.id || PolicyComponentsUtils.GenerateNewUUID(),
             options.defaultActive,
             options.tag,
             options.permissions,
@@ -187,7 +187,7 @@ export class PolicyComponentsStuff {
             GetOtherOptions(options as PolicyBlockFullArgumentList)
         );
         if (!skipRegistration) {
-            PolicyComponentsStuff.RegisterComponent(policyId, instance);
+            PolicyComponentsUtils.RegisterComponent(policyId, instance);
         }
         return instance;
     }

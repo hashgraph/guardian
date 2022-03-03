@@ -1,6 +1,6 @@
 import express from 'express';
 import FastMQ from 'fastmq'
-import { createConnection } from 'typeorm';
+import {createConnection, getMongoRepository} from 'typeorm';
 import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
 import { approveAPI } from '@api/approve.service';
 import { configAPI, readConfig } from '@api/config.service';
@@ -20,6 +20,9 @@ import { VpDocument } from '@entity/vp-document';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
 import {VcHelper} from '@helpers/vcHelper';
+import {BlockTreeGenerator} from '@policy-engine/block-tree-generator';
+import {Policy} from '@entity/policy';
+import {Guardians} from '@helpers/guardians';
 
 const PORT = process.env.PORT || 3001;
 
@@ -45,6 +48,18 @@ Promise.all([
     const app = express();
 
     IPFS.setChannel(channel);
+    new Guardians().setChannel(channel);
+
+    const vc = new VcHelper();
+
+    const policyGenerator = new BlockTreeGenerator();
+    policyGenerator.setChannel(channel);
+    for (let policy of await getMongoRepository(Policy).find(
+        {where: {status: {$eq: 'PUBLISH'}}}
+    )) {
+        await policyGenerator.generate(policy.id.toString());
+    }
+    policyGenerator.registerWssServer();
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);
     const vcDocumentRepository = db.getMongoRepository(VcDocument);

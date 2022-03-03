@@ -4,7 +4,7 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
-import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import { Schema, SchemaStatus } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '@auth/auth.interface';
@@ -35,8 +35,8 @@ export class RequestVcDocumentBlock {
     }
 
     async getData(user: IAuthUser): Promise<any> {
-        const options = PolicyComponentsStuff.GetBlockUniqueOptionsObject(this);
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!this.schema) {
             const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
@@ -60,7 +60,7 @@ export class RequestVcDocumentBlock {
     // }
 
     async setData(user: IAuthUser, _data: any): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
         if (!userFull.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
@@ -106,7 +106,7 @@ export class RequestVcDocumentBlock {
             return HederaUtils.randomUUID();
         }
         if (idType == 'DID') {
-            const ref = PolicyComponentsStuff.GetBlockRef(this);
+            const ref = PolicyComponentsUtils.GetBlockRef(this);
             const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
             const hederaHelper = HederaHelper
                 .setOperator(userHederaAccount, userHederaKey)
@@ -137,7 +137,7 @@ export class RequestVcDocumentBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         // Test schema options
         if (!ref.options.schema) {

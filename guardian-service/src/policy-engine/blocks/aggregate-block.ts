@@ -8,7 +8,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -50,7 +50,7 @@ export class AggregateBlock {
     }
 
     async runAction(data: any, user: any) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         const {
             tokenId,
             rule,
@@ -84,7 +84,7 @@ export class AggregateBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         // Test rule options
         if (!ref.options.rule) {

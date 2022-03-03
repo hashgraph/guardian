@@ -4,7 +4,7 @@ import {PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList} from '@policy-
 import {PolicyRole} from 'interfaces';
 
 import {AnyBlockType, IPolicyBlock, ISerializedBlock,} from '../../policy-engine.interface';
-import {PolicyComponentsStuff} from '../../policy-components-stuff';
+import {PolicyComponentsUtils} from '../../policy-components-utils';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
 import {IAuthUser} from '../../../auth/auth.interface';
 import {getMongoRepository} from 'typeorm';
@@ -151,10 +151,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public async updateBlock(state, user, tag) {
                 if (!!this.tag) {
-                    PolicyComponentsStuff.CallDependencyCallbacks(this.tag, this.policyId, user);
+                    PolicyComponentsUtils.CallDependencyCallbacks(this.tag, this.policyId, user);
                 }
                 await this.saveState();
-                PolicyComponentsStuff.UpdateFn(this.uuid, state, user, tag);
+                PolicyComponentsUtils.UpdateFn(this.uuid, state, user, tag);
             }
 
             public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
@@ -172,7 +172,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             private async saveState(): Promise<void> {
-                const stateFields = PolicyComponentsStuff.GetStateFields(this);
+                const stateFields = PolicyComponentsUtils.GetStateFields(this);
                 if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
                     const repo = getMongoRepository(BlockState);
                     let stateEntity = await repo.findOne({

@@ -2,7 +2,7 @@ import { EventBlock } from '@policy-engine/helpers/decorators';
 import { IAuthUser } from '@auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
 import { Guardians } from '@helpers/guardians';
-import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import { getMongoRepository, getRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
@@ -32,18 +32,18 @@ export class InterfaceDocumentActionBlock {
     private wallet: Wallet;
 
     private async getSources(user): Promise<any[]> {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyInterfaceBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         let data = [];
         for (let child of ref.children) {
             if (child.blockClassName === 'SourceAddon') {
-                data = data.concat(await PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(child).getFromSource(user))
+                data = data.concat(await PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(child).getFromSource(user))
             }
         }
         return data;
     }
 
     async getData(user: IAuthUser): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         const userFull = await this.users.getUser(user.username);
 
         const data: any = {
@@ -73,14 +73,14 @@ export class InterfaceDocumentActionBlock {
     }
 
     async setData(user: IAuthUser, document: any): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyInterfaceBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         let state: any = { data: document };
 
         if (ref.options.type == 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
-                const block = PolicyComponentsStuff.GetBlockByTag(ref.policyId, option.bindBlock) as any;
+                const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, option.bindBlock) as any;
                 const owner = await getRepository(User).findOne({ did: document.owner });
                 await ref.runTarget(owner, state, block);
             }
@@ -121,7 +121,7 @@ export class InterfaceDocumentActionBlock {
 
         if (ref.options.type == 'dropdown') {
             if (ref.options.bindBlock) {
-                const block = PolicyComponentsStuff.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
+                const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
                 const owner = await getRepository(User).findOne({ did: document.owner });
                 await ref.runTarget(owner, state, block);
                 return;
@@ -143,7 +143,7 @@ export class InterfaceDocumentActionBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!ref.options.type) {
             resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');

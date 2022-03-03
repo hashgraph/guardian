@@ -8,7 +8,7 @@ import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../policy-components-utils';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -103,7 +103,7 @@ export class RetirementBlock {
     private async createWipeVC(root, token, data: number): Promise<HcsVcDocument<VcSubject>> {
         const vcHelper = new VcHelper();
 
-        const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.WIPE_TOKEN); 
+        const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.WIPE_TOKEN);
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
             date: (new Date()).toISOString(),
@@ -163,7 +163,7 @@ export class RetirementBlock {
     }
 
     async runAction(state, user) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         const {
             tokenId,
             rule
@@ -212,7 +212,7 @@ export class RetirementBlock {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!ref.options.tokenId) {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');

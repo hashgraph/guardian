@@ -8,7 +8,7 @@ import { Guardians } from '@helpers/guardians';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
-import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+import {PolicyComponentsUtils} from '../policy-components-utils';
 import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
 
 @SourceAddon({
@@ -22,7 +22,7 @@ export class DocumentsSourceAddon {
     private users: Users;
 
     async getFromSource(user: IAuthUser) {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyAddonBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const userFull = await this.users.getUser(user.username);
 
         let filters: any = {};
@@ -116,7 +116,7 @@ export class DocumentsSourceAddon {
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const types = ['vc-documents', 'did-documents', 'vp-documents', 'root-authorities', 'approve', 'source'];
         if (types.indexOf(ref.options.dataType) == -1) {
