@@ -80,18 +80,19 @@
 }
 
 .btn-block-link {
-    width: auto;
-    font-size: 20px;
-    color: #0B73F8;
-    text-decoration: none;
+    width: auto !important;
+    font-size: 20px !important;
+    color: #0B73F8 !important;
+    text-decoration: none !important;
     border-bottom: 3px solid #0C77FF;
-    padding: 0 0 3px 0;
-    font-weight: normal;
-    background-color: transparent;
-    box-shadow: none;
-    border-radius: 0;
-    height: 33px;
-    box-sizing: border-box;
-    position: relative;
-    top: -9px;
+    padding: 0 0 3px 0 !important;
+    margin: 0 !important;
+    font-weight: normal !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    height: 33px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    top: -9px !important;
 }

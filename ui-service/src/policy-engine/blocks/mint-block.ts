@@ -169,6 +169,7 @@ export class MintBlock {
         );
 
         let vcDate: any;
+        console.log('Mint: Start');
         if (token.tokenType == 'non-fungible') {
             const metaData: any = HederaUtils.decode(uuid);
 
@@ -181,11 +182,13 @@ export class MintBlock {
                 const element = dataChunk[i];
                 const newSerials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, element, uuid);
                 serials = serials.concat(newSerials);
+                console.log(`Mint: Minting (${i}/${dataChunk.length})`);
             }
             const serialsChunk = this.split(serials, 10);
             for (let i = 0; i < serialsChunk.length; i++) {
                 const element = serialsChunk[i];
                 await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, element, uuid);
+                console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
             }
             vcDate = serials;
         } else {
@@ -193,6 +196,7 @@ export class MintBlock {
             await hederaHelper.SDK.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
             vcDate = tokenAmount;
         }
+        console.log('Mint: End');
 
         const mintVC = await this.createMintVC(root, token, vcDate);
 
