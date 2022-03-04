@@ -54,8 +54,8 @@ export class SendConfigComponent implements OnInit {
 
     addOption() {
         this.block.options.push({
-            variable: '',
-            role: ''
+            name: '',
+            value: ''
         })
     }
 
