@@ -97,6 +97,13 @@
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Button Content</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.uiMetaData.buttonClass" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
             <td class="propRowCell cellName">Dialog Title</td>
             <td class="propRowCell">
                 <input [(ngModel)]="block.uiMetaData.dialogContent" [readonly]="readonly">

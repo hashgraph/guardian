@@ -12,7 +12,7 @@
 
 .content-dialog {
     display: block;
-    background: #fff;
+    background: transparent;
     margin: 10px 5px 5px 5px;
 }
 
@@ -77,4 +77,21 @@
 .content-dialog button {
     height: 40px;
     margin-bottom: 6px;
+}
+
+.btn-block-link {
+    width: auto;
+    font-size: 20px;
+    color: #0B73F8;
+    text-decoration: none;
+    border-bottom: 3px solid #0C77FF;
+    padding: 0 0 3px 0;
+    font-weight: normal;
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    height: 33px;
+    box-sizing: border-box;
+    position: relative;
+    top: -9px;
 }
