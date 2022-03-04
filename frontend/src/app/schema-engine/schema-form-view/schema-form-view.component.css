@@ -138,13 +138,3 @@ form {
     color: red;
     margin-bottom: 10px;
 }
-
-.array-expander {
-    color: gray;
-    text-align: center;
-}
-
-.array-expander .array-expander-action {
-    margin: 0 12px;
-    cursor: pointer;
-}

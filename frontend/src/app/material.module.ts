@@ -24,6 +24,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ClipboardModule } from '@angular/cdk/clipboard';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 @NgModule({
     declarations: [],
@@ -51,7 +52,8 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
         MatCheckboxModule,
         MatTreeModule,
         MatTooltipModule,
-        MatSlideToggleModule
+        MatSlideToggleModule,
+        MatPaginatorModule
     ],
     exports: [
         MatTabsModule,
@@ -77,7 +79,8 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
         MatTreeModule,
         MatTooltipModule,
         MatSlideToggleModule,
-        ClipboardModule
+        ClipboardModule,
+        MatPaginatorModule
     ]
 })
 export class MaterialModule { }
