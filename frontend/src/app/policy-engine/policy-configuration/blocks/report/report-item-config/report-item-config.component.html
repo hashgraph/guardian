@@ -62,6 +62,9 @@
             <td class="propRowCell">
                 <mat-select [(value)]="block.filters[i].type" [disabled]="readonly">
                     <mat-option value="equal">Equal</mat-option>
+                    <mat-option value="not_equal">Not Equal</mat-option>
+                    <mat-option value="in">In</mat-option>
+                    <mat-option value="not_in">Not In</mat-option>
                 </mat-select>
             </td>
         </tr>

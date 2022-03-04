@@ -6,6 +6,7 @@ import { ReportItem } from "@policy-engine/helpers/decorators";
 import { PolicyComponentsStuff } from "@policy-engine/policy-components-stuff";
 import { IPolicyReportItemBlock } from "@policy-engine/policy-engine.interface";
 import { IReportItem } from "interfaces";
+import { BlockActionError } from '@policy-engine/errors';
 
 /**
  * Report item block
@@ -44,12 +45,34 @@ export class ReportItemBlock {
         if (ref.options.filters) {
             for (let index = 0; index < ref.options.filters.length; index++) {
                 const filter = ref.options.filters[index];
+                let expr: any;
                 if (filter.typeValue === 'value') {
-                    filtersToVc[filter.field] = filter.value;
+                    expr = filter.value;
                 }
                 else if (filter.typeValue === 'variable') {
-                    filtersToVc[filter.field] = variables[filter.value];
+                    expr = variables[filter.value];
                 }
+                switch (filter.type) {
+                    case 'equal':
+                        expr = { $eq: expr };
+                        break;
+    
+                    case 'not_equal':
+                        expr = { $ne: expr };
+                        break;
+    
+                    case 'in':
+                        expr = { $in: expr.split(',') };
+                        break;
+    
+                    case 'not_in':
+                        expr = { $nin: expr.split(',') };
+                        break;
+    
+                    default:
+                        throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+                }
+                filtersToVc[filter.field] = expr;
             }
         }
 
