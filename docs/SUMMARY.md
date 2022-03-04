@@ -38,15 +38,17 @@
 * [requestVCDocumentBlock](available-policy-workflow-blocks/request-workflow-block.md)
 * [sendToGuardianBlock](available-policy-workflow-blocks/send-workflow-block.md)
 * [InformationBlock](available-policy-workflow-blocks/information-workflow-block.md)
-* [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/documents-workflow-block.md)
-* [DocumentsSourceAddOnBlock](available-policy-workflow-blocks/documents-workflow-block-1.md)
-* [filtersAddOnBlock](available-policy-workflow-blocks/documents-workflow-block-2.md)
+* [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/interfacedocumentssourceblock.md)
+* [DocumentsSourceAddOnBlock](available-policy-workflow-blocks/documentssourceaddonblock.md)
+* [filtersAddOnBlock](available-policy-workflow-blocks/filtersaddonblock.md)
 * [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
 * [externalDataBlock](available-policy-workflow-blocks/external-data-workflow-block.md)
 * [mintDocumentBlock](available-policy-workflow-blocks/token-mint-workflow-block.md)
-* [retirementDocumentBlock](available-policy-workflow-blocks/token-mint-workflow-block-1.md)
+* [retirementDocumentBlock](available-policy-workflow-blocks/retirementdocumentblock.md)
 * [wipeDocumentBlock](available-policy-workflow-blocks/token-wipe-workflow-block.md)
+* [calculateContainerBlock & calculateMathAddOnBlock](available-policy-workflow-blocks/calculatecontainerblock-and-calculatemathaddonblock.md)
 * [aggregateDocumentBlock](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
+* [reportBlock & reportItemBlock](available-policy-workflow-blocks/reportblock-and-reportitemblock.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 

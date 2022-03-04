@@ -21,8 +21,6 @@ Note: This block is used for dropdown. You can add multiple blocks to 1 grid to 
 
 ### UI Properties
 
-
-
 | Filter Property | Definition             | Example Input |
 | --------------- | ---------------------- | ------------- |
 | Title           | Filter title           | Filter1       |
@@ -81,4 +79,3 @@ Current filter value
 New filter value
 {% endswagger-parameter %}
 {% endswagger %}
-

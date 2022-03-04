@@ -20,8 +20,6 @@ Note: This block is used for dropdown. You can add multiple blocks to 1 grid to 
 
 ### Filter Properties
 
-
-
 | Filter Property | Definition                                                 | Example Input |
 | --------------- | ---------------------------------------------------------- | ------------- |
 | Type            | Filter on the basis of type (Equal, Not Equal, In, Not In) | Equal         |
