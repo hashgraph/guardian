@@ -89,7 +89,7 @@
                 <div *ngIf="item.isInvalidType" class="invalid-type">
                    <b>The field type does not match the field type in the schema</b>
                 </div>
-                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                <div *ngFor="let listItem of getItemsPage(item, item.pageEvent)" class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">
                     <div class="form-field">
 
@@ -157,12 +157,20 @@
 
                     </div>
                 </div>
+
+                <mat-paginator 
+                  *ngIf="pageSize < item.list.length"
+                  [length]="item.list.length" 
+                  [pageSizeOptions]="[pageSize]"
+                  (page)="item.pageEvent = $event"
+                >
+                </mat-paginator>
             </div>
 
 
             <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
                 <div class="label-field">{{item.description}}</div>
-                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                <div *ngFor="let listItem of getItemsPage(item, item.pageEvent)" class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">
                     <div class="form-field-group">
                         <app-schema-form-view
@@ -176,6 +184,14 @@
                         <div class="delimiter"></div>
                     </div>
                 </div>
+
+                <mat-paginator 
+                  *ngIf="pageSize < item.list.length"
+                  [length]="item.list.length" 
+                  [pageSizeOptions]="[pageSize]"
+                  (page)="item.pageEvent = $event"
+                >
+                </mat-paginator>
             </div>
 
         </div>
