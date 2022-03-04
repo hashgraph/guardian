@@ -38,6 +38,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     rowDocument: any;
     needPreset: any;
     presetFields: any;
+    buttonClass: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -146,6 +147,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             }
             if (this.type == 'dialog') {
                 this.content = uiMetaData.content;
+                this.buttonClass = uiMetaData.buttonClass;
                 this.dialogContent = uiMetaData.dialogContent;
                 this.dialogClass = uiMetaData.dialogClass;
                 this.description = uiMetaData.description;
