@@ -31,7 +31,7 @@ Promise.all([
         host: process.env.DB_HOST,
         database: process.env.DB_DATABASE,
         synchronize: true,
-        logging: true,
+        logging: process.env.ENVIRONMENT !== 'production',
         useUnifiedTopology: true,
         entities: [
             'dist/entity/*.js'

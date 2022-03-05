@@ -112,7 +112,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public updateDataState(user, state: any): boolean {
                 this.oldDataState[user.did] = this.currentDataState[user.did];
                 this.currentDataState[user.did] = state;
-                console.log(this.oldDataState[user.did], this.currentDataState[user.did]);
                 return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
                     strict: true
                 })

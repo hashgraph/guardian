@@ -1,17 +1,17 @@
-import { Policy } from '@entity/policy';
-import { getConnection, getMongoRepository } from 'typeorm';
-import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { PolicyComponentsUtils } from './policy-components-utils';
-import { Singleton } from '@helpers/decorators/singleton';
-import { DeepPartial } from 'typeorm/common/DeepPartial';
+import {Policy} from '@entity/policy';
+import {getConnection, getMongoRepository} from 'typeorm';
+import {IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend} from './policy-engine.interface';
+import {PolicyComponentsUtils} from './policy-components-utils';
+import {Singleton} from '@helpers/decorators/singleton';
+import {DeepPartial} from 'typeorm/common/DeepPartial';
 import {
-    MessageAPI, MessageError,
+    MessageError,
     MessageResponse,
     ModelHelper,
+    PolicyEngineEvents,
     SchemaEntity,
     SchemaHelper,
-    SchemaStatus,
-    UserRole
+    SchemaStatus
 } from 'interfaces';
 import {
     HederaHelper,
@@ -20,14 +20,13 @@ import {
     IPolicySubmitMessage,
     ModelActionType
 } from 'vc-modules';
-import { Guardians } from '@helpers/guardians';
-import { VcHelper } from '@helpers/vcHelper';
-import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { BlockPermissions } from '@policy-engine/helpers/middleware/block-permissions';
-import { IPFS } from '@helpers/ipfs';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { findAllEntities, replaceAllEntities } from '@helpers/utils';
+import {Guardians} from '@helpers/guardians';
+import {VcHelper} from '@helpers/vcHelper';
+import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
+import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
+import {IPFS} from '@helpers/ipfs';
+import {PolicyImportExportHelper} from './helpers/policy-import-export-helper';
+import {findAllEntities, replaceAllEntities} from '@helpers/utils';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -210,17 +209,17 @@ export class BlockTreeGenerator {
      * @private
      */
     public registerListeners(): void {
-        this.channel.response('get-policy', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.GET_POLICY, async (msg, res) => {
             const data = await getMongoRepository(Policy).findOne(msg.payload);
             res.send(new MessageResponse(data));
         });
 
-        this.channel.response('get-policies', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.GET_POLICIES, async (msg, res) => {
             const data = await getMongoRepository(Policy).find(msg.payload);
             res.send(new MessageResponse(data));
         });
 
-        this.channel.response('create-policies', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.CREATE_POLICIES, async (msg, res) => {
             try {
                 const model = getMongoRepository(Policy).create(msg.payload.model as DeepPartial<Policy>);
                 console.log(msg.payload);
@@ -258,7 +257,7 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.channel.response('save-policies', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.SAVE_POLICIES, async (msg, res) => {
             console.log(msg);
             try {
                 const model = await getMongoRepository(Policy).findOne(msg.payload.policyId);
@@ -281,7 +280,7 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.channel.response('publish-policies', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.PUBLISH_POLICIES, async (msg, res) => {
             try {
                 if (!msg.payload.model || !msg.payload.model.policyVersion) {
                     throw new Error('Policy version in body is empty');
@@ -396,7 +395,7 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.channel.response('validate-policies', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.VALIDATE_POLICIES, async (msg, res) => {
             try {
                 const policy = msg.payload.model as Policy;
                 const results = await this.validate(policy);
@@ -409,7 +408,7 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.channel.response('get-policy-blocks', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.POLICY_BLOCKS, async (msg, res) => {
             try {
                 const model = this.models.get(msg.payload.policyId) as IPolicyInterfaceBlock as any;
                 if (!model) {
@@ -422,10 +421,9 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.channel.response('get-block-data', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.GET_BLOCK_DATA, async (msg, res) => {
             try {
                 const {user, blockId, policyId} = msg.payload;
-                console.log(msg.payload);
                 const data = await(PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(user, blockId, null)
                 res.send(new MessageResponse(data));
             } catch (e) {
@@ -433,7 +431,7 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.channel.response('set-block-data', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.SET_BLOCK_DATA, async (msg, res) => {
             try {
                 const {user, blockId, policyId, data} = msg.payload;
                 const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(user, data)
@@ -443,13 +441,13 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.channel.response('get-block-by-tag', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.BLOCK_BY_TAG, async (msg, res) => {
             const {user, tag, policyId} = msg.payload;
             const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
             res.send(new MessageResponse({ id: block.uuid }));
         });
 
-        this.channel.response('get-block-parents', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg, res) => {
             const {user, blockId, policyId, data} = msg.payload;
             const block = PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock;
             let tmpBlock: IPolicyBlock = block;
@@ -462,7 +460,7 @@ export class BlockTreeGenerator {
 
         });
 
-        this.channel.response('policy-export-file', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.POLICY_EXPORT_FILE, async (msg, res) => {
             const {policyId} = msg.payload;
             const policy = await getMongoRepository(Policy).findOne(policyId);
             if (!policy) {
@@ -475,7 +473,7 @@ export class BlockTreeGenerator {
             res.send(file);
         });
 
-        this.channel.response('policy-export-message', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, async (msg, res) => {
             const {policyId} = msg.payload;
             const policy = await getMongoRepository(Policy).findOne(policyId);
             if (!policy) {
@@ -491,7 +489,7 @@ export class BlockTreeGenerator {
             }));
         });
 
-        this.channel.response('policy-import-file', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg, res) => {
             const {zip, user} = msg.payload;
             if (!zip) {
                 throw new Error('file in body is empty');
@@ -501,7 +499,7 @@ export class BlockTreeGenerator {
             res.send(new MessageResponse(policies));
         });
 
-        this.channel.response('policy-import-message', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg, res) => {
             const {messageId, user} = msg.payload;
 
             if (!messageId) {
@@ -522,7 +520,7 @@ export class BlockTreeGenerator {
 
         });
 
-        this.channel.response('policy-import-file-preview', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg, res) => {
             const {zip, user} = msg.payload;
             if (!zip) {
                 throw new Error('file in body is empty');
@@ -531,7 +529,7 @@ export class BlockTreeGenerator {
             res.send(new MessageResponse(policyToImport));
         });
 
-        this.channel.response('policy-import-message-preview', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg, res) => {
             const {messageId, user} = msg.payload;
 
             if (!messageId) {
@@ -550,7 +548,7 @@ export class BlockTreeGenerator {
             res.send(new MessageResponse(policyToImport));
         });
 
-        this.channel.response('recieve-external-data', async (msg, res) => {
+        this.channel.response(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg, res) => {
             await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
             res.send(new MessageResponse(true));
         });
