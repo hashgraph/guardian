@@ -1,13 +1,9 @@
 import { Policy } from '@entity/policy';
-import { Response, Router } from 'express';
 import { getConnection, getMongoRepository } from 'typeorm';
-import WebSocket from 'ws';
 import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { Singleton } from '@helpers/decorators/singleton';
-import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
-import { User } from '@entity/user';
 import {
     MessageAPI, MessageError,
     MessageResponse,

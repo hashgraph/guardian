@@ -119,7 +119,7 @@ async function createRootAuthorityProfile(profile: IUser) {
  */
 export const profileAPI = Router();
 
-profileAPI.get('/', async (req: Request, res: Response) => {
+profileAPI.get('/:username/', async (req: Request, res: Response) => {
     try {
         const guardians = new Guardians();
         const users = new Users();
@@ -182,7 +182,7 @@ profileAPI.get('/', async (req: Request, res: Response) => {
     }
 });
 
-profileAPI.put('/', async (req: Request, res: Response) => {
+profileAPI.put('/:username/', async (req: Request, res: Response) => {
     try {
         const users = new Users();
         const wallet = new Wallet();
@@ -224,7 +224,7 @@ profileAPI.put('/', async (req: Request, res: Response) => {
     }
 });
 
-profileAPI.get('/balance', async (req: Request, res: Response) => {
+profileAPI.get('/:username/balance', async (req: Request, res: Response) => {
     try {
         const users = new Users();
         const wallet = new Wallet();
@@ -246,4 +246,3 @@ profileAPI.get('/balance', async (req: Request, res: Response) => {
         res.json('null');
     }
 });
-
