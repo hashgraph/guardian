@@ -12,7 +12,7 @@ import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 @EventBlock({
-    blockType: 'requestVcDocument',
+    blockType: 'requestVcDocumentBlock',
     commonBlock: false,
 })
 export class RequestVcDocumentBlock {

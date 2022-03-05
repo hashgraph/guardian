@@ -31,7 +31,7 @@ enum DataTypes {
  * Mint block
  */
 @BasicBlock({
-    blockType: 'mintDocument',
+    blockType: 'mintDocumentBlock',
     commonBlock: true
 })
 export class MintBlock {

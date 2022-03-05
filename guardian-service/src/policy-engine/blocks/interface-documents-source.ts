@@ -12,7 +12,7 @@ import {IPolicyContainerBlock, IPolicySourceBlock} from '@policy-engine/policy-e
  * Document source block with UI
  */
 @DataSourceBlock({
-    blockType: 'interfaceDocumentsSource',
+    blockType: 'interfaceDocumentsSourceBlock',
     commonBlock: false
 })
 export class InterfaceDocumentsSource {

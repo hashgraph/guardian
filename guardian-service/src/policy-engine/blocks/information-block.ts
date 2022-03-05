@@ -6,13 +6,6 @@ import {PolicyComponentsUtils} from '../policy-components-utils';
     commonBlock: false
 })
 export class InformationBlock {
-    // private init(): void {
-    //     const {options, uuid, blockType} = PolicyComponentsUtils.GetBlockRef(this);
-    //     if (!options.uiMetaData) {
-    //         throw new BlockInitError(`Field "uiMetaData" is required`, blockType, uuid);
-    //     }
-    // }
-
     async getData(user): Promise<any> {
         const {options} = PolicyComponentsUtils.GetBlockRef(this);
         return {uiMetaData: options.uiMetaData};

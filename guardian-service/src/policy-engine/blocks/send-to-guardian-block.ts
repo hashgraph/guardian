@@ -11,7 +11,7 @@ import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation
 import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
 
 @BasicBlock({
-    blockType: 'sendToGuardian',
+    blockType: 'sendToGuardianBlock',
     commonBlock: true
 })
 export class SendToGuardianBlock {

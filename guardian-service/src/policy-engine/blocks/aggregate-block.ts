@@ -24,7 +24,7 @@ function evaluate(formula: string, scope: any) {
  * Aggregate block
  */
 @BasicBlock({
-    blockType: 'aggregateDocument',
+    blockType: 'aggregateDocumentBlock',
     commonBlock: true
 })
 export class AggregateBlock {

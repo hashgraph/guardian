@@ -17,7 +17,7 @@ import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-
  * Document action clock with UI
  */
 @EventBlock({
-    blockType: 'interfaceAction',
+    blockType: 'interfaceActionBlock',
     commonBlock: false,
 })
 export class InterfaceDocumentActionBlock {

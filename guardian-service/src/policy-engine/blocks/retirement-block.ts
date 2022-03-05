@@ -31,7 +31,7 @@ enum DataTypes {
  * Retirement block
  */
 @BasicBlock({
-    blockType: 'retirementDocument',
+    blockType: 'retirementDocumentBlock',
     commonBlock: true
 })
 export class RetirementBlock {
