@@ -1,6 +1,5 @@
 import {Singleton} from '@helpers/decorators/singleton';
 import {IMessageResponse, MessageAPI} from 'interfaces';
-import {Policy} from '@entity/policy';
 
 @Singleton
 export class PolicyEngine {
@@ -43,11 +42,11 @@ export class PolicyEngine {
         }
     }
 
-    public async getPolicy(filter): Promise<Policy | Policy[]> {
+    public async getPolicy(filter): Promise<any> {
         return await this.request('get-policy', filter);
     }
 
-    public async getPolicies(filter): Promise<Policy | Policy[]> {
+    public async getPolicies(filter): Promise<any> {
         return await this.request('get-policies', filter);
     }
 

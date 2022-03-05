@@ -23,6 +23,7 @@ import {VcHelper} from '@helpers/vcHelper';
 import {BlockTreeGenerator} from '@policy-engine/block-tree-generator';
 import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
+import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
 
 const PORT = process.env.PORT || 3001;
 
@@ -60,6 +61,9 @@ Promise.all([
         await policyGenerator.generate(policy.id.toString());
     }
     policyGenerator.registerListeners();
+    new Guardians().registerMRVReceiver(async (data) => {
+        await PolicyComponentsUtils.ReceiveExternalData(data);
+    });
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);
     const vcDocumentRepository = db.getMongoRepository(VcDocument);

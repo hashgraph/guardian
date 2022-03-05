@@ -9,12 +9,11 @@ import {
     externalAPI,
     ipfsAPI
 } from '@api/service';
-import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
 import express from 'express';
 import FastMQ from 'fastmq';
 import {createServer, IncomingMessage} from 'http';
-import {createConnection, getMongoRepository} from 'typeorm';
+import {createConnection} from 'typeorm';
 import WebSocket from 'ws';
 import {authorizationHelper} from '@auth/authorizationHelper';
 import { IPFS } from '@helpers/ipfs';
@@ -45,11 +44,6 @@ Promise.all([
     // Fill test data
     await fixtures();
 
-    // if (!(await getMongoRepository(Policy).find()).length) {
-    //     await BlockTreeGenerator.GenerateMock();
-    // }
-    ///////////////////////////////////////
-
     // Init services
     const app = express();
     app.use(express.json());
@@ -60,10 +54,6 @@ Promise.all([
     }));
 
     new Guardians().setChannel(channel);
-    // new Guardians().registerMRVReceiver(async (data) => {
-    //     await PolicyComponentsStuff.ReceiveExternalData(data);
-    // });
-
     new IPFS().setChannel(channel);
     new PolicyEngine().setChannel(channel);
 

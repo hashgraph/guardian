@@ -2,7 +2,6 @@ import {Response, Router} from 'express';
 import {AuthenticatedRequest} from '@auth/auth.interface';
 import {getMongoRepository} from 'typeorm';
 import {User} from '@entity/user';
-import {Policy} from '@entity/policy';
 import {ModelHelper, SchemaEntity, SchemaHelper, SchemaStatus, UserRole} from 'interfaces';
 import yaml, { JSON_SCHEMA } from 'js-yaml';
 import {PolicyEngine} from '@helpers/policyEngine';
@@ -44,7 +43,7 @@ policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
     const engineService = new PolicyEngine();
 
     try {
-        const model = (await engineService.getPolicy(req.params.policyId)) as Policy;
+        const model = (await engineService.getPolicy(req.params.policyId)) as any;
         delete model.registeredUsers;
         res.send(model);
     } catch (e) {
@@ -56,7 +55,7 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
     const engineService = new PolicyEngine();
 
     try {
-        const model = await engineService.getPolicy(req.params.policyId) as Policy;
+        const model = await engineService.getPolicy(req.params.policyId) as any;
         const policy = req.body;
 
         model.config = policy.config;
