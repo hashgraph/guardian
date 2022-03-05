@@ -180,14 +180,23 @@ export class MintBlock {
             const dataChunk = this.split(data, 10);
             for (let i = 0; i < dataChunk.length; i++) {
                 const element = dataChunk[i];
-                const newSerials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, element, uuid);
-                serials = serials.concat(newSerials);
+                try {
+                    const newSerials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, element, uuid);
+                    serials = serials.concat(newSerials);
+                } catch (error) {
+                    console.log(`Mint: Mint Error (${error.message})`);
+                }
                 console.log(`Mint: Minting (${i}/${dataChunk.length})`);
             }
+            console.log(`Mint: Minted (${serials.length})`);
             const serialsChunk = this.split(serials, 10);
             for (let i = 0; i < serialsChunk.length; i++) {
                 const element = serialsChunk[i];
-                await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, element, uuid);
+                try {
+                    await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, element, uuid);
+                } catch (error) {
+                    console.log(`Mint: Transfer Error (${error.message})`);
+                } 
                 console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
             }
             vcDate = serials;
