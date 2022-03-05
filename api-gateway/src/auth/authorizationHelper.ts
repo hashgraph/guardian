@@ -1,8 +1,6 @@
 import {Response} from 'express';
-import {verify} from 'jsonwebtoken';
 import {AuthenticatedRequest, IAuthUser} from './auth.interface';
-import {getMongoRepository} from 'typeorm';
-import {User} from '@entity/user';
+import { Users } from '@helpers/users';
 
 /**
  * Authorization middleware
@@ -12,24 +10,23 @@ import {User} from '@entity/user';
  */
 export async function authorizationHelper(req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
     const authHeader = req.headers.authorization;
+    const users = new Users();
     if (authHeader) {
         const token = authHeader.split(' ')[1];
-        verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user: IAuthUser) => {
-            if (err) {
-                return res.sendStatus(401);
-            }
-            const userDB = await getMongoRepository(User).findOne({username: user.username});
-            req.user = userDB;
+        try {
+            req.user = await users.getUserByToken(token) as IAuthUser;
             next();
-        });
-    } else {
-        res.sendStatus(401);
+            return;
+        } catch (e) {
+            console.error(e.message);
+        }
     }
+    res.sendStatus(401);
 }
 
 export function permissionHelper(...roles: string[]) {
     return async function (req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
-        if (req.user) { 
+        if (req.user) {
             if(req.user.role) {
                 if(roles.indexOf(req.user.role) !== -1) {
                     next();

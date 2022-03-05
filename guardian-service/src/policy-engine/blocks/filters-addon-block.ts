@@ -2,7 +2,6 @@ import { DataSourceAddon } from '@policy-engine/helpers/decorators/data-source-a
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';

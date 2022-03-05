@@ -22,3 +22,5 @@ ui-service/.vs/
 /test_results/
 /api-tests/node_modules/
 /api-docs/node_modules/
+/auth-service/dist/
+/auth-service/node_modules/

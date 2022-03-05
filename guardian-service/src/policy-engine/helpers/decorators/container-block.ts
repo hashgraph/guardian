@@ -4,7 +4,6 @@ import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
-import { User } from '@entity/user';
 import { IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 
 /**

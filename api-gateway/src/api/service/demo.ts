@@ -1,8 +1,6 @@
 import { Request, Response, Router } from 'express';
-import { getMongoRepository } from 'typeorm';
-import { User } from '@entity/user';
-import { HederaHelper } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
+import { Users } from '@helpers/users';
 
 /**
  * Route for demo api
@@ -10,12 +8,9 @@ import { Guardians } from '@helpers/guardians';
 export const demoAPI = Router();
 
 demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
+    const users = new Users();
     try {
-        const users = await getMongoRepository(User).find();
-        res.json(users.map(e => ({
-            username: e.username,
-            role: e.role
-        })));
+        res.json(await users.getAllUserAccountsDemo());
     } catch (e) {
         res.status(500).send({ code: 500, message: 'Server error' });
     }

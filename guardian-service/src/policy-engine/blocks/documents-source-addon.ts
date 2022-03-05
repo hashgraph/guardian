@@ -1,7 +1,4 @@
 import { SourceAddon } from '@policy-engine/helpers/decorators';
-import { getMongoRepository } from 'typeorm';
-import { User } from '@entity/user';
-import { SchemaStatus, UserRole } from 'interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Inject } from '@helpers/decorators/inject';
 import { Guardians } from '@helpers/guardians';
@@ -92,7 +89,7 @@ export class DocumentsSourceAddon {
                 break;
 
             case 'root-authorities':
-                data = await getMongoRepository(User).find({ where: { role: { $eq: UserRole.ROOT_AUTHORITY } } });
+                data = await this.users.getAllRootAuthorityAccounts() as IAuthUser[];
                 break;
 
             case 'approve':

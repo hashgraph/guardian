@@ -1,4 +1,3 @@
-import {fixtures} from '@api/fixtures';
 import {
     accountAPI,
     trustchainsAPI,
@@ -12,39 +11,20 @@ import {
 import {Guardians} from '@helpers/guardians';
 import express from 'express';
 import FastMQ from 'fastmq';
-import {createServer, IncomingMessage} from 'http';
-import {createConnection} from 'typeorm';
-import WebSocket from 'ws';
+import {createServer} from 'http';
 import {authorizationHelper} from '@auth/authorizationHelper';
 import { IPFS } from '@helpers/ipfs';
 import {policyAPI} from '@api/service/policy';
 import {PolicyEngine} from '@helpers/policyEngine';
-import {AuthenticatedWebSocket, IAuthUser} from '@auth/auth.interface';
-import {verify} from 'jsonwebtoken';
 import {WebSocketsService} from '@api/service/websockets';
+import { Users } from '@helpers/users';
+import { Wallet } from '@helpers/wallet';
 
 const PORT = process.env.PORT || 3002;
 
 Promise.all([
-    createConnection({
-        type: 'mongodb',
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        synchronize: true,
-        logging: process.env.ENVIRONMENT !== 'production',
-        useUnifiedTopology: true,
-        entities: [
-            'dist/entity/*.js'
-        ],
-        cli: {
-            entitiesDir: 'dist/entity'
-        }
-    }),
     FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
-]).then(async ([db, channel]) => {
-    // Fill test data
-    await fixtures();
-
+]).then(async ([channel]) => {
     // Init services
     const app = express();
     app.use(express.json());
@@ -57,6 +37,8 @@ Promise.all([
     new Guardians().setChannel(channel);
     new IPFS().setChannel(channel);
     new PolicyEngine().setChannel(channel);
+    new Users().setChannel(channel);
+    new Wallet().setChannel(channel);
 
     const server = createServer(app);
     new WebSocketsService(server, channel);

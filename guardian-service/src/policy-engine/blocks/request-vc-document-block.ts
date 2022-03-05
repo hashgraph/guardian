@@ -61,20 +61,19 @@ export class RequestVcDocumentBlock {
 
     async setData(user: IAuthUser, _data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const userFull = await this.users.getUser(user.username);
-        if (!userFull.did) {
+        if (!user.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
         }
 
-        const userHederaAccount = userFull.hederaAccountId;
-        const userHederaKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userFull.did);
+        const userHederaAccount = user.hederaAccountId;
+        const userHederaKey = await this.wallet.getKey(user.walletToken, KeyType.KEY, user.did);
 
         const document = _data.document;
         const documentRef = _data.ref;
         const credentialSubject = document;
         const schema = ref.options.schema;
         const idType = ref.options.idType;
-        const id = await this.generateId(idType, userFull, userHederaAccount, userHederaKey);
+        const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
         if (id) {
             credentialSubject.id = id;
         }
@@ -82,23 +81,27 @@ export class RequestVcDocumentBlock {
             credentialSubject.ref = documentRef;
         }
         credentialSubject.policyId = ref.policyId;
-        const res = await this.vcHelper.verifySubject(credentialSubject);
-        if (!res.ok) {
-            throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
+        try {
+            const res = await this.vcHelper.verifySubject(credentialSubject);
+            if (!res.ok) {
+                throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
+            }
+
+            const vc = await this.vcHelper.createVC(user.did, userHederaKey, credentialSubject);
+            const item = {
+                hash: vc.toCredentialHash(),
+                owner: user.did,
+                document: vc.toJsonTree(),
+                schema: schema,
+                type: schema
+            };
+
+            await ref.runNext(user, {data: item});
+
+            return {};
+        } catch (e) {
+            console.error(e.message)
         }
-
-        const vc = await this.vcHelper.createVC(userFull.did, userHederaKey, credentialSubject);
-        const item = {
-            hash: vc.toCredentialHash(),
-            owner: userFull.did,
-            document: vc.toJsonTree(),
-            schema: schema,
-            type: schema
-        };
-
-        await ref.runNext(user, { data: item });
-
-        return {};
     }
 
     async generateId(idType: string, user: any, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {

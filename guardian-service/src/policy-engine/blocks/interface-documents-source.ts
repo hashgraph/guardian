@@ -6,7 +6,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import {PolicyComponentsUtils} from '../policy-components-utils';
-import {IPolicyContainerBlock, IPolicySourceBlock} from '@policy-engine/policy-engine.interface';
+import {IPolicySourceBlock} from '@policy-engine/policy-engine.interface';
 
 /**
  * Document source block with UI

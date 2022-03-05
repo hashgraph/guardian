@@ -1,46 +1,10 @@
-import {Singleton} from '@helpers/decorators/singleton';
-import { IMessageResponse, MessageAPI, PolicyEngineEvents } from 'interfaces';
+import { Singleton } from '@helpers/decorators/singleton';
+import { PolicyEngineEvents } from 'interfaces';
+import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
 
 @Singleton
-export class PolicyEngine {
-    private channel: any;
-    private readonly target: string = 'guardian.*';
-
-    /**
-     * Register channel
-     * @param channel
-     */
-    public setChannel(channel: any): any {
-        this.channel = channel;
-    }
-
-    /**
-     * Get channel
-     */
-    public getChannel(): any {
-        return this.channel;
-    }
-
-    /**
-     * Request to guardian service method
-     * @param entity
-     * @param params
-     * @param type
-     */
-    public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
-        try {
-            const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
-            if (!response) {
-                throw 'Server is not available';
-            }
-            if (response.error) {
-                throw response.error;
-            }
-            return response.body;
-        } catch (e) {
-            throw new Error(`Guardian (${entity}) send: ` + e);
-        }
-    }
+export class PolicyEngine extends ServiceRequestsBase {
+    public target: string = 'guardian.*'
 
     public async getPolicy(filter): Promise<any> {
         return await this.request(PolicyEngineEvents.GET_POLICY, filter);

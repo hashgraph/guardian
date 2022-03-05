@@ -1,3 +1,4 @@
+export { AuthEvents } from './type/auth-events';
 export { ApproveStatus } from './type/approve-status.type';
 export { DidDocumentStatus } from './type/did-status.type';
 export { DocumentSignature } from './type/document-signature.type';
@@ -32,3 +33,4 @@ export { ModelHelper } from './helpers/model-helper'
 export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';
 export { IMessageResponse, MessageResponse, MessageError, Response } from './models/message-response';
+export { WalletEvents } from './type/wallet-events';

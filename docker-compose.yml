@@ -21,16 +21,25 @@ services:
       - 7500
       - 3003
 
-  ui-service:
+  auth-service:
     build:
       context: .
-      dockerfile: ./ui-service/Dockerfile
+      dockerfile: ./auth-service/Dockerfile
+    depends_on:
+      - mongo
+      - message-broker
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
     expose:
       - 3002
     depends_on:
       - mongo
       - message-broker
       - guardian-service
+      - auth-service
 
   guardian-service:
     build:
@@ -39,6 +48,7 @@ services:
     depends_on:
       - mongo
       - message-broker
+      - auth-service
 
   ipfs-client:
     build:
@@ -66,7 +76,9 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - ui-service
+      - guardian-service
+      - auth-service
+      - api-gateway
       - api-docs
       - mrv-sender
 volumes:

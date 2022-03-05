@@ -54,14 +54,14 @@ export class BlockTreeGenerator {
         const role = policy.registeredUsers[user.did];
 
         if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, user)) {
-            if (PolicyComponentsUtils.GetBlockRef(block).checkDataStateDiffer(user)) {
+            // if (PolicyComponentsUtils.GetBlockRef(block).checkDataStateDiffer(user)) {
                 console.log('update', this['uuid']);
                 await this.channel.request('api-gateway', 'update-block', {
                     uuid,
                     state,
                     user
                 })
-            }
+            // }
         }
     }
 

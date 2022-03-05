@@ -1,7 +1,5 @@
-import express from 'express';
 import FastMQ from 'fastmq'
 import {createConnection, getMongoRepository} from 'typeorm';
-import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
 import { approveAPI } from '@api/approve.service';
 import { configAPI, readConfig } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -24,6 +22,8 @@ import {BlockTreeGenerator} from '@policy-engine/block-tree-generator';
 import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
 import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
+import { Wallet } from '@helpers/wallet';
+import { Users } from '@helpers/users';
 
 Promise.all([
     createConnection({
@@ -44,10 +44,11 @@ Promise.all([
     readConfig()
 ]).then(async values => {
     const [db, channel, fileConfig] = values;
-    const app = express();
 
     IPFS.setChannel(channel);
     new Guardians().setChannel(channel);
+    new Wallet().setChannel(channel);
+    new Users().setChannel(channel);
 
     const vc = new VcHelper();
 
@@ -93,7 +94,4 @@ Promise.all([
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
 
     console.log('guardian service started');
-    // app.listen(PORT, () => {
-    //     console.log('guardian service started', PORT);
-    // });
 });

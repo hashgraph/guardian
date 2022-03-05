@@ -16,10 +16,10 @@ export class VcHelper extends VCHelper {
     constructor() {
         super();
         const defaultDocumentLoader = new DefaultDocumentLoader();
-        const schemaDocumentLoader = new ContextDocumentLoader(getMongoRepository(Schema), 'https://ipfs.io/ipfs/');
-        const didDocumentLoader = new DIDDocumentLoader(getMongoRepository(DidDocument));
-        const vcSchemaObjectLoader = new VCSchemaLoader(getMongoRepository(Schema), "https://ipfs.io/ipfs/");
-        const subjectSchemaObjectLoader = new SubjectSchemaLoader(getMongoRepository(Schema), "https://ipfs.io/ipfs/");
+        const schemaDocumentLoader = new ContextDocumentLoader('https://ipfs.io/ipfs/');
+        const didDocumentLoader = new DIDDocumentLoader();
+        const vcSchemaObjectLoader = new VCSchemaLoader("https://ipfs.io/ipfs/");
+        const subjectSchemaObjectLoader = new SubjectSchemaLoader("https://ipfs.io/ipfs/");
 
         this.addDocumentLoader(defaultDocumentLoader);
         this.addDocumentLoader(schemaDocumentLoader);

@@ -7,7 +7,6 @@ import { getMongoRepository, getRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { User } from '@entity/user';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Schema, SchemaStatus } from 'interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
@@ -48,7 +47,7 @@ export class InterfaceDocumentActionBlock {
 
         const data: any = {
             id: ref.uuid,
-            blockType: 'interfaceAction',
+            blockType: ref.blockType,
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData
         }
@@ -81,7 +80,7 @@ export class InterfaceDocumentActionBlock {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, option.bindBlock) as any;
-                const owner = await getRepository(User).findOne({ did: document.owner });
+                const owner = await new Users().getUserById(document.owner);
                 await ref.runTarget(owner, state, block);
             }
             return;
@@ -122,7 +121,7 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type == 'dropdown') {
             if (ref.options.bindBlock) {
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
-                const owner = await getRepository(User).findOne({ did: document.owner });
+                const owner = await new Users().getUserById(document.owner);
                 await ref.runTarget(owner, state, block);
                 return;
             }

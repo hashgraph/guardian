@@ -1,18 +1,18 @@
 import {Response, Router} from 'express';
 import {AuthenticatedRequest} from '@auth/auth.interface';
-import {getMongoRepository} from 'typeorm';
-import {User} from '@entity/user';
-import {ModelHelper, SchemaEntity, SchemaHelper, SchemaStatus, UserRole} from 'interfaces';
+import {UserRole} from 'interfaces';
 import yaml, { JSON_SCHEMA } from 'js-yaml';
 import {PolicyEngine} from '@helpers/policyEngine';
+import { Users } from '@helpers/users';
 
 export const policyAPI = Router();
 
 policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
+    const users = new Users()
     const engineService = new PolicyEngine();
 
     try {
-        const user = await getMongoRepository(User).findOne({ where: { username: { $eq: req.user.username } } });
+        const user = await users.getUser(req.user.username);
         let result: any;
         if (user.role === UserRole.ROOT_AUTHORITY) {
             result = await engineService.getPolicies({ owner: user.did });
@@ -154,16 +154,17 @@ policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedReques
 policyAPI.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
     if (!req.body || !req.body.json) {
         res.status(500).send({ code: 500, message: 'Bad json' });
+        return;
     }
     try {
-        const yml = yaml.dump(req.body.json, {
-            indent: 4,
-            lineWidth: -1,
-            noRefs: false,
-            noCompatMode: true,
-            schema: JSON_SCHEMA
+        res.json({ yaml: yaml.dump(req.body.json, {
+                indent: 4,
+                lineWidth: -1,
+                noRefs: false,
+                noCompatMode: true,
+                schema: JSON_SCHEMA
+            })
         });
-        res.json({ yml });
     } catch (error) {
         res.status(500).send({ code: 500, message: 'Bad json' });
     }
@@ -172,13 +173,14 @@ policyAPI.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
 policyAPI.post('/from-yaml', async (req: AuthenticatedRequest, res: Response) => {
     if (!req.body || !req.body.yaml) {
         res.status(500).send({ code: 500, message: 'Bad yaml' });
+        return;
     }
     try {
-        const json = yaml.load(req.body.yaml, {
-            schema: JSON_SCHEMA,
-            json: true
+        res.json({ json: yaml.load(req.body.yaml, {
+                schema: JSON_SCHEMA,
+                json: true
+            })
         });
-        res.json({ json });
     } catch (error) {
         res.status(500).send({ code: 500, message: 'Bad yaml' });
     }

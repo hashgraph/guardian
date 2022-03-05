@@ -2,9 +2,9 @@ import { Guardians } from '@helpers/guardians';
 import { Response, Router } from 'express';
 import { UserRole } from 'interfaces';
 import { getMongoRepository } from 'typeorm';
-import { User } from '@entity/user';
-import { AuthenticatedRequest } from '@auth/auth.interface';
+import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
+import { Users } from '@helpers/users';
 
 /**
  * Audit route
@@ -36,12 +36,10 @@ trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: Aut
             return null;
         }).filter(did => !!did);
 
-        let userMap: any = await getMongoRepository(User).find({
-            where: {
-                did: { $in: DIDs }
-            }
-        }) || [];
-        userMap = userMap.map((user: User) => {
+        const users = new Users();
+
+        let userMap: any = users.getUsersByIds(DIDs) || [];
+        userMap = userMap.map((user: IAuthUser) => {
             return { username: user.username, did: user.did }
         })
 

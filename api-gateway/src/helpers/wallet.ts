@@ -1,6 +1,6 @@
-import {WalletAccount} from '@entity/wallet-account';
 import {Singleton} from '@helpers/decorators/singleton';
-import {getMongoRepository} from 'typeorm';
+import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
+import { WalletEvents } from 'interfaces';
 
 export enum KeyType {
     ID = 'ID',
@@ -11,7 +11,9 @@ export enum KeyType {
  * Wallet service
  */
 @Singleton
-export class Wallet {
+export class Wallet extends ServiceRequestsBase {
+    public target: string = 'auth-service'
+
     /**
      * Return key
      * @param token
@@ -19,12 +21,7 @@ export class Wallet {
      * @param key
      */
     public async getKey(token: string, type: KeyType, key: string): Promise<string> {
-        const wallet = await getMongoRepository(WalletAccount).findOne({
-            where: {
-                token: {$eq: token},
-                type: {$eq: type + '|' + key}
-            }
-        });
+        const wallet = await this.request<any>(WalletEvents.GET_KEY, {token, type, key});
         return wallet.key;
     }
 
@@ -36,11 +33,6 @@ export class Wallet {
      * @param value
      */
     public async setKey(token: string, type: string, key: string, value: string) {
-        const walletAcc = getMongoRepository(WalletAccount).create({
-            token: token,
-            type: type + '|' + key,
-            key: value
-        });
-        await getMongoRepository(WalletAccount).save(walletAcc);
+        await this.request<any>(WalletEvents.SET_KEY, {token, type, key, value});
     }
 }

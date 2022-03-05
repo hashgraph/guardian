@@ -1,6 +1,6 @@
 import { PolicyRole, UserRole } from 'interfaces';
 import { IAuthUser } from '../auth/auth.interface';
-import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 export interface IPolicyRoles {
     [policyId: string]: string;
