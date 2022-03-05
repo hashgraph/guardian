@@ -21,6 +21,7 @@ import {policyAPI} from '@api/service/policy';
 import {PolicyEngine} from '@helpers/policyEngine';
 import {AuthenticatedWebSocket, IAuthUser} from '@auth/auth.interface';
 import {verify} from 'jsonwebtoken';
+import {WebSocketsService} from '@api/service/websockets';
 
 const PORT = process.env.PORT || 3002;
 
@@ -58,41 +59,12 @@ Promise.all([
     new PolicyEngine().setChannel(channel);
 
     const server = createServer(app);
-
-    const wss = new WebSocket.Server({server})
-    wss.on('connection', async (ws: AuthenticatedWebSocket, req: IncomingMessage) => {
-        const token = req.url.replace('/?token=', '');
-        verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user: IAuthUser) => {
-            if (err) {
-                return;
-            }
-            ws.user = user;
-        });
-
-        ws.on('message', (data: Buffer) => {
-            switch (data.toString()) {
-                case 'ping':
-                    ws.send('pong');
-                    break;
-            }
-        });
-    });
-    channel.response('update-block', async (msg, res) => {
-        console.log(msg.payload);
-        wss.clients.forEach((client: AuthenticatedWebSocket) => {
-            try {
-                client.send(msg.payload.uuid);
-            } catch (e) {
-                console.error('WS Error', e);
-            }
-        });
-    })
+    new WebSocketsService(server, channel);
 
     ////////////////////////////////////////
 
     // Config routes
     app.use('/policies', authorizationHelper, policyAPI);
-    // app.use('/policies', authorizationHelper, importExportAPI);
     app.use('/accounts/', accountAPI);
     app.use('/profile/', authorizationHelper, profileAPI);
     app.use('/schemas', authorizationHelper, schemaAPI);
