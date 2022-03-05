@@ -14,8 +14,11 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             public readonly blockClassName = 'EventBlock';
 
             async getData(...args) {
+                const [user] = args;
                 if (typeof super.getData === 'function') {
-                    return await super.getData(...args);
+                    const data = await super.getData(...args);
+                    const changed = (this as any).updateDataState(user, data);
+                    return data;
                 }
                 return {};
             }

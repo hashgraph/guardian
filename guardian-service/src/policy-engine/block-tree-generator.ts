@@ -50,17 +50,19 @@ export class BlockTreeGenerator {
      * @param user {IAuthUser} - short user object
      */
     async stateChangeCb(uuid: string, state: any, user: any) {
-        console.log(uuid, state, user);
         const block = PolicyComponentsUtils.GetBlockByUUID(uuid) as IPolicyInterfaceBlock;
         const policy = await getMongoRepository(Policy).findOne(block.policyId)
         const role = policy.registeredUsers[user.did];
 
         if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, user)) {
-            await this.channel.request('api-gateway', 'update-block', {
-                uuid,
-                state,
-                user
-            })
+            if (PolicyComponentsUtils.GetBlockRef(block).checkDataStateDiffer(user)) {
+                console.log('update', this['uuid']);
+                await this.channel.request('api-gateway', 'update-block', {
+                    uuid,
+                    state,
+                    user
+                })
+            }
         }
     }
 

@@ -9,6 +9,7 @@ import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation
 import {IAuthUser} from '../../../auth/auth.interface';
 import {getMongoRepository} from 'typeorm';
 import {BlockState} from '@entity/block-state';
+import deepEqual from 'deep-equal';
 
 /**
  * Basic block decorator
@@ -67,6 +68,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
         return class extends basicClass {
             static blockType = o.blockType;
 
+            protected oldDataState: any = {};
+            protected currentDataState: any = {};
+
             public policyId: string;
             public policyOwner: string;
 
@@ -98,6 +102,32 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
 
                 this.init();
+            }
+
+            /**
+             * Update internal block state
+             * @param state
+             * @return {boolean} - true if state was changed
+             */
+            public updateDataState(user, state: any): boolean {
+                this.oldDataState[user.did] = this.currentDataState[user.did];
+                this.currentDataState[user.did] = state;
+                console.log(this.oldDataState[user.did], this.currentDataState[user.did]);
+                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
+                    strict: true
+                })
+            }
+
+            public checkDataStateDiffer(user): boolean {
+                // TODO: Remove hardcode appearance
+                return true;
+
+                if (this.blockType === 'policyRolesBlock') {
+                    return true;
+                }
+                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
+                    strict: true
+                })
             }
 
             public setPolicyId(id): void {
@@ -133,7 +163,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return;
                 }
                 if (this.parent && (typeof this.parent['changeStep'] === 'function')) {
-                    await this.parent.changeStep(user, data, this.parent.children[this.parent.children.indexOf(this) + 1]);
+                    await this.parent.changeStep(user, data, this.parent.children[this.parent.children.indexOf(this as any) + 1]);
                 }
             }
 
@@ -153,8 +183,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!!this.tag) {
                     PolicyComponentsUtils.CallDependencyCallbacks(this.tag, this.policyId, user);
                 }
+                // for (let child of this.children) {
+                //     child.updateBlock(state, user, tag);
+                // }
                 await this.saveState();
                 PolicyComponentsUtils.UpdateFn(this.uuid, state, user, tag);
+
             }
 
             public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
@@ -168,7 +202,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!this.parent) {
                     return true;
                 }
-                return this.parent.isChildActive(this, user);
+                return this.parent.isChildActive(this as any, user);
             }
 
             private async saveState(): Promise<void> {

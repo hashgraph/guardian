@@ -23,7 +23,8 @@
         "no-trailing-whitespace": false,
         "unified-signatures": false,
         "no-string-literal": false,
-        "no-string-throw": false
+        "no-string-throw": false,
+        "ban-types": true
     },
     "jsRules": {
         "max-line-length": {

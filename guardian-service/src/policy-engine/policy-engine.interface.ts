@@ -54,6 +54,8 @@ export interface IPolicyBlock {
     isChildActive(child: AnyBlockType, user: IAuthUser): boolean;
 
     isActive(user: IAuthUser): boolean;
+
+    checkDataStateDiffer?: (user) => boolean
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {

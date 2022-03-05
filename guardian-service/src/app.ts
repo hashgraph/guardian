@@ -25,8 +25,6 @@ import {Policy} from '@entity/policy';
 import {Guardians} from '@helpers/guardians';
 import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
 
-const PORT = process.env.PORT || 3001;
-
 Promise.all([
     createConnection({
         type: 'mongodb',
@@ -58,7 +56,11 @@ Promise.all([
     for (let policy of await getMongoRepository(Policy).find(
         {where: {status: {$eq: 'PUBLISH'}}}
     )) {
-        await policyGenerator.generate(policy.id.toString());
+        try {
+            await policyGenerator.generate(policy.id.toString());
+        } catch (e) {
+            console.error(e.message);
+        }
     }
     policyGenerator.registerListeners();
     new Guardians().registerMRVReceiver(async (data) => {
@@ -90,7 +92,8 @@ Promise.all([
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
 
-    app.listen(PORT, () => {
-        console.log('guardian service started', PORT);
-    });
+    console.log('guardian service started');
+    // app.listen(PORT, () => {
+    //     console.log('guardian service started', PORT);
+    // });
 });

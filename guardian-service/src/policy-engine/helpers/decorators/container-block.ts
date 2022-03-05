@@ -41,7 +41,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const currentRole = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[user.did] : null;
                 // const dbUser = await getMongoRepository(User).findOne({ username: user.username });
 
-                return Object.assign(data, {
+                const result = Object.assign(data, {
                     id: this.uuid,
                     blockType: this.blockType,
                     blocks: this.children.map(child => {
@@ -63,6 +63,9 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                         return undefined;
                     })
                 })
+
+                const changed = (this as any).updateDataState(user, result);
+                return result;
             }
         }
     }
