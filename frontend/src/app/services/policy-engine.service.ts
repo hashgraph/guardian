@@ -57,7 +57,7 @@ export class PolicyEngineService {
   }
 
   private getUrl(accessToken: string | null) {
-    return `${this.getBaseUrl()}?token=${accessToken}`;
+    return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
   }
 
   private closeWebSocket() {

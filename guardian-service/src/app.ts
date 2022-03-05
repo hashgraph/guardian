@@ -59,7 +59,7 @@ Promise.all([
     )) {
         await policyGenerator.generate(policy.id.toString());
     }
-    policyGenerator.registerWssServer();
+    policyGenerator.registerListeners();
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);
     const vcDocumentRepository = db.getMongoRepository(VcDocument);

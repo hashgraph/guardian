@@ -4,9 +4,19 @@
     "secure": false,
     "logLevel": "debug",
     "changeOrigin": true,
-    "ws": true,
+    "ws": false,
     "pathRewrite": {
       "/api/v1": ""
+    }
+  },
+  "/ws/*": {
+    "target": "http://localhost:3002/",
+    "secure": false,
+    "ws": true,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "/ws": ""
     }
   }
 }

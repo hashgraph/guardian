@@ -1,5 +1,6 @@
 import {Singleton} from '@helpers/decorators/singleton';
 import {IMessageResponse, MessageAPI} from 'interfaces';
+import {Policy} from '@entity/policy';
 
 @Singleton
 export class PolicyEngine {
@@ -42,7 +43,11 @@ export class PolicyEngine {
         }
     }
 
-    public async getPolicies(filter) {
+    public async getPolicy(filter): Promise<Policy | Policy[]> {
+        return await this.request('get-policy', filter);
+    }
+
+    public async getPolicies(filter): Promise<Policy | Policy[]> {
         return await this.request('get-policies', filter);
     }
 
@@ -66,7 +71,48 @@ export class PolicyEngine {
         return await this.request('get-policy-blocks', {user, policyId});
     }
 
-    public async getBlockData(user, blockId) {
-        return await this.request('get-block-data', {user, blockId});
+    public async getBlockData(user, policyId, blockId: string) {
+        return await this.request('get-block-data', {user, blockId, policyId});
     }
+
+    public async setBlockData(user, policyId, blockId: string, data: any) {
+        return await this.request('set-block-data', {user, blockId, policyId, data});
+    }
+
+    public async getBlockByTagName(user, policyId, tag: string) {
+        return await this.request('get-block-by-tag', {user, tag, policyId});
+    }
+
+    public async getBlockParents(user, policyId, blockId) {
+        return await this.request('get-block-parents', {user, blockId, policyId});
+    }
+
+    public async exportFile(user, policyId) {
+        return await this.request('policy-export-file', {policyId, user});
+    }
+
+    public async exportMessage(user, policyId) {
+        return await this.request('policy-export-message', {policyId, user});
+    }
+
+    public async importFile(user, zip) {
+        return await this.request('policy-import-file', {zip, user});
+    }
+
+    public async importMessage(user, messageId) {
+        return await this.request('policy-import-file', {messageId, user});
+    }
+
+    public async importFilePreview(user, zip) {
+        return await this.request('policy-import-file-preview', {zip, user});
+    }
+
+    public async importMessagePreview(user, messageId) {
+        return await this.request('policy-import-file-preview', {messageId, user});
+    }
+
+    public async recieveExternalData(data) {
+        return await this.request('recieve-external-data', data);
+    }
+
 }

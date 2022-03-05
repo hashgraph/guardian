@@ -1,13 +1,7 @@
 import { Policy } from '@entity/policy';
-import { PolicyOtherError } from '@policy-engine/errors';
-import { BlockError } from '@policy-engine/interfaces';
 import { Response, Router } from 'express';
-import { IncomingMessage } from 'http';
-import yaml, { JSON_SCHEMA } from 'js-yaml';
-import { verify } from 'jsonwebtoken';
 import { getConnection, getMongoRepository } from 'typeorm';
 import WebSocket from 'ws';
-// import { AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser } from '../auth/auth.interface';
 import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { Singleton } from '@helpers/decorators/singleton';
@@ -15,7 +9,6 @@ import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { User } from '@entity/user';
 import {
-    ISchema,
     MessageAPI, MessageError,
     MessageResponse,
     ModelHelper,
@@ -24,7 +17,13 @@ import {
     SchemaStatus,
     UserRole
 } from 'interfaces';
-import { HederaHelper, HederaSenderHelper, IPolicySubmitMessage, ModelActionType } from 'vc-modules';
+import {
+    HederaHelper,
+    HederaMirrorNodeHelper,
+    HederaSenderHelper,
+    IPolicySubmitMessage,
+    ModelActionType
+} from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -37,8 +36,6 @@ import { findAllEntities, replaceAllEntities } from '@helpers/utils';
 @Singleton
 export class BlockTreeGenerator {
     private models: Map<string, IPolicyBlock> = new Map();
-    private router: Router;
-    private wss: WebSocket.Server;
     private channel: any;
 
     public setChannel(channel) {
@@ -46,20 +43,9 @@ export class BlockTreeGenerator {
     }
 
     constructor() {
-        this.router = Router();
         PolicyComponentsUtils.UpdateFn = (...args: any[]) => {
             this.stateChangeCb.apply(this, args);
         };
-    }
-
-    /**
-     * Register web socket server
-     * @param wss
-     */
-    registerWssServer(): void {
-        // this.wss = wss;
-        // this.registerWsAuth();
-        this.registerRoutes();
     }
 
     /**
@@ -67,70 +53,19 @@ export class BlockTreeGenerator {
      * @param uuid {string} - id of block
      * @param user {IAuthUser} - short user object
      */
-    stateChangeCb(uuid: string, state: any, user: any) {
-        // this.wss.clients.forEach(async (client: AuthenticatedWebSocket) => {
-        //     try {
-        //         const dbUser = await getMongoRepository(User).findOne({ username: client.user.username });
-        //         const blockRef = PolicyComponentsUtils.GetBlockByUUID(uuid) as any;
-        //
-        //         const policy = await getMongoRepository(Policy).findOne(blockRef.policyId);
-        //         const role = policy.registeredUsers[dbUser.did];
-        //
-        //         if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, dbUser)) {
-        //             client.send(uuid);
-        //         }
-        //     } catch (e) {
-        //         console.error('WS Error', e);
-        //     }
-        // });
-    }
+    async stateChangeCb(uuid: string, state: any, user: any) {
+        console.log(uuid, state, user);
+        const block = PolicyComponentsUtils.GetBlockByUUID(uuid) as IPolicyInterfaceBlock;
+        const policy = await getMongoRepository(Policy).findOne(block.policyId)
+        const role = policy.registeredUsers[user.did];
 
-    public static ToYAML(config: any): string {
-        return yaml.dump(config, {
-            indent: 4,
-            lineWidth: -1,
-            noRefs: false,
-            noCompatMode: true,
-            schema: JSON_SCHEMA
-        })
-    }
-
-    public static FromYAML(config: string): any {
-        return yaml.load(config, {
-            schema: JSON_SCHEMA,
-            json: true
-        })
-    }
-
-    /**
-     * Generate mock policy
-     * @constructor
-     */
-    static async GenerateMock(): Promise<void> {
-        const policyRepository = getMongoRepository(Policy);
-        const ra = await getMongoRepository(User).findOne({ role: UserRole.ROOT_AUTHORITY });
-
-        const existing = await policyRepository.find();
-
-        await policyRepository.remove(existing);
-        const newPolicyEntity = policyRepository.create({
-            name: 'test policy',
-            status: 'DRAFT',
-            config: ConfigPolicyTest,
-            policyRoles: ['INSTALLER'],
-            owner: ra.did,
-            policyTag: 'TestPolicy',
-            creator: ra.did,
-            topicId: '',
-            messageId: '',
-            uuid: '',
-            version: '',
-            previousVersion: '',
-            description: '',
-            topicDescription: '',
-            registeredUsers: {}
-        });
-        await policyRepository.save(newPolicyEntity);
+        if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, user)) {
+            await this.channel.request('api-gateway', 'update-block', {
+                uuid,
+                state,
+                user
+            })
+        }
     }
 
     /**
@@ -240,22 +175,6 @@ export class BlockTreeGenerator {
     }
 
     /**
-     * Save policy to database
-     * @param id
-     * @param policy
-     */
-    public static async savePolicyToDb(id: string | null, policy: Policy): Promise<void> {
-        const connection = getConnection();
-        if (id) {
-            const policyRepository = connection.getMongoRepository(Policy);
-
-            await policyRepository.update(id, policy);
-        } else {
-
-        }
-    }
-
-    /**
      * Register websocker auth
      * @private
      */
@@ -292,9 +211,15 @@ export class BlockTreeGenerator {
      * Register endpoints for policy engine
      * @private
      */
-    private registerRoutes(): void {
+    public registerListeners(): void {
+        this.channel.response('get-policy', async (msg, res) => {
+            const data = await getMongoRepository(Policy).findOne(msg.payload);
+            res.send(new MessageResponse(data));
+        });
+
         this.channel.response('get-policies', async (msg, res) => {
-            res.send(new MessageResponse(await getMongoRepository(Policy).find(msg.payload)))
+            const data = await getMongoRepository(Policy).find(msg.payload);
+            res.send(new MessageResponse(data));
         });
 
         this.channel.response('create-policies', async (msg, res) => {
@@ -499,101 +424,137 @@ export class BlockTreeGenerator {
             }
         });
 
-        // blockRouter.get('/', async (req: AuthenticatedRequest, res: Response) => {
         this.channel.response('get-block-data', async (msg, res) => {
             try {
-                // const data = await req['block'].getData(msg.payload.user, msg.payload.blockId, null);
-                // res.send(new MessageResponse(data));
+                const {user, blockId, policyId} = msg.payload;
+                console.log(msg.payload);
+                const data = await(PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(user, blockId, null)
+                res.send(new MessageResponse(data));
             } catch (e) {
                 res.send(new MessageError(e.message()))
             }
         });
-        // blockRouter.post('/', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const data = await req['block'].setData(req.user, req.body);
-        //         res.status(200).send(data || {});
-        //     } catch (e) {
-        //         try {
-        //             const err = e as BlockError;
-        //             res.status(err.errorObject.code).send(err.errorObject);
-        //         } catch (_e) {
-        //             res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-        //         }
-        //         console.error(e);
-        //     }
-        // });
-        // this.router.use('/:policyId/blocks/:uuid', BlockPermissions, blockRouter);
-        //
-        // this.router.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const block = PolicyComponentsUtils.GetBlockByTag(req.params.policyId, req.params.tagName);
-        //         if (!block) {
-        //             const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
-        //             res.status(err.errorObject.code).send(err.errorObject);
-        //             return;
-        //         }
-        //         res.send({ id: block.uuid });
-        //     } catch (e) {
-        //         try {
-        //             const err = e as BlockError;
-        //             res.status(err.errorObject.code).send(err.errorObject);
-        //         } catch (_e) {
-        //             res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-        //         }
-        //         console.error(e);
-        //     }
-        // });
-        //
-        // this.router.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
-        //     try {
-        //         const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-        //         if (!block) {
-        //             const err = new PolicyOtherError('Block does not exist', req.params.uuid, 404);
-        //             res.status(err.errorObject.code).send(err.errorObject);
-        //             return;
-        //         }
-        //         let tmpBlock: IPolicyBlock = block;
-        //         const parents = [block.uuid];
-        //         while (tmpBlock.parent) {
-        //             parents.push(tmpBlock.parent.uuid);
-        //             tmpBlock = tmpBlock.parent;
-        //         }
-        //         res.send(parents);
-        //     } catch (e) {
-        //         try {
-        //             const err = e as BlockError;
-        //             res.status(err.errorObject.code).send(err.errorObject);
-        //         } catch (_e) {
-        //             res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-        //         }
-        //         console.error(e);
-        //     }
-        // });
-        //
-        // this.router.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
-        //     if (!req.body || !req.body.json) {
-        //         res.status(500).send({ code: 500, message: 'Bad json' });
-        //     }
-        //     try {
-        //         const json = req.body.json;
-        //         const yaml = BlockTreeGenerator.ToYAML(json);
-        //         res.json({ yaml });
-        //     } catch (error) {
-        //         res.status(500).send({ code: 500, message: 'Bad json' });
-        //     }
-        // });
-        //
-        // this.router.post('/from-yaml', async (req: AuthenticatedRequest, res: Response) => {
-        //     if (!req.body || !req.body.yaml) {
-        //         res.status(500).send({ code: 500, message: 'Bad yaml' });
-        //     }
-        //     try {
-        //         const yaml = req.body.yaml;
-        //         const json = BlockTreeGenerator.FromYAML(yaml);
-        //         res.json({ json });
-        //     } catch (error) {
-        //         res.status(500).send({ code: 500, message: 'Bad yaml' });
-        //     }
-        // });
+
+        this.channel.response('set-block-data', async (msg, res) => {
+            try {
+                const {user, blockId, policyId, data} = msg.payload;
+                const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(user, data)
+                res.send(new MessageResponse(result));
+            } catch (e) {
+                res.send(new MessageError(e.message()))
+            }
+        });
+
+        this.channel.response('get-block-by-tag', async (msg, res) => {
+            const {user, tag, policyId} = msg.payload;
+            const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
+            res.send(new MessageResponse({ id: block.uuid }));
+        });
+
+        this.channel.response('get-block-parents', async (msg, res) => {
+            const {user, blockId, policyId, data} = msg.payload;
+            const block = PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock;
+            let tmpBlock: IPolicyBlock = block;
+            const parents = [block.uuid];
+            while (tmpBlock.parent) {
+                parents.push(tmpBlock.parent.uuid);
+                tmpBlock = tmpBlock.parent;
+            }
+            res.send(new MessageResponse(parents));
+
+        });
+
+        this.channel.response('policy-export-file', async (msg, res) => {
+            const {policyId} = msg.payload;
+            const policy = await getMongoRepository(Policy).findOne(policyId);
+            if (!policy) {
+                throw new Error(`Cannot export policy ${policyId}`);
+            }
+            const zip = await PolicyImportExportHelper.generateZipFile(policy);
+            const file = await zip.generateAsync();
+            res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
+            res.setHeader('Content-type', 'application/zip');
+            res.send(file);
+        });
+
+        this.channel.response('policy-export-message', async (msg, res) => {
+            const {policyId} = msg.payload;
+            const policy = await getMongoRepository(Policy).findOne(policyId);
+            if (!policy) {
+                throw new Error(`Cannot export policy ${policyId}`);
+            }
+            res.send(new MessageResponse({
+                id: policy.id,
+                name: policy.name,
+                description: policy.description,
+                version: policy.version,
+                messageId: policy.messageId,
+                owner: policy.owner
+            }));
+        });
+
+        this.channel.response('policy-import-file', async (msg, res) => {
+            const {zip, user} = msg.payload;
+            if (!zip) {
+                throw new Error('file in body is empty');
+            }
+            const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
+            const policies = await PolicyImportExportHelper.importPolicy(policyToImport, user.did);
+            res.send(new MessageResponse(policies));
+        });
+
+        this.channel.response('policy-import-message', async (msg, res) => {
+            const {messageId, user} = msg.payload;
+
+            if (!messageId) {
+                throw new Error('Policy ID in body is empty');
+            }
+
+            const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
+            const message = topicMessage.message;
+            const zip = await IPFS.getFile(message.cid, "raw");
+
+            if (!zip) {
+                throw new Error('file in body is empty');
+            }
+
+            const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
+            const policies = await PolicyImportExportHelper.importPolicy(policyToImport, user.did);
+            res.send(new MessageResponse(policies));
+
+        });
+
+        this.channel.response('policy-import-file-preview', async (msg, res) => {
+            const {zip, user} = msg.payload;
+            if (!zip) {
+                throw new Error('file in body is empty');
+            }
+            const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
+            res.send(new MessageResponse(policyToImport));
+        });
+
+        this.channel.response('policy-import-message-preview', async (msg, res) => {
+            const {messageId, user} = msg.payload;
+
+            if (!messageId) {
+                throw new Error('Policy ID in body is empty');
+            }
+
+            const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
+            const message = topicMessage.message;
+            const zip = await IPFS.getFile(message.cid, "raw");
+
+            if (!zip) {
+                throw new Error('file in body is empty');
+            }
+
+            const policyToImport = await PolicyImportExportHelper.parseZipFile(zip);
+            res.send(new MessageResponse(policyToImport));
+        });
+
+        this.channel.response('recieve-external-data', async (msg, res) => {
+            await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
+            res.send(new MessageResponse(true));
+        });
     }
 }

@@ -159,7 +159,7 @@ export class PolicyComponentsUtils {
      * Return block state fields
      * @param target
      */
-    public static GetStateFields(target): Object {
+    public static GetStateFields(target): any {
         return target[STATE_KEY];
     }
 

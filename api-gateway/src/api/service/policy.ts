@@ -4,12 +4,7 @@ import {getMongoRepository} from 'typeorm';
 import {User} from '@entity/user';
 import {Policy} from '@entity/policy';
 import {ModelHelper, SchemaEntity, SchemaHelper, SchemaStatus, UserRole} from 'interfaces';
-import {DeepPartial} from 'typeorm/common/DeepPartial';
-import {Guardians} from '@helpers/guardians';
-import {findAllEntities, replaceAllEntities} from '@helpers/utils';
-import {HederaHelper, HederaSenderHelper, IPolicySubmitMessage, ModelActionType} from 'vc-modules';
-import {IPFS} from '@helpers/ipfs';
-import {VcHelper} from '@helpers/vcHelper';
+import yaml, { JSON_SCHEMA } from 'js-yaml';
 import {PolicyEngine} from '@helpers/policyEngine';
 
 export const policyAPI = Router();
@@ -49,7 +44,7 @@ policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
     const engineService = new PolicyEngine();
 
     try {
-        const model = (await engineService.getPolicies(req.params.policyId))[0];
+        const model = (await engineService.getPolicy(req.params.policyId)) as Policy;
         delete model.registeredUsers;
         res.send(model);
     } catch (e) {
@@ -61,7 +56,7 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
     const engineService = new PolicyEngine();
 
     try {
-        const model = (await engineService.getPolicies(req.params.policyId))[0];
+        const model = await engineService.getPolicy(req.params.policyId) as Policy;
         const policy = req.body;
 
         model.config = policy.config;
@@ -112,105 +107,146 @@ policyAPI.get('/:policyId/blocks', async (req: AuthenticatedRequest, res: Respon
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
-//
-// const blockRouter = Router();
-// blockRouter.get('/', async (req: AuthenticatedRequest, res: Response) => {
-//     try {
-//         const data = await req['block'].getData(req.user, req['block'].uuid, req.query);
-//         res.send(data);
-//     } catch (e) {
-//         try {
-//             const err = e as BlockError;
-//             res.status(err.errorObject.code).send(err.errorObject);
-//         } catch (e) {
-//             res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-//         }
-//     }
-// });
-// blockRouter.post('/', async (req: AuthenticatedRequest, res: Response) => {
-//     try {
-//         const data = await req['block'].setData(req.user, req.body);
-//         res.status(200).send(data || {});
-//     } catch (e) {
-//         try {
-//             const err = e as BlockError;
-//             res.status(err.errorObject.code).send(err.errorObject);
-//         } catch (_e) {
-//             res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-//         }
-//         console.error(e);
-//     }
-// });
-// policyAPI.use('/:policyId/blocks/:uuid', BlockPermissions, blockRouter);
-//
-// policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
-//     try {
-//         const block = PolicyComponentsUtils.GetBlockByTag(req.params.policyId, req.params.tagName);
-//         if (!block) {
-//             const err = new PolicyOtherError('Unexisting tag', req.params.uuid, 404);
-//             res.status(err.errorObject.code).send(err.errorObject);
-//             return;
-//         }
-//         res.send({ id: block.uuid });
-//     } catch (e) {
-//         try {
-//             const err = e as BlockError;
-//             res.status(err.errorObject.code).send(err.errorObject);
-//         } catch (_e) {
-//             res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-//         }
-//         console.error(e);
-//     }
-// });
-//
-// policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
-//     try {
-//         const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(req.params.uuid);
-//         if (!block) {
-//             const err = new PolicyOtherError('Block does not exist', req.params.uuid, 404);
-//             res.status(err.errorObject.code).send(err.errorObject);
-//             return;
-//         }
-//         let tmpBlock: IPolicyBlock = block;
-//         const parents = [block.uuid];
-//         while (tmpBlock.parent) {
-//             parents.push(tmpBlock.parent.uuid);
-//             tmpBlock = tmpBlock.parent;
-//         }
-//         res.send(parents);
-//     } catch (e) {
-//         try {
-//             const err = e as BlockError;
-//             res.status(err.errorObject.code).send(err.errorObject);
-//         } catch (_e) {
-//             res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-//         }
-//         console.error(e);
-//     }
-// });
-//
-// policyAPI.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
-//     if (!req.body || !req.body.json) {
-//         res.status(500).send({ code: 500, message: 'Bad json' });
-//     }
-//     try {
-//         const json = req.body.json;
-//         const yaml = BlockTreeGenerator.ToYAML(json);
-//         res.json({ yaml });
-//     } catch (error) {
-//         res.status(500).send({ code: 500, message: 'Bad json' });
-//     }
-// });
-//
-// policyAPI.post('/from-yaml', async (req: AuthenticatedRequest, res: Response) => {
-//     if (!req.body || !req.body.yaml) {
-//         res.status(500).send({ code: 500, message: 'Bad yaml' });
-//     }
-//     try {
-//         const yaml = req.body.yaml;
-//         const json = BlockTreeGenerator.FromYAML(yaml);
-//         res.json({ json });
-//     } catch (error) {
-//         res.status(500).send({ code: 500, message: 'Bad yaml' });
-//     }
-// });
+
+policyAPI.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.getBlockData(req.user, req.params.policyId, req.params.uuid));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.setBlockData(req.user, req.params.policyId, req.params.uuid, req.body));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.getBlockByTagName(req.user, req.params.policyId, req.params.tagName));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.getBlockParents(req.user, req.params.policyId, req.params.uuid));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.body || !req.body.json) {
+        res.status(500).send({ code: 500, message: 'Bad json' });
+    }
+    try {
+        const yml = yaml.dump(req.body.json, {
+            indent: 4,
+            lineWidth: -1,
+            noRefs: false,
+            noCompatMode: true,
+            schema: JSON_SCHEMA
+        });
+        res.json({ yml });
+    } catch (error) {
+        res.status(500).send({ code: 500, message: 'Bad json' });
+    }
+});
+
+policyAPI.post('/from-yaml', async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.body || !req.body.yaml) {
+        res.status(500).send({ code: 500, message: 'Bad yaml' });
+    }
+    try {
+        const json = yaml.load(req.body.yaml, {
+            schema: JSON_SCHEMA,
+            json: true
+        });
+        res.json({ json });
+    } catch (error) {
+        res.status(500).send({ code: 500, message: 'Bad yaml' });
+    }
+});
+
+policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.exportFile(req.user, req.params.policyId));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.exportMessage(req.user, req.params.policyId));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.importMessage(req.user, req.body.messageId));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.importFile(req.user, req.body));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+
+policyAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+
+    try {
+        res.send(await engineService.importFilePreview(req.user, req.body));
+    } catch (e) {
+        console.error(e);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});

@@ -39,7 +39,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
                 const currentPolicy = await getMongoRepository(Policy).findOne(ref.policyId);
                 const currentRole = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[user.did] : null;
-                const dbUser = await getMongoRepository(User).findOne({ username: user.username });
+                // const dbUser = await getMongoRepository(User).findOne({ username: user.username });
 
                 return Object.assign(data, {
                     id: this.uuid,
@@ -56,7 +56,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                             return undefined;
                         }
 
-                        if (PolicyComponentsUtils.IfHasPermission(child.uuid, currentRole, dbUser)) {
+                        if (PolicyComponentsUtils.IfHasPermission(child.uuid, currentRole, user)) {
                             return returnValue;
                         }
 
