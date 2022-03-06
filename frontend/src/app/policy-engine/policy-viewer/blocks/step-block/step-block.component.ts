@@ -37,7 +37,6 @@ export class StepBlockComponent implements OnInit {
     private policyHelper: PolicyHelper,
   ) {
     this.socket = null;
-    console.log(this);
   }
 
   ngOnInit(): void {

@@ -1,7 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { Response, Router } from 'express';
 import { UserRole } from 'interfaces';
-import { getMongoRepository } from 'typeorm';
 import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Users } from '@helpers/users';

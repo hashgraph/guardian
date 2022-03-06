@@ -1,7 +1,6 @@
 import WebSocket from 'ws';
 import {IncomingMessage, Server} from 'http';
-import {AuthenticatedWebSocket, IAuthUser} from '@auth/auth.interface';
-import {verify} from 'jsonwebtoken';
+import { Users } from '@helpers/users';
 
 export class WebSocketsService {
     private wss: WebSocket.Server;
@@ -17,7 +16,7 @@ export class WebSocketsService {
     }
 
     private registerPingPongAnswers(): void {
-        this.wss.on('connection', async (ws: AuthenticatedWebSocket, req: IncomingMessage) => {
+        this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
             ws.on('message', (data: Buffer) => {
                 switch (data.toString()) {
                     case 'ping':
@@ -29,20 +28,20 @@ export class WebSocketsService {
     }
 
     private registerAuthorisation(): void {
-        this.wss.on('connection', async (ws: AuthenticatedWebSocket, req: IncomingMessage) => {
-            const token = req.url.replace('/?token=', '');
-            verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user: IAuthUser) => {
-                if (err) {
-                    return;
-                }
-                ws.user = user;
-            });
+        this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
+            try {
+                const params = req.url.split('?')[1];
+                const token = new URLSearchParams(params).get('token');
+                ws.user = await new Users().getUserByToken(token);
+            } catch (e) {
+                console.error(e.message);
+            }
         });
     }
 
     private registerMessageHandler(): void {
         this.channel.response('update-block', async (msg, res) => {
-            this.wss.clients.forEach((client: AuthenticatedWebSocket) => {
+            this.wss.clients.forEach((client: any) => {
                 try {
                     client.send(msg.payload.uuid);
                 } catch (e) {

@@ -17,7 +17,7 @@ export class VcHelper extends VCHelper {
         this.addDocumentLoader(new ContextLoader("https://ipfs.io/ipfs/"));
         this.addDocumentLoader(new DIDDocumentLoader());
         this.addSchemaLoader(new SubjectSchemaLoader("https://ipfs.io/ipfs/"));
-        this.addSchemaLoader(new VCSchemaLoader("https://ipfs.io/ipfs/"));  
+        this.addSchemaLoader(new VCSchemaLoader("https://ipfs.io/ipfs/"));
         this.buildDocumentLoader();
         this.buildSchemaLoader();
     }

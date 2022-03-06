@@ -222,7 +222,6 @@ export class BlockTreeGenerator {
         this.channel.response(PolicyEngineEvents.CREATE_POLICIES, async (msg, res) => {
             try {
                 const model = getMongoRepository(Policy).create(msg.payload.model as DeepPartial<Policy>);
-                console.log(msg.payload);
                 if (model.uuid) {
                     const old = await getMongoRepository(Policy).findOne({ uuid: model.uuid });
                     if (model.creator != msg.payload.user.did) {
@@ -258,7 +257,6 @@ export class BlockTreeGenerator {
         });
 
         this.channel.response(PolicyEngineEvents.SAVE_POLICIES, async (msg, res) => {
-            console.log(msg);
             try {
                 const model = await getMongoRepository(Policy).findOne(msg.payload.policyId);
                 const policy = msg.payload.model;

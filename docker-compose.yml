@@ -55,10 +55,12 @@ services:
       context: .
       dockerfile: ./ipfs-client/Dockerfile
     ports:
-      - 5001:5001
-      - 5002:5002
-      - 4001:4001
-      - 4002:4002
+      - "5001:5001"
+      - "5002:5002"
+      - "4001:4001"
+      - "4002:4002"
+      - "8080:8080"
+      - "8081:8081"
     depends_on:
       - message-broker
 
@@ -74,7 +76,7 @@ services:
       context: .
       dockerfile: ./web-proxy/Dockerfile
     ports:
-      - "8080:80"
+      - "3000:80"
     depends_on:
       - guardian-service
       - auth-service

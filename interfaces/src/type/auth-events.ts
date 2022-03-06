@@ -4,6 +4,7 @@ export enum AuthEvents {
     GENERATE_NEW_TOKEN = 'generate_new_token',
     GET_ALL_USER_ACCOUNTS = 'get-all-users',
     GET_ALL_USER_ACCOUNTS_DEMO = 'get-all-users-demo',
+    GET_ALL_ROOT_AUTHORITY_ACCOUNTS = 'get-all-root-authority-demo',
     GET_USER = 'get-user',
     GET_USER_BY_ID = 'get-user-by-id',
     GET_USERS_BY_ID = 'get-user-by-id',

@@ -42,7 +42,7 @@
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "name": "ui-service",
+  "name": "api-gateway",
   "scripts": {
     "build": "tsc",
     "debug": "nodemon dist/index.js",

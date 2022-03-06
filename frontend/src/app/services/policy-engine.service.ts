@@ -16,6 +16,7 @@ export class PolicyEngineService {
   private socket: any;
   private websocketSubject: Subject<unknown>;
   private wsSubjectConfig: WebSocketSubjectConfig<string>;
+  private socketSubscription: Subscription | null;
 
   private connectionStatus: boolean = false;
   private reconnectInterval: number = 5000;  /// pause between connections
@@ -29,6 +30,7 @@ export class PolicyEngineService {
     private toastr: ToastrService
   ) {
     this.websocketSubject = new Subject();
+    this.socketSubscription = null;
     this.wsSubjectConfig = {
       url: this.getUrl(null),
       deserializer: (e) => e.data,
@@ -64,6 +66,10 @@ export class PolicyEngineService {
     if (this.socket) {
       this.socket.unsubscribe();
     }
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();;
+    }
+    this.socketSubscription = null;
     this.socket = null;
     this.connectionStatus = false;
     this.reconnect();
@@ -81,13 +87,16 @@ export class PolicyEngineService {
   }
 
   private connect(): void {
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();
+    }
     const accessToken = this.auth.getAccessToken();
     if (!accessToken) {
       return;
     }
     this.wsSubjectConfig.url = this.getUrl(accessToken);
     this.socket = webSocket(this.wsSubjectConfig);
-    this.socket.subscribe(
+    this.socketSubscription =  this.socket.subscribe(
       (m: any) => {
         if (m === "pong") {
           return;

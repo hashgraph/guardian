@@ -23,7 +23,6 @@ export class PolicyImportExportHelper {
         const tokenIds = findAllEntities(policyObject.config, 'tokenId');
         const schemesIds = findAllEntities(policyObject.config, 'schema');
 
-        console.log(schemesIds);
         const tokens = await guardians.getTokens({ ids: tokenIds });
         const schemes = await guardians.getSchemaByIRIs(schemesIds);
 
