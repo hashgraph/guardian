@@ -24,12 +24,6 @@
       "@helpers/*": [
         "helpers/*"
       ],
-      "@policy-engine/*": [
-        "policy-engine/*"
-      ],
-      "@subscribers/*": [
-        "subscribers/*"
-      ],
       "@auth/*": [
         "auth/*"
       ]
