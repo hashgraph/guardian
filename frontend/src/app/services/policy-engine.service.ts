@@ -16,7 +16,8 @@ export class PolicyEngineService {
   private socket: any;
   private websocketSubject: Subject<unknown>;
   private wsSubjectConfig: WebSocketSubjectConfig<string>;
-  private socketSubscription: Subscription | null;
+  private socketSubscription: Subscription | null = null;
+  private heartbeatTimeout: number | null = null;
 
   private connectionStatus: boolean = false;
   private reconnectInterval: number = 5000;  /// pause between connections
@@ -69,7 +70,11 @@ export class PolicyEngineService {
     if (this.socketSubscription) {
       this.socketSubscription.unsubscribe();;
     }
+    if (this.heartbeatTimeout) {
+      clearTimeout(this.heartbeatTimeout);
+    }
     this.socketSubscription = null;
+    this.heartbeatTimeout = null;
     this.socket = null;
     this.connectionStatus = false;
     this.reconnect();
@@ -89,6 +94,9 @@ export class PolicyEngineService {
   private connect(): void {
     if (this.socketSubscription) {
       this.socketSubscription.unsubscribe();
+    }
+    if (this.heartbeatTimeout) {
+      clearTimeout(this.heartbeatTimeout);
     }
     const accessToken = this.auth.getAccessToken();
     if (!accessToken) {
@@ -113,7 +121,7 @@ export class PolicyEngineService {
 
   private heartbeat() {
     this.socket.next('ping');
-    setTimeout(this.heartbeat.bind(this), PolicyEngineService.HEARTBEAT_DELAY);
+    this.heartbeatTimeout = setTimeout(this.heartbeat.bind(this), PolicyEngineService.HEARTBEAT_DELAY);
   }
 
   private reconnect(): void {
