@@ -55,7 +55,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
         }
 
-        const o: PolicyBlockFullArgumentList = <PolicyBlockFullArgumentList>Object.assign(
+        const o = Object.assign(
             options,
             PolicyBlockDefaultOptions(),
             {
@@ -63,7 +63,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 permissions: [],
                 dependencies: []
             }
-        );
+        ) as PolicyBlockFullArgumentList;
 
         return class extends basicClass {
             static blockType = o.blockType;
