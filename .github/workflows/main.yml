@@ -71,9 +71,6 @@ jobs:
           pushd guardian-service
           npm run test
           popd
-          pushd api-gateway
-          npm run test
-          popd
         env:
           CI: true
       - name: Publish Unit Test Results
