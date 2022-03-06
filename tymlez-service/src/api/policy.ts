@@ -105,7 +105,7 @@ export const makePolicyApi = ({
       schemas: newSchemas.map((schema) => ({
         ...schema,
         inputName: inputPackage.schemas.find((inputSchema) =>
-          schema.name.startsWith(inputSchema.name),
+          schema.name?.startsWith(inputSchema.name),
         )!.name,
       })),
     });

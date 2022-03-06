@@ -299,7 +299,7 @@ export const makeTrackAndTraceApi = ({
         vcSubject.policyId = policyId;
         vcSubject.accountId = hederaAccountId;
 
-        vc = await vcHelper.createVC(did, key, type, vcSubject);
+        vc = await vcHelper.createVC(did, key, vcSubject, type);
         document = vc.toJsonTree();
 
         console.log('created vc');

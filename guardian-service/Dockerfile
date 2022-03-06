@@ -20,7 +20,7 @@ WORKDIR /usr/guardian-service
 COPY ./guardian-service/package.json ./
 RUN npm install
 COPY ./guardian-service/tsconfig.json ./
-COPY ./guardian-service/config.json ./
+#COPY ./guardian-service/config.json ./
 COPY ./guardian-service/.env.docker ./.env
 COPY ./guardian-service/system-schemes ./system-schemes/.
 RUN npm install

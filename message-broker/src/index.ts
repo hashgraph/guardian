@@ -3,11 +3,11 @@ import express, { Request, Response } from 'express'
 
 const mqServer = FastMQ.Server.create('master', 7500, '0.0.0.0');
 
-server.onError(err => {
+mqServer.onError(err => {
     console.error('MBError: ', err);
 });
 
-server.onSocketError(err => {
+mqServer.onSocketError(err => {
     console.error('SocketError: ', err);
 });
 

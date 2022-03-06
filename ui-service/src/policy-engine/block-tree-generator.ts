@@ -9,6 +9,7 @@ import { getConnection, getMongoRepository } from 'typeorm';
 import WebSocket from 'ws';
 import { AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser } from '../auth/auth.interface';
 import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import {StateContainer} from './state-container';
 import { PolicyComponentsStuff } from './policy-components-stuff';
 import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';

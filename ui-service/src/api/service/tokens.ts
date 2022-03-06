@@ -120,23 +120,12 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
         }
 
         const tokens = (await guardians.setToken(newToken));
-        res.status(201).json(tokens);
 
+        res.status(201).json(tokens);
     } catch (error) {
         console.error("Failed to create token", error)
         res.status(500).send({code: 500, message: error.message});
         return;
-    }
-});
-
-tokenAPI.get('/', async (req: Request, res: Response) => {
-    const guardians = new Guardians();
-    const users = new Users();
-
-    if (!(await users.permission(req, UserRole.ROOT_AUTHORITY))) {
-        res.status(403).send({code: 403, message: 'Forbidden'});
-        return;
-        res.status(500).send({ code: 500, message: error.message });
     }
 });
 

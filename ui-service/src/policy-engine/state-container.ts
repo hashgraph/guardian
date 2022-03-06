@@ -96,7 +96,7 @@ export class StateContainer {
      * @param role
      */
     public static IfHasPermission(uuid: string, role: UserRole): boolean {
-        return StateContainer.PolicyBlockMapObject.get(uuid).hasPermission(role);
+        return StateContainer.PolicyBlockMapObject.get(uuid).hasPermission(role, null);
     }
 
     /**
@@ -157,9 +157,9 @@ export class StateContainer {
         }
     }
 
-    public static InitStateSubscriptions(): void {
-        for (let b of StateContainer.PolicyBlockMapObject.values()) {
-            b.registerSubscriptions();
-        }
-    }
+    // public static InitStateSubscriptions(): void {
+    //     for (let b of StateContainer.PolicyBlockMapObject.values()) {
+    //         b.registerSubscriptions();
+    //     }
+    // }
 }

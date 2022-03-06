@@ -5,7 +5,6 @@ import {
     frontendService,
     demoAPI,
     infoAPI,
-    otherAPI,
     profileAPI,
     schemaAPI,
     tokenAPI,
@@ -105,7 +104,6 @@ Promise.all([
     app.use('/api/tokens', authorizationHelper, tokenAPI);
     app.use('/api/info', infoAPI);
     app.use('/api/package', importExportAPI);
-    app.use('/api/', authorizationHelper, rootAPI, auditAPI, otherAPI);
     app.use('/api-docs/', swaggerAPI);
 
     //New - these are from upstream

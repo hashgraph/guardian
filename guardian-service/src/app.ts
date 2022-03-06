@@ -74,11 +74,6 @@ Promise.all([
     const vcSchemaObjectLoader = new VCSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
     const subjectSchemaObjectLoader = new SubjectSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
 
-    // TODO: Maybe remove? This might be superfluos after merge
-    const schemaObjectLoader = new SchemaObjectLoader(schemaRepository);
-    vcHelper.addContext('https://localhost/schema');
-    //
-
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(schemaDocumentLoader);
     vcHelper.addDocumentLoader(didDocumentLoader);
