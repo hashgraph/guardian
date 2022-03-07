@@ -16,8 +16,6 @@ This Block accepts source VC as input and generates output as new VC document.
 | title    | Title of the operation                   | Summary          |
 | value    | Variable to store the value of the field | E0               |
 
-### Example:
-
 ```
 "inputFields": [
                     {
@@ -46,8 +44,6 @@ New variable "E0" would be created with a value set to one from the "field0" in 
 | title    | Title of the operation                    | Summary          |
 | value    | Points to the value of specified variable | E1               |
 
-### Example:
-
 ```
 outputFields: [
                     {
@@ -69,8 +65,6 @@ The output variable "field0" will contain the value from the variable "E1".
 This Block performs mathematical calculations sequentially.
 
 #### equations : array of formulas.
-
-### Example:
 
 ```
 "equations": [
