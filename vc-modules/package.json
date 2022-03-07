@@ -1,7 +1,7 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@hashgraph/sdk": "2.6.0",
+    "@hashgraph/sdk": "2.10.1",
     "@hashgraph/did-sdk-js": "0.1.1",
     "jose": "4.3.8",
     "@transmute/credentials-context": "0.7.0-unstable.40",
