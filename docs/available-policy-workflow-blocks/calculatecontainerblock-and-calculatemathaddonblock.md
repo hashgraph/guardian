@@ -2,31 +2,76 @@
 
 ## calculateContainerBlock
 
-### Properties
+This Block accepts source VC as input and generates output as new VC document.
 
-| Block Property | Definition                                                                              | Example Input                                                            |
-| -------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Type           | Type of workflow logic block.                                                           | **calculateContainer**Block (Can't be changed).                          |
-| inputSchema    | source VC schema                                                                        |                                                                          |
-| inputFields    | array of variables which would be taken from the source VC                              | <p>"name": "field0", </p><p>"title": "Summary", </p><p>"value": "E0"</p> |
-| Title          | The value is set automatically for user convenience                                     | Input                                                                    |
-| outputSchema   | output VC schema                                                                        |                                                                          |
-| outputFields   | array of variables of output VC, which will be field with the values from the variables | <p>"name": "field0", </p><p>"title": "Summary", </p><p>"value": "E1"</p> |
-| Title          | The value is set automatically for user convenience                                     | Output                                                                   |
+#### inputSchema : source VC schema
+
+#### inputFields : array of variables which would be taken from the source VC.
+
+### Example:
+
+```
+"inputFields": [
+                    {
+                      "name": "field0",
+                      "title": "Summary",
+                      "value": "E0"
+                    },
+                ]
+```
+
+#### New variable "E0" would be created with a value set to one from the "field0" in the VC document.
+
+{% hint style="info" %}
+"title" is not a mandatory parameter. The value is set automatically as per the user convenience.
+{% endhint %}
+
+#### outputSchema : output VC schema
+
+#### outputFields : array of variables of output VC, which will be the field with the values from the variables.
+
+### Example:
+
+```
+outputFields: [
+                    {
+                      "name": "field0",
+                      "title": "Summary",
+                      "value": "E1"
+                    }
+                ]
+```
+
+#### The output variable "field0" will contain the value from the variable "E1".
+
+{% hint style="info" %}
+"title" is not a mandatory parameter. The value is set automatically as per the user convenience.
+{% endhint %}
 
 ## calculateMathAddonBlock
 
-### Properties
+This Block performs mathematical calculations sequentially.
 
-| Block Property | Definition                    | Example Input                                      |
-| -------------- | ----------------------------- | -------------------------------------------------- |
-| Type           | Type of workflow logic block. | **calculateMathAddon**Block (Can't be changed).    |
-| equations      | array of formulas             | <p>"variable": "E1", </p><p>"formula": "E0*10"</p> |
+#### equations : array of formulas.
+
+### Example:
+
+```
+"equations": [
+                    {
+                      "variable": "E1",
+                      "formula": "E0*10"
+                    }
+                ]
+```
+
+When above code is executed, a new variable, "E1" will be created which would contain the value of the calculation "E0\*10".
 
 ### Example
 
+In the input VC is { "field0" : 5 }
+
 ```
-in the input VC is { "field0": 5 }
 		calculateContainerBlock:
 			"inputFields": [
 				{
@@ -47,10 +92,11 @@ in the input VC is { "field0": 5 }
 				  "formula": "E0*10"
 				}
 			]
-	Then 
-		1 input VC variable "E0" will contain 5 (e.g. "E0" = 5)
-		2 when executed a new variable "E1" will be created with the value "E1" = E0*10 = 5 * 10 = 50
-		3 in the output VC there will be "E1" variable
-	The result will be VC = { "field0": 50 }
 ```
 
+Then
+
+1. input VC variable "E0" will contain 5 (eg. "E0" = 5)
+2. When executed a new variable "E1" will be created with the value "E1" = E0\*10 = 5 \* 10 = 50
+3. In the output VC there will be "E1" variable
+4. The result will be VC = { "field0" : 50 }
