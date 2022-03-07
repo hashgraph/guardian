@@ -4,9 +4,17 @@
 
 This Block accepts source VC as input and generates output as new VC document.
 
+### Input Parameters:
+
 #### inputSchema : source VC schema
 
 #### inputFields : array of variables which would be taken from the source VC.
+
+| Variable | Definition                               | Example of Input |
+| -------- | ---------------------------------------- | ---------------- |
+| name     | Refer to the specified field value       | field0           |
+| title    | Title of the operation                   | Summary          |
+| value    | Variable to store the value of the field | E0               |
 
 ### Example:
 
@@ -20,15 +28,23 @@ This Block accepts source VC as input and generates output as new VC document.
                 ]
 ```
 
-#### New variable "E0" would be created with a value set to one from the "field0" in the VC document.
+New variable "E0" would be created with a value set to one from the "field0" in the VC document.
 
 {% hint style="info" %}
 "title" is not a mandatory parameter. The value is set automatically as per the user convenience.
 {% endhint %}
 
+### Output Parameters
+
 #### outputSchema : output VC schema
 
 #### outputFields : array of variables of output VC, which will be the field with the values from the variables.
+
+| Variable | Definition                                | Example of Input |
+| -------- | ----------------------------------------- | ---------------- |
+| name     | Variable that refers to specified field   | field0           |
+| title    | Title of the operation                    | Summary          |
+| value    | Points to the value of specified variable | E1               |
 
 ### Example:
 
@@ -42,7 +58,7 @@ outputFields: [
                 ]
 ```
 
-#### The output variable "field0" will contain the value from the variable "E1".
+The output variable "field0" will contain the value from the variable "E1".
 
 {% hint style="info" %}
 "title" is not a mandatory parameter. The value is set automatically as per the user convenience.
