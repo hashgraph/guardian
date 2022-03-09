@@ -37,7 +37,7 @@ export enum BlockType {
     Mint = 'mintDocumentBlock',
     ExternalData = 'externalDataBlock',
     AggregateDocument = 'aggregateDocumentBlock',
-    Wipe = 'wipeDocument',
+    Wipe = 'retirementDocumentBlock',
     FiltersAddon = 'filtersAddon',
     DocumentsSourceAddon = 'documentsSourceAddon',
     Calculate = 'calculateContainerBlock',

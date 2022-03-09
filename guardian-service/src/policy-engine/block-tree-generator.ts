@@ -1,9 +1,9 @@
-import {Policy} from '@entity/policy';
-import {getConnection, getMongoRepository} from 'typeorm';
-import {IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend} from './policy-engine.interface';
-import {PolicyComponentsUtils} from './policy-components-utils';
-import {Singleton} from '@helpers/decorators/singleton';
-import {DeepPartial} from 'typeorm/common/DeepPartial';
+import { Policy } from '@entity/policy';
+import { getConnection, getMongoRepository } from 'typeorm';
+import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import { PolicyComponentsUtils } from './policy-components-utils';
+import { Singleton } from '@helpers/decorators/singleton';
+import { DeepPartial } from 'typeorm/common/DeepPartial';
 import {
     MessageError,
     MessageResponse,
@@ -20,13 +20,13 @@ import {
     IPolicySubmitMessage,
     ModelActionType
 } from 'vc-modules';
-import {Guardians} from '@helpers/guardians';
-import {VcHelper} from '@helpers/vcHelper';
-import {ISerializedErrors, PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
-import {GenerateUUIDv4} from '@policy-engine/helpers/uuidv4';
-import {IPFS} from '@helpers/ipfs';
-import {PolicyImportExportHelper} from './helpers/policy-import-export-helper';
-import {findAllEntities, replaceAllEntities} from '@helpers/utils';
+import { Guardians } from '@helpers/guardians';
+import { VcHelper } from '@helpers/vcHelper';
+import { ISerializedErrors, PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
+import { IPFS } from '@helpers/ipfs';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
+import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -55,12 +55,12 @@ export class BlockTreeGenerator {
 
         if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, user)) {
             // if (PolicyComponentsUtils.GetBlockRef(block).checkDataStateDiffer(user)) {
-                console.log('update', this['uuid']);
-                await this.channel.request('api-gateway', 'update-block', {
-                    uuid,
-                    state,
-                    user
-                })
+            console.log('update', this['uuid']);
+            await this.channel.request('api-gateway', 'update-block', {
+                uuid,
+                state,
+                user
+            })
             // }
         }
     }
@@ -221,24 +221,27 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.CREATE_POLICIES, async (msg, res) => {
             try {
+                const user = msg.payload.user;
                 const model = getMongoRepository(Policy).create(msg.payload.model as DeepPartial<Policy>);
                 if (model.uuid) {
                     const old = await getMongoRepository(Policy).findOne({ uuid: model.uuid });
-                    if (model.creator != msg.payload.user.did) {
+                    if (model.creator != user.did) {
                         throw 'Invalid owner';
                     }
-                    if (old.creator != msg.payload.user.did) {
+                    if (old.creator != user.did) {
                         throw 'Invalid owner';
                     }
-                    model.creator = msg.payload.user.did;
-                    model.owner = msg.payload.user.did;
+                    model.creator = user.did;
+                    model.owner = user.did;
                     delete model.version;
+                    delete model.messageId;
                 } else {
-                    model.creator = msg.payload.user.did;
-                    model.owner = msg.payload.user.did;
+                    model.creator = user.did;
+                    model.owner = user.did;
                     delete model.previousVersion;
                     delete model.topicId;
                     delete model.version;
+                    delete model.messageId;
                 }
                 if (!model.config) {
                     model.config = {
@@ -316,20 +319,21 @@ export class BlockTreeGenerator {
 
                 if (isValid) {
                     const guardians = new Guardians();
+                    const user = msg.payload.user;
 
-                    const schemaIRIs = findAllEntities(model.config, 'schema');
+                    const schemaIRIs = findAllEntities(model.config, SchemaFields);
                     for (let i = 0; i < schemaIRIs.length; i++) {
                         const schemaIRI = schemaIRIs[i];
-                        const schema = await guardians.incrementSchemaVersion(schemaIRI, msg.payload.user.did);
+                        const schema = await guardians.incrementSchemaVersion(schemaIRI, user.did);
                         if (schema.status == SchemaStatus.PUBLISHED) {
                             continue;
                         }
-                        const newSchema = await guardians.publishSchema(schema.id, schema.version, msg.payload.user.did);
-                        replaceAllEntities(model.config, 'schema', schemaIRI, newSchema.iri);
+                        const newSchema = await guardians.publishSchema(schema.id, schema.version, user.did);
+                        replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
                     }
                     this.regenerateIds(model.config);
 
-                    const root = await guardians.getRootConfig(msg.payload.user.did);
+                    const root = await guardians.getRootConfig(user.did);
                     const hederaHelper = HederaHelper
                         .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
 
@@ -364,10 +368,10 @@ export class BlockTreeGenerator {
                         ...SchemaHelper.getContext(policySchema),
                         id: messageId
                     }
-                    const vc = await vcHelper.createVC(msg.payload.user.did, root.hederaAccountKey, credentialSubject);
+                    const vc = await vcHelper.createVC(user.did, root.hederaAccountKey, credentialSubject);
                     await guardians.setVcDocument({
                         hash: vc.toCredentialHash(),
-                        owner: msg.payload.user.did,
+                        owner: user.did,
                         document: vc.toJsonTree(),
                         type: SchemaEntity.POLICY,
                         policyId: `${model.id}`
@@ -421,8 +425,8 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.GET_BLOCK_DATA, async (msg, res) => {
             try {
-                const {user, blockId, policyId} = msg.payload;
-                const data = await(PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(user, blockId, null)
+                const { user, blockId, policyId } = msg.payload;
+                const data = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(user, blockId, null)
                 res.send(new MessageResponse(data));
             } catch (e) {
                 res.send(new MessageError(e.message()))
@@ -431,7 +435,7 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.SET_BLOCK_DATA, async (msg, res) => {
             try {
-                const {user, blockId, policyId, data} = msg.payload;
+                const { user, blockId, policyId, data } = msg.payload;
                 const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(user, data)
                 res.send(new MessageResponse(result));
             } catch (e) {
@@ -440,13 +444,13 @@ export class BlockTreeGenerator {
         });
 
         this.channel.response(PolicyEngineEvents.BLOCK_BY_TAG, async (msg, res) => {
-            const {user, tag, policyId} = msg.payload;
+            const { user, tag, policyId } = msg.payload;
             const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
             res.send(new MessageResponse({ id: block.uuid }));
         });
 
         this.channel.response(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg, res) => {
-            const {user, blockId, policyId, data} = msg.payload;
+            const { user, blockId, policyId, data } = msg.payload;
             const block = PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock;
             let tmpBlock: IPolicyBlock = block;
             const parents = [block.uuid];
@@ -459,7 +463,7 @@ export class BlockTreeGenerator {
         });
 
         this.channel.response(PolicyEngineEvents.POLICY_EXPORT_FILE, async (msg, res) => {
-            const {policyId} = msg.payload;
+            const { policyId } = msg.payload;
             const policy = await getMongoRepository(Policy).findOne(policyId);
             if (!policy) {
                 throw new Error(`Cannot export policy ${policyId}`);
@@ -472,7 +476,7 @@ export class BlockTreeGenerator {
         });
 
         this.channel.response(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, async (msg, res) => {
-            const {policyId} = msg.payload;
+            const { policyId } = msg.payload;
             const policy = await getMongoRepository(Policy).findOne(policyId);
             if (!policy) {
                 throw new Error(`Cannot export policy ${policyId}`);
@@ -488,7 +492,7 @@ export class BlockTreeGenerator {
         });
 
         this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg, res) => {
-            const {zip, user} = msg.payload;
+            const { zip, user } = msg.payload;
             if (!zip) {
                 throw new Error('file in body is empty');
             }
@@ -498,7 +502,7 @@ export class BlockTreeGenerator {
         });
 
         this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg, res) => {
-            const {messageId, user} = msg.payload;
+            const { messageId, user } = msg.payload;
 
             if (!messageId) {
                 throw new Error('Policy ID in body is empty');
@@ -519,7 +523,7 @@ export class BlockTreeGenerator {
         });
 
         this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg, res) => {
-            const {zip, user} = msg.payload;
+            const { zip, user } = msg.payload;
             if (!zip) {
                 throw new Error('file in body is empty');
             }
@@ -528,7 +532,7 @@ export class BlockTreeGenerator {
         });
 
         this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg, res) => {
-            const {messageId, user} = msg.payload;
+            const { messageId, user } = msg.payload;
 
             if (!messageId) {
                 throw new Error('Policy ID in body is empty');
