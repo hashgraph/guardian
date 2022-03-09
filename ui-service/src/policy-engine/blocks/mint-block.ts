@@ -176,17 +176,21 @@ export class MintBlock {
             const data = new Array(Math.floor(tokenValue));
             data.fill(metaData);
 
-            let serials = [];
+            const serials = [];
             const dataChunk = this.split(data, 10);
             for (let i = 0; i < dataChunk.length; i++) {
                 const element = dataChunk[i];
                 try {
                     const newSerials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, element, uuid);
-                    serials = serials.concat(newSerials);
+                    for (let j = 0; j < newSerials.length; j++) {
+                        serials.push(newSerials[j])
+                    }
                 } catch (error) {
                     console.log(`Mint: Mint Error (${error.message})`);
                 }
-                console.log(`Mint: Minting (${i}/${dataChunk.length})`);
+                if (i % 100 == 0) {
+                    console.log(`Mint: Minting (${i}/${dataChunk.length})`);
+                }
             }
             console.log(`Mint: Minted (${serials.length})`);
             const serialsChunk = this.split(serials, 10);
@@ -196,8 +200,10 @@ export class MintBlock {
                     await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, element, uuid);
                 } catch (error) {
                     console.log(`Mint: Transfer Error (${error.message})`);
-                } 
-                console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
+                }
+                if (i % 100 == 0) {
+                    console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
+                }
             }
             vcDate = serials;
         } else {
@@ -260,7 +266,7 @@ export class MintBlock {
 
         try {
             const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
-            ref.runNext(null, { data: doc }).then(
+            ref.runNext(null, state).then(
                 function () { },
                 function (error: any) { console.error(error); }
             );
