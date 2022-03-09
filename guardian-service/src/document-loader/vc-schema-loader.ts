@@ -1,6 +1,6 @@
 import { SchemaLoader } from 'vc-modules';
 import { Schema } from '@entity/schema';
-import { MongoRepository } from 'typeorm';
+import { getMongoRepository, MongoRepository } from 'typeorm';
 import { ISchema } from 'interfaces';
 
 /**
@@ -8,7 +8,6 @@ import { ISchema } from 'interfaces';
  */
 export class VCSchemaLoader extends SchemaLoader {
     constructor(
-        private readonly schemaRepository: MongoRepository<Schema>,
         private readonly context: string
     ) {
         super();
@@ -63,7 +62,7 @@ export class VCSchemaLoader extends SchemaLoader {
             if (!context) {
                 return null;
             }
-            const schema = await this.schemaRepository.find({
+            const schema = await getMongoRepository(Schema).find({
                 where: { contextURL: { $in: context } }
             });
             return schema

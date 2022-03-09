@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="0.0100" tests="34" failures="0">
+  <testsuite name="Root Suite" timestamp="2021-12-03T13:41:51" tests="0" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="BlockTreeGenerator" timestamp="2021-12-03T13:41:51" tests="1" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\blocks\block-tree-generator.test.js" time="0.0020" failures="0">
+    <testcase name="BlockTreeGenerator Create" time="0.0000" classname="Create">
+    </testcase>
+  </testsuite>
+  <testsuite name="Information block" timestamp="2021-12-03T13:41:51" tests="2" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\blocks\information-block.test.js" time="0.0000" failures="0">
+    <testcase name="Information block init" time="0.0000" classname="init">
+    </testcase>
+    <testcase name="Information block getData" time="0.0000" classname="getData">
+    </testcase>
+  </testsuite>
+  <testsuite name="State Container" timestamp="2021-12-03T13:41:51" tests="2" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\blocks\state-container.test.js" time="0.0010" failures="0">
+    <testcase name="State Container GenerateNewUUID" time="0.0010" classname="GenerateNewUUID">
+    </testcase>
+    <testcase name="State Container IfUUIDRegistered" time="0.0000" classname="IfUUIDRegistered">
+    </testcase>
+  </testsuite>
+  <testsuite name="DidDocumentLoader" timestamp="2021-12-03T13:41:51" tests="1" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\document-loader\did-document-loader.test.js" time="0.0000" failures="0">
+    <testcase name="DidDocumentLoader Create" time="0.0000" classname="Create">
+    </testcase>
+  </testsuite>
+  <testsuite name="Basic Block" timestamp="2021-12-03T13:41:51" tests="1" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\helpers\decorators\basic-block.test.js" time="0.0010" failures="0">
+    <testcase name="Basic Block Create" time="0.0010" classname="Create">
+    </testcase>
+  </testsuite>
+  <testsuite name="Container Block" timestamp="2021-12-03T13:41:51" tests="1" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\helpers\decorators\container-block.test.js" time="0.0000" failures="0">
+    <testcase name="Container Block Create" time="0.0000" classname="Create">
+    </testcase>
+  </testsuite>
+  <testsuite name="DataSource Block" timestamp="2021-12-03T13:41:51" tests="1" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\helpers\decorators\data-source-block.test.js" time="0.0000" failures="0">
+    <testcase name="DataSource Block Create" time="0.0000" classname="Create">
+    </testcase>
+  </testsuite>
+  <testsuite name="Event Block" timestamp="2021-12-03T13:41:51" tests="1" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\helpers\decorators\event-block.test.js" time="0.0010" failures="0">
+    <testcase name="Event Block Create" time="0.0010" classname="Create">
+    </testcase>
+  </testsuite>
+  <testsuite name="ExternalData Block" timestamp="2021-12-03T13:41:51" tests="1" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\helpers\decorators\external-data.test.js" time="0.0000" failures="0">
+    <testcase name="ExternalData Block Create" time="0.0000" classname="Create">
+    </testcase>
+  </testsuite>
+  <testsuite name="Guardians" timestamp="2021-12-03T13:41:51" tests="23" file="C:\Users\tmf\Projects\WaveAccess\guardian\ui-service\tests\helpers\guardians.test.js" time="0.0040" failures="0">
+    <testcase name="Guardians Create" time="0.0000" classname="Create">
+    </testcase>
+    <testcase name="Guardians getRootAddressBook" time="0.0010" classname="getRootAddressBook">
+    </testcase>
+    <testcase name="Guardians getAddressBook" time="0.0000" classname="getAddressBook">
+    </testcase>
+    <testcase name="Guardians getDidDocuments" time="0.0000" classname="getDidDocuments">
+    </testcase>
+    <testcase name="Guardians getVcDocuments" time="0.0000" classname="getVcDocuments">
+    </testcase>
+    <testcase name="Guardians getVpDocuments" time="0.0000" classname="getVpDocuments">
+    </testcase>
+    <testcase name="Guardians getSchemes" time="0.0000" classname="getSchemes">
+    </testcase>
+    <testcase name="Guardians getTokens" time="0.0000" classname="getTokens">
+    </testcase>
+    <testcase name="Guardians getRootConfig" time="0.0000" classname="getRootConfig">
+    </testcase>
+    <testcase name="Guardians getChain" time="0.0000" classname="getChain">
+    </testcase>
+    <testcase name="Guardians loadDidDocument" time="0.0000" classname="loadDidDocument">
+    </testcase>
+    <testcase name="Guardians loadSchemaDocument" time="0.0000" classname="loadSchemaDocument">
+    </testcase>
+    <testcase name="Guardians setDidDocument" time="0.0000" classname="setDidDocument">
+    </testcase>
+    <testcase name="Guardians setVcDocument" time="0.0010" classname="setVcDocument">
+    </testcase>
+    <testcase name="Guardians setVpDocument" time="0.0000" classname="setVpDocument">
+    </testcase>
+    <testcase name="Guardians setSchema" time="0.0000" classname="setSchema">
+    </testcase>
+    <testcase name="Guardians importSchemes" time="0.0000" classname="importSchemes">
+    </testcase>
+    <testcase name="Guardians setToken" time="0.0000" classname="setToken">
+    </testcase>
+    <testcase name="Guardians setRootConfig" time="0.0000" classname="setRootConfig">
+    </testcase>
+    <testcase name="Guardians setApproveDocuments" time="0.0010" classname="setApproveDocuments">
+    </testcase>
+    <testcase name="Guardians getApproveDocuments" time="0.0000" classname="getApproveDocuments">
+    </testcase>
+    <testcase name="Guardians updateApproveDocument" time="0.0000" classname="updateApproveDocument">
+    </testcase>
+    <testcase name="Guardians exportSchemes" time="0.0000" classname="exportSchemes">
+    </testcase>
+  </testsuite>
+</testsuites>

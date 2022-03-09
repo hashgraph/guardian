@@ -1,9 +1,11 @@
+export { AuthEvents } from './type/auth-events';
 export { ApproveStatus } from './type/approve-status.type';
 export { DidDocumentStatus } from './type/did-status.type';
 export { DocumentSignature } from './type/document-signature.type';
 export { DocumentStatus } from './type/document-status.type';
 export { PolicyType } from './type/policy.type';
 export { RootState } from './type/root-state.type';
+export { PolicyEngineEvents } from './type/policy-engine-events';
 export { SchemaEntity } from './type/schema-entity.type';
 export { UserRole, PolicyRole } from './type/user-role.type';
 export { MessageAPI } from './type/message-api.type';
@@ -32,3 +34,4 @@ export { ModelHelper } from './helpers/model-helper'
 export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';
 export { IMessageResponse, MessageResponse, MessageError, Response } from './models/message-response';
+export { WalletEvents } from './type/wallet-events';

@@ -1,6 +1,5 @@
 const axios = require("axios");
-const assert = require("assert");
-const BASE_URL = 'http://localhost:3002/api/v1'
+const BASE_URL = 'http://localhost:3002'
 
 let tokens = [
 ];
@@ -79,6 +78,7 @@ function sleep(time) {
 }
 
 function GetURL(service, ...methods) {
+    console.log([BASE_URL, service, ...methods].join('/'));
     return [BASE_URL, service, ...methods].join('/');
 }
 

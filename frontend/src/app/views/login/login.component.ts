@@ -59,6 +59,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.auth.login(login, password).subscribe((result) => {
             console.log(result);
             this.auth.setAccessToken(result.accessToken);
+            this.auth.setUsername(login);
             this.authState.updateState(true);
             if (result.role == UserRole.ROOT_AUTHORITY) {
                 this.router.navigate(['/config']);

@@ -47,6 +47,18 @@ export class AuthService {
     this.accessTokenSubject.next(null);
   }
 
+  public setUsername(username: string) {
+    localStorage.setItem('username', username);
+  }
+
+  public removeUsername() {
+    localStorage.removeItem('username');
+  }
+
+  public getUsername(): string {
+    return localStorage.getItem('username') as string;
+  }
+
   public getAccessToken() {
     return localStorage.getItem('accessToken');
   }

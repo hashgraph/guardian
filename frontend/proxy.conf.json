@@ -1,25 +1,22 @@
 {
-  "/policy/*": {
-    "target": "http://localhost:3002",
+  "/api/v1/*": {
+    "target": "http://localhost:3002/",
     "secure": false,
     "logLevel": "debug",
-    "changeOrigin": true
+    "changeOrigin": true,
+    "ws": false,
+    "pathRewrite": {
+      "/api/v1": ""
+    }
   },
-  "/policy/block/*": {
-    "target": "http://localhost:3002",
+  "/ws/*": {
+    "target": "http://localhost:3002/",
     "secure": false,
+    "ws": true,
     "logLevel": "debug",
-    "changeOrigin": true
-  },
-  "/api/*": {
-    "target": "http://localhost:3002",
-    "secure": false,
-    "logLevel": "debug",
-    "changeOrigin": true
-  },
-  "policy/events": {
-    "target": "http://localhost:3002",
-    "secure": false,
-    "ws": true
+    "changeOrigin": true,
+    "pathRewrite": {
+      "/ws": ""
+    }
   }
 }

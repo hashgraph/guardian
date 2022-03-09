@@ -17,8 +17,6 @@ export default Promise.all([
 
     app.post('/mrv', async (req: Request, res: Response) => {
         try {
-            console.log(req.body);
-
             await channel.request('ui-service', 'mrv-data', req.body, 'json');
             res.sendStatus(200);
         } catch (e) {

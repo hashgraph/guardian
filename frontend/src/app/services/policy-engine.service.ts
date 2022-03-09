@@ -16,6 +16,8 @@ export class PolicyEngineService {
   private socket: any;
   private websocketSubject: Subject<unknown>;
   private wsSubjectConfig: WebSocketSubjectConfig<string>;
+  private socketSubscription: Subscription | null = null;
+  private heartbeatTimeout: number | null = null;
 
   private connectionStatus: boolean = false;
   private reconnectInterval: number = 5000;  /// pause between connections
@@ -29,6 +31,7 @@ export class PolicyEngineService {
     private toastr: ToastrService
   ) {
     this.websocketSubject = new Subject();
+    this.socketSubscription = null;
     this.wsSubjectConfig = {
       url: this.getUrl(null),
       deserializer: (e) => e.data,
@@ -57,13 +60,21 @@ export class PolicyEngineService {
   }
 
   private getUrl(accessToken: string | null) {
-    return `${this.getBaseUrl()}?token=${accessToken}`;
+    return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
   }
 
   private closeWebSocket() {
     if (this.socket) {
       this.socket.unsubscribe();
     }
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();;
+    }
+    if (this.heartbeatTimeout) {
+      clearTimeout(this.heartbeatTimeout);
+    }
+    this.socketSubscription = null;
+    this.heartbeatTimeout = null;
     this.socket = null;
     this.connectionStatus = false;
     this.reconnect();
@@ -81,13 +92,19 @@ export class PolicyEngineService {
   }
 
   private connect(): void {
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();
+    }
+    if (this.heartbeatTimeout) {
+      clearTimeout(this.heartbeatTimeout);
+    }
     const accessToken = this.auth.getAccessToken();
     if (!accessToken) {
       return;
     }
     this.wsSubjectConfig.url = this.getUrl(accessToken);
     this.socket = webSocket(this.wsSubjectConfig);
-    this.socket.subscribe(
+    this.socketSubscription =  this.socket.subscribe(
       (m: any) => {
         if (m === "pong") {
           return;
@@ -104,7 +121,7 @@ export class PolicyEngineService {
 
   private heartbeat() {
     this.socket.next('ping');
-    setTimeout(this.heartbeat.bind(this), PolicyEngineService.HEARTBEAT_DELAY);
+    this.heartbeatTimeout = setTimeout(this.heartbeat.bind(this), PolicyEngineService.HEARTBEAT_DELAY);
   }
 
   private reconnect(): void {

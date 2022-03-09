@@ -1,7 +1,5 @@
-import express from 'express';
 import FastMQ from 'fastmq'
-import { createConnection } from 'typeorm';
-import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
+import {createConnection, getMongoRepository} from 'typeorm';
 import { approveAPI } from '@api/approve.service';
 import { configAPI, readConfig } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -17,14 +15,15 @@ import { Schema } from '@entity/schema';
 import { Token } from '@entity/token';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { DIDDocumentLoader } from './document-loader/did-document-loader';
-import { ContextDocumentLoader } from './document-loader/context-loader';
-import { VCSchemaLoader } from './document-loader/vc-schema-loader';
-import { SubjectSchemaLoader } from './document-loader/subject-schema-loader';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
-
-const PORT = process.env.PORT || 3001;
+import {VcHelper} from '@helpers/vcHelper';
+import {BlockTreeGenerator} from '@policy-engine/block-tree-generator';
+import {Policy} from '@entity/policy';
+import {Guardians} from '@helpers/guardians';
+import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
+import { Wallet } from '@helpers/wallet';
+import { Users } from '@helpers/users';
 
 Promise.all([
     createConnection({
@@ -45,9 +44,29 @@ Promise.all([
     readConfig()
 ]).then(async values => {
     const [db, channel, fileConfig] = values;
-    const app = express();
 
     IPFS.setChannel(channel);
+    new Guardians().setChannel(channel);
+    new Wallet().setChannel(channel);
+    new Users().setChannel(channel);
+
+    const vc = new VcHelper();
+
+    const policyGenerator = new BlockTreeGenerator();
+    policyGenerator.setChannel(channel);
+    for (let policy of await getMongoRepository(Policy).find(
+        {where: {status: {$eq: 'PUBLISH'}}}
+    )) {
+        try {
+            await policyGenerator.generate(policy.id.toString());
+        } catch (e) {
+            console.error(e.message);
+        }
+    }
+    policyGenerator.registerListeners();
+    new Guardians().registerMRVReceiver(async (data) => {
+        await PolicyComponentsUtils.ReceiveExternalData(data);
+    });
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);
     const vcDocumentRepository = db.getMongoRepository(VcDocument);
@@ -56,23 +75,6 @@ Promise.all([
     const tokenRepository = db.getMongoRepository(Token);
     const configRepository = db.getMongoRepository(RootConfig);
     const schemaRepository = db.getMongoRepository(Schema);
-
-    // <-- Document Loader
-    const vcHelper = new VCHelper()
-    const defaultDocumentLoader = new DefaultDocumentLoader();
-    const schemaDocumentLoader = new ContextDocumentLoader(schemaRepository, 'https://ipfs.io/ipfs/');
-    const didDocumentLoader = new DIDDocumentLoader(didDocumentRepository);
-    const vcSchemaObjectLoader = new VCSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
-    const subjectSchemaObjectLoader = new SubjectSchemaLoader(schemaRepository, "https://ipfs.io/ipfs/");
-
-    vcHelper.addDocumentLoader(defaultDocumentLoader);
-    vcHelper.addDocumentLoader(schemaDocumentLoader);
-    vcHelper.addDocumentLoader(didDocumentLoader);
-    vcHelper.addSchemaLoader(vcSchemaObjectLoader);
-    vcHelper.addSchemaLoader(subjectSchemaObjectLoader);
-    vcHelper.buildDocumentLoader();
-    vcHelper.buildSchemaLoader();
-    // Document Loader -->
 
     await setDefaultSchema(schemaRepository);
     await configAPI(channel, fileConfig);
@@ -85,14 +87,11 @@ Promise.all([
         didDocumentRepository,
         vcDocumentRepository,
         vpDocumentRepository,
-        vcHelper
     );
     await demoAPI(channel);
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
 
-    app.listen(PORT, () => {
-        console.log('guardian service started', PORT);
-    });
+    console.log('guardian service started');
 });

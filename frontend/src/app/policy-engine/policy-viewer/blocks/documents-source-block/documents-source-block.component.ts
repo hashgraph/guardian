@@ -137,7 +137,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.policyEngineService.getGetIdByName(element.bindBlock, this.policyId).subscribe(({ id }: any) => {
                 this.policyEngineService.getBlockData(id, this.policyId).subscribe((data: any) => {
                     data.id = id;
-                    console.log(data);
                     resolve(data);
                 }, (e) => {
                     reject();
