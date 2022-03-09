@@ -8,19 +8,21 @@
   * [Prerequisites](getting-started/getting-started/prerequisites.md)
   * [Installation](getting-started/getting-started/installation.md)
 * [Demo Usage Guide](getting-started/demo-usage-guide.md)
+* [API Versioning & Depreciation Policy](getting-started/api-versioning-and-depreciation-policy.md)
+* [Demo Using APIs](getting-started/demo-using-apis.md)
 * [Contributing](getting-started/contributing/README.md)
   * [Contribute a New Policy](getting-started/contributing/contribute-a-new-policy.md)
-* [Reference Implementation](getting-started/reference-implementation.md)
 * [Built With](getting-started/built-with.md)
 * [Change Log](getting-started/change-log.md)
 * [Roadmap](getting-started/roadmap.md)
 * [License](getting-started/license.md)
 * [Contact](getting-started/contact.md)
 * [Security](getting-started/security.md)
+* [Reference Implementation](getting-started/reference-implementation.md)
 
 ## User Guide Glossary
 
-* [Guardian Glossary](<README (1).md>)
+* [Guardian Glossary](user-guide-glossary/guardian-glossary.md)
 * [Policy Glossary](user-guide-glossary/policy-glossary.md)
 
 ## Available Schema Types
@@ -29,18 +31,24 @@
 
 ## Available Policy Workflow Blocks
 
-* [Container Workflow Block](available-policy-workflow-blocks/container-workflow-block.md)
-* [Roles Workflow Block](available-policy-workflow-blocks/roles-workflow-block.md)
-* [Step Workflow Block](available-policy-workflow-blocks/step-workflow-block.md)
-* [Request Workflow Block](available-policy-workflow-blocks/request-workflow-block.md)
-* [Send Workflow Block](available-policy-workflow-blocks/send-workflow-block.md)
-* [Information Workflow Block](available-policy-workflow-blocks/information-workflow-block.md)
-* [Documents Workflow Block](available-policy-workflow-blocks/documents-workflow-block.md)
-* [Action Workflow Block](available-policy-workflow-blocks/action-workflow-block.md)
-* [External Data Workflow Block](available-policy-workflow-blocks/external-data-workflow-block.md)
-* [Token Mint Workflow Block](available-policy-workflow-blocks/token-mint-workflow-block.md)
-* [Token Wipe Workflow Block](available-policy-workflow-blocks/token-wipe-workflow-block.md)
-* [Aggregate Data Workflow Block](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
+* [Introduction](available-policy-workflow-blocks/introduction.md)
+* [InterfaceContainerBlock](available-policy-workflow-blocks/container-workflow-block.md)
+* [PolicyRolesBlock](available-policy-workflow-blocks/roles-workflow-block.md)
+* [InterfaceStepBlock](available-policy-workflow-blocks/step-workflow-block.md)
+* [requestVCDocumentBlock](available-policy-workflow-blocks/request-workflow-block.md)
+* [sendToGuardianBlock](available-policy-workflow-blocks/send-workflow-block.md)
+* [InformationBlock](available-policy-workflow-blocks/information-workflow-block.md)
+* [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/interfacedocumentssourceblock.md)
+* [DocumentsSourceAddOnBlock](available-policy-workflow-blocks/documentssourceaddonblock.md)
+* [filtersAddOnBlock](available-policy-workflow-blocks/filtersaddonblock.md)
+* [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
+* [externalDataBlock](available-policy-workflow-blocks/external-data-workflow-block.md)
+* [mintDocumentBlock](available-policy-workflow-blocks/token-mint-workflow-block.md)
+* [retirementDocumentBlock](available-policy-workflow-blocks/retirementdocumentblock.md)
+* [wipeDocumentBlock](available-policy-workflow-blocks/token-wipe-workflow-block.md)
+* [calculateContainerBlock & calculateMathAddOnBlock](available-policy-workflow-blocks/calculatecontainerblock-and-calculatemathaddonblock.md)
+* [aggregateDocumentBlock](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
+* [reportBlock & reportItemBlock](available-policy-workflow-blocks/reportblock-and-reportitemblock.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 
@@ -77,22 +85,33 @@
 * [Prerequesite Steps](policy-creation-using-the-guardian-apis/prerequesite-steps.md)
 * [Creation of a Policy](policy-creation-using-the-guardian-apis/creation-of-a-policy.md)
 * [Policy Listing](policy-creation-using-the-guardian-apis/policy-listing.md)
+* [Import a Policy from IPFS](policy-creation-using-the-guardian-apis/import-a-policy.md)
+* [Policy Preview from IPFS](policy-creation-using-the-guardian-apis/policy-preview-from-ipfs.md)
 * [Retrieves Policy Configuration](policy-creation-using-the-guardian-apis/retrieves-policy-configuration.md)
 * [Updates Policy Configuration](policy-creation-using-the-guardian-apis/updates-policy-configuration.md)
 * [Publish a Policy](policy-creation-using-the-guardian-apis/publish-a-policy.md)
-* [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
-* [Adding file to IPFS](policy-creation-using-the-guardian-apis/adding-file-to-ipfs.md)
-* [Import Policy from IPFS](policy-creation-using-the-guardian-apis/import-policy-from-ipfs.md)
+* [Policy Validation](policy-creation-using-the-guardian-apis/policy-validation.md)
+* [Retrieval of Data from Root Policy Block](policy-creation-using-the-guardian-apis/retrieval-of-data-from-root-policy-block.md)
+* [Request Block Data](policy-creation-using-the-guardian-apis/request-block-data.md)
+* [Sends Data to Specified Block](policy-creation-using-the-guardian-apis/sends-data-to-specified-block.md)
+* [Returns Block ID by tag](policy-creation-using-the-guardian-apis/returns-block-id-by-tag.md)
+* [Exporting Message ID](policy-creation-using-the-guardian-apis/exporting-message-id.md)
+* [Export to zip file](policy-creation-using-the-guardian-apis/export-to-zip-file.md)
+* [Import from zip file](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
 * [Creation of a schema](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
-* [Listing of schema](schema-creation-using-the-guardian-apis/listing-of-schema.md)
+* [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
 * [Publishing schema based on schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
 * [Updating schema](schema-creation-using-the-guardian-apis/updating-schema.md)
 * [Deleting a schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
-* [Import schema from IPFS](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
-* [Export a schema](schema-creation-using-the-guardian-apis/export-a-schema.md)
+* [Import schema from Zip](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
+* [Import schema from IPFS](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
+* [Schema Preview from IPFS](schema-creation-using-the-guardian-apis/schema-preview-from-ipfs.md)
+* [Schema Preview from Zip](schema-creation-using-the-guardian-apis/schema-preview-from-zip.md)
+* [Export message IDs of Schema](schema-creation-using-the-guardian-apis/export-a-schema.md)
+* [Export Files from Schema](schema-creation-using-the-guardian-apis/export-a-schema-1.md)
 
 ## ACCOUNT APIS
 
@@ -110,7 +129,7 @@
 ## TOKEN APIS
 
 * [Token Listing](token-apis/token-listing.md)
-* [Creation of new token](token-apis/creation-of-new-token.md)
+* [Creation of Token](token-apis/token-listing-1.md)
 * [User Info for selected token](token-apis/user-info-for-selected-token.md)
 * [Associates the user with token](token-apis/associates-the-user-with-token.md)
 * [Disassociates the user with token](token-apis/disassociates-the-user-with-token.md)

@@ -1,6 +1,6 @@
-# Step 1
+# Policy Workflow Step 1
 
-Navigate to the top row of the interface, and click on the “Step” button which creates the 1st policy action – called block2 – in the policy workflow, we just created.
+Navigate to the top row of the interface, and click on the “Step” button which creates the 1st policy action – called Block2 – in the policy workflow, we just created.
 
 &#x20;You can edit the policy action name and the UI will automatically adjust the graphical representation of the policy action on the left side to “initi\_installer\_steps”.
 
@@ -12,7 +12,7 @@ We then select “Default Active” as true since this policy action must always
 
 Now we have a Policy Action defined, however, without any specific actions
 
-![](<../.gitbook/assets/image (1).png>)
+![](<../.gitbook/assets/image (4).png>)
 
 **Programmatically this workflow step looks like this:**
 
