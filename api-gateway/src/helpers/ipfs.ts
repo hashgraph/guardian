@@ -31,12 +31,13 @@ export class IPFS {
      * @returns {{ cid: string, url: string }} - hash
      */
     public async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {
-        const res = (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;;
+        const res = (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
+        console.log(res);
         if (!res) {
-            throw new Error('Invalid response');
+            throw new Error('Invalid IPFS response');
         }
         if (res.error) {
-            throw new Error(res.error);
+            throw new Error(`IPFS: ${res.error}`);
         }
         return res.body;
     }

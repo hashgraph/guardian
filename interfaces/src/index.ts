@@ -23,12 +23,13 @@ export { IVPDocument } from './interface/vp-document.interface';
 export { IVP } from './interface/vp.interface';
 export { IUser, ISession } from './interface/user.interface';
 export { IWalletAccount } from './interface/wallet-account.interface';
-export { IChainItem } from './interface/chain-item.interface';
+export { IChainItem, IReport, IReportItem, IPolicyReport, ITokenReport, IVCReport, IVPReport } from './interface/chain-item.interface';
 export { Token } from './models/token';
 export { Schema } from './models/schema';
 export { SchemaStatus } from './type/schema-status.type';
 export { ISchemaDocument } from './interface/schema-document.interface';
 export { SchemaField } from './interface/schema-field.interface';
+export { SchemaCondition } from './interface/schema-condition.interface';
 export { ModelHelper } from './helpers/model-helper'
 export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';

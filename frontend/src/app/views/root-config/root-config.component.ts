@@ -124,10 +124,12 @@ export class RootConfigComponent implements OnInit {
     onHederaSubmit() {
         if (this.hederaForm.valid) {
             const value = this.hederaForm.value;
+            const vcDocument = value.vc;
+            this.prepareDataFrom(vcDocument);
             const data: any = {
                 hederaAccountId: value.hederaAccountId,
                 hederaAccountKey: value.hederaAccountKey,
-                vcDocument: value.vc,
+                vcDocument: vcDocument,
                 addressBook: {
                     appnetName: value.appnetName,
                     didServerUrl: value.didServerUrl,
@@ -220,5 +222,36 @@ export class RootConfigComponent implements OnInit {
         this.isFailed = false;
         this.isNewAccount = true;
         clearInterval(this.progressInterval);
+    }
+
+    prepareDataFrom(data: any) {
+        if(Array.isArray(data)) {
+            for (let j = 0; j < data.length; j++) {
+                let dataArrayElem = data[j];
+                if(dataArrayElem === "" || dataArrayElem === null) {
+                    data.splice(j, 1);
+                    j--;
+                }
+                if(Object.getPrototypeOf(dataArrayElem) === Object.prototype
+                    || Array.isArray(dataArrayElem)) {
+                    this.prepareDataFrom(dataArrayElem);
+                }
+            }
+        }
+
+        if (Object.getPrototypeOf(data) === Object.prototype)
+        {
+            let dataKeys = Object.keys(data);
+            for (let i = 0;i< dataKeys.length; i++) {
+                const dataElem = data[dataKeys[i]];
+                if(dataElem === "" || dataElem === null) {
+                    delete data[dataKeys[i]];
+                }
+                if(Object.getPrototypeOf(dataElem) === Object.prototype
+                    || Array.isArray(dataElem)) {
+                    this.prepareDataFrom(dataElem);
+                }
+            }
+        }
     }
 }

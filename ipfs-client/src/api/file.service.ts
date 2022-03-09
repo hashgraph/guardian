@@ -36,10 +36,9 @@ export const fileAPI = async function (
             res.send(response, 'json');
         }
         catch (e) {
-            console.log(e);
             const response = {
                 body: null,
-                error: e
+                error: e.message
             }
             res.send(response, 'json');
         }

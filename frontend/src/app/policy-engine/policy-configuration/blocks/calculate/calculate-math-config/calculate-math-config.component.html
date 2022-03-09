@@ -23,7 +23,7 @@
             <td class="propRowCell cellName">Equation {{i}}</td>
             <td class="propRowCell">
                 {{equation.variable}}
-                <span *ngIf="equation.role"> = {{equation.role}}</span>
+                <span *ngIf="equation.formula"> = {{equation.formula}}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveEquation(i)">
                     <mat-icon>delete</mat-icon>
                 </span>

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -18,7 +18,8 @@ export class RequestDocumentBlockComponent implements OnInit {
     @Input('static') static!: any;
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
-    isActive = false;
+    isExist = false;
+    disabled = false;
     loading: boolean = true;
     socket: any;
 
@@ -31,15 +32,20 @@ export class RequestDocumentBlockComponent implements OnInit {
     dialogClass: any;
     dialogRef: any;
     ref: any;
-
     title: any;
     description: any;
+    presetDocument: any;
+    rowDocument: any;
+    needPreset: any;
+    presetFields: any;
+    buttonClass: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         this.dataForm = fb.group({});
     }
@@ -49,6 +55,9 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
         }
         this.loadData();
+        (window as any).__requestLast = this;
+        (window as any).__request = (window as any).__request || {};
+        (window as any).__request[this.id] = this;
     }
 
     ngOnDestroy(): void {
@@ -62,7 +71,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.loadData();
         }
     }
-    
+
     loadData() {
         this.loading = true;
         if (this.static) {
@@ -98,11 +107,34 @@ export class RequestDocumentBlockComponent implements OnInit {
         return null;
     }
 
+    getJson(data: any, presetFields: any[]) {
+        try {
+            if (data) {
+                const json: any = {};
+                let cs: any = {};
+                if (Array.isArray(data.document.credentialSubject)) {
+                    cs = data.document.credentialSubject[0];
+                } else {
+                    cs = data.document.credentialSubject;
+                }
+                for (let i = 0; i < presetFields.length; i++) {
+                    const f = presetFields[i];
+                    json[f.name] = cs[f.value];
+                }
+                return json;
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
     setData(data: any) {
         if (data) {
             const uiMetaData = data.uiMetaData;
             const row = data.data;
             const schema = data.schema;
+            const active = data.active;
             this.ref = this.getId(row);
             this.type = uiMetaData.type;
             this.schema = schema;
@@ -115,6 +147,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             }
             if (this.type == 'dialog') {
                 this.content = uiMetaData.content;
+                this.buttonClass = uiMetaData.buttonClass;
                 this.dialogContent = uiMetaData.dialogContent;
                 this.dialogClass = uiMetaData.dialogClass;
                 this.description = uiMetaData.description;
@@ -123,18 +156,27 @@ export class RequestDocumentBlockComponent implements OnInit {
                 this.title = uiMetaData.title;
                 this.description = uiMetaData.description;
             }
-            this.isActive = true;
+            this.disabled = active === false;
+            this.isExist = true;
+            this.needPreset = !!data.presetSchema;
+            this.presetFields = data.presetFields || [];
+            if (this.needPreset && row) {
+                this.rowDocument = this.getJson(row, this.presetFields);
+                this.preset(this.rowDocument);
+            }
         } else {
             this.ref = null;
             this.schema = null;
             this.hideFields = null;
-            this.isActive = false;
+            this.disabled = false;
+            this.isExist = false;
         }
     }
 
     onSubmit() {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
+            this.prepareDataFrom(data);
             this.policyEngineService.setBlockData(this.id, this.policyId, {
                 document: data,
                 ref: this.ref
@@ -151,6 +193,41 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
+    prepareDataFrom(data: any) {
+        if (Array.isArray(data)) {
+            for (let j = 0; j < data.length; j++) {
+                let dataArrayElem = data[j];
+                if (dataArrayElem === "" || dataArrayElem === null) {
+                    data.splice(j, 1);
+                    j--;
+                }
+                if (Object.getPrototypeOf(dataArrayElem) === Object.prototype
+                    || Array.isArray(dataArrayElem)) {
+                    this.prepareDataFrom(dataArrayElem);
+                }
+            }
+        }
+
+        if (Object.getPrototypeOf(data) === Object.prototype) {
+            let dataKeys = Object.keys(data);
+            for (let i = 0; i < dataKeys.length; i++) {
+                const dataElem = data[dataKeys[i]];
+                if (dataElem === "" || dataElem === null) {
+                    delete data[dataKeys[i]];
+                }
+                if (Object.getPrototypeOf(dataElem) === Object.prototype
+                    || Array.isArray(dataElem)) {
+                    this.prepareDataFrom(dataElem);
+                }
+            }
+        }
+    }
+
+    preset(document: any) {
+        this.presetDocument = document;
+        this.changeDetectorRef.detectChanges();
+    }
+
     onCancel(): void {
         if (this.dialogRef) {
             this.dialogRef.close();
@@ -158,9 +235,13 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
-
     onDialog() {
         this.dataForm.reset();
+        if (this.needPreset && this.rowDocument) {
+            this.preset(this.rowDocument);
+        } else {
+            this.presetDocument = null;
+        }
         this.dialogRef = this.dialog.open(this.dialogTemplate, {
             width: '850px',
             data: this

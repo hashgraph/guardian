@@ -178,7 +178,7 @@ profileAPI.get('/:username/', async (req: Request, res: Response) => {
         res.json(result);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ code: 500, message: error });
+        res.status(500).json({ code: 500, message: error.message });
     }
 });
 
@@ -220,7 +220,7 @@ profileAPI.put('/:username/', async (req: Request, res: Response) => {
         res.status(200).json(null);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ code: 500, message: error });
+        res.status(500).json({ code: 500, message: error.message });
     }
 });
 

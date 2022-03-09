@@ -1,5 +1,5 @@
-<div class="content-{{type}}" [hidden]="!isActive">
-    <div *ngIf="loading" class="loading">
+<div class="content-{{type}}" [hidden]="!isExist">
+    <div *ngIf="loading || disabled" class="loading">
         <mat-spinner></mat-spinner>
     </div>
     <ng-container *ngIf="type=='page'">
@@ -7,7 +7,7 @@
             <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
             <div *ngIf="description" class="description">{{description}}</div>
             <div class="schema-form">
-                <app-schema-form [formGroup]="dataForm" [schema]="schema" [private-fields]="hideFields">
+                <app-schema-form [formGroup]="dataForm" [schema]="schema" [private-fields]="hideFields" [preset]="presetDocument">
                 </app-schema-form>
             </div>
             <div class="page-btns">
@@ -16,7 +16,7 @@
         </form>
     </ng-container>
     <ng-container *ngIf="type=='dialog'">
-        <button mat-raised-button color="primary" (click)="onDialog()">{{content}}</button>
+        <button mat-raised-button color="primary" class="btn-block-{{buttonClass}}" (click)="onDialog()">{{content}}</button>
     </ng-container>
 </div>
 
@@ -30,7 +30,7 @@
             <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit()">
                 <div class="form-{{data.type}}">
                     <app-schema-form [formGroup]="data.dataForm" [schema]="data.schema"
-                        [private-fields]="data.hideFields">
+                        [private-fields]="data.hideFields" [preset]="presetDocument">
                     </app-schema-form>
                 </div>
                 <div mat-dialog-actions>

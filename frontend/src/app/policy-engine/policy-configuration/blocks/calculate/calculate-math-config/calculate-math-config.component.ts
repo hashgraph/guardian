@@ -53,7 +53,7 @@ export class CalculateMathConfigComponent implements OnInit {
     addEquation() {
         this.block.equations.push({
             variable: '',
-            role: ''
+            formula: ''
         })
     }
 

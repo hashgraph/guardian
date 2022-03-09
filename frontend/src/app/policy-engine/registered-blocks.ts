@@ -22,6 +22,8 @@ import { StepBlockComponent } from "./policy-viewer/blocks/step-block/step-block
 import { CalculateConfigComponent } from './policy-configuration/blocks/calculate/calculate-config/calculate-config.component';
 import { CalculateMathConfigComponent } from './policy-configuration/blocks/calculate/calculate-math-config/calculate-math-config.component';
 import { BlockNode } from "./helpers/tree-data-source/tree-data-source";
+import { ReportBlockComponent } from "./policy-viewer/blocks/report-block/report-block.component";
+import { ReportItemConfigComponent } from "./policy-configuration/blocks/report/report-item-config/report-item-config.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -40,13 +42,16 @@ export enum BlockType {
     DocumentsSourceAddon = 'documentsSourceAddon',
     Calculate = 'calculateContainerBlock',
     CalculateMathAddon = 'calculateMathAddon',
+    Report = 'reportBlock',
+    ReportItem = 'reportItemBlock'
 }
 
 export enum BlockGroup {
     Main = 'Main',
     Documents = 'Documents',
     Tokens = 'Tokens',
-    Calculate = 'Calculate'
+    Calculate = 'Calculate',
+    Report = 'Report'
 }
 
 @Injectable()
@@ -84,6 +89,8 @@ export class RegisteredBlocks {
         this.register(BlockType.DocumentsSourceAddon, 'source', 'Source', `Add 'DocumentsSourceAddon' Block`);
         this.register(BlockType.Calculate, 'bar_chart', 'Calculate', `Add 'Calculate' Addon`);
         this.register(BlockType.CalculateMathAddon, 'calculate', 'Math Addon', `Add 'Math' Addon`);
+        this.register(BlockType.Report, 'addchart', 'Report', `Add 'Report' Block`);
+        this.register(BlockType.ReportItem, 'list_alt', 'Report Item', `Add 'Report Item' Block`);
 
         this.registerGroup(BlockGroup.Main, BlockType.Container);
         this.registerGroup(BlockGroup.Main, BlockType.Step);
@@ -101,6 +108,8 @@ export class RegisteredBlocks {
         this.registerGroup(BlockGroup.Tokens, BlockType.Wipe);
         this.registerGroup(BlockGroup.Calculate, BlockType.Calculate);
         this.registerGroup(BlockGroup.Calculate, BlockType.CalculateMathAddon);
+        this.registerGroup(BlockGroup.Report, BlockType.Report);
+        this.registerGroup(BlockGroup.Report, BlockType.ReportItem);
 
         this.registerFactory(BlockType.Container, ContainerBlockComponent);
         this.registerFactory(BlockType.DocumentsViewer, DocumentsSourceBlockComponent);
@@ -110,6 +119,7 @@ export class RegisteredBlocks {
         this.registerFactory(BlockType.Information, InformationBlockComponent);
         this.registerFactory(BlockType.PolicyRoles, RolesBlockComponent);
         this.registerFactory(BlockType.FiltersAddon, FiltersAddonBlockComponent);
+        this.registerFactory(BlockType.Report, ReportBlockComponent);
 
         this.registerProperties(BlockType.DocumentsViewer, DocumentSourceComponent);
         this.registerProperties(BlockType.Action, ActionConfigComponent);
@@ -125,7 +135,7 @@ export class RegisteredBlocks {
         this.registerProperties(BlockType.PolicyRoles, RolesConfigComponent);
         this.registerProperties(BlockType.FiltersAddon, FiltersAddonConfigComponent);
         this.registerProperties(BlockType.DocumentsSourceAddon, SourceAddonConfigComponent);
-
+        this.registerProperties(BlockType.ReportItem, ReportItemConfigComponent);
         this.registerProperties(BlockType.Calculate, CalculateConfigComponent);
         this.registerProperties(BlockType.CalculateMathAddon, CalculateMathConfigComponent);
     }

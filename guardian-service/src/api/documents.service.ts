@@ -97,39 +97,44 @@ export const documentsAPI = async function (
      * @returns {IVCDocument[]} - VC Documents
      */
     channel.response(MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
-        if (msg.payload) {
-            const reqObj: any = { where: {} };
-            const { owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
-            if (owner) {
-                reqObj.where['owner'] = { $eq: owner }
+        try{
+            if (msg.payload) {
+                const reqObj: any = { where: {} };
+                const { owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
+                if (owner) {
+                    reqObj.where['owner'] = { $eq: owner }
+                }
+                if (assign) {
+                    reqObj.where['assign'] = { $eq: assign }
+                }
+                if (issuer) {
+                    reqObj.where['document.issuer'] = { $eq: issuer }
+                }
+                if (id) {
+                    reqObj.where['document.id'] = { $eq: id }
+                }
+                if (hash) {
+                    reqObj.where['hash'] = { $eq: hash }
+                }
+                if (policyId) {
+                    reqObj.where['policyId'] = { $eq: policyId }
+                }
+                if (schema) {
+                    reqObj.where['schema'] = { $eq: schema }
+                }
+                if (typeof reqObj.where !== 'object') {
+                    reqObj.where = {};
+                }
+                Object.assign(reqObj.where, otherArgs);
+                const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
+                res.send(new MessageResponse(vcDocuments));
+            } else {
+                const vcDocuments: IVCDocument[] = await vcDocumentRepository.find();
+                res.send(new MessageResponse(vcDocuments));
             }
-            if (assign) {
-                reqObj.where['assign'] = { $eq: assign }
-            }
-            if (issuer) {
-                reqObj.where['document.issuer'] = { $eq: issuer }
-            }
-            if (id) {
-                reqObj.where['document.id'] = { $eq: id }
-            }
-            if (hash) {
-                reqObj.where['hash'] = { $in: hash }
-            }
-            if (policyId) {
-                reqObj.where['policyId'] = { $eq: policyId }
-            }
-            if (schema) {
-                reqObj.where['schema'] = { $eq: schema }
-            }
-            if (typeof reqObj.where !== 'object') {
-                reqObj.where = {};
-            }
-            Object.assign(reqObj.where, otherArgs);
-            const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
-            res.send(new MessageResponse(vcDocuments));
-        } else {
-            const vcDocuments: IVCDocument[] = await vcDocumentRepository.find();
-            res.send(new MessageResponse(vcDocuments));
+        }
+        catch (e){
+            res.send(new MessageError(e.message));
         }
     });
 

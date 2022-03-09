@@ -14,6 +14,9 @@ import { Utils } from './utils';
 import { HcsVpDocument } from '../vc/vp-document';
 import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader';
 
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
+
 interface ISubject {
     id?: string;
     type?: string;
@@ -273,12 +276,15 @@ export class VCHelper {
             throw new Error('Schema not found');
         }
 
-        const res = await check({
-            input: vc,
-            schema: schema,
-            documentLoader: this.loader as any,
-        });
-        return res;
+        const ajv = new Ajv();
+        addFormats(ajv);
+
+        this.prepareSchema(schema);
+
+        const validate = ajv.compile(schema);
+        const valid = validate(vc);
+
+        return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
     }
 
     /**
@@ -299,11 +305,37 @@ export class VCHelper {
             throw new Error('Schema not found');
         }
 
-        const res = await check({
-            input: subject,
-            schema: schema,
-            documentLoader: this.loader as any,
-        });
-        return res;
+        const ajv = new Ajv();
+        addFormats(ajv);
+
+        this.prepareSchema(schema);
+
+        const validate = ajv.compile(schema);
+        const valid = validate(subject);
+        
+        return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+    }
+
+
+    /**
+     * Delete system fields from schema defs
+     * 
+     * @param schema Schema
+     */
+    private prepareSchema(schema: any) {
+        const defsObj = schema.$defs;
+        if (!defsObj) {
+            return;
+        }
+
+        const defsKeys = Object.keys(defsObj);
+        for (let i = 0; i < defsKeys.length; i++) {
+            const nestedSchema = defsObj[defsKeys[i]];
+            const required = nestedSchema.required;
+            if (!required || required.length === 0) {
+                continue;
+            }
+            nestedSchema.required = required.filter(field => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
+        }
     }
 }

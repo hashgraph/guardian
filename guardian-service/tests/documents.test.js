@@ -74,7 +74,7 @@ describe('Documents service', function () {
                     '$eq': 'issuer'
                 },
                 'hash': {
-                    '$in': 'hash'
+                    '$eq': 'hash'
                 },
                 'owner': {
                     '$eq': 'owner'

@@ -1,6 +1,7 @@
 import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { PageEvent } from '@angular/material/paginator';
 import { Schema, SchemaField } from 'interfaces';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 
@@ -25,7 +26,8 @@ export class SchemaFormViewComponent implements OnInit {
   @Input('values') values: any;
 
   fields: any[] | undefined = [];
-
+  pageSize: number = 20;
+  
   constructor() { }
 
 
@@ -64,7 +66,8 @@ export class SchemaFormViewComponent implements OnInit {
         hide: false,
         type: field.type,
         format: field.format,
-        pattern: field.pattern
+        pattern: field.pattern,
+        isInvalidType: false
       }
       if (!field.isArray && !field.isRef) {
         let value = "";
@@ -81,9 +84,15 @@ export class SchemaFormViewComponent implements OnInit {
 
       if (field.isArray && !field.isRef) {
         let value = [];
-
         if (this.values && this.values[item.name]) {
-          value = this.values[item.name];
+          const fieldValue = this.values[item.name];
+          if (Array.isArray(fieldValue)) {
+            value = fieldValue;
+          }
+          else {
+            value = [fieldValue]
+            item.isInvalidType = true;
+          }
         }
 
         item.list = value;
@@ -92,7 +101,6 @@ export class SchemaFormViewComponent implements OnInit {
       if (field.isArray && field.isRef) {
         item.fields = field.fields;
         let value = [];
-
         if (this.values && this.values[item.name]) {
           value = this.values[item.name];
         }
@@ -109,5 +117,22 @@ export class SchemaFormViewComponent implements OnInit {
     return matches
       ? matches[0]
       : "";
+  }
+
+  getItemsPage(item: any, pageEvent?: PageEvent) {
+    const result = [];
+    if (!pageEvent){
+      for (let i = 0; i < this.pageSize && i < item.list.length; i++) {
+        result.push(item.list[i]);
+      }
+      return result;
+    }
+
+    const startIndex = pageEvent.pageIndex*pageEvent.pageSize;
+    const endIndex = startIndex + pageEvent.pageSize;
+    for (let i = startIndex; i < endIndex && i < item.list.length; i++) {
+      result.push(item.list[i]);
+    }
+    return result;
   }
 }

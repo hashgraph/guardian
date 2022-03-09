@@ -270,6 +270,29 @@ export const schemaAPI = async function (
             const schemes = await schemaRepository.find({
                 where: { iri: { $in: msg.payload.iris } }
             });
+            if (msg.payload.includes) {
+                const defs: any[] = schemes.map(s => JSON.parse(s.document).$defs);
+                const map: any = {};
+                for (let i = 0; i < schemes.length; i++) {
+                    const id = schemes[i].iri;
+                    map[id] = id;
+                }
+                for (let i = 0; i < defs.length; i++) {
+                    if (defs[i]) {
+                        const ids = Object.keys(defs[i]);
+                        for (let j = 0; j < ids.length; j++) {
+                            const id = ids[j];
+                            map[id] = id;
+                        }
+                    }
+                }
+                const allSchemesIds = Object.keys(map);
+                const allSchemes = await schemaRepository.find({
+                    where: { iri: { $in: allSchemesIds } }
+                });
+                res.send(new MessageResponse(allSchemes));
+                return;
+            }
             res.send(new MessageResponse(schemes));
             return;
         }
@@ -328,7 +351,7 @@ export const schemaAPI = async function (
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
                     result[uuid] = newUUID;
-                }  
+                }
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
             }
@@ -342,11 +365,11 @@ export const schemaAPI = async function (
                     const uuid = uuids[j];
                     file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
                     file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
-                }    
+                }
                 file.messageId = null;
                 file.creator = owner;
                 file.owner = owner;
-                file.status = SchemaStatus.DRAFT; 
+                file.status = SchemaStatus.DRAFT;
                 SchemaHelper.setVersion(file, '', '');
                 const schema = schemaRepository.create(file);
                 await schemaRepository.save(schema);
@@ -397,7 +420,7 @@ export const schemaAPI = async function (
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
                     result[uuid] = newUUID;
-                }    
+                }
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
             }

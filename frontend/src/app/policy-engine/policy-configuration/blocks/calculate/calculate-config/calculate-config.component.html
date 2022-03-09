@@ -27,7 +27,9 @@
     <ng-container *ngFor="let field of block.inputFields; let i=index">
         <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName">{{field.title}}</td>
+            <td class="propRowCell cellName">
+                <span class="lvl" [attr.lvl]="field.lvl">{{field.title}}</span>
+            </td>
             <td class="propRowCell">
                 <input [(ngModel)]="field.value" [readonly]="readonly">
             </td>
@@ -62,7 +64,9 @@
     <ng-container *ngFor="let field of block.outputFields; let i=index">
         <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName">{{field.title}}</td>
+            <td class="propRowCell cellName">
+                <span class="lvl" [attr.lvl]="field.lvl">{{field.title}}</span>
+            </td>
             <td class="propRowCell">
                 <input [(ngModel)]="field.value" [readonly]="readonly">
             </td>

@@ -135,7 +135,7 @@ export class PolicyComponentsUtils {
      */
     public static IfHasPermission(uuid: string, role: PolicyRole, user: IAuthUser | null): boolean {
         const block = PolicyComponentsUtils.PolicyBlockMapObject.get(uuid);
-        return block.isActive(user) && block.hasPermission(role, user);
+        return block.hasPermission(role, user);
     }
 
     /**

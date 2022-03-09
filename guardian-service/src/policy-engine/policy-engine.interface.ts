@@ -79,7 +79,7 @@ export interface IPolicySourceBlock extends IPolicyBlock {
 }
 
 export interface IPolicyAddonBlock extends IPolicyBlock {
-    filters: { [key: string]: string };
+    filters: { [key: string]: { [key: string]: string } };
 
     setData(user: IAuthUser | null, data: any): Promise<any>;
 
@@ -89,9 +89,9 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
 
     getFromSource(user: IAuthUser): any;
 
-    getFilters(): { [key: string]: string };
+    getFilters(user: IAuthUser): { [key: string]: string };
 
-    setFilters(filters: { [key: string]: string }): void
+    setFilters(filters: { [key: string]: string }, user: IAuthUser): void
 }
 
 
@@ -107,6 +107,16 @@ export interface IPolicyCalculateAddon extends IPolicyBlock {
     evaluate(formula: string, scope: any): any;
 
     parse(formula: string): boolean;
+}
+
+export interface IPolicyReportBlock extends IPolicyBlock {
+    getItems(): IPolicyReportItemBlock[];
+}
+
+export interface IPolicyReportItemBlock extends IPolicyBlock {
+    run(fieldsResult: any[], mapVariables: any): Promise<any>;
+
+    getItems(): IPolicyReportItemBlock[];
 }
 
 export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock | IPolicyCalculateBlock | IPolicyCalculateAddon;

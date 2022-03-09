@@ -73,7 +73,8 @@ export class RetirementBlock {
                 document: vc.toJsonTree(),
                 type: DataTypes.RETIREMENT as any,
                 policyId:  ref.policyId,
-                tag: ref.tag
+                tag: ref.tag,
+                schema: `#${vc.getCredentialSubject()[0].getType()}`
             })
             return true;
         } catch (error) {

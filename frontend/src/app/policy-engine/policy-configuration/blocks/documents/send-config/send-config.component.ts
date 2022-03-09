@@ -24,6 +24,8 @@ export class SendConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
+        optionGroup: false,
+        options: {}
     };
 
     block!: BlockNode;
@@ -42,10 +44,22 @@ export class SendConfigComponent implements OnInit {
 
     load(block: BlockNode) {
         this.block = block;
-        this.block.uiMetaData = this.block.uiMetaData || {}
+        this.block.uiMetaData = this.block.uiMetaData || {};
+        this.block.options = this.block.options || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    addOption() {
+        this.block.options.push({
+            name: '',
+            value: ''
+        })
+    }
+
+    removeOption(i:number) {
+        this.block.options.splice(i, 1);
     }
 }

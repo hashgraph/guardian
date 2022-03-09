@@ -22,11 +22,11 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
                 return filters;
             }
 
-            protected getFilters(): {[key: string]: string} {
+            protected getFilters(user): {[key: string]: string} {
                 const filters = {};
 
                 for (let addon of this.getAddons()) {
-                    Object.assign(filters, (addon as any).getFilters());
+                    Object.assign(filters, (addon as any).getFilters(user));
                 }
 
                 return filters;

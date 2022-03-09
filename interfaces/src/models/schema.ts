@@ -5,6 +5,7 @@ import { SchemaEntity } from '../type/schema-entity.type';
 import { SchemaStatus } from '../type/schema-status.type';
 import { SchemaHelper } from '../helpers/schema-helper';
 import { SchemaField } from '../interface/schema-field.interface';
+import { SchemaCondition } from '../interface/schema-condition.interface';
 
 export class Schema implements ISchema {
     public id: string;
@@ -29,6 +30,7 @@ export class Schema implements ISchema {
     public documentObject: ISchemaDocument;
     public contextObject: any;
     public fields: SchemaField[];
+    public conditions: SchemaCondition[];
     public previousVersion: string;
 
     private userDID: string;
@@ -94,6 +96,7 @@ export class Schema implements ISchema {
         const { previousVersion } = SchemaHelper.parseComment(this.documentObject.$comment);
         this.previousVersion = previousVersion;
         this.fields = SchemaHelper.parseFields(this.documentObject, this.contextURL);
+        this.conditions = SchemaHelper.parseConditions(this.documentObject, this.contextURL, this.fields);
     }
 
     private parseContext(): void {
@@ -148,11 +151,12 @@ export class Schema implements ISchema {
         clone.type = this.type;
         clone.previousVersion = this.previousVersion;
         clone.fields = this.fields;
+        clone.conditions = this.conditions;
         clone.userDID = this.userDID;
         return clone;
     }
 
-    public update(fields?: SchemaField[]): void {
+    public update(fields?: SchemaField[], conditions?: SchemaCondition[]): void {
         if (fields) {
             this.fields = fields;
         }
@@ -161,7 +165,7 @@ export class Schema implements ISchema {
             return null;
         }
 
-        const document = SchemaHelper.buildDocument(this, fields);
+        const document = SchemaHelper.buildDocument(this, fields, conditions);
 
         this.documentObject = document as any;
         this.document = JSON.stringify(document);

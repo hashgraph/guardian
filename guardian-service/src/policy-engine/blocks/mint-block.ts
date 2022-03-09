@@ -44,6 +44,15 @@ export class MintBlock {
     private tokenId: any;
     private rule: any;
 
+    private split(array: any[], chunk: number) {
+        const res = [];
+        let i: number, j: number;
+        for (i = 0, j = array.length; i < j; i += chunk) {
+            res.push(array.slice(i, i + chunk));
+        }
+        return res;
+    }
+
     private getScope(item: HcsVcDocument<VcSubject>) {
         return item.getCredentialSubject()[0].toJsonTree();
     }
@@ -59,10 +68,12 @@ export class MintBlock {
         return amount;
     }
 
-    private tokenAmount(token, amount: number) {
+    private tokenAmount(token, amount: number): any[] {
         const decimals = parseFloat(token.decimals) || 0;
         const _decimals = Math.pow(10, decimals);
-        return Math.round(amount * _decimals);
+        const tokenValue = Math.round(amount * _decimals);
+        const tokenAmount = (tokenValue / _decimals).toFixed(decimals);
+        return [tokenValue, tokenAmount];
     }
 
     private async saveVC(vc: HcsVcDocument<VcSubject>, owner: string, ref: any): Promise<boolean> {
@@ -73,7 +84,8 @@ export class MintBlock {
                 document: vc.toJsonTree(),
                 type: DataTypes.MINT as any,
                 policyId: ref.policyId,
-                tag: ref.tag
+                tag: ref.tag,
+                schema: `#${vc.getCredentialSubject()[0].getType()}`
             })
             return true;
         } catch (error) {
@@ -150,23 +162,58 @@ export class MintBlock {
         const adminKey = token.adminKey;
         const uuid = HederaUtils.randomUUID();
         const amount = this.aggregate(rule, document);
-        const tokenValue = this.tokenAmount(token, amount);
+        const [tokenValue, tokenAmount] = this.tokenAmount(token, amount);
 
         const hederaHelper = HederaHelper.setOperator(
             root.hederaAccountId, root.hederaAccountKey
         );
 
-        let mintVC: HcsVcDocument<VcSubject>;
+        let vcDate: any;
+        console.log('Mint: Start');
         if (token.tokenType == 'non-fungible') {
-            const data: any = HederaUtils.decode(tokenValue.toString());
-            const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], uuid);
-            await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials, uuid);
-            mintVC = await this.createMintVC(root, token, serials);
+            const metaData: any = HederaUtils.decode(uuid);
+
+            const data = new Array(Math.floor(tokenValue));
+            data.fill(metaData);
+
+            const serials = [];
+            const dataChunk = this.split(data, 10);
+            for (let i = 0; i < dataChunk.length; i++) {
+                const element = dataChunk[i];
+                try {
+                    const newSerials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, element, uuid);
+                    for (let j = 0; j < newSerials.length; j++) {
+                        serials.push(newSerials[j])
+                    }
+                } catch (error) {
+                    console.log(`Mint: Mint Error (${error.message})`);
+                }
+                if (i % 100 == 0) {
+                    console.log(`Mint: Minting (${i}/${dataChunk.length})`);
+                }
+            }
+            console.log(`Mint: Minted (${serials.length})`);
+            const serialsChunk = this.split(serials, 10);
+            for (let i = 0; i < serialsChunk.length; i++) {
+                const element = serialsChunk[i];
+                try {
+                    await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, element, uuid);
+                } catch (error) {
+                    console.log(`Mint: Transfer Error (${error.message})`);
+                }
+                if (i % 100 == 0) {
+                    console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
+                }
+            }
+            vcDate = serials;
         } else {
             await hederaHelper.SDK.mint(tokenId, supplyKey, tokenValue, uuid);
             await hederaHelper.SDK.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
-            mintVC = await this.createMintVC(root, token, tokenValue);
+            vcDate = tokenAmount;
         }
+        console.log('Mint: End');
+
+        const mintVC = await this.createMintVC(root, token, vcDate);
 
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
@@ -219,7 +266,7 @@ export class MintBlock {
 
         try {
             const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
-            ref.runNext(null, { data: doc }).then(
+            ref.runNext(null, state).then(
                 function () { },
                 function (error: any) { console.error(error); }
             );
