@@ -57,25 +57,4 @@ export class FiltersAddonConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
-
-    addOptions() {
-        this.block.uiMetaData.options.push({
-            title: '',
-            name: '',
-            tooltip: '',
-            type: 'text',
-        })
-    }
-
-    addFilters() {
-        if(!this.block.filters) {
-            this.block.filters = [];
-        }
-        this.block.filters.push({
-            title: '',
-            name: '',
-            tooltip: '',
-            type: 'text',
-        })
-    }
 }

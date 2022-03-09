@@ -62,7 +62,11 @@
                 </mat-icon>
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
-            <td class="propRowCell">{{field.name}}</td>
+            <td class="propRowCell">
+                <span *ngIf="field.field&&field.type&&field.value">
+                    {{field.field}} {{field.type}} {{field.value}}
+                </span>
+            </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
             <td class="propRowCol"></td>

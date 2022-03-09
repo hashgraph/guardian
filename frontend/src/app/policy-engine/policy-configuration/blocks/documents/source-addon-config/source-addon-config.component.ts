@@ -53,10 +53,9 @@ export class SourceAddonConfigComponent implements OnInit {
 
     addField() {
         this.block.filters.push({
-            title: '',
-            name: '',
-            tooltip: '',
-            type: 'text',
+            value: '',
+            field: '',
+            type: 'equal',
         })
     }
 }
