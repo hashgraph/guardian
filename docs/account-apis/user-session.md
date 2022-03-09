@@ -2,27 +2,48 @@
 
 ### DISPLAY CURRENT USER SESSION
 
-**Description:** Returns current session of the user
+{% swagger method="get" path="" baseUrl="/accounts/session" summary="Returns current session of the user" %}
+{% swagger-description %}
+Returns current user session
+{% endswagger-description %}
 
-GET  /accounts/session
-
-**Response body:**
-
-```
-   200:
-          description: Successful operation.
-          content:
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
-   401:
-          description: Unauthorized.
-   500:
-          description: Internal server error.
-          content:
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="401: Unauthorized" description="" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}
 
 ****

@@ -2,44 +2,54 @@
 
 ### PUBLISH POLICY USING SPECIFIED POLICY ID
 
-**Description**: Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+{% swagger method="put" path="" baseUrl="/policies/{policyId}/publish" summary="Publishes the policy onto IPFS" %}
+{% swagger-description %}
+Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+{% endswagger-description %}
 
-`PUT` /policies/{policyId}/publish
+{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
+Selected policy ID
+{% endswagger-parameter %}
 
-**Request body:**
+{% swagger-parameter in="body" type="Object" name="policyVersion" required="true" %}
+Object that contains policy version
+{% endswagger-parameter %}
 
-```
-description: Object that contains policy version.
-        required: true
-        content:
-          application/json:
-              schema:
-                type: object
-                properties:
-                  policyVersion:
-                    type: string
-      summary: Publishes the policy onto IPFS.
-      security:
-      - bearerAuth: []
-```
-
-#### Response body:
-
-```
-200:
-          description: Successful operation.
-          content:
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublishPolicy'
-401:
-          description: Unauthorized.
-403:
-          description: Forbidden.
-500:
-          description: Internal server error.
-          content:
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="Forbidden" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}

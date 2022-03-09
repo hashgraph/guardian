@@ -2,32 +2,47 @@
 
 ### SETS HEDERA CREDENTIALS
 
-**Description:** Sets Hedera credentials for the user. For users with the Root Authority role it also creates an address book.
+{% swagger method="put" path="" baseUrl="/profiles/{username}" summary="Sets Hedera credentials for the user" %}
+{% swagger-description %}
+Sets Hedera credentials for the user. For users with the Root Authority role it also creates an address book
+{% endswagger-description %}
 
-**Request body:**
+{% swagger-parameter in="path" name="username" type="String" required="true" %}
+The name of the user for whom to update the information
+{% endswagger-parameter %}
 
+{% swagger-response status="201: Created" description="Successful Operation" %}
+```javascript
+{
+    // Response
+}
 ```
-     description: Object that contains the Hedera account data.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-```
+{% endswagger-response %}
 
-#### Response body:
-
+{% swagger-response status="401: Unauthorized" description="" %}
+```javascript
+{
+    // Response
+}
 ```
-   201:
-          description: Successful operation.
-   401:
-          description: Unauthorized.
-   403:
-          description: Forbidden.
-   500:
-          description: Internal server error.
-          content:
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}

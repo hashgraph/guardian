@@ -1,46 +1,51 @@
-# Export a schema
+# Export message IDs of Schema
 
-### IMPORTING SCHEMA FROM IPFS FILE
+### EXPORTING HEDERA MESSAGED IDS OF PUBLISHED SCHEMA
 
-**Description:** Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of schema files.&#x20;
+{% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/message" summary="Hedera message IDs of published schemas" %}
+{% swagger-description %}
+Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Root Authority role are allowed to make the request.
+{% endswagger-description %}
 
-Only users with the Root Authority role are allowed to make the request.
+{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
+Selected schema ID
+{% endswagger-parameter %}
 
-POST /schemas/export
-
-**Request body:**
-
-```
-description: Object that contains IDs of schemas.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                ids:
-                  type: array
-                  items:
-                    type: string
-```
-
-**Response body:**
-
-```
-200:
-          description: Successful operation.
-          content:
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExportSchema"
-401:
-          description: Unauthorized.
-403:
-          description: Forbidden.
-500:
-          description: Internal server error.
-          content:
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="Forbidden" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+```javascript
+{
+    content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+}
 ```
+{% endswagger-response %}
+{% endswagger %}

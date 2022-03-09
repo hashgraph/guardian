@@ -1,14 +1,16 @@
-# Step 2
+# Policy Workflow Step 2
 
 Next, we add specific Actions by clicking on the “Request” button on the top navigation bar.
 
-This creates a new Action workflow block with additional fields we can use to define a specific request action.
+This creates a new Action Workflow Block with additional fields we can use to define a specific request action.
 
 First, we give this new action the name we want.
 
 We then set the “Default Active” and add “Installer” as permission.
 
-As a next step, we set the “Schema” field through a drop-down based on pre-configured schemas for the document relevant for this policy action request – in our case we select “IRec-Application-Details” as the required data schema for the request. Note - the creation of schemas is a prerequisite to policy creation.
+As a next step, we set the “Schema” field through a drop-down based on pre-configured schemas for the document relevant for this policy action request – in our case we select “IRec-Application-Details” as the required data schema for the request.&#x20;
+
+Note - the creation of schemas is a prerequisite to policy creation.
 
 We then set the Id Type using the drop-down, and select “Owner” as the type of identifier used within the Policy Action. This option selects the DID of the document owner as the identifier utilized as the subject in the verifiable credential that is created from this document
 

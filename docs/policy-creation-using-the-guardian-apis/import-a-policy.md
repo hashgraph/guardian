@@ -1,53 +1,53 @@
-# Import a Policy
+# Import a Policy from IPFS
 
 ### IMPORT A POLICY
 
-**Description**: Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+{% swagger method="post" path="" baseUrl="policies/import/message" summary="Imports new policy from IPFS." %}
+{% swagger-description %}
+Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+{% endswagger-description %}
 
-**Policy import (unzip content)**
+{% swagger-parameter in="body" type="Object" required="true" name="schema" %}
+Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy
+{% endswagger-parameter %}
 
-`POST /api/v1/policies/import/preview`
-
-**Request:**
-
-.zip file
-
-**Response body:**
-
-```
+{% swagger-response status="201: Created" description="Successful Operation" %}
+```javascript
 {
-	"policy":{
-		...
-	},
-	"tokens":[
-		...
-	],
-	"schemas":[
-		...
-	]
+    content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyConfig'
 }
 ```
+{% endswagger-response %}
 
-****
-
-**Policy import**
-
-`POST /api/v1/policies/import`
-
-**Request body:**
-
-```
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+```javascript
 {
-	//Put the response from the step 5 here
+    // Response
 }
 ```
+{% endswagger-response %}
 
-****
+{% swagger-response status="403: Forbidden" description="Forbidden" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
 
-**Publish of the imported policy**
-
-`PUT /api/v1/policies/61dd9f1ae2becb0015685bfa/publish`
-
-**Request body:**
-
-`{"policyVersion":"1.0.0"}`
+{% swagger-response status="500: Internal Server Error" description="Internal server error" %}
+```javascript
+{
+    content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+}
+```
+{% endswagger-response %}
+{% endswagger %}
