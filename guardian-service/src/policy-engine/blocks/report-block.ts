@@ -3,7 +3,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { Guardians } from '@helpers/guardians';
 import { getVCField } from '@helpers/utils';
 import { Report } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsStuff } from '@policy-engine/policy-components-stuff';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport, SchemaEntity } from 'interfaces';
 import { BlockActionError } from '@policy-engine/errors';
@@ -70,7 +70,7 @@ export class ReportBlock {
     }
 
     async getData(user: IAuthUser, uuid): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyReportBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const blockState = this.state[user.did] || {};
             if (!blockState.lastValue) {

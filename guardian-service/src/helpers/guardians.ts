@@ -348,8 +348,8 @@ export class Guardians {
      *
      * @returns {ISchema} - schema
      */
-    public async getSchemaByIRIs(iris: string[]): Promise<ISchema[]> {
-        return await this.request(MessageAPI.GET_SCHEMES, { iris });
+    public async getSchemaByIRIs(iris: string[], includes: boolean): Promise<ISchema[]> {
+        return await this.request(MessageAPI.GET_SCHEMES, { iris, includes: includes });
     }
 
     /**

@@ -3,7 +3,7 @@ import { Guardians } from "@helpers/guardians";
 import { Users } from "@helpers/users";
 import { findOptions, getVCIssuer } from "@helpers/utils";
 import { ReportItem } from "@policy-engine/helpers/decorators";
-import { PolicyComponentsStuff } from "@policy-engine/policy-components-stuff";
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportItemBlock } from "@policy-engine/policy-engine.interface";
 import { IReportItem } from "interfaces";
 import { BlockActionError } from '@policy-engine/errors';
@@ -23,7 +23,7 @@ export class ReportItemBlock {
     public users: Users;
 
     public async run(resultFields: IReportItem[], variables: any): Promise<any> {
-        const ref = PolicyComponentsStuff.GetBlockRef<IPolicyReportItemBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
         const icon = ref.options.icon;
         const title = ref.options.title;
         const description = ref.options.description;

@@ -38,7 +38,7 @@ export class RequestVcDocumentBlock {
     }
 
     async changeActive(user, active) {
-        const ref = PolicyComponentsStuff.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};

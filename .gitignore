@@ -24,3 +24,4 @@ ui-service/.vs/
 /api-docs/node_modules/
 /auth-service/dist/
 /auth-service/node_modules/
+/guardian-service/config.json
