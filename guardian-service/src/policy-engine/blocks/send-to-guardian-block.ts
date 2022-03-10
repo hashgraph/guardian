@@ -30,6 +30,7 @@ export class SendToGuardianBlock {
         let document = state.data;
         document.policyId = ref.policyId;
         document.tag = ref.tag;
+        document.type = ref.options.entityType;
 
         if (ref.options.forceNew) {
             document = { ...document };
