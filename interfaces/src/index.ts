@@ -36,3 +36,4 @@ export { SchemaHelper } from './helpers/schema-helper';
 export { IMessageResponse, MessageResponse, MessageError, Response } from './models/message-response';
 export { WalletEvents } from './type/wallet-events';
 export { SchemaCategory } from './type/schema-category.type';
+export { CommonSettings } from './interface/common-settings.interface'

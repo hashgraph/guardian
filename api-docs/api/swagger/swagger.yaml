@@ -482,6 +482,17 @@ components:
           type: string
         key:
           type: string
+    CommonSettings:
+      type: object
+      properties:
+        operatorId:
+          type: string
+        operatorKey:
+          type: string
+        schemaTopicId:
+          type: string
+        nftApiKey:
+          type: string
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
@@ -501,6 +512,8 @@ tags:
     description: "Demo Only APIs"
   - name: "ipfs"
     description: "IPFS Operations"
+  - name: "settings"
+    description: "Settings operations"
 paths:
   /accounts:
     get:
@@ -2147,6 +2160,58 @@ paths:
                 type: string
         401:
           description: Unauthorized.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /settings:
+    get:
+      tags:
+        - settings
+      description: Returns current settings. For users with the Root Authority role only.
+      security:
+      - bearerAuth: []
+      summary: Returns current settings.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonSettings'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - settings
+      description: Set settings. For users with the Root Authority role only.
+      security:
+      - bearerAuth: []
+      requestBody:
+        description: Settings.
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: '#/components/schemas/CommonSettings'
+      summary: Set settings.
+      responses:
+        200:
+          description: Successful operation.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
         500:
           description: Internal server error.
           content:

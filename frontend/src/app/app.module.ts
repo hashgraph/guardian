@@ -31,6 +31,8 @@ import { PolicyHelper } from './services/policy-helper.service';
 import { MaterialModule } from './material.module';
 import { PolicyEngineModule } from './policy-engine/policy-engine.module';
 import { IPFSService } from './services/ipfs.service';
+import { ProfileSettingsDialogComponent } from './components/profile-settings-dialog/profile-settings-dialog.component';
+import { SettingsService } from './services/settings.service';
 
 @NgModule({
     declarations: [
@@ -46,7 +48,8 @@ import { IPFSService } from './services/ipfs.service';
         SchemaConfigComponent,
         AuditComponent,
         TrustChainComponent,
-        NewPolicyDialog
+        NewPolicyDialog,
+        ProfileSettingsDialogComponent
     ],
     imports: [
         BrowserModule,
@@ -72,6 +75,7 @@ import { IPFSService } from './services/ipfs.service';
         PolicyEngineService,
         PolicyHelper,
         IPFSService,
+        SettingsService,
         DemoService,
         {
             provide: HTTP_INTERCEPTORS,

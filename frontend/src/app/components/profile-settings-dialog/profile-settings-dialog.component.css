@@ -1,0 +1,10 @@
+form {
+    display: flex;
+    flex-direction: column;
+    height: 360px;
+    overflow: visible;
+}
+
+.loading {
+    margin: 0 auto;
+}

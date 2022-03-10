@@ -24,6 +24,7 @@ import {Guardians} from '@helpers/guardians';
 import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
+import { Settings } from '@entity/settings';
 
 Promise.all([
     createConnection({
@@ -40,10 +41,9 @@ Promise.all([
             entitiesDir: 'dist/entity'
         }
     }),
-    FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS),
-    readConfig()
+    FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
 ]).then(async values => {
-    const [db, channel, fileConfig] = values;
+    const [db, channel] = values;
 
     IPFS.setChannel(channel);
     new Guardians().setChannel(channel);
@@ -75,10 +75,18 @@ Promise.all([
     const tokenRepository = db.getMongoRepository(Token);
     const configRepository = db.getMongoRepository(RootConfig);
     const schemaRepository = db.getMongoRepository(Schema);
+    const settingsRepository = db.getMongoRepository(Settings);
+    let fileConfig = null;
+    try {
+        fileConfig = await readConfig(settingsRepository);
+    }
+    catch (e){
+        console.log(e);
+    }
 
     await setDefaultSchema(schemaRepository);
-    await configAPI(channel, fileConfig);
-    await schemaAPI(channel, schemaRepository, configRepository);
+    await configAPI(channel, fileConfig, settingsRepository);
+    await schemaAPI(channel, schemaRepository, configRepository, settingsRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await rootAuthorityAPI(channel, configRepository);

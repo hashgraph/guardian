@@ -19,6 +19,7 @@ import {PolicyEngine} from '@helpers/policyEngine';
 import {WebSocketsService} from '@api/service/websockets';
 import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
+import { settingsAPI } from '@api/service/settings';
 
 const PORT = process.env.PORT || 3002;
 
@@ -49,6 +50,7 @@ Promise.all([
     app.use('/policies', authorizationHelper, policyAPI);
     app.use('/accounts/', accountAPI);
     app.use('/profile/', authorizationHelper, profileAPI);
+    app.use('/settings/', authorizationHelper, settingsAPI);
     app.use('/schemas', authorizationHelper, schemaAPI);
     app.use('/tokens', authorizationHelper, tokenAPI);
     app.use('/trustchains/', authorizationHelper, trustchainsAPI);

@@ -17,7 +17,9 @@
     "mathjs": "^10.1.0",
     "module-alias": "^2.2.2",
     "nft.storage": "^5.2.0",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "mongodb": "^3.7.3",
+    "typeorm": "^0.2.41"
   },
   "description": "",
   "devDependencies": {

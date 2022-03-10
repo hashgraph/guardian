@@ -1,0 +1,35 @@
+<h1 mat-dialog-title>Change settings</h1>
+<div mat-dialog-content *ngIf="!isLoading; else spinner">
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>OPERATOR ID:</mat-label>
+            <input matInput type="text" formControlName="operatorId">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>OPERATOR KEY:</mat-label>
+            <input matInput type="text" formControlName="operatorKey">
+        </mat-form-field>
+        
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>SCHEMA TOPIC ID:</mat-label>
+            <input matInput type="text" formControlName="schemaTopicId">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>NFT API KEY:</mat-label>
+            <input matInput type="text" formControlName="nftApiKey">
+        </mat-form-field>
+
+        <div mat-dialog-actions>
+            <button mat-raised-button color="primary" type="submit"
+                [disabled]="!dataForm.valid">Ok</button>
+            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+        </div>
+    </form>
+
+</div>
+
+<ng-template #spinner>
+    <mat-spinner class="loading"></mat-spinner>
+</ng-template>

@@ -23,6 +23,7 @@ import path from 'path';
 import { Blob } from 'buffer';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
+import { Settings } from '@entity/settings';
 
 export const schemaCache = {};
 
@@ -170,6 +171,7 @@ export const schemaAPI = async function (
     channel: any,
     schemaRepository: MongoRepository<Schema>,
     configRepository: MongoRepository<RootConfig>,
+    settingsRepository: MongoRepository<Settings>,
 ): Promise<void> {
     /**
      * Create or update schema
@@ -569,7 +571,10 @@ export const schemaAPI = async function (
 
                 const hederaHelper = HederaHelper
                     .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK;
-                const messageId = await HederaSenderHelper.SubmitSchemaMessage(hederaHelper, process.env.SCHEMA_TOPIC_ID, schemaPublishMessage);
+                const schemaTopicId = await settingsRepository.findOne({
+                    name: 'SCHEMA_TOPIC_ID'
+                })
+                const messageId = await HederaSenderHelper.SubmitSchemaMessage(hederaHelper, schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID, schemaPublishMessage);
 
                 item.messageId = messageId;
 

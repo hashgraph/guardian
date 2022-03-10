@@ -1,5 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import {
+    CommonSettings,
     IAddressBookConfig,
     IApprovalDocument,
     IChainItem,
@@ -68,6 +69,23 @@ export class Guardians {
     public async getRootAddressBook(): Promise<IAddressBookConfig> {
         return await this.request(MessageAPI.GET_ROOT_ADDRESS_BOOK);
     }
+
+    /**
+     * Update settings
+     * 
+     */
+     public async updateSettings(settings: CommonSettings): Promise<void> {
+        await this.request(MessageAPI.UPDATE_SETTINGS, settings);
+    }
+
+    /**
+     * Get settings
+     * 
+     */
+     public async getSettings(): Promise<any> {
+        return await this.request(MessageAPI.GET_SETTINGS);
+    }
+
 
     /**
      * Return Address book
