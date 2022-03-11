@@ -20,7 +20,7 @@ export class ExternalDataBlock {
     @Inject()
     private guardians: Guardians;
 
-    async receiveData(data) {
+    async receiveData(data:any) {
         let verify: boolean;
         try {
             const res = await this.vcHelper.verifySchema(data.document);

@@ -20,7 +20,6 @@ export class DocumentsSourceAddon {
 
     async getFromSource(user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const userFull = await this.users.getUser(user.username);
 
         let filters: any = {};
         if (!Array.isArray(ref.options.filters)) {
@@ -28,11 +27,11 @@ export class DocumentsSourceAddon {
         }
 
         if (ref.options.onlyOwnDocuments) {
-            filters.owner = userFull.did;
+            filters.owner = user.did;
         }
 
         if (ref.options.onlyAssignDocuments) {
-            filters.assign = userFull.did;
+            filters.assign = user.did;
         }
 
         if (ref.options.schema) {

@@ -9,6 +9,7 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { IAuthUser } from '@auth/auth.interface';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -24,7 +25,7 @@ export class SendToGuardianBlock {
     @Inject()
     private users: Users;
 
-    async documentSender(state, user): Promise<any> {
+    async documentSender(state, user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         let document = state.data;
@@ -84,9 +85,9 @@ export class SendToGuardianBlock {
         return result;
     }
 
-    async runAction(state, user) {
-        console.log("send-to-guardian-block runAction");
+    async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+        console.log(`sendToGuardianBlock: runAction: ${ref.tag}`);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
         ref.updateBlock(state, user, '');

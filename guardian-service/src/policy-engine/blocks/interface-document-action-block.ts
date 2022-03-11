@@ -30,7 +30,7 @@ export class InterfaceDocumentActionBlock {
     @Inject()
     private wallet: Wallet;
 
-    private async getSources(user): Promise<any[]> {
+    private async getSources(user: IAuthUser): Promise<any[]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         let data = [];
         for (let child of ref.children) {
@@ -43,7 +43,6 @@ export class InterfaceDocumentActionBlock {
 
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const userFull = await this.users.getUser(user.username);
 
         const data: any = {
             id: ref.uuid,
@@ -57,7 +56,7 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type == 'dropdown') {
-            let documents: any[] = await this.getSources(userFull);
+            let documents: any[] = await this.getSources(user);
             data.name = ref.options.name;
             data.value = ref.options.value;
             data.field = ref.options.field;
@@ -80,7 +79,7 @@ export class InterfaceDocumentActionBlock {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, option.bindBlock) as any;
-                const owner = await new Users().getUserById(document.owner);
+                const owner = await this.users.getUserById(document.owner);
                 await ref.runTarget(owner, state, block);
             }
             return;
@@ -121,7 +120,7 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type == 'dropdown') {
             if (ref.options.bindBlock) {
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
-                const owner = await new Users().getUserById(document.owner);
+                const owner = await this.users.getUserById(document.owner);
                 await ref.runTarget(owner, state, block);
                 return;
             }

@@ -57,7 +57,7 @@ export class RequestConfigComponent implements OnInit {
             this.block.presetFields = [];
         }
         this.presetMap = [];
-        if (presetSchema) {
+        if (presetSchema && presetSchema.fields) {
             for (let i = 0; i < presetSchema.fields.length; i++) {
                 const field = presetSchema.fields[i];
                 this.presetMap.push({
@@ -78,7 +78,7 @@ export class RequestConfigComponent implements OnInit {
 
         const schema = this.schemes.find(e => e.iri == this.block.schema);
         const presetSchema = this.schemes.find(e => e.iri == this.block.presetSchema);
-        if (schema && presetSchema) {
+        if (schema && presetSchema && schema.fields) {
             for (let i = 0; i < schema.fields.length; i++) {
                 const field = schema.fields[i];
                 this.block.presetFields.push({
@@ -89,7 +89,7 @@ export class RequestConfigComponent implements OnInit {
                 })
             }
         }
-        if (presetSchema) {
+        if (presetSchema && presetSchema.fields) {
             this.presetMap.push({
                 name: null,
                 title: ''

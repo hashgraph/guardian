@@ -8,6 +8,7 @@ import { HcsVcDocument, VcSubject } from 'vc-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
+import { IAuthUser } from '@auth/auth.interface';
 
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
@@ -54,7 +55,7 @@ export class CalculateContainerBlock {
             ...SchemaHelper.getContext(outputSchema),
             ...newJson
         }
-        
+
         if (json.ref) {
             vcSubject.ref = json.ref;
         }
@@ -81,7 +82,7 @@ export class CalculateContainerBlock {
         return item;
     }
 
-    public async runAction(state, user) {
+    public async runAction(state: any, user: IAuthUser) {
         console.log("calculate-block, runAction")
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         let document = null;

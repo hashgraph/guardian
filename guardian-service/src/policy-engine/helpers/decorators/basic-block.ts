@@ -178,7 +178,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-            public async updateBlock(state, user, tag) {
+            public async updateBlock(state:any, user:IAuthUser, tag:string) {
                 if (!!this.tag) {
                     PolicyComponentsUtils.CallDependencyCallbacks(this.tag, this.policyId, user);
                 }
