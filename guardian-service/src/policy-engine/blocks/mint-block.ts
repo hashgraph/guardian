@@ -9,6 +9,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import {PolicyComponentsUtils} from '../policy-components-utils';
+import { IAuthUser } from '@auth/auth.interface';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -112,7 +113,7 @@ export class MintBlock {
         }
     }
 
-    private async createMintVC(root, token, data: number | number[]): Promise<HcsVcDocument<VcSubject>> {
+    private async createMintVC(root:any, token:any, data: number | number[]): Promise<HcsVcDocument<VcSubject>> {
         const vcHelper = new VcHelper();
 
         let vcSubject: any;
@@ -225,7 +226,7 @@ export class MintBlock {
         return vp;
     }
 
-    async runAction(state, user) {
+    async runAction(state: any, user:IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const {
             tokenId,

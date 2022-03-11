@@ -2,13 +2,13 @@ import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { HcsVcDocument, VcSubject } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
+import { IAuthUser } from '@auth/auth.interface';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -49,7 +49,7 @@ export class AggregateBlock {
         return amount;
     }
 
-    async runAction(data: any, user: any) {
+    async runAction(data: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const {
             tokenId,

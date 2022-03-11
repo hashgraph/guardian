@@ -17,9 +17,6 @@ export class FiltersAddonBlock {
         lastValue: null
     };
 
-    @Inject()
-    private users: Users;
-
     public getFilters(user: IAuthUser): { [key: string]: string } {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filters = ref.filters[user.did] || {};
@@ -32,14 +29,7 @@ export class FiltersAddonBlock {
     }
 
     async getData(user: IAuthUser) {
-        try {
-            
-        } catch (error) {
-            console.error(error)
-        }
-
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const userFull = await this.users.getUser(user.username);
 
         let block: any = {
             id: ref.uuid,
@@ -49,7 +39,7 @@ export class FiltersAddonBlock {
             canBeEmpty: ref.options.canBeEmpty
         };
 
-        let data: any[] = await ref.getSources(userFull);
+        let data: any[] = await ref.getSources(user);
 
         if (ref.options.type == 'dropdown') {
             const blockState = this.state[user.did] || {};
