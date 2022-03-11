@@ -109,7 +109,7 @@ export class PolicyImportExportHelper {
             const item = schemesMap[index];
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
         }
-        //compatibility with older versions
+        // compatibility with older versions
         replaceAllEntities(policy.config, ['blockType'], 'interfaceDocumentsSource', 'interfaceDocumentsSourceBlock');
         replaceAllEntities(policy.config, ['blockType'], 'requestVcDocument', 'requestVcDocumentBlock');
         replaceAllEntities(policy.config, ['blockType'], 'sendToGuardian', 'sendToGuardianBlock');
