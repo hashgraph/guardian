@@ -36,9 +36,8 @@ trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: Aut
         }).filter(did => !!did);
 
         const users = new Users();
-
-        let userMap: any = users.getUsersByIds(DIDs) || [];
-        userMap = userMap.map((user: IAuthUser) => {
+        const allUsers = (await users.getUsersByIds(DIDs)) || [];
+        const userMap = allUsers.map((user: IAuthUser) => {
             return { username: user.username, did: user.did }
         })
 
