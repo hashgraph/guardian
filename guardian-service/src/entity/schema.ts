@@ -1,5 +1,5 @@
-import { ISchema, ModelHelper, SchemaEntity, SchemaStatus } from 'interfaces';
-import { BeforeInsert, BeforeUpdate, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
+import { ISchema, ModelHelper, SchemaEntity, SchemaStatus, SchemaCategory } from 'interfaces';
+import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
 export class Schema implements ISchema {
@@ -57,6 +57,11 @@ export class Schema implements ISchema {
     @Column()
     iri: string;
 
+    /**
+     * Virtual column.
+     */
+    category: SchemaCategory;
+
     @BeforeInsert()
     setDefaults() {
         this.entity = this.entity || SchemaEntity.NONE;
@@ -67,5 +72,12 @@ export class Schema implements ISchema {
         if(this.status == SchemaStatus.DRAFT) {
             this.messageId = null;
         }
+    }
+
+    @AfterLoad()
+    defineLabel() {
+        this.category = this.readonly 
+            ? SchemaCategory.SYSTEM 
+            : SchemaCategory.USER;
     }
 }
