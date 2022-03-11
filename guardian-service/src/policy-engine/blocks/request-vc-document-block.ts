@@ -73,7 +73,7 @@ export class RequestVcDocumentBlock {
         }
         return {
             id: ref.uuid,
-            blockType: 'requestVcDocument',
+            blockType: ref.blockType,
             schema: this.schema,
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
