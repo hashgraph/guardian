@@ -17,6 +17,7 @@
     "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13",
     "vc-modules": "file:../vc-modules",
+    "logger-helper": "file:../logger-helper",
     "ws": "^8.2.1"
   },
   "description": "",

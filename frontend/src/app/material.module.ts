@@ -25,6 +25,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatChipsModule } from '@angular/material/chips';
 
 @NgModule({
     declarations: [],
@@ -80,7 +82,9 @@ import { MatPaginatorModule } from '@angular/material/paginator';
         MatTooltipModule,
         MatSlideToggleModule,
         ClipboardModule,
-        MatPaginatorModule
+        MatPaginatorModule,
+        MatSortModule,
+        MatChipsModule
     ]
 })
 export class MaterialModule { }

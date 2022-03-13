@@ -20,13 +20,13 @@ import {WebSocketsService} from '@api/service/websockets';
 import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
 import { settingsAPI } from '@api/service/settings';
+import { loggerAPI } from '@api/service/logger';
 
 const PORT = process.env.PORT || 3002;
 
 Promise.all([
     FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
 ]).then(async ([channel]) => {
-    // Init services
     const app = express();
     app.use(express.json());
     app.use(express.raw({
@@ -57,6 +57,7 @@ Promise.all([
     app.use('/external/', externalAPI);
     app.use('/demo/', demoAPI);
     app.use('/ipfs', authorizationHelper, ipfsAPI);
+    app.use('/logger', authorizationHelper, loggerAPI);
     /////////////////////////////////////////
 
     server.listen(PORT, () => {

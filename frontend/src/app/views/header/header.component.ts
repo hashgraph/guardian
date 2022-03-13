@@ -3,7 +3,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { IUser, UserRole } from 'interfaces';
 import { Observable } from 'rxjs';
-import { ProfileSettingsDialogComponent } from 'src/app/components/profile-settings-dialog/profile-settings-dialog.component';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
 import { AuthService } from '../../services/auth.service';
@@ -70,6 +69,11 @@ export class HeaderComponent implements OnInit {
       disabled: false,
       link: '/policy-configuration',
       hidden: true,
+    },
+    {
+      name: "Admin",
+      disabled: false,
+      link: '/admin'
     }];
     this.linksConfig[UserRole.AUDITOR] = [{
       name: "Audit",
@@ -156,11 +160,5 @@ export class HeaderComponent implements OnInit {
 
   onHome() {
     this.router.navigate(['/']);
-  }
-
-  changeSettings() {
-    const dialogRef = this.dialog.open(ProfileSettingsDialogComponent, {
-        width: '600px'
-    });
   }
 }
