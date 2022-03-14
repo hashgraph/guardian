@@ -232,12 +232,4 @@ export class PolicyEngineService {
       }
     });
   }
-
-  public toYAML(json: any): Observable<any> {
-    return this.http.post<any>(`${this.url}/to-yaml`, { json });
-  }
-
-  public fromYAML(yaml: string): Observable<any> {
-    return this.http.post<any>(`${this.url}/from-yaml`, { yaml });
-  }
 }

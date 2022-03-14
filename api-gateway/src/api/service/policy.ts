@@ -1,7 +1,6 @@
 import {Response, Router} from 'express';
 import {AuthenticatedRequest} from '@auth/auth.interface';
 import {UserRole} from 'interfaces';
-import yaml, { JSON_SCHEMA } from 'js-yaml';
 import {PolicyEngine} from '@helpers/policyEngine';
 import { Users } from '@helpers/users';
 
@@ -148,41 +147,6 @@ policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedReques
     } catch (e) {
         console.error(e);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
-    }
-});
-
-policyAPI.post('/to-yaml', async (req: AuthenticatedRequest, res: Response) => {
-    if (!req.body || !req.body.json) {
-        res.status(500).send({ code: 500, message: 'Bad json' });
-        return;
-    }
-    try {
-        res.json({ yaml: yaml.dump(req.body.json, {
-                indent: 4,
-                lineWidth: -1,
-                noRefs: false,
-                noCompatMode: true,
-                schema: JSON_SCHEMA
-            })
-        });
-    } catch (error) {
-        res.status(500).send({ code: 500, message: 'Bad json' });
-    }
-});
-
-policyAPI.post('/from-yaml', async (req: AuthenticatedRequest, res: Response) => {
-    if (!req.body || !req.body.yaml) {
-        res.status(500).send({ code: 500, message: 'Bad yaml' });
-        return;
-    }
-    try {
-        res.json({ json: yaml.load(req.body.yaml, {
-                schema: JSON_SCHEMA,
-                json: true
-            })
-        });
-    } catch (error) {
-        res.status(500).send({ code: 500, message: 'Bad yaml' });
     }
 });
 
