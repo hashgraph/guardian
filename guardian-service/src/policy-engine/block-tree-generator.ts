@@ -241,8 +241,8 @@ export class BlockTreeGenerator {
                 await getMongoRepository(Policy).save(model);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did })
                 res.send(new MessageResponse(policies));
-            } catch (e) {
-                res.send(new MessageError(e));
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -262,9 +262,9 @@ export class BlockTreeGenerator {
                 const result = await getMongoRepository(Policy).save(model);
 
                 res.send(new MessageResponse(result));
-            } catch (e) {
-                console.error(e);
-                res.send(new MessageError(e));
+            } catch (error) {
+                console.error(error);
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -393,8 +393,8 @@ export class BlockTreeGenerator {
                     results,
                     policy
                 }));
-            } catch (e) {
-                res.send(new MessageError(e.message));
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -407,9 +407,9 @@ export class BlockTreeGenerator {
                 const user = msg.payload.user;
                 const userFull = await this.users.getUser(user.username);
                 res.send(new MessageResponse(await model.getData(userFull) as any));
-            } catch (e) {
-                console.error(e);
-                res.send(new MessageError(e.message));
+            } catch (error) {
+                console.error(error);
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -419,8 +419,8 @@ export class BlockTreeGenerator {
                 const userFull = await this.users.getUser(user.username);
                 const data = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(userFull, blockId, null)
                 res.send(new MessageResponse(data));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -430,8 +430,8 @@ export class BlockTreeGenerator {
                 const userFull = await this.users.getUser(user.username);
                 const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(userFull, data)
                 res.send(new MessageResponse(result));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -441,8 +441,8 @@ export class BlockTreeGenerator {
                 const userFull = await this.users.getUser(user.username);
                 const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
                 res.send(new MessageResponse({ id: block.uuid }));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -458,8 +458,8 @@ export class BlockTreeGenerator {
                     tmpBlock = tmpBlock.parent;
                 }
                 res.send(new MessageResponse(parents));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -471,12 +471,14 @@ export class BlockTreeGenerator {
                     throw new Error(`Cannot export policy ${policyId}`);
                 }
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
-                const file = await zip.generateAsync();
-                res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
-                res.setHeader('Content-type', 'application/zip');
-                res.send(file);
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+                const file = await zip.generateAsync({ type: 'arraybuffer' });
+                res.send(new MessageResponse({
+                    file: file,
+                    name: policy.name
+                }));
+            } catch (error) {
+                console.log(error);
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -495,8 +497,8 @@ export class BlockTreeGenerator {
                     messageId: policy.messageId,
                     owner: policy.owner
                 }));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -510,8 +512,8 @@ export class BlockTreeGenerator {
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
                 const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 res.send(new MessageResponse(policies));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -535,8 +537,8 @@ export class BlockTreeGenerator {
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip));
                 const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 res.send(new MessageResponse(policies));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -549,8 +551,8 @@ export class BlockTreeGenerator {
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
                 res.send(new MessageResponse(policyToImport));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -573,9 +575,9 @@ export class BlockTreeGenerator {
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip));
                 res.send(new MessageResponse(policyToImport));
-            } catch (e) {
-                console.log(e)
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                console.log(error)
+                res.send(new MessageError(error.message));
             }
         });
 
@@ -583,8 +585,8 @@ export class BlockTreeGenerator {
             try {
                 await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
                 res.send(new MessageResponse(true));
-            } catch (e) {
-                res.send(new MessageError(e.message()))
+            } catch (error) {
+                res.send(new MessageError(error.message));
             }
         });
     }

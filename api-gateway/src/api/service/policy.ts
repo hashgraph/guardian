@@ -1,7 +1,7 @@
-import {Response, Router} from 'express';
-import {AuthenticatedRequest} from '@auth/auth.interface';
-import {UserRole} from 'interfaces';
-import {PolicyEngine} from '@helpers/policyEngine';
+import { Response, Router } from 'express';
+import { AuthenticatedRequest } from '@auth/auth.interface';
+import { UserRole } from 'interfaces';
+import { PolicyEngine } from '@helpers/policyEngine';
 import { Users } from '@helpers/users';
 
 export const policyAPI = Router();
@@ -9,7 +9,6 @@ export const policyAPI = Router();
 policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     const users = new Users()
     const engineService = new PolicyEngine();
-
     try {
         const user = await users.getUser(req.user.username);
         let result: any;
@@ -29,7 +28,6 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
 
 policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         const policies = await engineService.createPolicy(req.body, req.user)
         res.json(policies);
@@ -40,7 +38,6 @@ policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
 
 policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         const model = (await engineService.getPolicy(req.params.policyId)) as any;
         delete model.registeredUsers;
@@ -52,7 +49,6 @@ policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
 
 policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         const model = await engineService.getPolicy(req.params.policyId) as any;
         const policy = req.body;
@@ -76,7 +72,6 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
 //
 policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
     } catch (error) {
@@ -86,7 +81,6 @@ policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Respo
 
 policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.validatePolicy(req.body, req.user));
     } catch (e) {
@@ -97,7 +91,6 @@ policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => 
 //
 policyAPI.get('/:policyId/blocks', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.getPolicyBlocks(req.user, req.params.policyId));
     } catch (e) {
@@ -108,7 +101,6 @@ policyAPI.get('/:policyId/blocks', async (req: AuthenticatedRequest, res: Respon
 
 policyAPI.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.getBlockData(req.user, req.params.policyId, req.params.uuid));
     } catch (e) {
@@ -119,7 +111,6 @@ policyAPI.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: 
 
 policyAPI.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.setBlockData(req.user, req.params.policyId, req.params.uuid, req.body));
     } catch (e) {
@@ -130,7 +121,6 @@ policyAPI.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res:
 
 policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.getBlockByTagName(req.user, req.params.policyId, req.params.tagName));
     } catch (e) {
@@ -141,7 +131,6 @@ policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: 
 
 policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.getBlockParents(req.user, req.params.policyId, req.params.uuid));
     } catch (e) {
@@ -152,18 +141,19 @@ policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedReques
 
 policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
-        res.send(await engineService.exportFile(req.user, req.params.policyId));
+        const policy: any = await engineService.exportFile(req.user, req.params.policyId);
+        res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
+        res.setHeader('Content-type', 'application/zip');
+        res.send(policy.file);
     } catch (e) {
         console.error(e);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+        res.status(500).send({ code: 500, message: e.message });
     }
 });
 
 policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.exportMessage(req.user, req.params.policyId));
     } catch (e) {
@@ -174,7 +164,6 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
 
 policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.importMessage(req.user, req.body.messageId));
     } catch (e) {
@@ -185,7 +174,6 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
 
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.importFile(req.user, req.body));
     } catch (e) {
@@ -196,7 +184,6 @@ policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) 
 
 policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
     } catch (e) {
@@ -207,7 +194,6 @@ policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res:
 
 policyAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-
     try {
         res.send(await engineService.importFilePreview(req.user, req.body));
     } catch (e) {
