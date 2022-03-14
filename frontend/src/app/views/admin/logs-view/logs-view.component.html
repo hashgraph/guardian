@@ -1,5 +1,9 @@
 <div class="content">
     <form [formGroup]="searchForm" (ngSubmit)="onApply()" class="search-form">
+        <mat-form-field class="submit-field" appearance="outline">
+            <mat-label>Message</mat-label>
+            <input matInput type="text" formControlName="message">
+        </mat-form-field>
 
         <mat-form-field appearance="outline" class="search-field">
             <mat-label>Message Type</mat-label>
@@ -11,11 +15,17 @@
             </mat-select>
           </mat-form-field>
 
-        <mat-form-field class="search-field">
-            <mat-label>Choose a date</mat-label>
-            <input matInput [matDatepicker]="dateItem" formControlName="date">
-            <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
-            <mat-datepicker #dateItem></mat-datepicker>
+        <mat-form-field appearance="outline">
+            <mat-label>Enter a date range</mat-label>
+            <mat-date-range-input [formGroup]="searchForm" [rangePicker]="picker">
+              <input matStartDate formControlName="startDate" placeholder="Start date">
+              <input matEndDate formControlName="endDate" placeholder="End date">
+            </mat-date-range-input>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+          
+            <mat-error *ngIf="searchForm.controls.startDate.hasError('matStartDateInvalid')">Invalid start date</mat-error>
+            <mat-error *ngIf="searchForm.controls.endDate.hasError('matEndDateInvalid')">Invalid end date</mat-error>
         </mat-form-field>
 
         <mat-form-field class="search-field">
@@ -35,6 +45,7 @@
         </mat-form-field>
 
         <button mat-raised-button color="primary" type="submit" class="submit-button">Apply filters</button>
+        <button mat-raised-button type="button" (click)="onSave()">Save logs</button>
     </form>
 
     <div class="table-container">

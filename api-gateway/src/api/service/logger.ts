@@ -15,11 +15,11 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
         if (req.body.type) {
             filters.type = req.body.type;
         }
-        if (req.body.date) {
-            const sDate = new Date(req.body.date);
+        if (req.body.startDate && req.body.endDate) {
+            const sDate = new Date(req.body.startDate);
             sDate.setHours(0, 0, 0, 0);
-            const eDate = new Date(sDate);
-            eDate.setDate(sDate.getDate() + 1);
+            const eDate = new Date(req.body.endDate);
+            eDate.setHours(0, 0, 0, 0);
             filters.datetime = {
                 $gte: sDate,
                 $lt: eDate
@@ -27,6 +27,11 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
         }
         if (req.body.attributes && req.body.attributes.length !== 0) {
             filters.attributes = { $all: req.body.attributes };
+        }
+        if (req.body.message) {
+            filters.$text = {  
+                $search: req.body.message
+            };
         }
         if (req.body.pageSize) {
             pageParameters.skip = (req.body.pageIndex || 0) * req.body.pageSize;

@@ -2,12 +2,6 @@ import { ILog, IPageParameters, MessageAPI, MessageError, MessageResponse } from
 import { MongoRepository } from 'typeorm';
 import { Log } from '@entity/log';
 
-/**
- * Connecting to the message broker methods of working with IPFS.
- * 
- * @param channel - channel
- * @param node - IPFS client
- */
 export const loggerAPI = async function (
     channel: any,
     logRepository: MongoRepository<Log>

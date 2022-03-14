@@ -4,6 +4,7 @@ import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { saveAs } from 'file-saver';
 import { ILog } from 'interfaces';
 import { merge, of } from 'rxjs';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
@@ -29,8 +30,10 @@ export class LogsViewComponent implements OnInit {
     selectedAll!: boolean;
     totalCount: number = 0;
     searchForm = this.fb.group({
+        message: [''],
         type: [''],
-        date: [''],
+        startDate: [''],
+        endDate: [''],
         attributes: [[]]
     });
     filters: any = {};
@@ -100,9 +103,35 @@ export class LogsViewComponent implements OnInit {
         const value = this.searchForm.value;
         this.filters = {
             type: value.type,
-            date: value.date && value.date.toISOString(),
-            attributes: value.attributes
-        }
+            startDate: value.startDate && value.startDate.toISOString(),
+            endDate: value.endDate && value.endDate.toISOString(),
+            attributes: value.attributes,
+            message: value.message
+        };
         this.onSearch.emit();
+    }
+
+    onSave() {
+        this.loading = true;
+        this.logService.getLogs(this.filters)
+            .subscribe(data => {
+                const logs = data.logs?.map((log: any) => {
+                    let attributes = "";
+                    if (log.attributes &&  log.attributes.length !== 0) {
+                        attributes = `(${log.attributes.join(', ')})`;
+                    }
+                    return `[${log.type}] ${log.datetime} ${attributes} ${log.message}`;
+                });
+
+                if (!logs || logs.length === 0) {
+                    return;
+                }
+                var blob = new Blob([logs.join('\r\n')], { type: "text/plain;charset=utf-8" });
+                saveAs(blob, 'logs.txt');
+                this.loading = false;
+            }, (error) => {
+                this.loading = false;
+            });
+
     }
 }

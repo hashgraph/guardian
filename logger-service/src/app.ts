@@ -23,6 +23,13 @@ Promise.all([
     const [db, channel] = values;
 
     const logRepository = db.getMongoRepository(Log);
+
+    if (!await logRepository.collectionIndexExists('message')) {
+        logRepository.createCollectionIndex({
+            message: "text"
+        });
+    }
+
     await loggerAPI(channel, logRepository);
 
     console.log('logger service started');

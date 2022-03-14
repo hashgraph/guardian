@@ -14,7 +14,7 @@ export class LoggerService {
   ) {
   }
 
-  public getLogs(logFindSettings?: any): Observable<ILog[]> {
-    return this.http.post<ILog[]>(`${this.url}`, logFindSettings);
+  public getLogs(logFindSettings?: any): Observable<any> {
+    return this.http.post<any>(`${this.url}`, logFindSettings);
   }
 }
