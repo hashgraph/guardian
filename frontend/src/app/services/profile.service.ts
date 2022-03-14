@@ -9,7 +9,7 @@ import {AuthService} from './auth.service';
  */
 @Injectable()
 export class ProfileService {
-  private readonly url: string = `${API_BASE_URL}/profile/`;
+  private readonly url: string = `${API_BASE_URL}/profiles/`;
   constructor(
     private http: HttpClient,
     private auth: AuthService,
