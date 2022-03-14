@@ -420,7 +420,7 @@ export class BlockTreeGenerator {
                 const data = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(userFull, blockId, null)
                 res.send(new MessageResponse(data));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -431,7 +431,7 @@ export class BlockTreeGenerator {
                 const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(userFull, data)
                 res.send(new MessageResponse(result));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -442,7 +442,7 @@ export class BlockTreeGenerator {
                 const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
                 res.send(new MessageResponse({ id: block.uuid }));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -459,7 +459,7 @@ export class BlockTreeGenerator {
                 }
                 res.send(new MessageResponse(parents));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -476,7 +476,7 @@ export class BlockTreeGenerator {
                 res.setHeader('Content-type', 'application/zip');
                 res.send(file);
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -496,7 +496,7 @@ export class BlockTreeGenerator {
                     owner: policy.owner
                 }));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -511,7 +511,7 @@ export class BlockTreeGenerator {
                 const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 res.send(new MessageResponse(policies));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -536,7 +536,7 @@ export class BlockTreeGenerator {
                 const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 res.send(new MessageResponse(policies));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -550,7 +550,7 @@ export class BlockTreeGenerator {
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
                 res.send(new MessageResponse(policyToImport));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -575,7 +575,7 @@ export class BlockTreeGenerator {
                 res.send(new MessageResponse(policyToImport));
             } catch (e) {
                 console.log(e)
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
 
@@ -584,7 +584,7 @@ export class BlockTreeGenerator {
                 await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
                 res.send(new MessageResponse(true));
             } catch (e) {
-                res.send(new MessageError(e.message()))
+                res.send(new MessageError(e.message))
             }
         });
     }
