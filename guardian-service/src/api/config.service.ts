@@ -1,6 +1,7 @@
 import { Settings } from '@entity/settings';
 import { readJSON, writeJSON, pathExists } from 'fs-extra';
 import { CommonSettings, IAddressBookConfig, MessageAPI, MessageError, MessageResponse } from 'interfaces';
+import { Logger } from 'logger-helper';
 import path from 'path';
 import { MongoRepository } from 'typeorm';
 import { HederaHelper } from 'vc-modules';
@@ -99,6 +100,7 @@ export const configAPI = async function (
             res.send(new MessageResponse(config));
         }
         catch (e) {
+            new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(e));
         }
     });
@@ -163,6 +165,7 @@ export const configAPI = async function (
         }
         catch (e) {
             fileContent = null;
+            new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(e))
         }
     });
@@ -190,6 +193,7 @@ export const configAPI = async function (
             }));
         }
         catch (e) {
+            new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(e))
         }
     });

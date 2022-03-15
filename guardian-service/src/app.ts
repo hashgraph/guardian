@@ -25,6 +25,7 @@ import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
+import { Logger } from 'logger-helper';
 
 Promise.all([
     createConnection({
@@ -46,6 +47,7 @@ Promise.all([
     const [db, channel] = values;
 
     IPFS.setChannel(channel);
+    new Logger().setChannel(channel);
     new Guardians().setChannel(channel);
     new Wallet().setChannel(channel);
     new Users().setChannel(channel);
@@ -60,6 +62,7 @@ Promise.all([
         try {
             await policyGenerator.generate(policy.id.toString());
         } catch (e) {
+            new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
             console.error(e.message);
         }
     }
@@ -81,6 +84,7 @@ Promise.all([
         fileConfig = await readConfig(settingsRepository);
     }
     catch (e){
+        new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
         console.log(e);
     }
 
@@ -101,5 +105,6 @@ Promise.all([
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
 
+    new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
 });

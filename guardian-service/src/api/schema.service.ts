@@ -24,6 +24,7 @@ import { Blob } from 'buffer';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
 import { Settings } from '@entity/settings';
+import { Logger } from 'logger-helper';
 
 export const schemaCache = {};
 
@@ -247,6 +248,7 @@ export const schemaAPI = async function (
             res.send(new MessageError('Schema not found'));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error));
         }
     });
@@ -390,6 +392,7 @@ export const schemaAPI = async function (
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -457,6 +460,7 @@ export const schemaAPI = async function (
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -489,6 +493,7 @@ export const schemaAPI = async function (
             res.send(new MessageResponse(result));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -586,6 +591,7 @@ export const schemaAPI = async function (
             }
             res.send(new MessageError("Invalid id"));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -649,6 +655,7 @@ export const schemaAPI = async function (
             }
             res.send(new MessageResponse(relationships));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -691,6 +698,7 @@ export const schemaAPI = async function (
             schema.version = newVersion;
             res.send(new MessageResponse(schema));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });

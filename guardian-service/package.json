@@ -31,7 +31,8 @@
     "mongodb": "^3.7.3",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.41",
-    "vc-modules": "file:../vc-modules"
+    "vc-modules": "file:../vc-modules",
+    "logger-helper": "file:../logger-helper"
   },
   "description": "",
   "devDependencies": {
