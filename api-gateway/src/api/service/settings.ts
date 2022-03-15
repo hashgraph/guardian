@@ -3,6 +3,7 @@ import { Guardians } from '@helpers/guardians';
 import { IPFS } from '@helpers/ipfs';
 import { Request, Response, Router } from 'express';
 import { CommonSettings, UserRole } from 'interfaces';
+import { Logger } from 'logger-helper';
 
 /**
  * Settings route
@@ -23,6 +24,7 @@ settingsAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Req
         ]);
         res.json(null);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -40,6 +42,7 @@ settingsAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Requ
             ...ipfsClientSettings
         });
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });

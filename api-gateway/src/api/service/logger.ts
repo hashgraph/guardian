@@ -41,6 +41,7 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
         const logsObj = await logger.getLogs(filters, pageParameters, req.body.sortDirection);
         return res.send(logsObj);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ code: 500, message: error.message });
     }
 });

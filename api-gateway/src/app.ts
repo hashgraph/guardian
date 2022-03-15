@@ -21,6 +21,7 @@ import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
 import { settingsAPI } from '@api/service/settings';
 import { loggerAPI } from '@api/service/logger';
+import { Logger } from 'logger-helper';
 
 const PORT = process.env.PORT || 3002;
 
@@ -35,6 +36,7 @@ Promise.all([
         type: 'binary/octet-stream'
     }));
 
+    new Logger().setChannel(channel);
     new Guardians().setChannel(channel);
     new IPFS().setChannel(channel);
     new PolicyEngine().setChannel(channel);
@@ -61,6 +63,7 @@ Promise.all([
     /////////////////////////////////////////
 
     server.listen(PORT, () => {
+        new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         console.log('UI service started on', PORT);
     });
 });

@@ -6,6 +6,7 @@ import { permissionHelper } from '@auth/authorizationHelper';
 import { Request, Response, Router } from 'express';
 import { ITokenInfo, UserRole } from 'interfaces';
 import { HederaHelper } from 'vc-modules';
+import { Logger } from 'logger-helper';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
@@ -123,6 +124,7 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
 
         res.status(201).json(tokens);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message });
     }
 });
@@ -157,6 +159,7 @@ tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), asyn
             res.json(tokens as ITokenInfo[]);
         }
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message });
     }
 });
@@ -173,6 +176,7 @@ tokenAPI.put('/:tokenId/associate', permissionHelper(UserRole.USER), async (req:
         const status = await HederaHelper.setOperator(userID, userKey).SDK.associate(tokenId, userID, userKey);
         res.status(200).json(status);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -188,6 +192,7 @@ tokenAPI.put('/:tokenId/dissociate', permissionHelper(UserRole.USER), async (req
         const status = await HederaHelper.setOperator(userID, userKey).SDK.dissociate(tokenId, userID, userKey);
         res.status(200).json(status);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -226,6 +231,7 @@ tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTH
         const result = getTokenInfo(info, { tokenId });
         res.status(200).json(result as ITokenInfo);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -264,6 +270,7 @@ tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUT
         const result = getTokenInfo(info, { tokenId });
         res.status(200).json(result as ITokenInfo);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -302,6 +309,7 @@ tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHOR
         const result = getTokenInfo(info, { tokenId });
         res.status(200).json(result as ITokenInfo);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -340,6 +348,7 @@ tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTH
         const result = getTokenInfo(info, { tokenId });
         res.status(200).json(result as ITokenInfo);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -371,6 +380,7 @@ tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.ROOT_AUTHORIT
         const result = getTokenInfo(info, { tokenId });
         res.status(200).json(result as ITokenInfo);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
