@@ -51,7 +51,7 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     public async exportFile(user, policyId) {
-        return await this.request(PolicyEngineEvents.POLICY_EXPORT_FILE, {policyId, user});
+        return await this.rawRequest(PolicyEngineEvents.POLICY_EXPORT_FILE, {policyId, user});
     }
 
     public async exportMessage(user, policyId) {
