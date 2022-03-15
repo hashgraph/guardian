@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import FastMQ from 'fastmq'
 import { createConnection } from 'typeorm';
 import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
@@ -25,6 +25,15 @@ import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
 
 const PORT = process.env.PORT || 3001;
+
+console.log('Starting guardian-service', {
+    now: new Date().toString(),
+    PORT,
+    DB_HOST: process.env.DB_HOST,
+    DB_DATABASE: process.env.DB_DATABASE,
+    BUILD_VERSION: process.env.BUILD_VERSION,
+    DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+});
 
 Promise.all([
     createConnection({
@@ -91,6 +100,16 @@ Promise.all([
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
+
+    app.get('/info', async (req: Request, res: Response) => {
+        res.status(200).json({
+            NAME: 'guardian-service',
+            BUILD_VERSION: process.env.BUILD_VERSION,
+            DEPLOY_VERSION: process.env.DEPLOY_VERSION,
+            OPERATOR_ID: fileConfig.OPERATOR_ID,
+            WEB3_STORAGE_TOKEN: process.env.WEB3_STORAGE_TOKEN
+        });
+    });
 
     app.listen(PORT, () => {
         console.log('guardian service started', PORT);

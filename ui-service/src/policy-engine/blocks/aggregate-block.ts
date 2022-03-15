@@ -72,7 +72,10 @@ export class AggregateBlock {
         await repository.save(newVC);
 
         const rawEntities = await repository.find({
-            owner: doc.owner
+            where: {
+                owner: doc.owner,
+                "document.issuer": doc.document.issuer
+            }
         });
         const forAggregate = rawEntities.map(e => HcsVcDocument.fromJsonTree(e.document, null, VcSubject));
         const amount = this.aggregate(rule, forAggregate);

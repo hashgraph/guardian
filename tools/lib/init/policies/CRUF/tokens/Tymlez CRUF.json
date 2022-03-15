@@ -1,0 +1,6 @@
+{
+  "tokenId": "<%= CRUF_TOKEN_ID %>",
+  "tokenName": "Tymlez CRU Forecast",
+  "tokenSymbol": "TYM_CRUF",
+  "selected": true
+}

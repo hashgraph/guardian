@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "guardian-tymlez-service.fullname" . }}-{{ .Release.Revision }}
+data:
+  {{- toYaml .Values.configmap.data | nindent 2 }}
+  MQ_ADDRESS: {{ .Release.Name }}-guardian-message-broker-{{ .Release.Revision }}
+  DB_HOST: {{ .Release.Name }}-mongodb
+  MRV_RECEIVER_URL: http://{{ .Release.Name }}-guardian-message-broker-{{ .Release.Revision }}:3003/mrv
+  UI_SERVICE_BASE_URL: http://{{ .Release.Name }}-guardian-ui-service:3002
+  GUARDIAN_SERVICE_BASE_URL: http://{{ .Release.Name }}-guardian-service:3001
+  MESSAGE_BROKER_BASE_URL: http://{{ .Release.Name }}-guardian-message-broker-{{ .Release.Revision }}:3003
+
+

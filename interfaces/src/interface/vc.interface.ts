@@ -5,6 +5,7 @@ import {uuid} from './uuid.interface';
 export interface IVC {
     '@context': string[],
     id: uuid,
+    cid?: string,
     type: string[],
     credentialSubject: ICredentialSubject[],
     issuer: did,

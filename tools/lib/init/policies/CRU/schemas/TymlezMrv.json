@@ -1,0 +1,101 @@
+{
+  "name": "TymlezMrv",
+  "uuid": "7aeb0cec-d277-456e-a943-21d742d63816",
+  "entity": "MRV",
+  "document": {
+    "$id": "#7aeb0cec-d277-456e-a943-21d742d63816",
+    "$comment": "{\"term\": \"7aeb0cec-d277-456e-a943-21d742d63816\", \"@id\": \"https://localhost/schema#7aeb0cec-d277-456e-a943-21d742d63816\"}",
+    "title": "TymlezMrv",
+    "description": "",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "mrvEnergyAmount": {
+        "title": "Energy Amount",
+        "description": "Energy Amount",
+        "readOnly": false,
+        "$comment": "{\"term\": \"mrvEnergyAmount\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "number"
+      },
+      "mrvCarbonAmount": {
+        "title": "Carbon Amount",
+        "description": "Carbon Amount",
+        "readOnly": false,
+        "$comment": "{\"term\": \"mrvCarbonAmount\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "number"
+      },
+      "mrvTimestamp": {
+        "title": "Timestamp",
+        "description": "Timestamp in ISO Date",
+        "readOnly": false,
+        "$comment": "{\"term\": \"mrvTimestamp\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string",
+        "format": "date"
+      },
+      "mrvDuration": {
+        "title": "Duration",
+        "description": "Duration in milliseconds",
+        "readOnly": false,
+        "$comment": "{\"term\": \"mrvDuration\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "number"
+      },
+      "accountId": {
+        "title": "accountId",
+        "description": "accountId",
+        "readOnly": true,
+        "$comment": "{\"term\": \"accountId\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "policyId": {
+        "title": "policyId",
+        "description": "policyId",
+        "readOnly": true,
+        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "mrvEnergyAmount",
+      "mrvCarbonAmount",
+      "mrvTimestamp",
+      "mrvDuration",
+      "accountId",
+      "policyId"
+    ],
+    "additionalProperties": false
+  },
+  "relationships": []
+}

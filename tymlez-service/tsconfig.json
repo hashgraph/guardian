@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "lib": ["es5", "es6"],
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist/",
+    "strict": true,
+    "importsNotUsedAsValues": "error",
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@entity/*": ["entity/*"],
+      "@api/*": ["api/*"],
+      "@subscribers/*": ["subscribers/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "compileOnSave": true
+}

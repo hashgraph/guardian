@@ -123,7 +123,9 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
 
         res.status(201).json(tokens);
     } catch (error) {
-        res.status(500).send({ code: 500, message: error.message });
+        console.error("Failed to create token", error)
+        res.status(500).send({code: 500, message: error.message});
+        return;
     }
 });
 

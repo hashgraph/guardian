@@ -1,0 +1,92 @@
+{
+  "name": "TymlezDevice",
+  "uuid": "b578cb95-8530-46cc-9dc4-f31980744bf7",
+  "entity": "INVERTER",
+  "document": {
+    "$id": "#b578cb95-8530-46cc-9dc4-f31980744bf7",
+    "$comment": "{\"term\": \"b578cb95-8530-46cc-9dc4-f31980744bf7\", \"@id\": \"https://localhost/schema#b578cb95-8530-46cc-9dc4-f31980744bf7\"}",
+    "title": "TymlezDevice",
+    "description": "",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "deviceId": {
+        "title": "Device Id",
+        "description": "Device Id",
+        "readOnly": false,
+        "$comment": "{\"term\": \"deviceId\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "deviceLabel": {
+        "title": "Device Label",
+        "description": "Device Label",
+        "readOnly": false,
+        "$comment": "{\"term\": \"deviceLabel\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "deviceType": {
+        "title": "Device Type",
+        "description": "Device Type",
+        "readOnly": false,
+        "$comment": "{\"term\": \"deviceType\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "siteName": {
+        "title": "Site Name",
+        "description": "Site Name",
+        "readOnly": false,
+        "$comment": "{\"term\": \"siteName\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "policyId": {
+        "title": "policyId",
+        "description": "policyId",
+        "readOnly": true,
+        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "deviceId",
+      "deviceLabel",
+      "deviceType",
+      "siteName",
+      "policyId"
+    ],
+    "additionalProperties": false
+  },
+  "relationships": []
+}

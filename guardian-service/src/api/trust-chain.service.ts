@@ -77,8 +77,10 @@ export const trustChainAPI = async function (
             owner: vc.owner,
             schema: schema,
             tag: vc.tag,
-            label: 'HASH'
+            label: 'HASH',
+            cid:vc.cid
         });
+
 
         const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
 
@@ -158,7 +160,7 @@ export const trustChainAPI = async function (
                     tag: "Policy Imported"
                 });
             }
-            
+
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
                 const rootAuthority = await vcDocumentRepository.findOne({
@@ -187,6 +189,7 @@ export const trustChainAPI = async function (
                         owner: rootAuthority.owner,
                         schema: getField(rootAuthority, 'type'),
                         label: 'HASH',
+                        cid: rootAuthority.cid
                         entity: 'RootAuthority',
                         tag: "Account Creation"
                     });
@@ -228,6 +231,7 @@ export const trustChainAPI = async function (
                     schema: 'VerifiablePresentation',
                     label: 'HASH',
                     entity: 'VP',
+                    cid: root.cid,
                     tag: root.tag
                 });
                 const vpDocument = HcsVpDocument.fromJsonTree(root.document);
@@ -246,6 +250,7 @@ export const trustChainAPI = async function (
                 chain.push({
                     type: 'VP',
                     id: root.document.id,
+                    cid: root.cid,
                     document: root.document,
                     owner: root.owner,
                     schema: 'VerifiablePresentation',

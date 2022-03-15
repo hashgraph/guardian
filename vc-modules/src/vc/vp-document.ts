@@ -9,6 +9,7 @@ const VERIFIABLE_CREDENTIAL = 'verifiableCredential';
  */
 export class HcsVpDocument {
     protected id: string;
+    protected cid: string;
     protected context: string[];
     protected type: string[];
     protected verifiableCredential: HcsVcDocument<VcSubject>[];
@@ -25,6 +26,14 @@ export class HcsVpDocument {
 
     public setId(id: string): void {
         this.id = id;
+    }
+
+    public getCid(): string {
+        return this.cid;
+    }
+
+    public setCid(cid: string): void {
+        this.cid = cid;
     }
 
     public getContext(): string[] {

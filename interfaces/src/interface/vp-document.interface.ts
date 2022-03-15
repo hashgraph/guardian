@@ -5,6 +5,7 @@ import {IVP} from './vp.interface';
 
 export interface IVPDocument {
     id?: string;
+    cid?:string; 
     owner: string;
     hash: string;
     document: IVP;

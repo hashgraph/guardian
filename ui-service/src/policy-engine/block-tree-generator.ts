@@ -9,6 +9,7 @@ import { getConnection, getMongoRepository } from 'typeorm';
 import WebSocket from 'ws';
 import { AuthenticatedRequest, AuthenticatedWebSocket, IAuthUser } from '../auth/auth.interface';
 import { IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import {StateContainer} from './state-container';
 import { PolicyComponentsStuff } from './policy-components-stuff';
 import { Singleton } from '@helpers/decorators/singleton';
 import { ConfigPolicyTest } from '@policy-engine/helpers/mockConfig/configPolicy';
@@ -613,5 +614,43 @@ export class BlockTreeGenerator {
                 res.status(500).send({ code: 500, message: 'Bad yaml' });
             }
         });
+
+        // Copied from `get('/block/:uuid')`, but use `StateContainer.GetBlockByTag()` 
+        // instead of `StateContainer.GetBlockByUUID()`
+        this.router.get('/block/tag2/:policyId/:tag', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const block = StateContainer.GetBlockByTag<IPolicyInterfaceBlock>(req.params.policyId, req.params.tag)
+                const content = await block.getData(req.user, req.params.uuid);
+                res.send(content);
+            } catch (e) {
+                try {
+                    const err = e as BlockError;
+                    res.status(err.errorObject.code).send(err.errorObject);
+                } catch (e) {
+                    res.status(500).send({code: 500, message: 'Unknown error'});
+                }
+                console.error(e);
+                // throw e;
+            }
+        });
+
+        // Copied from `post('/block/:uuid')`, but use `StateContainer.GetBlockByTag()` 
+        // instead of `StateContainer.GetBlockByUUID()`
+        this.router.post('/block/tag2/:policyId/:tag', async (req: AuthenticatedRequest, res: Response) => {
+            try {
+                const block = StateContainer.GetBlockByTag<IPolicyInterfaceBlock>(req.params.policyId, req.params.tag)
+                const data = await block.setData(req.user, req.body);
+                res.status(200).send(data || {});
+            } catch (e) {
+                try {
+                    const err = e as BlockError;
+                    res.status(err.errorObject.code).send(err.errorObject);
+                } catch (_e) {
+                    res.status(500).send({code: 500, message: 'Unknown error: ' + e.message});
+                }
+                console.error(e);
+            }
+        });
+
     }
 }

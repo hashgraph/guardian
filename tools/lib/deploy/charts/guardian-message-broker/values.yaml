@@ -1,0 +1,60 @@
+# Default values for guardian-message-broker.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ''
+  pullPolicy: IfNotPresent
+  tag: ''
+
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+
+podAnnotations: {}
+
+podSecurityContext:
+  {}
+  # fsGroup: 2000
+
+securityContext:
+  {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  ports:
+    - port: 3003
+      targetPort: 'p3003' # named port from deployment
+      protocol: TCP
+      name: 'p3003'
+    - port: 7500
+      targetPort: 'p7500' # named port from deployment
+      protocol: TCP
+      name: 'p7500'
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 8G
+  requests:
+    cpu: 1000m
+    memory: 4G
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+configmap:
+  data: 
+    NODE_DEBUG: 'fastmq*'
+

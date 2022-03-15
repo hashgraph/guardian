@@ -45,6 +45,9 @@ export class VcDocument implements IVCDocument {
     tag: string;
 
     @Column()
+    cid?: string;
+
+    @Column()
     option: any;
 
     @Column()

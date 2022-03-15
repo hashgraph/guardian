@@ -20,6 +20,7 @@ export class AuditComponent implements OnInit {
     loading: boolean = true;
     displayedColumns: string[] = [
         'id',
+        'cid',
         'hash',
         'owner',
         'createDate',
@@ -47,6 +48,9 @@ export class AuditComponent implements OnInit {
 
     loadData() {
         this.loading = true;
+        this.auditService.getVpDocuments().subscribe((data: any[]) => {
+
+            console.log(data)
         forkJoin([
             this.auditService.getVpDocuments(),
             this.schemaService.getSchemes()
@@ -63,11 +67,12 @@ export class AuditComponent implements OnInit {
         });
     }
 
-    openVP(document: any) {
+    openVP(document: any, cid: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
                 document: document,
+                cid: cid,
                 title: 'VP',
                 type: 'VP',
                 schemas: this.schemas,

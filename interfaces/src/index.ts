@@ -1,3 +1,6 @@
+export { Token } from './models/token';
+export { Schema } from './models/schema';
+
 export { ApproveStatus } from './type/approve-status.type';
 export { DidDocumentStatus } from './type/did-status.type';
 export { DocumentSignature } from './type/document-signature.type';
@@ -7,6 +10,9 @@ export { RootState } from './type/root-state.type';
 export { SchemaEntity } from './type/schema-entity.type';
 export { UserRole, PolicyRole } from './type/user-role.type';
 export { MessageAPI } from './type/message-api.type';
+export { UserState } from './type/user-state.type';
+export { ImportType } from './type/import.type';
+
 export { IApprovalDocument } from './interface/approval-document.interface';
 export { ICredentialSubject } from './interface/credential-subject.interface';
 export { IDidDocument } from './interface/did-document.interface';
@@ -19,15 +25,15 @@ export { IVCDocument } from './interface/vc-document.interface';
 export { IVC } from './interface/vc.interface';
 export { IVPDocument } from './interface/vp-document.interface';
 export { IVP } from './interface/vp.interface';
-export { IUser, ISession } from './interface/user.interface';
+export { IUser, ISession, IUserProfile } from './interface/user.interface';
 export { IWalletAccount } from './interface/wallet-account.interface';
 export { IChainItem } from './interface/chain-item.interface';
-export { Token } from './models/token';
-export { Schema } from './models/schema';
+
 export { SchemaStatus } from './type/schema-status.type';
 export { ISchemaDocument } from './interface/schema-document.interface';
 export { SchemaField } from './interface/schema-field.interface';
+
 export { ModelHelper } from './helpers/model-helper'
-export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';
+
 export { IMessageResponse, MessageResponse, MessageError, Response } from './models/message-response';

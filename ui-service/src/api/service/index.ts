@@ -7,3 +7,4 @@ export {accountAPI} from '@api/service/account';
 export {demoAPI} from '@api/service/demo';
 export {externalAPI} from '@api/service/external';
 export {ipfsAPI} from '@api/service/ipfs'
+export {infoAPI} from '@api/service/info';

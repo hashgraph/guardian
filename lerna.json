@@ -1,0 +1,13 @@
+{
+  "packages": [
+    "message-broker",
+    "frontend",
+    "ui-service",
+    "guardian-service",
+    "vc-modules",
+    "interfaces",
+    "mrv-sender",
+    "tymlez-service"
+  ],
+  "version": "0.0.0"
+}
