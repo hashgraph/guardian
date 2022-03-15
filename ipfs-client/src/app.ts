@@ -1,4 +1,5 @@
 import FastMQ from 'fastmq';
+import { Logger } from 'logger-helper';
 import { NFTStorage } from 'nft.storage';
 import { createConnection } from 'typeorm';
 import { fileAPI } from './api/file.service';
@@ -30,7 +31,9 @@ Promise.all([
         name: "NFT_API_KEY"
     });
 
+    new Logger().setChannel(channel);
     await fileAPI(channel, new NFTStorage({ token: nftApiKey?.value || process.env.NFT_API_KEY }), settingsRepository);
 
+    new Logger().info('ipfs-client service started', ['IPFS_CLIENT']);
     console.log('ipfs-client service started');
 })

@@ -5,6 +5,7 @@ import axios, { ResponseType } from 'axios';
 import axiosRetry from 'axios-retry';
 import { MongoRepository } from 'typeorm';
 import { Settings } from '../entity/settings';
+import { Logger } from 'logger-helper';
 
 
 export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
@@ -39,6 +40,7 @@ export const fileAPI = async function (
             res.send(response, 'json');
         }
         catch (e) {
+            new Logger().error(e.toString(), ['IPFS_CLIENT']);
             const response = {
                 body: null,
                 error: e.message
@@ -82,6 +84,7 @@ export const fileAPI = async function (
             }
         }
         catch (e) {
+            new Logger().error(e.toString(), ['IPFS_CLIENT']);
             res.send({ error: e.message });
         }
     })
@@ -115,6 +118,7 @@ export const fileAPI = async function (
             res.send({});
         }
         catch (e) {
+            new Logger().error(e.toString(), ['IPFS_CLIENT']);
             console.log(e);
             res.send({ error: e.message });
         }
