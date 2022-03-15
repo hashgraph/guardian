@@ -10,6 +10,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { PolicyAction, SavePolicyDialog } from '../../save-policy-dialog/save-policy-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
+import * as yaml from 'js-yaml';
 
 /**
  * The page for editing the policy and blocks.
@@ -357,10 +358,10 @@ export class PolicyConfigurationComponent implements OnInit {
             let root = null;
             try {
                 if (this.currentView == 'json') {
-                    root = await this.jsonToObject(this.code);
+                    root = this.jsonToObject(this.code);
                 }
                 if (this.currentView == 'yaml') {
-                    root = await this.yamlToObject(this.code);
+                    root = this.yamlToObject(this.code);
                 }
             } catch (error: any) {
                 this.errors = [error.message];
@@ -374,10 +375,10 @@ export class PolicyConfigurationComponent implements OnInit {
             let code = "";
             try {
                 if (this.currentView == 'blocks') {
-                    code = await this.objectToJson(this.root);
+                    code = this.objectToJson(this.root);
                 }
                 if (this.currentView == 'yaml') {
-                    code = await this.yamlToJson(this.code);
+                    code = this.yamlToJson(this.code);
                 }
             } catch (error: any) {
                 this.errors = [error.message];
@@ -391,10 +392,10 @@ export class PolicyConfigurationComponent implements OnInit {
             let code = "";
             try {
                 if (this.currentView == 'blocks') {
-                    code = await this.objectToYaml(this.root);
+                    code = this.objectToYaml(this.root);
                 }
                 if (this.currentView == 'json') {
-                    code = await this.jsonToYaml(this.code);
+                    code = this.jsonToYaml(this.code);
                 }
             } catch (error: any) {
                 this.errors = [error.message];
@@ -408,41 +409,38 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = false;
     }
 
-    async objectToJson(root: any): Promise<string> {
+    objectToJson(root: any): string {
         return JSON.stringify(root, null, 2);
     }
 
-    async jsonToObject(json: string): Promise<any> {
+    jsonToObject(json: string): any {
         return JSON.parse(json);
     }
 
-    async objectToYaml(root: any): Promise<string> {
-        return new Promise((resolve, reject) => {
-            this.policyEngineService.toYAML(root).subscribe((data: any) => {
-                resolve(data.yaml);
-            }, (e) => {
-                reject({ message: 'Bad yaml' });
-            });
+    objectToYaml(root: any): string {
+        return yaml.dump(root, {
+            indent: 4,
+            lineWidth: -1,
+            noRefs: false,
+            noCompatMode: true
         });
     }
 
-    async yamlToObject(yaml: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.policyEngineService.fromYAML(yaml).subscribe((data: any) => {
-                resolve(data.json);
-            }, (e) => {
-                reject({ message: 'Bad yaml' });
-            });
-        });
+    yamlToObject(yamlString: string): any {
+        return yaml.load(yamlString);
     }
 
-    async yamlToJson(yaml: string): Promise<string> {
-        const root = await this.yamlToObject(yaml);
-        return await this.objectToJson(root);
+    yamlToJson(yaml: string): string {
+        const root = this.yamlToObject(yaml);
+        return this.objectToJson(root);
     }
 
-    async jsonToYaml(json: string): Promise<string> {
-        const root = await this.jsonToObject(json);
-        return await this.objectToYaml(root);
+    jsonToYaml(json: string): string {
+        const root = this.jsonToObject(json);
+        return this.objectToYaml(root);
     }
 }
+
+
+
+

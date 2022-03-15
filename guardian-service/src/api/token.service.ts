@@ -80,7 +80,7 @@ export const tokenAPI = async function (
             res.send(new MessageResponse(tokens));
         } catch (error) {
             console.error(error);
-            res.send(new MessageError(error));
+            res.send(new MessageError(error.message));
         }
     })
 }

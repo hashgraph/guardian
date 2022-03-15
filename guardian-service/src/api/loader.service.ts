@@ -35,8 +35,8 @@ export const loaderAPI = async function (
                 return;
             }
             res.send(new MessageError('Document not found'));
-        } catch (e) {
-            res.send(new MessageError(e));
+        } catch (error) {
+            res.send(new MessageError(error.message));
         }
     });
 
@@ -66,7 +66,7 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
-            res.send(new MessageError(error));
+            res.send(new MessageError(error.message));
         }
     });
 
@@ -95,7 +95,7 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
-            res.send(new MessageError(error));
+            res.send(new MessageError(error.message));
         }
     });
 }

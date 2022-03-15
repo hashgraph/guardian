@@ -319,7 +319,7 @@ function showHide(event) {
 
 async function generateAndSendMRV(config) {
     try {
-        const result = await fetch('/mrv-generate', {
+        const result = await fetch(location.href + 'mrv-generate', {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
             mode: 'cors', // no-cors, *cors, same-origin
             cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -347,7 +347,7 @@ async function generateAndSendMRV(config) {
 
 async function generateAndSendWipe(config) {
     try {
-        const result = await fetch('/wipe-generate', {
+        const result = await fetch(location.href + 'wipe-generate', {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
             mode: 'cors', // no-cors, *cors, same-origin
             cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached

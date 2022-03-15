@@ -1,6 +1,5 @@
 import { Inject } from '@helpers/decorators/inject';
 import { Guardians } from '@helpers/guardians';
-import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
@@ -29,17 +28,14 @@ export class RequestVcDocumentBlock {
     @Inject()
     private wallet: Wallet;
 
-    @Inject()
-    private users: Users;
-
     private schema: Schema | null;
 
     constructor() {
     }
 
-    async changeActive(user, active) {
+    async changeActive(user:IAuthUser, active) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        let blockState;
+        let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
             this.state[user.did] = blockState;
@@ -50,7 +46,7 @@ export class RequestVcDocumentBlock {
         ref.updateBlock(blockState, user);
     }
 
-    getActive(user) {
+    getActive(user:IAuthUser) {
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -77,7 +73,7 @@ export class RequestVcDocumentBlock {
         }
         return {
             id: ref.uuid,
-            blockType: 'requestVcDocument',
+            blockType: ref.blockType,
             schema: this.schema,
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
@@ -89,6 +85,7 @@ export class RequestVcDocumentBlock {
 
     async setData(user: IAuthUser, _data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        console.log(`requestVcDocumentBlock: setData: ${ref.tag}`);
 
         if (!user.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);

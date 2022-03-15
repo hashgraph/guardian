@@ -267,7 +267,7 @@ export const trustChainAPI = async function (
             res.send(new MessageResponse(chain));
         } catch (error) {
             console.error(error);
-            res.send(new MessageError(error));
+            res.send(new MessageError(error.message));
         }
     });
 }

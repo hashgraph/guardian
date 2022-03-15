@@ -24,7 +24,7 @@ import { timeout } from './utils';
 export class HederaDIDHelper {
     public readonly client: Client;
     public readonly network: HcsIdentityNetwork;
-    public static MAX_TIMEOUT: number = 60000;
+    public static MAX_TIMEOUT: number = 120000;
 
     constructor(client: Client, network: HcsIdentityNetwork) {
         this.client = client;

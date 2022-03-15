@@ -69,7 +69,7 @@ export class ReportBlock {
         await this.itemUserMap(report.documents, map);
     }
 
-    async getData(user: IAuthUser, uuid): Promise<any> {
+    async getData(user: IAuthUser, uuid:string): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const blockState = this.state[user.did] || {};

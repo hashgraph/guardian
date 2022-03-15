@@ -138,7 +138,7 @@ Press the **green triangle** to begin generating the data. Navigate back to the 
 
 17\. The last step is to log out of the Installer account and log into the Auditor account.
 
-[![image](https://user-images.githubusercontent.com/40637665/148989347-49bfb6fb-6753-4167-aeac-1dd6602cb1a4.png)](https://user-images.githubusercontent.com/40637665/148989347-49bfb6fb-6753-4167-aeac-1dd6602cb1a4.png)
+![](https://user-images.githubusercontent.com/40637665/148989347-49bfb6fb-6753-4167-aeac-1dd6602cb1a4.png)
 
 There are two tabs in this view: **Audit** and **Trust Chain**. Clicking into the Audit tab offers high-level public information from our reference implementation such as the Verifiable Presentation ID, the Hash of the Verifiable Presentation, the DID of the sensor, the date information the Verifiable Presentation was created, the type of activity, and the ability to view the Verifiable Presentation.
 
@@ -149,7 +149,5 @@ There are two tabs in this view: **Audit** and **Trust Chain**. Clicking into th
 ![](https://user-images.githubusercontent.com/40637665/137972170-7970a07e-7a76-410b-90a7-22a9f3586103.png)
 
 The **Trust Chain** view displays important elements that can be publicly discovered. Elements include token information, Policy information, and all of the important information regarding the Verifiable Credentials that make up the Verifiable Presentation. You'll notice "Cards" on the bottom of the screen. Those cards are Verifiable Credentials displayed in chronological order. For example, you will see when the Root Authority was created, when the policy was created, when the Installer submitted documentation, etc. Feel free to explore!
-
-\\
 
 ![](https://user-images.githubusercontent.com/40637665/137972740-a40ed2cb-2502-4da5-a9f2-3047c30e6773.png)

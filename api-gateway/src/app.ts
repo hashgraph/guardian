@@ -49,7 +49,7 @@ Promise.all([
     // Config routes
     app.use('/policies', authorizationHelper, policyAPI);
     app.use('/accounts/', accountAPI);
-    app.use('/profile/', authorizationHelper, profileAPI);
+    app.use('/profiles/', authorizationHelper, profileAPI);
     app.use('/settings/', authorizationHelper, settingsAPI);
     app.use('/schemas', authorizationHelper, schemaAPI);
     app.use('/tokens', authorizationHelper, tokenAPI);

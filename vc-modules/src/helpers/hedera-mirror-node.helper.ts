@@ -8,7 +8,7 @@ import { timeout } from "./utils";
  * Hedera mirror node helper
  */
 export class HederaMirrorNodeHelper {
-    public static MAX_TIMEOUT: number = 60000;
+    public static MAX_TIMEOUT: number = 120000;
 
     /**
      * Return message by timestamp (messageId)

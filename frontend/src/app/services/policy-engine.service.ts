@@ -17,7 +17,7 @@ export class PolicyEngineService {
   private websocketSubject: Subject<unknown>;
   private wsSubjectConfig: WebSocketSubjectConfig<string>;
   private socketSubscription: Subscription | null = null;
-  private heartbeatTimeout: number | null = null;
+  private heartbeatTimeout: any = null;
 
   private connectionStatus: boolean = false;
   private reconnectInterval: number = 5000;  /// pause between connections
@@ -43,7 +43,10 @@ export class PolicyEngineService {
         next: this.openWebSocket.bind(this)
       }
     };
+    this.init();
+  }
 
+  public init() {
     this.connect();
     this.auth.subscribe(() => {
       this.reconnectAttempts = 10;
@@ -73,6 +76,10 @@ export class PolicyEngineService {
     if (this.heartbeatTimeout) {
       clearTimeout(this.heartbeatTimeout);
     }
+    const accessToken = this.auth.getAccessToken();
+    if (!accessToken) {
+      return;
+    }
     this.socketSubscription = null;
     this.heartbeatTimeout = null;
     this.socket = null;
@@ -92,6 +99,9 @@ export class PolicyEngineService {
   }
 
   private connect(): void {
+    if (this.socket) {
+      this.socket.unsubscribe();
+    }
     if (this.socketSubscription) {
       this.socketSubscription.unsubscribe();
     }
@@ -104,7 +114,7 @@ export class PolicyEngineService {
     }
     this.wsSubjectConfig.url = this.getUrl(accessToken);
     this.socket = webSocket(this.wsSubjectConfig);
-    this.socketSubscription =  this.socket.subscribe(
+    this.socketSubscription = this.socket.subscribe(
       (m: any) => {
         if (m === "pong") {
           return;
@@ -221,13 +231,5 @@ export class PolicyEngineService {
         'Content-Type': 'binary/octet-stream'
       }
     });
-  }
-
-  public toYAML(json: any): Observable<any> {
-    return this.http.post<any>(`${this.url}/to-yaml`, { json });
-  }
-
-  public fromYAML(yaml: string): Observable<any> {
-    return this.http.post<any>(`${this.url}/from-yaml`, { yaml });
   }
 }

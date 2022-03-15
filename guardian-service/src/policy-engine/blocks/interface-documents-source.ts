@@ -2,11 +2,9 @@ import { Guardians } from '@helpers/guardians';
 import { BlockStateUpdate } from '@policy-engine/helpers/decorators';
 import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
 import { IAuthUser } from '../../auth/auth.interface';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import {PolicyComponentsUtils} from '../policy-components-utils';
-import {IPolicySourceBlock} from '@policy-engine/policy-engine.interface';
+import { PolicyComponentsUtils } from '../policy-components-utils';
+import { IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
 
 /**
  * Document source block with UI
@@ -16,16 +14,13 @@ import {IPolicySourceBlock} from '@policy-engine/policy-engine.interface';
     commonBlock: false
 })
 export class InterfaceDocumentsSource {
-    @Inject()
-    private users: Users;
 
     @BlockStateUpdate()
-    async update(state, user) {
+    async update(state: any, user: IAuthUser) {
     }
 
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
-        const userFull = await this.users.getUser(user.username);
 
         const blocks = ref.getFiltersAddons().map(addon => {
             return {

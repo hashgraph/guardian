@@ -1,7 +1,7 @@
 FROM node:16 as frontendBuilder
 WORKDIR /usr/local/interfaces
-COPY ./interfaces/package*.json /usr/local/interfaces
-COPY ./interfaces/tsconfig.json /usr/local/interfaces
+COPY ./interfaces/package*.json /usr/local/interfaces/
+COPY ./interfaces/tsconfig.json /usr/local/interfaces/
 RUN npm install
 ADD ./interfaces/src/ /usr/local/interfaces/src/.
 RUN npm run build

@@ -109,6 +109,15 @@ export class PolicyImportExportHelper {
             const item = schemesMap[index];
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
         }
+        // compatibility with older versions
+        replaceAllEntities(policy.config, ['blockType'], 'interfaceDocumentsSource', 'interfaceDocumentsSourceBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'requestVcDocument', 'requestVcDocumentBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'sendToGuardian', 'sendToGuardianBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'interfaceAction', 'interfaceActionBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'mintDocument', 'mintDocumentBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'aggregateDocument', 'aggregateDocumentBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'wipeDocument', 'retirementDocumentBlock');
+
         regenerateIds(policy.config);
 
         let model = policyRepository.create(policy as Policy);
