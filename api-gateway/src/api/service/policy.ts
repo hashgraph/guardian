@@ -142,10 +142,11 @@ policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedReques
 policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        const policy: any = await engineService.exportFile(req.user, req.params.policyId);
+        const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
+        const policy: any = await engineService.getPolicy(req.params.policyId);
         res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
         res.setHeader('Content-type', 'application/zip');
-        res.send(policy.file);
+        res.send(policyFile);
     } catch (e) {
         console.error(e);
         res.status(500).send({ code: 500, message: e.message });
