@@ -3,6 +3,7 @@ import { HcsDidRootKey } from '@hashgraph/did-sdk-js';
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';
+import { Logger } from 'logger-helper';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
@@ -36,6 +37,7 @@ export const loaderAPI = async function (
             }
             res.send(new MessageError('Document not found'));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -66,6 +68,7 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -95,6 +98,7 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });

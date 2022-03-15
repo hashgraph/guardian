@@ -6,3 +6,5 @@ export {accountAPI} from '@api/service/account';
 export {demoAPI} from '@api/service/demo';
 export {externalAPI} from '@api/service/external';
 export {ipfsAPI} from '@api/service/ipfs'
+export {loggerAPI} from '@api/service/logger';
+export {settingsAPI} from '@api/service/settings';

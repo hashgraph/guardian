@@ -1,4 +1,4 @@
-import { MessageAPI } from "interfaces";
+import { CommonSettings, MessageAPI } from "interfaces";
 import { Singleton } from "./decorators/singleton";
 
 /**
@@ -59,5 +59,34 @@ export class IPFS {
         return responseType === 'raw'
             ? res.body.data
             : res.body;
+    }
+
+    /**
+     * Update settings
+     * @param settings Settings to update
+     */
+     public async updateSettings(settings: CommonSettings): Promise<void> {
+        const res = (await this.channel.request(this.target, MessageAPI.UPDATE_SETTINGS, settings)).payload;
+        if (!res) {
+            throw new Error('Invalid IPFS response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+    }
+
+    /**
+     * Get settings
+     * @returns Settings
+     */
+     public async getSettings(): Promise<any> {
+        const res = (await this.channel.request(this.target, MessageAPI.GET_SETTINGS)).payload;
+        if (!res) {
+            throw new Error('Invalid IPFS response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+        return res.body;
     }
 }

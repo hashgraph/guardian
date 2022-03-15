@@ -1,5 +1,6 @@
 import { Response, Router } from 'express';
 import { IPFS } from '@helpers/ipfs';
+import { Logger } from 'logger-helper';
 
 /**
  * IPFS route
@@ -24,8 +25,7 @@ ipfsAPI.post('/file', async (req: any, res: Response) => {
 
         res.status(200).json(cid);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
-
-

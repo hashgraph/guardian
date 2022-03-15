@@ -21,6 +21,13 @@ services:
       - 7500
       - 3003
 
+  logger-service:
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
+    depends_on:
+      - message-broker
+
   auth-service:
     build:
       context: .
@@ -28,6 +35,7 @@ services:
     depends_on:
       - mongo
       - message-broker
+      - logger-service
 
   api-gateway:
     build:
@@ -40,6 +48,7 @@ services:
       - message-broker
       - guardian-service
       - auth-service
+      - logger-service
 
   guardian-service:
     build:
@@ -49,6 +58,7 @@ services:
       - mongo
       - message-broker
       - auth-service
+      - logger-service
 
   ipfs-client:
     build:
@@ -63,6 +73,7 @@ services:
       - "8081:8081"
     depends_on:
       - message-broker
+      - logger-service
 
   mrv-sender:
     build:

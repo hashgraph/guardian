@@ -4,6 +4,7 @@ import { ISchema, SchemaHelper, UserRole } from 'interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
+import { Logger } from 'logger-helper';
 
 export async function parseZipFile(zipFile: any): Promise<any[]> {
     const zip = new JSZip();
@@ -56,6 +57,7 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(201).json(schemes);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -68,6 +70,7 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -91,6 +94,7 @@ schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -113,6 +117,7 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async 
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -143,6 +148,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -157,6 +163,7 @@ schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), asy
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -175,6 +182,7 @@ schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async 
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).json(schemes);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -190,6 +198,7 @@ schemaAPI.post('/import/message/preview', permissionHelper(UserRole.ROOT_AUTHORI
         const schemaToPreview = await guardians.previewSchemesByMessages([messageId]);
         res.status(200).json(schemaToPreview);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -206,6 +215,7 @@ schemaAPI.post('/import/file/preview', permissionHelper(UserRole.ROOT_AUTHORITY)
         const schemaToPreview = await guardians.previewSchemesByFile(files);
         res.status(200).json(schemaToPreview);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -231,6 +241,7 @@ schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.ROOT_AUTHOR
             owner: scheme.owner
         });
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -250,7 +261,7 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.ROOT_AUTHORITY
         res.setHeader('Content-type', 'application/zip');
         arcStream.pipe(res);
     } catch (error) {
+        new Logger().error(error.toString(), ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
-

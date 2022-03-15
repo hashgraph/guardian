@@ -24,6 +24,8 @@ import {Guardians} from '@helpers/guardians';
 import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
+import { Settings } from '@entity/settings';
+import { Logger } from 'logger-helper';
 
 Promise.all([
     createConnection({
@@ -40,12 +42,12 @@ Promise.all([
             entitiesDir: 'dist/entity'
         }
     }),
-    FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS),
-    readConfig()
+    FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
 ]).then(async values => {
-    const [db, channel, fileConfig] = values;
+    const [db, channel] = values;
 
     IPFS.setChannel(channel);
+    new Logger().setChannel(channel);
     new Guardians().setChannel(channel);
     new Wallet().setChannel(channel);
     new Users().setChannel(channel);
@@ -60,6 +62,7 @@ Promise.all([
         try {
             await policyGenerator.generate(policy.id.toString());
         } catch (e) {
+            new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
             console.error(e.message);
         }
     }
@@ -75,10 +78,19 @@ Promise.all([
     const tokenRepository = db.getMongoRepository(Token);
     const configRepository = db.getMongoRepository(RootConfig);
     const schemaRepository = db.getMongoRepository(Schema);
+    const settingsRepository = db.getMongoRepository(Settings);
+    let fileConfig = null;
+    try {
+        fileConfig = await readConfig(settingsRepository);
+    }
+    catch (e){
+        new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
+        console.log(e);
+    }
 
     await setDefaultSchema(schemaRepository);
-    await configAPI(channel, fileConfig);
-    await schemaAPI(channel, schemaRepository, configRepository);
+    await configAPI(channel, fileConfig, settingsRepository);
+    await schemaAPI(channel, schemaRepository, configRepository, settingsRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await rootAuthorityAPI(channel, configRepository);
@@ -93,5 +105,6 @@ Promise.all([
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
 
+    new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
 });

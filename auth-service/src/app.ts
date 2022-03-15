@@ -3,6 +3,7 @@ import {createConnection} from 'typeorm';
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/accountService';
 import { WalletService } from '@api/walletService';
+import { Logger } from 'logger-helper';
 
 const PORT = process.env.PORT || 3002;
 
@@ -25,8 +26,10 @@ Promise.all([
 ]).then(async ([db, channel]) => {
     await fixtures();
 
+    new Logger().setChannel(channel);
     new AccountService(channel);
     new WalletService(channel);
 
+    new Logger().info('auth service started', ['AUTH_SERVICE']);
     console.log('auth service started');
 });

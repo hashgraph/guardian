@@ -15,6 +15,9 @@ import { SchemaConfigComponent } from './views/schema-config/schema-config.compo
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
 import { AuthService } from './services/auth.service';
+import { AdminHeaderComponent } from './views/admin/admin-header/admin-panel.component';
+import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
+import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
 
 
 class Guard {
@@ -36,6 +39,21 @@ class Guard {
   }
 
   canActivate() {
+    return this.auth.sessions().pipe(
+      map((res: IUser | null) => {
+        if (res) {
+          return res.role == this.role;
+        } else {
+          return this.router.parseUrl(this.defaultPage);
+        }
+      }),
+      catchError(() => {
+        return of(this.router.parseUrl(this.defaultPage));
+      })
+    )
+  }
+
+  canActivateChild() {
     return this.auth.sessions().pipe(
       map((res: IUser | null) => {
         if (res) {
@@ -87,6 +105,12 @@ const routes: Routes = [
   { path: 'config', component: RootConfigComponent, canActivate: [RootAuthorityGuard] },
   { path: 'tokens', component: TokenConfigComponent, canActivate: [RootAuthorityGuard] },
   { path: 'schemes', component: SchemaConfigComponent, canActivate: [RootAuthorityGuard] },
+  { path: 'admin', component: AdminHeaderComponent, canActivate: [RootAuthorityGuard], canActivateChild: [RootAuthorityGuard],
+    children: [
+      { path: 'settings', component: SettingsViewComponent },
+      { path: 'logs', component: LogsViewComponent }
+    ]
+  },
   
   { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard] },
   { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard] },
