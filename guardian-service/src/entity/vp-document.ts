@@ -1,6 +1,5 @@
 import { DocumentSignature, DocumentStatus, IVPDocument, SchemaEntity } from 'interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
-
 @Entity()
 export class VpDocument implements IVPDocument {
     @ObjectIdColumn()
@@ -37,6 +36,9 @@ export class VpDocument implements IVPDocument {
 
     @Column()
     tag: string;
+
+    @Column()
+    cid?: string;
 
     @BeforeInsert()
     setDefaults() {

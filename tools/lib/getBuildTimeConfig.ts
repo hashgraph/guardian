@@ -27,6 +27,7 @@ export const getBuildTimeConfig = async ({
     GUARDIAN_OPERATOR_KEY,
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+    WEB3_STORAGE_TOKEN
   ] =
     env !== 'local'
       ? await getParameters([
@@ -37,6 +38,8 @@ export const getBuildTimeConfig = async ({
           `/${env}/tymlez-platform/guardian-operator-key`,
           `/${env}/tymlez-platform/guardian-tymlez-api-key`,
           `/${env}/tymlez-platform/guardian-tymlez-service-base-url`,
+          `/${env}/tymlez-platform/web3-storage-api-token`,
+
         ])
       : [
           undefined,
@@ -46,6 +49,7 @@ export const getBuildTimeConfig = async ({
           process.env.GUARDIAN_OPERATOR_KEY,
           'tymlezApiKey1',
           'http://localhost:3010',
+          process.env.WEB3_STORAGE_TOKEN
         ];
 
   assert(GUARDIAN_OPERATOR_ID, `GUARDIAN_OPERATOR_ID is missing`);
@@ -54,6 +58,10 @@ export const getBuildTimeConfig = async ({
   assert(
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
     `GUARDIAN_TYMLEZ_SERVICE_BASE_URL is missing`,
+  );
+  assert(
+    WEB3_STORAGE_TOKEN,
+    `WEB3_STORAGE_TOKEN is missing`,
   );
 
   return {
@@ -66,6 +74,7 @@ export const getBuildTimeConfig = async ({
     GUARDIAN_OPERATOR_KEY,
     GUARDIAN_TYMLEZ_API_KEY,
     GUARDIAN_TYMLEZ_SERVICE_BASE_URL,
+    WEB3_STORAGE_TOKEN
   };
 };
 
@@ -109,6 +118,7 @@ interface IConfig {
   GCP_PROJECT_ID?: string;
   GCP_REGION?: string;
   GKE_CLUSTER?: string;
+  WEB3_STORAGE_TOKEN?: string;
 
   DEVICE_INFOS?: IDeviceInfo[];
 }

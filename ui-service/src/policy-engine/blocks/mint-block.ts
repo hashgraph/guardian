@@ -6,9 +6,12 @@ import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
+import { File, Web3Storage } from 'web3.storage';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import {PolicyComponentsStuff} from '@policy-engine/policy-components-stuff';
+
+const web3storageToken =  process.env.WEB3_STORAGE_TOKEN;
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -86,13 +89,15 @@ export class MintBlock {
             if (!vp) {
                 return false;
             }
+
             await this.guardians.setVpDocument({
                 hash: vp.toCredentialHash(),
                 document: vp.toJsonTree(),
                 owner: sensorDid,
                 type: type as any,
                 policyId: ref.policyId,
-                tag: ref.tag
+                tag: ref.tag,
+                cid: vp.getCid()
             })
             return true;
         } catch (error) {
@@ -140,6 +145,11 @@ export class MintBlock {
             vcs,
             uuid
         );
+
+        const storage = new Web3Storage({token: web3storageToken});
+        const cid = (await storage.put([new File([JSON.stringify(vp)], `${vp.getId()}.json`, {type:'application/json'})]));
+        vp.setCid(cid);
+
         return vp;
     }
 
@@ -158,19 +168,23 @@ export class MintBlock {
 
         let mintVC: HcsVcDocument<VcSubject>;
         console.log("Minting token", { tokenId, supplyKey, tokenValue, uuid })
-        if (token.tokenType == 'non-fungible') {
-            const data: any = HederaUtils.decode(tokenValue.toString());
-            const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], uuid);
-            await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials, uuid);
-            mintVC = await this.createMintVC(root, token, serials);
-        } else {
-            await hederaHelper.SDK.mint(tokenId, supplyKey, tokenValue, uuid);
-            await hederaHelper.SDK.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
-            mintVC = await this.createMintVC(root, token, tokenValue);
-        }
-        console.log("Creating VP after minting", { tokenId, uuid })
+        mintVC = await this.createMintVC(root, token, tokenValue);
+
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
+        if (token.tokenType == 'non-fungible') {
+            const data: any = HederaUtils.decode(tokenValue.toString());
+            const serials = await hederaHelper.SDK.mintNFT(tokenId, supplyKey, [data], vp.getCid()||uuid);// uuid);
+            //mintVC = await this.createMintVC(root, token, serials);
+            await hederaHelper.SDK.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, serials,vp.getCid()|| uuid);
+        } else {
+            await hederaHelper.SDK.mint(tokenId, supplyKey, tokenValue, vp.getCid());//uuid);
+            //mintVC = await this.createMintVC(root, token, tokenValue)
+            await hederaHelper.SDK.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, vp.getCid());
+        }
+        console.log("Creating VP after minting", { tokenId, uuid })
+        //const vcs = [].concat(document, mintVC);
+        //const vp = await this.createVP(root, uuid, vcs);
 
         console.log("Saving VP", { tokenId, uuid })
         let status = false;

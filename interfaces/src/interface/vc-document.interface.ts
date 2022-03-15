@@ -3,6 +3,7 @@ import {IVC} from './vc.interface';
 
 export interface IVCDocument {
     id?: string;
+    cid?: string;
     owner: string;
     assign?: string;
     hash: string;

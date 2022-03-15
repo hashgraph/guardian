@@ -13,6 +13,12 @@
                 <a (click)="setFilter('id', element.document.id)">{{element.document.id}} </a>
             </td>
         </ng-container>
+       <ng-container matColumnDef="cid">
+            <th mat-header-cell *matHeaderCellDef> Cid </th>
+            <td mat-cell *matCellDef="let element">
+                <a href="ipfs://{{element.cid}}" target="_blank">{{element.cid}} </a>
+            </td>
+        </ng-container>
         <ng-container matColumnDef="owner">
             <th mat-header-cell *matHeaderCellDef> Owner </th>
             <td mat-cell *matCellDef="let element">
@@ -28,7 +34,7 @@
             <td mat-cell *matCellDef="let element"> {{element.createDate}} </td>
         </ng-container>
         <ng-container matColumnDef="vp">
-            <th mat-header-cell *matHeaderCellDef> Document </th>
+            <th mat-header-cell *matHeaderCellDef> Document</th>
             <td mat-cell *matCellDef="let element">
                 <a (click)="openVP(element.document)">View Document</a>
             </td>

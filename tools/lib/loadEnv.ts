@@ -15,6 +15,7 @@ export const loadEnv = async (): Promise<void> => {
     GUARDIAN_OPERATOR_ID,
     GUARDIAN_OPERATOR_KEY,
     GUARDIAN_TYMLEZ_API_KEY,
+    WEB3_STORAGE_TOKEN
   } = await getBuildTimeConfig({
     env: process.env.ENV,
     clientName: process.env.CLIENT_NAME,
@@ -26,6 +27,7 @@ export const loadEnv = async (): Promise<void> => {
     data: {
       GUARDIAN_OPERATOR_ID,
       GUARDIAN_OPERATOR_KEY,
+      WEB3_STORAGE_TOKEN
     },
   });
 
@@ -35,6 +37,7 @@ export const loadEnv = async (): Promise<void> => {
     data: {
       GUARDIAN_OPERATOR_ID,
       GUARDIAN_OPERATOR_KEY,
+      WEB3_STORAGE_TOKEN
     },
   });
 
@@ -45,6 +48,7 @@ export const loadEnv = async (): Promise<void> => {
       GUARDIAN_OPERATOR_ID,
       GUARDIAN_OPERATOR_KEY,
       GUARDIAN_TYMLEZ_API_KEY,
+      WEB3_STORAGE_TOKEN
     },
   });
 
@@ -55,16 +59,19 @@ export const loadEnv = async (): Promise<void> => {
       GUARDIAN_OPERATOR_ID,
       GUARDIAN_OPERATOR_KEY,
       GUARDIAN_TYMLEZ_API_KEY,
+      WEB3_STORAGE_TOKEN
     },
   });
 
   console.log('Updating ./guardian-service/config.json');
+  console.log('web3storgage: '+WEB3_STORAGE_TOKEN)
   await writeFile(
     './guardian-service/config.json',
     JSON.stringify(
       {
         OPERATOR_ID: GUARDIAN_OPERATOR_ID,
         OPERATOR_KEY: GUARDIAN_OPERATOR_KEY,
+        WEB3_STORAGE_TOKEN
       },
       undefined,
       2,

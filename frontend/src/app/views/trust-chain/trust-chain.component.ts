@@ -111,6 +111,8 @@ export class TrustChainComponent implements OnInit {
                             ...vcMint.credentialSubject[0],
                             issuer: vcMint.issuer,
                             document: vcMint,
+                            schema: vcMint.type.includes('MintToken') ? 'MintToken' : 'MintNFToken',
+                            cid: vcMint.cid
                             schema: vcMint.credentialSubject[0].type,
                             entity: 'Mint',
                             tag: 'Mint Token'
@@ -128,7 +130,8 @@ export class TrustChainComponent implements OnInit {
                     this.vpPolicy = {
                         ...vcPolicy.document.credentialSubject[0],
                         issuer: vcPolicy.document.issuer,
-                        document: vcPolicy.document
+                        document: vcPolicy.document,
+                        cid:vcPolicy.cid
                     };
                 } else {
                     this.vpPolicy = null;
@@ -163,6 +166,10 @@ export class TrustChainComponent implements OnInit {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
+                document: {
+                  cid:item.cid,
+                  document:item.document
+                },
                 viewDocument: true,
                 document: item.document,
                 title: item.type,
