@@ -92,27 +92,36 @@ async function createRootAuthorityProfile(profile: IUser) {
 
     await guardians.setDidDocument({ did, document });
 
-    hederaHelper.DID.createVcTransaction(vcDocument, profile.hederaAccountKey).then(function (message: any) {
-        const hash = message.getCredentialHash();
-        const operation = message.getOperation();
-        guardians.setVcDocument({ hash, operation });
-    }, function (error: any) {
-        console.error("createVcTransaction:", error);
-    });
-
-    hederaHelper.DID.createDidTransaction(hcsDid).then(function (message: any) {
+    try {
+        console.log((new Date()).toISOString(), "create DID started");
+        const message = await hederaHelper.DID.createDidTransaction(hcsDid)
         const did = message.getDid();
         const operation = message.getOperation();
         guardians.setDidDocument({ did, operation });
-    }, function (error: any) {
-        console.error('createDidTransaction:', error);
+        console.log((new Date()).toISOString(), "created DID");
+    } catch (error) {
+        console.log((new Date()).toISOString(), "create DID error:", error);
         guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
-    });
+    }
+    
+    await wait(1);
 
-    await wait(15);
+    try {
+        console.log((new Date()).toISOString(), "create VC started");
+        const message = await hederaHelper.DID.createVcTransaction(vcDocument, profile.hederaAccountKey);
+        const hash = message.getCredentialHash();
+        const operation = message.getOperation();
+        guardians.setVcDocument({ hash, operation });
+        console.log((new Date()).toISOString(), "created VC");
+    } catch (error) {
+        console.log((new Date()).toISOString(), "create VC error:", error);
+    }
+
+    await wait(1);
 
     return did;
 }
+
 
 /**
  * User profile route

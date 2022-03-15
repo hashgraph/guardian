@@ -23,7 +23,7 @@ accountAPI.get('/session', async (req: Request, res: Response) => {
         }
     } catch (e) {
         new Logger().error(e.toString(), ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Server error' });
+        res.status(500).send({ code: 500, message: e.message });
     }
 });
 

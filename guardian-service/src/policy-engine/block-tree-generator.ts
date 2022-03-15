@@ -480,10 +480,7 @@ export class BlockTreeGenerator {
                 }
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
                 const file = await zip.generateAsync({ type: 'arraybuffer' });
-                res.send(new MessageResponse({
-                    file: file,
-                    name: policy.name
-                }));
+                res.send(file, 'raw');
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.log(error);
