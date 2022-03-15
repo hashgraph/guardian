@@ -512,6 +512,9 @@ components:
           type: number
         pageIndex:
           type: number
+        sortDirection:
+          type: string
+          enum: [ASC, DESC]
     Log:
       type: object
       properties:
@@ -2252,7 +2255,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /logger:
+  /logs:
     post:
       tags:
         - logs

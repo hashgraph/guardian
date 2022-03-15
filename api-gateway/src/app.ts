@@ -59,7 +59,7 @@ Promise.all([
     app.use('/external/', externalAPI);
     app.use('/demo/', demoAPI);
     app.use('/ipfs', authorizationHelper, ipfsAPI);
-    app.use('/logger', authorizationHelper, loggerAPI);
+    app.use('/logs', authorizationHelper, loggerAPI);
     /////////////////////////////////////////
 
     server.listen(PORT, () => {

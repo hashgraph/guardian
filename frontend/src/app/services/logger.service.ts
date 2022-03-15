@@ -8,7 +8,7 @@ import { API_BASE_URL } from './api';
  */
 @Injectable()
 export class LoggerService {
-  private readonly url: string = `${API_BASE_URL}/logger`;
+  private readonly url: string = `${API_BASE_URL}/logs`;
   constructor(
     private http: HttpClient
   ) {
