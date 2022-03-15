@@ -16,6 +16,13 @@ RUN npm install
 ADD ./interfaces/src ./src/.
 RUN npm run build
 
+WORKDIR /usr/logger-helper
+COPY ./logger-helper/package*.json ./
+COPY ./logger-helper/tsconfig.json ./
+RUN npm install
+ADD ./logger-helper/src ./src/.
+RUN npm run build
+
 WORKDIR /usr/guardian-service
 COPY ./guardian-service/package*.json ./
 COPY ./guardian-service/tsconfig.json ./
