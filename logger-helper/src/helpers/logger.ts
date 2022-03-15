@@ -38,7 +38,7 @@ export class Logger {
             }
             return response.body;
         } catch (e) {
-            throw new Error(`Logger (${entity}) send: ` + e);
+            console.error(e);
         }
     }
 

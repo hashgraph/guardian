@@ -21,6 +21,13 @@ services:
       - 7500
       - 3003
 
+  logger-service:
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
+    depends_on:
+      - message-broker
+
   auth-service:
     build:
       context: .
