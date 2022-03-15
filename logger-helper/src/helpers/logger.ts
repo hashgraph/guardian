@@ -31,7 +31,7 @@ export class Logger {
         try {
             const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
             if (!response) {
-                throw 'Server is not available';
+                throw Error('Server is not available');
             }
             if (response.error) {
                 throw response.error;
