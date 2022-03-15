@@ -36,7 +36,7 @@ export abstract class ServiceRequestsBase {
             }
             return response.body;
         } catch (e) {
-            throw new Error(`Guardian (${entity}) send: ` + e);
+            throw new Error(`${this.target} (${entity}) send: ` + e);
         }
     }
 }

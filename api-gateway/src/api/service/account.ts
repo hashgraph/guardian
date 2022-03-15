@@ -21,7 +21,7 @@ accountAPI.get('/session', async (req: Request, res: Response) => {
             res.sendStatus(401);
         }
     } catch (e) {
-        res.status(500).send({ code: 500, message: 'Server error' });
+        res.status(500).send({ code: 500, message: e.message });
     }
 });
 

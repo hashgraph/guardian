@@ -11,8 +11,9 @@ demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
     const users = new Users();
     try {
         res.json(await users.getAllUserAccountsDemo());
-    } catch (e) {
-        res.status(500).send({ code: 500, message: 'Server error' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ code: 500, message: error.message });
     }
 });
 
@@ -22,6 +23,7 @@ demoAPI.get('/randomKey', async (req: Request, res: Response) => {
         const demoKey = await guardians.generateDemoKey();
         res.status(200).json(demoKey);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
