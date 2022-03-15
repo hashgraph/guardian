@@ -5,6 +5,7 @@ import { verify } from 'jsonwebtoken';
 import { getMongoRepository } from 'typeorm';
 import { User } from '@entity/user';
 import { WalletAccount } from '@entity/wallet-account';
+import { Logger } from 'logger-helper';
 
 export class WalletService {
     constructor(
@@ -20,6 +21,7 @@ export class WalletService {
             try {
                 res.send(new MessageResponse(await getMongoRepository(WalletAccount).findOne({token, type: type + '|' + key})));
             } catch (e) {
+                new Logger().error(e.toString(), ['AUTH_SERVICE']);
                 res.send(new MessageError(e.message))
             }
         });
@@ -35,6 +37,7 @@ export class WalletService {
                 });
                 res.send(new MessageResponse(await getMongoRepository(WalletAccount).save(walletAcc)));
             } catch (e) {
+                new Logger().error(e.toString(), ['AUTH_SERVICE']);
                 res.send(new MessageError(e.message))
             }
         });
