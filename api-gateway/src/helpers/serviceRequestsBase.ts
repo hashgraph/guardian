@@ -1,8 +1,8 @@
 import { IMessageResponse } from 'interfaces';
 
 export abstract class ServiceRequestsBase {
-    protected channel: any;
     abstract readonly target: string;
+    protected channel: any;
 
     /**
      * Register channel

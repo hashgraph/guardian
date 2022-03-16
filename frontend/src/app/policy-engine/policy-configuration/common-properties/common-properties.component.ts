@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { BlockErrorActions, Schema, Token } from 'interfaces';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 
@@ -27,6 +27,24 @@ export class CommonPropertiesComponent implements OnInit {
     };
 
     block!: BlockNode;
+    errorActions = [
+        {
+            label: 'No action',
+            value: BlockErrorActions.NO_ACTION
+        },
+        {
+            label: 'Retry',
+            value: BlockErrorActions.RETRY
+        },
+        {
+            label: 'Go to step',
+            value: BlockErrorActions.GOTO_STEP
+        },
+        {
+            label: 'Go to tag',
+            value: BlockErrorActions.GOTO_TAG
+        }
+    ];
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -55,7 +73,7 @@ export class CommonPropertiesComponent implements OnInit {
         if (!this.configContainer) {
             return;
         }
-        if (this.block != block) {   
+        if (this.block != block) {
             this.loadComponent(block);
         }
     }
