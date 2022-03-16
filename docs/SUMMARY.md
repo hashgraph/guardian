@@ -142,3 +142,12 @@
 
 * [Requesting](trustchains-apis/requesting.md)
 * [Building and returning](trustchains-apis/building-and-returning.md)
+
+## Settings APIs
+
+* [Displays Current Settings](settings-apis/displays-current-settings.md)
+* [Adding Settings](settings-apis/adding-settings.md)
+
+## Logs
+
+* [Returning Logs](logs/returning-logs.md)
