@@ -148,6 +148,6 @@
 * [Displaying Current Settings](settings-apis/displaying-current-settings.md)
 * [Adding Settings](settings-apis/adding-settings.md)
 
-## Logs
+## Logs APIs
 
-* [Returning Logs](logs/returning-logs.md)
+* [Returning Logs](logs-apis/returning-logs.md)
