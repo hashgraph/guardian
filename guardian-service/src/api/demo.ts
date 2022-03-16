@@ -1,4 +1,5 @@
 import { MessageAPI, MessageError, MessageResponse } from 'interfaces';
+import { Logger } from 'logger-helper';
 import { HederaHelper } from 'vc-modules';
 
 export const demoAPI = async function (
@@ -15,6 +16,7 @@ export const demoAPI = async function (
                 key: treasury.key.toString()
             }));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error));
         }
     })

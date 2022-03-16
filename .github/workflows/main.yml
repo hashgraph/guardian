@@ -22,6 +22,14 @@ jobs:
           npm install
           npm run build
           popd
+          pushd logger-helper
+          npm install
+          npm run build
+          popd
+          pushd logger-service
+          npm install
+          npm run build
+          popd
           pushd frontend
           npm install
           npm run build
@@ -50,6 +58,12 @@ jobs:
           npm run lint
           popd
           pushd vc-modules
+          npm run lint
+          popd
+          pushd logger-helper
+          npm run lint
+          popd
+          pushd logger-service
           npm run lint
           popd
           pushd auth-service

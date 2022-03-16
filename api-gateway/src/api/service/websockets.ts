@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import {IncomingMessage, Server} from 'http';
 import { Users } from '@helpers/users';
+import { Logger } from 'logger-helper';
 
 export class WebSocketsService {
     private wss: WebSocket.Server;
@@ -34,6 +35,7 @@ export class WebSocketsService {
                 const token = new URLSearchParams(params).get('token');
                 ws.user = await new Users().getUserByToken(token);
             } catch (e) {
+                new Logger().error(e.toString(), ['API_GATEWAY']);
                 console.error(e.message);
             }
         });
@@ -66,6 +68,7 @@ export class WebSocketsService {
                         }));
                     }
                 } catch (e) {
+                    new Logger().error(e.toString(), ['API_GATEWAY']);
                     console.error('WS Error', e);
                 }
             });

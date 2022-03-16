@@ -23,6 +23,8 @@ import path from 'path';
 import { Blob } from 'buffer';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
+import { Settings } from '@entity/settings';
+import { Logger } from 'logger-helper';
 
 export const schemaCache = {};
 
@@ -170,6 +172,7 @@ export const schemaAPI = async function (
     channel: any,
     schemaRepository: MongoRepository<Schema>,
     configRepository: MongoRepository<RootConfig>,
+    settingsRepository: MongoRepository<Settings>,
 ): Promise<void> {
     /**
      * Create or update schema
@@ -245,6 +248,7 @@ export const schemaAPI = async function (
             res.send(new MessageError('Schema not found'));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error));
         }
     });
@@ -388,6 +392,7 @@ export const schemaAPI = async function (
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -455,6 +460,7 @@ export const schemaAPI = async function (
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -487,6 +493,7 @@ export const schemaAPI = async function (
             res.send(new MessageResponse(result));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -569,7 +576,10 @@ export const schemaAPI = async function (
 
                 const hederaHelper = HederaHelper
                     .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK;
-                const messageId = await HederaSenderHelper.SubmitSchemaMessage(hederaHelper, process.env.SCHEMA_TOPIC_ID, schemaPublishMessage);
+                const schemaTopicId = await settingsRepository.findOne({
+                    name: 'SCHEMA_TOPIC_ID'
+                })
+                const messageId = await HederaSenderHelper.SubmitSchemaMessage(hederaHelper, schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID, schemaPublishMessage);
 
                 item.messageId = messageId;
 
@@ -581,6 +591,7 @@ export const schemaAPI = async function (
             }
             res.send(new MessageError("Invalid id"));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -644,6 +655,7 @@ export const schemaAPI = async function (
             }
             res.send(new MessageResponse(relationships));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -686,6 +698,7 @@ export const schemaAPI = async function (
             schema.version = newVersion;
             res.send(new MessageResponse(schema));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });

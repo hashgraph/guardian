@@ -38,6 +38,7 @@ import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/util
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
+import { Logger } from 'logger-helper';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -264,6 +265,7 @@ export class BlockTreeGenerator {
 
                 res.send(new MessageResponse(result));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
                 res.send(new MessageError(error.message));
             }
@@ -381,6 +383,7 @@ export class BlockTreeGenerator {
                     errors
                 }));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.log(error);
                 console.error(error.message);
                 res.send(new MessageError(error.message));
@@ -396,6 +399,7 @@ export class BlockTreeGenerator {
                     policy
                 }));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });
@@ -410,6 +414,7 @@ export class BlockTreeGenerator {
                 const userFull = await this.users.getUser(user.username);
                 res.send(new MessageResponse(await model.getData(userFull) as any));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
                 res.send(new MessageError(error.message));
             }
@@ -422,6 +427,7 @@ export class BlockTreeGenerator {
                 const data = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(userFull, blockId, null)
                 res.send(new MessageResponse(data));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });
@@ -433,6 +439,7 @@ export class BlockTreeGenerator {
                 const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(userFull, data)
                 res.send(new MessageResponse(result));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });
@@ -461,6 +468,7 @@ export class BlockTreeGenerator {
                 }
                 res.send(new MessageResponse(parents));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });
@@ -476,6 +484,7 @@ export class BlockTreeGenerator {
                 const file = await zip.generateAsync({type: 'arraybuffer'});
                 res.send(file, 'raw');
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.log(error);
                 res.send(new MessageError(error.message));
             }
@@ -497,6 +506,7 @@ export class BlockTreeGenerator {
                     owner: policy.owner
                 }));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });
@@ -512,6 +522,7 @@ export class BlockTreeGenerator {
                 const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 res.send(new MessageResponse(policies));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });
@@ -537,6 +548,7 @@ export class BlockTreeGenerator {
                 const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 res.send(new MessageResponse(policies));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });
@@ -551,6 +563,7 @@ export class BlockTreeGenerator {
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
                 res.send(new MessageResponse(policyToImport));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });
@@ -575,6 +588,7 @@ export class BlockTreeGenerator {
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip));
                 res.send(new MessageResponse(policyToImport));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.log(error)
                 res.send(new MessageError(error.message));
             }
@@ -585,6 +599,7 @@ export class BlockTreeGenerator {
                 await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
                 res.send(new MessageResponse(true));
             } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
             }
         });

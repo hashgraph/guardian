@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
 import { UserRole } from 'interfaces';
 import { Users } from '@helpers/users';
+import { Logger } from 'logger-helper';
 
 /**
  * User account route
@@ -21,7 +22,8 @@ accountAPI.get('/session', async (req: Request, res: Response) => {
             res.sendStatus(401);
         }
     } catch (e) {
-        res.status(500).send({ code: 500, message: 'Server error' });
+        new Logger().error(e.toString(), ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: e.message });
     }
 });
 
@@ -31,6 +33,7 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
         const { username, password, role } = req.body;
         res.status(201).json(await users.registerNewUser(username, password, role));
     } catch (e) {
+        new Logger().error(e.toString(), ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
@@ -43,6 +46,7 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
 
         res.status(200).json(await users.generateNewToken(username, password));
     } catch (e) {
+        new Logger().error(e.toString(), ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
@@ -53,6 +57,7 @@ accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORIT
         const users = new Users();
         res.status(200).json(await users.getAllUserAccounts());
     } catch (e) {
+        new Logger().error(e.toString(), ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
