@@ -1,6 +1,5 @@
 import {PolicyBlockStateData} from '@policy-engine/interfaces';
-import {PolicyComponentsUtils} from '../../policy-components-utils';
-import {IAuthUser} from '../../../auth/auth.interface';
+import {IAuthUser} from '@auth/auth.interface';
 
 /**
  * Block state update method decorator

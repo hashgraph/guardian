@@ -20,7 +20,8 @@ export class PolicyComponentsUtils {
     private static PolicyTagMapObject: Map<string, PolicyTagMap> = new Map();
     private static BlockSubscriptions: Map<string, Map<string, Function[]>> = new Map();
 
-    public static UpdateFn: (uuid: string, state: any, user: IAuthUser, tag?:string) => void;
+    public static BlockUpdateFn: (uuid: string, state: any, user: IAuthUser, tag?:string) => void;
+    public static BlockErrorFn: (blockType: string, message: any, user: IAuthUser) => void;
 
     /**
      * Register dependency

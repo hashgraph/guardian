@@ -9,6 +9,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { IAuthUser } from '@auth/auth.interface';
+import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
@@ -82,6 +83,7 @@ export class CalculateContainerBlock {
         return item;
     }
 
+    @CatchErrors()
     public async runAction(state: any, user: IAuthUser) {
         console.log("calculate-block, runAction")
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);

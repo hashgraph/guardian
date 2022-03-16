@@ -28,7 +28,7 @@ export class PolicyRolesBlock {
         currentPolicy.registeredUsers[user.did] = document.role;
 
         const result = await policyRepository.save(currentPolicy);
-        PolicyComponentsUtils.UpdateFn(ref.parent.uuid, {}, user, ref.tag);
+        PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
 
         return result;
     }
