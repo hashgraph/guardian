@@ -145,7 +145,7 @@
 
 ## Settings APIs
 
-* [Displays Current Settings](settings-apis/displays-current-settings.md)
+* [Displaying Current Settings](settings-apis/displaying-current-settings.md)
 * [Adding Settings](settings-apis/adding-settings.md)
 
 ## Logs
