@@ -14,6 +14,7 @@ import {
     IVCDocument,
     IVPDocument,
     MessageAPI,
+    MessageError,
     SchemaEntity
 } from 'interfaces';
 
@@ -49,18 +50,20 @@ export class Guardians {
      * @param type
      */
     public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
+        let response: any;
         try {
-            const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
-            if (!response) {
-                throw 'Server is not available';
-            }
-            if (response.error) {
-                throw response.error;
-            }
-            return response.body;
+            response = (await this.channel.request(this.target, entity, params, type)).payload;
         } catch (e) {
             throw new Error(`Guardian (${entity}) send: ` + e);
         }
+        if (!response) {
+            throw new Error(`Guardian (${entity}) send: Server is not available`);
+        }
+        if (response.error) {
+            response.message = `Guardian (${entity}) send: ${response.error}`;
+            throw response;
+        }
+        return response.body;
     }
 
     /**

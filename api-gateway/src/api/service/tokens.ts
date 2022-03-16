@@ -22,7 +22,7 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
         res.status(201).json(tokens);
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        res.status(500).send({ code: error.code || 500, message: error.message });
     }
 });
 
@@ -40,7 +40,7 @@ tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), asyn
         }
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        res.status(500).send({ code: error.code || 500, message: error.message });
     }
 });
 
@@ -53,7 +53,7 @@ tokenAPI.put('/:tokenId/associate', permissionHelper(UserRole.USER), async (req:
         res.status(200).json(status);
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
 
@@ -66,7 +66,7 @@ tokenAPI.put('/:tokenId/dissociate', permissionHelper(UserRole.USER), async (req
         res.status(200).json(status);
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
 
@@ -80,7 +80,7 @@ tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTH
         res.status(200).json(result);
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
 
@@ -94,7 +94,7 @@ tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUT
         res.status(200).json(result);
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
 
@@ -108,7 +108,7 @@ tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHOR
         res.status(200).json(result);
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
 
@@ -122,7 +122,7 @@ tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTH
         res.status(200).json(result);
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
 
@@ -136,6 +136,6 @@ tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.ROOT_AUTHORIT
         res.status(200).json(result as ITokenInfo);
     } catch (error) {
         new Logger().error(error.toString(), ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });

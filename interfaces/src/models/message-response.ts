@@ -20,8 +20,8 @@ export class MessageError implements IMessageResponse<any>, Error {
     public readonly body: any;
     public readonly error: string;
     public readonly code: number;
-    public readonly name: string;
-    public readonly message: string;
+    public name: string;
+    public message: string;
 
     constructor(error: string, code: number = 500) {
         this.body = null;
