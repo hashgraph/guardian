@@ -1,5 +1,6 @@
 import { BlockErrorActions } from 'interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { Logger } from 'logger-helper';
 
 export function CatchErrors() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -11,6 +12,7 @@ export function CatchErrors() {
                     try {
                         await target.apply(thisArg, argArray);
                     } catch (e) {
+                        new Logger().error(e.message, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime']);
                         console.error(e.message);
                         PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, e.message, user);
                         switch (thisArg.options.onErrorAction) {
