@@ -10,6 +10,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
+import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -85,6 +86,7 @@ export class SendToGuardianBlock {
         return result;
     }
 
+    @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         console.log(`sendToGuardianBlock: runAction: ${ref.tag}`);

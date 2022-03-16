@@ -1,3 +1,4 @@
+export { BlockErrorActions } from './type/block-error-actions';
 export { AuthEvents } from './type/auth-events';
 export { ApproveStatus } from './type/approve-status.type';
 export { DidDocumentStatus } from './type/did-status.type';

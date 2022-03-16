@@ -61,7 +61,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
                     }
                 }
 
-                PolicyComponentsUtils.UpdateFn(parentBlock.uuid, {}, args[0], this.tag);
+                PolicyComponentsUtils.BlockUpdateFn(parentBlock.uuid, {}, args[0], this.tag);
                 return result;
             }
         }

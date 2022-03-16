@@ -186,7 +186,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 //     child.updateBlock(state, user, tag);
                 // }
                 await this.saveState();
-                PolicyComponentsUtils.UpdateFn(this.uuid, state, user, tag);
+                PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
 
             }
 

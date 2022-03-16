@@ -43,7 +43,28 @@ export class WebSocketsService {
         this.channel.response('update-block', async (msg, res) => {
             this.wss.clients.forEach((client: any) => {
                 try {
-                    client.send(msg.payload.uuid);
+                    client.send(JSON.stringify({
+                        type: 'update-event',
+                        data: msg.payload.uuid
+                    }));
+                } catch (e) {
+                    console.error('WS Error', e);
+                }
+            });
+        });
+
+        this.channel.response('block-error', async (msg, res) => {
+            this.wss.clients.forEach((client: any) => {
+                try {
+                    if (client.user.did === msg.payload.user.did) {
+                        client.send(JSON.stringify({
+                            type: 'error-event',
+                            data: {
+                                blockType: msg.payload.blockType,
+                                message: msg.payload.message
+                            }
+                        }));
+                    }
                 } catch (e) {
                     console.error('WS Error', e);
                 }

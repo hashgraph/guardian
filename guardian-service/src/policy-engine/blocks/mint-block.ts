@@ -10,6 +10,7 @@ import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import {PolicyComponentsUtils} from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
+import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -226,6 +227,7 @@ export class MintBlock {
         return vp;
     }
 
+    @CatchErrors()
     async runAction(state: any, user:IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const {
