@@ -4,7 +4,7 @@ import { approveAPI } from '@api/approve.service';
 import { configAPI, readConfig } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
 import { loaderAPI } from '@api/loader.service';
-import { rootAuthorityAPI } from '@api/root-authority.service';
+import { profileAPI } from '@api/profile';
 import { schemaAPI, setDefaultSchema } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
@@ -91,9 +91,9 @@ Promise.all([
     await setDefaultSchema(schemaRepository);
     await configAPI(channel, fileConfig, settingsRepository);
     await schemaAPI(channel, schemaRepository, configRepository, settingsRepository);
-    await tokenAPI(channel, tokenRepository);
+    await tokenAPI(channel, tokenRepository, configRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await rootAuthorityAPI(channel, configRepository);
+    await profileAPI(channel, configRepository);
     await documentsAPI(
         channel,
         didDocumentRepository,

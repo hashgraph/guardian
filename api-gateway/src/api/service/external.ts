@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import {PolicyEngine} from '@helpers/policyEngine';
+import { PolicyEngine } from '@helpers/policyEngine';
 import { Logger } from 'logger-helper';
 // import {PolicyComponentsUtils} from '@policy-engine/policy-components-stuff';
 

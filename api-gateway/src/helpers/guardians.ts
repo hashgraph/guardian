@@ -9,6 +9,8 @@ import {
     IRootConfig,
     ISchema,
     IToken,
+    ITokenInfo,
+    IUser,
     IVCDocument,
     IVPDocument,
     MessageAPI,
@@ -74,7 +76,7 @@ export class Guardians {
      * Update settings
      * 
      */
-     public async updateSettings(settings: CommonSettings): Promise<void> {
+    public async updateSettings(settings: CommonSettings): Promise<void> {
         await this.request(MessageAPI.UPDATE_SETTINGS, settings);
     }
 
@@ -82,7 +84,7 @@ export class Guardians {
      * Get settings
      * 
      */
-     public async getSettings(): Promise<any> {
+    public async getSettings(): Promise<any> {
         return await this.request(MessageAPI.GET_SETTINGS);
     }
 
@@ -241,6 +243,83 @@ export class Guardians {
      */
     public async importTokens(items: IToken[]): Promise<void> {
         return await this.request(MessageAPI.IMPORT_TOKENS, items);
+    }
+
+
+    public async freezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.FREEZE_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            freeze: true,
+        });
+    }
+
+    public async unfreezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.FREEZE_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            freeze: false,
+        });
+    }
+
+    public async grantKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.KYC_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            grant: true,
+        });
+    }
+
+    public async revokeKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.KYC_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            grant: false,
+        });
+    }
+
+    public async associateToken(tokenId: string, did: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.ASSOCIATE_TOKEN, {
+            tokenId: tokenId,
+            did: did,
+            associate: true,
+        });
+    }
+
+    public async dissociateToken(tokenId: string, did: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.ASSOCIATE_TOKEN, {
+            tokenId: tokenId,
+            did: did,
+            associate: false,
+        });
+    }
+
+    public async getInfoToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.GET_INFO_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner
+        });
+    }
+
+    public async getAssociatedTokens(did: string): Promise<ITokenInfo[]> {
+        return await this.request(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
+    }
+
+    public async createRootAuthorityProfile(profile: IUser): Promise<string> {
+        return await this.request(MessageAPI.CREATE_ROOT_AUTHORITY, profile);
+    }
+
+    public async createUserProfile(profile: IUser): Promise<string> {
+        return await this.request(MessageAPI.CREATE_USER_PROFILE, profile);
+    }
+
+    public async getUserBalance(username: string): Promise<string> {
+        return await this.request(MessageAPI.GET_USER_BALANCE, { username });
     }
 
     /**
