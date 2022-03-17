@@ -26,6 +26,14 @@ export class ImportSchemaDialog {
     private fb: FormBuilder,
     private schemaService: SchemaService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
+      if (data.timeStamp) {
+        this.importType = ImportType.IPFS;
+        this.isImportTypeSelected = true;
+        this.dataForm.patchValue({
+          timestamp: data.timeStamp
+        });
+        this.importFromMessage();
+      }
   }
 
   setImportType(importType: ImportType) {
