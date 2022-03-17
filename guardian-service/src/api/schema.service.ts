@@ -490,6 +490,40 @@ export const schemaAPI = async function (
                 const schema = await loadSchema(messageId, null);
                 result.push(schema);
             }
+
+
+            function onlyUnique(value, index, self) {
+                return self.indexOf(value) === index;
+            }
+
+            const topics = result.map(res => res.topicId).filter(onlyUnique);
+            let anotherSchemas = [];
+
+            for (let i = 0; i < topics.length; i++) {
+                const topicId = topics[i];
+                anotherSchemas.push({
+                    topicId,
+                    messages: await HederaMirrorNodeHelper.getTopicMessages(topicId)
+                })
+            }
+
+            for (let i = 0; i < result.length; i++) {
+                const schema = result[i];
+                const newVersions = [];
+                const topicMessages = anotherSchemas.find(item => item.topicId === schema.topicId);
+                topicMessages?.messages?.forEach(anotherSchema => {
+                    if(anotherSchema.message.uuid === schema.uuid && ModelHelper.versionCompare(anotherSchema.message.version, schema.version) === 1) {
+                        newVersions.push({
+                            messageId: anotherSchema.timeStamp,
+                            version: anotherSchema.message.version
+                        });
+                    }
+                });
+                if (newVersions && newVersions.length !== 0) {
+                    schema.newVersions = newVersions.reverse();
+                }
+            }
+
             res.send(new MessageResponse(result));
         }
         catch (error) {
