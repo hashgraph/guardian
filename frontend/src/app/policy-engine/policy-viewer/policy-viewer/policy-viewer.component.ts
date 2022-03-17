@@ -241,10 +241,13 @@ export class PolicyViewerComponent implements OnInit {
             }));
     }
 
-    importPolicy() {
+    importPolicy(messageId?: string) {
         const dialogRef = this.dialog.open(ImportPolicyDialog, {
             width: '500px',
-            autoFocus: false
+            autoFocus: false,
+            data: {
+                timeStamp: messageId
+            }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
@@ -264,6 +267,11 @@ export class PolicyViewerComponent implements OnInit {
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
+                if (result.messageId) {
+                    this.importPolicy(result.messageId);
+                    return;
+                }
+
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService.importByMessage(data).subscribe((policies) => {

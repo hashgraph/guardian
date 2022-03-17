@@ -247,10 +247,11 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
-    async importSchemes() {
+    async importSchemes(messageId?: string) {
         const dialogRef = this.dialog.open(ImportSchemaDialog, {
             width: '500px',
-            autoFocus: false
+            autoFocus: false,
+            data: { timeStamp: messageId }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
@@ -270,6 +271,11 @@ export class SchemaConfigComponent implements OnInit {
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
+                if (result.messageId) {
+                    this.importSchemes(result.messageId);
+                    return;
+                }
+
                 this.loading = true;
                 if (type == 'message') {
                     this.schemaService.importByMessage(data).subscribe((schemes) => {

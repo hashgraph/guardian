@@ -17,6 +17,7 @@ export class PreviewPolicyDialog {
     schemes!: string;
     tokens!: string;
     policyRoles!: string;
+    newVersions: any[] = [];
 
     constructor(
         public dialogRef: MatDialogRef<PreviewPolicyDialog>,
@@ -25,6 +26,7 @@ export class PreviewPolicyDialog {
         this.policyId = data.policyId;
 
         if (data.policy) {
+            this.newVersions = data.policy.newVersions || [];
             this.policy = data.policy.policy;
             this.policyRoles = (this.policy.policyRoles || []).join(', ');
 
@@ -54,5 +56,11 @@ export class PreviewPolicyDialog {
 
     onImport() {
         this.dialogRef.close(true);
+    }
+
+    onNewVersionClick(messageId: string) {
+        this.dialogRef.close({
+            messageId
+        });
     }
 }

@@ -578,18 +578,33 @@ export class BlockTreeGenerator {
 
                 const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
                 const message = topicMessage.message;
-                const zip = await IPFS.getFile(message.cid, 'raw');
 
+                const newVersions: any = [];
+                const anotherVersions = await HederaMirrorNodeHelper.getTopicMessages(topicMessage.topicId);
+                for (let i = 0; i < anotherVersions.length; i++) {
+                    const element = anotherVersions[i];
+                    if (ModelHelper.versionCompare(element.message.version, topicMessage.message.version) === 1) {
+                        newVersions.push({
+                            messageId: element.timeStamp,
+                            version: element.message.version
+                        });
+                    } 
+                };
+                const zip = await IPFS.getFile(message.cid, 'raw');
+                
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
 
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip));
+                if (newVersions.length !== 0) {
+                    policyToImport.newVersions = newVersions.reverse();
+                }
+
                 res.send(new MessageResponse(policyToImport));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                console.log(error)
                 res.send(new MessageError(error.message));
             }
         });
