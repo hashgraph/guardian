@@ -26,18 +26,20 @@ export abstract class ServiceRequestsBase {
      * @param type
      */
     public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
+        let response: any;
         try {
-            const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
-            if (!response) {
-                throw 'Server is not available';
-            }
-            if (response.error) {
-                throw response.error;
-            }
-            return response.body;
+            response = (await this.channel.request(this.target, entity, params, type)).payload;
         } catch (e) {
-            throw new Error(`${this.target} (${entity}) send: ` + e);
+            throw new Error(`${this.target} (${entity}) send: ${e}`);
         }
+        if (!response) {
+            throw new Error(`${this.target} (${entity}) send: Server is not available`);
+        }
+        if (response.error) {
+            response.message = `${this.target} (${entity}) send: ${response.error}`;
+            throw response;
+        }
+        return response.body;
     }
 
     public async rawRequest(entity: string, params?: any, type?: string): Promise<any> {
