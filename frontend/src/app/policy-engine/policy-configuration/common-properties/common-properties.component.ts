@@ -81,6 +81,9 @@ export class CommonPropertiesComponent implements OnInit {
     loadComponent(block: BlockNode) {
         setTimeout(() => {
             this.block = block;
+            if (!this.block.onErrorAction) {
+                this.block.onErrorAction = BlockErrorActions.NO_ACTION;
+            }
             this.configContainer.clear();
             const factory: any = this.registeredBlocks.getProperties(block.blockType);
             if (factory) {

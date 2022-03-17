@@ -4,7 +4,6 @@ import { Logger } from 'logger-helper';
 
 export function CatchErrors() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        console.log(target, propertyKey, descriptor);
         descriptor.value = new Proxy(target[propertyKey], {
             async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
                 const user = argArray[1];
@@ -12,7 +11,7 @@ export function CatchErrors() {
                     try {
                         await target.apply(thisArg, argArray);
                     } catch (e) {
-                        new Logger().error(e.message, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime']);
+                        new Logger().error(e.message, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
                         console.error(e.message);
                         PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, e.message, user);
                         switch (thisArg.options.onErrorAction) {
