@@ -79,6 +79,11 @@ form {
     margin-bottom: 0px;
 }
 
+.version-container {
+    display: flex;
+    gap: 50px;
+}
+
 .info-label {
     vertical-align: middle;
     margin-right: 5px;
@@ -107,4 +112,8 @@ form {
     overflow-x: scroll;
     display: flex;
     gap: 30px;
+}
+
+.version-container .field-version {
+    margin-bottom: 0px;
 }
