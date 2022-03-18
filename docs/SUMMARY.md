@@ -151,3 +151,4 @@
 ## Logs APIs
 
 * [Returning Logs](logs-apis/returning-logs.md)
+* [Returning Log Attributes](logs-apis/returning-log-attributes.md)

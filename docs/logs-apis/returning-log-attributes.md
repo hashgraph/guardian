@@ -1,25 +1,24 @@
-# Displaying Current Settings
+# Returning Log Attributes
 
-## DISPLAYS CURRENT SETTINGS
+## RETURNS LOGS ATTRIBUTES
 
-{% swagger method="get" path="" baseUrl="/settings" summary="Returns current settings" %}
+{% swagger method="get" path="" baseUrl="/logs/attributes" summary="Returns logs attributes" %}
 {% swagger-description %}
-Returns current settings. For users with the Root Authority role only
+Returns logs attributes. For users with the Root Authority role only.
 {% endswagger-description %}
 
-{% swagger-response status="200: OK" description="Success Operation" %}
+{% swagger-parameter in="query" name="name" type="String" required="true" %}
+Part of the name
+{% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
-    type: object
-            properties:
-			operatorId:
-			  type: string
-			operatorKey:
-			  type: string
-			schemaTopicId:
-			  type: string
-			nftApiKey:
-			  type: string
+    application/json:
+              schema:
+                type: array
+                items: 
+                  type: string
 }
 ```
 {% endswagger-response %}
