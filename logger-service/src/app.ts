@@ -24,10 +24,6 @@ Promise.all([
 
     const logRepository = db.getMongoRepository(Log);
 
-    logRepository.createCollectionIndex({
-        message: "text"
-    });
-
     await loggerAPI(channel, logRepository);
 
     console.log('logger service started');

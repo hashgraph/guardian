@@ -37,19 +37,30 @@
                 </button>
                 </mat-chip>
         
-                <input matInput
+                <input
+                    #chipInput
+                    matInput
+                    [matAutocomplete]="auto"
                     [matChipInputFor]="chipList" 
                     placeholder="Attributes" 
-                    (matChipInputTokenEnd)="add($event)">
+                    (matChipInputTokenEnd)="add($event)"
+                    [formControl]="autoCompleteControl">
+
+                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); chipInput.value = ''">
+                    <mat-option *ngFor="let attr of attributes | async" [value]="attr">
+                        {{attr}}
+                    </mat-option>
+                </mat-autocomplete>
             </mat-chip-list>
         </mat-form-field>
 
         <button mat-raised-button color="primary" type="submit" class="submit-button">Apply filters</button>
         <button mat-raised-button type="button" (click)="onSave()">Save logs</button>
+        <button mat-raised-button type="button" (click)="clearValues()"><mat-icon>clear</mat-icon></button>
     </form>
 
     <div class="table-container">
-        <div class="example-loading-shade"
+        <div class="loading-shade"
             *ngIf="loading">
             <mat-spinner></mat-spinner>
         </div>

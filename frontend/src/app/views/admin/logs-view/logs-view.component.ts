@@ -1,12 +1,13 @@
 import { Component, EventEmitter, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { saveAs } from 'file-saver';
 import { ILog } from 'interfaces';
-import { merge, of } from 'rxjs';
+import { merge, Observable, of } from 'rxjs';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';
 
@@ -36,7 +37,9 @@ export class LogsViewComponent implements OnInit {
         endDate: [''],
         attributes: [[]]
     });
+    autoCompleteControl = this.fb.control('');
     filters: any = {};
+    attributes?: Observable<any>;
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
@@ -48,6 +51,14 @@ export class LogsViewComponent implements OnInit {
         public dialog: MatDialog) {
 
     }
+
+    ngOnInit() {
+        this.attributes = this.autoCompleteControl.valueChanges
+          .pipe(
+            startWith([]),
+            switchMap(value => this.logService.getAttributes(this.autoCompleteControl.value))
+          );
+      }
 
     ngAfterViewInit() {
         const resetPage = () => this.paginator.pageIndex = 0;
@@ -77,8 +88,6 @@ export class LogsViewComponent implements OnInit {
             })
           ).subscribe((data: ILog[]) => this.logs = data);
       }
-
-    ngOnInit() { }
 
     remove(attribute: string) {
         const attributes = this.searchForm.get('attributes')!.value;
@@ -133,5 +142,25 @@ export class LogsViewComponent implements OnInit {
                 this.loading = false;
             });
 
+    }
+
+    selected(event: MatAutocompleteSelectedEvent): void {
+        const value = (event.option.viewValue || '').trim();
+        const attributes = this.searchForm.get('attributes')!.value;
+
+        if (value) {
+            attributes.push(value);
+        }
+        this.autoCompleteControl.patchValue('');
+    }
+
+    clearValues() {
+        this.searchForm.patchValue({
+            message: '',
+            type: '',
+            startDate: '',
+            endDate: '',
+            attributes: []
+        });
     }
 }

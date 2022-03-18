@@ -29,9 +29,10 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
             filters.attributes = { $all: req.body.attributes };
         }
         if (req.body.message) {
-            filters.$text = {  
-                $search: req.body.message
-            };
+            filters.message = {
+                $regex: `.*${req.body.message}.*`,
+                $options: 'i'
+            }
         }
         if (req.body.pageSize) {
             pageParameters.skip = (req.body.pageIndex || 0) * req.body.pageSize;
@@ -40,6 +41,17 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
         const logger = new Logger();
         const logsObj = await logger.getLogs(filters, pageParameters, req.body.sortDirection);
         return res.send(logsObj);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+loggerAPI.get('/attributes', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+    try {
+        const logger = new Logger();
+        const attributes = await logger.getAttributes(req.query.name as string);
+        return res.send(attributes);
     } catch (error) {
         console.error(error);
         res.status(500).json({ code: 500, message: error.message });
