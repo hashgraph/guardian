@@ -491,7 +491,6 @@ export const schemaAPI = async function (
                 result.push(schema);
             }
 
-
             function onlyUnique(value, index, self) {
                 return self.indexOf(value) === index;
             }
@@ -509,10 +508,17 @@ export const schemaAPI = async function (
 
             for (let i = 0; i < result.length; i++) {
                 const schema = result[i];
+                if (!schema.version) {
+                    continue;
+                }
+
                 const newVersions = [];
                 const topicMessages = anotherSchemas.find(item => item.topicId === schema.topicId);
                 topicMessages?.messages?.forEach(anotherSchema => {
-                    if(anotherSchema.message.uuid === schema.uuid && ModelHelper.versionCompare(anotherSchema.message.version, schema.version) === 1) {
+                    if (anotherSchema.message
+                        && anotherSchema.message.uuid === schema.uuid
+                        && anotherSchema.message.version
+                        && ModelHelper.versionCompare(anotherSchema.message.version, schema.version) === 1) {
                         newVersions.push({
                             messageId: anotherSchema.timeStamp,
                             version: anotherSchema.message.version
