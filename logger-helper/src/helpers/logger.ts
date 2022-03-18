@@ -70,4 +70,8 @@ export class Logger {
             filters, pageParameters, sortDirection
         });
     }
+
+    public async getAttributes(name?: string): Promise<string[]> {
+        return await this.request(MessageAPI.GET_ATTRIBUTES, { name });
+    }
 }
