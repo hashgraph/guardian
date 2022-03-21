@@ -1,7 +1,7 @@
 import FastMQ from 'fastmq'
-import {createConnection, getMongoRepository} from 'typeorm';
+import { createConnection, getMongoRepository } from 'typeorm';
 import { approveAPI } from '@api/approve.service';
-import { configAPI, readConfig } from '@api/config.service';
+import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
 import { loaderAPI } from '@api/loader.service';
 import { profileAPI } from '@api/profile.service';
@@ -17,15 +17,16 @@ import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
-import {VcHelper} from '@helpers/vcHelper';
-import {BlockTreeGenerator} from '@policy-engine/block-tree-generator';
-import {Policy} from '@entity/policy';
-import {Guardians} from '@helpers/guardians';
-import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
+import { VcHelper } from '@helpers/vcHelper';
+import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { Policy } from '@entity/policy';
+import { Guardians } from '@helpers/guardians';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
+import { Topic } from '@entity/topic';
 
 Promise.all([
     createConnection({
@@ -57,7 +58,7 @@ Promise.all([
     const policyGenerator = new BlockTreeGenerator();
     policyGenerator.setChannel(channel);
     for (let policy of await getMongoRepository(Policy).find(
-        {where: {status: {$eq: 'PUBLISH'}}}
+        { where: { status: { $eq: 'PUBLISH' } } }
     )) {
         try {
             await policyGenerator.generate(policy.id.toString());
@@ -76,31 +77,24 @@ Promise.all([
     const vpDocumentRepository = db.getMongoRepository(VpDocument);
     const approvalDocumentRepository = db.getMongoRepository(ApprovalDocument);
     const tokenRepository = db.getMongoRepository(Token);
-    const configRepository = db.getMongoRepository(RootConfig);
     const schemaRepository = db.getMongoRepository(Schema);
     const settingsRepository = db.getMongoRepository(Settings);
-    let fileConfig = null;
-    try {
-        fileConfig = await readConfig(settingsRepository);
-    }
-    catch (e){
-        new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
-        console.log(e);
-    }
+    const topicRepository = db.getMongoRepository(Topic);
+    const configRepository = db.getMongoRepository(RootConfig);
 
     await setDefaultSchema(schemaRepository);
-    await configAPI(channel, fileConfig, settingsRepository);
+    await configAPI(channel, configRepository, settingsRepository, topicRepository);
     await schemaAPI(channel, schemaRepository, configRepository, settingsRepository);
     await tokenAPI(channel, tokenRepository, configRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await profileAPI(channel, configRepository);
+    await profileAPI(channel, topicRepository, configRepository);
     await documentsAPI(
         channel,
         didDocumentRepository,
         vcDocumentRepository,
         vpDocumentRepository,
     );
-    await demoAPI(channel);
+    await demoAPI(channel, settingsRepository);
 
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);

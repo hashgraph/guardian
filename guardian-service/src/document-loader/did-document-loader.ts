@@ -1,5 +1,5 @@
 import { DidDocument } from '@entity/did-document';
-import { DocumentLoader, IDocumentFormat } from 'hedera-modules';
+import { DidRootKey, DocumentLoader, IDocumentFormat } from 'hedera-modules';
 import { getMongoRepository } from 'typeorm';
 
 /**
@@ -19,7 +19,7 @@ export class DIDDocumentLoader extends DocumentLoader {
     }
 
     public async getDocument(iri: string): Promise<any> {
-        const did = HcsDidRootKey.fromId(iri).getController();
+        const did = DidRootKey.create(iri).getController();
         const reqObj = { where: { did: { $eq: did } } };
         const didDocuments = await getMongoRepository(DidDocument).findOne(reqObj);
         if (didDocuments) {

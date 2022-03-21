@@ -1,6 +1,6 @@
+import { Topic } from '@entity/topic';
 import { Singleton } from '@helpers/decorators/singleton';
 import {
-    IAddressBookConfig,
     IApprovalDocument,
     IChainItem,
     IDidDocument,
@@ -11,7 +11,8 @@ import {
     IVCDocument,
     IVPDocument,
     MessageAPI,
-    SchemaEntity
+    SchemaEntity,
+    TopicType
 } from 'interfaces';
 
 type IFilter = any;
@@ -61,23 +62,15 @@ export class Guardians {
     }
 
     /**
-     * Return Root Address book
+     * Return DID Documents
      *
-     * @returns {IAddressBookConfig} - Address book
+     * @param {Object} params - filters
+     * @param {string} params.did - DID
+     *
+     * @returns {IDidDocument[]} - DID Documents
      */
-    public async getRootAddressBook(): Promise<IAddressBookConfig> {
-        return await this.request(MessageAPI.GET_ROOT_ADDRESS_BOOK);
-    }
-
-    /**
-     * Return Address book
-     *
-     * @param {string} owner - owner DID
-     *
-     * @returns {IAddressBookConfig} - Address book
-     */
-    public async getAddressBook(owner: string): Promise<IAddressBookConfig> {
-        return await this.request(MessageAPI.GET_ADDRESS_BOOK, { owner: owner });
+    public async getTopic(type: TopicType, did: string): Promise<Topic> {
+        return await this.request(MessageAPI.GET_TOPIC, { type, did });
     }
 
     /**

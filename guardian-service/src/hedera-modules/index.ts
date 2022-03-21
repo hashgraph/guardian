@@ -15,5 +15,4 @@ export { DefaultDocumentLoader } from './document-loader/document-loader-default
 export { DocumentLoaderFunction } from './document-loader/document-loader-function';
 export { DocumentLoader } from './document-loader/document-loader';
 export { SchemaLoader, SchemaLoaderFunction } from './document-loader/schema-loader';
-export { DIDDocument } from './vcjs/did-document';
-
+export { DIDDocument, DidRootKey } from './vcjs/did-document';

@@ -1,5 +1,7 @@
+import { RootConfig } from '@entity/root-config';
 import { Settings } from '@entity/settings';
-import { CommonSettings, MessageAPI, MessageError, MessageResponse } from 'interfaces';
+import { Topic } from '@entity/topic';
+import { CommonSettings, IRootConfig, MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 
@@ -12,13 +14,59 @@ import { MongoRepository } from 'typeorm';
  */
 export const configAPI = async function (
     channel: any,
-    settingsRepository: MongoRepository<Settings>
+    configRepository: MongoRepository<RootConfig>,
+    settingsRepository: MongoRepository<Settings>,
+    topicRepository: MongoRepository<Topic>,
 ): Promise<void> {
+    channel.response(MessageAPI.GET_TOPIC, async (msg, res) => {
+        const { type, did } = msg.payload;
+        const topic = await topicRepository.findOne({
+            where: {
+                did: did,
+                type: type
+            }
+        });
+        if (!topic) {
+            res.send(new MessageError('Topic not found'));
+            return;
+        }
+        res.send(new MessageResponse(topic));
+    })
+
+    /**
+     * Return Address books, VC Document and DID Document
+     * 
+     * @param {string} payload - DID
+     * 
+     * @returns {IFullConfig} - approve documents
+     */
+    channel.response(MessageAPI.GET_ROOT_CONFIG, async (msg, res) => {
+        const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload } } });
+        if (!rootConfig) {
+            res.send(new MessageResponse(null));
+            return;
+        }
+        res.send(new MessageResponse(rootConfig));
+    })
+
+    /**
+     * Create Address book
+     * 
+     * @param {Object} payload - Address book config
+     * 
+     * @returns {IRootConfig} - Address book config
+     */
+    channel.response(MessageAPI.SET_ROOT_CONFIG, async (msg, res) => {
+        const rootObject = configRepository.create(msg.payload as RootConfig);
+        const result: IRootConfig = await configRepository.save(rootObject);
+        res.send(new MessageResponse(result));
+    });
+
     /**
      * Update settings
      * 
      */
-     channel.response(MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
+    channel.response(MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
         try {
             const settings = msg.payload as CommonSettings;
             const oldSchemaTopicId = await settingsRepository.findOne({
@@ -26,7 +74,8 @@ export const configAPI = async function (
             });
             if (oldSchemaTopicId) {
                 await settingsRepository.update({
-                    name: 'SCHEMA_TOPIC_ID' }, {
+                    name: 'SCHEMA_TOPIC_ID'
+                }, {
                     value: settings.schemaTopicId
                 });
             }
@@ -42,7 +91,8 @@ export const configAPI = async function (
             });
             if (oldOperatorId) {
                 await settingsRepository.update({
-                    name: 'OPERATOR_ID' }, {
+                    name: 'OPERATOR_ID'
+                }, {
                     value: settings.operatorId
                 });
             }
@@ -52,13 +102,14 @@ export const configAPI = async function (
                     value: settings.operatorId
                 });
             }
-            
+
             const oldOperatorKey = await settingsRepository.findOne({
                 name: 'OPERATOR_KEY'
             });
             if (oldOperatorKey) {
                 await settingsRepository.update({
-                    name: 'OPERATOR_KEY' }, {
+                    name: 'OPERATOR_KEY'
+                }, {
                     value: settings.operatorKey
                 });
             }
@@ -80,7 +131,7 @@ export const configAPI = async function (
      * Get settings
      * 
      */
-     channel.response(MessageAPI.GET_SETTINGS, async (msg, res) => {
+    channel.response(MessageAPI.GET_SETTINGS, async (msg, res) => {
         try {
             const operatorId = await settingsRepository.findOne({
                 name: 'OPERATOR_ID'

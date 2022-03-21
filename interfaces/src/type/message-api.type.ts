@@ -1,5 +1,4 @@
 export enum MessageAPI {
-    GET_ADDRESS_BOOK = 'get-address-book',
     GET_DID_DOCUMENTS = 'get-did-documents',
     GET_VC_DOCUMENTS = 'get-vc-documents',
     SET_DID_DOCUMENT = 'set-did-document',
@@ -44,5 +43,6 @@ export enum MessageAPI {
     GET_INFO_TOKEN = 'GET_INFO_TOKEN',
     CREATE_ROOT_AUTHORITY='CREATE_ROOT_AUTHORITY',
     CREATE_USER_PROFILE='CREATE_USER_PROFILE',
-    GET_USER_BALANCE='GET_USER_BALANCE'
+    GET_USER_BALANCE='GET_USER_BALANCE',
+    GET_TOPIC = 'GET_TOPIC'
 }

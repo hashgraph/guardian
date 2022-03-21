@@ -5,6 +5,7 @@ import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
+import { HederaSDKHelper } from 'hedera-modules';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
@@ -91,9 +92,8 @@ export const tokenAPI = async function (
                 throw 'Invalid Owner';
             }
 
-            const hederaHelper = HederaHelper
-                .setOperator(root.hederaAccountId, root.hederaAccountKey);
-            const treasury = await hederaHelper.SDK.newAccount(2);
+            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+            const treasury = await client.newAccount(2);
             const treasuryId = treasury.id;
             const treasuryKey = treasury.key;
             const adminKey = enableAdmin ? treasuryKey : null;
@@ -104,7 +104,7 @@ export const tokenAPI = async function (
             const nft = tokenType == 'non-fungible';
             const _decimals = nft ? 0 : decimals;
             const _initialSupply = nft ? 0 : initialSupply;
-            const tokenId = await hederaHelper.SDK.newToken(
+            const tokenId = await client.newToken(
                 tokenName,
                 tokenSymbol,
                 nft,
@@ -165,15 +165,15 @@ export const tokenAPI = async function (
                 throw 'User is not linked to an Hedera Account';
             }
 
-            const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
+            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const freezeKey = token.freezeKey;
             if (freeze) {
-                await hederaHelper.SDK.freeze(tokenId, user.hederaAccountId, freezeKey);
+                await client.freeze(tokenId, user.hederaAccountId, freezeKey);
             } else {
-                await hederaHelper.SDK.unfreeze(tokenId, user.hederaAccountId, freezeKey);
+                await client.unfreeze(tokenId, user.hederaAccountId, freezeKey);
             }
 
-            const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
+            const info = await client.accountInfo(user.hederaAccountId);
             const result = getTokenInfo(info, { tokenId });
             res.send(new MessageResponse(result));
         } catch (error) {
@@ -207,15 +207,15 @@ export const tokenAPI = async function (
                 throw 'User is not linked to an Hedera Account';
             }
 
-            const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
+            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const kycKey = token.kycKey;
             if (grant) {
-                await hederaHelper.SDK.grantKyc(tokenId, user.hederaAccountId, kycKey);
+                await client.grantKyc(tokenId, user.hederaAccountId, kycKey);
             } else {
-                await hederaHelper.SDK.revokeKyc(tokenId, user.hederaAccountId, kycKey);
+                await client.revokeKyc(tokenId, user.hederaAccountId, kycKey);
             }
 
-            const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
+            const info = await client.accountInfo(user.hederaAccountId);
             const result = getTokenInfo(info, { tokenId });
             res.send(new MessageResponse(result));
         } catch (error) {
@@ -248,12 +248,12 @@ export const tokenAPI = async function (
                 throw 'User is not linked to an Hedera Account';
             }
 
-            const hederaHelper = HederaHelper.setOperator(userID, userKey);
+            const client = new HederaSDKHelper(userID, userKey);
             let status: boolean;
             if (associate) {
-                status = await hederaHelper.SDK.associate(tokenId, userID, userKey);
+                status = await client.associate(tokenId, userID, userKey);
             } else {
-                status = await hederaHelper.SDK.dissociate(tokenId, userID, userKey);
+                status = await client.dissociate(tokenId, userID, userKey);
             }
 
             res.send(new MessageResponse(status));
@@ -287,9 +287,8 @@ export const tokenAPI = async function (
                 throw 'User is not linked to an Hedera Account';
             }
 
-            const info = await HederaHelper
-                .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-                .accountInfo(user.hederaAccountId);
+            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+            const info = await client.accountInfo(user.hederaAccountId);
             const result = getTokenInfo(info, { tokenId });
 
             res.send(new MessageResponse(result));
@@ -319,9 +318,8 @@ export const tokenAPI = async function (
                 return;
             }
 
-            const info = await HederaHelper
-                .setOperator(userID, userKey).SDK
-                .accountInfo(user.hederaAccountId);
+            const client = new HederaSDKHelper(userID, userKey);
+            const info = await client.accountInfo(user.hederaAccountId);
 
             const tokens = await tokenRepository.find();
             const result: any[] = [];

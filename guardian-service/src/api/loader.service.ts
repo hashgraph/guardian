@@ -3,6 +3,7 @@ import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';
 import { Logger } from 'logger-helper';
+import { DidRootKey } from 'hedera-modules';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
@@ -27,7 +28,7 @@ export const loaderAPI = async function (
     channel.response(MessageAPI.LOAD_DID_DOCUMENT, async (msg, res) => {
         try {
             const iri = msg.payload.did;
-            const did = HcsDidRootKey.fromId(iri).getController();
+            const did = DidRootKey.create(iri).getController();
             const reqObj = { where: { did: { $eq: did } } };
             const didDocuments = await didDocumentRepository.findOne(reqObj);
             if (didDocuments) {

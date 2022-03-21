@@ -75,6 +75,20 @@ export class DidRootKey {
         return Hashing.base58.encode(Hashing.sha256.digest(didRootKey.toBytes()));
     }
 
+    public static create(did: string): DidRootKey {
+        if (!did) {
+            throw new Error('DID cannot be ' + did);
+        }
+        const result = new DidRootKey();
+        result.privateKey = null;
+        result.publicKey = null;
+        result.controller = did;
+        result.id = result.controller + DidRootKey.DID_ROOT_KEY_NAME;
+        result.publicKeyBase58 = null;
+        result.type = DidRootKey.DID_ROOT_KEY_TYPE;
+        return result;
+    }
+
     public static createByPublicKey(did: string, key: PublicKey | string): DidRootKey {
         if (!did) {
             throw new Error('DID cannot be ' + did);
@@ -91,7 +105,6 @@ export class DidRootKey {
         result.publicKeyBase58 = Hashing.base58.encode(publicKey.toBytes());
         result.type = DidRootKey.DID_ROOT_KEY_TYPE;
         return result;
-
     }
 
     public static createByPrivateKey(did: string, key: PrivateKey | string): DidRootKey {
@@ -222,6 +235,26 @@ export class DIDDocument {
         return this.document.getDidDocument();
     }
 
+    public getPrivateKey(): PrivateKey {
+        return this.privateKey;
+    }
+
+    public getPublicKey(): PublicKey {
+        return this.publicKey;
+    }
+
+    public getPrivateKeyString(): string {
+        if(this.privateKey) {
+            return this.privateKey.toString();
+        }
+    }
+
+    public getPublicKeyString(): string {
+        if(this.publicKey) {
+            return this.publicKey.toString();
+        }
+    }
+    
     private buildDid(): string {
         const methodNetwork =
             DIDDocument.HEDERA_HCS +

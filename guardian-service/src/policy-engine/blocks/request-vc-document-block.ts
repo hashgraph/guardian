@@ -3,12 +3,12 @@ import { Guardians } from '@helpers/guardians';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { Schema, SchemaStatus } from 'interfaces';
+import { DidDocumentStatus, Schema, SchemaStatus, TopicType } from 'interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { StateField } from '@policy-engine/helpers/decorators';
-import { HederaUtils } from 'hedera-modules';
+import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from 'hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 
 @EventBlock({
@@ -30,7 +30,7 @@ export class RequestVcDocumentBlock {
     constructor() {
     }
 
-    async changeActive(user:IAuthUser, active) {
+    async changeActive(user: IAuthUser, active) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
@@ -43,7 +43,7 @@ export class RequestVcDocumentBlock {
         ref.updateBlock(blockState, user);
     }
 
-    getActive(user:IAuthUser) {
+    getActive(user: IAuthUser) {
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -148,27 +148,24 @@ export class RequestVcDocumentBlock {
             }
             if (idType == 'DID') {
                 const ref = PolicyComponentsUtils.GetBlockRef(this);
-                const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
-                const hederaHelper = HederaHelper
-                    .setOperator(userHederaAccount, userHederaKey)
-                    .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
+                const topic = await this.guardians.getTopic(TopicType.RootPolicyTopic, ref.policyOwner);
+                const didObject = DIDDocument.create(null, topic.topicId);
 
-                // did generation
-                const newDid = await hederaHelper.DID.createDid();
-                const DID = newDid.did;
-                const DIDDocument = newDid.document;
-                const key = newDid.key;
-                const hcsDid = newDid.hcsDid;
+                const did = didObject.getDid();
+                const key = didObject.getPrivateKeyString();
+                const document =  didObject.getDocument();
 
-                const message = await hederaHelper.DID.createDidTransaction(hcsDid)
-                const did = message.getDid();
-                const operation = message.getOperation();
+                const message = new DIDMessage(MessageAction.CreateDID);
+                message.setDocument(didObject);
 
-                await this.guardians.setDidDocument({ did: DID, document: DIDDocument });
-                await this.guardians.setDidDocument({ did, operation });
-                await this.wallet.setKey(user.walletToken, KeyType.KEY, DID, key);
+                const client = new MessageServer(userHederaAccount, userHederaKey);
+                client.setSubmitKey(topic.key);
+                await client.sendMessage(topic.topicId, message);
 
-                return DID;
+                await this.guardians.setDidDocument({ did: did, document: document });
+                await this.guardians.setDidDocument({ did: did, operation: DidDocumentStatus.CREATE });
+                await this.wallet.setKey(user.walletToken, KeyType.KEY, did, key);
+                return did;
             }
             if (idType == 'OWNER') {
                 return user.did;

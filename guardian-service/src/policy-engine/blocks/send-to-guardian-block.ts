@@ -1,7 +1,7 @@
 import { Guardians } from '@helpers/guardians';
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus } from 'interfaces';
+import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -10,7 +10,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument } from 'hedera-modules';
+import { MessageAction, MessageServer, VcDocument, VCMessage } from 'hedera-modules';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -100,13 +100,14 @@ export class SendToGuardianBlock {
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
-        const hederaHelper = HederaHelper
-            .setOperator(userID, userKey)
-            .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
+        const topic = await this.guardians.getTopic(TopicType.RootPolicyTopic, ref.policyOwner);
         const vc = VcDocument.fromJsonTree(document.document);
-        const result = await hederaHelper.DID.createVcTransaction(vc, userKey);
-        document.hederaStatus = result.getOperation();
+
+        const vcMessage = new VCMessage(MessageAction.CreateVC);
+        vcMessage.setDocument(vc);
+        const messageServer = new MessageServer(userID, userKey);
+        await messageServer.sendMessage(topic.topicId, vcMessage)
+        document.hederaStatus = DocumentStatus.ISSUE;
         return document;
     }
 
