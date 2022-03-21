@@ -1,9 +1,8 @@
 import {did} from './did.interface';
 
 export interface ICredentialSubject {
-    '@context': string[];
-    id: did;
-    type: 'Installer';
-
+    id?: did;
+    type?: string;
+    '@context': string | string[];
     [x: string]: any;
 }

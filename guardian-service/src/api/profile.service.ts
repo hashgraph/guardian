@@ -1,14 +1,24 @@
-import { DidDocument } from '@entity/did-document';
 import { RootConfig } from '@entity/root-config';
-import { VcDocument } from '@entity/vc-document';
-import { DidDocumentStatus, IAddressBookConfig, IRootConfig, IUser, MessageAPI, MessageError, MessageResponse, SchemaEntity } from 'interfaces';
+import {
+    DidDocumentStatus,
+    DocumentStatus,
+    IAddressBookConfig,
+    IRootConfig,
+    IUser,
+    MessageAPI,
+    MessageError,
+    MessageResponse,
+    SchemaEntity,
+    TopicType
+} from 'interfaces';
 import { MongoRepository } from 'typeorm';
-import { HederaHelper } from 'vc-modules';
 import { Logger } from 'logger-helper';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
+import { DIDDocument, DIDMessage, HederaSDKHelper, MessageAction, MessageServer, VcDocument, VCMessage } from 'hedera-modules';
+import { Topic } from '@entity/topic';
 
 async function wait(s: number): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -28,13 +38,11 @@ async function wait(s: number): Promise<void> {
  */
 export const profileAPI = async function (
     channel: any,
+    topicRepository: MongoRepository<Topic>,
     configRepository: MongoRepository<RootConfig>
 ) {
     channel.response(MessageAPI.GET_USER_BALANCE, async (msg, res) => {
         try {
-            res.send(new MessageError("test", 401));
-            return;
-
             const { username } = msg.payload;
 
             const wallet = new Wallet();
@@ -48,12 +56,8 @@ export const profileAPI = async function (
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-
-            const balance = await HederaHelper
-                .setOperator(user.hederaAccountId, key).SDK
-                .balance(user.hederaAccountId);
-            res.json(balance);
-
+            const client = new HederaSDKHelper(user.hederaAccountId, key);
+            const balance = await client.balance(user.hederaAccountId);
             res.send(new MessageResponse(balance));
         } catch (error) {
             new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
@@ -64,25 +68,43 @@ export const profileAPI = async function (
 
     channel.response(MessageAPI.CREATE_USER_PROFILE, async (msg, res) => {
         try {
-            const profile = msg.payload as IUser;
+            const {
+                hederaAccountId,
+                hederaAccountKey,
+                owner
+            } = msg.payload;
 
             const guardians = new Guardians();
 
-            const addressBook = await guardians.getRootAddressBook();
-            const hederaHelper = HederaHelper
-                .setOperator(profile.hederaAccountId, profile.hederaAccountKey)
-                .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
+            const topic = await topicRepository.findOne({
+                where: {
+                    did: owner,
+                    type: TopicType.UserTopic
+                }
+            });
 
-            const { hcsDid, did, document } = await hederaHelper.DID.createDid(profile.hederaAccountKey);
+            if (!topic) {
+                throw 'Topic not found';
+            }
+
+            const topicId = topic.topicId;
+
+            const didDocument = DIDDocument.create(hederaAccountKey, topicId);
+            const did = didDocument.getDid();
+            const document = didDocument.getDocument();
 
             await guardians.setDidDocument({ did, document });
 
-            hederaHelper.DID.createDidTransaction(hcsDid).then(function (message: any) {
-                const did = message.getDid();
-                const operation = message.getOperation();
-                guardians.setDidDocument({ did, operation });
+            const message = new DIDMessage(MessageAction.CreateDID);
+            message.setDocument(document);
+
+            const client = new MessageServer(hederaAccountId, hederaAccountKey);
+            client.setSubmitKey(topic.key);
+            client.sendMessage(topicId, message).then(function (message) {
+                guardians.setDidDocument({ did, operation: DidDocumentStatus.CREATE });
             }, function (error) {
-                console.error('createDidTransaction:', error);
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                console.error(error);
                 guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
             });
 
@@ -96,90 +118,93 @@ export const profileAPI = async function (
 
     channel.response(MessageAPI.CREATE_ROOT_AUTHORITY, async (msg, res) => {
         try {
-            const profile = msg.payload as IUser;
-
             const guardians = new Guardians();
             const vcHelper = new VcHelper();
 
-            const addressBook = await HederaHelper
-                .newNetwork(
-                    profile.hederaAccountId,
-                    profile.hederaAccountKey,
-                    profile.addressBook.appnetName,
-                    profile.addressBook.didServerUrl,
-                    profile.addressBook.didTopicMemo,
-                    profile.addressBook.vcTopicMemo,
-                );
+            const {
+                hederaAccountId,
+                hederaAccountKey,
+                vcDocument,
+                addressBook
+            } = msg.payload;
+
+            const topicMemo = JSON.stringify(addressBook);
+            const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey);
+            const topicId = await client.newTopic(hederaAccountKey, null, topicMemo);
 
             await wait(15);
 
-            const hederaHelper = HederaHelper
-                .setOperator(profile.hederaAccountId, profile.hederaAccountKey)
-                .setAddressBook(
-                    addressBook.addressBookId,
-                    addressBook.didTopicId,
-                    addressBook.vcTopicId,
-                );
+            const didObject = DIDDocument.create(hederaAccountKey, topicId);
+            const userDID = didObject.getDid();
 
-            const { hcsDid, did, document } = await hederaHelper.DID.createDid(profile.hederaAccountKey);
+            const vc: any = vcDocument || {};
+            vc.id = userDID;
+            const vcObject = await vcHelper.createVC(userDID, hederaAccountKey, vc);
 
-            const vc: any = profile.vcDocument || {};
-            vc.id = did;
+            const didMessage = new DIDMessage(MessageAction.CreateDID);
+            didMessage.setDocument(didObject);
 
-            const vcDocument = await vcHelper.createVC(did, profile.hederaAccountKey, vc);
+            const vcMessage = new VCMessage(MessageAction.CreateVC);
+            vcMessage.setDocument(vcObject);
 
+            const tokenObject = topicRepository.create({
+                topicId: topicId,
+                description: topicMemo,
+                owner: didMessage.did,
+                type: TopicType.UserTopic,
+                key: null
+            });
+            await topicRepository.save(tokenObject);
+            await guardians.setDidDocument({ 
+                did:didMessage.did, 
+                document: didMessage.document 
+            });
             await guardians.setVcDocument({
-                hash: vcDocument.toCredentialHash(),
-                owner: did,
-                document: vcDocument.toJsonTree(),
+                hash: vcMessage.hash,
+                owner: didMessage.did,
+                document: vcMessage.document,
                 type: SchemaEntity.ROOT_AUTHORITY
             });
 
-            await guardians.setDidDocument({ did, document });
+            const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
+            messageServer.sendMessage(topicId, didMessage).then(function (message: DIDMessage) {
+                guardians.setDidDocument({ did: message.did, operation: DidDocumentStatus.CREATE });
+            }, function (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                console.error(error);
+                guardians.setDidDocument({ did: didMessage.did, operation: DidDocumentStatus.FAILED });
+            });
 
+            await wait(1);
+
+            messageServer.sendMessage(topicId, vcMessage).then(function (message: VCMessage) {
+                guardians.setVcDocument({ hash: message.hash, operation: DocumentStatus.ISSUE });
+            }, function (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                console.error(error);
+                guardians.setVcDocument({ hash: vcMessage.hash, operation: DocumentStatus.FAILED });
+            });
+
+            //NEED DELETE
             const rootObject = configRepository.create({
-                hederaAccountId: profile.hederaAccountId,
-                hederaAccountKey: profile.hederaAccountKey,
-                addressBook: addressBook.addressBookId,
-                didTopic: addressBook.didTopicId,
-                vcTopic: addressBook.vcTopicId,
-                appnetName: profile.addressBook.appnetName,
-                didServerUrl: profile.addressBook.didServerUrl,
-                didTopicMemo: profile.addressBook.didTopicMemo,
-                vcTopicMemo: profile.addressBook.vcTopicMemo,
-                did: did,
+                hederaAccountId: hederaAccountId,
+                hederaAccountKey: hederaAccountKey,
+                addressBook: null,
+                didTopic: null,
+                vcTopic: null,
+                appnetName: null,
+                didServerUrl: null,
+                didTopicMemo: null,
+                vcTopicMemo: null,
+                did: userDID,
                 state: 1
             });
             await configRepository.save(rootObject);
-
-            try {
-                console.log((new Date()).toISOString(), "create DID started");
-                const message = await hederaHelper.DID.createDidTransaction(hcsDid)
-                const did = message.getDid();
-                const operation = message.getOperation();
-                guardians.setDidDocument({ did, operation });
-                new Logger().info('Created RA DID', ['GUARDIAN_SERVICE']);
-            } catch (error) {
-                guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-            }
+            //
 
             await wait(1);
 
-            try {
-                console.log((new Date()).toISOString(), "create VC started");
-                const message = await hederaHelper.DID.createVcTransaction(vcDocument, profile.hederaAccountKey);
-                const hash = message.getCredentialHash();
-                const operation = message.getOperation();
-                guardians.setVcDocument({ hash, operation });
-                new Logger().info('Created RA VC', ['GUARDIAN_SERVICE']);
-            } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-            }
-
-            await wait(1);
-
-            res.send(new MessageResponse(did));
+            res.send(new MessageResponse(userDID));
         } catch (error) {
             new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);

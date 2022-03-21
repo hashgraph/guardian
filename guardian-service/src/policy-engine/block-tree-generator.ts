@@ -18,13 +18,6 @@ import {
     SchemaHelper,
     SchemaStatus
 } from 'interfaces';
-import {
-    HederaHelper,
-    HederaMirrorNodeHelper,
-    HederaSenderHelper,
-    IPolicySubmitMessage,
-    ModelActionType
-} from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import {
@@ -39,6 +32,7 @@ import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { Logger } from 'logger-helper';
+import { HederaSDKHelper } from 'hedera-modules';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -326,12 +320,9 @@ export class BlockTreeGenerator {
                     this.regenerateIds(model.config);
 
                     const root = await guardians.getRootConfig(userFull.did);
-                    const hederaHelper = HederaHelper
-                        .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
-
+                    const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
                     if (!model.topicId) {
-                        const topicId = await hederaHelper
-                            .newTopic(root.hederaAccountKey, model.topicDescription);
+                        const topicId = await client.newTopic(root.hederaAccountKey, model.topicDescription);
                         model.topicId = topicId;
                     }
                     model.status = 'PUBLISH';

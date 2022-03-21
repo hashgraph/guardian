@@ -24,7 +24,7 @@
     },
     "include": [
         "src/**/*"
-    ],
+, "../interfaces/src/type/TopicType.ts"    ],
     "exclude": [
         "node_modules"
     ],

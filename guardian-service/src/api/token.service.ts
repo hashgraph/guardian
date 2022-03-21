@@ -3,7 +3,6 @@ import { Token } from '@entity/token';
 import { IToken, MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
-import { HederaHelper } from 'vc-modules';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 

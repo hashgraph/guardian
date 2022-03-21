@@ -1,10 +1,19 @@
 import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { IChainItem, MessageAPI, MessageError, MessageResponse, SchemaEntity } from 'interfaces';
+import {
+    IChainItem,
+    MessageAPI,
+    MessageError,
+    MessageResponse,
+    SchemaEntity
+} from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
-import { HcsVpDocument } from 'vc-modules';
+import {
+    VcDocument as HVcDocument,
+    VpDocument as HVpDocument
+} from 'hedera-modules';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
@@ -159,7 +168,7 @@ export const trustChainAPI = async function (
                     tag: "Policy Imported"
                 });
             }
-            
+
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
                 const rootAuthority = await vcDocumentRepository.findOne({
@@ -231,7 +240,7 @@ export const trustChainAPI = async function (
                     entity: 'VP',
                     tag: root.tag
                 });
-                const vpDocument = HcsVpDocument.fromJsonTree(root.document);
+                const vpDocument = HVpDocument.fromJsonTree(root.document);
                 const vcpDocument = vpDocument.getVerifiableCredential()[0];
                 const hashVc = vcpDocument.toCredentialHash();
                 const vc = await vcDocumentRepository.findOne({ where: { hash: { $eq: hashVc } } });
@@ -254,7 +263,7 @@ export const trustChainAPI = async function (
                     entity: 'VP',
                     tag: root.tag
                 });
-                const vpDocument = HcsVpDocument.fromJsonTree(root.document);
+                const vpDocument = HVpDocument.fromJsonTree(root.document);
                 const vcpDocument = vpDocument.getVerifiableCredential()[0];
                 const hashVc = vcpDocument.toCredentialHash();
                 const vc = await vcDocumentRepository.findOne({ where: { hash: { $eq: hashVc } } });

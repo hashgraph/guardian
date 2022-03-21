@@ -1,7 +1,6 @@
 import { DidDocument } from '@entity/did-document';
-import { HcsDidRootKey } from '@hashgraph/did-sdk-js';
+import { DocumentLoader, IDocumentFormat } from 'hedera-modules';
 import { getMongoRepository } from 'typeorm';
-import { DocumentLoader, IDocumentFormat } from 'vc-modules';
 
 /**
  * DID Documents Loader

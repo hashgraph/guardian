@@ -1,16 +1,16 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { HcsVcDocument, HcsVpDocument, HederaHelper, HederaUtils, VcSubject } from 'vc-modules';
 import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
-import { VcHelper } from '@helpers/vcHelper';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
-import {PolicyComponentsUtils} from '../policy-components-utils';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper } from 'hedera-modules';
+import { VcHelper } from '@helpers/vcHelper';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -46,11 +46,11 @@ export class RetirementBlock {
     private tokenId: any;
     private rule: any;
 
-    private getScope(item: HcsVcDocument<VcSubject>) {
-        return item.getCredentialSubject()[0].toJsonTree();
+    private getScope(item: VcDocument) {
+        return item.getCredentialSubject().toJsonTree();
     }
 
-    private aggregate(rule, vcs: HcsVcDocument<VcSubject>[]) {
+    private aggregate(rule, vcs: VcDocument[]) {
         let amount = 0;
         for (let i = 0; i < vcs.length; i++) {
             const element = vcs[i];
@@ -67,14 +67,14 @@ export class RetirementBlock {
         return Math.round(amount * _decimals);
     }
 
-    private async saveVC(vc: HcsVcDocument<VcSubject>, owner: string, ref: any): Promise<boolean> {
+    private async saveVC(vc: VcDocument, owner: string, ref: any): Promise<boolean> {
         try {
             await this.guardians.setVcDocument({
                 hash: vc.toCredentialHash(),
                 owner: owner,
                 document: vc.toJsonTree(),
                 type: DataTypes.RETIREMENT as any,
-                policyId:  ref.policyId,
+                policyId: ref.policyId,
                 tag: ref.tag,
                 schema: `#${vc.getCredentialSubject()[0].getType()}`
             })
@@ -84,7 +84,7 @@ export class RetirementBlock {
         }
     }
 
-    private async saveVP(vp: HcsVpDocument, sensorDid: string, type: DataTypes, ref:any): Promise<boolean> {
+    private async saveVP(vp: VpDocument, sensorDid: string, type: DataTypes, ref: any): Promise<boolean> {
         try {
             if (!vp) {
                 return false;
@@ -94,7 +94,7 @@ export class RetirementBlock {
                 document: vp.toJsonTree(),
                 owner: sensorDid,
                 type: type as any,
-                policyId:  ref.policyId,
+                policyId: ref.policyId,
                 tag: ref.tag
             })
             return true;
@@ -103,8 +103,8 @@ export class RetirementBlock {
         }
     }
 
-    private async createWipeVC(root, token, data: number): Promise<HcsVcDocument<VcSubject>> {
-        const vcHelper = new VcHelper();
+    private async createWipeVC(root, token, data: number): Promise<VcDocument> {
+        const VCHelper = new VcHelper();
 
         const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.WIPE_TOKEN);
         const vcSubject = {
@@ -114,7 +114,7 @@ export class RetirementBlock {
             amount: data.toString()
         }
 
-        const wipeVC = await vcHelper.createVC(
+        const wipeVC = await VCHelper.createVC(
             root.did,
             root.hederaAccountKey,
             vcSubject
@@ -122,10 +122,10 @@ export class RetirementBlock {
         return wipeVC;
     }
 
-    private async createVP(root, uuid: string, vcs: HcsVcDocument<VcSubject>[]) {
-        const vcHelper = new VcHelper();
+    private async createVP(root, uuid: string, vcs: VcDocument[]) {
+        const VCHelper = new VcHelper();
 
-        const vp = await vcHelper.createVP(
+        const vp = await VCHelper.createVP(
             root.did,
             root.hederaAccountKey,
             vcs,
@@ -144,15 +144,13 @@ export class RetirementBlock {
         const amount = this.aggregate(rule, document);
         const tokenValue = this.tokenAmount(token, amount);
 
-        const hederaHelper = HederaHelper.setOperator(
-            root.hederaAccountId, root.hederaAccountKey
-        );
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
 
-        let wipeVC: HcsVcDocument<VcSubject>;
+        let wipeVC: VcDocument;
         if (token.tokenType == 'non-fungible') {
             throw "unsupported operation";
         } else {
-            await hederaHelper.SDK.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
+            await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
             wipeVC = await this.createWipeVC(root, token, tokenValue);
         }
         const vcs = [].concat(document, wipeVC);
@@ -166,7 +164,7 @@ export class RetirementBlock {
     }
 
     @CatchErrors()
-    async runAction(state: any, user:IAuthUser) {
+    async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const {
             tokenId,
@@ -189,13 +187,13 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const vcs: HcsVcDocument<VcSubject>[] = [];
+        const vcs: VcDocument[] = [];
         for (let i = 0; i < docs.length; i++) {
             const element = docs[i];
-            if(element.signature === DocumentSignature.INVALID) {
+            if (element.signature === DocumentSignature.INVALID) {
                 throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
             }
-            vcs.push(HcsVcDocument.fromJsonTree(element.document, null, VcSubject));
+            vcs.push(VcDocument.fromJsonTree(element.document));
         }
 
         const curUser = await this.users.getUserById(docs[0].owner);

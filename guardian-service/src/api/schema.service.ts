@@ -10,13 +10,6 @@ import {
     MessageError,
     ModelHelper
 } from 'interfaces';
-import {
-    HederaHelper,
-    HederaMirrorNodeHelper,
-    HederaSenderHelper,
-    ISchemaSubmitMessage,
-    ModelActionType
-} from 'vc-modules';
 import { MongoRepository } from 'typeorm';
 import { readJSON } from 'fs-extra';
 import path from 'path';

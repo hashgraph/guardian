@@ -3,5 +3,6 @@ export enum DocumentStatus {
     ISSUE = 'ISSUE',
     REVOKE = 'REVOKE',
     SUSPEND = 'SUSPEND',
-    RESUME = 'RESUME'
+    RESUME = 'RESUME',
+    FAILED = 'FAILED'
 }

@@ -1,5 +1,4 @@
 export enum MessageAPI {
-    GET_ROOT_ADDRESS_BOOK = 'get-root-address-book',
     GET_ADDRESS_BOOK = 'get-address-book',
     GET_DID_DOCUMENTS = 'get-did-documents',
     GET_VC_DOCUMENTS = 'get-vc-documents',

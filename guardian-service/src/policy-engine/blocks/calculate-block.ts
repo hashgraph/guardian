@@ -4,12 +4,12 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
-import { HcsVcDocument, VcSubject } from 'vc-modules';
-import { VcHelper } from '@helpers/vcHelper';
 import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { VcDocument } from 'hedera-modules';
+import { VcHelper } from '@helpers/vcHelper';
 
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
@@ -25,7 +25,7 @@ export class CalculateContainerBlock {
             throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
         }
 
-        const VC = HcsVcDocument.fromJsonTree(document.document, null, VcSubject);
+        const VC = VcDocument.fromJsonTree(document.document);
         const json = VC.getCredentialSubject()[0].toJsonTree();
 
         let scope = {};
@@ -65,8 +65,9 @@ export class CalculateContainerBlock {
         }
 
         const root = await this.guardians.getRootConfig(ref.policyOwner);
-        const vcHelper = new VcHelper();
-        const newVC = await vcHelper.createVC(
+        
+        const VCHelper = new VcHelper();
+        const newVC = await VCHelper.createVC(
             root.did,
             root.hederaAccountKey,
             vcSubject

@@ -1,7 +1,7 @@
-import { SchemaLoader } from 'vc-modules';
 import { Schema } from '@entity/schema';
 import { getMongoRepository, MongoRepository } from 'typeorm';
 import { ISchema } from 'interfaces';
+import { SchemaLoader } from 'hedera-modules';
 
 /**
  * Subject schema loader

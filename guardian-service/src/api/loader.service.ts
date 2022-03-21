@@ -1,5 +1,4 @@
 import { MessageAPI, MessageError, MessageResponse } from 'interfaces';
-import { HcsDidRootKey } from '@hashgraph/did-sdk-js';
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';

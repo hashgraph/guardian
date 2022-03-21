@@ -1,15 +1,15 @@
 import { Inject } from '@helpers/decorators/inject';
 import { Guardians } from '@helpers/guardians';
-import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { Schema, SchemaStatus } from 'interfaces';
-import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { StateField } from '@policy-engine/helpers/decorators';
+import { HederaUtils } from 'hedera-modules';
+import { VcHelper } from '@helpers/vcHelper';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -21,9 +21,6 @@ export class RequestVcDocumentBlock {
 
     @Inject()
     private guardians: Guardians;
-
-    @Inject()
-    private vcHelper: VcHelper;
 
     @Inject()
     private wallet: Wallet;
@@ -109,6 +106,7 @@ export class RequestVcDocumentBlock {
             const idType = ref.options.idType;
 
             const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
+            const VCHelper = new VcHelper();
 
             if (id) {
                 credentialSubject.id = id;
@@ -117,12 +115,12 @@ export class RequestVcDocumentBlock {
                 credentialSubject.ref = documentRef;
             }
             credentialSubject.policyId = ref.policyId;
-            const res = await this.vcHelper.verifySubject(credentialSubject);
+            const res = await VCHelper.verifySubject(credentialSubject);
             if (!res.ok) {
                 throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
             }
 
-            const vc = await this.vcHelper.createVC(user.did, userHederaKey, credentialSubject);
+            const vc = await VCHelper.createVC(user.did, userHederaKey, credentialSubject);
             const item = {
                 hash: vc.toCredentialHash(),
                 owner: user.did,

@@ -1,12 +1,10 @@
 import { DataSourceAddon } from '@policy-engine/helpers/decorators/data-source-addon';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import {PolicyComponentsUtils} from '../policy-components-utils';
-import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
+import { PolicyComponentsUtils } from '../policy-components-utils';
+import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 
 @DataSourceAddon({
     blockType: 'filtersAddon'

@@ -2,7 +2,6 @@ import { Guardians } from '@helpers/guardians';
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, DocumentStatus } from 'interfaces';
-import { HcsVcDocument, HederaHelper, VcSubject } from 'vc-modules';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -11,6 +10,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { VcDocument } from 'hedera-modules';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -50,7 +50,7 @@ export class SendToGuardianBlock {
         let result: any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
-                const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
+                const vc = VcDocument.fromJsonTree(document.document);
                 const doc = {
                     hash: vc.toCredentialHash(),
                     owner: document.owner,
@@ -104,7 +104,7 @@ export class SendToGuardianBlock {
         const hederaHelper = HederaHelper
             .setOperator(userID, userKey)
             .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
-        const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
+        const vc = VcDocument.fromJsonTree(document.document);
         const result = await hederaHelper.DID.createVcTransaction(vc, userKey);
         document.hederaStatus = result.getOperation();
         return document;

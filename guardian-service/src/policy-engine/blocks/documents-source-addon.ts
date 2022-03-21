@@ -5,8 +5,8 @@ import { Guardians } from '@helpers/guardians';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
-import {PolicyComponentsUtils} from '../policy-components-utils';
-import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
+import { PolicyComponentsUtils } from '../policy-components-utils';
+import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 
 @SourceAddon({
     blockType: 'documentsSourceAddon'

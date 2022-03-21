@@ -312,7 +312,7 @@ export class VCHelper {
 
         const validate = ajv.compile(schema);
         const valid = validate(subject);
-        
+
         return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
     }
 

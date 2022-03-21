@@ -59,7 +59,6 @@ export class VcSubject extends CredentialSubject {
                 this._addContext(context);
             }
         }
-
     }
 
     private _addContext(context: string): void {

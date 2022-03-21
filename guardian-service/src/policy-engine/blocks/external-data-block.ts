@@ -1,11 +1,11 @@
 import { ExternalData } from '@policy-engine/helpers/decorators';
-import { HcsVcDocument, VcSubject } from 'vc-modules';
 import { DocumentSignature, DocumentStatus, SchemaStatus } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
-import { VcHelper } from '@helpers/vcHelper';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Guardians } from '@helpers/guardians';
-import {PolicyComponentsUtils} from '../policy-components-utils';
+import { PolicyComponentsUtils } from '../policy-components-utils';
+import { VcDocument } from 'hedera-modules';
+import { VcHelper } from '@helpers/vcHelper';
 /**
  * External data block
  */
@@ -15,25 +15,23 @@ import {PolicyComponentsUtils} from '../policy-components-utils';
 })
 export class ExternalDataBlock {
     @Inject()
-    private vcHelper: VcHelper;
-
-    @Inject()
     private guardians: Guardians;
 
-    async receiveData(data:any) {
+    async receiveData(data: any) {
         let verify: boolean;
         try {
-            const res = await this.vcHelper.verifySchema(data.document);
+            const VCHelper = new VcHelper();
+            const res = await VCHelper.verifySchema(data.document);
             verify = res.ok;
             if (verify) {
-                verify = await this.vcHelper.verifyVC(data.document);
+                verify = await VCHelper.verifyVC(data.document);
             }
         } catch (error) {
             verify = false;
         }
         const signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const vc = HcsVcDocument.fromJsonTree<VcSubject>(data.document, null, VcSubject);
+        const vc = VcDocument.fromJsonTree(data.document);
         const doc = {
             hash: vc.toCredentialHash(),
             owner: data.owner,

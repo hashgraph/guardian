@@ -1,18 +1,15 @@
-import { DefaultDocumentLoader, VCHelper } from 'vc-modules';
-import { DIDDocumentLoader } from '../document-loader/did-document-loader';
-import {ContextDocumentLoader} from '../document-loader/context-loader';
 import { Singleton } from '@helpers/decorators/singleton';
-import { SubjectSchemaLoader } from '../document-loader/subject-schema-loader';
-import { VCSchemaLoader } from '../document-loader/vc-schema-loader';
-import {getMongoRepository} from 'typeorm';
-import {Schema} from '@entity/schema';
-import {DidDocument} from '@entity/did-document';
+import { ContextDocumentLoader } from 'document-loader/context-loader';
+import { DIDDocumentLoader } from 'document-loader/did-document-loader';
+import { SubjectSchemaLoader } from 'document-loader/subject-schema-loader';
+import { VCSchemaLoader } from 'document-loader/vc-schema-loader';
+import { VCJS, DefaultDocumentLoader } from 'hedera-modules';
 
 /**
  * Configured VCHelper
  */
 @Singleton
-export class VcHelper extends VCHelper {
+export class VcHelper extends VCJS {
     constructor() {
         super();
         const defaultDocumentLoader = new DefaultDocumentLoader();
