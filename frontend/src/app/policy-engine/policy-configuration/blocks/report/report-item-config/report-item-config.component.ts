@@ -1,5 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { MatDialog } from '@angular/material/dialog';
+import { IconType, Schema, Token } from 'interfaces';
+import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
+import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
+import { IPFSService } from 'src/app/services/ipfs.service';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -22,6 +26,8 @@ export class ReportItemConfigComponent implements OnInit {
     @Input('roles') roles!: string[];
     @Output() onInit = new EventEmitter();
 
+    fileLoading = false;
+
     propHidden: any = {
         main: false,
         filterGroup: false,
@@ -32,8 +38,10 @@ export class ReportItemConfigComponent implements OnInit {
 
     block!: BlockNode;
 
-    constructor() {
-    }
+    constructor(
+        private ipfs: IPFSService,
+        public dialog: MatDialog
+    ) { }
 
     ngOnInit(): void {
         this.onInit.emit(this);
@@ -49,6 +57,7 @@ export class ReportItemConfigComponent implements OnInit {
         this.block.filters = this.block.filters || [];
         this.block.variables = this.block.variables || [];
         this.block.visible = block.visible !== false;
+        this.block.iconType = block.iconType || IconType.COMMON
     }
 
     onHide(item: any, prop: any) {
@@ -69,5 +78,30 @@ export class ReportItemConfigComponent implements OnInit {
 
     onRemoveFilter(i: number) {
         this.block.filters.splice(i, 1);
+    }
+
+    onFileSelected(event: any, block: any) {
+        const file = event?.target?.files[0];
+
+        if (!file) {
+            return;
+        }
+        this.fileLoading = true;
+        this.ipfs.addFile(file)
+            .subscribe(res => {
+                block.icon = API_IPFS_GATEWAY_URL + res;
+                this.fileLoading = false;
+            }, error => {
+                this.fileLoading = false;
+            });
+    }
+
+    iconPreview() {
+        this.dialog.open(IconPreviewDialog, {
+            data: {
+                iconType: this.block.iconType,
+                icon: this.block.icon
+            }
+        });
     }
 }

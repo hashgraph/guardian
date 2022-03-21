@@ -1,4 +1,4 @@
-import { IVCDocument, IVPDocument } from "..";
+import { IconType, IVCDocument, IVPDocument } from "..";
 
 export interface IChainItem {
     type: 'VP' | 'VC' | 'DID';
@@ -62,7 +62,8 @@ export interface IReportItem {
     username: string;
     document: IVCDocument;
     documents?: IReportItem[];
-    visible: boolean
+    visible: boolean,
+    iconType: IconType
 }
 
 export interface IReport {

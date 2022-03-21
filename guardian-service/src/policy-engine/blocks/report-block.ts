@@ -5,7 +5,7 @@ import { getVCField } from '@helpers/utils';
 import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
-import { IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport, SchemaEntity } from 'interfaces';
+import { IconType, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport, SchemaEntity } from 'interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Users } from "@helpers/users";
 
@@ -190,6 +190,7 @@ export class ReportBlock {
                     const policyCreatorDocument: IReportItem = {
                         type: 'VC',
                         icon: 'account_circle',
+                        iconType: IconType.COMMON,
                         title: 'RootAuthority',
                         description: 'Account Creation',
                         visible: true,

@@ -36,6 +36,7 @@ import { LoggerService } from './services/logger.service';
 import { AdminHeaderComponent } from './views/admin/admin-header/admin-panel.component';
 import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
+import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview-dialog.component';
 
 @NgModule({
     declarations: [
@@ -54,7 +55,8 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
         NewPolicyDialog,
         LogsViewComponent,
         SettingsViewComponent,
-        AdminHeaderComponent
+        AdminHeaderComponent,
+        IconPreviewDialog
     ],
     imports: [
         BrowserModule,
