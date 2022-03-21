@@ -9,6 +9,7 @@
   * [Installation](getting-started/getting-started/installation.md)
 * [Demo Usage Guide](getting-started/demo-usage-guide.md)
 * [API Versioning & Deprecation Policy](getting-started/api-versioning-and-deprecation-policy.md)
+* [Policy Versioning & Deprecation Policy](getting-started/policy-versioning-and-deprecation-policy.md)
 * [Demo Using APIs](getting-started/demo-using-apis.md)
 * [Contributing](getting-started/contributing/README.md)
   * [Contribute a New Policy](getting-started/contributing/contribute-a-new-policy.md)
