@@ -1,0 +1,10 @@
+<h1 mat-dialog-title class="dialog-title">Icon Preview</h1>
+<div mat-dialog-content class="content-container">
+    <ng-container [ngSwitch]="iconType">
+        <div *ngSwitchCase="'custom'">
+          <mat-spinner *ngIf="loading" class="loading"></mat-spinner>
+          <img [hidden]="loading" (load)="onLoad()" (error)="onLoad()" [src]="icon" class="image-container" alt="Icon not found"/>
+        </div>
+        <mat-icon *ngSwitchCase="'common'" class="icon-container" style="font-size: 250px;">{{icon}}</mat-icon>
+    </ng-container>
+</div>
