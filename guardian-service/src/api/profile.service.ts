@@ -1,14 +1,26 @@
 import { DidDocument } from '@entity/did-document';
 import { RootConfig } from '@entity/root-config';
 import { VcDocument } from '@entity/vc-document';
-import { DidDocumentStatus, IAddressBookConfig, IRootConfig, IUser, MessageAPI, MessageError, MessageResponse, SchemaEntity } from 'interfaces';
-import { MongoRepository } from 'typeorm';
+import {
+    DidDocumentStatus,
+    DocumentStatus,
+    IAddressBookConfig,
+    IRootConfig,
+    IUser,
+    MessageAPI,
+    MessageError,
+    MessageResponse,
+    SchemaEntity
+} from 'interfaces';
+import { getMongoRepository, MongoRepository } from 'typeorm';
 import { HederaHelper } from 'vc-modules';
 import { Logger } from 'logger-helper';
-import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
+import { getDIDOperation, getVCOperation } from '@helpers/utils';
+import { readConfig } from '@api/config.service';
+import { Settings } from '@entity/settings';
 
 async function wait(s: number): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -20,7 +32,7 @@ async function wait(s: number): Promise<void> {
 
 /**
  * Connect to the message broker methods of working with Address books.
- * 
+ *
  * @param channel - channel
  * @param configRepository - table with Address books
  * @param didDocumentRepository - table with DID Documents
@@ -32,10 +44,10 @@ export const profileAPI = async function (
 ) {
     channel.response(MessageAPI.GET_USER_BALANCE, async (msg, res) => {
         try {
-            res.send(new MessageError("test", 401));
+            res.send(new MessageError('test', 401));
             return;
 
-            const { username } = msg.payload;
+            const {username} = msg.payload;
 
             const wallet = new Wallet();
             const users = new Users();
@@ -66,25 +78,30 @@ export const profileAPI = async function (
         try {
             const profile = msg.payload as IUser;
 
-            const guardians = new Guardians();
-
-            const addressBook = await guardians.getRootAddressBook();
+            const config = await readConfig(getMongoRepository(Settings));
+            const addressBook = {
+                owner: null,
+                addressBook: config['ADDRESS_BOOK'],
+                vcTopic: config['VC_TOPIC_ID'],
+                didTopic: config['DID_TOPIC_ID']
+            }
             const hederaHelper = HederaHelper
                 .setOperator(profile.hederaAccountId, profile.hederaAccountKey)
                 .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
 
-            const { hcsDid, did, document } = await hederaHelper.DID.createDid(profile.hederaAccountKey);
+            const {hcsDid, did, document} = await hederaHelper.DID.createDid(profile.hederaAccountKey);
 
-            await guardians.setDidDocument({ did, document });
+            const doc = getMongoRepository(DidDocument).create({did, document});
 
             hederaHelper.DID.createDidTransaction(hcsDid).then(function (message: any) {
                 const did = message.getDid();
                 const operation = message.getOperation();
-                guardians.setDidDocument({ did, operation });
+                doc.status = getDIDOperation(operation);
             }, function (error) {
                 console.error('createDidTransaction:', error);
-                guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
+                doc.status = getDIDOperation(DidDocumentStatus.FAILED);
             });
+            await getMongoRepository(DidDocument).save(doc);
 
             res.send(new MessageResponse(did));
         } catch (error) {
@@ -98,7 +115,6 @@ export const profileAPI = async function (
         try {
             const profile = msg.payload as IUser;
 
-            const guardians = new Guardians();
             const vcHelper = new VcHelper();
 
             const addressBook = await HederaHelper
@@ -121,21 +137,21 @@ export const profileAPI = async function (
                     addressBook.vcTopicId,
                 );
 
-            const { hcsDid, did, document } = await hederaHelper.DID.createDid(profile.hederaAccountKey);
+            const {hcsDid, did, document} = await hederaHelper.DID.createDid(profile.hederaAccountKey);
 
             const vc: any = profile.vcDocument || {};
             vc.id = did;
 
             const vcDocument = await vcHelper.createVC(did, profile.hederaAccountKey, vc);
 
-            await guardians.setVcDocument({
+            const vcDoc = getMongoRepository(VcDocument).create({
                 hash: vcDocument.toCredentialHash(),
                 owner: did,
                 document: vcDocument.toJsonTree(),
                 type: SchemaEntity.ROOT_AUTHORITY
             });
 
-            await guardians.setDidDocument({ did, document });
+            const didDoc = getMongoRepository(DidDocument).create({did, document});
 
             const rootObject = configRepository.create({
                 hederaAccountId: profile.hederaAccountId,
@@ -153,29 +169,32 @@ export const profileAPI = async function (
             await configRepository.save(rootObject);
 
             try {
-                console.log((new Date()).toISOString(), "create DID started");
+                console.log((new Date()).toISOString(), 'create DID started');
                 const message = await hederaHelper.DID.createDidTransaction(hcsDid)
                 const did = message.getDid();
                 const operation = message.getOperation();
-                guardians.setDidDocument({ did, operation });
+                didDoc.status = getDIDOperation(operation);
                 new Logger().info('Created RA DID', ['GUARDIAN_SERVICE']);
             } catch (error) {
-                guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
+                didDoc.status = getDIDOperation(DidDocumentStatus.FAILED);
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             }
+            await getMongoRepository(DidDocument).save(didDoc);
 
             await wait(1);
 
             try {
-                console.log((new Date()).toISOString(), "create VC started");
+                console.log((new Date()).toISOString(), 'create VC started');
                 const message = await hederaHelper.DID.createVcTransaction(vcDocument, profile.hederaAccountKey);
                 const hash = message.getCredentialHash();
                 const operation = message.getOperation();
-                guardians.setVcDocument({ hash, operation });
+                vcDoc.hederaStatus = getVCOperation(operation);
                 new Logger().info('Created RA VC', ['GUARDIAN_SERVICE']);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                vcDoc.hederaStatus = getVCOperation(DocumentStatus.FAILED as any);
             }
+            await getMongoRepository(VcDocument).save(vcDoc);
 
             await wait(1);
 
@@ -189,13 +208,13 @@ export const profileAPI = async function (
 
     /**
      * Return Address books, VC Document and DID Document
-     * 
+     *
      * @param {string} payload - DID
-     * 
+     *
      * @returns {IFullConfig} - approve documents
      */
     channel.response(MessageAPI.GET_ROOT_CONFIG, async (msg, res) => {
-        const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload } } });
+        const rootConfig = await configRepository.findOne({where: {did: {$eq: msg.payload}}});
         if (!rootConfig) {
             res.send(new MessageResponse(null));
             return;
@@ -205,9 +224,9 @@ export const profileAPI = async function (
 
     /**
      * Create Address book
-     * 
+     *
      * @param {Object} payload - Address book config
-     * 
+     *
      * @returns {IRootConfig} - Address book config
      */
     channel.response(MessageAPI.SET_ROOT_CONFIG, async (msg, res) => {
@@ -218,10 +237,10 @@ export const profileAPI = async function (
 
     /**
      * Return Address book
-     * 
+     *
      * @param {Object} payload - filters
      * @param {string} payload.owner - owner DID
-     * 
+     *
      * @returns {IAddressBookConfig} - Address book
      */
     channel.response(MessageAPI.GET_ADDRESS_BOOK, async (msg, res) => {
@@ -230,7 +249,7 @@ export const profileAPI = async function (
             return;
         }
 
-        const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload.owner } } });
+        const rootConfig = await configRepository.findOne({where: {did: {$eq: msg.payload.owner}}});
         if (!rootConfig) {
             res.send(new MessageResponse(null));
             return;

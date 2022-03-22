@@ -25,7 +25,6 @@ import {
     IPolicySubmitMessage,
     ModelActionType
 } from 'vc-modules';
-import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import {
     ISerializedErrors,
@@ -34,11 +33,20 @@ import {
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { IPFS } from '@helpers/ipfs';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
+import {
+    findAllEntities,
+    incrementSchemaVersion,
+    publishSchema,
+    replaceAllEntities,
+    SchemaFields
+} from '@helpers/utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { Logger } from 'logger-helper';
+import { RootConfig } from '@entity/root-config';
+import { Schema } from '@entity/schema';
+import { VcDocument } from '@entity/vc-document';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -309,23 +317,22 @@ export class BlockTreeGenerator {
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
-                    const guardians = new Guardians();
                     const user = msg.payload.user;
                     const userFull = await this.users.getUser(user.username);
 
                     const schemaIRIs = findAllEntities(model.config, SchemaFields);
                     for (let i = 0; i < schemaIRIs.length; i++) {
                         const schemaIRI = schemaIRIs[i];
-                        const schema = await guardians.incrementSchemaVersion(schemaIRI, userFull.did);
+                        const schema = await incrementSchemaVersion(schemaIRI, userFull.did);
                         if (schema.status == SchemaStatus.PUBLISHED) {
                             continue;
                         }
-                        const newSchema = await guardians.publishSchema(schema.id, schema.version, userFull.did);
+                        const newSchema = await publishSchema(schema.id, schema.version, userFull.did);
                         replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
                     }
                     this.regenerateIds(model.config);
 
-                    const root = await guardians.getRootConfig(userFull.did);
+                    const root = await getMongoRepository(RootConfig).findOne({did: userFull.did});
                     const hederaHelper = HederaHelper
                         .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
 
@@ -353,7 +360,7 @@ export class BlockTreeGenerator {
                     const messageId = await HederaSenderHelper.SubmitPolicyMessage(hederaHelper, model.topicId, publishPolicyMessage);
                     model.messageId = messageId;
 
-                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);
+                    const policySchema = await getMongoRepository(Schema).findOne({entity: SchemaEntity.POLICY});
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
                         ...publishPolicyMessage,
@@ -361,13 +368,14 @@ export class BlockTreeGenerator {
                         id: messageId
                     }
                     const vc = await vcHelper.createVC(userFull.did, root.hederaAccountKey, credentialSubject);
-                    await guardians.setVcDocument({
+                    const doc = getMongoRepository(VcDocument).create({
                         hash: vc.toCredentialHash(),
                         owner: userFull.did,
                         document: vc.toJsonTree(),
                         type: SchemaEntity.POLICY,
                         policyId: `${model.id}`
                     });
+                    await getMongoRepository(VcDocument).save(doc);
 
                     await getMongoRepository(Policy).save(model);
                     await this.generate(model.id.toString());
@@ -592,11 +600,12 @@ export class BlockTreeGenerator {
                                 messageId: element.timeStamp,
                                 version: element.message.version
                             });
-                        } 
-                    };
+                        }
+                    }
+
                 }
                 const zip = await IPFS.getFile(message.cid, 'raw');
-                
+
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }

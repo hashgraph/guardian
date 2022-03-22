@@ -1,5 +1,5 @@
 import FastMQ from 'fastmq'
-import {createConnection, getMongoRepository} from 'typeorm';
+import { createConnection, getMongoRepository } from 'typeorm';
 import { approveAPI } from '@api/approve.service';
 import { configAPI, readConfig } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -17,11 +17,10 @@ import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
-import {VcHelper} from '@helpers/vcHelper';
-import {BlockTreeGenerator} from '@policy-engine/block-tree-generator';
-import {Policy} from '@entity/policy';
-import {Guardians} from '@helpers/guardians';
-import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
+import { VcHelper } from '@helpers/vcHelper';
+import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { Policy } from '@entity/policy';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
@@ -48,7 +47,6 @@ Promise.all([
 
     IPFS.setChannel(channel);
     new Logger().setChannel(channel);
-    new Guardians().setChannel(channel);
     new Wallet().setChannel(channel);
     new Users().setChannel(channel);
 
@@ -67,8 +65,9 @@ Promise.all([
         }
     }
     policyGenerator.registerListeners();
-    new Guardians().registerMRVReceiver(async (data) => {
-        await PolicyComponentsUtils.ReceiveExternalData(data);
+    channel.response('mrv-data', async (msg, res) => {
+        await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
+        res.send();
     });
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);
@@ -82,8 +81,7 @@ Promise.all([
     let fileConfig = null;
     try {
         fileConfig = await readConfig(settingsRepository);
-    }
-    catch (e){
+    } catch (e) {
         new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
         console.log(e);
     }
