@@ -27,6 +27,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 @NgModule({
     declarations: [],
@@ -84,7 +85,8 @@ import { MatChipsModule } from '@angular/material/chips';
         ClipboardModule,
         MatPaginatorModule,
         MatSortModule,
-        MatChipsModule
+        MatChipsModule,
+        MatAutocompleteModule
     ]
 })
 export class MaterialModule { }

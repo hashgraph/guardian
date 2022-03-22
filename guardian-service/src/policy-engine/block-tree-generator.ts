@@ -569,18 +569,23 @@ export class BlockTreeGenerator {
 
                 const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
                 const message = topicMessage.message;
-
                 const newVersions: any = [];
-                const anotherVersions = await HederaMirrorNodeHelper.getTopicMessages(topicMessage.topicId);
-                for (let i = 0; i < anotherVersions.length; i++) {
-                    const element = anotherVersions[i];
-                    if (ModelHelper.versionCompare(element.message.version, topicMessage.message.version) === 1) {
-                        newVersions.push({
-                            messageId: element.timeStamp,
-                            version: element.message.version
-                        });
-                    } 
-                };
+                if (message.version) {
+                    const anotherVersions = await HederaMirrorNodeHelper.getTopicMessages(topicMessage.topicId);
+                    for (let i = 0; i < anotherVersions.length; i++) {
+                        const element = anotherVersions[i];
+                        if (!element.message || !element.message.version) {
+                            continue;
+                        }
+
+                        if (ModelHelper.versionCompare(element.message.version, message.version) === 1) {
+                            newVersions.push({
+                                messageId: element.timeStamp,
+                                version: element.message.version
+                            });
+                        } 
+                    };
+                }
                 const zip = await IPFS.getFile(message.cid, 'raw');
                 
                 if (!zip) {

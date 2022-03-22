@@ -7,8 +7,20 @@
 Set settings. For users with the Root Authority role only.
 {% endswagger-description %}
 
-{% swagger-parameter in="body" type="Schema" required="true" %}
-Settings
+{% swagger-parameter in="body" type="String" required="true" name="operatorID" %}
+ID of the operator
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="operatorKey" type="String" required="true" %}
+Key of the operator
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="schemaTopicID" type="String" required="true" %}
+TopicID of Schema
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="nftApiKey" type="String" required="true" %}
+API key of NFT
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}

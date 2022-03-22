@@ -115,7 +115,7 @@
                             <div class="chain-id">
                                 {{item.description}}
                             </div>
-                            <div class="parties">
+                            <div *ngIf="item.username" class="parties">
                                 <div class="parties-label">Parties:</div>
                                 <div class="parties-value">
                                     <div class="partie">
@@ -130,7 +130,7 @@
                                     </a>
                                 </ng-container>
                             </div>
-                            <div class="chain-document">
+                            <div *ngIf="item.document" class="chain-document">
                                 <a (click)="openVCDocument(item)">VC Files</a>
                             </div>
                         </div>

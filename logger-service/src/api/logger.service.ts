@@ -60,4 +60,32 @@ export const loggerAPI = async function (
             res.send(new MessageError(e.toString()));
         }
     })
+
+    /**
+     * Get attributes.
+     * 
+     * @param {any} [payload.name] - Name to filter
+     * 
+     * @return {any} - Attributes
+     */
+    channel.response(MessageAPI.GET_ATTRIBUTES, async (msg, res) => {
+        try {
+            const nameFilter = `.*${msg.payload.name || ""}.*`;
+            let attrCursor = await logRepository.aggregate([
+                { $project: { attributes : "$attributes" }},
+                { $unwind: { path: "$attributes" }},
+                { $match: { attributes: { $regex: nameFilter, $options: 'i' }}},
+                { $group: { _id: null, uniqueValues: { $addToSet: "$attributes" }}},
+                { $unwind: { path: "$uniqueValues" }},
+                { $limit: 20 },
+                { $group: { _id: null, uniqueValues: { $addToSet: "$uniqueValues" }}}
+            ]);
+            const attrObject = await attrCursor.next();
+            attrCursor.close();
+            res.send(new MessageResponse(attrObject?.uniqueValues?.sort() || []));
+        }
+        catch (e) {
+            res.send(new MessageError(e.toString()));
+        }
+    })
 }
