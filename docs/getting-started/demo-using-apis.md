@@ -28,9 +28,7 @@
 
 ### 1.2 In the policy config there is a root block which is the top of the structure
 
-![](<../.gitbook/assets/image (25).png>)
-
-### 1.3 Request the config for the root block
+![](<../.gitbook/assets/image (6).png>)
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/97379c43-2bce-4e67-9817-a79fbad3e53d" summary="Requesting configuration of root block" %}
 {% swagger-description %}
@@ -70,11 +68,11 @@
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (24).png>)
+![](<../.gitbook/assets/image (9).png>)
 
 ### 1.5 At present only PolicyRolesBlock is available to the user. Select the "INSTALLER" role.
 
-{% swagger method="post" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/bb342b37-8bb6-4595-93fc-98fd63a23c16" summary="Registering the role as "Installer"" %}
+{% swagger method="post" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/bb342b37-8bb6-4595-93fc-98fd63a23c16" summary="Registering the role as " %}
 {% swagger-description %}
 Request the role
 {% endswagger-description %}
@@ -84,7 +82,7 @@ INSTALLER
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (10).png>)
+![](<../.gitbook/assets/image (10) (1).png>)
 
 ### 1.6 Request the root block and all contained blocks.
 
@@ -232,10 +230,14 @@ Years of registration
 
 {% swagger-parameter in="body" name="@context" type="array" required="true" %}
 \["https://ipfs.io/ipfs/bafkreihj5c6npywzkfx2pylalh5f23lhy2ogofxhdqctvpoh3gczwtzjg4"]
+
+![](<../.gitbook/assets/image (10).png>)
+
+
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (16).png>)
+![](<../.gitbook/assets/image (3).png>)
 
 ### 1.8 Request the root block and all contained blocks again.
 
@@ -297,7 +299,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (6).png>)
+![](<../.gitbook/assets/image (6) (1).png>)
 
 ## 2. Login as a Root Authority
 
@@ -389,7 +391,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-#### 2.2.4 Requesting Approval&#x20;
+#### 2.2.4 Requesting Approval
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/blocks/d5c7c788-696d-457d-985e-dce3886b726" summary="Requesting Approval" %}
 {% swagger-description %}
@@ -471,7 +473,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 				
 ```
 
-![](<../.gitbook/assets/image (15).png>)
+![](../.gitbook/assets/image.png)
 
 ![](<../.gitbook/assets/image (2).png>)
 
@@ -632,7 +634,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 {% endswagger-response %}
 {% endswagger %}
 
-### 3.2 In the fields of the grid there is a link to the "download\_config\_btn" bloc.&#x20;
+### 3.2 In the fields of the grid there is a link to the "download\_config\_btn" bloc.
 
 {% swagger method="get" path="" baseUrl="/api/v1/policies/621376c8e6763a0014fb0de4/tag/download_config_btn" summary="Requesting BlockID" %}
 {% swagger-description %}
@@ -701,7 +703,7 @@ capacity
 
 ![](<../.gitbook/assets/image (12).png>)
 
-![](../.gitbook/assets/image.png)
+![](<../.gitbook/assets/image (1).png>)
 
 ### 3.4 Refresh the Blocks
 
@@ -717,4 +719,4 @@ record in the grid (data[0])
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (17).png>)
+![](<../.gitbook/assets/image (15).png>)
