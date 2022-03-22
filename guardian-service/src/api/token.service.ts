@@ -1,7 +1,45 @@
+import { RootConfig } from '@entity/root-config';
 import { Token } from '@entity/token';
 import { IToken, MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
+import { HederaHelper } from 'vc-modules';
+import { KeyType, Wallet } from '@helpers/wallet';
+import { Users } from '@helpers/users';
+
+function getTokenInfo(info: any, token: any) {
+    const tokenId = token.tokenId;
+    const result = {
+        id: token.id,
+        tokenId: token.tokenId,
+        tokenName: token.tokenName,
+        tokenSymbol: token.tokenSymbol,
+        tokenType: token.tokenType,
+        decimals: token.decimals,
+        associated: false,
+        balance: null,
+        hBarBalance: null,
+        frozen: null,
+        kyc: null
+    }
+    if (info[tokenId]) {
+        result.associated = true;
+        result.balance = info[tokenId].balance;
+        result.hBarBalance = info[tokenId].hBarBalance;
+        result.frozen = !!info[tokenId].frozen;
+        result.kyc = !!info[tokenId].kyc;
+        try {
+            if (result.decimals) {
+                result.balance = (
+                    result.balance / Math.pow(10, result.decimals)
+                ).toFixed(result.decimals)
+            }
+        } catch (error) {
+            result.balance = "N/A";
+        }
+    }
+    return result;
+}
 
 /**
  * Connect to the message broker methods of working with tokens.
@@ -11,7 +49,8 @@ import { MongoRepository } from 'typeorm';
  */
 export const tokenAPI = async function (
     channel: any,
-    tokenRepository: MongoRepository<Token>
+    tokenRepository: MongoRepository<Token>,
+    configRepository: MongoRepository<RootConfig>
 ): Promise<void> {
     /**
      * Create new token
@@ -21,10 +60,281 @@ export const tokenAPI = async function (
      * @returns {IToken[]} - all tokens
      */
     channel.response(MessageAPI.SET_TOKEN, async (msg, res) => {
-        const tokenObject = tokenRepository.create(msg.payload);
-        const result = await tokenRepository.save(tokenObject);
-        const tokens = await tokenRepository.find();
-        res.send(new MessageResponse(tokens));
+        try {
+            if (!msg.payload) {
+                throw 'Invalid Params';
+            }
+
+            const {
+                changeSupply,
+                decimals,
+                enableAdmin,
+                enableFreeze,
+                enableKYC,
+                enableWipe,
+                initialSupply,
+                tokenName,
+                tokenSymbol,
+                tokenType
+            } = msg.payload.token;
+            const owner = msg.payload.owner;
+
+            if (!tokenName) {
+                throw 'Invalid Token Name';
+            }
+
+            if (!tokenSymbol) {
+                throw 'Invalid Token Symbol';
+            }
+
+            const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
+            if (!root) {
+                throw 'Invalid Owner';
+            }
+
+            const hederaHelper = HederaHelper
+                .setOperator(root.hederaAccountId, root.hederaAccountKey);
+            const treasury = await hederaHelper.SDK.newAccount(2);
+            const treasuryId = treasury.id;
+            const treasuryKey = treasury.key;
+            const adminKey = enableAdmin ? treasuryKey : null;
+            const kycKey = enableKYC ? treasuryKey : null;
+            const freezeKey = enableFreeze ? treasuryKey : null;
+            const wipeKey = enableWipe ? treasuryKey : null;
+            const supplyKey = changeSupply ? treasuryKey : null;
+            const nft = tokenType == 'non-fungible';
+            const _decimals = nft ? 0 : decimals;
+            const _initialSupply = nft ? 0 : initialSupply;
+            const tokenId = await hederaHelper.SDK.newToken(
+                tokenName,
+                tokenSymbol,
+                nft,
+                _decimals,
+                _initialSupply,
+                '',
+                treasury,
+                adminKey,
+                kycKey,
+                freezeKey,
+                wipeKey,
+                supplyKey,
+            );
+            const tokenObject = tokenRepository.create({
+                tokenId,
+                tokenName,
+                tokenSymbol,
+                tokenType,
+                decimals: _decimals,
+                initialSupply: _initialSupply,
+                adminId: treasuryId ? treasuryId.toString() : null,
+                adminKey: adminKey ? adminKey.toString() : null,
+                kycKey: kycKey ? kycKey.toString() : null,
+                freezeKey: freezeKey ? freezeKey.toString() : null,
+                wipeKey: wipeKey ? wipeKey.toString() : null,
+                supplyKey: supplyKey ? supplyKey.toString() : null,
+            });
+            const result = await tokenRepository.save(tokenObject);
+            const tokens = await tokenRepository.find();
+            res.send(new MessageResponse(tokens));
+        } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message));
+        }
+    })
+
+    channel.response(MessageAPI.FREEZE_TOKEN, async (msg, res) => {
+        try {
+            const { tokenId, username, owner, freeze } = msg.payload;
+
+            const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
+            if (!root) {
+                throw 'Invalid Owner';
+            }
+
+            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+            if (!token) {
+                throw 'Token not found';
+            }
+
+            const users = new Users();
+            const user = await users.getUser(username);
+            if (!user) {
+                throw 'User not found';
+            }
+            if (!user.hederaAccountId) {
+                throw 'User is not linked to an Hedera Account';
+            }
+
+            const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
+            const freezeKey = token.freezeKey;
+            if (freeze) {
+                await hederaHelper.SDK.freeze(tokenId, user.hederaAccountId, freezeKey);
+            } else {
+                await hederaHelper.SDK.unfreeze(tokenId, user.hederaAccountId, freezeKey);
+            }
+
+            const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
+            const result = getTokenInfo(info, { tokenId });
+            res.send(new MessageResponse(result));
+        } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message, 400));
+        }
+    })
+
+
+    channel.response(MessageAPI.KYC_TOKEN, async (msg, res) => {
+        try {
+            const { tokenId, username, owner, grant } = msg.payload;
+
+            const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
+            if (!root) {
+                throw 'Invalid Owner';
+            }
+
+            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+            if (!token) {
+                throw 'Token not found';
+            }
+
+            const users = new Users();
+            const user = await users.getUser(username);
+            if (!user) {
+                throw 'User not found';
+            }
+            if (!user.hederaAccountId) {
+                throw 'User is not linked to an Hedera Account';
+            }
+
+            const hederaHelper = HederaHelper.setOperator(root.hederaAccountId, root.hederaAccountKey);
+            const kycKey = token.kycKey;
+            if (grant) {
+                await hederaHelper.SDK.grantKyc(tokenId, user.hederaAccountId, kycKey);
+            } else {
+                await hederaHelper.SDK.revokeKyc(tokenId, user.hederaAccountId, kycKey);
+            }
+
+            const info = await hederaHelper.SDK.accountInfo(user.hederaAccountId);
+            const result = getTokenInfo(info, { tokenId });
+            res.send(new MessageResponse(result));
+        } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message, 400));
+        }
+    })
+
+    channel.response(MessageAPI.ASSOCIATE_TOKEN, async (msg, res) => {
+        try {
+            const { tokenId, did, associate } = msg.payload;
+
+            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+            if (!token) {
+                throw 'Token not found';
+            }
+
+            const wallet = new Wallet();
+            const users = new Users();
+            const user = await users.getUserById(did);
+            const userID = user.hederaAccountId;
+            const userDID = user.did;
+            const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+            if (!user) {
+                throw 'User not found';
+            }
+
+            if (!user.hederaAccountId) {
+                throw 'User is not linked to an Hedera Account';
+            }
+
+            const hederaHelper = HederaHelper.setOperator(userID, userKey);
+            let status: boolean;
+            if (associate) {
+                status = await hederaHelper.SDK.associate(tokenId, userID, userKey);
+            } else {
+                status = await hederaHelper.SDK.dissociate(tokenId, userID, userKey);
+            }
+
+            res.send(new MessageResponse(status));
+        } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message, 400));
+        }
+    })
+
+    channel.response(MessageAPI.GET_INFO_TOKEN, async (msg, res) => {
+        try {
+            const { tokenId, username, owner } = msg.payload;
+
+            const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
+            if (!root) {
+                throw 'Invalid Owner';
+            }
+
+            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+            if (!token) {
+                throw 'Token not found';
+            }
+
+            const users = new Users();
+            const user = await users.getUser(username);
+            if (!user) {
+                throw 'User not found';
+            }
+            if (!user.hederaAccountId) {
+                throw 'User is not linked to an Hedera Account';
+            }
+
+            const info = await HederaHelper
+                .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK
+                .accountInfo(user.hederaAccountId);
+            const result = getTokenInfo(info, { tokenId });
+
+            res.send(new MessageResponse(result));
+        } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message, 400));
+        }
+    })
+
+    channel.response(MessageAPI.GET_ASSOCIATED_TOKENS, async (msg, res) => {
+        try {
+            const wallet = new Wallet();
+            const users = new Users();
+
+            const { did } = msg.payload;
+            const user = await users.getUserById(did);
+            const userID = user.hederaAccountId;
+            const userDID = user.did;
+            const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+            if (!user) {
+                throw 'User not found';
+            }
+
+            if (!user.hederaAccountId) {
+                res.send(new MessageResponse([]));
+                return;
+            }
+
+            const info = await HederaHelper
+                .setOperator(userID, userKey).SDK
+                .accountInfo(user.hederaAccountId);
+
+            const tokens = await tokenRepository.find();
+            const result: any[] = [];
+            for (let i = 0; i < tokens.length; i++) {
+                result.push(getTokenInfo(info, tokens[i]));
+            }
+            res.send(new MessageResponse(result));
+        } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message, 400));
+        }
     })
 
     /**

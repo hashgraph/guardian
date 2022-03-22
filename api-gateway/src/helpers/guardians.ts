@@ -9,9 +9,12 @@ import {
     IRootConfig,
     ISchema,
     IToken,
+    ITokenInfo,
+    IUser,
     IVCDocument,
     IVPDocument,
     MessageAPI,
+    MessageError,
     SchemaEntity
 } from 'interfaces';
 
@@ -47,18 +50,20 @@ export class Guardians {
      * @param type
      */
     public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
+        let response: any;
         try {
-            const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
-            if (!response) {
-                throw 'Server is not available';
-            }
-            if (response.error) {
-                throw response.error;
-            }
-            return response.body;
+            response = (await this.channel.request(this.target, entity, params, type)).payload;
         } catch (e) {
             throw new Error(`Guardian (${entity}) send: ` + e);
         }
+        if (!response) {
+            throw new Error(`Guardian (${entity}) send: Server is not available`);
+        }
+        if (response.error) {
+            response.message = `Guardian (${entity}) send: ${response.error}`;
+            throw response;
+        }
+        return response.body;
     }
 
     /**
@@ -241,6 +246,83 @@ export class Guardians {
      */
     public async importTokens(items: IToken[]): Promise<void> {
         return await this.request(MessageAPI.IMPORT_TOKENS, items);
+    }
+
+
+    public async freezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.FREEZE_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            freeze: true,
+        });
+    }
+
+    public async unfreezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.FREEZE_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            freeze: false,
+        });
+    }
+
+    public async grantKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.KYC_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            grant: true,
+        });
+    }
+
+    public async revokeKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.KYC_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            grant: false,
+        });
+    }
+
+    public async associateToken(tokenId: string, did: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.ASSOCIATE_TOKEN, {
+            tokenId: tokenId,
+            did: did,
+            associate: true,
+        });
+    }
+
+    public async dissociateToken(tokenId: string, did: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.ASSOCIATE_TOKEN, {
+            tokenId: tokenId,
+            did: did,
+            associate: false,
+        });
+    }
+
+    public async getInfoToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.GET_INFO_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner
+        });
+    }
+
+    public async getAssociatedTokens(did: string): Promise<ITokenInfo[]> {
+        return await this.request(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
+    }
+
+    public async createRootAuthorityProfile(profile: IUser): Promise<string> {
+        return await this.request(MessageAPI.CREATE_ROOT_AUTHORITY, profile);
+    }
+
+    public async createUserProfile(profile: IUser): Promise<string> {
+        return await this.request(MessageAPI.CREATE_USER_PROFILE, profile);
+    }
+
+    public async getUserBalance(username: string): Promise<string> {
+        return await this.request(MessageAPI.GET_USER_BALANCE, { username });
     }
 
     /**
