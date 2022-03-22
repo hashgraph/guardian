@@ -1,12 +1,12 @@
 import { VcDocument } from 'hedera-modules';
-import { Message, MessageType } from './message';
+import { IURL, Message, MessageAction, MessageType } from './message';
 
 export class VCMessage extends Message {
     public vcDocument: VcDocument;
     public document: any;
     public hash: string;
 
-    constructor(action: string) {
+    constructor(action: MessageAction) {
         super(action, MessageType.VCDocument);
     }
 
@@ -14,6 +14,10 @@ export class VCMessage extends Message {
         this.vcDocument = document;
         this.document = document.getDocument();
         this.hash = document.toCredentialHash();
+    }
+
+    public getDocument(): any {
+        return this.document;
     }
 
     public toMessage(): string {
@@ -25,8 +29,11 @@ export class VCMessage extends Message {
         });
     }
 
-    public toDocuments(): string[] {
-        return [JSON.stringify(this.document)];
+    public async toDocuments(): Promise<ArrayBuffer[]> {
+        const json = JSON.stringify(this.document);
+        const documentFile = new Blob([json], { type: "application/json" });
+        const buffer = await documentFile.arrayBuffer();
+        return [buffer];
     }
 
     public loadDocuments(documents: string[]): VCMessage {
@@ -51,5 +58,9 @@ export class VCMessage extends Message {
         }]
         message.setUrls(urls);
         return message;
+    }
+
+    public override getUrl(): IURL {
+        return this.urls[0];
     }
 }

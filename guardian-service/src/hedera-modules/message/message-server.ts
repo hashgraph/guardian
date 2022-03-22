@@ -11,7 +11,7 @@ export class MessageServer {
     private client: HederaSDKHelper;
     private submitKey: PrivateKey | string;
 
-    constructor(operatorId: string | AccountId, operatorKey: string | PrivateKey) {
+    constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         this.client = new HederaSDKHelper(operatorId, operatorKey);
     }
 
@@ -19,8 +19,8 @@ export class MessageServer {
         this.submitKey = submitKey;
     }
 
-    private async sendIPFS(message: Message): Promise<Message> {
-        const buffers = message.toDocuments();
+    private async sendIPFS<T extends Message>(message: T): Promise<T> {
+        const buffers = await message.toDocuments();
         const urls = [];
         for (let i = 0; i < buffers.length; i++) {
             const buffer = buffers[i];
@@ -32,19 +32,19 @@ export class MessageServer {
         return message;
     }
 
-    private async loadIPFS(message: Message): Promise<Message> {
+    private async loadIPFS<T extends Message>(message: T): Promise<T> {
         const urls = message.urls;
         const documents = [];
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
-            const document = await IPFS.getFile(url.cid, "str") as string;
+            const document = await IPFS.getFile(url.cid, message.responseType);
             documents.push(document);
         }
-        message = message.loadDocuments(documents);
+        message = message.loadDocuments(documents) as T;
         return message;
     }
 
-    private async sendHedera(topicId: string | TopicId, message: Message): Promise<Message> {
+    private async sendHedera<T extends Message>(topicId: string | TopicId, message: T): Promise<T> {
         const buffer = message.toMessage();
         const id = await this.client.submitMessage(topicId, buffer, this.submitKey);
         message.setId(id);
@@ -52,7 +52,7 @@ export class MessageServer {
         return message;
     }
 
-    private async getTopicMessage(timeStamp: string): Promise<any> {
+    private async getTopicMessage(timeStamp: string): Promise<Message> {
         const { topicId, message } = await this.client.getTopicMessage(timeStamp)
         const result = Message.fromMessage(message);
         result.setId(timeStamp);
@@ -60,15 +60,15 @@ export class MessageServer {
         return result;
     }
 
-    public async sendMessage(topicId: string | TopicId, message: Message): Promise<Message> {
+    public async sendMessage<T extends Message>(topicId: string | TopicId, message: T): Promise<T> {
         message = await this.sendIPFS(message);
         message = await this.sendHedera(topicId, message);
         return message;
     }
 
-    public async getMessage(id: string): Promise<Message> {
+    public async getMessage<T extends Message>(id: string): Promise<T> {
         let message = await this.getTopicMessage(id);
         message = await this.loadIPFS(message);
-        return message;
+        return message as T;
     }
 }

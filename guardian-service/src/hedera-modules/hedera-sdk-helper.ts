@@ -39,9 +39,11 @@ export class HederaSDKHelper {
     private readonly client: Client;
     public static readonly MAX_TIMEOUT: number = 120000;
 
-    constructor(operatorId: string | AccountId, operatorKey: string | PrivateKey) {
+    constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         this.client = Environment.createClient();
-        this.client.setOperator(operatorId, operatorKey);
+        if(operatorId && operatorKey) {
+            this.client.setOperator(operatorId, operatorKey);
+        }
     }
 
     /**

@@ -15,9 +15,9 @@ import { readJSON } from 'fs-extra';
 import path from 'path';
 import { Blob } from 'buffer';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { IPFS } from '@helpers/ipfs';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
+import { MessageAction, MessageServer, SchemaMessage } from 'hedera-modules';
 
 export const schemaCache = {};
 
@@ -94,14 +94,13 @@ const loadSchema = async function (messageId: string, owner: string) {
         if (schemaCache[messageId]) {
             return schemaCache[messageId];
         }
+
+        const messageServer = new MessageServer();
+        
         console.log("loadSchema: " + messageId);
-        const { topicId, message } = await HederaMirrorNodeHelper.getSchemaTopicMessage(messageId);
-        console.log("loadSchema message");
-        console.log("loadSchema ipfs " + message.document_cid);
-        const documentObject = await IPFS.getFile(message.document_cid, "str") as string;
-        console.log("loadSchema ipfs " + message.context_cid);
-        const contextObject = await IPFS.getFile(message.context_cid, "str") as string;
-        console.log("loadSchema files");
+        const message = await messageServer.getMessage<SchemaMessage>(messageId);
+        console.log("loadedSchema: " + messageId);
+
         const schemaToImport: any = {
             uuid: message.uuid,
             hash: "",
@@ -110,15 +109,15 @@ const loadSchema = async function (messageId: string, owner: string) {
             entity: message.entity as SchemaEntity,
             status: SchemaStatus.PUBLISHED,
             readonly: false,
-            document: documentObject,
-            context: contextObject,
+            document: message.getDocument(),
+            context: message.getContext(),
             version: message.version,
             creator: message.owner,
             owner: owner,
-            topicId: topicId,
+            topicId: message.getTopicId(),
             messageId: messageId,
-            documentURL: message.document_url,
-            contextURL: message.context_url,
+            documentURL: message.getDocumentUrl().url,
+            contextURL: message.getContextUrl().url,
             iri: null
         }
         updateIRI(schemaToImport);
@@ -153,6 +152,10 @@ const getDefs = function (schema: ISchema) {
     } catch (error) {
         return [];
     }
+}
+
+const onlyUnique = function (value: any, index: any, self: any): boolean {
+    return self.indexOf(value) === index;
 }
 
 /**
@@ -484,13 +487,9 @@ export const schemaAPI = async function (
                 result.push(schema);
             }
 
-            function onlyUnique(value, index, self) {
-                return self.indexOf(value) === index;
-            }
-
+            /*
             const topics = result.map(res => res.topicId).filter(onlyUnique);
-            let anotherSchemas = [];
-
+            const anotherSchemas = [];
             for (let i = 0; i < topics.length; i++) {
                 const topicId = topics[i];
                 anotherSchemas.push({
@@ -498,13 +497,11 @@ export const schemaAPI = async function (
                     messages: await HederaMirrorNodeHelper.getTopicMessages(topicId)
                 })
             }
-
             for (let i = 0; i < result.length; i++) {
                 const schema = result[i];
                 if (!schema.version) {
                     continue;
                 }
-
                 const newVersions = [];
                 const topicMessages = anotherSchemas.find(item => item.topicId === schema.topicId);
                 topicMessages?.messages?.forEach(anotherSchema => {
@@ -522,6 +519,7 @@ export const schemaAPI = async function (
                     schema.newVersions = newVersions.reverse();
                 }
             }
+            */
 
             res.send(new MessageResponse(result));
         }
@@ -564,57 +562,38 @@ export const schemaAPI = async function (
                     return;
                 }
 
-                SchemaHelper.updateVersion(item, version);
-
-                const itemDocument = JSON.parse(item.document);
-                const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
-                item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
-
-                const document = item.document;
-                const context = item.context;
-
-                const documentFile = new Blob([document], { type: "application/json" });
-                const contextFile = new Blob([context], { type: "application/json" });
-                let result: any;
-                result = await IPFS.addFile(await documentFile.arrayBuffer());
-                const documentCid = result.cid;
-                const documentUrl = result.url;
-                result = await IPFS.addFile(await contextFile.arrayBuffer());
-                const contextCid = result.cid;
-                const contextUrl = result.url;
-
-                item.status = SchemaStatus.PUBLISHED;
-                item.documentURL = documentUrl;
-                item.contextURL = contextUrl;
-
-                const schemaPublishMessage: ISchemaSubmitMessage = {
-                    name: item.name,
-                    description: item.description,
-                    entity: item.entity,
-                    owner: item.creator,
-                    uuid: item.uuid,
-                    version: item.version,
-                    operation: ModelActionType.PUBLISH,
-                    document_cid: documentCid,
-                    document_url: documentUrl,
-                    context_cid: contextCid,
-                    context_url: contextUrl
-                }
-
                 const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
                 if (!root) {
                     res.send(new MessageError("Root not found"));
                     return;
                 }
 
-                const hederaHelper = HederaHelper
-                    .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK;
                 const schemaTopicId = await settingsRepository.findOne({
                     name: 'SCHEMA_TOPIC_ID'
                 })
-                const messageId = await HederaSenderHelper.SubmitSchemaMessage(hederaHelper, schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID, schemaPublishMessage);
+                const topicId = schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID;
 
+                SchemaHelper.updateVersion(item, version);
+
+                const itemDocument = JSON.parse(item.document);
+                const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
+                item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
+
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                // messageServer.setSubmitKey(topic.key);
+                const message = new SchemaMessage(MessageAction.PublishSchema);
+                message.setDocument(item);
+                const result = await messageServer.sendMessage(topicId, message);
+
+                const messageId = result.getId();
+                const contextUrl = result.getDocumentUrl();
+                const documentUrl = result.getContextUrl();
+
+                item.status = SchemaStatus.PUBLISHED;
+                item.documentURL = documentUrl.url;
+                item.contextURL = contextUrl.url;
                 item.messageId = messageId;
+                item.messageId = topicId;
 
                 updateIRI(item);
                 await schemaRepository.update(item.id, item);

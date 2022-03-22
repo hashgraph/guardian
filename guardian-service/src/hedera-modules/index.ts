@@ -8,7 +8,7 @@ export { VCJS } from './vcjs/vcjs';
 export { DIDMessage } from './message/did-message';
 export { SchemaMessage } from './message/schema-message';
 export { VCMessage } from './message/vc-message';
-export { Message, URL, MessageType, MessageAction } from './message/message';
+export { Message, IURL as URL, MessageType, MessageAction } from './message/message';
 export { MessageServer } from './message/message-server';
 export { IDocumentFormat } from './document-loader/document-format';
 export { DefaultDocumentLoader } from './document-loader/document-loader-default';
@@ -16,3 +16,4 @@ export { DocumentLoaderFunction } from './document-loader/document-loader-functi
 export { DocumentLoader } from './document-loader/document-loader';
 export { SchemaLoader, SchemaLoaderFunction } from './document-loader/schema-loader';
 export { DIDDocument, DidRootKey } from './vcjs/did-document';
+export { PolicyMessage } from './message/policy-message';

@@ -13,29 +13,40 @@ export enum MessageType {
 export enum MessageAction {
     CreateDID = 'create-did-document',
     CreateVC = 'create-vc-document',
+    CreatePolicy = 'create-policy',
+    PublishPolicy = 'publish-policy',
+    CreateSchema = 'create-schema',
+    PublishSchema = 'publish-schema'
 }
 
-export interface URL {
+export interface IURL {
     cid: string;
     url: string;
 }
 
 export abstract class Message {
     public id: string;
-    public urls: URL[];
+    public urls: IURL[];
     public topicId: string | TopicId;
 
-    public readonly action: string;
+    public readonly action: MessageAction;
     public readonly type: MessageType;
 
-    constructor(action: string, type: MessageType) {
+    protected _responseType: "json" | "raw" | "str";
+
+    get responseType() {
+        return this._responseType;
+    }
+
+    constructor(action: MessageAction, type: MessageType) {
         this.action = action;
         this.type = type;
+        this._responseType = "str";
     }
 
     public abstract toMessage(): string;
-    public abstract toDocuments(): string[];
-    public abstract loadDocuments(documents: string[]): Message;
+    public abstract toDocuments(): Promise<ArrayBuffer[]>;
+    public abstract loadDocuments(documents: any[]): Message;
 
     public static fromMessage(message: string): Message {
         const json = JSON.parse(message);
@@ -49,11 +60,11 @@ export abstract class Message {
             case MessageType.DIDDocument:
                 return DIDMessage.fromMessageObject(json);
             default:
-                throw 'Invalid format'
+                throw 'Invalid format';
         }
     }
 
-    public setUrls(url: URL[]): void {
+    public setUrls(url: IURL[]): void {
         this.urls = url;
     }
 
@@ -63,6 +74,18 @@ export abstract class Message {
 
     public setTopicId(topicId: string | TopicId): void {
         this.topicId = topicId;
+    }
+
+    public getUrl(): any {
+        return this.urls;
+    }
+
+    public getId(): string {
+        return this.id;
+    }
+
+    public getTopicId(): string | TopicId {
+        return this.topicId;
     }
 }
 

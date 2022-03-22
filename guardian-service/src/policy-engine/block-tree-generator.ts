@@ -25,14 +25,13 @@ import {
     PolicyValidationResultsContainer
 } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { IPFS } from '@helpers/ipfs';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { Logger } from 'logger-helper';
-import { HederaSDKHelper } from 'hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from 'hedera-modules';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -129,7 +128,7 @@ export class BlockTreeGenerator {
         const configObject = policy.config as ISerializedBlock;
 
         async function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): Promise<IPolicyBlock> {
-            const {blockType, children, ...params}: ISerializedBlockExtend = block;
+            const { blockType, children, ...params }: ISerializedBlockExtend = block;
             if (parent) {
                 params._parent = parent;
             }
@@ -207,7 +206,7 @@ export class BlockTreeGenerator {
                 const userFull = await this.users.getUser(user.username);
                 const model = getMongoRepository(Policy).create(msg.payload.model as DeepPartial<Policy>);
                 if (model.uuid) {
-                    const old = await getMongoRepository(Policy).findOne({uuid: model.uuid});
+                    const old = await getMongoRepository(Policy).findOne({ uuid: model.uuid });
                     if (model.creator != userFull.did) {
                         throw 'Invalid owner';
                     }
@@ -235,7 +234,7 @@ export class BlockTreeGenerator {
                     }
                 }
                 await getMongoRepository(Policy).save(model);
-                const policies = await getMongoRepository(Policy).find({owner: userFull.did})
+                const policies = await getMongoRepository(Policy).find({ owner: userFull.did })
                 res.send(new MessageResponse(policies));
             } catch (error) {
                 res.send(new MessageError(error.message));
@@ -280,7 +279,7 @@ export class BlockTreeGenerator {
                     throw new Error('The policy is empty');
                 }
 
-                const {policyVersion} = msg.payload.model;
+                const { policyVersion } = msg.payload.model;
                 if (!ModelHelper.checkVersionFormat(msg.payload.model.policyVersion)) {
                     throw new Error('Invalid version format');
                 }
@@ -328,28 +327,32 @@ export class BlockTreeGenerator {
                     model.status = 'PUBLISH';
                     model.version = msg.payload.model.policyVersion;
                     const zip = await PolicyImportExportHelper.generateZipFile(model);
-                    const {cid, url} = await IPFS.addFile(await zip.generateAsync({type: 'arraybuffer'}));
-                    const publishPolicyMessage: IPolicySubmitMessage = {
+                    const buffer = await zip.generateAsync({ type: 'arraybuffer' })
+
+                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                    // messageServer.setSubmitKey(topic.key);
+                    const message = new PolicyMessage(MessageAction.PublishPolicy);
+                    message.setDocument(model, buffer);
+                    const result = await messageServer.sendMessage(model.topicId, message);
+                    model.messageId = result.getId();
+
+                    const messageId = result.getId();
+                    const url = result.getUrl();
+                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);
+                    const vcHelper = new VcHelper();
+                    const credentialSubject = {
+                        ...SchemaHelper.getContext(policySchema),
+                        id: messageId,
                         name: model.name,
                         description: model.description,
                         topicDescription: model.topicDescription,
                         version: model.version,
                         policyTag: model.policyTag,
                         owner: model.owner,
-                        cid: cid,
-                        url: url,
+                        cid: url.cid,
+                        url: url.url,
                         uuid: model.uuid,
-                        operation: ModelActionType.PUBLISH
-                    }
-                    const messageId = await HederaSenderHelper.SubmitPolicyMessage(hederaHelper, model.topicId, publishPolicyMessage);
-                    model.messageId = messageId;
-
-                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);
-                    const vcHelper = new VcHelper();
-                    const credentialSubject = {
-                        ...publishPolicyMessage,
-                        ...SchemaHelper.getContext(policySchema),
-                        id: messageId
+                        operation: 'PUBLISH'
                     }
                     const vc = await vcHelper.createVC(userFull.did, root.hederaAccountKey, credentialSubject);
                     await guardians.setVcDocument({
@@ -413,7 +416,7 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.GET_BLOCK_DATA, async (msg, res) => {
             try {
-                const {user, blockId, policyId} = msg.payload;
+                const { user, blockId, policyId } = msg.payload;
                 const userFull = await this.users.getUser(user.username);
                 const data = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(userFull, blockId, null)
                 res.send(new MessageResponse(data));
@@ -425,7 +428,7 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.SET_BLOCK_DATA, async (msg, res) => {
             try {
-                const {user, blockId, policyId, data} = msg.payload;
+                const { user, blockId, policyId, data } = msg.payload;
                 const userFull = await this.users.getUser(user.username);
                 const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(userFull, data)
                 res.send(new MessageResponse(result));
@@ -437,10 +440,10 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.BLOCK_BY_TAG, async (msg, res) => {
             try {
-                const {user, tag, policyId} = msg.payload;
+                const { user, tag, policyId } = msg.payload;
                 const userFull = await this.users.getUser(user.username);
                 const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
-                res.send(new MessageResponse({id: block.uuid}));
+                res.send(new MessageResponse({ id: block.uuid }));
             } catch (error) {
                 res.send(new MessageError(error.message));
             }
@@ -448,7 +451,7 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg, res) => {
             try {
-                const {user, blockId, policyId, data} = msg.payload;
+                const { user, blockId, policyId, data } = msg.payload;
                 const userFull = await this.users.getUser(user.username);
                 const block = PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock;
                 let tmpBlock: IPolicyBlock = block;
@@ -466,13 +469,13 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.POLICY_EXPORT_FILE, async (msg, res) => {
             try {
-                const {policyId} = msg.payload;
+                const { policyId } = msg.payload;
                 const policy = await getMongoRepository(Policy).findOne(policyId);
                 if (!policy) {
                     throw new Error(`Cannot export policy ${policyId}`);
                 }
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
-                const file = await zip.generateAsync({type: 'arraybuffer'});
+                const file = await zip.generateAsync({ type: 'arraybuffer' });
                 res.send(file, 'raw');
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
@@ -483,7 +486,7 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, async (msg, res) => {
             try {
-                const {policyId} = msg.payload;
+                const { policyId } = msg.payload;
                 const policy = await getMongoRepository(Policy).findOne(policyId);
                 if (!policy) {
                     throw new Error(`Cannot export policy ${policyId}`);
@@ -502,57 +505,31 @@ export class BlockTreeGenerator {
             }
         });
 
-        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg, res) => {
-            try {
-                const {zip, user} = msg.payload;
-                if (!zip) {
-                    throw new Error('file in body is empty');
-                }
-                const userFull = await this.users.getUser(user.username);
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
-                const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
-                res.send(new MessageResponse(policies));
-            } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
-            }
-        });
-
-        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg, res) => {
-            try {
-                const {messageId, user} = msg.payload;
-                const userFull = await this.users.getUser(user.username);
-
-                if (!messageId) {
-                    throw new Error('Policy ID in body is empty');
-                }
-
-                const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
-                const message = topicMessage.message;
-                const zip = await IPFS.getFile(message.cid, 'raw');
-
-                if (!zip) {
-                    throw new Error('file in body is empty');
-                }
-
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip));
-                const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
-                res.send(new MessageResponse(policies));
-            } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
-            }
-        });
-
         this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg, res) => {
             try {
-                const {zip, user} = msg.payload;
+                const { zip, user } = msg.payload;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
                 res.send(new MessageResponse(policyToImport));
+            } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                res.send(new MessageError(error.message));
+            }
+        });
+
+        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg, res) => {
+            try {
+                const { zip, user } = msg.payload;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+                const userFull = await this.users.getUser(user.username);
+                const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
+                const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
+                res.send(new MessageResponse(policies));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
@@ -561,44 +538,78 @@ export class BlockTreeGenerator {
 
         this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg, res) => {
             try {
-                const {messageId, user} = msg.payload;
-
+                const { messageId, user } = msg.payload;
+                const userFull = await this.users.getUser(user.username);
                 if (!messageId) {
                     throw new Error('Policy ID in body is empty');
                 }
 
-                const topicMessage = await HederaMirrorNodeHelper.getPolicyTopicMessage(messageId);
-                const message = topicMessage.message;
-                const newVersions: any = [];
-                if (message.version) {
-                    const anotherVersions = await HederaMirrorNodeHelper.getTopicMessages(topicMessage.topicId);
-                    for (let i = 0; i < anotherVersions.length; i++) {
-                        const element = anotherVersions[i];
-                        if (!element.message || !element.message.version) {
-                            continue;
-                        }
+                const guardians = new Guardians();
+                const root = await guardians.getRootConfig(userFull.did);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
-                        if (ModelHelper.versionCompare(element.message.version, message.version) === 1) {
-                            newVersions.push({
-                                messageId: element.timeStamp,
-                                version: element.message.version
-                            });
-                        } 
-                    };
+                if (message.type !== MessageType.PolicyDocument) {
+                    throw new Error('Invalid Message Type');
                 }
-                const zip = await IPFS.getFile(message.cid, 'raw');
-                
-                if (!zip) {
+
+                if (!message.document) {
                     throw new Error('file in body is empty');
                 }
 
-                const userFull = await this.users.getUser(user.username);
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip));
+                const newVersions: any = [];
+                if (message.version) {
+                    // const anotherVersions = await HederaMirrorNodeHelper.getTopicMessages(topicMessage.topicId);
+                    // for (let i = 0; i < anotherVersions.length; i++) {
+                    //     const element = anotherVersions[i];
+                    //     if (!element.message || !element.message.version) {
+                    //         continue;
+                    //     }
+                    //     if (ModelHelper.versionCompare(element.message.version, message.version) === 1) {
+                    //         newVersions.push({
+                    //             messageId: element.timeStamp,
+                    //             version: element.message.version
+                    //         });
+                    //     } 
+                    // };
+                }
+
+                const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
                 if (newVersions.length !== 0) {
                     policyToImport.newVersions = newVersions.reverse();
                 }
 
                 res.send(new MessageResponse(policyToImport));
+            } catch (error) {
+                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                res.send(new MessageError(error.message));
+            }
+        });
+
+        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg, res) => {
+            try {
+                const { messageId, user } = msg.payload;
+                const userFull = await this.users.getUser(user.username);
+                if (!messageId) {
+                    throw new Error('Policy ID in body is empty');
+                }
+
+                const guardians = new Guardians();
+                const root = await guardians.getRootConfig(userFull.did);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                const message = await messageServer.getMessage<PolicyMessage>(messageId);
+
+                if (message.type !== MessageType.PolicyDocument) {
+                    throw new Error('Invalid Message Type');
+                }
+
+                if (!message.document) {
+                    throw new Error('file in body is empty');
+                }
+
+                const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+                const policies = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
+                res.send(new MessageResponse(policies));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 res.send(new MessageError(error.message));
