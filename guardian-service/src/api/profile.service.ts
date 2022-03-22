@@ -186,15 +186,7 @@ export const profileAPI = async function (
             const rootObject = configRepository.create({
                 hederaAccountId: hederaAccountId,
                 hederaAccountKey: hederaAccountKey,
-                addressBook: null,
-                didTopic: null,
-                vcTopic: null,
-                appnetName: null,
-                didServerUrl: null,
-                didTopicMemo: null,
-                vcTopicMemo: null,
                 did: userDID,
-                state: 1
             });
             await configRepository.save(rootObject);
             //

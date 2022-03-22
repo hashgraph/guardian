@@ -14,7 +14,7 @@ export { IApprovalDocument } from './interface/approval-document.interface';
 export { ICredentialSubject } from './interface/credential-subject.interface';
 export { IDidDocument } from './interface/did-document.interface';
 export { did } from './interface/did.interface';
-export { IRootConfig, IAddressBookConfig } from './interface/root-config.interface';
+export { IRootConfig } from './interface/root-config.interface';
 export { ISchema } from './interface/schema.interface';
 export { IToken, ITokenInfo } from './interface/token.interface';
 export { uuid } from './interface/uuid.interface';

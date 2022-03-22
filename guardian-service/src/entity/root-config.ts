@@ -11,31 +11,7 @@ export class RootConfig implements IRootConfig {
 
     @Column()
     hederaAccountKey: string;
-
-    @Column()
-    addressBook: string;
-
-    @Column()
-    didTopic: string;
-
-    @Column()
-    vcTopic: string;
-
-    @Column()
-    appnetName: string;
-
-    @Column()
-    didServerUrl: string;
-
-    @Column()
-    didTopicMemo: string;
-
-    @Column()
-    vcTopicMemo: string;
-
+    
     @Column()
     did: string;
-
-    @Column()
-    state: RootState;
 }
