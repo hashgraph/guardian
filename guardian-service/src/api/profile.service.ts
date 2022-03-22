@@ -192,7 +192,7 @@ export const profileAPI = async function (
                 new Logger().info('Created RA VC', ['GUARDIAN_SERVICE']);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                vcDoc.hederaStatus = getVCOperation(DocumentStatus.FAILED as any);
+                vcDoc.hederaStatus = DocumentStatus.FAILED;
             }
             await getMongoRepository(VcDocument).save(vcDoc);
 
