@@ -25,6 +25,9 @@ export class ReportBlock {
     public users: Users;
 
     async getUserName(did: string, map: any): Promise<string> {
+        if(!did) {
+            return null;
+        }
         if (map[did]) {
             return map[did];
         } else {

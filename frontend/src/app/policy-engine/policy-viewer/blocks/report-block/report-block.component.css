@@ -371,6 +371,7 @@ a.open-vp {
 .parties-label {
     font-size: 16px;
     color: #707070;
+    padding: 3px 0;
 }
 
 .parties-value, .nested-documents-value {
