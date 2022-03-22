@@ -44,9 +44,6 @@ export const profileAPI = async function (
 ) {
     channel.response(MessageAPI.GET_USER_BALANCE, async (msg, res) => {
         try {
-            res.send(new MessageError('test', 401));
-            return;
-
             const {username} = msg.payload;
 
             const wallet = new Wallet();
@@ -64,7 +61,6 @@ export const profileAPI = async function (
             const balance = await HederaHelper
                 .setOperator(user.hederaAccountId, key).SDK
                 .balance(user.hederaAccountId);
-            res.json(balance);
 
             res.send(new MessageResponse(balance));
         } catch (error) {

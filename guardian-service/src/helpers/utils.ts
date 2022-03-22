@@ -146,13 +146,11 @@ export function getVCOperation(operation: HcsVcOperation) {
     }
 }
 
-export async function incrementSchemaVersion(owner: string, iri: string): Promise<Schema> {
+export async function incrementSchemaVersion(iri: string, owner: string): Promise<Schema> {
     if (!owner || !iri) {
         throw new Error('Schema not found');
     }
-    const schema = await getMongoRepository(Schema).findOne({
-        where: { iri: { $eq: iri } }
-    });
+    const schema = await getMongoRepository(Schema).findOne({ iri: iri });
 
     if (!schema) {
         throw new Error('Schema not found');
@@ -197,15 +195,15 @@ export async function publishSchema(id: string, version: string, owner: string):
 
     SchemaHelper.updateVersion(item, version);
 
-    const itemDocument = JSON.parse(item.document);
+    const itemDocument = item.document;
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
-    item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
+    item.context = schemasToContext([...defsArray, itemDocument]);
 
     const document = item.document;
     const context = item.context;
 
-    const documentFile = new Blob([document], { type: "application/json" });
-    const contextFile = new Blob([context], { type: "application/json" });
+    const documentFile = new Blob([JSON.stringify(document)], { type: "application/json" });
+    const contextFile = new Blob([JSON.stringify(context)], { type: "application/json" });
     let result: any;
     result = await IPFS.addFile(await documentFile.arrayBuffer());
     const documentCid = result.cid;
@@ -255,7 +253,7 @@ export async function publishSchema(id: string, version: string, owner: string):
 export function updateIRI(schema: ISchema) {
     try {
         if (schema.document) {
-            const document = JSON.parse(schema.document);
+            const document = schema.document;
             schema.iri = document.$id || null;
         } else {
             schema.iri = null;
@@ -263,4 +261,21 @@ export function updateIRI(schema: ISchema) {
     } catch (error) {
         schema.iri = null;
     }
+}
+
+export function replaceValueRecursive(document: any, replaceMap: Map<string, string>): any {
+    let str: string;
+    switch (typeof document) {
+        case 'string':
+            str = document;
+            break;
+
+        case 'object':
+            str = JSON.stringify(document)
+    }
+
+    for (let [oldVal, newVal] of replaceMap.entries()) {
+        str = str.replace(new RegExp(oldVal, 'g'), newVal);
+    }
+    return JSON.parse(str);
 }

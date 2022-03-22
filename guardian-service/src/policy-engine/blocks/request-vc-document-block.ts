@@ -4,6 +4,7 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { Schema } from 'interfaces';
+import { Schema as SchemaEntity } from '@entity/schema'
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
@@ -65,7 +66,7 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!this.schema) {
-            const schema = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
+            const schema = await getMongoRepository(SchemaEntity).findOne({iri: ref.options.schema});
             this.schema = schema ? new Schema(schema) : null;
         }
         if (!this.schema) {
@@ -199,13 +200,13 @@ export class RequestVcDocumentBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
             return;
         }
-        const schema = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
+        const schema = await getMongoRepository(SchemaEntity).findOne({iri: ref.options.schema});
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
             return;
         }
         if (ref.options.presetSchema) {
-            const presetSchema = await getMongoRepository(Schema).findOne({iri: ref.options.presetSchema});
+            const presetSchema = await getMongoRepository(SchemaEntity).findOne({iri: ref.options.presetSchema});
             if (!presetSchema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
                 return;

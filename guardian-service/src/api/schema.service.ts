@@ -25,12 +25,13 @@ import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
+import { replaceValueRecursive } from '@helpers/utils';
 
 export const schemaCache = {};
 
 /**
  * Creation of default schemes.
- * 
+ *
  * @param schemaRepository - table with schemes
  */
 export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
@@ -117,8 +118,8 @@ const loadSchema = async function (messageId: string, owner: string) {
             entity: message.entity as SchemaEntity,
             status: SchemaStatus.PUBLISHED,
             readonly: false,
-            document: documentObject,
-            context: contextObject,
+            document: JSON.parse(documentObject),
+            context: JSON.parse(contextObject),
             version: message.version,
             creator: message.owner,
             owner: owner,
@@ -140,7 +141,7 @@ const loadSchema = async function (messageId: string, owner: string) {
 const updateIRI = function (schema: ISchema) {
     try {
         if (schema.document) {
-            const document = JSON.parse(schema.document);
+            const document = schema.document;
             schema.iri = document.$id || null;
         } else {
             schema.iri = null;
@@ -152,7 +153,7 @@ const updateIRI = function (schema: ISchema) {
 
 const getDefs = function (schema: ISchema) {
     try {
-        const document = JSON.parse(schema.document);
+        const document = schema.document;
         if (!document.$defs) {
             return [];
         }
@@ -164,7 +165,7 @@ const getDefs = function (schema: ISchema) {
 
 /**
  * Connect to the message broker methods of working with schemes.
- * 
+ *
  * @param channel - channel
  * @param schemaRepository - table with schemes
  */
@@ -176,9 +177,9 @@ export const schemaAPI = async function (
 ): Promise<void> {
     /**
      * Create or update schema
-     * 
+     *
      * @param {ISchema} payload - schema
-     * 
+     *
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.SET_SCHEMA, async (msg, res) => {
@@ -208,11 +209,11 @@ export const schemaAPI = async function (
 
     /**
      * Return schemes
-     * 
+     *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
+     * @param {string} [payload.type] - schema type
      * @param {string} [payload.entity] - schema entity type
-     * 
+     *
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.GET_SCHEMA, async (msg, res) => {
@@ -255,11 +256,11 @@ export const schemaAPI = async function (
 
     /**
      * Return schemes
-     * 
+     *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
+     * @param {string} [payload.type] - schema type
      * @param {string} [payload.entity] - schema entity type
-     * 
+     *
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
@@ -275,7 +276,7 @@ export const schemaAPI = async function (
                 where: { iri: { $in: msg.payload.iris } }
             });
             if (msg.payload.includes) {
-                const defs: any[] = schemes.map(s => JSON.parse(s.document).$defs);
+                const defs: any[] = schemes.map(s => s.document.$defs);
                 const map: any = {};
                 for (let i = 0; i < schemes.length; i++) {
                     const id = schemes[i].iri;
@@ -324,9 +325,9 @@ export const schemaAPI = async function (
 
     /**
      * Load schema by message identifier
-     * 
+     *
      * @param {string} [payload.messageId] Message identifier
-     * 
+     *
      * @returns {Schema} Found or uploaded schema
      */
     channel.response(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
@@ -348,28 +349,24 @@ export const schemaAPI = async function (
                 files.push(newSchema);
             }
 
-            const result: any = {};
+            const uuidMap: Map<string, string> = new Map();
             for (let i = 0; i < files.length; i++) {
-                const file = files[i] as ISchema;
+                const file = files[i];
                 const newUUID = ModelHelper.randomUUID();
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
-                    result[uuid] = newUUID;
+                    uuidMap.set(uuid, newUUID);
                 }
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
             }
 
-            const uuids = Object.keys(result);
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                file.document = file.document || '';
-                file.context = file.context || '';
-                for (let j = 0; j < uuids.length; j++) {
-                    const uuid = uuids[j];
-                    file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
-                    file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
-                }
+
+                file.document = replaceValueRecursive(file.document, uuidMap);
+                file.context = replaceValueRecursive(file.context, uuidMap);
+
                 file.messageId = null;
                 file.creator = owner;
                 file.owner = owner;
@@ -380,15 +377,15 @@ export const schemaAPI = async function (
             }
 
             const schemesMap = [];
-            for (let j = 0; j < uuids.length; j++) {
-                const uuid = uuids[j];
+
+            uuidMap.forEach((v, k) => {
                 schemesMap.push({
-                    oldUUID: uuid,
-                    newUUID: result[uuid],
-                    oldIRI: `#${uuid}`,
-                    newIRI: `#${result[uuid]}`
+                    oldUUID: k,
+                    newUUID: v,
+                    oldIRI: `#${k}`,
+                    newIRI: `#${v}`
                 })
-            }
+            });
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
@@ -401,9 +398,9 @@ export const schemaAPI = async function (
 
     /**
      * Load schema by files
-     * 
+     *
      * @param {string} [payload.files] files
-     * 
+     *
      * @returns {Schema} Found or uploaded schema
      */
     channel.response(MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
@@ -418,26 +415,24 @@ export const schemaAPI = async function (
                 return;
             }
 
-            const result: any = {};
+            const uuidMap: Map<string, string> = new Map();
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const newUUID = ModelHelper.randomUUID();
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
-                    result[uuid] = newUUID;
+                    uuidMap.set(uuid, newUUID);
                 }
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
             }
 
-            const uuids = Object.keys(result);
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                for (let j = 0; j < uuids.length; j++) {
-                    const uuid = uuids[j];
-                    file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
-                    file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
-                }
+
+                file.document = replaceValueRecursive(file.document, uuidMap);
+                file.context = replaceValueRecursive(file.context, uuidMap);
+
                 file.messageId = null;
                 file.creator = owner;
                 file.owner = owner;
@@ -448,15 +443,15 @@ export const schemaAPI = async function (
             }
 
             const schemesMap = [];
-            for (let j = 0; j < uuids.length; j++) {
-                const uuid = uuids[j];
+
+            uuidMap.forEach((v, k) => {
                 schemesMap.push({
-                    oldUUID: uuid,
-                    newUUID: result[uuid],
-                    oldIRI: `#${uuid}`,
-                    newIRI: `#${result[uuid]}`
+                    oldUUID: k,
+                    newUUID: v,
+                    oldIRI: `#${k}`,
+                    newIRI: `#${v}`
                 })
-            }
+            });
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
@@ -468,9 +463,9 @@ export const schemaAPI = async function (
 
     /**
      * Preview schema by message identifier
-     * 
+     *
      * @param {string} [payload.messageId] Message identifier
-     * 
+     *
      * @returns {Schema} Found or uploaded schema
      */
     channel.response(MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
@@ -541,10 +536,10 @@ export const schemaAPI = async function (
 
     /**
      * Change the status of a schema on PUBLISHED.
-     * 
+     *
      * @param {Object} payload - filters
-     * @param {string} payload.id - schema id 
-     * 
+     * @param {string} payload.id - schema id
+     *
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
@@ -573,15 +568,15 @@ export const schemaAPI = async function (
 
                 SchemaHelper.updateVersion(item, version);
 
-                const itemDocument = JSON.parse(item.document);
+                const itemDocument = item.document;
                 const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
-                item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
+                item.context = schemasToContext([...defsArray, itemDocument]);
 
                 const document = item.document;
                 const context = item.context;
 
-                const documentFile = new Blob([document], { type: "application/json" });
-                const contextFile = new Blob([context], { type: "application/json" });
+                const documentFile = new Blob([JSON.stringify(document)], { type: "application/json" });
+                const contextFile = new Blob([JSON.stringify(context)], { type: "application/json" });
                 let result: any;
                 result = await IPFS.addFile(await documentFile.arrayBuffer());
                 const documentCid = result.cid;
@@ -639,10 +634,10 @@ export const schemaAPI = async function (
 
     /**
      * Delete a schema.
-     * 
+     *
      * @param {Object} payload - filters
-     * @param {string} payload.id - schema id 
-     * 
+     * @param {string} payload.id - schema id
+     *
      * @returns {ISchema[]} - all schemes
      */
     channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
@@ -663,10 +658,10 @@ export const schemaAPI = async function (
 
     /**
      * Export schemes
-     * 
+     *
      * @param {Object} payload - filters
      * @param {string[]} payload.ids - schema ids
-     * 
+     *
      * @returns {any} - Response result
      */
     channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {

@@ -49,7 +49,7 @@ export class VCSchemaLoader extends SchemaLoader {
                 if (!schema.document) {
                     throw new Error('Document not found');
                 }
-                const document = JSON.parse(schema.document);
+                const document = schema.document;
                 return this.vcSchema(document);
             }
         }

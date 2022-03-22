@@ -25,6 +25,6 @@ export class DidDocument implements IDidDocument {
 
     @BeforeInsert()
     setDefaults() {
-        this.status = DidDocumentStatus.NEW;
+        this.status = this.status || DidDocumentStatus.NEW;
     }
 }

@@ -1,5 +1,11 @@
 import { Policy } from '@entity/policy';
-import { findAllEntities, regenerateIds, replaceAllEntities, SchemaFields } from '@helpers/utils';
+import {
+    findAllEntities,
+    regenerateIds,
+    replaceAllEntities,
+    replaceValueRecursive,
+    SchemaFields
+} from '@helpers/utils';
 import JSZip from 'jszip';
 import { getMongoRepository } from 'typeorm';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
@@ -27,7 +33,7 @@ export class PolicyImportExportHelper {
         const rootSchemes = await getMongoRepository(Schema).find({
             where: {iri: {$in: schemesIds}}
         });
-        const defs: any[] = rootSchemes.map(s => JSON.parse(s.document).$defs);
+        const defs: any[] = rootSchemes.map(s => s.document.$defs);
         const map: any = {};
         for (let i = 0; i < rootSchemes.length; i++) {
             const id = rootSchemes[i].iri;
@@ -133,26 +139,24 @@ export class PolicyImportExportHelper {
         const tokenObject = getMongoRepository(Token).create(tokens.filter((token: any) => !existingTokensMap[token.tokenId]));
         await getMongoRepository(Token).save(tokenObject);
 
-        const result: any = {};
+        const uuidMap: Map<string, string> = new Map();
         for (let i = 0; i < schemes.length; i++) {
             const file = schemes[i];
             const newUUID = ModelHelper.randomUUID();
             const uuid = file.iri ? file.iri.substring(1) : null;
             if (uuid) {
-                result[uuid] = newUUID;
+                uuidMap.set(uuid, newUUID);
             }
             file.uuid = newUUID;
             file.iri = '#' + newUUID;
         }
 
-        const uuids = Object.keys(result);
         for (let i = 0; i < schemes.length; i++) {
             const file = schemes[i];
-            for (let j = 0; j < uuids.length; j++) {
-                const uuid = uuids[j];
-                file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
-                file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
-            }
+
+            file.document = replaceValueRecursive(file.document, uuidMap)
+            file.context = replaceValueRecursive(file.context, uuidMap)
+
             file.messageId = null;
             file.creator = policyOwner;
             file.owner = policyOwner;
@@ -163,15 +167,14 @@ export class PolicyImportExportHelper {
         }
 
         const schemesMap = [];
-        for (let j = 0; j < uuids.length; j++) {
-            const uuid = uuids[j];
+        uuidMap.forEach((v, k) => {
             schemesMap.push({
-                oldUUID: uuid,
-                newUUID: result[uuid],
-                oldIRI: `#${uuid}`,
-                newIRI: `#${result[uuid]}`
+                oldUUID: k,
+                newUUID: v,
+                oldIRI: `#${k}`,
+                newIRI: `#${v}`
             })
-        }
+        })
 
         for (let index = 0; index < schemesMap.length; index++) {
             const item = schemesMap[index];
