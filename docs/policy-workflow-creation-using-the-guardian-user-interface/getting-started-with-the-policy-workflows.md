@@ -36,7 +36,7 @@ And we select Root-Authority and Installer in the drop-down as available roles i
 
 Then we select the “type” of UI we want to utilize. In our example, we choose the “Blank” template.
 
-![](<../.gitbook/assets/image (8).png>)
+![](<../.gitbook/assets/image (8) (1).png>)
 
 **Programmatically you begin like this:**
 
