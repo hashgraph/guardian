@@ -36,7 +36,7 @@ export class CalculateMathAddon {
         if (ref.options.equations) {
             for (let index = 0; index < ref.options.equations.length; index++) {
                 const equation = ref.options.equations[index];
-                if(!ref.parse(equation.formula)) {
+                if (!ref.parse(equation.formula)) {
                     resultsContainer.addBlockError(ref.uuid, `Incorrect formula: ${equation.formula}`);
                     return;
                 }

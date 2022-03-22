@@ -1,5 +1,6 @@
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { IVC, IVCDocument } from 'interfaces';
+import { DidDocumentStatus, IVC, IVCDocument } from 'interfaces';
+import { DidMethodOperation } from '@hashgraph/did-sdk-js';
 
 export const SchemaFields = [
     'schema',
@@ -99,4 +100,25 @@ export function findOptions(document: any, field: any) {
         }
     }
     return value;
+}
+
+export function getDIDOperation(operation: DidMethodOperation | DidDocumentStatus) {
+    switch (operation) {
+        case DidMethodOperation.CREATE:
+            return DidDocumentStatus.CREATE;
+        case DidMethodOperation.DELETE:
+            return DidDocumentStatus.DELETE;
+        case DidMethodOperation.UPDATE:
+            return DidDocumentStatus.UPDATE;
+        case DidDocumentStatus.CREATE:
+            return DidDocumentStatus.CREATE;
+        case DidDocumentStatus.DELETE:
+            return DidDocumentStatus.DELETE;
+        case DidDocumentStatus.FAILED:
+            return DidDocumentStatus.FAILED;
+        case DidDocumentStatus.UPDATE:
+            return DidDocumentStatus.UPDATE;
+        default:
+            return DidDocumentStatus.NEW;
+    }
 }

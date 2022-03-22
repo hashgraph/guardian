@@ -1,6 +1,5 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { HcsVcDocument, HcsVpDocument, HederaHelper, HederaUtils, VcSubject } from 'vc-modules';
-import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { VcHelper } from '@helpers/vcHelper';
@@ -8,9 +7,15 @@ import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import {PolicyComponentsUtils} from '../policy-components-utils';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument } from '@entity/vc-document';
+import { VpDocument } from '@entity/vp-document';
+import { Schema } from '@entity/schema';
+import { Token } from '@entity/token';
+import { RootConfig } from '@entity/root-config';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -38,13 +43,82 @@ enum DataTypes {
 })
 export class MintBlock {
     @Inject()
-    private guardians: Guardians;
-
-    @Inject()
     private users: Users;
 
     private tokenId: any;
     private rule: any;
+
+    @CatchErrors()
+    async runAction(state: any, user: IAuthUser) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const {
+            tokenId,
+            rule
+        } = ref.options;
+
+        const token = await getMongoRepository(Token).findOne({tokenId});
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
+        }
+        const root = await getMongoRepository(RootConfig).findOne({did: ref.policyOwner});
+
+        let docs = [];
+        if (Array.isArray(state.data)) {
+            docs = state.data as any[];
+        } else {
+            docs = [state.data];
+        }
+
+        if (!docs.length && docs[0]) {
+            throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
+        }
+
+        const vcs: HcsVcDocument<VcSubject>[] = [];
+        for (let i = 0; i < docs.length; i++) {
+            const element = docs[i];
+            if (element.signature === DocumentSignature.INVALID) {
+                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
+            }
+            vcs.push(HcsVcDocument.fromJsonTree(element.document, null, VcSubject));
+        }
+
+        const curUser = await this.users.getUserById(docs[0].owner);
+
+        if (!curUser) {
+            throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
+        }
+
+        try {
+            const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
+            ref.runNext(null, state).then(
+                function () {
+                },
+                function (error: any) {
+                    console.error(error);
+                }
+            );
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+
+        if (!ref.options.tokenId) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+        } else if (typeof ref.options.tokenId !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+        } else if (!(await getMongoRepository(Token).findOne({tokenId: ref.options.tokenId}))) {
+            resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+        }
+
+        if (!ref.options.rule) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+        } else if (typeof ref.options.rule !== 'string') {
+            resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+        }
+    }
 
     private split(array: any[], chunk: number) {
         const res = [];
@@ -79,8 +153,9 @@ export class MintBlock {
     }
 
     private async saveVC(vc: HcsVcDocument<VcSubject>, owner: string, ref: any): Promise<boolean> {
+        const hash = vc.toCredentialHash();
         try {
-            await this.guardians.setVcDocument({
+            const doc = getMongoRepository(VcDocument).create({
                 hash: vc.toCredentialHash(),
                 owner: owner,
                 document: vc.toJsonTree(),
@@ -88,7 +163,9 @@ export class MintBlock {
                 policyId: ref.policyId,
                 tag: ref.tag,
                 schema: `#${vc.getCredentialSubject()[0].getType()}`
-            })
+            });
+
+            await getMongoRepository(VcDocument).save(doc);
             return true;
         } catch (error) {
             return false;
@@ -100,26 +177,28 @@ export class MintBlock {
             if (!vp) {
                 return false;
             }
-            await this.guardians.setVpDocument({
+            const doc = getMongoRepository(VpDocument).create({
                 hash: vp.toCredentialHash(),
                 document: vp.toJsonTree(),
                 owner: sensorDid,
                 type: type as any,
                 policyId: ref.policyId,
                 tag: ref.tag
-            })
+            });
+            await getMongoRepository(VpDocument).save(doc);
+
             return true;
         } catch (error) {
             return false;
         }
     }
 
-    private async createMintVC(root:any, token:any, data: number | number[]): Promise<HcsVcDocument<VcSubject>> {
+    private async createMintVC(root: any, token: any, data: number | number[]): Promise<HcsVcDocument<VcSubject>> {
         const vcHelper = new VcHelper();
 
         let vcSubject: any;
+        const policySchema = await getMongoRepository(Schema).findOne({entity: SchemaEntity.MINT_NFTOKEN});
         if (token.tokenType == 'non-fungible') {
-            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_NFTOKEN);
             const serials = data as number[];
             vcSubject = {
                 ...SchemaHelper.getContext(policySchema),
@@ -128,7 +207,6 @@ export class MintBlock {
                 serials: serials
             }
         } else {
-            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_TOKEN);
             const amount = data as number;
             vcSubject = {
                 ...SchemaHelper.getContext(policySchema),
@@ -225,74 +303,5 @@ export class MintBlock {
         status = await this.saveVP(vp, user.did, DataTypes.MINT, ref);
 
         return vp;
-    }
-
-    @CatchErrors()
-    async runAction(state: any, user:IAuthUser) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const {
-            tokenId,
-            rule
-        } = ref.options;
-
-        const token = (await this.guardians.getTokens({ tokenId }))[0];
-        if (!token) {
-            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
-        }
-        const root = await this.guardians.getRootConfig(ref.policyOwner);
-
-        let docs = [];
-        if (Array.isArray(state.data)) {
-            docs = state.data as any[];
-        } else {
-            docs = [state.data];
-        }
-
-        if (!docs.length && docs[0]) {
-            throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
-        }
-
-        const vcs: HcsVcDocument<VcSubject>[] = [];
-        for (let i = 0; i < docs.length; i++) {
-            const element = docs[i];
-            if (element.signature === DocumentSignature.INVALID) {
-                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
-            }
-            vcs.push(HcsVcDocument.fromJsonTree(element.document, null, VcSubject));
-        }
-
-        const curUser = await this.users.getUserById(docs[0].owner);
-
-        if (!curUser) {
-            throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
-        }
-
-        try {
-            const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
-            ref.runNext(null, state).then(
-                function () { },
-                function (error: any) { console.error(error); }
-            );
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        if (!ref.options.tokenId) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-        } else if (typeof ref.options.tokenId !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-        } else if (!(await this.guardians.getTokens({ tokenId: ref.options.tokenId }))[0]) {
-            resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
-        }
-
-        if (!ref.options.rule) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-        } else if (typeof ref.options.rule !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
-        }
     }
 }

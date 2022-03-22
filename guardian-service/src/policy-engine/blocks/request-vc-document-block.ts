@@ -1,15 +1,18 @@
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { Schema, SchemaStatus } from 'interfaces';
+import { Schema } from 'interfaces';
 import { HederaHelper, HederaUtils } from 'vc-modules';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { StateField } from '@policy-engine/helpers/decorators';
+import { getMongoRepository } from 'typeorm';
+import { RootConfig } from '@entity/root-config';
+import { DidDocument } from '@entity/did-document';
+import { getDIDOperation } from '@helpers/utils';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -17,10 +20,7 @@ import { StateField } from '@policy-engine/helpers/decorators';
 })
 export class RequestVcDocumentBlock {
     @StateField()
-    state: { [key: string]: any } = { active: true };
-
-    @Inject()
-    private guardians: Guardians;
+    state: { [key: string]: any } = {active: true};
 
     @Inject()
     private vcHelper: VcHelper;
@@ -33,7 +33,7 @@ export class RequestVcDocumentBlock {
     constructor() {
     }
 
-    async changeActive(user:IAuthUser, active) {
+    async changeActive(user: IAuthUser, active) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
@@ -46,7 +46,7 @@ export class RequestVcDocumentBlock {
         ref.updateBlock(blockState, user);
     }
 
-    getActive(user:IAuthUser) {
+    getActive(user: IAuthUser) {
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -65,7 +65,7 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!this.schema) {
-            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+            const schema = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
             this.schema = schema ? new Schema(schema) : null;
         }
         if (!this.schema) {
@@ -133,7 +133,7 @@ export class RequestVcDocumentBlock {
 
             await this.changeActive(user, true);
 
-            await ref.runNext(user, { data: item });
+            await ref.runNext(user, {data: item});
         } catch (error) {
             await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
@@ -150,10 +150,10 @@ export class RequestVcDocumentBlock {
             }
             if (idType == 'DID') {
                 const ref = PolicyComponentsUtils.GetBlockRef(this);
-                const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
+                const rootConfid = await getMongoRepository(RootConfig).findOne({did: ref.policyOwner});
                 const hederaHelper = HederaHelper
                     .setOperator(userHederaAccount, userHederaKey)
-                    .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
+                    .setAddressBook(rootConfid.addressBook, rootConfid.didTopic, rootConfid.vcTopic);
 
                 // did generation
                 const newDid = await hederaHelper.DID.createDid();
@@ -166,8 +166,14 @@ export class RequestVcDocumentBlock {
                 const did = message.getDid();
                 const operation = message.getOperation();
 
-                await this.guardians.setDidDocument({ did: DID, document: DIDDocument });
-                await this.guardians.setDidDocument({ did, operation });
+                let doc: DidDocument;
+                doc = getMongoRepository(DidDocument).create({did: DID, document: DIDDocument});
+                await getMongoRepository(DidDocument).save(doc);
+
+                doc = await getMongoRepository(DidDocument).findOne({did});
+                doc.status = getDIDOperation(operation);
+                await getMongoRepository(DidDocument).save(doc);
+
                 await this.wallet.setKey(user.walletToken, KeyType.KEY, DID, key);
 
                 return DID;
@@ -193,13 +199,13 @@ export class RequestVcDocumentBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
             return;
         }
-        const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+        const schema = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
             return;
         }
         if (ref.options.presetSchema) {
-            const presetSchema = await this.guardians.getSchemaByIRI(ref.options.presetSchema);
+            const presetSchema = await getMongoRepository(Schema).findOne({iri: ref.options.presetSchema});
             if (!presetSchema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
                 return;

@@ -6,19 +6,16 @@ import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { HcsVcDocument, VcSubject } from 'vc-modules';
 import { VcHelper } from '@helpers/vcHelper';
-import { Guardians } from '@helpers/guardians';
-import { Inject } from '@helpers/decorators/inject';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { getMongoRepository } from 'typeorm';
+import { RootConfig } from '@entity/root-config';
 
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
     commonBlock: true
 })
 export class CalculateContainerBlock {
-    @Inject()
-    private guardians: Guardians;
-
     async calculate(document: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         if (document.signature === DocumentSignature.INVALID) {
@@ -51,7 +48,7 @@ export class CalculateContainerBlock {
         }
         newJson.id = json.id;
 
-        const outputSchema = await this.guardians.getSchemaByIRI(ref.options.outputSchema);
+        const outputSchema = await getMongoRepository(Schema).findOne({iri: ref.options.outputSchema});
         const vcSubject = {
             ...SchemaHelper.getContext(outputSchema),
             ...newJson
@@ -64,7 +61,7 @@ export class CalculateContainerBlock {
             vcSubject.policyId = json.policyId;
         }
 
-        const root = await this.guardians.getRootConfig(ref.policyOwner);
+        const root = await getMongoRepository(RootConfig).findOne({did: ref.policyOwner});
         const vcHelper = new VcHelper();
         const newVC = await vcHelper.createVC(
             root.did,
@@ -85,7 +82,7 @@ export class CalculateContainerBlock {
 
     @CatchErrors()
     public async runAction(state: any, user: IAuthUser) {
-        console.log("calculate-block, runAction")
+        console.log('calculate-block, runAction')
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         let document = null;
         if (Array.isArray(state.data)) {
@@ -111,7 +108,7 @@ export class CalculateContainerBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "inputSchema" must be a string');
             return;
         }
-        const inputSchema = await this.guardians.getSchemaByIRI(ref.options.inputSchema);
+        const inputSchema = await getMongoRepository(Schema).findOne({iri: ref.options.inputSchema});
         if (!inputSchema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.inputSchema}" does not exist`);
             return;
@@ -126,7 +123,7 @@ export class CalculateContainerBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "outputSchema" must be a string');
             return;
         }
-        const outputSchema = await this.guardians.getSchemaByIRI(ref.options.outputSchema);
+        const outputSchema = await getMongoRepository(Schema).findOne({iri: ref.options.outputSchema})
         if (!outputSchema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.outputSchema}" does not exist`);
             return;

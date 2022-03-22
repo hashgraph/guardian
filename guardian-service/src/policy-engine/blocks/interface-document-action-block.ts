@@ -1,14 +1,13 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
 import { IAuthUser } from '@auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { getMongoRepository, getRepository } from 'typeorm';
+import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { Schema, SchemaStatus } from 'interfaces';
+import { Schema } from 'interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 
@@ -20,26 +19,11 @@ import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-
     commonBlock: false,
 })
 export class InterfaceDocumentActionBlock {
-
-    @Inject()
-    private guardians: Guardians;
-
     @Inject()
     private users: Users;
 
     @Inject()
     private wallet: Wallet;
-
-    private async getSources(user: IAuthUser): Promise<any[]> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
-        let data = [];
-        for (let child of ref.children) {
-            if (child.blockClassName === 'SourceAddon') {
-                data = data.concat(await PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(child).getFromSource(user))
-            }
-        }
-        return data;
-    }
 
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -73,7 +57,7 @@ export class InterfaceDocumentActionBlock {
     async setData(user: IAuthUser, document: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
-        let state: any = { data: document };
+        let state: any = {data: document};
 
         if (ref.options.type == 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
@@ -93,7 +77,7 @@ export class InterfaceDocumentActionBlock {
             const userDID = userFull.did;
             const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
-            const schemaObject = await this.guardians.getSchemaByIRI(ref.options.schema);
+            const schemaObject = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
             const schema = new Schema(schemaObject);
             return {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
@@ -125,19 +109,6 @@ export class InterfaceDocumentActionBlock {
                 return;
             }
         }
-    }
-
-    private findOptions(document: any, field: any, options: any[]) {
-        let value: any = null;
-        if (document && field) {
-            const keys = field.split('.');
-            value = document;
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-                value = value[key];
-            }
-        }
-        return options.find(e => e.value == value);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
@@ -187,7 +158,7 @@ export class InterfaceDocumentActionBlock {
                         break;
                     }
 
-                    const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+                    const schema = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
                     if (!schema) {
                         resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                         break;
@@ -209,5 +180,29 @@ export class InterfaceDocumentActionBlock {
                     resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector|download|dropdown"');
             }
         }
+    }
+
+    private async getSources(user: IAuthUser): Promise<any[]> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
+        let data = [];
+        for (let child of ref.children) {
+            if (child.blockClassName === 'SourceAddon') {
+                data = data.concat(await PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(child).getFromSource(user))
+            }
+        }
+        return data;
+    }
+
+    private findOptions(document: any, field: any, options: any[]) {
+        let value: any = null;
+        if (document && field) {
+            const keys = field.split('.');
+            value = document;
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                value = value[key];
+            }
+        }
+        return options.find(e => e.value == value);
     }
 }

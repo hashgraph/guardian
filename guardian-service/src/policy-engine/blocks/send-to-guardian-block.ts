@@ -1,4 +1,3 @@
-import { Guardians } from '@helpers/guardians';
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, DocumentStatus } from 'interfaces';
@@ -11,15 +10,17 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument } from '@entity/vc-document';
+import { DidDocument } from '@entity/did-document';
+import { ApprovalDocument } from '@entity/approval-document';
+import { RootConfig } from '@entity/root-config';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
     commonBlock: true
 })
 export class SendToGuardianBlock {
-    @Inject()
-    private guardians: Guardians;
-
     @Inject()
     private wallet: Wallet;
 
@@ -35,7 +36,7 @@ export class SendToGuardianBlock {
         document.type = ref.options.entityType;
 
         if (ref.options.forceNew) {
-            document = { ...document };
+            document = {...document};
             document.id = undefined;
             state.data = document;
         }
@@ -51,7 +52,7 @@ export class SendToGuardianBlock {
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
-                const doc = {
+                const doc = getMongoRepository(VcDocument).create({
                     hash: vc.toCredentialHash(),
                     owner: document.owner,
                     assign: document.assign,
@@ -63,16 +64,18 @@ export class SendToGuardianBlock {
                     policyId: ref.policyId,
                     tag: ref.tag,
                     document: vc.toJsonTree()
-                };
-                result = await this.guardians.setVcDocument(doc);
+                });
+                result = await getMongoRepository(VcDocument).save(doc);
                 break;
             }
             case 'did-documents': {
-                result = await this.guardians.setDidDocument(document);
+                const doc = getMongoRepository(DidDocument).create(document);
+                result = await getMongoRepository(DidDocument).save(doc);
                 break;
             }
             case 'approve': {
-                result = await this.guardians.setApproveDocuments(document);
+                const doc = getMongoRepository(ApprovalDocument).create(document);
+                result = await getMongoRepository(ApprovalDocument).save(doc);
                 break;
             }
             case 'hedera': {
@@ -100,10 +103,10 @@ export class SendToGuardianBlock {
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
+        const rootConfig = await getMongoRepository(RootConfig).findOne({did: ref.policyOwner});
         const hederaHelper = HederaHelper
             .setOperator(userID, userKey)
-            .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
+            .setAddressBook(rootConfig.addressBook, rootConfig.didTopic, rootConfig.vcTopic);
         const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
         const result = await hederaHelper.DID.createVcTransaction(vc, userKey);
         document.hederaStatus = result.getOperation();

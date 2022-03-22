@@ -1,11 +1,13 @@
 import { ExternalData } from '@policy-engine/helpers/decorators';
 import { HcsVcDocument, VcSubject } from 'vc-modules';
-import { DocumentSignature, DocumentStatus, SchemaStatus } from 'interfaces';
+import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { VcHelper } from '@helpers/vcHelper';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { Guardians } from '@helpers/guardians';
-import {PolicyComponentsUtils} from '../policy-components-utils';
+import { PolicyComponentsUtils } from '../policy-components-utils';
+import { getMongoRepository } from 'typeorm';
+import { Schema } from '@entity/schema';
+
 /**
  * External data block
  */
@@ -17,10 +19,7 @@ export class ExternalDataBlock {
     @Inject()
     private vcHelper: VcHelper;
 
-    @Inject()
-    private guardians: Guardians;
-
-    async receiveData(data:any) {
+    async receiveData(data: any) {
         let verify: boolean;
         try {
             const res = await this.vcHelper.verifySchema(data.document);
@@ -44,9 +43,12 @@ export class ExternalDataBlock {
             type: ref.options.entityType,
             schema: ref.options.schema
         };
-        ref.runNext(null, { data: doc }).then(
-            function () { },
-            function (error: any) { console.error(error); }
+        ref.runNext(null, {data: doc}).then(
+            function () {
+            },
+            function (error: any) {
+                console.error(error);
+            }
         );
     }
 
@@ -58,7 +60,7 @@ export class ExternalDataBlock {
                 return;
             }
 
-            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+            const schema = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;

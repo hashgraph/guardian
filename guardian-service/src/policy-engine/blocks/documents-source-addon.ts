@@ -1,20 +1,22 @@
 import { SourceAddon } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
-import {PolicyComponentsUtils} from '../policy-components-utils';
-import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
+import { PolicyComponentsUtils } from '../policy-components-utils';
+import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument } from '@entity/vc-document';
+import { DidDocument } from '@entity/did-document';
+import { VpDocument } from '@entity/vp-document';
+import { ApprovalDocument } from '@entity/approval-document';
+import { Schema } from '@entity/schema';
 
 @SourceAddon({
     blockType: 'documentsSourceAddon'
 })
 export class DocumentsSourceAddon {
-    @Inject()
-    private guardians: Guardians;
-
     @Inject()
     private users: Users;
 
@@ -43,19 +45,19 @@ export class DocumentsSourceAddon {
 
             switch (filter.type) {
                 case 'equal':
-                    Object.assign(expr, { $eq: filter.value })
+                    Object.assign(expr, {$eq: filter.value})
                     break;
 
                 case 'not_equal':
-                    Object.assign(expr, { $ne: filter.value });
+                    Object.assign(expr, {$ne: filter.value});
                     break;
 
                 case 'in':
-                    Object.assign(expr, { $in: filter.value.split(',') });
+                    Object.assign(expr, {$in: filter.value.split(',')});
                     break;
 
                 case 'not_in':
-                    Object.assign(expr, { $nin: filter.value.split(',') });
+                    Object.assign(expr, {$nin: filter.value.split(',')});
                     break;
 
                 default:
@@ -66,7 +68,7 @@ export class DocumentsSourceAddon {
 
         const dynFilters = {};
         for (let [key, value] of Object.entries(ref.getFilters(user))) {
-            dynFilters[key] = { $eq: value };
+            dynFilters[key] = {$eq: value};
         }
 
         Object.assign(filters, dynFilters);
@@ -75,16 +77,16 @@ export class DocumentsSourceAddon {
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getVcDocuments(filters);
+                data = await getMongoRepository(VcDocument).find(filters);
                 break;
 
             case 'did-documents':
-                data = await this.guardians.getDidDocuments(filters);
+                data = await getMongoRepository(DidDocument).find(filters);
                 break;
 
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getVpDocuments(filters);
+                data = await getMongoRepository(VpDocument).find(filters);
                 break;
 
             case 'root-authorities':
@@ -93,7 +95,7 @@ export class DocumentsSourceAddon {
 
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getApproveDocuments(filters);
+                data = await getMongoRepository(ApprovalDocument).find(filters);
                 break;
 
             case 'source':
@@ -124,7 +126,7 @@ export class DocumentsSourceAddon {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+            const schema = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;
