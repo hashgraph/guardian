@@ -4,9 +4,10 @@
 
 This folder contains sample files that are referenced in the Demo Usage Guide
 
-1. Sample Schema (`iRec_Application_Details.zip`)
+1. Sample Schema for iRec Policy (`iRec_Application_Details.zip`)
 2. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
-3. Demo Usage Guide
+3. Sample Schema for Verra REDD Policy (`Verra REDD.zip`)
+4. Sample Schema design template for Verra REDD Policy (`REDD APD Schema Design Template.xlsx`)
 
 1.The Guardian reference implementation comes with two predefined users:
 
@@ -36,8 +37,9 @@ There is a new feature as of version 1.0.2 which allows for the _Importing of Po
 * `1644847084.945541771` (iRec Application Details)
 * `1644847093.979895804` (Inverter)
 * `1644847107.415192828` (MRV)
+* `1647950909.262020677`(Verra REDD)
 
-Those Hedera message IDs correspond respectively to the iRec Application Details, Inverter, and MRV Schemas.
+Those Hedera message IDs correspond respectively to the iRec Application Details, Inverter, MRV and Verra REDD Schemas.
 
 Again this step is not needed if you import the entire policy (see step 6 and the discussion above).
 
