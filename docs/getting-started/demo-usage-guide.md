@@ -37,9 +37,8 @@ There is a new feature as of version 1.0.2 which allows for the _Importing of Po
 * `1644847084.945541771` (iRec Application Details)
 * `1644847093.979895804` (Inverter)
 * `1644847107.415192828` (MRV)
-* `1647950909.262020677`(Verra REDD)
 
-Those Hedera message IDs correspond respectively to the iRec Application Details, Inverter, MRV and Verra REDD Schemas.
+Those Hedera message IDs correspond respectively to the iRec Application Details, Inverter and MRV Schemas.
 
 Again this step is not needed if you import the entire policy (see step 6 and the discussion above).
 
@@ -50,10 +49,11 @@ Again this step is not needed if you import the entire policy (see step 6 and th
 6\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, as noted above, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the **import** button and enter the following Hedera message ID:
 
 * `1644847114.111298000` (iRec Policy)
+* `1647950909.262020677`(Verra REDD Policy)
 
 ![](https://user-images.githubusercontent.com/40637665/153242444-c16f357f-d12c-4b92-a9f9-b50788c47b2c.png)
 
-Once you have done that, you can move onto steop 8. If you'd like to build a policy from scratch, please continue reading below.
+Once you have done that, you can move onto step 8. If you'd like to build a policy from scratch, please continue reading below.
 
 Click **Create Policy** and fill the required information in the dialog box. Please note that you will need to create new **Tag** and **Version** numbers for each policy. identical Tags and Versions will cause an error. Once the Policy is complete, we have just _**created our first Policy Workflow and Policy Action Execution instance!**_
 
