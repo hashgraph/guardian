@@ -9,6 +9,13 @@ RUN npm install
 ADD ./interfaces/src ./src/.
 RUN npm run build
 
+WORKDIR /usr/logger-helper
+COPY ./logger-helper/package*.json ./
+COPY ./logger-helper/tsconfig.json ./
+RUN npm install
+ADD ./logger-helper/src ./src/.
+RUN npm run build
+
 WORKDIR /usr/ipfs-client
 COPY ./ipfs-client/package*.json ./
 COPY ./ipfs-client/tsconfig.json ./

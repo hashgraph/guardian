@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { MongoRepository } from 'typeorm';
+import { getMongoRepository, MongoRepository } from 'typeorm';
 import { DocumentLoader, IDocumentFormat } from 'vc-modules';
 import { ISchema } from 'interfaces';
 
@@ -8,16 +8,13 @@ import { ISchema } from 'interfaces';
  * Used for schema validation.
  */
 export class ContextDocumentLoader extends DocumentLoader {
-    private schemaRepository: MongoRepository<Schema>;
     private readonly context: string;
 
     constructor(
-        schemaRepository: MongoRepository<Schema>,
-        context: string  
+        context: string
     ) {
         super();
         this.context = context;
-        this.schemaRepository = schemaRepository;
     }
 
     public async has(iri: string): Promise<boolean> {
@@ -51,7 +48,7 @@ export class ContextDocumentLoader extends DocumentLoader {
             if (!context) {
                 return null;
             }
-            const schema = await this.schemaRepository.findOne({
+            const schema = await getMongoRepository(Schema).findOne({
                 where: { contextURL: { $eq: context } }
             });
             return schema;

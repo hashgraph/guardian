@@ -1,0 +1,151 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <div class="content-trust-chain">
+
+        <form *ngIf="!(vpDocument || vcDocument)" class="filters" [formGroup]="searchForm" (ngSubmit)="updateFilter()">
+            <mat-form-field class="search-input" appearance="outline">
+                <mat-label>HASH/ID:</mat-label>
+                <input matInput type="text" placeholder="HASH/ID" formControlName="value">
+                <button mat-icon-button matSuffix type="submit" [disabled]="!searchForm.valid">
+                    <mat-icon>search</mat-icon>
+                </button>
+            </mat-form-field>
+        </form>
+
+        <div class="not-exist" *ngIf="!(vpDocument || vcDocument) && this.hash">
+            Can't find document with HASH: {{this.hash}}
+        </div>
+
+        <div *ngIf="vpDocument || vcDocument" class="display-chain">
+            <div class="verified-presentation">
+
+                <div *ngIf="vpDocument" class="header">
+                    <a (click)="onBackClick()" class="go-back-link">
+                        <mat-icon>chevron_left</mat-icon>
+                        HASH: {{vpDocument.hash}}
+                    </a>
+                    Verified Presentation
+                    <mat-icon>check_circle</mat-icon>
+                    <a class="open-vp" (click)="openVPDocument(vpDocument)">VP File</a>
+                </div>
+
+                <div *ngIf="vcDocument" class="header">
+                    <a (click)="onBackClick()" class="go-back-link">
+                        <mat-icon>chevron_left</mat-icon>
+                        HASH: {{vcDocument.hash}}
+                    </a>
+                    <a class="open-vp" (click)="openVCDocument(vcDocument)">File</a>
+                </div>
+
+                <div *ngIf="mintDocument" class="vp-section">
+                    <div class="vp-section-header">
+                        Token & Issuer
+                        <a class="open-vp" (click)="openJsonDocument(mintDocument)">VC Files</a>
+                    </div>
+                    <div class="vp-table">
+                        <div class="vp-field">
+                            <div class="vp-field-label">Token</div>
+                            <div class="vp-field-value">{{mintDocument.tokenId}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Issuer: Name</div>
+                            <div class="vp-field-value" [title]="mintDocument.issuer">{{mintDocument.username}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Mint date</div>
+                            <div class="vp-field-value">{{mintDocument.date}}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="policyDocument" class="vp-section">
+                    <div class="vp-section-header">
+                        Policy Overview
+                        <a class="open-vp" (click)="openVCDocument(policyDocument)">VC Files</a>
+                    </div>
+                    <div class="vp-table">
+                        <div class="vp-field">
+                            <div class="vp-field-label">Policy Name</div>
+                            <div class="vp-field-value">{{policyDocument.name}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Description</div>
+                            <div class="vp-field-value">{{policyDocument.description}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Version</div>
+                            <div class="vp-field-value">{{policyDocument.version}}</div>
+                        </div>
+                        <div class="vp-field">
+                            <div class="vp-field-label">Issuer: Name</div>
+                            <div class="vp-field-value" [title]="policyDocument.issuer">{{policyDocument.username}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vp-description">
+                    This Carbon Offset Claim has met all the requirements as issued in the policy secured to this token.
+                </div>
+
+                <div *ngIf="vpDocument" class="vp-signature">
+                    <div class="vp-field-label">Verified Signature:</div>
+                    <div class="vp-field-value">{{vpDocument.document.document.proof.jws}}</div>
+                </div>
+                <div *ngIf="vcDocument" class="vp-signature">
+                    <div class="vp-field-label">Verified Signature:</div>
+                    <div class="vp-field-value">{{vcDocument.document.document.proof.jws}}</div>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="scroll-right" (click)="onScrollButtonPress(scrollContainer, -150)">
+                    <mat-icon style="margin-left: 32px">chevron_left</mat-icon>
+                </div>
+                <div class="chain-container" (wheel)="onWheel($event)" #scrollContainer>
+                    <ng-container *ngFor="let item of documents">
+                        <div class="chain-item item-type-{{item.type}}">
+                            <div class="chain-title">
+                                <ng-container [ngSwitch]="item.iconType" *ngIf="item.icon">
+                                    <mat-icon *ngSwitchCase="'common'">{{item.icon}}</mat-icon>
+                                    <img *ngSwitchCase="'custom'" [src]="item.icon" class="item-image"/>
+                                </ng-container>
+                                
+                                {{item.title}}
+                            </div>
+                            <div class="chain-id">
+                                {{item.description}}
+                            </div>
+                            <div *ngIf="item.username" class="parties">
+                                <div class="parties-label">Parties:</div>
+                                <div class="parties-value">
+                                    <div class="partie">
+                                        {{item.username}}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="nested-documents">
+                                <ng-container *ngFor="let link of item.documents">
+                                    <a class="nested-documents-value" (click)="openVCDocument(link)" [title]="link.description">
+                                        {{link.title}}
+                                    </a>
+                                </ng-container>
+                            </div>
+                            <div *ngIf="item.document" class="chain-document">
+                                <a (click)="openVCDocument(item)">VC Files</a>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+                <div class="scroll-right" (click)="onScrollButtonPress(scrollContainer, 150)">
+                    <mat-icon>chevron_right</mat-icon>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

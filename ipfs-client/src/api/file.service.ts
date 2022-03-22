@@ -1,8 +1,11 @@
-import { MessageAPI } from 'interfaces';
+import { CommonSettings, MessageAPI } from 'interfaces';
 import { NFTStorage } from 'nft.storage';
 import Blob from 'cross-blob';
 import axios, { ResponseType } from 'axios';
 import axiosRetry from 'axios-retry';
+import { MongoRepository } from 'typeorm';
+import { Settings } from '../entity/settings';
+import { Logger } from 'logger-helper';
 
 
 export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
@@ -15,7 +18,8 @@ export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
  */
 export const fileAPI = async function (
     channel: any,
-    client: NFTStorage
+    client: NFTStorage,
+    settingsRepository: MongoRepository<Settings>
 ): Promise<void> {
     /**
      * Add file and return hash
@@ -36,10 +40,10 @@ export const fileAPI = async function (
             res.send(response, 'json');
         }
         catch (e) {
-            console.log(e);
+            new Logger().error(e.toString(), ['IPFS_CLIENT']);
             const response = {
                 body: null,
-                error: e
+                error: e.message
             }
             res.send(response, 'json');
         }
@@ -80,7 +84,57 @@ export const fileAPI = async function (
             }
         }
         catch (e) {
+            new Logger().error(e.toString(), ['IPFS_CLIENT']);
             res.send({ error: e.message });
         }
+    })
+
+    /**
+     * Update settings.
+     * 
+     * @param {CommonSettings} [payload] - Settings
+     * 
+     */
+     channel.response(MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
+        try {
+            const settings = msg.payload as CommonSettings;
+            const oldNftApiKey = await settingsRepository.findOne({
+                name: 'NFT_API_KEY'
+            });
+            if (oldNftApiKey) {
+                await settingsRepository.update({
+                    name: 'NFT_API_KEY' }, {
+                    value: settings.nftApiKey
+                });
+            }
+            else {
+                await settingsRepository.save({
+                    name: 'NFT_API_KEY',
+                    value: settings.nftApiKey
+                });
+            }
+
+            client = new NFTStorage({ token: settings.nftApiKey });
+            res.send({});
+        }
+        catch (e) {
+            new Logger().error(e.toString(), ['IPFS_CLIENT']);
+            console.log(e);
+            res.send({ error: e.message });
+        }
+    })
+
+    /**
+     * Get settings.
+     * 
+     * @return {any} - settings
+     */
+     channel.response(MessageAPI.GET_SETTINGS, async (msg, res) => {
+        const nftApiKey = await settingsRepository.findOne({
+            name: "NFT_API_KEY"
+        });
+        res.send({body: {
+            nftApiKey: nftApiKey?.value || process.env.NFT_API_KEY
+        }}); 
     })
 }

@@ -31,6 +31,12 @@ import { PolicyHelper } from './services/policy-helper.service';
 import { MaterialModule } from './material.module';
 import { PolicyEngineModule } from './policy-engine/policy-engine.module';
 import { IPFSService } from './services/ipfs.service';
+import { SettingsService } from './services/settings.service';
+import { LoggerService } from './services/logger.service';
+import { AdminHeaderComponent } from './views/admin/admin-header/admin-panel.component';
+import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
+import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
+import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview-dialog.component';
 
 @NgModule({
     declarations: [
@@ -46,7 +52,11 @@ import { IPFSService } from './services/ipfs.service';
         SchemaConfigComponent,
         AuditComponent,
         TrustChainComponent,
-        NewPolicyDialog
+        NewPolicyDialog,
+        LogsViewComponent,
+        SettingsViewComponent,
+        AdminHeaderComponent,
+        IconPreviewDialog
     ],
     imports: [
         BrowserModule,
@@ -72,6 +82,8 @@ import { IPFSService } from './services/ipfs.service';
         PolicyEngineService,
         PolicyHelper,
         IPFSService,
+        SettingsService,
+        LoggerService,
         DemoService,
         {
             provide: HTTP_INTERCEPTORS,

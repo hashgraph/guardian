@@ -39,8 +39,9 @@ export interface IHederaHelper {
  * SDK - Contains methods to simplify work with hashgraph sdk
  */
 export class HederaHelper {
-    public static MAX_TIMEOUT: number = 60000;
+    public static MAX_TIMEOUT: number = 120000;
     public static readonly HEDERA_MESSAGE_API: string = "https://testnet.mirrornode.hedera.com/api/v1/topics/messages";
+    public static readonly HEDERA_TOPIC_API: string = "https://testnet.mirrornode.hedera.com/api/v1/topics/"
 
     public DID: HederaDIDHelper;
     public SDK: HederaSDKHelper;

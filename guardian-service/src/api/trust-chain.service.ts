@@ -2,6 +2,7 @@ import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { IChainItem, MessageAPI, MessageError, MessageResponse, SchemaEntity } from 'interfaces';
+import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { HcsVpDocument } from 'vc-modules';
 
@@ -266,8 +267,9 @@ export const trustChainAPI = async function (
             await getPolicyInfo(chain, null);
             res.send(new MessageResponse(chain));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error));
+            res.send(new MessageError(error.message));
         }
     });
 }

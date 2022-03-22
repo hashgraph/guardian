@@ -1,0 +1,75 @@
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow">
+        <td class="propRowCol" (click)="onHide(propHidden, 'inputSchemaGroup')"
+            [attr.collapse]="propHidden.inputSchemaGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propRowCell cellName">Input Schema</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.inputSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
+                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <ng-container *ngIf="block.inputSchema">
+        <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName cellTitle">Description</td>
+            <td class="propRowCell cellTitle">Alias</td>
+        </tr>
+    </ng-container>
+    <ng-container *ngFor="let field of block.inputFields; let i=index">
+        <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                <span class="lvl" [attr.lvl]="field.lvl">{{field.title}}</span>
+            </td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.value" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+
+    <tr class="propRow">
+        <td class="propRowCol" (click)="onHide(propHidden, 'outputSchemaGroup')"
+            [attr.collapse]="propHidden.outputSchemaGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propRowCell cellName">Output Schema</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
+                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <ng-container *ngIf="block.outputFields">
+        <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName cellTitle">Description</td>
+            <td class="propRowCell cellTitle">Variable</td>
+        </tr>
+    </ng-container>
+    <ng-container *ngFor="let field of block.outputFields; let i=index">
+        <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                <span class="lvl" [attr.lvl]="field.lvl">{{field.title}}</span>
+            </td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.value" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+</table>

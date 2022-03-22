@@ -16,8 +16,8 @@ export class HandleErrorsService implements HttpInterceptor {
   ) {
   }
 
-  messageToText(message:any) {
-    if(typeof message === 'object') {
+  messageToText(message: any) {
+    if (typeof message === 'object') {
       return JSON.stringify(message, null, 2);
     }
     return message;
@@ -31,12 +31,31 @@ export class HandleErrorsService implements HttpInterceptor {
         let text = "";
         if (typeof error.error === 'string') {
           header = `${error.status} ${error.statusText}`;
-          if(error.message) {
+          if (error.message) {
             text = `<div>${this.messageToText(error.message)}</div><div>${this.messageToText(error.error)}</div>`;
           } else {
             text = `${error.error}`;
           }
         } else if (typeof error.error === 'object') {
+          if (typeof error.error.text == 'function') {
+            error.error.text().then((e: string) => {
+              const error = JSON.parse(e)
+              const header = `${error.code} Other Error`;
+              let text;
+              if (error.message) {
+                text = `<div>${this.messageToText(error.message)}</div><div>${this.messageToText(error.error)}</div>`;
+              } else {
+                text = `${error.error}`;
+              }
+              this.toastr.error(text, header, {
+                timeOut: 30000,
+                closeButton: true,
+                positionClass: 'toast-bottom-right',
+                enableHtml: true
+              });
+            });
+            return throwError(error.message);
+          }
           if (error.error.uuid) {
             text = `<div>${this.messageToText(error.error.message)}</div><div>${error.error.uuid}</div>`;
           } else {

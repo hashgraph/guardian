@@ -60,11 +60,183 @@
         </div>
     </div>
 
-    <div>
-        <div class="add-btn" (click)="onAdd($event)">
-            <span>
-                <mat-icon>add</mat-icon> Add Field
-            </span>
-        </div>
+    <div class="add-btn" (click)="onAdd($event)">
+        <span>
+            <mat-icon>add</mat-icon> Add Field
+        </span>
     </div>
+
+    <ng-template [ngIf]="fields && fields.length > 0">
+        <div class="delimiter" *ngIf="conditions && conditions.length"></div>
+
+        <div *ngIf="conditions && conditions.length">
+                <div *ngFor="let condition of conditions">
+                    <div class="condition-item">
+                        <div class="condition-if-container">
+                            <span class="condition-label">IF</span>
+
+                            <mat-form-field appearance="outline" [ngClass]="{'choose-field': !condition.ifControl.field?.value}">
+                                <mat-label>*Field</mat-label>
+                                <mat-select [formControl]="condition.ifControl.field" (valueChange)="onIfConditionFieldChange(condition, $event)">
+                                    <mat-option *ngFor="let field of getFieldsForCondition()" [value]="field">
+                                    {{field.controlName.value}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <span class="condition-label" *ngIf="condition.ifControl.field?.value">=</span>
+
+                            <mat-form-field appearance="outline" *ngIf="condition.ifControl.field?.value
+                                && 'boolean' !== schemaTypeMap[condition.ifControl.field.value.controlType.value].type
+                                && !['time', 'date-time', 'date'].includes(schemaTypeMap[condition.ifControl.field.value.controlType.value].format)">
+                                <mat-label>{{condition.ifControl.field.value.controlRequired.value ? "* Field value" : "Field value"}}</mat-label>
+                                <input matInput placeholder="Field value" [formControl]="condition.ifControl.fieldValue">
+                            </mat-form-field>
+
+
+                            <mat-form-field *ngIf="condition.ifControl.field?.value
+                                    && schemaTypeMap[condition.ifControl.field.value.controlType.value].type === 'string'
+                                    && 'time' === schemaTypeMap[condition.ifControl.field.value.controlType.value].format"
+                                class="example-full-width required-form-field" appearance="outline">
+                            <input matInput type="time" step="1" [formControl]="condition.ifControl.fieldValue">
+                            </mat-form-field>
+
+                            <mat-form-field *ngIf="condition.ifControl.field?.value
+                                    && schemaTypeMap[condition.ifControl.field.value.controlType.value].type === 'string'
+                                    && 'date-time' === schemaTypeMap[condition.ifControl.field.value.controlType.value].format"
+                                class="example-full-width required-form-field" appearance="outline">
+                                <mat-label>Choose a date & time</mat-label>
+                                <input matInput [ngxMatDatetimePicker]="dateTimePicker" [formControl]="condition.ifControl.fieldValue">
+                                <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
+                                <ngx-mat-datetime-picker #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
+                            </mat-form-field>
+
+                            <mat-form-field *ngIf="condition.ifControl.field?.value 
+                                    && schemaTypeMap[condition.ifControl.field.value.controlType.value].type === 'string'
+                                    && 'date' === schemaTypeMap[condition.ifControl.field.value.controlType.value].format"
+                                class="example-full-width required-form-field" appearance="outline">
+                                <mat-label>Choose a date</mat-label>
+                                <input [formControl]="condition.ifControl.fieldValue" matInput [matDatepicker]="dateItem">
+                                <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
+                                <mat-datepicker #dateItem></mat-datepicker>
+                            </mat-form-field>
+
+                            <div *ngIf="condition.ifControl.field?.value
+                             && schemaTypeMap[condition.ifControl.field.value.controlType.value].type === 'boolean'">
+                                <mat-radio-group [formControl]="condition.ifControl.fieldValue">
+                                    <mat-radio-button color="primary" class="boolean-option" [value]="true">True</mat-radio-button>
+                                    <mat-radio-button color="primary" class="boolean-option" [value]="false">False</mat-radio-button>
+                                </mat-radio-group>
+                            </div>
+
+
+                        </div>
+
+
+                        <p class="condition-label">THEN</p>
+                        <div *ngIf="condition.thenControls">
+                            <div class="custom-fields">
+                                <div *ngFor="let conditionField of condition.thenControls" class="custom-field">
+                                    <div class="custom-field-name">
+                                        <mat-form-field class="example-full-width" appearance="outline">
+                                            <mat-label>* Field name</mat-label>
+                                            <input matInput placeholder="Field name" [formControl]="conditionField.controlName">
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="custom-field-type">
+                                        <mat-form-field appearance="outline">
+                                            <mat-label>Field type</mat-label>
+                                            <mat-select [formControl]="conditionField.controlType" #controlType>
+                                                <mat-optgroup  label="Simple Types">
+                                                    <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
+                                                </mat-optgroup>
+                                                <mat-optgroup *ngIf="schemaTypes" label="Objects">
+                                                    <mat-option *ngFor="let type of schemaTypes" [value]="type.value">{{type.name}}</mat-option>
+                                                </mat-optgroup>
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="custom-field-required">
+                                        <mat-checkbox color="primary" [formControl]="conditionField.controlRequired">Required Field</mat-checkbox>
+                                    </div>
+                                    <div class="custom-field-isArray">
+                                        <mat-checkbox color="primary" [formControl]="conditionField.controlArray" [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
+                                    </div>
+                                    <div class="custom-field-remove">
+                                        <div class="custom-fields-remove" (click)="onConditionFieldRemove(condition, conditionField, 'then')">
+                                            <mat-icon>delete</mat-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="add-btn" (click)="onConditionFieldAdd(condition, 'then')">
+                            <span>
+                                <mat-icon>add</mat-icon> Add THEN Field
+                            </span>
+                        </div>
+
+                        <p class="condition-label">ELSE</p>
+                        <div *ngIf="condition.elseControls">
+                            <div class="custom-fields">
+                                <div *ngFor="let conditionField of condition.elseControls" class="custom-field">
+                                    <div class="custom-field-name">
+                                        <mat-form-field class="example-full-width" appearance="outline">
+                                            <mat-label>* Field name</mat-label>
+                                            <input matInput placeholder="Field name" [formControl]="conditionField.controlName">
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="custom-field-type">
+                                        <mat-form-field appearance="outline">
+                                            <mat-label>Field type</mat-label>
+                                            <mat-select [formControl]="conditionField.controlType" #controlType>
+                                                <mat-optgroup  label="Simple Types">
+                                                    <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
+                                                </mat-optgroup>
+                                                <mat-optgroup *ngIf="schemaTypes" label="Objects">
+                                                    <mat-option *ngFor="let type of schemaTypes" [value]="type.value">{{type.name}}</mat-option>
+                                                </mat-optgroup>
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="custom-field-required">
+                                        <mat-checkbox color="primary" [formControl]="conditionField.controlRequired">Required Field</mat-checkbox>
+                                    </div>
+                                    <div class="custom-field-isArray">
+                                        <mat-checkbox color="primary" [formControl]="conditionField.controlArray" [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
+                                    </div>
+                                    <div class="custom-field-remove">
+                                        <div class="custom-fields-remove" (click)="onConditionFieldRemove(condition, conditionField, 'else')">
+                                            <mat-icon>delete</mat-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="add-btn" (click)="onConditionFieldAdd(condition, 'else')">
+                            <span>
+                                <mat-icon>add</mat-icon> Add ELSE Field
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="rmv-btn" (click)="onConditionRemove(condition)">
+                        <span>
+                            <mat-icon>remove</mat-icon> Remove Condition
+                        </span>
+                    </div>
+
+                    <div class="delimiter"></div>
+                </div>
+        </div>
+
+            <div class="add-btn" (click)="onConditionAdd()">
+                <span>
+                    <mat-icon>add</mat-icon> Add Condition
+                </span>
+            </div>
+    </ng-template>
 </form>

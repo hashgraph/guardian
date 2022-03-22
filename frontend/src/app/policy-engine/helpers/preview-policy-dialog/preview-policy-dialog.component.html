@@ -25,9 +25,22 @@
 
                 <div class="delimiter"></div>
 
-                <div class="field-last">
+                <div class="version-container">
+                    <div *ngIf="policy.version" class="field field-version">
+                        <div class="field-name">Version</div>
+                        <div class="field-value">{{policy.version}}</div>
+                    </div>
+                    <div class="new-versions-container" *ngIf="newVersions && newVersions.length > 0">
+                        <div class="info-container field-name"><mat-icon class="info-label">info</mat-icon> <b>New versions of policy exist</b></div>
+                        <div class="new-versions-links">
+                            <a class="field-version-value" *ngFor="let newVersion of newVersions" [title]="newVersion.messageId" (click)="onNewVersionClick(newVersion.messageId)">{{newVersion.version}}</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
                     <div class="field-name">Description</div>
-                    <div class="field-value">{{policy.description}}</div>
+                    <div class="field-value">{{"test"}}</div>
                 </div>
 
                 <div class="field">

@@ -23,12 +23,12 @@
             <input type="file" class="file-input" style="display:none;" accept="image/*"
               (change)="onFileSelected($event, options.controls[item.name], item)" #fileUpload>
             <div class="file-upload" style="position: absolute; right:0; top:0;">
-                <ng-container [ngSwitch]="item.fileUploading">
-                  <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
-                  <button mat-icon-button *ngSwitchCase="false" class="upload-btn" (click)="fileUpload.click()">
-                    <mat-icon>attach_file</mat-icon>
-                  </button>
-                </ng-container>
+              <ng-container [ngSwitch]="item.fileUploading">
+                <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
+                <button mat-icon-button *ngSwitchCase="false" class="upload-btn" (click)="fileUpload.click()">
+                  <mat-icon>attach_file</mat-icon>
+                </button>
+              </ng-container>
             </div>
           </div>
         </mat-form-field>
@@ -58,8 +58,8 @@
         <div *ngIf="item.type === 'boolean'" class="boolean-form-field"
           [ngClass]="{'required-boolean-field': item.required && !options.controls[item.name].valid}">
           <mat-radio-group [formControlName]="item.name">
-            <mat-radio-button color="primary" value="true">True</mat-radio-button>
-            <mat-radio-button color="primary" value="false">False</mat-radio-button>
+            <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
+            <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
             <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
           </mat-radio-group>
         </div>
@@ -77,7 +77,7 @@
         <div *ngIf="item.control" class="form-field-array-item">
           <div class="form-field-group" [ngClass]="{'schema-form-field-group' : !item.required}">
             <app-schema-form [formGroup]="item.control" [fields]="item.fields" [context]="item.context"
-              [private-fields]="hide" [delimiter-hide]="true">
+              [private-fields]="hide" [delimiter-hide]="true" [conditions]="item.conditions" [preset]="item.preset">
             </app-schema-form>
           </div>
         </div>
@@ -152,14 +152,14 @@
             <div *ngIf="item.type === 'boolean'" class="boolean-form-field"
               [ngClass]="{'required-boolean-field': item.required && !listItem.control.valid}">
               <mat-radio-group [formControl]="listItem.control">
-                <mat-radio-button color="primary" value="true">True</mat-radio-button>
-                <mat-radio-button color="primary" value="false">False</mat-radio-button>
+                <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
+                <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
                 <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
               </mat-radio-group>
             </div>
 
           </div>
-          <div class="fields-remove" (click)="onRemove(item, listItem)">
+          <div class="fields-remove" (click)="removeItem(item, listItem)">
             <mat-icon>delete</mat-icon>
           </div>
         </div>
@@ -171,7 +171,7 @@
       </div>
 
       <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
-        <div class="invalid-field-label" *ngIf="!options.controls[item.name].valid">
+        <div class="invalid-field-label" *ngIf="!item.control.valid">
           <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
           <span>
             <b>Please make sure all fields in schemas contain a valid value</b>
@@ -183,9 +183,9 @@
           [attr.required]="item.required">
           <div class="form-field-group">
             <app-schema-form [formGroup]="listItem.control" [fields]="item.fields" [context]="item.context"
-              [private-fields]="hide" [delimiter-hide]="true">
+              [private-fields]="hide" [delimiter-hide]="true" [conditions]="item.conditions" [preset]="listItem.preset">
             </app-schema-form>
-            <div class="remove-btn" (click)="onRemove(item, listItem)">
+            <div class="remove-btn" (click)="removeItem(item, listItem)">
               <span>
                 <mat-icon>remove</mat-icon> Remove Entity
               </span>
@@ -205,6 +205,20 @@
     </div>
 
     <div *ngIf="!delimiterHide" class="delimiter"></div>
+
+    <ng-template [ngIf]="getConditions(item).length > 0">
+      <div *ngFor="let condition of getConditions(item)">
+        <app-schema-form
+          *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition"
+          [fields]="condition.thenFields" [formGroup]="condition.conditionForm" [preset]="condition.preset"
+          (destroy)="removeConditionFields(condition.thenFields, condition)"></app-schema-form>
+        <ng-template #elseCondition>
+          <app-schema-form *ngIf="condition.elseFields && condition.elseFields.length > 0"
+            [fields]="condition.elseFields" [formGroup]="condition.conditionForm" [preset]="condition.preset"
+            (destroy)="removeConditionFields(condition.elseFields, condition)"></app-schema-form>
+        </ng-template>
+      </div>
+    </ng-template>
 
   </ng-container>
 </form>

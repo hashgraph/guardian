@@ -103,6 +103,7 @@
 }
 .propRow .propRowCell {
     background: #fff;
+    position: relative;
 }
 .propRow:nth-child(2n) .propRowCell {
     background: #f7f7f7;
@@ -118,6 +119,10 @@
 .subRow-2 .cellName {
     padding-left: 40px;
     width: 125px;
+}
+
+.cellTitle {
+    font-weight: 500;
 }
 
 .propRowCol {
@@ -242,6 +247,14 @@
     display: block;
 }
 
+.cellValue span {
+    width: 300px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+}
+
 .properties input {
     width: 325px;
 }
@@ -268,4 +281,45 @@ input[readonly][type="checkbox"] {
 
 .readonly-prop {
     padding-left: 4px;
+}
+
+.remove-prop {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    color: #f00;
+    cursor: pointer;
+}
+
+.remove-prop mat-icon {
+    font-size: 20px;
+}
+
+.remove-prop[readonly="true"] {
+    display: none;
+}
+
+.lvl[lvl="1"] {
+    padding-left: 0px !important;
+    width: 140px !important;
+}
+.lvl[lvl="1"] {
+    padding-left: 8px !important;
+    width: 132px !important;
+}
+.lvl[lvl="2"] {
+    padding-left: 16px !important;
+    width: 124px !important;
+}
+.lvl[lvl="3"] {
+    padding-left: 24px !important;
+    width: 116px !important;
+}
+.lvl[lvl="3"] {
+    padding-left: 32px !important;
+    width: 108px !important;
+}
+.lvl[lvl="4"] {
+    padding-left: 40px !important;
+    width: 100px !important;
 }

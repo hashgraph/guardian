@@ -1,0 +1,69 @@
+
+.textarea-code {
+    position: absolute;
+    left: 0px;
+    top: 25px;
+    bottom: 0px;
+    right: 0px;
+    resize: none;
+    overflow: scroll;
+    width: 100%;
+    margin: 0px;
+    border: none;
+    padding: 0;
+}
+
+.toolbar {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    height: 24px;
+    overflow: hidden;
+    background: #f7f7f7;
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #ddd;
+}
+
+.toolbar-btn {
+    cursor: pointer;
+    margin: 0px 3px;
+}
+
+.json-errors {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    z-index: 99;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #c9c9c9;
+}
+
+.errors-properties {
+    margin: 6px 17px 3px 7px;
+    max-height: 200px;
+    flex: 0;
+}
+
+.errors-property {
+    border-radius: 3px;
+    border: 1px solid #f90000;
+    padding: 5px;
+    color: #f90000;
+    background: #fff2f2;
+    margin-bottom: 5px;
+    position: relative;
+    padding-left: 20px;
+}
+
+.errors-property span {
+    position: absolute;
+    left: 9px;
+    top: 13px;
+    background: #df0000;
+    width: 6px;
+    height: 3px;
+}

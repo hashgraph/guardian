@@ -1,4 +1,4 @@
-# Policy Preview
+# Policy Preview from IPFS
 
 ### POLICY PREVIEW FROM IPFS
 

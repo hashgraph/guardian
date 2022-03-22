@@ -8,7 +8,7 @@ import { timeout } from "./utils";
  * Hedera mirror node helper
  */
 export class HederaMirrorNodeHelper {
-    public static MAX_TIMEOUT: number = 60000;
+    public static MAX_TIMEOUT: number = 120000;
 
     /**
      * Return message by timestamp (messageId)
@@ -47,13 +47,7 @@ export class HederaMirrorNodeHelper {
             throw new Error(`Invalid message '${timeStamp}'`);
         }
 
-        const messageToParse = Buffer.from(res.data.message, 'base64').toString();
-
-        if (!this.isJSON(messageToParse)) {
-            throw new Error(`Invalid message '${timeStamp}'`);
-        }
-
-        const message = JSON.parse(messageToParse) as ISchemaSubmitMessage;
+        const message = this.parseTopicMessage(res.data.message, timeStamp) as ISchemaSubmitMessage;
 
         if (!this.validateSchemaMessageFields(message)) {
             throw new Error(`Message '${timeStamp}' doesn't match schema`);
@@ -83,14 +77,7 @@ export class HederaMirrorNodeHelper {
             throw new Error(`Invalid message '${timeStamp}'`);
         }
 
-        const messageToParse = Buffer.from(res.data.message, 'base64').toString();
-
-        if (!this.isJSON(messageToParse)) {
-            throw new Error(`Invalid message '${timeStamp}'`);
-        }
-
-        const message = JSON.parse(messageToParse) as IPolicySubmitMessage;
-
+        const message = this.parseTopicMessage(res.data.message, timeStamp) as IPolicySubmitMessage;
         if (!this.validatePolicyMessageFields(message)) {
             throw new Error(`Message '${timeStamp}' doesn't match policy`);
         }
@@ -100,6 +87,64 @@ export class HederaMirrorNodeHelper {
             topicId: res.data.topic_id,
             message: message
         }
+    }
+
+    /**
+     * Returns topic messages
+     * @param topicId Topic identifier
+     * @returns Messages
+     */
+     @timeout(HederaMirrorNodeHelper.MAX_TIMEOUT)
+     public static async getTopicMessages(topicId: string): Promise<{
+         timeStamp: string,
+         message: ISubmitModelMessage
+     }[]> {
+         const res = await axios.get(`${HederaHelper.HEDERA_TOPIC_API}${topicId}/messages`, { 
+            params: { limit: Number.MAX_SAFE_INTEGER },
+            responseType: 'json' 
+        });
+ 
+         if (!res || !res.data || !res.data.messages) {
+             throw new Error(`Invalid topicId '${topicId}'`);
+         }
+ 
+         const result = [];
+         const messages = res.data.messages;
+         if (messages.length === 0) {
+             return result;
+         }
+
+         for (let i = 0; i < messages.length; i++) {
+            try {
+                const message = this.parseTopicMessage(messages[i].message, messages[i].consensus_timestamp);
+                result.push({
+                    timeStamp: messages[i].consensus_timestamp,
+                    message
+                });
+            }
+            catch {
+                continue;
+            }
+         }
+
+         return result;
+     }
+
+     /**
+      * Parse topic message
+      * @param message Message to parse
+      * @param timeStamp Message Identifier
+      * @returns Parsed message
+      */
+    private static parseTopicMessage(message, timeStamp) {
+        const messageToParse = Buffer.from(message, 'base64').toString();
+ 
+        if (!this.isJSON(messageToParse)) {
+            throw new Error(`Invalid message '${timeStamp}'`);
+        }
+
+        const parsedMessage = JSON.parse(messageToParse);
+        return parsedMessage;
     }
 
     /**

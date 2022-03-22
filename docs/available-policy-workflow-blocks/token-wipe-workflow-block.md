@@ -1,4 +1,4 @@
-# Token Wipe Workflow Block
+# wipeDocumentBlock
 
 ### Properties
 

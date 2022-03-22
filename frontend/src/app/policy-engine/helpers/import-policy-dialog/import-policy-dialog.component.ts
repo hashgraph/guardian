@@ -26,6 +26,14 @@ export class ImportPolicyDialog {
     private fb: FormBuilder,
     private policyEngineService: PolicyEngineService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
+      if (data.timeStamp) {
+        this.importType = ImportType.IPFS;
+        this.isImportTypeSelected = true;
+        this.dataForm.patchValue({
+          timestamp: data.timeStamp
+        });
+        this.importFromMessage();
+      }
   }
 
   setImportType(importType: ImportType) {

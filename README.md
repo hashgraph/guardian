@@ -204,7 +204,7 @@ npm run test
 
 ([back to top](broken-reference))
 
-For complete documentation on following points. Please refer https://github.com/hashgraph/guardian/tree/main/docs
+For complete documentation on following points. Please refer https://docs.hedera.com/guardian
 
 * Swagger API
 * Postman Collection

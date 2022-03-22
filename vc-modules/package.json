@@ -1,9 +1,8 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@hashgraph/sdk": "2.6.0",
     "@hashgraph/did-sdk-js": "0.1.1",
-    "jose": "4.3.8",
+    "@hashgraph/sdk": "2.6.0",
     "@transmute/credentials-context": "0.7.0-unstable.40",
     "@transmute/did-context": "0.7.0-unstable.40",
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.40",
@@ -11,12 +10,15 @@
     "@transmute/jsonld-schema": "0.7.0-unstable.40",
     "@transmute/security-context": "0.7.0-unstable.40",
     "@transmute/vc.js": "0.7.0-unstable.40",
-    "axios": "^0.25.0"
+    "ajv": "^8.10.0",
+    "ajv-formats": "^2.1.1",
+    "axios": "^0.25.0",
+    "jose": "4.3.8"
   },
   "description": "",
   "devDependencies": {
     "@types/node": "^17.0.13",
-    "chai": "4.3.4",
+    "chai": "4.3.6",
     "mocha": "^9.2.0",
     "mocha-junit-reporter": "^2.0.2",
     "tslint": "^6.1.3",

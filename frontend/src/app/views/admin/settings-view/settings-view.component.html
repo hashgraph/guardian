@@ -1,0 +1,32 @@
+<h1 class="settings-title">Change settings</h1>
+<div *ngIf="!isLoading; else spinner">
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+        <mat-form-field class="submit-field" appearance="outline">
+            <mat-label>OPERATOR ID:</mat-label>
+            <input matInput type="text" formControlName="operatorId">
+        </mat-form-field>
+
+        <mat-form-field class="submit-field" appearance="outline">
+            <mat-label>OPERATOR KEY:</mat-label>
+            <input matInput type="text" formControlName="operatorKey">
+        </mat-form-field>
+        
+        <mat-form-field class="submit-field" appearance="outline">
+            <mat-label>SCHEMA TOPIC ID:</mat-label>
+            <input matInput type="text" formControlName="schemaTopicId">
+        </mat-form-field>
+
+        <mat-form-field class="submit-field" appearance="outline">
+            <mat-label>NFT API KEY:</mat-label>
+            <input matInput type="text" formControlName="nftApiKey">
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" class="submit-button"
+            [disabled]="!dataForm.valid">Ok</button>
+    </form>
+
+</div>
+
+<ng-template #spinner>
+    <mat-spinner class="loading"></mat-spinner>
+</ng-template>

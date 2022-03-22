@@ -1,5 +1,6 @@
 import { Token } from '@entity/token';
 import { IToken, MessageAPI, MessageError, MessageResponse } from 'interfaces';
+import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 
 /**
@@ -79,8 +80,9 @@ export const tokenAPI = async function (
             const tokens = await tokenRepository.find();
             res.send(new MessageResponse(tokens));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error));
+            res.send(new MessageError(error.message));
         }
     })
 }

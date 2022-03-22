@@ -34,6 +34,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     insert: any;
     addons: any;
     schemas!: Schema[];
+    fieldMap!: { [x: string]: any[] };
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -96,7 +97,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     async setData(data: any) {
         if (data) {
+
             const fields: any[] = data.fields || [];
+            this.fieldMap = {};
+            this.fields = [];
             for (let i = 0; i < fields.length; i++) {
                 const element = fields[i];
                 element.names = element.name.split('.');
@@ -104,15 +108,21 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 if (element.bindBlock) {
                     element._block = await this.getBindBlock(element);
                 }
+                if (this.fieldMap[element.title]) {
+                    this.fieldMap[element.title].push(element);
+                } else {
+                    this.fieldMap[element.title] = [element];
+                    this.fields.push(element);
+                }
             }
-            this.columns = fields.map(f => f.index);
             this.children = data.children;
-            this.fields = fields;
+            this.columns = this.fields.map(f => f.index);
             this.documents = data.data || [];
             this.isActive = true;
             this.insert = data.insert;
             this.addons = data.blocks || [];
         } else {
+            this.fieldMap = {};
             this.fields = [];
             this.columns = [];
             this.documents = null;
@@ -127,7 +137,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.policyEngineService.getGetIdByName(element.bindBlock, this.policyId).subscribe(({ id }: any) => {
                 this.policyEngineService.getBlockData(id, this.policyId).subscribe((data: any) => {
                     data.id = id;
-                    console.log(data);
                     resolve(data);
                 }, (e) => {
                     reject();
@@ -189,11 +198,20 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-    getGroup(row: any, field: any) {
-        if (field.bindGroup) {
-            return row.__sourceTag__ == field.bindGroup;
+    getGroup(row: any, field: any): any | null {
+        const items = this.fieldMap[field.title];
+        if (items) {
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (!item.bindGroup) {
+                    return item;
+                }
+                if (row.__sourceTag__ == item.bindGroup) {
+                    return item;
+                }
+            }
         }
-        return true;
+        return null;
     }
 
     getObjectValue(data: any, value: any) {

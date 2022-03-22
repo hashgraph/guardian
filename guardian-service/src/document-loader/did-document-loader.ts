@@ -1,6 +1,6 @@
 import { DidDocument } from '@entity/did-document';
 import { HcsDidRootKey } from '@hashgraph/did-sdk-js';
-import { MongoRepository } from 'typeorm';
+import { getMongoRepository } from 'typeorm';
 import { DocumentLoader, IDocumentFormat } from 'vc-modules';
 
 /**
@@ -8,15 +8,6 @@ import { DocumentLoader, IDocumentFormat } from 'vc-modules';
  * Used for signatures validation.
  */
 export class DIDDocumentLoader extends DocumentLoader {
-    private didDocumentRepository: MongoRepository<DidDocument>;
-
-    constructor(
-        didDocumentRepository: MongoRepository<DidDocument>
-    ) {
-        super();
-        this.didDocumentRepository = didDocumentRepository;
-    }
-
     public async has(iri: string): Promise<boolean> {
         return iri.startsWith('did:hedera:');
     }
@@ -31,7 +22,7 @@ export class DIDDocumentLoader extends DocumentLoader {
     public async getDocument(iri: string): Promise<any> {
         const did = HcsDidRootKey.fromId(iri).getController();
         const reqObj = { where: { did: { $eq: did } } };
-        const didDocuments = await this.didDocumentRepository.findOne(reqObj);
+        const didDocuments = await getMongoRepository(DidDocument).findOne(reqObj);
         if (didDocuments) {
             return didDocuments.document;
         }

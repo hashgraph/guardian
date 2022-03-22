@@ -25,11 +25,19 @@
     
                     <div class="delimiter"></div>
     
-                    <div *ngIf="schema.version" class="field">
-                        <div class="field-name">Version</div>
-                        <div class="field-value">{{schema.version}}</div>
+                    <div class="version-container">
+                        <div *ngIf="schema.version" class="field">
+                            <div class="field-name">Version</div>
+                            <div class="field-value">{{schema.version}}</div>
+                        </div>
+                        <div class="new-versions-container" *ngIf="schema.newVersions && schema.newVersions.length > 0">
+                            <div class="info-container field-name"><mat-icon class="info-label">info</mat-icon> <b>New versions of schema exist</b></div>
+                            <div class="new-versions-links">
+                                <a class="field-version-value" *ngFor="let newVersion of schema.newVersions" [title]="newVersion.messageId" (click)="onNewVersionClick(newVersion.messageId)">{{newVersion.version}}</a>
+                            </div>
+                        </div>
                     </div>
-    
+
                     <div *ngIf="schema.description" class="field-last">
                         <div class="field-name">Description</div>
                         <div class="field-value">{{schema.description}}</div>

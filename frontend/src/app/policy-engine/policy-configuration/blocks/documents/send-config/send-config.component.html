@@ -1,0 +1,82 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Data Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.dataType" [disabled]="readonly">
+                <mat-option value="vc-documents">Collection (VC)</mat-option>
+                <mat-option value="did-documents">Collection (DID)</mat-option>
+                <mat-option value="approve">Collection (Approve)</mat-option>
+                <mat-option value="hedera">Hedera (Topic)</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Entity Type</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.entityType" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Force New Document</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.forceNew" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Stop Propagation</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
+        </td>
+    </tr>
+
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'optionGroup')" [attr.collapse]="propHidden.optionGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Options</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addOption()">
+                <mat-icon>add</mat-icon>
+                <span>Add Option</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let option of block.options; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.optionGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">Option {{i}}</td>
+            <td class="propRowCell">
+                {{option.name}}
+                <span *ngIf="option.value">: {{option.value}}</span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="removeOption(i)">
+                    <mat-icon>delete</mat-icon>
+                </span>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.optionGroup || propHidden.options[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Name</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="option.name" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.optionGroup || propHidden.options[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Option Value</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="option.value" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+</table>

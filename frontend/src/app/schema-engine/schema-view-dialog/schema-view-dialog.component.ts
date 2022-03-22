@@ -29,4 +29,10 @@ export class SchemaViewDialog {
     onImport() {
         this.dialogRef.close(true);
     }
+
+    onNewVersionClick(messageId: string) {
+        this.dialogRef.close({
+            messageId
+        });
+    }
 }

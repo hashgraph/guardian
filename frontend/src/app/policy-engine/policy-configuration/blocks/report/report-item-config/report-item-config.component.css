@@ -1,0 +1,29 @@
+.file-input {
+    display: none;
+}
+
+.file-action-icon {
+    font-size: 15px;
+    position: absolute;
+    bottom: 2px;
+    right: 0px;
+}
+
+.file-action-button {
+    height: 100%; 
+    width: 20px; 
+    width: 23px;
+}
+
+.file-spinner {
+    width: 20px; 
+    margin-left: 5px;
+}
+
+.icon-container .icon-input {
+    width: 100%;
+}
+
+.icon-container {
+    display: flex;
+}

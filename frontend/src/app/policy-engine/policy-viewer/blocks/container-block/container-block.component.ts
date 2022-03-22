@@ -57,7 +57,7 @@ export class ContainerBlockComponent implements OnInit {
 
     onUpdateParams() {
         const id = this.policyHelper.getParams(this.id);
-        if (this.activeBlockId != id) {
+        if (this.blocks && this.activeBlockId != id) {
             this.activeBlockId = id;
             this.selectedIndex = this.blocks.findIndex((b: any) => b.id == this.activeBlockId);
             this.activeBlock = this.blocks[this.selectedIndex];

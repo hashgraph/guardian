@@ -65,6 +65,37 @@
                         </mat-select>
                     </td>
                 </tr>
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">On errors</td>
+                    <td class="propRowCell">
+                        <mat-select [(value)]="block.onErrorAction" [disabled]="readonly">
+                            <mat-option *ngFor="let item of errorActions"
+                                        [value]="item.value">{{item.label}}</mat-option>
+                        </mat-select>
+                    </td>
+                </tr>
+                <tr *ngIf="block.onErrorAction === 'retry'" class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Timeout</td>
+                    <td class="propRowCell">
+                        <input type="text" [(ngModel)]="block.errorTimeout" [readonly]="readonly">
+                    </td>
+                </tr>
+                <tr *ngIf="block.onErrorAction === 'goto-step'" class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Fallback step</td>
+                    <td class="propRowCell">
+                        <input type="text" [(ngModel)]="block.errorFallbackStep" [readonly]="readonly">
+                    </td>
+                </tr>
+                <tr *ngIf="block.onErrorAction === 'goto-tag'" class="propRow" [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Fallback tag</td>
+                    <td class="propRowCell">
+                        <input type="text" [(ngModel)]="block.errorFallbackTag" [readonly]="readonly">
+                    </td>
+                </tr>
             </table>
             <template #configContainer></template>
         </div>

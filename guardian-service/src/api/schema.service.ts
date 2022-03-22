@@ -23,6 +23,8 @@ import path from 'path';
 import { Blob } from 'buffer';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
+import { Settings } from '@entity/settings';
+import { Logger } from 'logger-helper';
 
 export const schemaCache = {};
 
@@ -170,6 +172,7 @@ export const schemaAPI = async function (
     channel: any,
     schemaRepository: MongoRepository<Schema>,
     configRepository: MongoRepository<RootConfig>,
+    settingsRepository: MongoRepository<Settings>,
 ): Promise<void> {
     /**
      * Create or update schema
@@ -245,6 +248,7 @@ export const schemaAPI = async function (
             res.send(new MessageError('Schema not found'));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error));
         }
     });
@@ -270,6 +274,29 @@ export const schemaAPI = async function (
             const schemes = await schemaRepository.find({
                 where: { iri: { $in: msg.payload.iris } }
             });
+            if (msg.payload.includes) {
+                const defs: any[] = schemes.map(s => JSON.parse(s.document).$defs);
+                const map: any = {};
+                for (let i = 0; i < schemes.length; i++) {
+                    const id = schemes[i].iri;
+                    map[id] = id;
+                }
+                for (let i = 0; i < defs.length; i++) {
+                    if (defs[i]) {
+                        const ids = Object.keys(defs[i]);
+                        for (let j = 0; j < ids.length; j++) {
+                            const id = ids[j];
+                            map[id] = id;
+                        }
+                    }
+                }
+                const allSchemesIds = Object.keys(map);
+                const allSchemes = await schemaRepository.find({
+                    where: { iri: { $in: allSchemesIds } }
+                });
+                res.send(new MessageResponse(allSchemes));
+                return;
+            }
             res.send(new MessageResponse(schemes));
             return;
         }
@@ -328,7 +355,7 @@ export const schemaAPI = async function (
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
                     result[uuid] = newUUID;
-                }  
+                }
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
             }
@@ -342,11 +369,11 @@ export const schemaAPI = async function (
                     const uuid = uuids[j];
                     file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
                     file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
-                }    
+                }
                 file.messageId = null;
                 file.creator = owner;
                 file.owner = owner;
-                file.status = SchemaStatus.DRAFT; 
+                file.status = SchemaStatus.DRAFT;
                 SchemaHelper.setVersion(file, '', '');
                 const schema = schemaRepository.create(file);
                 await schemaRepository.save(schema);
@@ -365,6 +392,7 @@ export const schemaAPI = async function (
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -397,7 +425,7 @@ export const schemaAPI = async function (
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
                     result[uuid] = newUUID;
-                }    
+                }
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
             }
@@ -432,6 +460,7 @@ export const schemaAPI = async function (
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -461,9 +490,50 @@ export const schemaAPI = async function (
                 const schema = await loadSchema(messageId, null);
                 result.push(schema);
             }
+
+            function onlyUnique(value, index, self) {
+                return self.indexOf(value) === index;
+            }
+
+            const topics = result.map(res => res.topicId).filter(onlyUnique);
+            let anotherSchemas = [];
+
+            for (let i = 0; i < topics.length; i++) {
+                const topicId = topics[i];
+                anotherSchemas.push({
+                    topicId,
+                    messages: await HederaMirrorNodeHelper.getTopicMessages(topicId)
+                })
+            }
+
+            for (let i = 0; i < result.length; i++) {
+                const schema = result[i];
+                if (!schema.version) {
+                    continue;
+                }
+
+                const newVersions = [];
+                const topicMessages = anotherSchemas.find(item => item.topicId === schema.topicId);
+                topicMessages?.messages?.forEach(anotherSchema => {
+                    if (anotherSchema.message
+                        && anotherSchema.message.uuid === schema.uuid
+                        && anotherSchema.message.version
+                        && ModelHelper.versionCompare(anotherSchema.message.version, schema.version) === 1) {
+                        newVersions.push({
+                            messageId: anotherSchema.timeStamp,
+                            version: anotherSchema.message.version
+                        });
+                    }
+                });
+                if (newVersions && newVersions.length !== 0) {
+                    schema.newVersions = newVersions.reverse();
+                }
+            }
+
             res.send(new MessageResponse(result));
         }
         catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -546,7 +616,10 @@ export const schemaAPI = async function (
 
                 const hederaHelper = HederaHelper
                     .setOperator(root.hederaAccountId, root.hederaAccountKey).SDK;
-                const messageId = await HederaSenderHelper.SubmitSchemaMessage(hederaHelper, process.env.SCHEMA_TOPIC_ID, schemaPublishMessage);
+                const schemaTopicId = await settingsRepository.findOne({
+                    name: 'SCHEMA_TOPIC_ID'
+                })
+                const messageId = await HederaSenderHelper.SubmitSchemaMessage(hederaHelper, schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID, schemaPublishMessage);
 
                 item.messageId = messageId;
 
@@ -558,6 +631,7 @@ export const schemaAPI = async function (
             }
             res.send(new MessageError("Invalid id"));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -621,6 +695,7 @@ export const schemaAPI = async function (
             }
             res.send(new MessageResponse(relationships));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -663,6 +738,7 @@ export const schemaAPI = async function (
             schema.version = newVersion;
             res.send(new MessageResponse(schema));
         } catch (error) {
+            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });

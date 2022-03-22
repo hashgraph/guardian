@@ -5,50 +5,95 @@ services:
     restart: always
     expose:
       - 27017
+
+  api-docs:
+    build:
+      context: .
+      dockerfile: ./api-docs/Dockerfile
+    expose:
+      - 3001
+
   message-broker:
     build:
       context: .
       dockerfile: ./message-broker/Dockerfile
-    ports:
-      - 3003:3003
     expose:
       - 7500
-  ui-service:
+      - 3003
+
+  logger-service:
     build:
       context: .
-      dockerfile: ./ui-service/Dockerfile
-    ports:
-      - 3002:3002
+      dockerfile: ./logger-service/Dockerfile
+    depends_on:
+      - message-broker
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    expose:
+      - 3002
     depends_on:
       - mongo
       - message-broker
       - guardian-service
+      - auth-service
+      - logger-service
+
   guardian-service:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
-    #    ports:
-    #      - 3004:3004
     depends_on:
       - mongo
       - message-broker
+      - auth-service
+      - logger-service
+
   ipfs-client:
     build:
       context: .
       dockerfile: ./ipfs-client/Dockerfile
     ports:
-      - 5001:5001
-      - 5002:5002
-      - 4001:4001
-      - 4002:4002
+      - "5001:5001"
+      - "5002:5002"
+      - "4001:4001"
+      - "4002:4002"
+      - "8080:8080"
+      - "8081:8081"
     depends_on:
       - message-broker
+      - logger-service
+
   mrv-sender:
     build:
       context: .
       dockerfile: ./mrv-sender/Dockerfile
+    expose:
+      - 3005
+
+  web-proxy:
+    build:
+      context: .
+      dockerfile: ./web-proxy/Dockerfile
     ports:
-      - 3005:3005
+      - "3000:80"
+    depends_on:
+      - guardian-service
+      - auth-service
+      - api-gateway
+      - api-docs
+      - mrv-sender
 volumes:
   mongo:
   # volume-guardian-service:

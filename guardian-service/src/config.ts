@@ -1,5 +1,6 @@
-import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
+import 'reflect-metadata';
+import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 
 dotenv.config();
 

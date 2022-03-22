@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { BlockErrorActions, Schema, Token } from 'interfaces';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 
@@ -27,6 +27,24 @@ export class CommonPropertiesComponent implements OnInit {
     };
 
     block!: BlockNode;
+    errorActions = [
+        {
+            label: 'No action',
+            value: BlockErrorActions.NO_ACTION
+        },
+        {
+            label: 'Retry',
+            value: BlockErrorActions.RETRY
+        },
+        {
+            label: 'Go to step',
+            value: BlockErrorActions.GOTO_STEP
+        },
+        {
+            label: 'Go to tag',
+            value: BlockErrorActions.GOTO_TAG
+        }
+    ];
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -39,6 +57,10 @@ export class CommonPropertiesComponent implements OnInit {
         this.load(this.currentBlock);
     }
 
+    ngAfterViewInit(): void {
+        this.load(this.currentBlock);
+    }
+
     ngOnChanges(changes: SimpleChanges) {
         this.load(this.currentBlock);
     }
@@ -48,25 +70,32 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     load(block: BlockNode) {
-        this.block = block;
-        this.loadComponent(block);
-    }
-
-    loadComponent(block: BlockNode) {
         if (!this.configContainer) {
             return;
         }
-        this.configContainer.clear();
-        const factory: any = this.registeredBlocks.getProperties(block.blockType);
-        if (factory) {
-            let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
-            let componentRef: any = this.configContainer.createComponent(componentFactory);
-            componentRef.instance.target = this.currentBlock;
-            componentRef.instance.schemes = this.schemes;
-            componentRef.instance.all = this.allBlocks;
-            componentRef.instance.readonly = this.readonly;
-            componentRef.instance.tokens = this.tokens;
-            componentRef.instance.roles = this.roles;
+        if (this.block != block) {
+            this.loadComponent(block);
         }
+    }
+
+    loadComponent(block: BlockNode) {
+        setTimeout(() => {
+            this.block = block;
+            if (!this.block.onErrorAction) {
+                this.block.onErrorAction = BlockErrorActions.NO_ACTION;
+            }
+            this.configContainer.clear();
+            const factory: any = this.registeredBlocks.getProperties(block.blockType);
+            if (factory) {
+                let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
+                let componentRef: any = this.configContainer.createComponent(componentFactory);
+                componentRef.instance.target = this.currentBlock;
+                componentRef.instance.schemes = this.schemes;
+                componentRef.instance.all = this.allBlocks;
+                componentRef.instance.readonly = this.readonly;
+                componentRef.instance.tokens = this.tokens;
+                componentRef.instance.roles = this.roles;
+            }
+        })
     }
 }

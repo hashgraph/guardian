@@ -3,6 +3,7 @@ import { ISchemaDocument, SchemaDataTypes } from '../interface/schema-document.i
 import { ISchema } from '../interface/schema.interface';
 import { Schema } from '../models/schema';
 import { SchemaField } from "../interface/schema-field.interface";
+import { SchemaCondition } from '..';
 
 export class SchemaHelper {
     public static parseRef(data: string | ISchema): {
@@ -54,7 +55,39 @@ export class SchemaHelper {
         }
     }
 
-    public static parseFields(document: ISchemaDocument, contextURL: string): SchemaField[] {
+    public static parseConditions(document: ISchemaDocument, context: string, fields: SchemaField[], defs: any = null): SchemaCondition[] {
+        const conditions: SchemaCondition[] = [];
+
+        if (!document || !document.allOf) {
+            return conditions;
+        }
+
+        const allOf = Object.keys(document.allOf);
+        for (let i = 0; i < allOf.length; i++) {
+            const condition = document.allOf[allOf[i]];
+            if (!condition.if)
+            {
+                continue;
+            }
+
+            const ifConditionFieldName = Object.keys(condition.if.properties)[0];
+            
+            let conditionToAdd: SchemaCondition = {
+                ifCondition: {
+                    field: fields.find(field => field.name === ifConditionFieldName),
+                    fieldValue: condition.if.properties[ifConditionFieldName].const
+                },
+                thenFields: this.parseFields(condition.then, context, document.$defs || defs) as SchemaField[],
+                elseFields: this.parseFields(condition.else, context, document.$defs || defs) as SchemaField[]
+            }; 
+
+            conditions.push(conditionToAdd);
+        }
+
+        return conditions;
+    }
+
+    public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any): SchemaField[] {
         const fields: SchemaField[] = [];
 
         if (!document || !document.properties) {
@@ -88,6 +121,8 @@ export class SchemaHelper {
             const isRef = !!property.$ref;
             let ref = String(property.type);
             let context = null;
+            let subFields: any = null
+            let conditions: any = null
             if (isRef) {
                 ref = property.$ref;
                 const { type } = SchemaHelper.parseRef(ref);
@@ -95,6 +130,8 @@ export class SchemaHelper {
                     type: type,
                     context: [contextURL]
                 };
+                subFields = this.parseFields(defs ? defs[property.$ref] : document.$defs[property.$ref], contextURL, defs ? defs : document.$defs);
+                conditions = this.parseConditions(defs ? defs[property.$ref] : document.$defs[property.$ref], contextURL, subFields, defs ? defs : document.$defs);
             }
             const format = isRef || !property.format ? null : String(property.format);
             const pattern = isRef || !property.pattern ? null : String(property.pattern);
@@ -110,15 +147,16 @@ export class SchemaHelper {
                 isRef: isRef,
                 isArray: isArray,
                 readOnly: readOnly,
-                fields: null,
-                context: context
+                fields: subFields,
+                context: context,
+                conditions: conditions
             });
         }
 
         return fields;
     }
 
-    public static buildDocument(schema: Schema, fields: SchemaField[]): ISchemaDocument {
+    public static buildDocument(schema: Schema, fields: SchemaField[], conditions: SchemaCondition[]): ISchemaDocument {
         const type = SchemaHelper.buildType(schema.uuid, schema.version);
         const ref = SchemaHelper.buildRef(type);
         const document = {
@@ -159,14 +197,75 @@ export class SchemaHelper {
             },
             required: ['@context', 'type'],
             additionalProperties: false,
+            allOf: []
         };
+
         const properties = document.properties;
         const required = document.required;
+        
+        this.getFieldsFromObject(fields, required, properties, schema);
+
+        if (conditions.length === 0) {
+            delete document.allOf;
+        }
+
+        const documentConditions = document.allOf;
+        for (let i = 0; i < conditions.length; i++) {
+            const element = conditions[i];
+            let ifCondition = {};
+            ifCondition[element.ifCondition.field.name] = { 'const': element.ifCondition.fieldValue };
+            let condition = {
+                "if": {
+                    "properties": ifCondition
+                },
+                "then": {},
+                "else": {}
+            };
+
+            let req = []
+            let props = {}
+
+            this.getFieldsFromObject(element.thenFields, req, props, schema, true);
+            fields.push(...element.thenFields);
+            if (Object.keys(props).length > 0) {
+                condition.then = {
+                    'properties': props,
+                    'required': req
+                }
+                document.properties = {...document.properties, ...props};
+            }
+            else {
+                delete condition.then;
+            }
+
+            req = []
+            props = {}
+
+            this.getFieldsFromObject(element.elseFields, req, props, schema, true);
+            fields.push(...element.elseFields);
+            if (Object.keys(props).length > 0) {
+                condition.else = {
+                    'properties': props,
+                    'required': req
+                }
+                document.properties = {...document.properties, ...props};
+            }
+            else {
+                delete condition.else;
+            }
+
+            documentConditions.push(condition);
+        }
+
+        return document;
+    }
+
+    private static getFieldsFromObject(fields, required, properties, schema, parseCondition = false) {
         for (let i = 0; i < fields.length; i++) {
             const field = fields[i];
             field.title = field.title || field.name;
             field.description = field.description || field.name;
-            if (!field.readOnly) {
+            if (!field.readOnly && !parseCondition) {
                 field.name = `field${i}`;
             }
 
@@ -207,8 +306,6 @@ export class SchemaHelper {
             }
             properties[field.name] = property;
         }
-
-        return document;
     }
 
     public static buildComment(type: string, url: string, version?: string): string {

@@ -1,10 +1,11 @@
+require("module-alias/register");
 const { expect, assert } = require('chai');
 const { documentsAPI } = require('../dist/api/documents.service');
-const { 
-    createChannel, 
-    createTable, 
-    checkMessage, 
-    checkError 
+const {
+    createChannel,
+    createTable,
+    checkMessage,
+    checkError
 } = require('./helper');
 
 describe('Documents service', function () {
@@ -73,7 +74,7 @@ describe('Documents service', function () {
                     '$eq': 'issuer'
                 },
                 'hash': {
-                    '$in': 'hash'
+                    '$eq': 'hash'
                 },
                 'owner': {
                     '$eq': 'owner'

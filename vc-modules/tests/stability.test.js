@@ -49,13 +49,16 @@ describe('Stability test', function () {
     it('AccountBalanceQuery', async function () {
         const logs = [];
         let success = 0, failed = 0;
+        console.log('AccountBalanceQuery:');
         for (let i = 0; i < maxTransaction; i++) {
             try {
+                const t1 = new Date();
                 const query = new AccountBalanceQuery().setAccountId(OPERATOR_ID);
                 const accountBalance = await query.execute(client);
                 await wait(1000);
                 ++success;
-                logs.push(true);
+                const t2 = new Date();
+                logs.push((t2-t1) / 1000);
             } catch (error) {
                 console.error('AccountBalanceQuery', error);
                 ++failed;
@@ -70,14 +73,17 @@ describe('Stability test', function () {
     it('AccountInfoQuery', async function () {
         const logs = [];
         let success = 0, failed = 0;
+        console.log('AccountInfoQuery:');
         for (let i = 0; i < maxTransaction; i++) {
             try {
+                const t1 = new Date();
                 const info = await new AccountInfoQuery()
                     .setAccountId(OPERATOR_ID)
                     .execute(client);
                 await wait(1000);
                 ++success;
-                logs.push(true);
+                const t2 = new Date();
+                logs.push((t2-t1) / 1000);
             } catch (error) {
                 console.error('AccountInfoQuery', error);
                 ++failed;
@@ -92,15 +98,18 @@ describe('Stability test', function () {
     it('TopicCreateTransaction', async function () {
         const logs = [];
         let success = 0, failed = 0;
+        console.log('TopicCreateTransaction:');
         for (let i = 0; i < maxTransaction; i++) {
             try {
+                const t1 = new Date();
                 const transaction = new TopicCreateTransaction();
                 const txResponse = await transaction.execute(client);
                 const receipt = await txResponse.getReceipt(client);
                 const topicId = receipt.topicId;
                 await wait(1000);
                 ++success;
-                logs.push(true);
+                const t2 = new Date();
+                logs.push((t2-t1) / 1000);
             } catch (error) {
                 console.error('TopicCreateTransaction', error);
                 ++failed;
@@ -115,8 +124,10 @@ describe('Stability test', function () {
     it('FileCreateTransaction', async function () {
         const logs = [];
         let success = 0, failed = 0;
+        console.log('FileCreateTransaction:');
         for (let i = 0; i < maxTransaction; i++) {
             try {
+                const t1 = new Date();
                 const transaction = new FileCreateTransaction()
                     .setContents("the file contents")
                     .setMaxTransactionFee(new Hbar(2))
@@ -126,7 +137,8 @@ describe('Stability test', function () {
                 const fileId = receipt.fileId;
                 await wait(1000);
                 ++success;
-                logs.push(true);
+                const t2 = new Date();
+                logs.push((t2-t1) / 1000);
             } catch (error) {
                 console.error('FileCreateTransaction', error);
                 ++failed;
@@ -141,8 +153,10 @@ describe('Stability test', function () {
     it('AccountCreateTransaction', async function () {
         const logs = [];
         let success = 0, failed = 0;
+        console.log('AccountCreateTransaction:');
         for (let i = 0; i < maxTransaction; i++) {
             try {
+                const t1 = new Date();
                 const newPrivateKey = PrivateKey.generate();
                 const transaction = new AccountCreateTransaction()
                     .setKey(newPrivateKey.publicKey)
@@ -152,7 +166,8 @@ describe('Stability test', function () {
                 const newAccountId = receipt.accountId;
                 await wait(1000);
                 ++success;
-                logs.push(true);
+                const t2 = new Date();
+                logs.push((t2-t1) / 1000);
             } catch (error) {
                 console.error('AccountCreateTransaction', error);
                 ++failed;
@@ -168,8 +183,10 @@ describe('Stability test', function () {
         const logs = [];
         let success = 0, failed = 0;
         const newPrivateKey = PrivateKey.generate();
+        console.log('TokenCreateTransaction:');
         for (let i = 0; i < maxTransaction; i++) {
             try {
+                const t1 = new Date();
                 let transaction = new TokenCreateTransaction()
                     .setTokenName('Test')
                     .setTokenSymbol('T')
@@ -190,7 +207,8 @@ describe('Stability test', function () {
                 const tokenId = receipt.tokenId;
                 await wait(1000);
                 ++success;
-                logs.push(true);
+                const t2 = new Date();
+                logs.push((t2-t1) / 1000);
             } catch (error) {
                 console.error('TokenCreateTransaction', error);
                 ++failed;

@@ -1,0 +1,48 @@
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'equationsGroup')" [attr.collapse]="propHidden.equationsGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Equations</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addEquation()">
+                <mat-icon>add</mat-icon>
+                <span>Add Equation</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let equation of block.equations; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.equationsGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.equations, i)" [attr.collapse]="propHidden.equations[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">Equation {{i}}</td>
+            <td class="propRowCell">
+                {{equation.variable}}
+                <span *ngIf="equation.formula"> = {{equation.formula}}</span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveEquation(i)">
+                    <mat-icon>delete</mat-icon>
+                </span>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.equationsGroup || propHidden.equations[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Variable</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="equation.variable" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.equationsGroup || propHidden.equations[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Formula</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="equation.formula" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+
+</table>

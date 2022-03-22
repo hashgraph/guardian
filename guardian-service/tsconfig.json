@@ -18,6 +18,8 @@
             "@api/*": ["api/*"],
             "@subscribers/*": ["subscribers/*"],
             "@helpers/*": ["helpers/*"],
+            "@policy-engine/*": ["policy-engine/*"],
+            "@auth/*": ["auth/*"]
         }
     },
     "include": [

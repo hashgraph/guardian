@@ -72,3 +72,38 @@ form {
 .field-last {
     margin-bottom: 0px;
 }
+
+.version-container {
+    display: flex;
+    gap: 50px;
+}
+
+.info-label {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.info-container {
+    color:#2F96B4;
+    margin-bottom: 10px;
+}
+
+.new-versions-container {
+    width: 100%;
+    padding-top: 1px;
+    overflow: hidden;
+}
+
+.field-version-value {
+    font-size: 20px;
+    color: #0C77FF;
+    font-weight: bold;
+    line-height: 25px;
+    cursor: pointer;
+}
+
+.new-versions-links {
+    overflow-x: scroll;
+    display: flex;
+    gap: 30px;
+}

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { IUser, UserRole } from 'interfaces';
 import { Observable } from 'rxjs';
@@ -33,7 +34,8 @@ export class HeaderComponent implements OnInit {
     private auth: AuthService,
     private otherService: DemoService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public dialog: MatDialog
   ) {
     this.testUsers$ = this.otherService.getAllUsers();
 
@@ -67,6 +69,11 @@ export class HeaderComponent implements OnInit {
       disabled: false,
       link: '/policy-configuration',
       hidden: true,
+    },
+    {
+      name: "Admin",
+      disabled: false,
+      link: '/admin'
     }];
     this.linksConfig[UserRole.AUDITOR] = [{
       name: "Audit",
@@ -134,6 +141,7 @@ export class HeaderComponent implements OnInit {
 
   logOut() {
     this.auth.removeAccessToken();
+    this.auth.removeUsername();
     this.authState.updateState(false);
     this.router.navigate(['/login']);
   }

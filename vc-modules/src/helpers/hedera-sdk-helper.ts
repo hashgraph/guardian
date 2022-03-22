@@ -33,7 +33,7 @@ import { timeout } from './utils';
 export class HederaSDKHelper {
     public readonly client: Client;
 
-    public static MAX_TIMEOUT: number = 60000;
+    public static MAX_TIMEOUT: number = 120000;
 
     constructor(client: Client) {
         this.client = client

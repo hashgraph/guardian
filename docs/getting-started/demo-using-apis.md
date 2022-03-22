@@ -28,7 +28,7 @@
 
 ### 1.2 In the policy config there is a root block which is the top of the structure
 
-![](<../.gitbook/assets/image (14).png>)
+![](<../.gitbook/assets/image (25).png>)
 
 ### 1.3 Request the config for the root block
 
@@ -70,7 +70,7 @@
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (13).png>)
+![](<../.gitbook/assets/image (24).png>)
 
 ### 1.5 At present only PolicyRolesBlock is available to the user. Select the "INSTALLER" role.
 
@@ -84,7 +84,7 @@ INSTALLER
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (5).png>)
+![](<../.gitbook/assets/image (10).png>)
 
 ### 1.6 Request the root block and all contained blocks.
 
@@ -235,7 +235,7 @@ Years of registration
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (10).png>)
+![](<../.gitbook/assets/image (16).png>)
 
 ### 1.8 Request the root block and all contained blocks again.
 
@@ -297,7 +297,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (4).png>)
+![](<../.gitbook/assets/image (6).png>)
 
 ## 2. Login as a Root Authority
 
@@ -323,7 +323,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (3).png>)
+![](<../.gitbook/assets/image (5).png>)
 
 ### 2.2 Request the root block and all contained blocks.
 
@@ -471,7 +471,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 				
 ```
 
-![](<../.gitbook/assets/image (9).png>)
+![](<../.gitbook/assets/image (15).png>)
 
 ![](<../.gitbook/assets/image (2).png>)
 
@@ -699,7 +699,7 @@ capacity
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (6).png>)
+![](<../.gitbook/assets/image (12).png>)
 
 ![](../.gitbook/assets/image.png)
 
@@ -717,4 +717,4 @@ record in the grid (data[0])
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (11).png>)
+![](<../.gitbook/assets/image (17).png>)

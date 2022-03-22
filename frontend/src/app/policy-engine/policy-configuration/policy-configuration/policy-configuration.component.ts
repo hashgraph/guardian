@@ -10,6 +10,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { PolicyAction, SavePolicyDialog } from '../../save-policy-dialog/save-policy-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
+import * as yaml from 'js-yaml';
 
 /**
  * The page for editing the policy and blocks.
@@ -38,8 +39,9 @@ export class PolicyConfigurationComponent implements OnInit {
     errorsCount: number = -1;
     errorsMap: any;
 
-    colGroup1 = false;
+    colGroup1 = true;
     colGroup2 = false;
+    colGroup3 = true;
 
     indexBlock: number = 0;
 
@@ -61,6 +63,7 @@ export class PolicyConfigurationComponent implements OnInit {
         readOnly: false,
         viewportMargin: Infinity
     };
+    propTab: string = 'Properties';
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -140,7 +143,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.currentBlock = root;
         this.allBlocks = this.all(root);
         this.allBlocks.forEach((b => {
-            if (!b.id) b.id = this.generateUUIDv4();
+            if (!b.id) b.id = this.registeredBlocks.generateUUIDv4();
         }));
     }
 
@@ -167,21 +170,14 @@ export class PolicyConfigurationComponent implements OnInit {
         return false;
     }
 
-    onAdd(type: string) {
+    onAdd(type: any) {
         if (this.currentBlock) {
             this.currentBlock.children = this.currentBlock.children || [];
             let permissions = undefined;
             if (this.currentBlock.permissions) {
                 permissions = this.currentBlock.permissions.slice();
             }
-            const newBlock: BlockNode = {
-                id: this.generateUUIDv4(),
-                tag: `Block${this.indexBlock}`,
-                blockType: type,
-                defaultActive: true,
-                children: [],
-                permissions: permissions
-            };
+            const newBlock = this.registeredBlocks.newBlock(type, permissions, this.indexBlock);
             this.currentBlock.children.push(newBlock);
             this.setBlocks(this.blocks[0]);
             this.indexBlock++;
@@ -220,13 +216,6 @@ export class PolicyConfigurationComponent implements OnInit {
 
     isSelect(block: BlockNode) {
         return this.currentBlock == block;
-    }
-
-    generateUUIDv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
     }
 
     async savePolicy() {
@@ -349,8 +338,10 @@ export class PolicyConfigurationComponent implements OnInit {
     onColGroup(n: number) {
         if (n == 1) {
             this.colGroup1 = !this.colGroup1;
-        } else {
+        } else if (n == 2) {
             this.colGroup2 = !this.colGroup2;
+        } else {
+            this.colGroup3 = !this.colGroup3;
         }
     }
 
@@ -367,10 +358,10 @@ export class PolicyConfigurationComponent implements OnInit {
             let root = null;
             try {
                 if (this.currentView == 'json') {
-                    root = await this.jsonToObject(this.code);
+                    root = this.jsonToObject(this.code);
                 }
                 if (this.currentView == 'yaml') {
-                    root = await this.yamlToObject(this.code);
+                    root = this.yamlToObject(this.code);
                 }
             } catch (error: any) {
                 this.errors = [error.message];
@@ -384,10 +375,10 @@ export class PolicyConfigurationComponent implements OnInit {
             let code = "";
             try {
                 if (this.currentView == 'blocks') {
-                    code = await this.objectToJson(this.root);
+                    code = this.objectToJson(this.root);
                 }
                 if (this.currentView == 'yaml') {
-                    code = await this.yamlToJson(this.code);
+                    code = this.yamlToJson(this.code);
                 }
             } catch (error: any) {
                 this.errors = [error.message];
@@ -401,10 +392,10 @@ export class PolicyConfigurationComponent implements OnInit {
             let code = "";
             try {
                 if (this.currentView == 'blocks') {
-                    code = await this.objectToYaml(this.root);
+                    code = this.objectToYaml(this.root);
                 }
                 if (this.currentView == 'json') {
-                    code = await this.jsonToYaml(this.code);
+                    code = this.jsonToYaml(this.code);
                 }
             } catch (error: any) {
                 this.errors = [error.message];
@@ -418,41 +409,38 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = false;
     }
 
-    async objectToJson(root: any): Promise<string> {
+    objectToJson(root: any): string {
         return JSON.stringify(root, null, 2);
     }
 
-    async jsonToObject(json: string): Promise<any> {
+    jsonToObject(json: string): any {
         return JSON.parse(json);
     }
 
-    async objectToYaml(root: any): Promise<string> {
-        return new Promise((resolve, reject) => {
-            this.policyEngineService.toYAML(root).subscribe((data: any) => {
-                resolve(data.yaml);
-            }, (e) => {
-                reject({ message: 'Bad yaml' });
-            });
+    objectToYaml(root: any): string {
+        return yaml.dump(root, {
+            indent: 4,
+            lineWidth: -1,
+            noRefs: false,
+            noCompatMode: true
         });
     }
 
-    async yamlToObject(yaml: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.policyEngineService.fromYAML(yaml).subscribe((data: any) => {
-                resolve(data.json);
-            }, (e) => {
-                reject({ message: 'Bad yaml' });
-            });
-        });
+    yamlToObject(yamlString: string): any {
+        return yaml.load(yamlString);
     }
 
-    async yamlToJson(yaml: string): Promise<string> {
-        const root = await this.yamlToObject(yaml);
-        return await this.objectToJson(root);
+    yamlToJson(yaml: string): string {
+        const root = this.yamlToObject(yaml);
+        return this.objectToJson(root);
     }
 
-    async jsonToYaml(json: string): Promise<string> {
-        const root = await this.jsonToObject(json);
-        return await this.objectToYaml(root);
+    jsonToYaml(json: string): string {
+        const root = this.jsonToObject(json);
+        return this.objectToYaml(root);
     }
 }
+
+
+
+
