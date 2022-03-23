@@ -42,4 +42,5 @@ export { Singleton } from './decorators/singleton';
 export { ILog } from './interface/log.interface';
 export { LogType } from './type/log.type';
 export { IPageParameters } from './interface/page-parameters.interface';
-export { IconType } from './type/icon.type'
+export { IconType } from './type/icon.type';
+export { UserType } from './type/user.type';
