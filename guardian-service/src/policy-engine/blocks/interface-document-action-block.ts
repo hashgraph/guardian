@@ -8,6 +8,7 @@ import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Schema } from 'interfaces';
+import { Schema as SchemaEntity } from '@entity/schema'
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 
@@ -77,7 +78,7 @@ export class InterfaceDocumentActionBlock {
             const userDID = userFull.did;
             const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
-            const schemaObject = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
+            const schemaObject = await getMongoRepository(SchemaEntity).findOne({iri: ref.options.schema});
             const schema = new Schema(schemaObject);
             return {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
@@ -158,7 +159,7 @@ export class InterfaceDocumentActionBlock {
                         break;
                     }
 
-                    const schema = await getMongoRepository(Schema).findOne({iri: ref.options.schema});
+                    const schema = await getMongoRepository(SchemaEntity).findOne({iri: ref.options.schema});
                     if (!schema) {
                         resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                         break;
