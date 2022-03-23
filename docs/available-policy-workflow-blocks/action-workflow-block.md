@@ -8,7 +8,7 @@
 | Tag              | Unique name for the logic block.                                                  | download\_config\_btn.                                                          |
 | Permissions      | Which entity has rights to interact at this part of the workflow.                 | Installer.                                                                      |
 | Default Active   | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                                                           |
-| Dependancies     | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown.                                 |
+| Dependencies     | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown.                                 |
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                                                           |
 | Type             | Specific the type of action workflow action block.                                | Current options are: SELECTOR (select an action) and DOWNLOAD (download files). |
 
