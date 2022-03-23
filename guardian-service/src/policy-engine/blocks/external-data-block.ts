@@ -1,11 +1,12 @@
 import { ExternalData } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, DocumentStatus, SchemaStatus } from 'interfaces';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { Guardians } from '@helpers/guardians';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { VcDocument } from 'hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
+import { getMongoRepository } from 'typeorm';
+import { Schema as SchemaCollection } from '@entity/schema';
+
 /**
  * External data block
  */
@@ -14,9 +15,6 @@ import { VcHelper } from '@helpers/vcHelper';
     commonBlock: false,
 })
 export class ExternalDataBlock {
-    @Inject()
-    private guardians: Guardians;
-
     async receiveData(data: any) {
         let verify: boolean;
         try {
@@ -56,7 +54,7 @@ export class ExternalDataBlock {
                 return;
             }
 
-            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+            const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;

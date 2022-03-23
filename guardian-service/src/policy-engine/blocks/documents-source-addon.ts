@@ -1,20 +1,24 @@
 import { SourceAddon } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
+import { Schema as SchemaCollection } from '@entity/schema';
+import { Token as TokenCollection } from '@entity/token';
+import { RootConfig as RootConfigCollection } from '@entity/root-config';
+import { DidDocument as DidDocumentCollection  } from '@entity/did-document';
+import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 
 @SourceAddon({
     blockType: 'documentsSourceAddon'
 })
 export class DocumentsSourceAddon {
-    @Inject()
-    private guardians: Guardians;
-
     @Inject()
     private users: Users;
 
@@ -75,25 +79,22 @@ export class DocumentsSourceAddon {
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getVcDocuments(filters);
+                data = await getMongoRepository(VcDocumentCollection).find(filters);
                 break;
-
             case 'did-documents':
-                data = await this.guardians.getDidDocuments(filters);
+                data = await getMongoRepository(DidDocumentCollection).find(filters);
                 break;
-
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getVpDocuments(filters);
+                data = await getMongoRepository(VpDocumentCollection).find(filters);
                 break;
-
             case 'root-authorities':
                 data = await this.users.getAllRootAuthorityAccounts() as IAuthUser[];
                 break;
 
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getApproveDocuments(filters);
+                data = await getMongoRepository(ApprovalDocumentCollection).find(filters);
                 break;
 
             case 'source':
@@ -124,7 +125,7 @@ export class DocumentsSourceAddon {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+            const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;

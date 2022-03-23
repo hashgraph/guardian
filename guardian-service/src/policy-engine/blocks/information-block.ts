@@ -8,7 +8,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
 })
 export class InformationBlock {
     async getData(user: IAuthUser): Promise<any> {
-        const { options } = PolicyComponentsUtils.GetBlockRef(this);
-        return { uiMetaData: options.uiMetaData };
+        const {options} = PolicyComponentsUtils.GetBlockRef(this);
+        return {uiMetaData: options.uiMetaData};
     }
 }

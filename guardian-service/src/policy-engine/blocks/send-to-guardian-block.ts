@@ -1,4 +1,3 @@
-import { Guardians } from '@helpers/guardians';
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
@@ -10,16 +9,19 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { MessageAction, MessageServer, VcDocument, VCMessage } from 'hedera-modules';
+import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from 'hedera-modules';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument } from '@entity/vc-document';
+import { DidDocument } from '@entity/did-document';
+import { ApprovalDocument } from '@entity/approval-document';
+import { Topic } from '@entity/topic';
+
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
     commonBlock: true
 })
 export class SendToGuardianBlock {
-    @Inject()
-    private guardians: Guardians;
-
     @Inject()
     private wallet: Wallet;
 
@@ -50,7 +52,7 @@ export class SendToGuardianBlock {
         let result: any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
-                const vc = VcDocument.fromJsonTree(document.document);
+                const vc = HVcDocument.fromJsonTree(document.document);
                 const doc = {
                     hash: vc.toCredentialHash(),
                     owner: document.owner,
@@ -64,15 +66,18 @@ export class SendToGuardianBlock {
                     tag: ref.tag,
                     document: vc.toJsonTree()
                 };
-                result = await this.guardians.setVcDocument(doc);
+                const item = getMongoRepository(VcDocument).create(doc);
+                result = await getMongoRepository(VcDocument).save(item);
                 break;
             }
             case 'did-documents': {
-                result = await this.guardians.setDidDocument(document);
+                const doc = getMongoRepository(DidDocument).create(document);
+                result = await getMongoRepository(DidDocument).save(doc);
                 break;
             }
             case 'approve': {
-                result = await this.guardians.setApproveDocuments(document);
+                const doc = getMongoRepository(ApprovalDocument).create(document);
+                result = await getMongoRepository(ApprovalDocument).save(doc);
                 break;
             }
             case 'hedera': {
@@ -100,9 +105,8 @@ export class SendToGuardianBlock {
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const topic = await this.guardians.getTopic(TopicType.RootPolicyTopic, ref.policyOwner);
-        const vc = VcDocument.fromJsonTree(document.document);
-
+        const topic = await getMongoRepository(Topic).findOne({ owner: ref.policyOwner, type: TopicType.RootPolicyTopic });
+        const vc = HVcDocument.fromJsonTree(document.document);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vc);
         const messageServer = new MessageServer(userID, userKey);

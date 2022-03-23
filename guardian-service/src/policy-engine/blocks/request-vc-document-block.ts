@@ -1,15 +1,18 @@
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { DidDocumentStatus, Schema, SchemaStatus, TopicType } from 'interfaces';
+import { DidDocumentStatus, Schema, TopicType } from 'interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { StateField } from '@policy-engine/helpers/decorators';
 import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from 'hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
+import { getMongoRepository } from 'typeorm';
+import { Schema as SchemaCollection  } from '@entity/schema';
+import { DidDocument as DidDocumentCollection  } from '@entity/did-document';
+import { Topic } from '@entity/topic';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -18,9 +21,6 @@ import { VcHelper } from '@helpers/vcHelper';
 export class RequestVcDocumentBlock {
     @StateField()
     state: { [key: string]: any } = { active: true };
-
-    @Inject()
-    private guardians: Guardians;
 
     @Inject()
     private wallet: Wallet;
@@ -62,7 +62,9 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!this.schema) {
-            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+            const schema = await getMongoRepository(SchemaCollection).findOne({
+                iri: ref.options.schema
+            });
             this.schema = schema ? new Schema(schema) : null;
         }
         if (!this.schema) {
@@ -148,7 +150,10 @@ export class RequestVcDocumentBlock {
             }
             if (idType == 'DID') {
                 const ref = PolicyComponentsUtils.GetBlockRef(this);
-                const topic = await this.guardians.getTopic(TopicType.RootPolicyTopic, ref.policyOwner);
+                const topic = await getMongoRepository(Topic).findOne({ 
+                    owner: ref.policyOwner, 
+                    type: TopicType.RootPolicyTopic 
+                });
                 const didObject = DIDDocument.create(null, topic.topicId);
 
                 const did = didObject.getDid();
@@ -162,8 +167,13 @@ export class RequestVcDocumentBlock {
                 client.setSubmitKey(topic.key);
                 await client.sendMessage(topic.topicId, message);
 
-                await this.guardians.setDidDocument({ did: did, document: document });
-                await this.guardians.setDidDocument({ did: did, operation: DidDocumentStatus.CREATE });
+                const doc = await getMongoRepository(DidDocumentCollection).findOne({
+                    did: did, 
+                    document: document,
+                    status: DidDocumentStatus.CREATE
+                });
+                await getMongoRepository(DidDocumentCollection).save(doc);
+
                 await this.wallet.setKey(user.walletToken, KeyType.KEY, did, key);
                 return did;
             }
@@ -188,13 +198,13 @@ export class RequestVcDocumentBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
             return;
         }
-        const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+        const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
         if (!schema) {
             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
             return;
         }
         if (ref.options.presetSchema) {
-            const presetSchema = await this.guardians.getSchemaByIRI(ref.options.presetSchema);
+            const presetSchema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.presetSchema});
             if (!presetSchema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
                 return;

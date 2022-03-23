@@ -20,7 +20,7 @@ export class FiltersAddonBlock {
         const filters = ref.filters[user.did] || {};
         if (ref.options.type == 'dropdown') {
             if (!filters[ref.options.field] && !ref.options.canBeEmpty) {
-                filters[ref.options.field] = "";
+                filters[ref.options.field] = '';
             }
         }
         return filters;

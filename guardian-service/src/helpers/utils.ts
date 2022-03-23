@@ -1,5 +1,11 @@
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { IVC, IVCDocument } from 'interfaces';
+import { ISchema, IVC, IVCDocument, SchemaHelper, SchemaStatus } from 'interfaces';
+import { getMongoRepository } from 'typeorm';
+import { Schema } from '@entity/schema';
+import { schemasToContext } from '@transmute/jsonld-schema';
+import { Blob } from 'buffer';
+import { RootConfig } from '@entity/root-config';
+import { Settings } from '@entity/settings';
 
 export const SchemaFields = [
     'schema',

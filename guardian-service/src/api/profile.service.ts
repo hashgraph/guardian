@@ -10,12 +10,22 @@ import {
 } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { Logger } from 'logger-helper';
-import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
-import { DIDDocument, DIDMessage, HederaSDKHelper, MessageAction, MessageServer, VcDocument, VCMessage } from 'hedera-modules';
+import {
+    DIDDocument,
+    DIDMessage,
+    HederaSDKHelper,
+    MessageAction,
+    MessageServer,
+    VcDocument,
+    VCMessage
+} from 'hedera-modules';
+import { getMongoRepository } from 'typeorm';
 import { Topic } from '@entity/topic';
+import { DidDocument as DidDocumentCollection } from '@entity/did-document';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
 async function wait(s: number): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -71,8 +81,6 @@ export const profileAPI = async function (
                 owner
             } = msg.payload;
 
-            const guardians = new Guardians();
-
             const topic = await topicRepository.findOne({
                 where: {
                     did: owner,
@@ -90,7 +98,7 @@ export const profileAPI = async function (
             const did = didDocument.getDid();
             const document = didDocument.getDocument();
 
-            await guardians.setDidDocument({ did, document });
+            const doc = getMongoRepository(DidDocumentCollection).create({ did, document });
 
             const message = new DIDMessage(MessageAction.CreateDID);
             message.setDocument(document);
@@ -98,11 +106,13 @@ export const profileAPI = async function (
             const client = new MessageServer(hederaAccountId, hederaAccountKey);
             client.setSubmitKey(topic.key);
             client.sendMessage(topicId, message).then(function (message) {
-                guardians.setDidDocument({ did, operation: DidDocumentStatus.CREATE });
+                doc.status = DidDocumentStatus.CREATE;
+                getMongoRepository(DidDocumentCollection).save(doc);
             }, function (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
-                guardians.setDidDocument({ did, operation: DidDocumentStatus.FAILED });
+                doc.status = DidDocumentStatus.FAILED;
+                getMongoRepository(DidDocumentCollection).save(doc);
             });
 
             res.send(new MessageResponse(did));
@@ -115,7 +125,6 @@ export const profileAPI = async function (
 
     channel.response(MessageAPI.CREATE_ROOT_AUTHORITY, async (msg, res) => {
         try {
-            const guardians = new Guardians();
             const vcHelper = new VcHelper();
 
             const {
@@ -152,11 +161,11 @@ export const profileAPI = async function (
                 key: null
             });
             await topicRepository.save(tokenObject);
-            await guardians.setDidDocument({ 
-                did:didMessage.did, 
-                document: didMessage.document 
+            const didDoc = getMongoRepository(DidDocumentCollection).create({
+                did: didMessage.did,
+                document: didMessage.document
             });
-            await guardians.setVcDocument({
+            const vcDoc = getMongoRepository(VcDocumentCollection).create({
                 hash: vcMessage.hash,
                 owner: didMessage.did,
                 document: vcMessage.document,
@@ -165,21 +174,25 @@ export const profileAPI = async function (
 
             const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
             messageServer.sendMessage(topicId, didMessage).then(function (message: DIDMessage) {
-                guardians.setDidDocument({ did: message.did, operation: DidDocumentStatus.CREATE });
+                didDoc.status = DidDocumentStatus.CREATE;
+                getMongoRepository(DidDocumentCollection).save(didDoc);
             }, function (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
-                guardians.setDidDocument({ did: didMessage.did, operation: DidDocumentStatus.FAILED });
+                didDoc.status = DidDocumentStatus.FAILED;
+                getMongoRepository(DidDocumentCollection).save(didDoc);
             });
 
             await wait(1);
 
             messageServer.sendMessage(topicId, vcMessage).then(function (message: VCMessage) {
-                guardians.setVcDocument({ hash: message.hash, operation: DocumentStatus.ISSUE });
+                vcDoc.hederaStatus = DocumentStatus.ISSUE;
+                getMongoRepository(VcDocumentCollection).save(vcDoc);
             }, function (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
-                guardians.setVcDocument({ hash: vcMessage.hash, operation: DocumentStatus.FAILED });
+                vcDoc.hederaStatus = DocumentStatus.FAILED;
+                getMongoRepository(VcDocumentCollection).save(vcDoc);
             });
 
             //NEED DELETE

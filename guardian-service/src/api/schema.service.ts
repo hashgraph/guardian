@@ -1,4 +1,4 @@
-import { Schema } from '@entity/schema';
+import { Schema as SchemaCollection } from '@entity/schema';
 import { RootConfig } from '@entity/root-config';
 import {
     ISchema,
@@ -13,11 +13,12 @@ import {
 import { MongoRepository } from 'typeorm';
 import { readJSON } from 'fs-extra';
 import path from 'path';
-import { Blob } from 'buffer';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
 import { MessageAction, MessageServer, SchemaMessage } from 'hedera-modules';
+import { getMongoRepository } from 'typeorm';
+import { RootConfig as RootConfigCollection } from '@entity/root-config';
 
 export const schemaCache = {};
 
@@ -26,7 +27,7 @@ export const schemaCache = {};
  * 
  * @param schemaRepository - table with schemes
  */
-export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
+export const setDefaultSchema = async function (schemaRepository: MongoRepository<SchemaCollection>) {
     const fileConfig = path.join(process.cwd(), 'system-schemes', 'system-schemes.json');
     let fileContent: any;
     try {
@@ -96,14 +97,14 @@ const loadSchema = async function (messageId: string, owner: string) {
         }
 
         const messageServer = new MessageServer();
-        
-        console.log("loadSchema: " + messageId);
+
+        console.log('loadSchema: ' + messageId);
         const message = await messageServer.getMessage<SchemaMessage>(messageId);
-        console.log("loadedSchema: " + messageId);
+        console.log('loadedSchema: ' + messageId);
 
         const schemaToImport: any = {
             uuid: message.uuid,
-            hash: "",
+            hash: '',
             name: message.name,
             description: message.description,
             entity: message.entity as SchemaEntity,
@@ -121,7 +122,7 @@ const loadSchema = async function (messageId: string, owner: string) {
             iri: null
         }
         updateIRI(schemaToImport);
-        console.log("loadSchema end: " + messageId);
+        console.log('loadSchema end: ' + messageId);
         schemaCache[messageId] = { ...schemaToImport };
         return schemaToImport;
     } catch (error) {
@@ -158,6 +159,98 @@ const onlyUnique = function (value: any, index: any, self: any): boolean {
     return self.indexOf(value) === index;
 }
 
+
+export async function incrementSchemaVersion(owner: string, iri: string): Promise<SchemaCollection> {
+    if (!owner || !iri) {
+        throw new Error('Schema not found');
+    }
+    
+    const schema = await getMongoRepository(SchemaCollection).findOne({ iri: iri });
+
+    if (!schema) {
+        throw new Error('Schema not found');
+    }
+
+    if (schema.status == SchemaStatus.PUBLISHED) {
+        return schema;
+    }
+
+    const { version, previousVersion } = SchemaHelper.getVersion(schema);
+    let newVersion = '1.0.0';
+    if (previousVersion) {
+        const schemes = await getMongoRepository(SchemaCollection).find({ uuid: schema.uuid });
+        const versions = [];
+        for (let i = 0; i < schemes.length; i++) {
+            const element = schemes[i];
+            const { version, previousVersion } = SchemaHelper.getVersion(element);
+            versions.push(version, previousVersion);
+        }
+        newVersion = SchemaHelper.incrementVersion(previousVersion, versions);
+    }
+    schema.version = newVersion;
+
+    return schema;
+}
+
+
+export async function publishSchema(id: string, version: string, owner: string): Promise<SchemaCollection> {
+    const item = await getMongoRepository(SchemaCollection).findOne(id);
+
+    if (!item) {
+        throw new Error('Schema not found');
+    }
+
+    if (item.creator != owner) {
+        throw new Error('Invalid owner');
+    }
+
+    if (item.status == SchemaStatus.PUBLISHED) {
+        throw new Error('Invalid status');
+    }
+
+    const root = await getMongoRepository(RootConfigCollection).findOne({
+        did: owner
+    });
+
+    if (!root) {
+        throw new Error('Root not found');
+    }
+
+    const schemaTopicId = await getMongoRepository(Settings).findOne({
+        name: 'SCHEMA_TOPIC_ID'
+    })
+
+    const topicId = schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID;
+
+    SchemaHelper.updateVersion(item, version);
+
+    const itemDocument = JSON.parse(item.document);
+    const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
+    item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
+
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+    // messageServer.setSubmitKey(topic.key);
+    const message = new SchemaMessage(MessageAction.PublishSchema);
+    message.setDocument(item);
+    const result = await messageServer.sendMessage(topicId, message);
+
+    const messageId = result.getId();
+    const contextUrl = result.getDocumentUrl();
+    const documentUrl = result.getContextUrl();
+
+    item.status = SchemaStatus.PUBLISHED;
+    item.documentURL = documentUrl.url;
+    item.contextURL = contextUrl.url;
+    item.messageId = messageId;
+    item.messageId = topicId;
+
+    updateIRI(item);
+
+    await getMongoRepository(SchemaCollection).update(item.id, item);
+
+    return item;
+}
+
 /**
  * Connect to the message broker methods of working with schemes.
  * 
@@ -166,7 +259,7 @@ const onlyUnique = function (value: any, index: any, self: any): boolean {
  */
 export const schemaAPI = async function (
     channel: any,
-    schemaRepository: MongoRepository<Schema>,
+    schemaRepository: MongoRepository<SchemaCollection>,
     configRepository: MongoRepository<RootConfig>,
     settingsRepository: MongoRepository<Settings>,
 ): Promise<void> {
@@ -337,7 +430,7 @@ export const schemaAPI = async function (
                 return;
             }
 
-            const files: any[] = [];
+            const files: ISchema[] = [];
             for (let i = 0; i < messageIds.length; i++) {
                 const messageId = messageIds[i];
                 const newSchema = await loadSchema(messageId, null);
@@ -544,64 +637,11 @@ export const schemaAPI = async function (
                 const id = msg.payload.id as string;
                 const version = msg.payload.version as string;
                 const owner = msg.payload.owner as string;
-
-                const item = await schemaRepository.findOne(id);
-
-                if (!item) {
-                    res.send(new MessageError("Schema not found"));
-                    return;
-                }
-
-                if (item.creator != owner) {
-                    res.send(new MessageError("Invalid owner"));
-                    return;
-                }
-
-                if (item.status == SchemaStatus.PUBLISHED) {
-                    res.send(new MessageError("Invalid status"));
-                    return;
-                }
-
-                const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
-                if (!root) {
-                    res.send(new MessageError("Root not found"));
-                    return;
-                }
-
-                const schemaTopicId = await settingsRepository.findOne({
-                    name: 'SCHEMA_TOPIC_ID'
-                })
-                const topicId = schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID;
-
-                SchemaHelper.updateVersion(item, version);
-
-                const itemDocument = JSON.parse(item.document);
-                const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
-                item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
-
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                // messageServer.setSubmitKey(topic.key);
-                const message = new SchemaMessage(MessageAction.PublishSchema);
-                message.setDocument(item);
-                const result = await messageServer.sendMessage(topicId, message);
-
-                const messageId = result.getId();
-                const contextUrl = result.getDocumentUrl();
-                const documentUrl = result.getContextUrl();
-
-                item.status = SchemaStatus.PUBLISHED;
-                item.documentURL = documentUrl.url;
-                item.contextURL = contextUrl.url;
-                item.messageId = messageId;
-                item.messageId = topicId;
-
-                updateIRI(item);
-                await schemaRepository.update(item.id, item);
-
+                const item = await publishSchema(id, version, owner);
                 res.send(new MessageResponse(item));
-                return;
+            } else {
+                res.send(new MessageError('Invalid id'));
             }
-            res.send(new MessageError("Invalid id"));
         } catch (error) {
             new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
             console.error(error);
@@ -675,39 +715,7 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg, res) => {
         try {
             const { owner, iri } = msg.payload as { owner: string, iri: string };
-            if (!owner || !iri) {
-                res.send(new MessageError('Schema not found'));
-                return;
-            }
-            const schema = await schemaRepository.findOne({
-                where: { iri: { $eq: iri } }
-            });
-
-            if (!schema) {
-                res.send(new MessageError('Schema not found'));
-                return;
-            }
-
-            if (schema.status == SchemaStatus.PUBLISHED) {
-                res.send(new MessageResponse(schema));
-                return;
-            }
-
-            const { version, previousVersion } = SchemaHelper.getVersion(schema);
-            let newVersion = '1.0.0';
-            if (previousVersion) {
-                const schemes = await schemaRepository.find({
-                    where: { uuid: { $eq: schema.uuid } }
-                });
-                const versions = [];
-                for (let i = 0; i < schemes.length; i++) {
-                    const element = schemes[i];
-                    const { version, previousVersion } = SchemaHelper.getVersion(element);
-                    versions.push(version, previousVersion);
-                }
-                newVersion = SchemaHelper.incrementVersion(previousVersion, versions);
-            }
-            schema.version = newVersion;
+            const schema = await incrementSchemaVersion(owner, iri);
             res.send(new MessageResponse(schema));
         } catch (error) {
             new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);

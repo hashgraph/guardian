@@ -18,7 +18,6 @@ import {
     SchemaHelper,
     SchemaStatus
 } from 'interfaces';
-import { Guardians } from '@helpers/guardians';
 import { VcHelper } from '@helpers/vcHelper';
 import {
     ISerializedErrors,
@@ -26,12 +25,27 @@ import {
 } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { Logger } from 'logger-helper';
-import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from 'hedera-modules';
+import {
+    findAllEntities,
+    replaceAllEntities,
+    SchemaFields
+} from '@helpers/utils';
+import {
+    HederaSDKHelper,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    PolicyMessage
+} from 'hedera-modules'
+
+import { RootConfig as RootConfigCollection } from '@entity/root-config';
+import { Schema as SchemaCollection } from '@entity/schema';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';import { incrementSchemaVersion, publishSchema } from '@api/schema.service';
+;
 
 @Singleton
 export class BlockTreeGenerator {
@@ -302,23 +316,22 @@ export class BlockTreeGenerator {
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
-                    const guardians = new Guardians();
                     const user = msg.payload.user;
                     const userFull = await this.users.getUser(user.username);
 
                     const schemaIRIs = findAllEntities(model.config, SchemaFields);
                     for (let i = 0; i < schemaIRIs.length; i++) {
                         const schemaIRI = schemaIRIs[i];
-                        const schema = await guardians.incrementSchemaVersion(schemaIRI, userFull.did);
+                        const schema = await incrementSchemaVersion(schemaIRI, userFull.did);
                         if (schema.status == SchemaStatus.PUBLISHED) {
                             continue;
                         }
-                        const newSchema = await guardians.publishSchema(schema.id, schema.version, userFull.did);
+                        const newSchema = await publishSchema(schema.id, schema.version, userFull.did);
                         replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
                     }
                     this.regenerateIds(model.config);
 
-                    const root = await guardians.getRootConfig(userFull.did);
+                    const root = await getMongoRepository(RootConfigCollection).findOne({did: userFull.did});
                     const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
                     if (!model.topicId) {
                         const topicId = await client.newTopic(root.hederaAccountKey, model.topicDescription);
@@ -338,7 +351,7 @@ export class BlockTreeGenerator {
 
                     const messageId = result.getId();
                     const url = result.getUrl();
-                    const policySchema = await guardians.getSchemaByEntity(SchemaEntity.POLICY);
+                    const policySchema = await getMongoRepository(SchemaCollection).findOne({entity: SchemaEntity.POLICY});
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
                         ...SchemaHelper.getContext(policySchema),
@@ -355,13 +368,14 @@ export class BlockTreeGenerator {
                         operation: 'PUBLISH'
                     }
                     const vc = await vcHelper.createVC(userFull.did, root.hederaAccountKey, credentialSubject);
-                    await guardians.setVcDocument({
+                    const doc = getMongoRepository(VcDocumentCollection).create({
                         hash: vc.toCredentialHash(),
                         owner: userFull.did,
                         document: vc.toJsonTree(),
                         type: SchemaEntity.POLICY,
                         policyId: `${model.id}`
                     });
+                    await getMongoRepository(VcDocumentCollection).save(doc);
 
                     await getMongoRepository(Policy).save(model);
                     await this.generate(model.id.toString());
@@ -544,8 +558,7 @@ export class BlockTreeGenerator {
                     throw new Error('Policy ID in body is empty');
                 }
 
-                const guardians = new Guardians();
-                const root = await guardians.getRootConfig(userFull.did);
+                const root = await getMongoRepository(RootConfigCollection).findOne({did: userFull.did});
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
@@ -594,8 +607,7 @@ export class BlockTreeGenerator {
                     throw new Error('Policy ID in body is empty');
                 }
 
-                const guardians = new Guardians();
-                const root = await guardians.getRootConfig(userFull.did);
+                const root = await getMongoRepository(RootConfigCollection).findOne({did: userFull.did});
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 

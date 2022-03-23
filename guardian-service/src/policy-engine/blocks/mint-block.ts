@@ -1,7 +1,7 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
+import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -9,8 +9,13 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper } from 'hedera-modules';
-import * as mathjs from 'mathjs';
 import { VcHelper } from '@helpers/vcHelper';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
+import { Schema as SchemaCollection } from '@entity/schema';
+import { Token as TokenCollection } from '@entity/token';
+import { RootConfig as RootConfigCollection } from '@entity/root-config';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -37,8 +42,6 @@ enum DataTypes {
     commonBlock: true
 })
 export class MintBlock {
-    @Inject()
-    private guardians: Guardians;
 
     @Inject()
     private users: Users;
@@ -80,7 +83,7 @@ export class MintBlock {
 
     private async saveVC(vc: VcDocument, owner: string, ref: any): Promise<boolean> {
         try {
-            await this.guardians.setVcDocument({
+            const doc = getMongoRepository(VcDocumentCollection).create({
                 hash: vc.toCredentialHash(),
                 owner: owner,
                 document: vc.toJsonTree(),
@@ -88,7 +91,8 @@ export class MintBlock {
                 policyId: ref.policyId,
                 tag: ref.tag,
                 schema: `#${vc.getCredentialSubject()[0].getType()}`
-            })
+            });
+            await getMongoRepository(VcDocumentCollection).save(doc);
             return true;
         } catch (error) {
             return false;
@@ -100,7 +104,7 @@ export class MintBlock {
             if (!vp) {
                 return false;
             }
-            await this.guardians.setVpDocument({
+            const doc = getMongoRepository(VpDocumentCollection).create({
                 hash: vp.toCredentialHash(),
                 document: vp.toJsonTree(),
                 owner: sensorDid,
@@ -108,6 +112,7 @@ export class MintBlock {
                 policyId: ref.policyId,
                 tag: ref.tag
             })
+            await getMongoRepository(VpDocumentCollection).save(doc);
             return true;
         } catch (error) {
             return false;
@@ -119,7 +124,9 @@ export class MintBlock {
 
         let vcSubject: any;
         if (token.tokenType == 'non-fungible') {
-            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_NFTOKEN);
+            const policySchema = await getMongoRepository(SchemaCollection).findOne({
+                entity: SchemaEntity.MINT_NFTOKEN
+            });
             const serials = data as number[];
             vcSubject = {
                 ...SchemaHelper.getContext(policySchema),
@@ -128,7 +135,9 @@ export class MintBlock {
                 serials: serials
             }
         } else {
-            const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.MINT_TOKEN);
+            const policySchema = await getMongoRepository(SchemaCollection).findOne({
+                entity: SchemaEntity.MINT_TOKEN
+            });
             const amount = data as number;
             vcSubject = {
                 ...SchemaHelper.getContext(policySchema),
@@ -161,6 +170,7 @@ export class MintBlock {
         const supplyKey = token.supplyKey;
         const adminId = token.adminId;
         const adminKey = token.adminKey;
+
         const uuid = HederaUtils.randomUUID();
         const amount = this.aggregate(rule, document);
         const [tokenValue, tokenAmount] = this.tokenAmount(token, amount);
@@ -231,12 +241,14 @@ export class MintBlock {
             tokenId,
             rule
         } = ref.options;
-
-        const token = (await this.guardians.getTokens({ tokenId }))[0];
+        const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
-        const root = await this.guardians.getRootConfig(ref.policyOwner);
+
+        const root = await getMongoRepository(RootConfigCollection).findOne({
+            did: ref.policyOwner
+        });
 
         let docs = [];
         if (Array.isArray(state.data)) {
@@ -282,7 +294,7 @@ export class MintBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
         } else if (typeof ref.options.tokenId !== 'string') {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-        } else if (!(await this.guardians.getTokens({ tokenId: ref.options.tokenId }))[0]) {
+        } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
             resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
         }
 

@@ -1,5 +1,4 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { Guardians } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
@@ -11,6 +10,12 @@ import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper } from 'hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
+import { Schema as SchemaCollection } from '@entity/schema';
+import { Token as TokenCollection } from '@entity/token';
+import { RootConfig as RootConfigCollection } from '@entity/root-config';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -37,9 +42,6 @@ enum DataTypes {
     commonBlock: true
 })
 export class RetirementBlock {
-    @Inject()
-    private guardians: Guardians;
-
     @Inject()
     private users: Users;
 
@@ -69,7 +71,7 @@ export class RetirementBlock {
 
     private async saveVC(vc: VcDocument, owner: string, ref: any): Promise<boolean> {
         try {
-            await this.guardians.setVcDocument({
+            const doc = getMongoRepository(VcDocumentCollection).create({
                 hash: vc.toCredentialHash(),
                 owner: owner,
                 document: vc.toJsonTree(),
@@ -77,7 +79,8 @@ export class RetirementBlock {
                 policyId: ref.policyId,
                 tag: ref.tag,
                 schema: `#${vc.getCredentialSubject()[0].getType()}`
-            })
+            });
+            await getMongoRepository(VcDocumentCollection).save(doc);;
             return true;
         } catch (error) {
             return false;
@@ -89,7 +92,7 @@ export class RetirementBlock {
             if (!vp) {
                 return false;
             }
-            await this.guardians.setVpDocument({
+            const doc = getMongoRepository(VpDocumentCollection).create({
                 hash: vp.toCredentialHash(),
                 document: vp.toJsonTree(),
                 owner: sensorDid,
@@ -97,6 +100,7 @@ export class RetirementBlock {
                 policyId: ref.policyId,
                 tag: ref.tag
             })
+            await getMongoRepository(VpDocumentCollection).save(doc);
             return true;
         } catch (error) {
             return false;
@@ -105,15 +109,15 @@ export class RetirementBlock {
 
     private async createWipeVC(root, token, data: number): Promise<VcDocument> {
         const VCHelper = new VcHelper();
-
-        const policySchema = await this.guardians.getSchemaByEntity(SchemaEntity.WIPE_TOKEN);
+        const policySchema = await getMongoRepository(SchemaCollection).findOne({
+            entity: SchemaEntity.WIPE_TOKEN
+        });
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
             date: (new Date()).toISOString(),
             tokenId: token.tokenId,
             amount: data.toString()
         }
-
         const wipeVC = await VCHelper.createVC(
             root.did,
             root.hederaAccountKey,
@@ -148,7 +152,7 @@ export class RetirementBlock {
 
         let wipeVC: VcDocument;
         if (token.tokenType == 'non-fungible') {
-            throw "unsupported operation";
+            throw 'unsupported operation';
         } else {
             await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
             wipeVC = await this.createWipeVC(root, token, tokenValue);
@@ -170,11 +174,14 @@ export class RetirementBlock {
             tokenId,
             rule
         } = ref.options;
-        const token = (await this.guardians.getTokens({ tokenId }))[0];
+        const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
-        const root = await this.guardians.getRootConfig(ref.policyOwner);
+
+        const root = await getMongoRepository(RootConfigCollection).findOne({
+            did: ref.policyOwner
+        });
 
         let docs = [];
         if (Array.isArray(state.data)) {
@@ -220,7 +227,7 @@ export class RetirementBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
         } else if (typeof ref.options.tokenId !== 'string') {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-        } else if (!(await this.guardians.getTokens({ tokenId: ref.options.tokenId }))[0]) {
+        } else if (!(await getMongoRepository(TokenCollection).findOne({tokenId: ref.options.tokenId}))) {
             resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
         }
 

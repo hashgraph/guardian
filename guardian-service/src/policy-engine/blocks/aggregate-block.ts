@@ -1,6 +1,4 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { Guardians } from '@helpers/guardians';
-import { Inject } from '@helpers/decorators/inject';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { getMongoRepository } from 'typeorm';
@@ -9,7 +7,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { VcDocument } from 'hedera-modules';
-
+import { Token } from '@entity/token';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -29,9 +27,6 @@ function evaluate(formula: string, scope: any) {
     commonBlock: true
 })
 export class AggregateBlock {
-    @Inject()
-    private guardians: Guardians;
-
     private getScope(item: VcDocument): any {
         return item.getCredentialSubject().toJsonTree();
     }
@@ -55,7 +50,7 @@ export class AggregateBlock {
             threshold
         } = ref.options;
 
-        const token = (await this.guardians.getTokens({ tokenId }))[0];
+        const token = await getMongoRepository(Token).findOne({tokenId});
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }

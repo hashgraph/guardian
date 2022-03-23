@@ -22,7 +22,7 @@ export const configAPI = async function (
         const { type, did } = msg.payload;
         const topic = await topicRepository.findOne({
             where: {
-                did: did,
+                owner: did,
                 type: type
             }
         });
