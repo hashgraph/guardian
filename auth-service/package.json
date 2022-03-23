@@ -11,9 +11,9 @@
     "interfaces": "file:../interfaces",
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.2",
-    "mongodb": "^3.7.3",
+    "mongodb": "^4.2.1",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "0.2.41",
+    "typeorm": "^0.2.41",
     "logger-helper": "file:../logger-helper"
   },
   "description": "",

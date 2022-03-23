@@ -1,6 +1,5 @@
-import { BlockStateUpdate } from '@policy-engine/helpers/decorators';
 import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
-import { IAuthUser } from '../../auth/auth.interface';
+import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
@@ -13,11 +12,6 @@ import { IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
     commonBlock: false
 })
 export class InterfaceDocumentsSource {
-
-    @BlockStateUpdate()
-    async update(state: any, user: IAuthUser) {
-    }
-
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 

@@ -90,7 +90,7 @@ export class InterfaceDocumentActionBlock {
                     'did': sensorDid,
                     'key': sensorKey,
                     'type': schema.type,
-                    'schema': schema.contextObject,
+                    'schema': schema.context,
                     'context': {
                         'type': schema.type,
                         '@context': [schema.contextURL]

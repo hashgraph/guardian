@@ -39,7 +39,7 @@ export class ContextDocumentLoader extends DocumentLoader {
         if (!schema.context) {
             throw new Error('context not found');
         }
-        const document = JSON.parse(schema.context);
+        const document = schema.context;
         return document;
     }
 

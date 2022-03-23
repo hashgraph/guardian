@@ -19,6 +19,7 @@ import { Logger } from 'logger-helper';
 import { MessageAction, MessageServer, SchemaMessage } from 'hedera-modules';
 import { getMongoRepository } from 'typeorm';
 import { RootConfig as RootConfigCollection } from '@entity/root-config';
+import { replaceValueRecursive } from '@helpers/utils';
 
 export const schemaCache = {};
 
@@ -133,7 +134,7 @@ const loadSchema = async function (messageId: string, owner: string) {
 const updateIRI = function (schema: ISchema) {
     try {
         if (schema.document) {
-            const document = JSON.parse(schema.document);
+            const document = schema.document;
             schema.iri = document.$id || null;
         } else {
             schema.iri = null;
@@ -145,7 +146,7 @@ const updateIRI = function (schema: ISchema) {
 
 const getDefs = function (schema: ISchema) {
     try {
-        const document = JSON.parse(schema.document);
+        const document = schema.document;
         if (!document.$defs) {
             return [];
         }
@@ -224,7 +225,7 @@ export async function publishSchema(id: string, version: string, owner: string):
 
     SchemaHelper.updateVersion(item, version);
 
-    const itemDocument = JSON.parse(item.document);
+    const itemDocument = item.document;
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
     item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
 
@@ -364,7 +365,7 @@ export const schemaAPI = async function (
                 where: { iri: { $in: msg.payload.iris } }
             });
             if (msg.payload.includes) {
-                const defs: any[] = schemes.map(s => JSON.parse(s.document).$defs);
+                const defs: any[] = schemes.map(s => s.document.$defs);
                 const map: any = {};
                 for (let i = 0; i < schemes.length; i++) {
                     const id = schemes[i].iri;
@@ -437,28 +438,24 @@ export const schemaAPI = async function (
                 files.push(newSchema);
             }
 
-            const result: any = {};
+            const uuidMap: Map<string, string> = new Map();
             for (let i = 0; i < files.length; i++) {
                 const file = files[i] as ISchema;
                 const newUUID = ModelHelper.randomUUID();
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
-                    result[uuid] = newUUID;
+                    uuidMap.set(uuid, newUUID);
                 }
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
             }
 
-            const uuids = Object.keys(result);
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                file.document = file.document || '';
-                file.context = file.context || '';
-                for (let j = 0; j < uuids.length; j++) {
-                    const uuid = uuids[j];
-                    file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
-                    file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
-                }
+
+                file.document = replaceValueRecursive(file.document, uuidMap);
+                file.context = replaceValueRecursive(file.context, uuidMap);
+
                 file.messageId = null;
                 file.creator = owner;
                 file.owner = owner;
@@ -469,15 +466,15 @@ export const schemaAPI = async function (
             }
 
             const schemesMap = [];
-            for (let j = 0; j < uuids.length; j++) {
-                const uuid = uuids[j];
+
+            uuidMap.forEach((v, k) => {
                 schemesMap.push({
-                    oldUUID: uuid,
-                    newUUID: result[uuid],
-                    oldIRI: `#${uuid}`,
-                    newIRI: `#${result[uuid]}`
+                    oldUUID: k,
+                    newUUID: v,
+                    oldIRI: `#${k}`,
+                    newIRI: `#${v}`
                 })
-            }
+            });
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
@@ -507,26 +504,24 @@ export const schemaAPI = async function (
                 return;
             }
 
-            const result: any = {};
+            const uuidMap: Map<string, string> = new Map();
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const newUUID = ModelHelper.randomUUID();
                 const uuid = file.iri ? file.iri.substring(1) : null;
                 if (uuid) {
-                    result[uuid] = newUUID;
+                    uuidMap.set(uuid, newUUID);
                 }
                 file.uuid = newUUID;
                 file.iri = '#' + newUUID;
             }
 
-            const uuids = Object.keys(result);
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                for (let j = 0; j < uuids.length; j++) {
-                    const uuid = uuids[j];
-                    file.document = file.document.replace(new RegExp(uuid, 'g'), result[uuid]);
-                    file.context = file.context.replace(new RegExp(uuid, 'g'), result[uuid]);
-                }
+
+                file.document = replaceValueRecursive(file.document, uuidMap);
+                file.context = replaceValueRecursive(file.context, uuidMap);
+
                 file.messageId = null;
                 file.creator = owner;
                 file.owner = owner;
@@ -537,15 +532,15 @@ export const schemaAPI = async function (
             }
 
             const schemesMap = [];
-            for (let j = 0; j < uuids.length; j++) {
-                const uuid = uuids[j];
+
+            uuidMap.forEach((v, k) => {
                 schemesMap.push({
-                    oldUUID: uuid,
-                    newUUID: result[uuid],
-                    oldIRI: `#${uuid}`,
-                    newIRI: `#${result[uuid]}`
+                    oldUUID: k,
+                    newUUID: v,
+                    oldIRI: `#${k}`,
+                    newIRI: `#${v}`
                 })
-            }
+            });
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {

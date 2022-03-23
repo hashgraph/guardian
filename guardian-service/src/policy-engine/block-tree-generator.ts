@@ -315,10 +315,10 @@ export class BlockTreeGenerator {
                 const errors = await this.validate(msg.payload.policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
-                if (isValid) {
-                    const user = msg.payload.user;
-                    const userFull = await this.users.getUser(user.username);
+                const user = msg.payload.user;
+                const userFull = await this.users.getUser(user.username);
 
+                if (isValid) {
                     const schemaIRIs = findAllEntities(model.config, SchemaFields);
                     for (let i = 0; i < schemaIRIs.length; i++) {
                         const schemaIRI = schemaIRIs[i];
@@ -381,7 +381,9 @@ export class BlockTreeGenerator {
                     await this.generate(model.id.toString());
                 }
 
-                const policies = await getMongoRepository(Policy).find() as Policy[];
+                const policies = await getMongoRepository(Policy).find({
+                    owner: userFull.did
+                }) as Policy[];
                 res.send(new MessageResponse({
                     policies: policies.map(item => {
                         delete item.registeredUsers;
@@ -392,7 +394,6 @@ export class BlockTreeGenerator {
                 }));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                console.log(error);
                 console.error(error.message);
                 res.send(new MessageError(error.message));
             }

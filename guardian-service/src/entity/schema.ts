@@ -1,4 +1,4 @@
-import { ISchema, ModelHelper, SchemaEntity, SchemaStatus, SchemaCategory } from 'interfaces';
+import { ISchema, ModelHelper, SchemaEntity, SchemaStatus, SchemaCategory, ISchemaDocument } from 'interfaces';
 import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
@@ -28,10 +28,10 @@ export class Schema implements ISchema {
     readonly: boolean;
 
     @Column()
-    document: string;
+    document: ISchemaDocument;
 
     @Column()
-    context: string;
+    context: any;
 
     @Column()
     version: string;
@@ -76,8 +76,8 @@ export class Schema implements ISchema {
 
     @AfterLoad()
     defineLabel() {
-        this.category = this.readonly 
-            ? SchemaCategory.SYSTEM 
+        this.category = this.readonly
+            ? SchemaCategory.SYSTEM
             : SchemaCategory.USER;
     }
 }
