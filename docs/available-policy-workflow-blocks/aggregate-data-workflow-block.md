@@ -15,5 +15,5 @@
 
 | UI Property | Definition                    |
 | ----------- | ----------------------------- |
-| Rule        | Need to fill out.             |
+| Rule        | Enter the Rule.               |
 | threshold   | Enter threshold calculations. |
