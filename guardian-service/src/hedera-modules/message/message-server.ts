@@ -12,6 +12,7 @@ import { DIDMessage } from './did-message';
 import { Logger } from 'logger-helper';
 import { PolicyMessage } from './policy-message';
 import { SchemaMessage } from './schema-message';
+import { MessageAction } from './message-action';
 
 export class MessageServer {
     private client: HederaSDKHelper;
@@ -30,8 +31,7 @@ export class MessageServer {
         const urls = [];
         for (let i = 0; i < buffers.length; i++) {
             const buffer = buffers[i];
-            const documentFile = new Blob([buffer], { type: "application/json" });
-            const result = await IPFS.addFile(await documentFile.arrayBuffer());
+            const result = await IPFS.addFile(buffer);
             urls.push(result);
         }
         message.setUrls(urls);

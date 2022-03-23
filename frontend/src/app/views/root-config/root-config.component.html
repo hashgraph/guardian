@@ -29,35 +29,7 @@
                 <h4 mat-line>Balance</h4>
                 <p mat-line class="root-field"> {{balance}} </p>
             </div>
-            <div class="list-item">
-                <h4 mat-line>Appnet Name</h4>
-                <p mat-line class="root-field"> {{profile.addressBook?.appnetName}} </p>
-                <mat-divider></mat-divider>
-            </div>
-            <div class="list-item">
-                <h4 mat-line>Address Book</h4>
-                <p mat-line class="root-field"> {{profile.addressBook?.addressBook}} </p>
-                <mat-divider></mat-divider>
-            </div>
 
-            <div class="list-item">
-                <h4 mat-line>DID Server Url</h4>
-                <p mat-line class="root-field"> {{profile.addressBook?.didServerUrl}} </p>
-                <mat-divider></mat-divider>
-            </div>
-            <div class="list-item">
-                <h4 mat-line>DID Topic Memo</h4>
-                <p mat-line class="root-field"> {{profile.addressBook?.didTopicMemo}} </p>
-                <mat-divider></mat-divider>
-            </div>
-
-            <div class="list-item">
-                <h4 mat-line>VC Topic Memo</h4>
-                <p mat-line class="root-field"> {{profile.addressBook?.vcTopicMemo}} </p>
-                <mat-divider></mat-divider>
-            </div>
-        </div>
-        <div class="config-display">
             <div class="list-item">
                 <h4 mat-line>Hedera Account Id</h4>
                 <p mat-line class="root-field"> {{profile.hederaAccountId}} </p>
@@ -67,6 +39,12 @@
             <div class="list-item">
                 <h4 mat-line>DID</h4>
                 <p mat-line class="root-field"> {{profile.did}} </p>
+                <mat-divider></mat-divider>
+            </div>
+
+            <div class="list-item">
+                <h4 mat-line>User Topic</h4>
+                <p mat-line class="root-field"> {{profile.topicId}} </p>
                 <mat-divider></mat-divider>
             </div>
 
@@ -80,32 +58,7 @@
                 <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
                     (change)="onChangeForm()">
                 </app-schema-form>
-                <mat-divider></mat-divider>
             </div>
-
-            <div class="list-item">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>Appnet Name:</mat-label>
-                    <input matInput placeholder="Test Identity SDK appnet" formControlName="appnetName">
-                </mat-form-field>
-
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>DID Server Url:</mat-label>
-                    <input matInput placeholder="http://localhost:3000/api/v1" formControlName="didServerUrl">
-                </mat-form-field>
-
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>DID Topic Memo:</mat-label>
-                    <input matInput placeholder="Test Identity SDK appnet DID topic" formControlName="didTopicMemo">
-                </mat-form-field>
-
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>VC Topic Memo:</mat-label>
-                    <input matInput placeholder="Test Identity SDK appnet VC topic" formControlName="vcTopicMemo">
-                </mat-form-field>
-                <mat-divider></mat-divider>
-            </div>
-
             <div class="list-item">
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR ID (Hedera Account):</mat-label>

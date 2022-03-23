@@ -82,10 +82,8 @@ export const profileAPI = async function (
             } = msg.payload;
 
             const topic = await topicRepository.findOne({
-                where: {
-                    did: owner,
-                    type: TopicType.UserTopic
-                }
+                owner: owner,
+                type: TopicType.UserTopic
             });
 
             if (!topic) {
@@ -98,22 +96,25 @@ export const profileAPI = async function (
             const did = didDocument.getDid();
             const document = didDocument.getDocument();
 
-            const doc = getMongoRepository(DidDocumentCollection).create({ did, document });
+            let doc = getMongoRepository(DidDocumentCollection).create({ did, document });
+            doc = await getMongoRepository(DidDocumentCollection).save(doc);
 
             const message = new DIDMessage(MessageAction.CreateDID);
             message.setDocument(document);
 
             const client = new MessageServer(hederaAccountId, hederaAccountKey);
             client.setSubmitKey(topic.key);
-            client.sendMessage(topicId, message).then(function (message) {
+
+            try {
+                await client.sendMessage(topicId, message);
                 doc.status = DidDocumentStatus.CREATE;
-                getMongoRepository(DidDocumentCollection).save(doc);
-            }, function (error) {
+                getMongoRepository(DidDocumentCollection).update(doc.id, doc);
+            } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
                 doc.status = DidDocumentStatus.FAILED;
-                getMongoRepository(DidDocumentCollection).save(doc);
-            });
+                getMongoRepository(DidDocumentCollection).update(doc.id, doc);
+            }
 
             res.send(new MessageResponse(did));
         } catch (error) {
@@ -161,39 +162,46 @@ export const profileAPI = async function (
                 key: null
             });
             await topicRepository.save(tokenObject);
-            const didDoc = getMongoRepository(DidDocumentCollection).create({
+
+            let didDoc = getMongoRepository(DidDocumentCollection).create({
                 did: didMessage.did,
                 document: didMessage.document
             });
-            const vcDoc = getMongoRepository(VcDocumentCollection).create({
+            let vcDoc = getMongoRepository(VcDocumentCollection).create({
                 hash: vcMessage.hash,
                 owner: didMessage.did,
                 document: vcMessage.document,
                 type: SchemaEntity.ROOT_AUTHORITY
             });
+            didDoc = await getMongoRepository(DidDocumentCollection).save(didDoc);
+            vcDoc = await getMongoRepository(VcDocumentCollection).save(vcDoc);
 
             const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
-            messageServer.sendMessage(topicId, didMessage).then(function (message: DIDMessage) {
+            
+
+            try {
+                await messageServer.sendMessage(topicId, didMessage)
                 didDoc.status = DidDocumentStatus.CREATE;
-                getMongoRepository(DidDocumentCollection).save(didDoc);
-            }, function (error) {
+                getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
+            } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
                 didDoc.status = DidDocumentStatus.FAILED;
-                getMongoRepository(DidDocumentCollection).save(didDoc);
-            });
+                getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
+            }
 
             await wait(1);
 
-            messageServer.sendMessage(topicId, vcMessage).then(function (message: VCMessage) {
+            try {
+                await messageServer.sendMessage(topicId, vcMessage)
                 vcDoc.hederaStatus = DocumentStatus.ISSUE;
-                getMongoRepository(VcDocumentCollection).save(vcDoc);
-            }, function (error) {
+                getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+            } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
                 vcDoc.hederaStatus = DocumentStatus.FAILED;
-                getMongoRepository(VcDocumentCollection).save(vcDoc);
-            });
+                getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+            }
 
             //NEED DELETE
             const rootObject = configRepository.create({

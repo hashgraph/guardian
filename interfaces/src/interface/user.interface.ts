@@ -18,13 +18,5 @@ export interface IUser {
     did?: string;
     didDocument?: IDidDocument;
     vcDocument?: IVCDocument;
-    addressBook?: {
-        appnetName: string;
-        addressBook: string;
-        didTopic: string;
-        vcTopic: string;
-        didServerUrl: string;
-        didTopicMemo: string;
-        vcTopicMemo: string;
-    }
+    topicId?: string;
 }

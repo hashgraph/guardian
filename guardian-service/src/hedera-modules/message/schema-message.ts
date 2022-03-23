@@ -61,8 +61,7 @@ export class SchemaMessage extends Message {
         const result = new Array(this.documents.length);
         for (let i = 0; i < this.documents.length; i++) {
             const json = JSON.stringify(this.documents[i]);
-            const documentFile = new Blob([json], { type: "application/json" });
-            const buffer = await documentFile.arrayBuffer();
+            const buffer = Buffer.from(json);
             result[i] = buffer;
         }
         return result;
@@ -80,6 +79,12 @@ export class SchemaMessage extends Message {
 
     public static fromMessageObject(json: any): SchemaMessage {
         const message = new SchemaMessage(json.action);
+        message.name = json.name;
+        message.description = json.description;
+        message.entity = json.entity;
+        message.owner = json.owner;
+        message.uuid = json.uuid;
+        message.version = json.version;
         const urls = [{
             cid: json.document_cid,
             url: json.document_url

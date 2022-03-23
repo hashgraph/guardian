@@ -127,8 +127,8 @@ const loadSchema = async function (messageId: string, owner: string) {
         schemaCache[messageId] = { ...schemaToImport };
         return schemaToImport;
     } catch (error) {
-        new Logger().error(`Cannot load schema ${messageId}`, ['GUARDIAN_SERVICE']);
-        console.error(`Cannot load schema ${messageId}`);
+        new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+        console.error(error.message);
         throw new Error(`Cannot load schema ${messageId}`);
     }
 }
@@ -245,7 +245,7 @@ export async function publishSchema(id: string, version: string, owner: string):
     item.documentURL = documentUrl.url;
     item.contextURL = contextUrl.url;
     item.messageId = messageId;
-    item.messageId = topicId;
+    item.topicId = topicId;
 
     updateIRI(item);
 

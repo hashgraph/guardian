@@ -2,7 +2,7 @@ import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Request, Response, Router } from 'express';
-import { DidDocumentStatus, IUser, SchemaEntity, UserRole } from 'interfaces';
+import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from 'interfaces';
 
 /**
  * User profile route
@@ -37,19 +37,11 @@ profileAPI.get('/:username/', async (req: Request, res: Response) => {
             }
         }
 
-        let addressBook: any = null;
-        if (user.role === UserRole.ROOT_AUTHORITY) {
-            const root = await guardians.getRootConfig(user.did);
-            if (root) {
-                addressBook = {
-                    appnetName: root.appnetName,
-                    addressBook: root.addressBook,
-                    didTopic: root.didTopic,
-                    vcTopic: root.vcTopic,
-                    didServerUrl: root.didServerUrl,
-                    didTopicMemo: root.didTopicMemo,
-                    vcTopicMemo: root.vcTopicMemo,
-                }
+        let topicId: any = null;
+        if (user.did) {
+            const topic = await guardians.getTopic(TopicType.UserTopic, user.did);
+            if (topic) {
+                topicId = topic.topicId;
             }
         }
 
@@ -60,10 +52,10 @@ profileAPI.get('/:username/', async (req: Request, res: Response) => {
             role: user.role,
             hederaAccountId: user.hederaAccountId,
             hederaAccountKey: null,
+            topicId: topicId,
             did: user.did,
             didDocument: didDocument,
-            vcDocument: vcDocument,
-            addressBook: addressBook
+            vcDocument: vcDocument
         };
         res.json(result);
     } catch (error) {
@@ -92,10 +84,6 @@ profileAPI.put('/:username/', async (req: Request, res: Response) => {
 
         let did: string;
         if (user.role === UserRole.ROOT_AUTHORITY) {
-            if (!profile.addressBook) {
-                res.status(403).json({ code: 403, message: 'Invalid Address Book' });
-                return;
-            }
             did = await guardians.createRootAuthorityProfile(profile);
         } else if (user.role === UserRole.USER) {
             did = await guardians.createUserProfile(profile);

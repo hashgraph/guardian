@@ -4,7 +4,6 @@ import { IURL } from "./i-url";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
 
-
 export class DIDMessage extends Message {
     public document: any;
     public didDocument: DIDDocument;
@@ -35,8 +34,7 @@ export class DIDMessage extends Message {
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
         const json = JSON.stringify(this.document);
-        const documentFile = new Blob([json], { type: "application/json" });
-        const buffer = await documentFile.arrayBuffer();
+        const buffer = Buffer.from(json);
         return [buffer];
     }
 

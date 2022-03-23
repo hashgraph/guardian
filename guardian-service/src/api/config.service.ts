@@ -19,19 +19,17 @@ export const configAPI = async function (
     topicRepository: MongoRepository<Topic>,
 ): Promise<void> {
     channel.response(MessageAPI.GET_TOPIC, async (msg, res) => {
-        const { type, did } = msg.payload;
+        const { type, owner } = msg.payload;
         const topic = await topicRepository.findOne({
-            where: {
-                owner: did,
-                type: type
-            }
+            owner: owner,
+            type: type
         });
         if (!topic) {
             res.send(new MessageError('Topic not found'));
             return;
         }
         res.send(new MessageResponse(topic));
-    })
+    });
 
     /**
      * Return Address books, VC Document and DID Document

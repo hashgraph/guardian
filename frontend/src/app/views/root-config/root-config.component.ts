@@ -26,10 +26,6 @@ export class RootConfigComponent implements OnInit {
     progress: number = 0;
 
     hederaForm = this.fb.group({
-        appnetName: ['', Validators.required],
-        didServerUrl: ['', Validators.required],
-        didTopicMemo: ['', Validators.required],
-        vcTopicMemo: ['', Validators.required],
         hederaAccountId: ['', Validators.required],
         hederaAccountKey: ['', Validators.required],
     });
@@ -70,10 +66,6 @@ export class RootConfigComponent implements OnInit {
     ngOnInit() {
         this.loading = true;
         this.hederaForm.setValue({
-            appnetName: "Test Identity SDK appnet",
-            didServerUrl: "http://localhost:3000/api/v1",
-            didTopicMemo: "Test Identity SDK appnet DID topic",
-            vcTopicMemo: "Test Identity SDK appnet VC topic",
             hederaAccountId: '',
             hederaAccountKey: '',
             vc: {}
@@ -99,6 +91,7 @@ export class RootConfigComponent implements OnInit {
 
             const profile = value[0];
             const balance = value[1];
+            
             this.schemas = SchemaHelper.map(value[2]);
             this.schema = this.schemas
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
@@ -129,13 +122,7 @@ export class RootConfigComponent implements OnInit {
             const data: any = {
                 hederaAccountId: value.hederaAccountId,
                 hederaAccountKey: value.hederaAccountKey,
-                vcDocument: vcDocument,
-                addressBook: {
-                    appnetName: value.appnetName,
-                    didServerUrl: value.didServerUrl,
-                    didTopicMemo: value.didTopicMemo,
-                    vcTopicMemo: value.vcTopicMemo,
-                }
+                vcDocument: vcDocument
             }
             this.loading = true;
             this.setProgress(true);
@@ -200,10 +187,6 @@ export class RootConfigComponent implements OnInit {
         this.otherService.getRandomKey().subscribe((account) => {
             this.loading = false;
             this.hederaForm.setValue({
-                appnetName: value.appnetName,
-                didServerUrl: value.didServerUrl,
-                didTopicMemo: value.didTopicMemo,
-                vcTopicMemo: value.vcTopicMemo,
                 hederaAccountId: account.id,
                 hederaAccountKey: account.key,
                 vc: value.vc
