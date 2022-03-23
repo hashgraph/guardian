@@ -301,7 +301,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (6).png>)
+![](<../.gitbook/assets/image (6) (1).png>)
 
 ## 2. Login as a Root Authority
 
@@ -703,7 +703,7 @@ capacity
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (8).png>)
+![](<../.gitbook/assets/image (8) (1).png>)
 
 ![](<../.gitbook/assets/image (2).png>)
 
@@ -721,4 +721,4 @@ record in the grid (data[0])
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (15).png>)
+![](<../.gitbook/assets/image (15) (1).png>)
