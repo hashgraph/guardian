@@ -9,7 +9,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from 'hedera-modules';
+import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument } from '@entity/vc-document';
 import { DidDocument } from '@entity/did-document';

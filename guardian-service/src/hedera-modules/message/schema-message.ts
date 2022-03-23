@@ -1,6 +1,9 @@
 
 import { Schema } from '@entity/schema';
-import { IURL, Message, MessageAction, MessageType } from './message';
+import { Message } from './message';
+import { IURL } from "./i-url";
+import { MessageAction } from "./message-action";
+import { MessageType } from "./message-type";
 
 export class SchemaMessage extends Message {
     public name: string;
@@ -10,7 +13,7 @@ export class SchemaMessage extends Message {
     public uuid: string;
     public version: string;
 
-    public documents: string[];
+    public documents: any[];
 
     constructor(action: MessageAction) {
         super(action, MessageType.SchemaDocument);
@@ -57,7 +60,7 @@ export class SchemaMessage extends Message {
     public async toDocuments(): Promise<ArrayBuffer[]> {
         const result = new Array(this.documents.length);
         for (let i = 0; i < this.documents.length; i++) {
-            const json = this.documents[i];
+            const json = JSON.stringify(this.documents[i]);
             const documentFile = new Blob([json], { type: "application/json" });
             const buffer = await documentFile.arrayBuffer();
             result[i] = buffer;
@@ -66,7 +69,7 @@ export class SchemaMessage extends Message {
     }
 
     public loadDocuments(documents: string[]): SchemaMessage {
-        this.documents = documents;
+        this.documents = documents.map(e => JSON.parse(e));
         return this;
     }
 

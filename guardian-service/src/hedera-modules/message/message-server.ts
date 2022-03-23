@@ -5,7 +5,13 @@ import {
 } from '@hashgraph/sdk';
 import { IPFS } from '@helpers/ipfs';
 import { Message } from './message';
-import { HederaSDKHelper } from 'hedera-modules/hedera-sdk-helper';
+import { HederaSDKHelper } from './../hedera-sdk-helper';
+import { MessageType } from './message-type';
+import { VCMessage } from './vc-message';
+import { DIDMessage } from './did-message';
+import { Logger } from 'logger-helper';
+import { PolicyMessage } from './policy-message';
+import { SchemaMessage } from './schema-message';
 
 export class MessageServer {
     private client: HederaSDKHelper;
@@ -52,9 +58,33 @@ export class MessageServer {
         return message;
     }
 
+    public static fromMessage(message: string): Message {
+        const json = JSON.parse(message);
+        return this.fromMessageObject(json);
+    }
+
+    public static fromMessageObject(json: any): Message {
+        switch (json.type) {
+            case MessageType.VCDocument:
+                return VCMessage.fromMessageObject(json);
+            case MessageType.DIDDocument:
+                return DIDMessage.fromMessageObject(json);
+            case MessageType.SchemaDocument:
+                return SchemaMessage.fromMessageObject(json);
+            case MessageType.PolicyDocument:
+                return PolicyMessage.fromMessageObject(json);
+            default:
+                new Logger().error(`Invalid format message: ${json.type}`, ['GUARDIAN_SERVICE']);
+                console.error(`Invalid format message: ${json.type}`);
+                throw 'Invalid format';
+        }
+    }
+
+
     private async getTopicMessage(timeStamp: string): Promise<Message> {
-        const { topicId, message } = await this.client.getTopicMessage(timeStamp)
-        const result = Message.fromMessage(message);
+        const { topicId, message } = await this.client.getTopicMessage(timeStamp);
+        new Logger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE']);
+        const result = MessageServer.fromMessage(message);
         result.setId(timeStamp);
         result.setTopicId(topicId);
         return result;

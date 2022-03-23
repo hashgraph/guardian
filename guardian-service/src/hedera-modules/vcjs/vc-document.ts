@@ -1,6 +1,6 @@
 import { Timestamp } from "@hashgraph/sdk";
-import { Hashing } from "hedera-modules/hashing";
-import { TimestampUtils } from "hedera-modules/timestamp-utils";
+import { Hashing } from "./../hashing";
+import { TimestampUtils } from "./../timestamp-utils";
 import { IVC } from "interfaces";
 import { DIDDocument } from "./did-document";
 import { Issuer } from "./issuer";

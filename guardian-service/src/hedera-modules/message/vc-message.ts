@@ -1,5 +1,9 @@
-import { VcDocument } from 'hedera-modules';
-import { IURL, Message, MessageAction, MessageType } from './message';
+import { VcDocument } from './../vcjs/vc-document';
+import {
+    Message} from './message';
+import { IURL } from "./i-url";
+import { MessageAction } from "./message-action";
+import { MessageType } from "./message-type";
 
 export class VCMessage extends Message {
     public vcDocument: VcDocument;

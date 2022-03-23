@@ -6,7 +6,8 @@
     "@helpers": "dist/helpers",
     "@auth": "dist/auth",
     "@policy-engine": "dist/policy-engine",
-    "@hedera-modules": "dist/hedera-modules"
+    "@hedera-modules": "dist/hedera-modules/index",
+    "@document-loader": "dist/document-loader"
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {

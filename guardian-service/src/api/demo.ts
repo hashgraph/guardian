@@ -2,7 +2,7 @@ import { MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { Settings } from '@entity/settings';
-import { HederaSDKHelper } from 'hedera-modules';
+import { HederaSDKHelper } from '@hedera-modules';
 
 export const demoAPI = async function (
     channel: any,

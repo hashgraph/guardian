@@ -1,4 +1,4 @@
-import { Hashing } from "hedera-modules/hashing";
+import { Hashing } from "./../hashing";
 import { IVP } from "interfaces";
 import { VcDocument } from "./vc-document";
 

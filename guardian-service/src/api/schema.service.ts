@@ -16,10 +16,11 @@ import path from 'path';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
-import { MessageAction, MessageServer, SchemaMessage } from 'hedera-modules';
+import { MessageAction, MessageServer, SchemaMessage } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
 import { RootConfig as RootConfigCollection } from '@entity/root-config';
 import { replaceValueRecursive } from '@helpers/utils';
+
 
 export const schemaCache = {};
 
@@ -83,7 +84,6 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 console.log(`Created schema: ${item.messageId}`);
             }
         } catch (error) {
-            console.error('ERROR: Unable to access ipfs');
             await wait(10000);
             await fn();
         }
@@ -127,6 +127,8 @@ const loadSchema = async function (messageId: string, owner: string) {
         schemaCache[messageId] = { ...schemaToImport };
         return schemaToImport;
     } catch (error) {
+        new Logger().error(`Cannot load schema ${messageId}`, ['GUARDIAN_SERVICE']);
+        console.error(`Cannot load schema ${messageId}`);
         throw new Error(`Cannot load schema ${messageId}`);
     }
 }

@@ -2,7 +2,7 @@ import { ExternalData } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, DocumentStatus, SchemaStatus } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { VcDocument } from 'hedera-modules';
+import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';

@@ -1,5 +1,8 @@
-import { DIDDocument } from 'hedera-modules';
-import { IURL, Message, MessageAction, MessageType } from './message';
+import { DIDDocument } from './../vcjs/did-document';
+import { Message } from './message';
+import { IURL } from "./i-url";
+import { MessageAction } from "./message-action";
+import { MessageType } from "./message-type";
 
 
 export class DIDMessage extends Message {

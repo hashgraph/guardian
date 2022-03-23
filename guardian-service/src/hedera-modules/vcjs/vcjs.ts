@@ -13,7 +13,7 @@ import { TimestampUtils } from './../timestamp-utils';
 import { DocumentLoaderFunction } from './../document-loader/document-loader-function';
 import { DocumentLoader } from "./..//document-loader/document-loader";
 import { SchemaLoader, SchemaLoaderFunction } from "./..//document-loader/schema-loader";
-import { Hashing } from "hedera-modules/hashing";
+import { Hashing } from "./../hashing";
 import { DidRootKey } from "./did-document";
 
 export interface ISuite {

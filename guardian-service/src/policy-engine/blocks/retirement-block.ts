@@ -8,7 +8,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper } from 'hedera-modules';
+import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';

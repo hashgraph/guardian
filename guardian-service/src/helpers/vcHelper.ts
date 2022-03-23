@@ -1,9 +1,9 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { ContextDocumentLoader } from 'document-loader/context-loader';
-import { DIDDocumentLoader } from 'document-loader/did-document-loader';
-import { SubjectSchemaLoader } from 'document-loader/subject-schema-loader';
-import { VCSchemaLoader } from 'document-loader/vc-schema-loader';
-import { VCJS, DefaultDocumentLoader } from 'hedera-modules';
+import { ContextDocumentLoader } from '@document-loader/context-loader';
+import { DIDDocumentLoader } from '@document-loader/did-document-loader';
+import { SubjectSchemaLoader } from '@document-loader/subject-schema-loader';
+import { VCSchemaLoader } from '@document-loader/vc-schema-loader';
+import { VCJS, DefaultDocumentLoader } from '@hedera-modules';
 
 /**
  * Configured VCHelper

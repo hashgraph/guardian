@@ -7,7 +7,7 @@ import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { StateField } from '@policy-engine/helpers/decorators';
-import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from 'hedera-modules';
+import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection  } from '@entity/schema';

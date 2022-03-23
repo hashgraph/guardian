@@ -21,7 +21,7 @@ import {
     MessageServer,
     VcDocument,
     VCMessage
-} from 'hedera-modules';
+} from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
 import { Topic } from '@entity/topic';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';

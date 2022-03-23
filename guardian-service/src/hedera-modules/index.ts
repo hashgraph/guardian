@@ -1,5 +1,12 @@
 export { HederaSDKHelper } from './hedera-sdk-helper';
 export { timeout } from './utils';
+
+
+
+
+export { Message } from './message/message';
+
+
 export { HederaUtils } from './utils';
 export { VcDocument } from './vcjs/vc-document';
 export { VcSubject } from './vcjs/vc-subject';
@@ -8,7 +15,8 @@ export { VCJS } from './vcjs/vcjs';
 export { DIDMessage } from './message/did-message';
 export { SchemaMessage } from './message/schema-message';
 export { VCMessage } from './message/vc-message';
-export { Message, IURL as URL, MessageType, MessageAction } from './message/message';
+export { MessageType } from './message/message-type';
+export { MessageAction } from './message/message-action';
 export { MessageServer } from './message/message-server';
 export { IDocumentFormat } from './document-loader/document-format';
 export { DefaultDocumentLoader } from './document-loader/document-loader-default';

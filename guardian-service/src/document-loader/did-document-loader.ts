@@ -1,5 +1,5 @@
 import { DidDocument } from '@entity/did-document';
-import { DidRootKey, DocumentLoader, IDocumentFormat } from 'hedera-modules';
+import { DidRootKey, DocumentLoader, IDocumentFormat } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
 
 /**

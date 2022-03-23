@@ -1,5 +1,8 @@
 import { Policy } from '@entity/policy';
-import { IURL, Message, MessageAction, MessageType } from './message';
+import { Message } from './message';
+import { IURL } from "./i-url";
+import { MessageAction } from "./message-action";
+import { MessageType } from "./message-type";
 
 export class PolicyMessage extends Message {
     public document: ArrayBuffer;

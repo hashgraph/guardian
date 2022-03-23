@@ -1,6 +1,6 @@
 import { PrivateKey, PublicKey, TopicId } from "@hashgraph/sdk";
-import { Environment } from "hedera-modules/environment";
-import { Hashing } from "hedera-modules/hashing";
+import { Environment } from "./../environment";
+import { Hashing } from "./../hashing";
 
 
 export class DidRootKey {

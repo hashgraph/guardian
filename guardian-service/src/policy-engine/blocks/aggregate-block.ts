@@ -6,7 +6,7 @@ import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
-import { VcDocument } from 'hedera-modules';
+import { VcDocument } from '@hedera-modules';
 import { Token } from '@entity/token';
 
 function evaluate(formula: string, scope: any) {

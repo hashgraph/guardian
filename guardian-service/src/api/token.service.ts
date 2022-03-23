@@ -5,7 +5,7 @@ import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
-import { HederaSDKHelper } from 'hedera-modules';
+import { HederaSDKHelper } from '@hedera-modules';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;

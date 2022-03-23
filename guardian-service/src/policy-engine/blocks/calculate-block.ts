@@ -6,7 +6,7 @@ import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument } from 'hedera-modules';
+import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';

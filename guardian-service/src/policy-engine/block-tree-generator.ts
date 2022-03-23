@@ -40,7 +40,7 @@ import {
     MessageServer,
     MessageType,
     PolicyMessage
-} from 'hedera-modules'
+} from '@hedera-modules'
 
 import { RootConfig as RootConfigCollection } from '@entity/root-config';
 import { Schema as SchemaCollection } from '@entity/schema';

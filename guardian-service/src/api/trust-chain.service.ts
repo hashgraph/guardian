@@ -13,7 +13,7 @@ import { MongoRepository } from 'typeorm';
 import {
     VcDocument as HVcDocument,
     VpDocument as HVpDocument
-} from 'hedera-modules';
+} from '@hedera-modules';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (

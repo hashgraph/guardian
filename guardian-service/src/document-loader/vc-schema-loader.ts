@@ -1,7 +1,7 @@
 import { Schema } from '@entity/schema';
 import { getMongoRepository, MongoRepository } from 'typeorm';
 import { ISchema } from 'interfaces';
-import { SchemaLoader } from 'hedera-modules';
+import { SchemaLoader } from '@hedera-modules';
 
 /**
  * VC schema loader

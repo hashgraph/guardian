@@ -3,7 +3,7 @@ import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';
 import { Logger } from 'logger-helper';
-import { DidRootKey } from 'hedera-modules';
+import { DidRootKey } from '@hedera-modules';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
