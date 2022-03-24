@@ -37,6 +37,7 @@ import { AdminHeaderComponent } from './views/admin/admin-header/admin-panel.com
 import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
 import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview-dialog.component';
+import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 
 @NgModule({
     declarations: [
@@ -56,7 +57,8 @@ import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview
         LogsViewComponent,
         SettingsViewComponent,
         AdminHeaderComponent,
-        IconPreviewDialog
+        IconPreviewDialog,
+        DetailsLogDialog
     ],
     imports: [
         BrowserModule,

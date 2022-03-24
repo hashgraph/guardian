@@ -71,7 +71,7 @@ export class Logger {
         });
     }
 
-    public async getAttributes(name?: string): Promise<string[]> {
-        return await this.request(MessageAPI.GET_ATTRIBUTES, { name });
+    public async getAttributes(name?: string, existingAttributes: string[] = []): Promise<string[]> {
+        return await this.request(MessageAPI.GET_ATTRIBUTES, { name, existingAttributes});
     }
 }

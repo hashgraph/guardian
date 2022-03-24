@@ -7,9 +7,11 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { saveAs } from 'file-saver';
 import { ILog } from 'interfaces';
+import * as moment from 'moment';
 import { merge, Observable, of } from 'rxjs';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';
+import { DetailsLogDialog } from '../details-log-dialog/details-log-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -26,7 +28,8 @@ export class LogsViewComponent implements OnInit {
         'type',
         'datetime',
         'message',
-        'attributes'
+        'attributes',
+        'details'
     ];
     selectedAll!: boolean;
     totalCount: number = 0;
@@ -56,7 +59,7 @@ export class LogsViewComponent implements OnInit {
         this.attributes = this.autoCompleteControl.valueChanges
           .pipe(
             startWith([]),
-            switchMap(value => this.logService.getAttributes(this.autoCompleteControl.value))
+            switchMap(value => this.logService.getAttributes(this.autoCompleteControl.value, this.searchForm?.get("attributes")?.value))
           );
       }
 
@@ -86,7 +89,14 @@ export class LogsViewComponent implements OnInit {
                 this.totalCount = data.totalCount;
                 return data.logs;
             })
-          ).subscribe((data: ILog[]) => this.logs = data);
+          ).subscribe((data: any) => {
+                this.logs = data.map((item: any) => {
+                    item.datetime = moment(item.datetime)
+                        .local()
+                        .format("YYYY-MM-DD HH:mm:ss");
+                    return item;
+                });
+            });
       }
 
     remove(attribute: string) {
@@ -161,6 +171,12 @@ export class LogsViewComponent implements OnInit {
             startDate: '',
             endDate: '',
             attributes: []
+        });
+    }
+
+    openDetails(element: any) {
+        this.dialog.open(DetailsLogDialog, {
+            data: element
         });
     }
 }

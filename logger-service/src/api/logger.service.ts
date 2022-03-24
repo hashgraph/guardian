@@ -71,10 +71,12 @@ export const loggerAPI = async function (
     channel.response(MessageAPI.GET_ATTRIBUTES, async (msg, res) => {
         try {
             const nameFilter = `.*${msg.payload.name || ""}.*`;
+            const existingAttributes = msg.payload.existingAttributes || [];
             let attrCursor = await logRepository.aggregate([
                 { $project: { attributes : "$attributes" }},
                 { $unwind: { path: "$attributes" }},
-                { $match: { attributes: { $regex: nameFilter, $options: 'i' }}},
+                { $match: { attributes: { $regex: nameFilter, $options: 'i'}}},
+                { $match: { attributes: { $not: { $in: existingAttributes }}}},
                 { $group: { _id: null, uniqueValues: { $addToSet: "$attributes" }}},
                 { $unwind: { path: "$uniqueValues" }},
                 { $limit: 20 },

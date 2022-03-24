@@ -1,0 +1,9 @@
+form {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    max-width: 100%;
+    padding: 10px;
+    max-height: 800px;
+    overflow: scroll;
+}

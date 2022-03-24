@@ -1,0 +1,25 @@
+<h1 mat-dialog-title>Log Details</h1>
+
+<form [formGroup]="dataForm">
+    <mat-form-field appearance="outline">
+        <mat-label>TYPE:</mat-label>
+        <input matInput type="text" formControlName="type" [readonly]="true">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+        <mat-label>DATETIME:</mat-label>
+        <input matInput type="text" formControlName="datetime" [readonly]="true">
+    </mat-form-field>
+    
+    <mat-form-field appearance="outline">
+        <mat-label>MESSAGE:</mat-label>
+        <textarea matInput formControlName="message" [readonly]="true"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+        <mat-label>ATTRIBUTES:</mat-label>
+        <textarea matInput formControlName="attributes" [readonly]="true"></textarea>
+    </mat-form-field>
+
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+</form>
