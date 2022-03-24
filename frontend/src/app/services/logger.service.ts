@@ -18,7 +18,7 @@ export class LoggerService {
     return this.http.post<any>(`${this.url}`, logFindSettings);
   }
 
-  public getAttributes(name: string = ""): Observable<string[]> {
-    return this.http.get<any>(`${this.url}/attributes`, { params: { name } });
+  public getAttributes(name: string = "", existingAttributes: string[] = []): Observable<string[]> {
+    return this.http.get<any>(`${this.url}/attributes`, { params: { name, existingAttributes } });
   }
 }
