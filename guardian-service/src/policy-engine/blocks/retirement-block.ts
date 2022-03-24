@@ -15,7 +15,6 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
-import { RootConfig as RootConfigCollection } from '@entity/root-config';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -178,10 +177,8 @@ export class RetirementBlock {
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
-
-        const root = await getMongoRepository(RootConfigCollection).findOne({
-            did: ref.policyOwner
-        });
+        
+        const root = await this.users.getHederaAccount(ref.policyOwner);
 
         let docs = [];
         if (Array.isArray(state.data)) {
@@ -227,7 +224,7 @@ export class RetirementBlock {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
         } else if (typeof ref.options.tokenId !== 'string') {
             resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-        } else if (!(await getMongoRepository(TokenCollection).findOne({tokenId: ref.options.tokenId}))) {
+        } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
             resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
         }
 

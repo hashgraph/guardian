@@ -11,8 +11,6 @@ export enum MessageAPI {
     LOAD_DID_DOCUMENT = 'load-did-document',
     LOAD_SCHEMA_DOCUMENT = 'load-schema-document',
     LOAD_SCHEMA_CONTEXT = 'load-schema-context',
-    GET_ROOT_CONFIG = 'get-root-config',
-    SET_ROOT_CONFIG = 'set-root-config',
     SET_APPROVE_DOCUMENTS = 'set-approve-documents',
     GET_APPROVE_DOCUMENTS = 'get-approve-documents',
     UPDATE_APPROVE_DOCUMENTS = 'update-approve-documents',

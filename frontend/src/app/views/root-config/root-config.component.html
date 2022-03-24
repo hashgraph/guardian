@@ -42,7 +42,7 @@
                 <mat-divider></mat-divider>
             </div>
 
-            <div class="list-item">
+            <div *ngIf="profile.topicId" class="list-item">
                 <h4 mat-line>User Topic</h4>
                 <p mat-line class="root-field"> {{profile.topicId}} </p>
                 <mat-divider></mat-divider>

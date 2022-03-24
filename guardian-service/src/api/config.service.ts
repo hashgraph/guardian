@@ -1,4 +1,3 @@
-import { RootConfig } from '@entity/root-config';
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
 import { CommonSettings, IRootConfig, MessageAPI, MessageError, MessageResponse } from 'interfaces';
@@ -14,7 +13,6 @@ import { MongoRepository } from 'typeorm';
  */
 export const configAPI = async function (
     channel: any,
-    configRepository: MongoRepository<RootConfig>,
     settingsRepository: MongoRepository<Settings>,
     topicRepository: MongoRepository<Topic>,
 ): Promise<void> {
@@ -24,40 +22,7 @@ export const configAPI = async function (
             owner: owner,
             type: type
         });
-        if (!topic) {
-            res.send(new MessageError('Topic not found'));
-            return;
-        }
         res.send(new MessageResponse(topic));
-    });
-
-    /**
-     * Return Address books, VC Document and DID Document
-     * 
-     * @param {string} payload - DID
-     * 
-     * @returns {IFullConfig} - approve documents
-     */
-    channel.response(MessageAPI.GET_ROOT_CONFIG, async (msg, res) => {
-        const rootConfig = await configRepository.findOne({ where: { did: { $eq: msg.payload } } });
-        if (!rootConfig) {
-            res.send(new MessageResponse(null));
-            return;
-        }
-        res.send(new MessageResponse(rootConfig));
-    })
-
-    /**
-     * Create Address book
-     * 
-     * @param {Object} payload - Address book config
-     * 
-     * @returns {IRootConfig} - Address book config
-     */
-    channel.response(MessageAPI.SET_ROOT_CONFIG, async (msg, res) => {
-        const rootObject = configRepository.create(msg.payload as RootConfig);
-        const result: IRootConfig = await configRepository.save(rootObject);
-        res.send(new MessageResponse(result));
     });
 
     /**

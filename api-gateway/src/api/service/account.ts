@@ -51,7 +51,6 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-
 accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const users = new Users();

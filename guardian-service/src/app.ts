@@ -10,7 +10,6 @@ import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
 import { ApprovalDocument } from '@entity/approval-document';
 import { DidDocument } from '@entity/did-document';
-import { RootConfig } from '@entity/root-config';
 import { Schema } from '@entity/schema';
 import { Token } from '@entity/token';
 import { VcDocument } from '@entity/vc-document';
@@ -77,14 +76,13 @@ Promise.all([
     const schemaRepository = db.getMongoRepository(Schema);
     const settingsRepository = db.getMongoRepository(Settings);
     const topicRepository = db.getMongoRepository(Topic);
-    const configRepository = db.getMongoRepository(RootConfig);
 
     await setDefaultSchema(schemaRepository);
-    await configAPI(channel, configRepository, settingsRepository, topicRepository);
-    await schemaAPI(channel, schemaRepository, configRepository, settingsRepository);
-    await tokenAPI(channel, tokenRepository, configRepository);
+    await configAPI(channel, settingsRepository, topicRepository);
+    await schemaAPI(channel, schemaRepository);
+    await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await profileAPI(channel, topicRepository, configRepository);
+    await profileAPI(channel, topicRepository);
     await documentsAPI(
         channel,
         didDocumentRepository,

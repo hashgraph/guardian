@@ -15,7 +15,6 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
-import { RootConfig as RootConfigCollection } from '@entity/root-config';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -246,9 +245,7 @@ export class MintBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        const root = await getMongoRepository(RootConfigCollection).findOne({
-            did: ref.policyOwner
-        });
+        const root = await this.users.getHederaAccount(ref.policyOwner);
 
         let docs = [];
         if (Array.isArray(state.data)) {

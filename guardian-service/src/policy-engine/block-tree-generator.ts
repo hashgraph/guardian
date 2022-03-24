@@ -41,11 +41,9 @@ import {
     MessageType,
     PolicyMessage
 } from '@hedera-modules'
-
-import { RootConfig as RootConfigCollection } from '@entity/root-config';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';import { incrementSchemaVersion, publishSchema } from '@api/schema.service';
-;
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { incrementSchemaVersion, publishSchema } from '@api/schema.service';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -331,7 +329,7 @@ export class BlockTreeGenerator {
                     }
                     this.regenerateIds(model.config);
 
-                    const root = await getMongoRepository(RootConfigCollection).findOne({did: userFull.did});
+                    const root = await this.users.getHederaAccount(userFull.did);
                     const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
                     if (!model.topicId) {
                         const topicId = await client.newTopic(root.hederaAccountKey, model.topicDescription);
@@ -351,7 +349,7 @@ export class BlockTreeGenerator {
 
                     const messageId = result.getId();
                     const url = result.getUrl();
-                    const policySchema = await getMongoRepository(SchemaCollection).findOne({entity: SchemaEntity.POLICY});
+                    const policySchema = await getMongoRepository(SchemaCollection).findOne({ entity: SchemaEntity.POLICY });
                     const vcHelper = new VcHelper();
                     const credentialSubject = {
                         ...SchemaHelper.getContext(policySchema),
@@ -559,7 +557,7 @@ export class BlockTreeGenerator {
                     throw new Error('Policy ID in body is empty');
                 }
 
-                const root = await getMongoRepository(RootConfigCollection).findOne({did: userFull.did});
+                const root = await this.users.getHederaAccount(userFull.did);
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
@@ -608,7 +606,7 @@ export class BlockTreeGenerator {
                     throw new Error('Policy ID in body is empty');
                 }
 
-                const root = await getMongoRepository(RootConfigCollection).findOne({did: userFull.did});
+                const root = await this.users.getHederaAccount(userFull.did);
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 

@@ -10,13 +10,17 @@ import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { RootConfig as RootConfigCollection } from '@entity/root-config';
+import { Inject } from '@helpers/decorators/inject';
+import { Users } from '@helpers/users';
 
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
     commonBlock: true
 })
 export class CalculateContainerBlock {
+    @Inject()
+    private users: Users;
+
     async calculate(document: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         if (document.signature === DocumentSignature.INVALID) {
@@ -64,10 +68,8 @@ export class CalculateContainerBlock {
             vcSubject.policyId = json.policyId;
         }
 
-        const root = await getMongoRepository(RootConfigCollection).findOne({
-            did: ref.policyOwner
-        });
-
+        const root = await this.users.getHederaAccount(ref.policyOwner);
+        
         const VCHelper = new VcHelper();
         const newVC = await VCHelper.createVC(
             root.did,

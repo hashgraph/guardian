@@ -1,5 +1,4 @@
 import { Schema as SchemaCollection } from '@entity/schema';
-import { RootConfig } from '@entity/root-config';
 import {
     ISchema,
     MessageAPI,
@@ -18,7 +17,6 @@ import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
 import { MessageAction, MessageServer, SchemaMessage } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
-import { RootConfig as RootConfigCollection } from '@entity/root-config';
 import { replaceValueRecursive } from '@helpers/utils';
 
 
@@ -211,13 +209,7 @@ export async function publishSchema(id: string, version: string, owner: string):
         throw new Error('Invalid status');
     }
 
-    const root = await getMongoRepository(RootConfigCollection).findOne({
-        did: owner
-    });
-
-    if (!root) {
-        throw new Error('Root not found');
-    }
+    const root = await this.users.getHederaAccount(owner);
 
     const schemaTopicId = await getMongoRepository(Settings).findOne({
         name: 'SCHEMA_TOPIC_ID'
@@ -262,9 +254,7 @@ export async function publishSchema(id: string, version: string, owner: string):
  */
 export const schemaAPI = async function (
     channel: any,
-    schemaRepository: MongoRepository<SchemaCollection>,
-    configRepository: MongoRepository<RootConfig>,
-    settingsRepository: MongoRepository<Settings>,
+    schemaRepository: MongoRepository<SchemaCollection>
 ): Promise<void> {
     /**
      * Create or update schema

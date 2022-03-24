@@ -10,5 +10,6 @@ export enum AuthEvents {
     GET_USERS_BY_ID = 'get-users-by-id',
     GET_USERS_BY_ROLE = 'get-users-by-role',
     UPDATE_USER = 'update-user',
-    SAVE_USER = 'save-user'
+    SAVE_USER = 'save-user',
+    GET_ALL_ROOT_AUTHORITY = 'GET_ALL_ROOT_AUTHORITY'
 }

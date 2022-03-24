@@ -1,4 +1,3 @@
-import { RootConfig } from '@entity/root-config';
 import {
     DidDocumentStatus,
     DocumentStatus,
@@ -45,8 +44,7 @@ async function wait(s: number): Promise<void> {
  */
 export const profileAPI = async function (
     channel: any,
-    topicRepository: MongoRepository<Topic>,
-    configRepository: MongoRepository<RootConfig>
+    topicRepository: MongoRepository<Topic>
 ) {
     channel.response(MessageAPI.GET_USER_BALANCE, async (msg, res) => {
         try {
@@ -78,107 +76,78 @@ export const profileAPI = async function (
             const {
                 hederaAccountId,
                 hederaAccountKey,
-                owner
+                owner,
+                vcDocument
             } = msg.payload;
 
-            const topic = await topicRepository.findOne({
-                owner: owner,
-                type: TopicType.UserTopic
-            });
-
-            if (!topic) {
-                throw 'Topic not found';
+            let topic: any, topicId: string, topicKey: string;
+            
+            console.log(owner);
+            if (owner) {
+                const topic = await topicRepository.findOne({
+                    owner: owner,
+                    type: TopicType.UserTopic
+                });
+                if (!topic) {
+                    throw 'Topic not found';
+                }
+                topicId = topic.topicId;
+                topicKey = topic.key;
+            } else {
+                const topicMemo = 'User Topic';
+                const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey);
+                const _topicId = await client.newTopic(hederaAccountKey, null, topicMemo);
+                topic = {
+                    topicId: _topicId,
+                    description: topicMemo,
+                    owner: null,
+                    type: TopicType.UserTopic,
+                    key: null
+                };
+                topicId = topic.topicId;
+                topicKey = topic.key;
+                await wait(10);
             }
 
-            const topicId = topic.topicId;
-
-            const didDocument = DIDDocument.create(hederaAccountKey, topicId);
-            const did = didDocument.getDid();
-            const document = didDocument.getDocument();
-
-            let doc = getMongoRepository(DidDocumentCollection).create({ did, document });
-            doc = await getMongoRepository(DidDocumentCollection).save(doc);
-
-            const message = new DIDMessage(MessageAction.CreateDID);
-            message.setDocument(document);
-
-            const client = new MessageServer(hederaAccountId, hederaAccountKey);
-            client.setSubmitKey(topic.key);
-
-            try {
-                await client.sendMessage(topicId, message);
-                doc.status = DidDocumentStatus.CREATE;
-                getMongoRepository(DidDocumentCollection).update(doc.id, doc);
-            } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                console.error(error);
-                doc.status = DidDocumentStatus.FAILED;
-                getMongoRepository(DidDocumentCollection).update(doc.id, doc);
-            }
-
-            res.send(new MessageResponse(did));
-        } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-            console.error(error);
-            res.send(new MessageError(error.message, 500));
-        }
-    })
-
-    channel.response(MessageAPI.CREATE_ROOT_AUTHORITY, async (msg, res) => {
-        try {
-            const vcHelper = new VcHelper();
-
-            const {
-                hederaAccountId,
-                hederaAccountKey,
-                vcDocument,
-                addressBook
-            } = msg.payload;
-
-            const topicMemo = JSON.stringify(addressBook);
-            const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey);
-            const topicId = await client.newTopic(hederaAccountKey, null, topicMemo);
-
-            await wait(15);
+            let didMessage: DIDMessage;
+            let vcMessage: VCMessage;
+            let didDoc: DidDocumentCollection;
+            let vcDoc: VcDocumentCollection;
 
             const didObject = DIDDocument.create(hederaAccountKey, topicId);
             const userDID = didObject.getDid();
-
-            const vc: any = vcDocument || {};
-            vc.id = userDID;
-            const vcObject = await vcHelper.createVC(userDID, hederaAccountKey, vc);
-
-            const didMessage = new DIDMessage(MessageAction.CreateDID);
+            didMessage = new DIDMessage(MessageAction.CreateDID);
             didMessage.setDocument(didObject);
-
-            const vcMessage = new VCMessage(MessageAction.CreateVC);
-            vcMessage.setDocument(vcObject);
-
-            const tokenObject = topicRepository.create({
-                topicId: topicId,
-                description: topicMemo,
-                owner: didMessage.did,
-                type: TopicType.UserTopic,
-                key: null
-            });
-            await topicRepository.save(tokenObject);
-
-            let didDoc = getMongoRepository(DidDocumentCollection).create({
+            didDoc = getMongoRepository(DidDocumentCollection).create({
                 did: didMessage.did,
                 document: didMessage.document
             });
-            let vcDoc = getMongoRepository(VcDocumentCollection).create({
-                hash: vcMessage.hash,
-                owner: didMessage.did,
-                document: vcMessage.document,
-                type: SchemaEntity.ROOT_AUTHORITY
-            });
             didDoc = await getMongoRepository(DidDocumentCollection).save(didDoc);
-            vcDoc = await getMongoRepository(VcDocumentCollection).save(vcDoc);
+
+            if (vcDocument) {
+                const vcHelper = new VcHelper();
+                const vc: any = vcDocument || {};
+                vc.id = userDID;
+                const vcObject = await vcHelper.createVC(userDID, hederaAccountKey, vc);
+                vcMessage = new VCMessage(MessageAction.CreateVC);
+                vcMessage.setDocument(vcObject);
+                vcDoc = getMongoRepository(VcDocumentCollection).create({
+                    hash: vcMessage.hash,
+                    owner: didMessage.did,
+                    document: vcMessage.document,
+                    type: SchemaEntity.ROOT_AUTHORITY
+                });
+                vcDoc = await getMongoRepository(VcDocumentCollection).save(vcDoc);
+            }
+
+            if (topic) {
+                topic.owner = didMessage.did;
+                const topicObject = topicRepository.create(topic);
+                await topicRepository.save(topicObject);
+            }
 
             const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
-            
-
+            messageServer.setSubmitKey(topicKey);
             try {
                 await messageServer.sendMessage(topicId, didMessage)
                 didDoc.status = DidDocumentStatus.CREATE;
@@ -189,30 +158,18 @@ export const profileAPI = async function (
                 didDoc.status = DidDocumentStatus.FAILED;
                 getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             }
-
-            await wait(1);
-
-            try {
-                await messageServer.sendMessage(topicId, vcMessage)
-                vcDoc.hederaStatus = DocumentStatus.ISSUE;
-                getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
-            } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                console.error(error);
-                vcDoc.hederaStatus = DocumentStatus.FAILED;
-                getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+            if (vcMessage) {
+                try {
+                    await messageServer.sendMessage(topicId, vcMessage)
+                    vcDoc.hederaStatus = DocumentStatus.ISSUE;
+                    getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+                } catch (error) {
+                    new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                    console.error(error);
+                    vcDoc.hederaStatus = DocumentStatus.FAILED;
+                    getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+                }
             }
-
-            //NEED DELETE
-            const rootObject = configRepository.create({
-                hederaAccountId: hederaAccountId,
-                hederaAccountKey: hederaAccountKey,
-                did: userDID,
-            });
-            await configRepository.save(rootObject);
-            //
-
-            await wait(1);
 
             res.send(new MessageResponse(userDID));
         } catch (error) {

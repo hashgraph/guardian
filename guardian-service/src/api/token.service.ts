@@ -1,4 +1,3 @@
-import { RootConfig } from '@entity/root-config';
 import { Token } from '@entity/token';
 import { IToken, MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
@@ -49,8 +48,7 @@ function getTokenInfo(info: any, token: any) {
  */
 export const tokenAPI = async function (
     channel: any,
-    tokenRepository: MongoRepository<Token>,
-    configRepository: MongoRepository<RootConfig>
+    tokenRepository: MongoRepository<Token>
 ): Promise<void> {
     /**
      * Create new token
@@ -87,10 +85,7 @@ export const tokenAPI = async function (
                 throw 'Invalid Token Symbol';
             }
 
-            const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
-            if (!root) {
-                throw 'Invalid Owner';
-            }
+            const root = await this.users.getHederaAccount(owner);
 
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const treasury = await client.newAccount(2);
@@ -146,10 +141,7 @@ export const tokenAPI = async function (
         try {
             const { tokenId, username, owner, freeze } = msg.payload;
 
-            const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
-            if (!root) {
-                throw 'Invalid Owner';
-            }
+            const root = await this.users.getHederaAccount(owner);
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
@@ -188,10 +180,7 @@ export const tokenAPI = async function (
         try {
             const { tokenId, username, owner, grant } = msg.payload;
 
-            const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
-            if (!root) {
-                throw 'Invalid Owner';
-            }
+            const root = await this.users.getHederaAccount(owner);
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
@@ -268,10 +257,7 @@ export const tokenAPI = async function (
         try {
             const { tokenId, username, owner } = msg.payload;
 
-            const root = await configRepository.findOne({ where: { did: { $eq: owner } } });
-            if (!root) {
-                throw 'Invalid Owner';
-            }
+            const root = await this.users.getHederaAccount(owner);
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
@@ -309,6 +295,7 @@ export const tokenAPI = async function (
             const userID = user.hederaAccountId;
             const userDID = user.did;
             const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+
             if (!user) {
                 throw 'User not found';
             }

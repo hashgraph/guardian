@@ -16,6 +16,10 @@
                         <div class="profile-item-name"> BALANCE:</div>
                         <div class="profile-item-value"> {{balance}}</div>
                     </div>
+                    <div *ngIf="profile.topicId" class="profile-item">
+                        <div class="profile-item-name"> USER TOPIC:</div>
+                        <div class="profile-item-value"> {{profile.topicId}} </div>
+                    </div>
                     <div class="profile-item">
                         <div class="profile-item-name"> DID:</div>
                         <div class="profile-item-value"> {{profile.did}} </div>

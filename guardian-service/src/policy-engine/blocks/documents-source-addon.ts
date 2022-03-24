@@ -11,7 +11,6 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
-import { RootConfig as RootConfigCollection } from '@entity/root-config';
 import { DidDocument as DidDocumentCollection  } from '@entity/did-document';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 

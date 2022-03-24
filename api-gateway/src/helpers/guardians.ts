@@ -216,7 +216,7 @@ export class Guardians {
     }
 
     public async createRootAuthorityProfile(profile: IUser): Promise<string> {
-        return await this.request(MessageAPI.CREATE_ROOT_AUTHORITY, profile);
+        return await this.request(MessageAPI.CREATE_USER_PROFILE, profile);
     }
 
     public async createUserProfile(profile: IUser): Promise<string> {
