@@ -1,6 +1,6 @@
 # README
 
-[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/ui-service?label=version) [![](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/898264469786988545)
+[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/guardian-service?label=version) [![](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/898264469786988545)
 
 ## Guardian
 
@@ -194,14 +194,6 @@ cd message-broker
 npm run test
 ```
 
-### API Tests
-
-To run the API tests you need to build the application as described in the Installation section and fill
-all .env files in the api-tests/configs folder. Then run this command in the api-tests directory:
-```
-npm run test
-```
-
 ([back to top](broken-reference))
 
 For complete documentation on following points. Please refer https://docs.hedera.com/guardian
@@ -221,7 +213,7 @@ For complete documentation on following points. Please refer https://docs.hedera
 
 For any questions, please reach out to the Envision Blockchain Solutions team at:
 
-* Website: <www.envisionblockchain.com>
+* Website: \<www.envisionblockchain.com>
 * Email: [info@envisionblockchain.com](mailto:info@envisionblockchain.com)
 
 ([back to top](broken-reference))
