@@ -43,3 +43,4 @@ export { ILog } from './interface/log.interface';
 export { LogType } from './type/log.type';
 export { IPageParameters } from './interface/page-parameters.interface';
 export { TopicType } from './type/topic.type';
+export { IconType } from './type/icon.type';

@@ -61,7 +61,6 @@ export class InformationBlockComponent implements OnInit {
             this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
                 this.setData(data);
                 this.loading = false;
-                console.log(data);
             }, (e) => {
                 console.error(e.error);
                 this.loading = false;

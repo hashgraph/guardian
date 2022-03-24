@@ -29,6 +29,45 @@
         </td>
     </tr>
 
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Icon Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.iconType" [disabled]="readonly">
+                <mat-option value="common">Common Library</mat-option>
+                <mat-option value="custom">Custom</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Icon</td>
+        <td class="propRowCell" >
+            <div class="icon-container">
+                <input [(ngModel)]="block.icon" [readonly]="readonly" class="icon-input">
+                <input type="file" class="file-input" accept="image/*"
+                    (change)="onFileSelected($event, block)" #fileUpload>
+                <ng-container [ngSwitch]="fileLoading" *ngIf="block.iconType === 'custom' && !readonly">
+                    <div *ngSwitchCase="true" >
+                        <mat-spinner [diameter]="20" class="file-spinner"></mat-spinner>
+                    </div>
+                    
+                    <div *ngSwitchCase="false"> 
+                        <button mat-icon-button class="upload-btn" class="file-action-button" (click)="fileUpload.click()">
+                            <mat-icon class="file-action-icon">attach_file</mat-icon>
+                        </button>
+                    </div>
+                </ng-container>
+                <div *ngIf="block.icon">
+                    <button  mat-icon-button class="upload-btn" class="file-action-button" (click)="iconPreview()">
+                        <mat-icon class="file-action-icon">remove_red_eye</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </td>
+    </tr>
+
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
             <mat-icon>expand_more</mat-icon>

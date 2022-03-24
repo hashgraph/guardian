@@ -88,7 +88,6 @@ export class CalculateContainerBlock {
 
     @CatchErrors()
     public async runAction(state: any, user: IAuthUser) {
-        console.log("calculate-block, runAction")
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         let document = null;
         if (Array.isArray(state.data)) {

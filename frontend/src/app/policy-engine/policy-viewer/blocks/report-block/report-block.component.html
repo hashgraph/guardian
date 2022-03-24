@@ -109,7 +109,11 @@
                     <ng-container *ngFor="let item of documents">
                         <div class="chain-item item-type-{{item.type}}">
                             <div class="chain-title">
-                                <!-- <mat-icon>{{item.icon}}</mat-icon> -->
+                                <ng-container [ngSwitch]="item.iconType" *ngIf="item.icon">
+                                    <mat-icon *ngSwitchCase="'common'">{{item.icon}}</mat-icon>
+                                    <img *ngSwitchCase="'custom'" [src]="item.icon" class="item-image"/>
+                                </ng-container>
+                                
                                 {{item.title}}
                             </div>
                             <div class="chain-id">

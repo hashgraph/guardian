@@ -8,7 +8,7 @@ The Guardian development team follows Scrum methodology with 2-week sprints. Sof
 The Guardian uses semantic versioning for releases in the major.minor.build format. Each number incremented sequentially to denote the following changes:
 - major: a significant milestone in product lifecycle has been reached
 - minor: the release contains notable new capabilities
-- build: incremental release brining enhancements and bug fixes
+- build: incremental release bringing enhancements and bug fixes
 
 In the future there will likely be backwards compatibility meaning assigned to these changes.
 

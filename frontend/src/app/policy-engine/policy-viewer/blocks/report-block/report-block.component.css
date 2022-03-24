@@ -404,3 +404,10 @@ a.open-vp {
     color: darkgrey;
     text-align: center;
 }
+
+.item-image {
+    min-width: 10px;
+    min-height: 10px;
+    max-width: 30px;
+    max-height: 30px;
+}

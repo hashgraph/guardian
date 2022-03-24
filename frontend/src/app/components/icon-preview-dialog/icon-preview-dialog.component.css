@@ -1,0 +1,24 @@
+.dialog-title {
+    text-align: center;
+}
+
+.content-container {
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.icon-container {
+    width: 250px;
+    height: 250px;
+}
+
+.image-container {
+    max-width: 300px;
+    max-height: 300px;
+    min-width: 100px;
+    min-height: 100px;
+}

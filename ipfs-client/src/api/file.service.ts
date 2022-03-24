@@ -12,7 +12,7 @@ export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
 
 /**
  * Connecting to the message broker methods of working with IPFS.
- * 
+ *
  * @param channel - channel
  * @param node - IPFS client
  */
@@ -23,9 +23,9 @@ export const fileAPI = async function (
 ): Promise<void> {
     /**
      * Add file and return hash
-     * 
+     *
      * @param {ArrayBuffer} [payload] - file to add
-     * 
+     *
      * @returns {string} - hash of added file
      */
     channel.response(MessageAPI.IPFS_ADD_FILE, async (msg, res) => {
@@ -51,15 +51,15 @@ export const fileAPI = async function (
 
     /**
      * Get file from IPFS.
-     * 
+     *
      * @param {string} [payload.cid] - File CID.
      * @param {string} [payload.responseType] - Response type
-     * 
+     *
      * @return {any} - File
      */
     channel.response(MessageAPI.IPFS_GET_FILE, async (msg, res) => {
         try {
-            axiosRetry(axios, { retries: 3, 
+            axiosRetry(axios, { retries: 3,
                 shouldResetTimeout: true,
                 retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error)
                     || error.code === 'ECONNABORTED',
@@ -91,9 +91,9 @@ export const fileAPI = async function (
 
     /**
      * Update settings.
-     * 
+     *
      * @param {CommonSettings} [payload] - Settings
-     * 
+     *
      */
      channel.response(MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
         try {
@@ -119,14 +119,13 @@ export const fileAPI = async function (
         }
         catch (e) {
             new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            console.log(e);
             res.send({ error: e.message });
         }
     })
 
     /**
      * Get settings.
-     * 
+     *
      * @return {any} - settings
      */
      channel.response(MessageAPI.GET_SETTINGS, async (msg, res) => {
@@ -135,6 +134,6 @@ export const fileAPI = async function (
         });
         res.send({body: {
             nftApiKey: nftApiKey?.value || process.env.NFT_API_KEY
-        }}); 
+        }});
     })
 }

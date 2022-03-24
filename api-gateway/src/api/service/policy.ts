@@ -90,7 +90,7 @@ policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => 
     try {
         res.send(await engineService.validatePolicy(req.body, req.user));
     } catch (e) {
-        console.log(e);
+        console.error(e);
         new Logger().error(e.toString(), ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: e.message });
     }

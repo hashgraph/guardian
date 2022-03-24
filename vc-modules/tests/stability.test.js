@@ -10,6 +10,11 @@ const {
     FileCreateTransaction
 } = require('@hashgraph/sdk');
 const { expect, assert } = require('chai');
+const {
+    AddressBook,
+    HcsIdentityNetwork,
+    HcsIdentityNetworkBuilder
+} = require('@hashgraph/did-sdk-js');
 
 async function wait(timeout) {
     return new Promise(function (resolve, reject) {
@@ -21,6 +26,29 @@ async function wait(timeout) {
             }
         }, timeout);
     });
+}
+
+async function run(name, maxTransaction, f, d) {
+    const logs = [];
+    let success = 0, failed = 0;
+    console.log(`${name} start`);
+    for (let i = 0; i < maxTransaction; i++) {
+        try {
+            const t1 = new Date();
+            await f();
+            await wait(d);
+            ++success;
+            const t2 = new Date();
+            logs.push((t2 - t1) / 1000);
+        } catch (error) {
+            console.error(`${name} Error: `, error);
+            ++failed;
+            logs.push(false);
+        }
+    }
+    console.log(`${name}: `, logs);
+    console.log(`${name} end`);
+    return { success, failed };
 }
 
 describe('Stability test', function () {
@@ -46,176 +74,155 @@ describe('Stability test', function () {
         newAccountKey = newPrivateKey;
     });
 
+
+    it('FileCreateTransaction', async function () {
+        const { success, failed } = await run('FileCreateTransaction', maxTransaction, async function () {
+            const json = '{"appnetName":"appnetName","didTopicId":"0.0.34016549","vcTopicId":"0.0.34016550","appnetDidServers":["didServerUrl"]}';
+            const transaction = new FileCreateTransaction()
+                .setContents(json)
+                .setMaxTransactionFee(new Hbar(2))
+                .freezeWith(client);
+            console.log('execute');
+            const txResponse = await transaction.execute(client);
+            console.log('getReceipt');
+            const receipt = await txResponse.getReceipt(client);
+            console.log('end');
+            const fileId = receipt.fileId;
+        }, 1000);
+        assert.equal(success, maxTransaction);
+        assert.equal(failed, 0);
+    });
+
+    it('HcsIdentityNetworkBuilder', async function () {
+        const { success, failed } = await run('HcsIdentityNetworkBuilder', maxTransaction, async function () {
+            const network = 'testnet';
+            const operatorKey = PrivateKey.fromString(OPERATOR_KEY);
+
+            console.log('HcsIdentityNetworkBuilder 1')
+            const didTopicCreateTransaction = new TopicCreateTransaction()
+                .setMaxTransactionFee(new Hbar(10))
+                .setTopicMemo('didTopicMemo');
+            didTopicCreateTransaction.setAdminKey(operatorKey.publicKey);
+
+            const didTxId = await didTopicCreateTransaction.execute(client);
+            console.log('HcsIdentityNetworkBuilder 2')
+            const didTopicId = (await didTxId.getReceipt(client)).topicId;
+            console.log('HcsIdentityNetworkBuilder 3')
+
+            const vcTopicCreateTransaction = new TopicCreateTransaction()
+                .setMaxTransactionFee(new Hbar(10))
+                .setTopicMemo('vcTopicMemo');
+            vcTopicCreateTransaction.setAdminKey(operatorKey.publicKey);
+
+            const vcTxId = await vcTopicCreateTransaction.execute(client);
+            console.log('HcsIdentityNetworkBuilder 4')
+            const vcTopicId = (await vcTxId.getReceipt(client)).topicId;
+            console.log('HcsIdentityNetworkBuilder 5')
+            const addressBook = AddressBook.create(
+                'appnetName',
+                didTopicId.toString(),
+                vcTopicId.toString(),
+                ['didServerUrl']
+            );
+            console.log(addressBook.toJSON());
+            const fileCreateTx = new FileCreateTransaction().setContents(addressBook.toJSON());
+            console.log('HcsIdentityNetworkBuilder 6')
+            const response = await fileCreateTx.execute(client);
+            console.log('HcsIdentityNetworkBuilder 7')
+            const receipt = await response.getReceipt(client);
+            console.log('HcsIdentityNetworkBuilder 8')
+            const fileId = receipt.fileId;
+
+            addressBook.setFileId(fileId);
+            const didNetwork = HcsIdentityNetwork.fromAddressBook(network, addressBook);
+        }, 1000);
+        assert.equal(success, maxTransaction);
+        assert.equal(failed, 0);
+    });
+
+    it('HcsIdentityNetworkBuilder', async function () {
+        const { success, failed } = await run('HcsIdentityNetworkBuilder', maxTransaction, async function () {
+            const network = 'testnet';
+            const operatorKey = PrivateKey.fromString(OPERATOR_KEY);
+            const didNetwork = await new HcsIdentityNetworkBuilder()
+                .setNetwork(network)
+                .setAppnetName('appnetName')
+                .addAppnetDidServer('didServerUrl')
+                .setPublicKey(operatorKey.publicKey)
+                .setMaxTransactionFee(new Hbar(10))
+                .setDidTopicMemo('didTopicMemo')
+                .setVCTopicMemo('vcTopicMemo')
+                .execute(client);
+        }, 1000);
+        assert.equal(success, maxTransaction);
+        assert.equal(failed, 0);
+    });
+
     it('AccountBalanceQuery', async function () {
-        const logs = [];
-        let success = 0, failed = 0;
-        console.log('AccountBalanceQuery:');
-        for (let i = 0; i < maxTransaction; i++) {
-            try {
-                const t1 = new Date();
-                const query = new AccountBalanceQuery().setAccountId(OPERATOR_ID);
-                const accountBalance = await query.execute(client);
-                await wait(1000);
-                ++success;
-                const t2 = new Date();
-                logs.push((t2-t1) / 1000);
-            } catch (error) {
-                console.error('AccountBalanceQuery', error);
-                ++failed;
-                logs.push(false);
-            }
-        }
-        console.log('AccountBalanceQuery', logs);
+        const { success, failed } = await run('AccountBalanceQuery', maxTransaction, async function () {
+            const query = new AccountBalanceQuery().setAccountId(OPERATOR_ID);
+            const accountBalance = await query.execute(client);
+        }, 1000);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('AccountInfoQuery', async function () {
-        const logs = [];
-        let success = 0, failed = 0;
-        console.log('AccountInfoQuery:');
-        for (let i = 0; i < maxTransaction; i++) {
-            try {
-                const t1 = new Date();
-                const info = await new AccountInfoQuery()
-                    .setAccountId(OPERATOR_ID)
-                    .execute(client);
-                await wait(1000);
-                ++success;
-                const t2 = new Date();
-                logs.push((t2-t1) / 1000);
-            } catch (error) {
-                console.error('AccountInfoQuery', error);
-                ++failed;
-                logs.push(false);
-            }
-        }
-        console.log('AccountInfoQuery', logs);
+        const { success, failed } = await run('AccountInfoQuery', maxTransaction, async function () {
+            const info = await new AccountInfoQuery()
+                .setAccountId(OPERATOR_ID)
+                .execute(client);
+        }, 1000);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('TopicCreateTransaction', async function () {
-        const logs = [];
-        let success = 0, failed = 0;
-        console.log('TopicCreateTransaction:');
-        for (let i = 0; i < maxTransaction; i++) {
-            try {
-                const t1 = new Date();
-                const transaction = new TopicCreateTransaction();
-                const txResponse = await transaction.execute(client);
-                const receipt = await txResponse.getReceipt(client);
-                const topicId = receipt.topicId;
-                await wait(1000);
-                ++success;
-                const t2 = new Date();
-                logs.push((t2-t1) / 1000);
-            } catch (error) {
-                console.error('TopicCreateTransaction', error);
-                ++failed;
-                logs.push(false);
-            }
-        }
-        console.log('TopicCreateTransaction', logs);
-        assert.equal(success, maxTransaction);
-        assert.equal(failed, 0);
-    });
-
-    it('FileCreateTransaction', async function () {
-        const logs = [];
-        let success = 0, failed = 0;
-        console.log('FileCreateTransaction:');
-        for (let i = 0; i < maxTransaction; i++) {
-            try {
-                const t1 = new Date();
-                const transaction = new FileCreateTransaction()
-                    .setContents("the file contents")
-                    .setMaxTransactionFee(new Hbar(2))
-                    .freezeWith(client);
-                const txResponse = await transaction.execute(client);
-                const receipt = await txResponse.getReceipt(client);
-                const fileId = receipt.fileId;
-                await wait(1000);
-                ++success;
-                const t2 = new Date();
-                logs.push((t2-t1) / 1000);
-            } catch (error) {
-                console.error('FileCreateTransaction', error);
-                ++failed;
-                logs.push(false);
-            }
-        }
-        console.log('FileCreateTransaction', logs);
+        const { success, failed } = await run('TopicCreateTransaction', maxTransaction, async function () {
+            const transaction = new TopicCreateTransaction();
+            const txResponse = await transaction.execute(client);
+            const receipt = await txResponse.getReceipt(client);
+            const topicId = receipt.topicId;
+        }, 1000);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('AccountCreateTransaction', async function () {
-        const logs = [];
-        let success = 0, failed = 0;
-        console.log('AccountCreateTransaction:');
-        for (let i = 0; i < maxTransaction; i++) {
-            try {
-                const t1 = new Date();
-                const newPrivateKey = PrivateKey.generate();
-                const transaction = new AccountCreateTransaction()
-                    .setKey(newPrivateKey.publicKey)
-                    .setInitialBalance(new Hbar(2));
-                const txResponse = await transaction.execute(client);
-                const receipt = await txResponse.getReceipt(client);
-                const newAccountId = receipt.accountId;
-                await wait(1000);
-                ++success;
-                const t2 = new Date();
-                logs.push((t2-t1) / 1000);
-            } catch (error) {
-                console.error('AccountCreateTransaction', error);
-                ++failed;
-                logs.push(false);
-            }
-        }
-        console.log('AccountCreateTransaction', logs);
+        const { success, failed } = await run('AccountCreateTransaction', maxTransaction, async function () {
+            const newPrivateKey = PrivateKey.generate();
+            const transaction = new AccountCreateTransaction()
+                .setKey(newPrivateKey.publicKey)
+                .setInitialBalance(new Hbar(2));
+            const txResponse = await transaction.execute(client);
+            const receipt = await txResponse.getReceipt(client);
+            const newAccountId = receipt.accountId;
+        }, 1000);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
 
     it('TokenCreateTransaction', async function () {
-        const logs = [];
-        let success = 0, failed = 0;
-        const newPrivateKey = PrivateKey.generate();
-        console.log('TokenCreateTransaction:');
-        for (let i = 0; i < maxTransaction; i++) {
-            try {
-                const t1 = new Date();
-                let transaction = new TokenCreateTransaction()
-                    .setTokenName('Test')
-                    .setTokenSymbol('T')
-                    .setTreasuryAccountId(newAccountId)
-                    .setDecimals(2)
-                    .setInitialSupply(0)
-                    .setMaxTransactionFee(new Hbar(5))
-                    .setTokenMemo('Memo');
-                transaction = transaction.setAdminKey(newPrivateKey);
-                transaction = transaction.setKycKey(newPrivateKey);
-                transaction = transaction.setFreezeKey(newPrivateKey);
-                transaction = transaction.setWipeKey(newPrivateKey);
-                transaction = transaction.setSupplyKey(newPrivateKey);
-                transaction = transaction.freezeWith(client);
-                const signTx = await (await transaction.sign(newPrivateKey)).sign(newAccountKey);
-                const txResponse = await signTx.execute(client);
-                const receipt = await txResponse.getReceipt(client);
-                const tokenId = receipt.tokenId;
-                await wait(1000);
-                ++success;
-                const t2 = new Date();
-                logs.push((t2-t1) / 1000);
-            } catch (error) {
-                console.error('TokenCreateTransaction', error);
-                ++failed;
-                logs.push(false);
-            }
-        }
-        console.log('TokenCreateTransaction', logs);
+        const { success, failed } = await run('TokenCreateTransaction', maxTransaction, async function () {
+            let transaction = new TokenCreateTransaction()
+                .setTokenName('Test')
+                .setTokenSymbol('T')
+                .setTreasuryAccountId(newAccountId)
+                .setDecimals(2)
+                .setInitialSupply(0)
+                .setMaxTransactionFee(new Hbar(5))
+                .setTokenMemo('Memo');
+            transaction = transaction.setAdminKey(newPrivateKey);
+            transaction = transaction.setKycKey(newPrivateKey);
+            transaction = transaction.setFreezeKey(newPrivateKey);
+            transaction = transaction.setWipeKey(newPrivateKey);
+            transaction = transaction.setSupplyKey(newPrivateKey);
+            transaction = transaction.freezeWith(client);
+            const signTx = await (await transaction.sign(newPrivateKey)).sign(newAccountKey);
+            const txResponse = await signTx.execute(client);
+            const receipt = await txResponse.getReceipt(client);
+            const tokenId = receipt.tokenId;
+        }, 1000);
         assert.equal(success, maxTransaction);
         assert.equal(failed, 0);
     });
