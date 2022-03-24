@@ -384,7 +384,6 @@ export class BlockTreeGenerator {
                 }));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                console.log(error);
                 console.error(error.message);
                 res.send(new MessageError(error.message));
             }
@@ -485,7 +484,7 @@ export class BlockTreeGenerator {
                 res.send(file, 'raw');
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                console.log(error);
+                console.error(error.message);
                 res.send(new MessageError(error.message));
             }
         });
@@ -592,11 +591,11 @@ export class BlockTreeGenerator {
                                 messageId: element.timeStamp,
                                 version: element.message.version
                             });
-                        } 
+                        }
                     };
                 }
                 const zip = await IPFS.getFile(message.cid, 'raw');
-                
+
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }

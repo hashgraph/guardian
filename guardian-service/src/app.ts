@@ -85,7 +85,7 @@ Promise.all([
     }
     catch (e){
         new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
-        console.log(e);
+        console.error(e);
     }
 
     await setDefaultSchema(schemaRepository);

@@ -7,7 +7,6 @@ export const demoAPI = async function (
 ): Promise<void> {
     channel.response(MessageAPI.GENERATE_DEMO_KEY, async (msg, res) => {
         try {
-            console.log("test")
             const OPERATOR_ID = process.env.OPERATOR_ID;
             const OPERATOR_KEY = process.env.OPERATOR_KEY;
             const treasury = await HederaHelper.setOperator(OPERATOR_ID, OPERATOR_KEY).SDK.newAccount(30);
