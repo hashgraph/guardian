@@ -64,6 +64,6 @@ Promise.all([
 
     server.listen(PORT, () => {
         new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
-        console.log('UI service started on', PORT);
+        console.log('API gateway started on', PORT);
     });
 });
