@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { Schema, Token, UserType } from 'interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -48,6 +48,7 @@ export class ActionConfigComponent implements OnInit {
         this.block = block;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.options = this.block.uiMetaData.options || [];
+        this.block.user = block.user || UserType.OWNER;
     }
 
     onHide(item: any, prop: any) {
