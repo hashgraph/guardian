@@ -31,7 +31,7 @@ Wherever possible and relevant, Guardian Policy version header contains a refere
 
 ### Version Compatibility
 
-Guardian Policy authors should take care to ensure that policy workflow blocks, their sequence, properties and parameters are preserved to be backward compatible with earlier versions. A new Policy element should be added to the policy if/when it is necessary to make a non-backward compatible change. Policy workflow sequence or existing elements should be removed/changed in accordance with the API deprecation policy.
+Guardian Policy authors should take care to ensure that policy workflow blocks, their sequence, properties and parameters are preserved to be backward compatible with earlier versions. A new Policy element should be added to the policy if/when it is necessary to make a non-backward compatible change. Policy workflow sequence or existing elements should be removed/changed in accordance with the Policy deprecation policy.
 
 ### Non - Breaking changes
 
