@@ -48,7 +48,6 @@ export class ActionConfigComponent implements OnInit {
         this.block = block;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.options = this.block.uiMetaData.options || [];
-        this.block.user = block.user || UserType.OWNER;
     }
 
     onHide(item: any, prop: any) {
@@ -60,6 +59,7 @@ export class ActionConfigComponent implements OnInit {
             title: '',
             name: '',
             tooltip: '',
+            user: UserType.OWNER,
             type: 'text',
         })
     }
