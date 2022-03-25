@@ -8,7 +8,7 @@
 | Tag            | Unique name for the logic block.                                                                       | sensors\_grid.                                                       |
 | Permissions    | Which entity has rights to interact at this part of the workflow.                                      | Installer.                                                           |
 | Default Active | Shows whether this block is active at this time and whether it needs to be shown.                      | Checked or unchecked.                                                |
-| Dependancies   | Automatic update. The block is automatically re-rendered if any of the linked components gets updated. | Select the appropriate block from the dropdown.                      |
+| Dependencies   | Automatic update. The block is automatically re-rendered if any of the linked components gets updated. | Select the appropriate block from the dropdown.                      |
 | Data Type      | Specify the table to request the data from.                                                            | Current options are: Verifiable Credential, DID, Approve, or Hedera. |
 
 ### UI Properties

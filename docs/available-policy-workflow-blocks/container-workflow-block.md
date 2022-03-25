@@ -8,7 +8,7 @@
 | Tag            | Unique name for the logic block.                                                  | installer\_header.                              |
 | Permissions    | Which entity has rights to interact at this part of the workflow.                 | Installer.                                      |
 | Default Active | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |
-| Dependancies   | Establish workflow dependancies that need to be completed prior.                  | Select the apprioriate block from the dropdown. |
+| Dependencies   | Establish workflow dependancies that need to be completed prior.                  | Select the apprioriate block from the dropdown. |
 
 ### **UI Properties**
 
