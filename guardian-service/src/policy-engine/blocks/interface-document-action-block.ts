@@ -73,14 +73,14 @@ export class InterfaceDocumentActionBlock {
 
     async setData(user: IAuthUser, document: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
-        const ownerDid = ref.options.user === UserType.CURRENT 
-            ? user.did 
-            : document.owner;
         let state: any = { data: document };
 
         if (ref.options.type == 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
+                const ownerDid = option.user === UserType.CURRENT 
+                    ? user.did 
+                    : document.owner;
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, option.bindBlock) as any;
                 const owner = await this.users.getUserById(ownerDid);
                 await ref.runTarget(owner, state, block);
