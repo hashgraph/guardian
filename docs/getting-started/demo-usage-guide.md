@@ -22,6 +22,10 @@ There is also a _Custom Role_ which is called _User_. This role can be used to c
 
 ![](https://user-images.githubusercontent.com/40637665/148996412-61e1b2eb-80b2-4bbd-8317-fcdbcf3d24f6.png)
 
+{% hint style="info" %}
+**Note**: Please wait for the Initialization Process to be completed.
+{% endhint %}
+
 3\. You'll now be prompted to configure your Root Authority account. Press the **Generate** button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
 ![](https://user-images.githubusercontent.com/40637665/137956842-d9b3d0a3-7021-4304-9d1b-83d06ac115e2.png)
