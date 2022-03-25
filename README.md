@@ -164,7 +164,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    npm start
    ```
-  
+  ### Note: Once you start the service, please wait for the Initialization Process to be completed.
 ([back to top](broken-reference))
 
 ### Unit Tests
