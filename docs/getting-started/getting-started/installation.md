@@ -143,6 +143,10 @@ npm start
 
 ([back to top](https://github.com/hashgraph/guardian/tree/develop#top))
 
+{% hint style="info" %}
+**Note**: Once you start the service, please wait for the Initialization Process to be completed.
+{% endhint %}
+
 ### Unit Tests
 
 To run **guardian-service** unit tests, following commands needs to be executed:
