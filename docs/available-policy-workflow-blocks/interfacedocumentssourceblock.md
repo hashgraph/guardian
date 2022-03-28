@@ -10,6 +10,7 @@
 | Default Active | Shows whether this block is active at this time and whether it needs to be shown.                      | Checked or unchecked.                                                |
 | Dependencies   | Automatic update. The block is automatically re-rendered if any of the linked components gets updated. | Select the appropriate block from the dropdown.                      |
 | Data Type      | Specify the table to request the data from.                                                            | Current options are: Verifiable Credential, DID, Approve, or Hedera. |
+| Bind Group     | Group of documents to which this field of type Block will be applied                                   | Select the appropriate block from the dropdown.                      |
 
 ### UI Properties
 
