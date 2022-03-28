@@ -96,7 +96,7 @@ To start the service (found on [http://localhost:3004](http://localhost:3004)):
 npm start
 ```
 
-**From the UI Service folder**
+**From the API Gateway Service folder**
 
 To build the service:
 
@@ -126,7 +126,26 @@ To start the service (found on [http://localhost:3005](http://localhost:3005)):
 npm start
 ```
 
+#### From the Frontend folder
+
+To build the service:
+
+```
+npm install
+npm run build
+```
+
+To start the service (found on [http://localhost:4200](http://localhost:4200))
+
+```
+npm start
+```
+
 ([back to top](https://github.com/hashgraph/guardian/tree/develop#top))
+
+{% hint style="info" %}
+**Note**: Once you start the service, please wait for the Initialization Process to be completed.
+{% endhint %}
 
 ### Unit Tests
 
@@ -154,13 +173,6 @@ To run stability tests (certain transactions will be executed 10 times each), th
 
 ```
 npm run test:stability
-```
-
-To run **ui-service** unit tests, following commands needs to be executed:
-
-```
-cd ui-service
-npm run test
 ```
 
 To run **message-broker** unit tests, following commands needs to be executed:

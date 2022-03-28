@@ -3,12 +3,13 @@ import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { Settings } from '@entity/settings';
 import { HederaSDKHelper } from '@hedera-modules';
+import { ApiResponse } from '@api/api-response';
 
 export const demoAPI = async function (
     channel: any,
     settingsRepository: MongoRepository<Settings>
 ): Promise<void> {
-    channel.response(MessageAPI.GENERATE_DEMO_KEY, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY, async (msg, res) => {
         try {
             const operatorId = await settingsRepository.findOne({
                 name: 'OPERATOR_ID'

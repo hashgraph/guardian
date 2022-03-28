@@ -71,7 +71,7 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         res.status(200).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code, message: error.message });
     }
 });
 

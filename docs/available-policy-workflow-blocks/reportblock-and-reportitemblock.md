@@ -10,7 +10,7 @@
 | Tag            | Unique name for the logic block.                                                  | report.                                         |
 | Permissions    | Which entity has rights to interact at this part of the workflow.                 | Root Authority.                                 |
 | Default Active | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |
-| Dependancies   | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. |
+| Dependencies   | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. |
 
 ## reportItemBlock
 

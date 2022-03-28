@@ -18,9 +18,13 @@ There is also a _Custom Role_ which is called _User_. This role can be used to c
 
 ![Guardian Step 1](https://user-images.githubusercontent.com/40637665/148966434-b35f04eb-e14d-4bd1-a574-5a50aa3b181e.png)
 
-2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3002/](http://localhost:3002). Typically the way we start the reference implementation demonstration is by logging in as the Root Authority. Click the **Demo Admin Panel** drop-down located in the upper right-hand corner of the login screen and select the **Root Authority** user.
+2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000). Typically the way we start the reference implementation demonstration is by logging in as the Root Authority. Click the **Demo Admin Panel** drop-down located in the upper right-hand corner of the login screen and select the **Root Authority** user.
 
 ![](https://user-images.githubusercontent.com/40637665/148996412-61e1b2eb-80b2-4bbd-8317-fcdbcf3d24f6.png)
+
+{% hint style="info" %}
+**Note**: Please wait for the Initialization Process to be completed.
+{% endhint %}
 
 3\. You'll now be prompted to configure your Root Authority account. Press the **Generate** button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
@@ -49,7 +53,7 @@ Again this step is not needed if you import the entire policy (see step 6 and th
 6\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, as noted above, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the **import** button and enter the following Hedera message ID:
 
 * `1644847114.111298000` (iRec Policy)
-* `1647950909.262020677`(Verra REDD Policy)
+* `1648223036.051204000`(Verra REDD Policy)
 
 ![](https://user-images.githubusercontent.com/40637665/153242444-c16f357f-d12c-4b92-a9f9-b50788c47b2c.png)
 

@@ -46,7 +46,7 @@
                     (matChipInputTokenEnd)="add($event)"
                     [formControl]="autoCompleteControl">
 
-                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); chipInput.value = ''">
+                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); chipInput.value = ''; chipInput.blur()">
                     <mat-option *ngFor="let attr of attributes | async" [value]="attr">
                         {{attr}}
                     </mat-option>
@@ -93,14 +93,23 @@
             <ng-container matColumnDef="message">
                 <th mat-header-cell *matHeaderCellDef> Message </th>
                 <td mat-cell *matCellDef="let element">
-                    <div>{{element.message}}</div>
+                    <div class="long-message">{{element.message}}</div>
                 </td>
             </ng-container>
             <ng-container matColumnDef="attributes">
                 <th mat-header-cell *matHeaderCellDef> Attributes </th>
                 <td mat-cell *matCellDef="let element">
-                    <div>
+                    <div class="long-message">
                         {{element.attributes && element.attributes.join(', ')}}
+                    </div>
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="details">
+                <th mat-header-cell *matHeaderCellDef> Details </th>
+                <td mat-cell *matCellDef="let element" >
+                    <div class="btn-settings" (click)="openDetails(element)" >
+                        <mat-icon>expand_more</mat-icon>
+                        <span>Details</span>
                     </div>
                 </td>
             </ng-container>

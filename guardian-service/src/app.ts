@@ -23,6 +23,7 @@ import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
+import { ApplicationState, ApplicationStates } from '@helpers/application-state';
 
 Promise.all([
     createConnection({
@@ -43,6 +44,8 @@ Promise.all([
 ]).then(async values => {
     const [db, channel] = values;
 
+    const state = new ApplicationState();
+
     IPFS.setChannel(channel);
     new Logger().setChannel(channel);
     new Wallet().setChannel(channel);
@@ -62,7 +65,8 @@ Promise.all([
     const settingsRepository = db.getMongoRepository(Settings);
     const topicRepository = db.getMongoRepository(Topic);
 
-    await setDefaultSchema(schemaRepository);
+    state.updateState(ApplicationStates.INITIALIZING);
+
     await configAPI(channel, settingsRepository, topicRepository);
     await schemaAPI(channel, schemaRepository);
     await tokenAPI(channel, tokenRepository);
@@ -72,7 +76,16 @@ Promise.all([
     await demoAPI(channel, settingsRepository);
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-
+    await setDefaultSchema(schemaRepository);
+    
     new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
+    
+    state.updateState(ApplicationStates.READY);
 });
+
+function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    })
+}

@@ -6,6 +6,7 @@ import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
+import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 
 /**
  * External data block
@@ -15,6 +16,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
     commonBlock: false,
 })
 export class ExternalDataBlock {
+    @CatchErrors()
     async receiveData(data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let verify: boolean;

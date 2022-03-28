@@ -43,7 +43,8 @@ export enum BlockType {
     Calculate = 'calculateContainerBlock',
     CalculateMathAddon = 'calculateMathAddon',
     Report = 'reportBlock',
-    ReportItem = 'reportItemBlock'
+    ReportItem = 'reportItemBlock',
+    ReassigningBlock = 'reassigningBlock'
 }
 
 export enum BlockGroup {
@@ -91,6 +92,7 @@ export class RegisteredBlocks {
         this.register(BlockType.CalculateMathAddon, 'calculate', 'Math Addon', `Add 'Math' Addon`);
         this.register(BlockType.Report, 'addchart', 'Report', `Add 'Report' Block`);
         this.register(BlockType.ReportItem, 'list_alt', 'Report Item', `Add 'Report Item' Block`);
+        this.register(BlockType.ReassigningBlock, 'content_copy', 'Reassigning', `Add 'Reassigning' Block`);
 
         this.registerGroup(BlockGroup.Main, BlockType.Container);
         this.registerGroup(BlockGroup.Main, BlockType.Step);
@@ -104,6 +106,7 @@ export class RegisteredBlocks {
         this.registerGroup(BlockGroup.Documents, BlockType.AggregateDocument);
         this.registerGroup(BlockGroup.Documents, BlockType.FiltersAddon);
         this.registerGroup(BlockGroup.Documents, BlockType.DocumentsSourceAddon);
+        this.registerGroup(BlockGroup.Documents, BlockType.ReassigningBlock);
         this.registerGroup(BlockGroup.Tokens, BlockType.Mint);
         this.registerGroup(BlockGroup.Tokens, BlockType.Wipe);
         this.registerGroup(BlockGroup.Calculate, BlockType.Calculate);

@@ -8,6 +8,14 @@ import { Logger } from 'logger-helper';
  */
 export const loggerAPI = Router();
 
+function escapeRegExp(text) {
+    if (!text) {
+        return "";
+    }
+
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
 loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
     try {
         const filters: any = {};
@@ -19,18 +27,18 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
             const sDate = new Date(req.body.startDate);
             sDate.setHours(0, 0, 0, 0);
             const eDate = new Date(req.body.endDate);
-            eDate.setHours(0, 0, 0, 0);
+            eDate.setHours(23, 59, 59, 999);
             filters.datetime = {
                 $gte: sDate,
                 $lt: eDate
             };
         }
         if (req.body.attributes && req.body.attributes.length !== 0) {
-            filters.attributes = { $all: req.body.attributes };
+            filters.attributes = { $in: req.body.attributes };
         }
         if (req.body.message) {
             filters.message = {
-                $regex: `.*${req.body.message}.*`,
+                $regex: `.*${escapeRegExp(req.body.message)}.*`,
                 $options: 'i'
             }
         }
@@ -50,7 +58,10 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
 loggerAPI.get('/attributes', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
     try {
         const logger = new Logger();
-        const attributes = await logger.getAttributes(req.query.name as string);
+        if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {
+            req.query.existingAttributes = [req.query.existingAttributes as string];
+        }
+        const attributes = await logger.getAttributes(escapeRegExp(req.query.name), req.query.existingAttributes as string[]);
         return res.send(attributes);
     } catch (error) {
         console.error(error);

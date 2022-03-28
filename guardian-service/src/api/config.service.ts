@@ -3,7 +3,7 @@ import { Topic } from '@entity/topic';
 import { CommonSettings, IRootConfig, MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
-
+import { ApiResponse } from '@api/api-response';
 
 /**
  * Connecting to the message broker methods of working with root address book.
@@ -16,7 +16,7 @@ export const configAPI = async function (
     settingsRepository: MongoRepository<Settings>,
     topicRepository: MongoRepository<Topic>,
 ): Promise<void> {
-    channel.response(MessageAPI.GET_TOPIC, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_TOPIC, async (msg, res) => {
         const { type, owner } = msg.payload;
         const topic = await topicRepository.findOne({
             owner: owner,
@@ -29,7 +29,7 @@ export const configAPI = async function (
      * Update settings
      * 
      */
-    channel.response(MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
         try {
             const settings = msg.payload as CommonSettings;
             const oldSchemaTopicId = await settingsRepository.findOne({
@@ -94,7 +94,7 @@ export const configAPI = async function (
      * Get settings
      * 
      */
-    channel.response(MessageAPI.GET_SETTINGS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg, res) => {
         try {
             const operatorId = await settingsRepository.findOne({
                 name: 'OPERATOR_ID'

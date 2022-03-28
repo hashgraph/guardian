@@ -25,6 +25,7 @@ import { getMongoRepository } from 'typeorm';
 import { Topic } from '@entity/topic';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { ApiResponse } from '@api/api-response';
 
 /**
  * Connect to the message broker methods of working with Address books.
@@ -38,7 +39,7 @@ export const profileAPI = async function (
     channel: any,
     topicRepository: MongoRepository<Topic>
 ) {
-    channel.response(MessageAPI.GET_USER_BALANCE, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg, res) => {
         try {
             const { username } = msg.payload;
 
@@ -63,7 +64,7 @@ export const profileAPI = async function (
         }
     })
 
-    channel.response(MessageAPI.CREATE_USER_PROFILE, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE, async (msg, res) => {
         try {
             const {
                 hederaAccountId,
@@ -73,7 +74,7 @@ export const profileAPI = async function (
             } = msg.payload;
 
             let topic: any, topicId: string, topicKey: string;
-            
+
             if (owner) {
                 const topic = await topicRepository.findOne({
                     owner: owner,

@@ -5,6 +5,7 @@ import { MongoRepository } from 'typeorm';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
+import { ApiResponse } from '@api/api-response';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
@@ -57,7 +58,7 @@ export const tokenAPI = async function (
      * 
      * @returns {IToken[]} - all tokens
      */
-    channel.response(MessageAPI.SET_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_TOKEN, async (msg, res) => {
         try {
             if (!msg.payload) {
                 throw 'Invalid Params';
@@ -138,7 +139,7 @@ export const tokenAPI = async function (
         }
     })
 
-    channel.response(MessageAPI.FREEZE_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.FREEZE_TOKEN, async (msg, res) => {
         try {
             const { tokenId, username, owner, freeze } = msg.payload;
 
@@ -176,7 +177,7 @@ export const tokenAPI = async function (
     })
 
 
-    channel.response(MessageAPI.KYC_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg, res) => {
         try {
             const { tokenId, username, owner, grant } = msg.payload;
 
@@ -213,7 +214,7 @@ export const tokenAPI = async function (
         }
     })
 
-    channel.response(MessageAPI.ASSOCIATE_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN, async (msg, res) => {
         try {
             const { tokenId, did, associate } = msg.payload;
 
@@ -252,7 +253,7 @@ export const tokenAPI = async function (
         }
     })
 
-    channel.response(MessageAPI.GET_INFO_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_INFO_TOKEN, async (msg, res) => {
         try {
             const { tokenId, username, owner } = msg.payload;
 
@@ -283,7 +284,7 @@ export const tokenAPI = async function (
         }
     })
 
-    channel.response(MessageAPI.GET_ASSOCIATED_TOKENS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_ASSOCIATED_TOKENS, async (msg, res) => {
         try {
             const wallet = new Wallet();
             const users = new Users();
@@ -327,7 +328,7 @@ export const tokenAPI = async function (
      * 
      * @returns {IToken[]} - tokens
      */
-    channel.response(MessageAPI.GET_TOKENS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_TOKENS, async (msg, res) => {
         if (msg.payload) {
             if (msg.payload.tokenId) {
                 const reqObj: any = { where: {} };
@@ -355,7 +356,7 @@ export const tokenAPI = async function (
      * 
      * @returns {IToken[]} - all tokens
      */
-    channel.response(MessageAPI.IMPORT_TOKENS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.IMPORT_TOKENS, async (msg, res) => {
         try {
             let items: IToken[] = msg.payload;
             if (!Array.isArray(items)) {

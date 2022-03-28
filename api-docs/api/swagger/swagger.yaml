@@ -2302,6 +2302,13 @@ paths:
           schema:
             type: string
           description: Part of name.
+        - in: query
+          name: existingAttributes
+          schema:
+            type: array
+            items:
+              type: string
+          description: Attributes to exclude.
       security:
       - bearerAuth: []
       summary: Returns logs attributes.

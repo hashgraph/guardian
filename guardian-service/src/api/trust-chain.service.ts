@@ -14,6 +14,7 @@ import {
     VcDocument as HVcDocument,
     VpDocument as HVpDocument
 } from '@hedera-modules';
+import { ApiResponse } from '@api/api-response';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
@@ -212,7 +213,7 @@ export const trustChainAPI = async function (
      * 
      * @returns {IChainItem[]} - trust chain
      */
-    channel.response(MessageAPI.GET_CHAIN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg, res) => {
         try {
             const hash = msg.payload;
             const chain: IChainItem[] = [];

@@ -1,5 +1,9 @@
 import { IMessageResponse } from 'interfaces';
 
+export class ServiceError extends Error {
+    public code: number;
+}
+
 export abstract class ServiceRequestsBase {
     abstract readonly target: string;
     protected channel: any;
@@ -26,31 +30,36 @@ export abstract class ServiceRequestsBase {
      * @param type
      */
     public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
-        let response: any;
         try {
-            response = (await this.channel.request(this.target, entity, params, type)).payload;
+            const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
+            if (!response) {
+                throw {error: 'Server is not available'};
+            }
+            if (response.code !== 200) {
+                throw response;
+            }
+            return response.body;
         } catch (e) {
-            throw new Error(`${this.target} (${entity}) send: ${e}`);
+            const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
+            err.code = e.code;
+            throw err
         }
-        if (!response) {
-            throw new Error(`${this.target} (${entity}) send: Server is not available`);
-        }
-        if (response.error) {
-            response.message = `${this.target} (${entity}) send: ${response.error}`;
-            throw response;
-        }
-        return response.body;
     }
 
     public async rawRequest(entity: string, params?: any, type?: string): Promise<any> {
         try {
             const response = (await this.channel.request(this.target, entity, params, type)).payload;
             if (!response) {
-                throw 'Server is not available';
+                throw {error: 'Server is not available'};
+            }
+            if (response.code !== 200) {
+                throw response;
             }
             return response;
         } catch (e) {
-            throw new Error(`Guardian (${entity}) send: ` + e);
+            const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
+            err.code = e.code;
+            throw err
         }
     }
 }

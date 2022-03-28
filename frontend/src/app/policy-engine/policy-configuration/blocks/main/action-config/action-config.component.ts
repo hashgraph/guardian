@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { Schema, Token, UserType } from 'interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -59,6 +59,7 @@ export class ActionConfigComponent implements OnInit {
             title: '',
             name: '',
             tooltip: '',
+            user: UserType.OWNER,
             type: 'text',
         })
     }

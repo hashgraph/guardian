@@ -6,7 +6,7 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.0",
     "fastmq": "^1.3.8",
     "interfaces": "file:../interfaces",
     "jsonwebtoken": "^8.5.1",

@@ -15,4 +15,5 @@ export { InformationBlock } from './information-block';
 export { CalculateContainerBlock } from './calculate-block';
 export { CalculateMathAddon } from './calculate-math-addon';
 export { ReportBlock } from './report-block';
-export { ReportItemBlock } from './report-item-block'
+export { ReportItemBlock } from './report-item-block';
+export { ReassigningBlock } from './reassigning.block';

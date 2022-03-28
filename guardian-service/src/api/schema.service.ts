@@ -19,7 +19,7 @@ import { MessageAction, MessageServer, MessageType, SchemaMessage } from '@heder
 import { getMongoRepository } from 'typeorm';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
-
+import { ApiResponse } from '@api/api-response';
 
 export const schemaCache = {};
 
@@ -302,7 +302,7 @@ export const schemaAPI = async function (
      * 
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.SET_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_SCHEMA, async (msg, res) => {
         if (msg.payload.id) {
             const id = msg.payload.id as string;
             const item = await schemaRepository.findOne(id);
@@ -336,7 +336,7 @@ export const schemaAPI = async function (
      * 
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.GET_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_SCHEMA, async (msg, res) => {
         try {
             if (msg.payload) {
                 const schema = await schemaRepository.findOne(msg.payload.id);
@@ -360,7 +360,7 @@ export const schemaAPI = async function (
      * 
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_SCHEMES, async (msg, res) => {
         if (!msg.payload) {
             res.send(new MessageError('Invalid load schema parameter'));
             return;
@@ -395,7 +395,7 @@ export const schemaAPI = async function (
      * 
      * @returns {Schema} Found or uploaded schema
      */
-    channel.response(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Invalid import schema parameter'));
@@ -432,7 +432,7 @@ export const schemaAPI = async function (
      * 
      * @returns {Schema} Found or uploaded schema
      */
-    channel.response(MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Invalid import schema parameter'));
@@ -461,7 +461,7 @@ export const schemaAPI = async function (
      * 
      * @returns {Schema} Found or uploaded schema
      */
-    channel.response(MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Invalid preview schema parameters'));
@@ -496,12 +496,12 @@ export const schemaAPI = async function (
                 if (!schema.version) {
                     continue;
                 }
-                
+
                 const newVersions = [];
                 const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
                 for (let j = 0; j < topicMessages.length; j++) {
                     const topicMessage = topicMessages[j];
-                    if (topicMessage.version && 
+                    if (topicMessage.version &&
                         ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
                         newVersions.push({
                             messageId: topicMessage.getId(),
@@ -530,7 +530,7 @@ export const schemaAPI = async function (
      * 
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
         try {
             if (msg.payload) {
                 const id = msg.payload.id as string;
@@ -556,7 +556,7 @@ export const schemaAPI = async function (
      * 
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.DELETE_SCHEMA, async (msg, res) => {
         try {
             if (msg.payload) {
                 const id = msg.payload as string;
@@ -580,7 +580,7 @@ export const schemaAPI = async function (
      * 
      * @returns {any} - Response result
      */
-    channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
         try {
             const ids = msg.payload as string[];
             const schemas = await schemaRepository.findByIds(ids);
@@ -611,7 +611,7 @@ export const schemaAPI = async function (
         }
     });
 
-    channel.response(MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg, res) => {
         try {
             const { owner, iri } = msg.payload as { owner: string, iri: string };
             const schema = await incrementSchemaVersion(iri, owner);

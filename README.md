@@ -1,6 +1,6 @@
 # README
 
-[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/ui-service?label=version)
+[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/guardian-service?label=version)
 
 ## Guardian
 
@@ -122,7 +122,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the UI Service folder**
+   **From the API Gateway Service folder**
 
    To build the service:
 
@@ -151,7 +151,22 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    npm start
    ```
-  
+
+   **From the Frontend folder**
+
+   To build the service:
+
+   ```
+   npm install
+   npm run build
+   ```
+
+   To start the service (found on http://localhost:4200):
+
+   ```
+   npm start
+   ```
+  ### Note: Once you start the service, please wait for the Initialization Process to be completed.
 ([back to top](broken-reference))
 
 ### Unit Tests
@@ -180,13 +195,6 @@ To run stability tests (certain transactions will be executed 10 times each), th
 
 ```
 npm run test:stability
-```
-
-To run **ui-service** unit tests, following commands needs to be executed:
-
-```
-cd ui-service
-npm run test
 ```
 
 To run **message-broker** unit tests, following commands needs to be executed:

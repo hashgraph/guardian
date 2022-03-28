@@ -36,7 +36,8 @@ export class InterfaceDocumentActionBlock {
             id: ref.uuid,
             blockType: ref.blockType,
             type: ref.options.type,
-            uiMetaData: ref.options.uiMetaData
+            uiMetaData: ref.options.uiMetaData,
+	    user: ref.options.user
         }
 
         if (ref.options.type == 'selector') {
@@ -64,10 +65,13 @@ export class InterfaceDocumentActionBlock {
         let state: any = { data: document };
 
         if (ref.options.type == 'selector') {
+            const ownerDid = option.user === UserType.CURRENT 
+                    ? user.did 
+                    : document.owner;
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, option.bindBlock) as any;
-                const owner = await this.users.getUserById(document.owner);
+                const owner = await this.users.getUserById(ownerDid);
                 await ref.runTarget(owner, state, block);
             }
             return;
