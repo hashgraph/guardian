@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TokenService } from 'src/app/services/token.service';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyAction, SavePolicyDialog } from '../../save-policy-dialog/save-policy-dialog.component';
+import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import * as yaml from 'js-yaml';
 

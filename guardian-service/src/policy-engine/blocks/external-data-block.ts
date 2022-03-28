@@ -16,6 +16,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 })
 export class ExternalDataBlock {
     async receiveData(data: any) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         let verify: boolean;
         try {
             const VCHelper = new VcHelper();
@@ -25,10 +26,11 @@ export class ExternalDataBlock {
                 verify = await VCHelper.verifyVC(data.document);
             }
         } catch (error) {
+            ref.error(`Verify VC: ${error.message}`)
             verify = false;
         }
+
         const signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
         const vc = VcDocument.fromJsonTree(data.document);
         const doc = {
             hash: vc.toCredentialHash(),
@@ -48,17 +50,21 @@ export class ExternalDataBlock {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        if (ref.options.schema) {
-            if (typeof ref.options.schema !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                return;
-            }
+        try {
+            if (ref.options.schema) {
+                if (typeof ref.options.schema !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+                    return;
+                }
 
-            const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
-            if (!schema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                return;
+                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+                if (!schema) {
+                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+                    return;
+                }
             }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

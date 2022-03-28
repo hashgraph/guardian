@@ -6,7 +6,7 @@ import {
     DidDocumentStatus,
     DocumentSignature,
     DocumentStatus,
-    IDidDocument,
+    IDidObject,
     IVCDocument,
     IVPDocument,
     MessageAPI,
@@ -78,7 +78,7 @@ export const documentsAPI = async function (
      */
     channel.response(MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
         const reqObj = { where: { did: { $eq: msg.payload.did } } };
-        const didDocuments: IDidDocument[] = await didDocumentRepository.find(reqObj);
+        const didDocuments: IDidObject[] = await didDocumentRepository.find(reqObj);
         res.send(new MessageResponse(didDocuments));
     });
 
@@ -153,14 +153,14 @@ export const documentsAPI = async function (
             const item = await didDocumentRepository.findOne({ where: { did: { $eq: did } } });
             if (item) {
                 item.status = getDIDOperation(operation);
-                const result: IDidDocument = await didDocumentRepository.save(item);
+                const result: IDidObject = await didDocumentRepository.save(item);
                 res.send(new MessageResponse(result));
             } else {
                 res.send(new MessageError('Document not found'));
             }
         } else {
             const didDocumentObject = didDocumentRepository.create(msg.payload);
-            const result: IDidDocument[] = await didDocumentRepository.save(didDocumentObject);
+            const result: IDidObject[] = await didDocumentRepository.save(didDocumentObject);
             res.send(new MessageResponse(result));
         }
     });

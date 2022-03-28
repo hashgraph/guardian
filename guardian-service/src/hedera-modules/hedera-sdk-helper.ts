@@ -41,7 +41,7 @@ export class HederaSDKHelper {
 
     constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         this.client = Environment.createClient();
-        if(operatorId && operatorKey) {
+        if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
         }
     }
@@ -525,25 +525,24 @@ export class HederaSDKHelper {
     ): Promise<string> {
         const client = this.client;
 
-        const topicCreateTransaction = new TopicCreateTransaction()
+        let transaction: any = new TopicCreateTransaction()
             .setMaxTransactionFee(new Hbar(MAX_FEE));
 
         if (topicMemo) {
-            topicCreateTransaction.setTopicMemo(topicMemo);
+            transaction = transaction.setTopicMemo(topicMemo);
         }
 
         if (submitKey) {
             const accountKey = PrivateKey.fromString(submitKey.toString());
-            topicCreateTransaction.setSubmitKey(accountKey);
+            transaction = transaction.setSubmitKey(accountKey);
         }
 
         if (adminKey) {
             const accountKey = PrivateKey.fromString(adminKey.toString());
-            topicCreateTransaction.setAdminKey(accountKey)
+            transaction = transaction.setAdminKey(accountKey)
         }
 
-        let transaction: Transaction = topicCreateTransaction
-            .freezeWith(client);
+        transaction = transaction.freezeWith(client);
 
         if (adminKey) {
             const accountKey = PrivateKey.fromString(adminKey.toString());
@@ -552,7 +551,6 @@ export class HederaSDKHelper {
 
         const dtxId = await transaction.execute(client);
         const topicId = (await dtxId.getReceipt(client)).topicId;
-
         return topicId.toString();
     }
 
@@ -576,6 +574,7 @@ export class HederaSDKHelper {
             message: message,
         });
         if (privateKey) {
+            messageTransaction = messageTransaction.freezeWith(client);
             if (typeof privateKey === 'string') {
                 messageTransaction = await messageTransaction.sign(PrivateKey.fromString(privateKey));
             } else {
@@ -613,4 +612,42 @@ export class HederaSDKHelper {
             message: buffer
         }
     }
+
+    /**
+     * Returns topic messages
+     * @param topicId Topic identifier
+     * @returns Messages
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async getTopicMessages(topicId: string): Promise<{
+        id: string,
+        message: string
+    }[]> {
+        const res = await axios.get(`${Environment.HEDERA_TOPIC_API}${topicId}/messages`, {
+            params: { limit: Number.MAX_SAFE_INTEGER },
+            responseType: 'json'
+        });
+
+        if (!res || !res.data || !res.data.messages) {
+            throw new Error(`Invalid topicId '${topicId}'`);
+        }
+
+        const result = [];
+        const messages = res.data.messages;
+        if (messages.length === 0) {
+            return result;
+        }
+
+        for (let i = 0; i < messages.length; i++) {
+            const buffer = Buffer.from(messages[i].message, 'base64').toString();
+            const id = messages[i].consensus_timestamp;
+            result.push({
+                id: id,
+                message: buffer
+            });
+        }
+
+        return result;
+    }
+
 }

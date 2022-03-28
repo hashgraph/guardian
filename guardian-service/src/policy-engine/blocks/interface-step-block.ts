@@ -17,6 +17,7 @@ export class InterfaceStepBlock {
 
     async changeStep(user: IAuthUser, data: any, target: any) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        ref.log(`changeStep`);
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};

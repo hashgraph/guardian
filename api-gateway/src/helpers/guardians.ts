@@ -2,7 +2,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import {
     CommonSettings,
     IChainItem,
-    IDidDocument,
+    IDidObject,
     ISchema,
     IToken,
     ITokenInfo,
@@ -85,7 +85,7 @@ export class Guardians {
      *
      * @returns {IDidDocument[]} - DID Documents
      */
-    public async getDidDocuments(params: IFilter): Promise<IDidDocument[]> {
+    public async getDidDocuments(params: IFilter): Promise<IDidObject[]> {
         return await this.request(MessageAPI.GET_DID_DOCUMENTS, params);
     }
 

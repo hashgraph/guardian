@@ -26,14 +26,6 @@ import { Topic } from '@entity/topic';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
-async function wait(s: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve();
-        }, s * 1000);
-    })
-}
-
 /**
  * Connect to the message broker methods of working with Address books.
  * 
@@ -82,7 +74,6 @@ export const profileAPI = async function (
 
             let topic: any, topicId: string, topicKey: string;
             
-            console.log(owner);
             if (owner) {
                 const topic = await topicRepository.findOne({
                     owner: owner,
@@ -94,19 +85,17 @@ export const profileAPI = async function (
                 topicId = topic.topicId;
                 topicKey = topic.key;
             } else {
-                const topicMemo = 'User Topic';
                 const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey);
-                const _topicId = await client.newTopic(hederaAccountKey, null, topicMemo);
+                const _topicId = await client.newTopic(hederaAccountKey, null, TopicType.UserTopic);
                 topic = {
                     topicId: _topicId,
-                    description: topicMemo,
+                    description: TopicType.UserTopic,
                     owner: null,
                     type: TopicType.UserTopic,
                     key: null
                 };
                 topicId = topic.topicId;
                 topicKey = topic.key;
-                await wait(10);
             }
 
             let didMessage: DIDMessage;

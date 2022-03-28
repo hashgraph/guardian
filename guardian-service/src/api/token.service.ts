@@ -85,7 +85,8 @@ export const tokenAPI = async function (
                 throw 'Invalid Token Symbol';
             }
 
-            const root = await this.users.getHederaAccount(owner);
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
 
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const treasury = await client.newAccount(2);
@@ -141,8 +142,6 @@ export const tokenAPI = async function (
         try {
             const { tokenId, username, owner, freeze } = msg.payload;
 
-            const root = await this.users.getHederaAccount(owner);
-
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
                 throw 'Token not found';
@@ -157,6 +156,7 @@ export const tokenAPI = async function (
                 throw 'User is not linked to an Hedera Account';
             }
 
+            const root = await users.getHederaAccount(owner);
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const freezeKey = token.freezeKey;
             if (freeze) {
@@ -180,8 +180,6 @@ export const tokenAPI = async function (
         try {
             const { tokenId, username, owner, grant } = msg.payload;
 
-            const root = await this.users.getHederaAccount(owner);
-
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
                 throw 'Token not found';
@@ -196,6 +194,7 @@ export const tokenAPI = async function (
                 throw 'User is not linked to an Hedera Account';
             }
 
+            const root = await users.getHederaAccount(owner);
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const kycKey = token.kycKey;
             if (grant) {
@@ -257,13 +256,6 @@ export const tokenAPI = async function (
         try {
             const { tokenId, username, owner } = msg.payload;
 
-            const root = await this.users.getHederaAccount(owner);
-
-            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
-            if (!token) {
-                throw 'Token not found';
-            }
-
             const users = new Users();
             const user = await users.getUser(username);
             if (!user) {
@@ -273,6 +265,12 @@ export const tokenAPI = async function (
                 throw 'User is not linked to an Hedera Account';
             }
 
+            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+            if (!token) {
+                throw 'Token not found';
+            }
+
+            const root = await users.getHederaAccount(owner);
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const info = await client.accountInfo(user.hederaAccountId);
             const result = getTokenInfo(info, { tokenId });

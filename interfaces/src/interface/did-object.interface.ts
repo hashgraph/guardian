@@ -1,9 +1,10 @@
 import {DidDocumentStatus} from '../type/did-status.type';
+import {IDidDocument} from './did-document';
 
-export interface IDidDocument {
+export interface IDidObject {
     id: string;
     did: string;
-    document: any;
+    document: IDidDocument;
     createDate: Date;
     updateDate: Date;
     status: DidDocumentStatus;

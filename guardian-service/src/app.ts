@@ -16,15 +16,13 @@ import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
-import { VcHelper } from '@helpers/vcHelper';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
-import { Policy } from '@entity/policy';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
 import { Topic } from '@entity/topic';
+import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 
 Promise.all([
     createConnection({
@@ -51,22 +49,9 @@ Promise.all([
     new Users().setChannel(channel);
 
     const policyGenerator = new BlockTreeGenerator();
-    policyGenerator.setChannel(channel);
-    for (let policy of await getMongoRepository(Policy).find(
-        { where: { status: { $eq: 'PUBLISH' } } }
-    )) {
-        try {
-            await policyGenerator.generate(policy.id.toString());
-        } catch (e) {
-            new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
-            console.error(e.message);
-        }
-    }
-    policyGenerator.registerListeners();
-    channel.response('mrv-data', async (msg, res) => {
-        await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
-        res.send();
-    });
+    const policyService = new PolicyEngineService(channel);
+    policyGenerator.init();
+    policyService.registerListeners();
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);
     const vcDocumentRepository = db.getMongoRepository(VcDocument);
@@ -83,14 +68,8 @@ Promise.all([
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await profileAPI(channel, topicRepository);
-    await documentsAPI(
-        channel,
-        didDocumentRepository,
-        vcDocumentRepository,
-        vpDocumentRepository,
-    );
+    await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await demoAPI(channel, settingsRepository);
-
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
 

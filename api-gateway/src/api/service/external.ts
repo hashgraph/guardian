@@ -15,7 +15,7 @@ externalAPI.post('/', async (req: Request, res: Response) => {
         res.send(await engineService.recieveExternalData(req.body));
     } catch (e) {
         console.error(e);
-        new Logger().error(e.toString(), ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });

@@ -15,9 +15,10 @@ import path from 'path';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
-import { MessageAction, MessageServer, SchemaMessage } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, SchemaMessage } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
 import { replaceValueRecursive } from '@helpers/utils';
+import { Users } from '@helpers/users';
 
 
 export const schemaCache = {};
@@ -90,17 +91,15 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
 }
 
 const loadSchema = async function (messageId: string, owner: string) {
+    const log = new Logger();
     try {
         if (schemaCache[messageId]) {
             return schemaCache[messageId];
         }
-
         const messageServer = new MessageServer();
-
-        console.log('loadSchema: ' + messageId);
+        log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
         const message = await messageServer.getMessage<SchemaMessage>(messageId);
-        console.log('loadedSchema: ' + messageId);
-
+        log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
         const schemaToImport: any = {
             uuid: message.uuid,
             hash: '',
@@ -121,11 +120,11 @@ const loadSchema = async function (messageId: string, owner: string) {
             iri: null
         }
         updateIRI(schemaToImport);
-        console.log('loadSchema end: ' + messageId);
+        log.info(`loadSchema end: ${messageId}`, ['GUARDIAN_SERVICE']);
         schemaCache[messageId] = { ...schemaToImport };
         return schemaToImport;
     } catch (error) {
-        new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+        log.error(error.message, ['GUARDIAN_SERVICE']);
         console.error(error.message);
         throw new Error(`Cannot load schema ${messageId}`);
     }
@@ -161,15 +160,15 @@ const onlyUnique = function (value: any, index: any, self: any): boolean {
 }
 
 
-export async function incrementSchemaVersion(owner: string, iri: string): Promise<SchemaCollection> {
+export async function incrementSchemaVersion(iri: string, owner: string): Promise<SchemaCollection> {
     if (!owner || !iri) {
-        throw new Error('Schema not found');
+        throw new Error(`Invalid increment schema version parameter`);
     }
 
     const schema = await getMongoRepository(SchemaCollection).findOne({ iri: iri });
 
     if (!schema) {
-        throw new Error('Schema not found');
+        throw new Error(`Schema not found: ${iri}`);
     }
 
     if (schema.status == SchemaStatus.PUBLISHED) {
@@ -198,7 +197,7 @@ export async function publishSchema(id: string, version: string, owner: string):
     const item = await getMongoRepository(SchemaCollection).findOne(id);
 
     if (!item) {
-        throw new Error('Schema not found');
+        throw new Error(`Schema not found: ${id}`);
     }
 
     if (item.creator != owner) {
@@ -208,8 +207,6 @@ export async function publishSchema(id: string, version: string, owner: string):
     if (item.status == SchemaStatus.PUBLISHED) {
         throw new Error('Invalid status');
     }
-
-    const root = await this.users.getHederaAccount(owner);
 
     const schemaTopicId = await getMongoRepository(Settings).findOne({
         name: 'SCHEMA_TOPIC_ID'
@@ -221,8 +218,10 @@ export async function publishSchema(id: string, version: string, owner: string):
 
     const itemDocument = item.document;
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
-    item.context = JSON.stringify(schemasToContext([...defsArray, itemDocument]));
+    item.context = schemasToContext([...defsArray, itemDocument]);
 
+    const users = new Users();
+    const root = await users.getHederaAccount(owner);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
     // messageServer.setSubmitKey(topic.key);
     const message = new SchemaMessage(MessageAction.PublishSchema);
@@ -344,7 +343,7 @@ export const schemaAPI = async function (
                 res.send(new MessageResponse(schema));
                 return;
             }
-            res.send(new MessageError('Schema not found'));
+            res.send(new MessageError('Invalid load schema parameter'));
         }
         catch (error) {
             new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
@@ -363,7 +362,7 @@ export const schemaAPI = async function (
      */
     channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
         if (!msg.payload) {
-            res.send(new MessageError('Schema not found'));
+            res.send(new MessageError('Invalid load schema parameter'));
             return;
         }
         const { owner, uuid } = msg.payload;
@@ -399,12 +398,12 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
         try {
             if (!msg.payload) {
-                res.send(new MessageError('Schema not found'));
+                res.send(new MessageError('Invalid import schema parameter'));
                 return;
             }
             const { owner, messageIds } = msg.payload as { owner: string, messageIds: string[] };
             if (!owner || !messageIds) {
-                res.send(new MessageError('Schema not found'));
+                res.send(new MessageError('Invalid import schema parameter'));
                 return;
             }
 
@@ -436,12 +435,12 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
         try {
             if (!msg.payload) {
-                res.send(new MessageError('Schema not found'));
+                res.send(new MessageError('Invalid import schema parameter'));
                 return;
             }
             const { owner, files } = msg.payload as { owner: string, files: ISchema[] };
             if (!owner || !files) {
-                res.send(new MessageError('Schema not found'));
+                res.send(new MessageError('Invalid import schema parameter'));
                 return;
             }
 
@@ -465,12 +464,12 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
         try {
             if (!msg.payload) {
-                res.send(new MessageError('Schema not found'));
+                res.send(new MessageError('Invalid preview schema parameters'));
                 return;
             }
             const { messageIds } = msg.payload as { messageIds: string[] };
             if (!messageIds) {
-                res.send(new MessageError('Schema not found'));
+                res.send(new MessageError('Invalid preview schema parameters'));
                 return;
             }
             const result = [];
@@ -480,40 +479,40 @@ export const schemaAPI = async function (
                 result.push(schema);
             }
 
-            /*
-            const topics = result.map(res => res.topicId).filter(onlyUnique);
-            const anotherSchemas = [];
-            for (let i = 0; i < topics.length; i++) {
-                const topicId = topics[i];
-                anotherSchemas.push({
-                    topicId,
-                    messages: await HederaMirrorNodeHelper.getTopicMessages(topicId)
-                })
+            const messageServer = new MessageServer();
+            const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
+            const anotherSchemas: SchemaMessage[] = [];
+            for (let i = 0; i < uniqueTopics.length; i++) {
+                const topicId = uniqueTopics[i];
+                const anotherVersions = await messageServer.getMessages<SchemaMessage>(
+                    topicId, MessageType.SchemaDocument, MessageAction.PublishSchema
+                );
+                for (let j = 0; j < anotherVersions.length; j++) {
+                    anotherSchemas.push(anotherVersions[j]);
+                }
             }
             for (let i = 0; i < result.length; i++) {
                 const schema = result[i];
                 if (!schema.version) {
                     continue;
                 }
+                
                 const newVersions = [];
-                const topicMessages = anotherSchemas.find(item => item.topicId === schema.topicId);
-                topicMessages?.messages?.forEach(anotherSchema => {
-                    if (anotherSchema.message
-                        && anotherSchema.message.uuid === schema.uuid
-                        && anotherSchema.message.version
-                        && ModelHelper.versionCompare(anotherSchema.message.version, schema.version) === 1) {
+                const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
+                for (let j = 0; j < topicMessages.length; j++) {
+                    const topicMessage = topicMessages[j];
+                    if (topicMessage.version && 
+                        ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
                         newVersions.push({
-                            messageId: anotherSchema.timeStamp,
-                            version: anotherSchema.message.version
+                            messageId: topicMessage.getId(),
+                            version: topicMessage.version
                         });
                     }
-                });
+                }
                 if (newVersions && newVersions.length !== 0) {
                     schema.newVersions = newVersions.reverse();
                 }
             }
-            */
-
             res.send(new MessageResponse(result));
         }
         catch (error) {
@@ -615,7 +614,7 @@ export const schemaAPI = async function (
     channel.response(MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg, res) => {
         try {
             const { owner, iri } = msg.payload as { owner: string, iri: string };
-            const schema = await incrementSchemaVersion(owner, iri);
+            const schema = await incrementSchemaVersion(iri, owner);
             res.send(new MessageResponse(schema));
         } catch (error) {
             new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);

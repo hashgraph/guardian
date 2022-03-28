@@ -15,6 +15,7 @@ import { DocumentLoader } from "./..//document-loader/document-loader";
 import { SchemaLoader, SchemaLoaderFunction } from "./..//document-loader/schema-loader";
 import { Hashing } from "./../hashing";
 import { DidRootKey } from "./did-document";
+import e from "express";
 
 export interface ISuite {
     issuer: string;
@@ -92,21 +93,9 @@ export class VCJS {
      * 
      * @returns {Ed25519Signature2018} - Ed25519Signature2018
      */
-    public async createSuite(id: string, did: string, didKey: PrivateKey): Promise<Ed25519Signature2018> {
-        const privateKey = didKey.toBytes();
-        const publicKey = didKey.publicKey.toBytes();
-        const secretKey = new Uint8Array(publicKey.byteLength + privateKey.byteLength);
-        secretKey.set(new Uint8Array(privateKey), 0);
-        secretKey.set(new Uint8Array(publicKey), privateKey.byteLength);
-        const publicKeyBase58 = Hashing.base58.encode(publicKey);
-        const privateKeyBase58 = Hashing.base58.encode(secretKey);
-        const key = await Ed25519VerificationKey2018.from({
-            id: id,
-            type: 'Ed25519VerificationKey2018',
-            controller: did,
-            publicKeyBase58: publicKeyBase58,
-            privateKeyBase58: privateKeyBase58,
-        });
+    public async createSuite(document: DidRootKey): Promise<Ed25519Signature2018> {
+        const verificationMethod = document.getPrivateVerificationMethod();
+        const key = await Ed25519VerificationKey2018.from(verificationMethod);
         return new Ed25519Signature2018({ key: key });
     }
 
@@ -148,7 +137,19 @@ export class VCJS {
             suite: new Ed25519Signature2018(),
             documentLoader: documentLoader,
         });
-        return !!result.verified;
+        if (result.verified) {
+            return true;
+        } else {
+            if (result.results) {
+                for (let i = 0; i < result.results.length; i++) {
+                    const element = result.results[i];
+                    if (!element.verified && element.error && element.error.message) {
+                        throw new Error(element.error.message);
+                    }
+                }
+            }
+            throw new Error('Verification error');
+        }
     }
 
     /**
@@ -234,8 +235,7 @@ export class VCJS {
         } else {
             vc = vcDocument;
         }
-        const verify = await this.verify(vc, this.loader);
-        return verify;
+        return await this.verify(vc, this.loader);
     }
 
 
@@ -279,11 +279,7 @@ export class VCJS {
     ): Promise<VcDocument> {
         const document = DidRootKey.createByPrivateKey(did, key);
         const id = HederaUtils.randomUUID();
-        const didRootId = document.getId();
-        const didId = document.getController();
-        const privateKey = document.getPrivateKey();
-        const suite = await this.createSuite(didRootId, didId, privateKey);
-
+        const suite = await this.createSuite(document);
         const vcSubject = VcSubject.create(subject, schema);
         for (let i = 0; i < this.schemaContext.length; i++) {
             const element = this.schemaContext[i];
@@ -294,7 +290,7 @@ export class VCJS {
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
         vc.addCredentialSubject(vcSubject);
-        vc.setIssuer(didId);
+        vc.setIssuer(did);
         vc = await this.issue(vc, suite, this.loader);
         return vc;
     }
@@ -317,11 +313,7 @@ export class VCJS {
     ): Promise<VpDocument> {
         uuid = uuid || HederaUtils.randomUUID();
         const document = DidRootKey.createByPrivateKey(did, key);
-        const didRootId = document.getId();
-        const didId = document.getController();
-        const privateKey = document.getPrivateKey();
-        const suite = await this.createSuite(didRootId, didId, privateKey);
-
+        const suite = await this.createSuite(document);
         let vp = new VpDocument();
         vp.setId(uuid);
         vp.addVerifiableCredentials(vcs);

@@ -64,20 +64,31 @@ export class MessageServer {
     }
 
     public static fromMessageObject(json: any): Message {
+        let message: Message;
         switch (json.type) {
             case MessageType.VCDocument:
-                return VCMessage.fromMessageObject(json);
+                message = VCMessage.fromMessageObject(json);
+                break;
             case MessageType.DIDDocument:
-                return DIDMessage.fromMessageObject(json);
+                message = DIDMessage.fromMessageObject(json);
+                break;
             case MessageType.SchemaDocument:
-                return SchemaMessage.fromMessageObject(json);
+                message = SchemaMessage.fromMessageObject(json);
+                break;
             case MessageType.PolicyDocument:
-                return PolicyMessage.fromMessageObject(json);
+                message = PolicyMessage.fromMessageObject(json);
+                break;
             default:
                 new Logger().error(`Invalid format message: ${json.type}`, ['GUARDIAN_SERVICE']);
                 console.error(`Invalid format message: ${json.type}`);
                 throw 'Invalid format';
         }
+        if(!message.validate()) {
+            new Logger().error(`Invalid json: ${json.type}`, ['GUARDIAN_SERVICE']);
+            console.error(`Invalid json: ${json.type}`);
+            throw 'Invalid json';
+        }
+        return message;
     }
 
 
@@ -87,6 +98,25 @@ export class MessageServer {
         const result = MessageServer.fromMessage(message);
         result.setId(timeStamp);
         result.setTopicId(topicId);
+        return result;
+    }
+
+    private async getTopicMessages(topicId: string | TopicId): Promise<Message[]> {
+        const topic = topicId.toString();
+        const messages = await this.client.getTopicMessages(topic);
+        new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
+        const result: Message[] = [];
+        for (let i = 0; i < messages.length; i++) {
+            try {
+                const message = messages[i];
+                const item = MessageServer.fromMessage(message.message);
+                item.setId(message.id);
+                item.setTopicId(topic);
+                result.push(item);
+            } catch (error) {
+                continue;
+            }
+        }
         return result;
     }
 
@@ -100,5 +130,21 @@ export class MessageServer {
         let message = await this.getTopicMessage(id);
         message = await this.loadIPFS(message);
         return message as T;
+    }
+
+
+    public async getMessages<T extends Message>(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<T[]> {
+        let messages = await this.getTopicMessages(topicId);
+        if (type) {
+            messages = messages.filter(m => m.type == type);
+        }
+        if (action) {
+            messages = messages.filter(m => m.action == action);
+        }
+        return messages as T[];
+    }
+
+    public async loadDocument<T extends Message>(message: T): Promise<T> {
+        return await this.loadIPFS<T>(message);
     }
 }

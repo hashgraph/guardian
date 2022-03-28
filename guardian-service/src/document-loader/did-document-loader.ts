@@ -20,11 +20,10 @@ export class DIDDocumentLoader extends DocumentLoader {
 
     public async getDocument(iri: string): Promise<any> {
         const did = DidRootKey.create(iri).getController();
-        const reqObj = { where: { did: { $eq: did } } };
-        const didDocuments = await getMongoRepository(DidDocument).findOne(reqObj);
+        const didDocuments = await getMongoRepository(DidDocument).findOne({ did: did });
         if (didDocuments) {
             return didDocuments.document;
         }
-        throw new Error('DID not found');
+        throw new Error(`DID not found: ${iri}`);
     }
 }

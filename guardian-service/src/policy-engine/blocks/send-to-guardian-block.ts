@@ -16,7 +16,6 @@ import { DidDocument } from '@entity/did-document';
 import { ApprovalDocument } from '@entity/approval-document';
 import { Topic } from '@entity/topic';
 
-
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
     commonBlock: true
@@ -48,6 +47,8 @@ export class SendToGuardianBlock {
                 document.option[option.name] = option.value;
             }
         }
+
+        ref.log(`Send Document: ${JSON.stringify(document)}`);
 
         let result: any;
         switch (ref.options.dataType) {
@@ -94,7 +95,7 @@ export class SendToGuardianBlock {
     @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        console.log(`sendToGuardianBlock: runAction: ${ref.tag}`);
+        ref.log(`runAction`);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
         ref.updateBlock(state, user, '');
@@ -105,11 +106,15 @@ export class SendToGuardianBlock {
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const topic = await getMongoRepository(Topic).findOne({ owner: ref.policyOwner, type: TopicType.RootPolicyTopic });
+        const topic = await getMongoRepository(Topic).findOne({ 
+            policyId: ref.policyId, 
+            type: TopicType.RootPolicyTopic 
+        });
         const vc = HVcDocument.fromJsonTree(document.document);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vc);
         const messageServer = new MessageServer(userID, userKey);
+        messageServer.setSubmitKey(topic.key);
         await messageServer.sendMessage(topic.topicId, vcMessage)
         document.hederaStatus = DocumentStatus.ISSUE;
         return document;
@@ -117,9 +122,12 @@ export class SendToGuardianBlock {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+        try {
+            if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

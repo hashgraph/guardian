@@ -50,7 +50,7 @@ export class AggregateBlock {
             threshold
         } = ref.options;
 
-        const token = await getMongoRepository(Token).findOne({tokenId});
+        const token = await getMongoRepository(Token).findOne({ tokenId });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -78,19 +78,22 @@ export class AggregateBlock {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        try {
+            // Test rule options
+            if (!ref.options.rule) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+            } else if (typeof ref.options.rule !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+            }
 
-        // Test rule options
-        if (!ref.options.rule) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-        } else if (typeof ref.options.rule !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
-        }
-
-        // Test threshold options
-        if (!ref.options.threshold) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
-        } else if (typeof ref.options.threshold !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a string');
+            // Test threshold options
+            if (!ref.options.threshold) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
+            } else if (typeof ref.options.threshold !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a string');
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

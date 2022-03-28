@@ -10,8 +10,8 @@ import { StateField } from '@policy-engine/helpers/decorators';
 import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection  } from '@entity/schema';
-import { DidDocument as DidDocumentCollection  } from '@entity/did-document';
+import { Schema as SchemaCollection } from '@entity/schema';
+import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { Topic } from '@entity/topic';
 
 @EventBlock({
@@ -30,7 +30,7 @@ export class RequestVcDocumentBlock {
     constructor() {
     }
 
-    async changeActive(user: IAuthUser, active) {
+    async changeActive(user: IAuthUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
@@ -84,7 +84,7 @@ export class RequestVcDocumentBlock {
 
     async setData(user: IAuthUser, _data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        console.log(`requestVcDocumentBlock: setData: ${ref.tag}`);
+        ref.log(`setData`);
 
         if (!user.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
@@ -109,7 +109,6 @@ export class RequestVcDocumentBlock {
 
             const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
             const VCHelper = new VcHelper();
-
             if (id) {
                 credentialSubject.id = id;
             }
@@ -117,6 +116,7 @@ export class RequestVcDocumentBlock {
                 credentialSubject.ref = documentRef;
             }
             credentialSubject.policyId = ref.policyId;
+
             const res = await VCHelper.verifySubject(credentialSubject);
             if (!res.ok) {
                 throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
@@ -130,11 +130,11 @@ export class RequestVcDocumentBlock {
                 schema: schema,
                 type: schema
             };
-
             await this.changeActive(user, true);
 
             await ref.runNext(user, { data: item });
         } catch (error) {
+            ref.error(`setData: ${error.message}`);
             await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
@@ -150,15 +150,15 @@ export class RequestVcDocumentBlock {
             }
             if (idType == 'DID') {
                 const ref = PolicyComponentsUtils.GetBlockRef(this);
-                const topic = await getMongoRepository(Topic).findOne({ 
-                    owner: ref.policyOwner, 
-                    type: TopicType.RootPolicyTopic 
+                const topic = await getMongoRepository(Topic).findOne({
+                    owner: ref.policyOwner,
+                    type: TopicType.RootPolicyTopic
                 });
                 const didObject = DIDDocument.create(null, topic.topicId);
 
                 const did = didObject.getDid();
                 const key = didObject.getPrivateKeyString();
-                const document =  didObject.getDocument();
+                const document = didObject.getDocument();
 
                 const message = new DIDMessage(MessageAction.CreateDID);
                 message.setDocument(didObject);
@@ -167,11 +167,12 @@ export class RequestVcDocumentBlock {
                 client.setSubmitKey(topic.key);
                 await client.sendMessage(topic.topicId, message);
 
-                const doc = await getMongoRepository(DidDocumentCollection).findOne({
-                    did: did, 
+                const doc = getMongoRepository(DidDocumentCollection).create({
+                    did: did,
                     document: document,
                     status: DidDocumentStatus.CREATE
                 });
+
                 await getMongoRepository(DidDocumentCollection).save(doc);
 
                 await this.wallet.setKey(user.walletToken, KeyType.KEY, did, key);
@@ -182,33 +183,37 @@ export class RequestVcDocumentBlock {
             }
             return undefined;
         } catch (error) {
+            ref.error(`generateId: ${idType} : ${error.message}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        // Test schema options
-        if (!ref.options.schema) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
-            return;
-        }
-        if (typeof ref.options.schema !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-            return;
-        }
-        const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
-        if (!schema) {
-            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-            return;
-        }
-        if (ref.options.presetSchema) {
-            const presetSchema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.presetSchema});
-            if (!presetSchema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
+        try {
+            // Test schema options
+            if (!ref.options.schema) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
                 return;
             }
+            if (typeof ref.options.schema !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+                return;
+            }
+            const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+            if (!schema) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+                return;
+            }
+            if (ref.options.presetSchema) {
+                const presetSchema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.presetSchema });
+                if (!presetSchema) {
+                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
+                    return;
+                }
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

@@ -11,7 +11,7 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
-import { DidDocument as DidDocumentCollection  } from '@entity/did-document';
+import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 
 @SourceAddon({
@@ -113,22 +113,25 @@ export class DocumentsSourceAddon {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        const types = ['vc-documents', 'did-documents', 'vp-documents', 'root-authorities', 'approve', 'source'];
-        if (types.indexOf(ref.options.dataType) == -1) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of ' + types.join(','));
-        }
-
-        if (ref.options.schema) {
-            if (typeof ref.options.schema !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                return;
+        try {
+            const types = ['vc-documents', 'did-documents', 'vp-documents', 'root-authorities', 'approve', 'source'];
+            if (types.indexOf(ref.options.dataType) == -1) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of ' + types.join(','));
             }
-            const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
-            if (!schema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                return;
+
+            if (ref.options.schema) {
+                if (typeof ref.options.schema !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+                    return;
+                }
+                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+                if (!schema) {
+                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+                    return;
+                }
             }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

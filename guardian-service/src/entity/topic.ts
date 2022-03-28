@@ -21,4 +21,7 @@ export class Topic {
 
     @Column()
     key: string;
+    
+    @Column()
+    policyId: string;
 }

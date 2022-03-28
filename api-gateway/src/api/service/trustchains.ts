@@ -17,7 +17,7 @@ trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: Authenti
         const vp = await guardians.getVpDocuments();
         res.status(200).json(vp);
     } catch (error) {
-        new Logger().error(error.toString(), ['API_GATEWAY']);
+        new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -45,7 +45,7 @@ trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: Aut
 
         res.status(200).json({ chain, userMap });
     } catch (error) {
-        new Logger().error(error.toString(), ['API_GATEWAY']);
+        new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });

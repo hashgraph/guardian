@@ -14,13 +14,15 @@ export class PolicyMessage extends Message {
     public version: string;
     public policyTag: string;
     public owner: string;
+    public rootTopicId: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.PolicyDocument);
         this._responseType = "raw";
+        this.urls = [];
     }
 
-    public setDocument(model: Policy, zip: ArrayBuffer): void {
+    public setDocument(model: Policy, zip?: ArrayBuffer): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
@@ -28,6 +30,8 @@ export class PolicyMessage extends Message {
         this.version = model.version;
         this.policyTag = model.policyTag;
         this.owner = model.owner;
+        this.topicId = model.topicId;
+        this.rootTopicId = model.rootTopicId;
         this.document = zip;
     }
 
@@ -36,6 +40,9 @@ export class PolicyMessage extends Message {
     }
 
     public toMessage(): string {
+        const iurl = this.getUrl();
+        const cid = iurl ? iurl.cid : undefined;
+        const url = iurl ? iurl.url : undefined;
         return JSON.stringify({
             action: this.action,
             type: this.type,
@@ -46,22 +53,25 @@ export class PolicyMessage extends Message {
             version: this.version,
             policyTag: this.policyTag,
             owner: this.owner,
-            cid: this.urls[0].cid,
-            url: this.urls[0].url
+            topicId: this.topicId,
+            rootTopicId: this.rootTopicId,
+            cid: cid,
+            url: url
         });
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
-        return [this.document];
+        if (this.document) {
+            return [this.document];
+        }
+        return [];
     }
 
     public loadDocuments(documents: any[]): PolicyMessage {
-        this.document = Buffer.from(documents[0]);
+        if (documents && documents.length == 1) {
+            this.document = Buffer.from(documents[0]);
+        }
         return this;
-    }
-
-    public setData(vc: any): void {
-        this.document = vc;
     }
 
     public static fromMessage(message: string): PolicyMessage {
@@ -71,15 +81,34 @@ export class PolicyMessage extends Message {
 
     public static fromMessageObject(json: any): PolicyMessage {
         const message = new PolicyMessage(json.action);
-        const urls = [{
-            cid: json.cid,
-            url: json.url
-        }]
-        message.setUrls(urls);
+        message.uuid = json.uuid;
+        message.name = json.name;
+        message.description = json.description;
+        message.topicDescription = json.topicDescription;
+        message.version = json.version;
+        message.policyTag = json.policyTag;
+        message.policyTag = json.owner;
+        message.topicId = json.topicId;
+        message.rootTopicId = json.rootTopicId;
+
+        if (json.cid && json.url) {
+            const urls = [{
+                cid: json.cid,
+                url: json.url
+            }];
+            message.setUrls(urls);
+        } else {
+            const urls = [];
+            message.setUrls(urls);
+        }
         return message;
     }
 
     public override getUrl(): IURL {
         return this.urls[0];
+    }
+
+    public override validate(): boolean {
+        return true;
     }
 }

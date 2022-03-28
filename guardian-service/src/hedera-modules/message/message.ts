@@ -50,6 +50,8 @@ export abstract class Message {
     public getTopicId(): string | TopicId {
         return this.topicId;
     }
+
+    public abstract validate(): boolean;
 }
 
 

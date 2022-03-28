@@ -286,19 +286,22 @@ export class MintBlock {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        try {
+            if (!ref.options.tokenId) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+            } else if (typeof ref.options.tokenId !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+            } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
+                resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+            }
 
-        if (!ref.options.tokenId) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-        } else if (typeof ref.options.tokenId !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-        } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
-            resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
-        }
-
-        if (!ref.options.rule) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-        } else if (typeof ref.options.rule !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+            if (!ref.options.rule) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+            } else if (typeof ref.options.rule !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

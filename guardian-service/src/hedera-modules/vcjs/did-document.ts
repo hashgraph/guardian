@@ -1,7 +1,7 @@
 import { PrivateKey, PublicKey, TopicId } from "@hashgraph/sdk";
 import { Environment } from "./../environment";
 import { Hashing } from "./../hashing";
-
+import { IVerificationMethod, IDidDocument } from "interfaces";
 
 export class DidRootKey {
     public static DID_ROOT_KEY_NAME = '#did-root-key';
@@ -11,6 +11,7 @@ export class DidRootKey {
     private type: string;
     private controller: string;
     private publicKeyBase58: string;
+    private privateKeyBase58: string;
     private privateKey: PrivateKey;
     private publicKey: PublicKey;
 
@@ -35,6 +36,10 @@ export class DidRootKey {
 
     public getPublicKeyBase58(): string {
         return this.publicKeyBase58;
+    }
+
+    public getPrivateKeyBase58(): string {
+        return this.privateKeyBase58;
     }
 
     public getPrivateKey(): PrivateKey {
@@ -82,9 +87,10 @@ export class DidRootKey {
         const result = new DidRootKey();
         result.privateKey = null;
         result.publicKey = null;
-        result.controller = did;
+        result.controller = did.split('#')[0];
         result.id = result.controller + DidRootKey.DID_ROOT_KEY_NAME;
         result.publicKeyBase58 = null;
+        result.privateKeyBase58 = null;
         result.type = DidRootKey.DID_ROOT_KEY_TYPE;
         return result;
     }
@@ -103,6 +109,7 @@ export class DidRootKey {
         result.controller = did;
         result.id = result.controller + DidRootKey.DID_ROOT_KEY_NAME;
         result.publicKeyBase58 = Hashing.base58.encode(publicKey.toBytes());
+        result.privateKeyBase58 = null;
         result.type = DidRootKey.DID_ROOT_KEY_TYPE;
         return result;
     }
@@ -122,7 +129,32 @@ export class DidRootKey {
         result.controller = did;
         result.id = result.controller + DidRootKey.DID_ROOT_KEY_NAME;
         result.publicKeyBase58 = Hashing.base58.encode(publicKey.toBytes());
+        const privateBytes = privateKey.toBytes();
+        const publicBytes = publicKey.toBytes();
+        const secretKey = new Uint8Array(publicBytes.byteLength + privateBytes.byteLength);
+        secretKey.set(new Uint8Array(privateBytes), 0);
+        secretKey.set(new Uint8Array(publicBytes), privateBytes.byteLength);
+        result.privateKeyBase58 = Hashing.base58.encode(secretKey);
         result.type = DidRootKey.DID_ROOT_KEY_TYPE;
+        return result;
+    }
+
+    public getVerificationMethod(): IVerificationMethod {
+        const result: any = {};
+        result.id = this.id;
+        result.type = this.type;
+        result.controller = this.controller;
+        result.publicKeyBase58 = this.publicKeyBase58;
+        return result;
+    }
+
+    public getPrivateVerificationMethod(): IVerificationMethod {
+        const result: any = {};
+        result.id = this.id;
+        result.type = this.type;
+        result.controller = this.controller;
+        result.publicKeyBase58 = this.publicKeyBase58;
+        result.privateKeyBase58 = this.privateKeyBase58;
         return result;
     }
 }
@@ -147,15 +179,32 @@ export class DidDocumentBase {
         ];
     }
 
-    public getDidDocument(): any {
-        const rootObject = {};
+    public getDidDocument(): IDidDocument {
+        const rootObject: any = {};
         rootObject[DidDocumentBase.CONTEXT] = [
             DidDocumentBase.DID_DOCUMENT_CONTEXT,
             DidDocumentBase.DID_DOCUMENT_TRANSMUTE_CONTEXT
         ];
         rootObject[DidDocumentBase.ID] = this.getId();
         rootObject[DidDocumentBase.VERIFICATION_METHOD] = [
-            this.didRootKey.toJsonTree()
+            this.didRootKey.getVerificationMethod()
+        ];
+        rootObject[DidDocumentBase.AUTHENTICATION] = this.didRootKey.getId();
+        rootObject[DidDocumentBase.ASSERTION_METHOD] = [
+            this.didRootKey.getMethod()
+        ];
+        return rootObject;
+    }
+
+    public getPrivateDidDocument(): IDidDocument {
+        const rootObject: any = {};
+        rootObject[DidDocumentBase.CONTEXT] = [
+            DidDocumentBase.DID_DOCUMENT_CONTEXT,
+            DidDocumentBase.DID_DOCUMENT_TRANSMUTE_CONTEXT
+        ];
+        rootObject[DidDocumentBase.ID] = this.getId();
+        rootObject[DidDocumentBase.VERIFICATION_METHOD] = [
+            this.didRootKey.getPrivateVerificationMethod()
         ];
         rootObject[DidDocumentBase.AUTHENTICATION] = this.didRootKey.getId();
         rootObject[DidDocumentBase.ASSERTION_METHOD] = [
@@ -244,17 +293,17 @@ export class DIDDocument {
     }
 
     public getPrivateKeyString(): string {
-        if(this.privateKey) {
+        if (this.privateKey) {
             return this.privateKey.toString();
         }
     }
 
     public getPublicKeyString(): string {
-        if(this.publicKey) {
+        if (this.publicKey) {
             return this.publicKey.toString();
         }
     }
-    
+
     private buildDid(): string {
         const methodNetwork =
             DIDDocument.HEDERA_HCS +

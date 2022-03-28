@@ -33,14 +33,18 @@ export class CalculateMathAddon {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        if (ref.options.equations) {
-            for (let index = 0; index < ref.options.equations.length; index++) {
-                const equation = ref.options.equations[index];
-                if (!ref.parse(equation.formula)) {
-                    resultsContainer.addBlockError(ref.uuid, `Incorrect formula: ${equation.formula}`);
-                    return;
+        try {
+            if (ref.options.equations) {
+                for (let index = 0; index < ref.options.equations.length; index++) {
+                    const equation = ref.options.equations[index];
+                    if (!ref.parse(equation.formula)) {
+                        resultsContainer.addBlockError(ref.uuid, `Incorrect formula: ${equation.formula}`);
+                        return;
+                    }
                 }
             }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

@@ -31,12 +31,16 @@ export class InterfaceDocumentsSource {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        if (Array.isArray(ref.options.uiMetaData.fields)) {
-            for (let tag of ref.options.uiMetaData.fields.map(i => i.bindBlock).filter(item => !!item)) {
-                if (!resultsContainer.isTagExist(tag)) {
-                    resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
+        try {
+            if (ref.options.uiMetaData && Array.isArray(ref.options.uiMetaData.fields)) {
+                for (let tag of ref.options.uiMetaData.fields.map(i => i.bindBlock).filter(item => !!item)) {
+                    if (!resultsContainer.isTagExist(tag)) {
+                        resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
+                    }
                 }
             }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

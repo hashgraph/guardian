@@ -69,7 +69,7 @@ export class CalculateContainerBlock {
         }
 
         const root = await this.users.getHederaAccount(ref.policyOwner);
-        
+
         const VCHelper = new VcHelper();
         const newVC = await VCHelper.createVC(
             root.did,
@@ -105,77 +105,80 @@ export class CalculateContainerBlock {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-
-        // Test schema options
-        if (!ref.options.inputSchema) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "inputSchema" does not set');
-            return;
-        }
-        if (typeof ref.options.inputSchema !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "inputSchema" must be a string');
-            return;
-        }
-        const inputSchema = await getMongoRepository(SchemaCollection).findOne({
-            iri: ref.options.inputSchema
-        });
-        if (!inputSchema) {
-            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.inputSchema}" does not exist`);
-            return;
-        }
-
-        // Test schema options
-        if (!ref.options.outputSchema) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "outputSchema" does not set');
-            return;
-        }
-        if (typeof ref.options.outputSchema !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "outputSchema" must be a string');
-            return;
-        }
-        const outputSchema = await getMongoRepository(SchemaCollection).findOne({
-            iri: ref.options.outputSchema
-        })
-        if (!outputSchema) {
-            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.outputSchema}" does not exist`);
-            return;
-        }
-
-        let variables: any = {};
-        if (ref.options.inputFields) {
-            for (let i = 0; i < ref.options.inputFields.length; i++) {
-                const field = ref.options.inputFields[i];
-                variables[field.value] = field.name;
+        try {
+            // Test schema options
+            if (!ref.options.inputSchema) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "inputSchema" does not set');
+                return;
             }
-        }
+            if (typeof ref.options.inputSchema !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "inputSchema" must be a string');
+                return;
+            }
+            const inputSchema = await getMongoRepository(SchemaCollection).findOne({
+                iri: ref.options.inputSchema
+            });
+            if (!inputSchema) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.inputSchema}" does not exist`);
+                return;
+            }
 
-        const addons = ref.getAddons();
-        for (let i = 0; i < addons.length; i++) {
-            const addon = addons[i];
-            variables = await addon.getVariables(variables);
-        }
+            // Test schema options
+            if (!ref.options.outputSchema) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "outputSchema" does not set');
+                return;
+            }
+            if (typeof ref.options.outputSchema !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "outputSchema" must be a string');
+                return;
+            }
+            const outputSchema = await getMongoRepository(SchemaCollection).findOne({
+                iri: ref.options.outputSchema
+            })
+            if (!outputSchema) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.outputSchema}" does not exist`);
+                return;
+            }
 
-        const map = {};
-        if (ref.options.outputFields) {
-            for (let i = 0; i < ref.options.outputFields.length; i++) {
-                const field = ref.options.outputFields[i];
-                if (!field.value) {
-                    continue;
+            let variables: any = {};
+            if (ref.options.inputFields) {
+                for (let i = 0; i < ref.options.inputFields.length; i++) {
+                    const field = ref.options.inputFields[i];
+                    variables[field.value] = field.name;
                 }
-                if (!variables.hasOwnProperty(field.value)) {
-                    resultsContainer.addBlockError(ref.uuid, `Variable ${field.value} not defined`);
-                    return;
-                }
-                map[field.name] = true;
             }
-        }
 
-        const schema = new Schema(outputSchema);
-        for (let i = 0; i < schema.fields.length; i++) {
-            const field = schema.fields[i];
-            if (field.required && !map[field.name]) {
-                resultsContainer.addBlockError(ref.uuid, `${field.description} is required`);
-                return
+            const addons = ref.getAddons();
+            for (let i = 0; i < addons.length; i++) {
+                const addon = addons[i];
+                variables = await addon.getVariables(variables);
             }
+
+            const map = {};
+            if (ref.options.outputFields) {
+                for (let i = 0; i < ref.options.outputFields.length; i++) {
+                    const field = ref.options.outputFields[i];
+                    if (!field.value) {
+                        continue;
+                    }
+                    if (!variables.hasOwnProperty(field.value)) {
+                        resultsContainer.addBlockError(ref.uuid, `Variable ${field.value} not defined`);
+                        return;
+                    }
+                    map[field.name] = true;
+                }
+            }
+
+            const schema = new Schema(outputSchema);
+            for (let i = 0; i < schema.fields.length; i++) {
+                const field = schema.fields[i];
+                if (field.required && !map[field.name]) {
+                    resultsContainer.addBlockError(ref.uuid, `${field.description} is required`);
+                    return
+                }
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

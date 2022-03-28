@@ -83,15 +83,19 @@ export class FiltersAddonBlock {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        if (!ref.options.type) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
-        } else {
-            switch (ref.options.type) {
-                case 'dropdown':
-                    break;
-                default:
-                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "dropdown"');
+        try {
+            if (!ref.options.type) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
+            } else {
+                switch (ref.options.type) {
+                    case 'dropdown':
+                        break;
+                    default:
+                        resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "dropdown"');
+                }
             }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

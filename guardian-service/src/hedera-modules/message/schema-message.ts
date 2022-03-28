@@ -108,4 +108,8 @@ export class SchemaMessage extends Message {
     public getContextUrl(): IURL {
         return this.urls[1];
     }
+
+    public override validate(): boolean {
+        return true;
+    }
 }

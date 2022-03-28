@@ -61,4 +61,8 @@ export class DIDMessage extends Message {
     public override getUrl(): IURL {
         return this.urls[0];
     }
+
+    public override validate(): boolean {
+        return true;
+    }
 }
