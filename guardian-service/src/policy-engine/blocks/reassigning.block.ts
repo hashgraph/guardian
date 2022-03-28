@@ -1,4 +1,3 @@
-import { Guardians } from '@helpers/guardians';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -7,7 +6,6 @@ import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vcHelper';
-import { HcsVcDocument, VcSubject } from 'vc-modules';
 import { Users } from '@helpers/users';
 
 @BasicBlock({
@@ -29,7 +27,7 @@ export class ReassigningBlock {
         const vcDocument = state.data.document;
         const credentialSubject = vcDocument.credentialSubject[0];
 
-        const vc: any= await this.vcHelper.createVC(user.did, userHederaKey, credentialSubject);
+        const vc: any = await this.vcHelper.createVC(user.did, userHederaKey, credentialSubject);
         const item = {
             hash: vc.toCredentialHash(),
             owner: user.did,

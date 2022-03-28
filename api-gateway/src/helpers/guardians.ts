@@ -12,6 +12,7 @@ import {
     MessageAPI,
     TopicType
 } from 'interfaces';
+import { ServiceRequestsBase } from './serviceRequestsBase';
 
 type IFilter = any;
 
@@ -20,7 +21,8 @@ type IFilter = any;
  */
 @Singleton
 export class Guardians extends ServiceRequestsBase {
-
+    public target: string = 'guardian.*';
+    
     /**
      * Update settings
      *

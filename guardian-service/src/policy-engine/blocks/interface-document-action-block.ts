@@ -7,7 +7,7 @@ import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { Schema } from 'interfaces';
+import { Schema, UserType } from 'interfaces';
 import { Schema as SchemaEntity } from '@entity/schema'
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
@@ -37,7 +37,7 @@ export class InterfaceDocumentActionBlock {
             blockType: ref.blockType,
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
-	    user: ref.options.user
+            user: ref.options.user
         }
 
         if (ref.options.type == 'selector') {
@@ -65,11 +65,11 @@ export class InterfaceDocumentActionBlock {
         let state: any = { data: document };
 
         if (ref.options.type == 'selector') {
-            const ownerDid = option.user === UserType.CURRENT 
-                    ? user.did 
-                    : document.owner;
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
+                const ownerDid = option.user === UserType.CURRENT
+                    ? user.did
+                    : document.owner;
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, option.bindBlock) as any;
                 const owner = await this.users.getUserById(ownerDid);
                 await ref.runTarget(owner, state, block);
