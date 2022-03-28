@@ -67,18 +67,50 @@ export class SendToGuardianBlock {
                     tag: ref.tag,
                     document: vc.toJsonTree()
                 };
-                const item = getMongoRepository(VcDocument).create(doc);
+                let item = await getMongoRepository(VcDocument).findOne({ hash: doc.hash });
+                if (item) {
+                    item.owner = doc.owner;
+                    item.assign = doc.assign;
+                    item.option = doc.option;
+                    item.schema = doc.schema;
+                    item.hederaStatus = doc.hederaStatus;
+                    item.signature = doc.signature;
+                    item.type = doc.type;
+                    item.tag = doc.tag;
+                    item.document = doc.document;
+                } else {
+                    item = getMongoRepository(VcDocument).create(doc);
+                }
                 result = await getMongoRepository(VcDocument).save(item);
                 break;
             }
             case 'did-documents': {
-                const doc = getMongoRepository(DidDocument).create(document);
-                result = await getMongoRepository(DidDocument).save(doc);
+                let item = await getMongoRepository(DidDocument).findOne({ did: document.did });
+                if (item) {
+                    item.document = document.document;
+                    item.status = document.status;
+                } else {
+                    item = getMongoRepository(DidDocument).create(document as DidDocument);
+                }
+                result = await getMongoRepository(DidDocument).save(item);
                 break;
             }
             case 'approve': {
-                const doc = getMongoRepository(ApprovalDocument).create(document);
-                result = await getMongoRepository(ApprovalDocument).save(doc);
+                let item: ApprovalDocument;
+                if (document.id) {
+                    item = await getMongoRepository(ApprovalDocument).findOne(document.id);
+                }
+                if (item) {
+                    item.owner = document.owner;
+                    item.option = document.option;
+                    item.schema = document.schema;
+                    item.document = document.document;
+                    item.tag = document.tag;
+                    item.type = document.type;
+                } else {
+                    item = getMongoRepository(ApprovalDocument).create(document as ApprovalDocument);
+                }
+                result = await getMongoRepository(ApprovalDocument).save(item);
                 break;
             }
             case 'hedera': {
@@ -106,9 +138,9 @@ export class SendToGuardianBlock {
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const topic = await getMongoRepository(Topic).findOne({ 
-            policyId: ref.policyId, 
-            type: TopicType.RootPolicyTopic 
+        const topic = await getMongoRepository(Topic).findOne({
+            policyId: ref.policyId,
+            type: TopicType.RootPolicyTopic
         });
         const vc = HVcDocument.fromJsonTree(document.document);
         const vcMessage = new VCMessage(MessageAction.CreateVC);

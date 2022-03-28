@@ -151,7 +151,7 @@ export const documentsAPI = async function (
         if (msg.payload.did && msg.payload.operation) {
             const did = msg.payload.did;
             const operation = msg.payload.operation;
-            const item = await didDocumentRepository.findOne({ where: { did: { $eq: did } } });
+            const item = await didDocumentRepository.findOne({ did: did });
             if (item) {
                 item.status = getDIDOperation(operation);
                 const result: IDidObject = await didDocumentRepository.save(item);
@@ -180,7 +180,7 @@ export const documentsAPI = async function (
 
         const hash = msg.payload.hash;
         if (hash) {
-            result = await vcDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
+            result = await vcDocumentRepository.findOne({ hash: hash });
         }
 
         if (result) {
