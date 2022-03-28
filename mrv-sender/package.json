@@ -8,7 +8,7 @@
     "@transmute/security-context": "0.7.0-unstable.8",
     "@transmute/vc.js": "0.7.0-unstable.8",
     "axios": "^0.25.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "vc-modules": "file:../vc-modules"
   },
   "description": "",
