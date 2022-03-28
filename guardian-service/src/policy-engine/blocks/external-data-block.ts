@@ -6,6 +6,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Guardians } from '@helpers/guardians';
 import {PolicyComponentsUtils} from '../policy-components-utils';
+import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 /**
  * External data block
  */
@@ -20,6 +21,7 @@ export class ExternalDataBlock {
     @Inject()
     private guardians: Guardians;
 
+    @CatchErrors()
     async receiveData(data:any) {
         let verify: boolean;
         try {
