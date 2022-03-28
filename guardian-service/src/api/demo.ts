@@ -1,11 +1,12 @@
 import { MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { HederaHelper } from 'vc-modules';
+import { ApiResponse } from '@api/api-response';
 
 export const demoAPI = async function (
     channel: any
 ): Promise<void> {
-    channel.response(MessageAPI.GENERATE_DEMO_KEY, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY, async (msg, res) => {
         try {
             const OPERATOR_ID = process.env.OPERATOR_ID;
             const OPERATOR_KEY = process.env.OPERATOR_KEY;

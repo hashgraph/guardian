@@ -1,5 +1,5 @@
 import FastMQ from 'fastmq'
-import {createConnection, getMongoRepository} from 'typeorm';
+import { createConnection, getMongoRepository } from 'typeorm';
 import { approveAPI } from '@api/approve.service';
 import { configAPI, readConfig } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -17,15 +17,16 @@ import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
-import {VcHelper} from '@helpers/vcHelper';
-import {BlockTreeGenerator} from '@policy-engine/block-tree-generator';
-import {Policy} from '@entity/policy';
-import {Guardians} from '@helpers/guardians';
-import {PolicyComponentsUtils} from '@policy-engine/policy-components-utils';
+import { VcHelper } from '@helpers/vcHelper';
+import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { Policy } from '@entity/policy';
+import { Guardians } from '@helpers/guardians';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
+import { ApplicationState, ApplicationStates } from '@helpers/application-state';
 
 Promise.all([
     createConnection({
@@ -45,6 +46,8 @@ Promise.all([
     FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
 ]).then(async values => {
     const [db, channel] = values;
+
+    const state = new ApplicationState();
 
     IPFS.setChannel(channel);
     new Logger().setChannel(channel);
@@ -82,13 +85,12 @@ Promise.all([
     let fileConfig = null;
     try {
         fileConfig = await readConfig(settingsRepository);
-    }
-    catch (e){
+    } catch (e) {
         new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
         console.error(e);
     }
 
-    await setDefaultSchema(schemaRepository);
+    state.updateState(ApplicationStates.INITIALIZING);
     await configAPI(channel, fileConfig, settingsRepository);
     await schemaAPI(channel, schemaRepository, configRepository, settingsRepository);
     await tokenAPI(channel, tokenRepository);
@@ -105,6 +107,15 @@ Promise.all([
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
 
+    await setDefaultSchema(schemaRepository);
+    await sleep(2000000);
     new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
+    state.updateState(ApplicationStates.READY);
 });
+
+function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    })
+}

@@ -5,6 +5,7 @@ import { IChainItem, MessageAPI, MessageError, MessageResponse, SchemaEntity } f
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { HcsVpDocument } from 'vc-modules';
+import { ApiResponse } from '@api/api-response';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
@@ -36,7 +37,7 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
 
 /**
  * Connecting to the message broker methods of working with trust chain.
- * 
+ *
  * @param channel - channel
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
@@ -50,7 +51,7 @@ export const trustChainAPI = async function (
 ): Promise<void> {
     /**
      * Search parent by VC or VP Document
-     * 
+     *
      * @param {IChainItem[]} chain - current trust chain
      * @param {VcDocument | VpDocument} vc - Document
      * @param {Object} map - ids map
@@ -112,7 +113,7 @@ export const trustChainAPI = async function (
 
     /**
      * Return Policy Info by Policy Id
-     * 
+     *
      * @param {IChainItem[]} chain - current trust chain
      * @param {string} policyId - policy Id
      */
@@ -159,7 +160,7 @@ export const trustChainAPI = async function (
                     tag: "Policy Imported"
                 });
             }
-            
+
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
                 const rootAuthority = await vcDocumentRepository.findOne({
@@ -198,12 +199,12 @@ export const trustChainAPI = async function (
 
     /**
      * Return trust chain
-     * 
+     *
      * @param {string} payload - hash or uuid
-     * 
+     *
      * @returns {IChainItem[]} - trust chain
      */
-    channel.response(MessageAPI.GET_CHAIN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg, res) => {
         try {
             const hash = msg.payload;
             const chain: IChainItem[] = [];
