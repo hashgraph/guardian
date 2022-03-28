@@ -247,9 +247,9 @@ export class PolicyEngineService {
     }
 
     /**
-      * Register endpoints for policy engine
-      * @private
-      */
+     * Register endpoints for policy engine
+     * @private
+     */
     public registerListeners(): void {
         this.channel.response('mrv-data', async (msg, res) => {
             await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
@@ -489,7 +489,7 @@ export class PolicyEngineService {
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
                 const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
-                const policies = await getMongoRepository(Policy).find({owner: userFull.did});
+                const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 res.send(new MessageResponse(policies));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
@@ -567,7 +567,7 @@ export class PolicyEngineService {
 
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
                 const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
-                const policies = await getMongoRepository(Policy).find({owner: userFull.did});
+                const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 res.send(new MessageResponse(policies));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
