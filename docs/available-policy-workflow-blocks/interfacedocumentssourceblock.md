@@ -28,14 +28,6 @@
 | Dialogue Class     | Dialog style. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                                                       |
 | Bind Block         | Specifying a "bindBlock" field would result in the display of the linked block in side the dialog.. Needs for the field type to be a BLOCK or BUTTON with the Action type as DIALOGUE. |
 
-### Filter Properties
-
-| Filter Property    | Definition                                                                                  | Example Input                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Schema             | Filter on the basis of schema ID.                                                           | Inverter (to be selected from the drop down of available schemas in your Guardian instance). |
-| Entity Type        | Filter on the basis of the "entityType" field in the "sendToGuardian" Block.                | Inverter.                                                                                    |
-| Only Own Documents | When checked, this filter out the documents not created by the current user when rendering. | It can be either checked or unchecked.                                                       |
-
 ### API Parameters
 
 {% swagger method="get" path="" baseUrl="blockType: 'InterfaceDocumentsSource'" summary="" %}

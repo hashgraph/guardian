@@ -45,5 +45,3 @@ Returns current user session
 ```
 {% endswagger-response %}
 {% endswagger %}
-
-****
