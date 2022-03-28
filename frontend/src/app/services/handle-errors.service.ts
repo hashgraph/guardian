@@ -70,6 +70,15 @@ export class HandleErrorsService implements HttpInterceptor {
           header = `${error.code || error.status} Other Error`
           text = `${this.messageToText(error.message)}`;
         }
+        if (error.error.code === 0) {
+            this.toastr.warning(text, 'Waiting for initialization', {
+                timeOut: 30000,
+                closeButton: true,
+                positionClass: 'toast-bottom-right',
+                enableHtml: true
+            });
+            return throwError(error.message);
+        }
         this.toastr.error(text, header, {
           timeOut: 30000,
           closeButton: true,

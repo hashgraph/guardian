@@ -25,12 +25,13 @@ import { schemasToContext } from '@transmute/jsonld-schema';
 import { IPFS } from '@helpers/ipfs';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
+import { ApiResponse } from '@api/api-response';
 
 export const schemaCache = {};
 
 /**
  * Creation of default schemes.
- * 
+ *
  * @param schemaRepository - table with schemes
  */
 export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
@@ -164,7 +165,7 @@ const getDefs = function (schema: ISchema) {
 
 /**
  * Connect to the message broker methods of working with schemes.
- * 
+ *
  * @param channel - channel
  * @param schemaRepository - table with schemes
  */
@@ -176,12 +177,12 @@ export const schemaAPI = async function (
 ): Promise<void> {
     /**
      * Create or update schema
-     * 
+     *
      * @param {ISchema} payload - schema
-     * 
+     *
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.SET_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_SCHEMA, async (msg, res) => {
         if (msg.payload.id) {
             const id = msg.payload.id as string;
             const item = await schemaRepository.findOne(id);
@@ -208,14 +209,14 @@ export const schemaAPI = async function (
 
     /**
      * Return schemes
-     * 
+     *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
+     * @param {string} [payload.type] - schema type
      * @param {string} [payload.entity] - schema entity type
-     * 
+     *
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.GET_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_SCHEMA, async (msg, res) => {
         try {
             if (msg.payload) {
                 if (msg.payload.id) {
@@ -255,14 +256,14 @@ export const schemaAPI = async function (
 
     /**
      * Return schemes
-     * 
+     *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
+     * @param {string} [payload.type] - schema type
      * @param {string} [payload.entity] - schema entity type
-     * 
+     *
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_SCHEMES, async (msg, res) => {
         if (msg.payload && msg.payload.uuid) {
             const schemes = await schemaRepository.find({
                 where: { uuid: { $eq: msg.payload.uuid } }
@@ -324,12 +325,12 @@ export const schemaAPI = async function (
 
     /**
      * Load schema by message identifier
-     * 
+     *
      * @param {string} [payload.messageId] Message identifier
-     * 
+     *
      * @returns {Schema} Found or uploaded schema
      */
-    channel.response(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Schema not found'));
@@ -401,12 +402,12 @@ export const schemaAPI = async function (
 
     /**
      * Load schema by files
-     * 
+     *
      * @param {string} [payload.files] files
-     * 
+     *
      * @returns {Schema} Found or uploaded schema
      */
-    channel.response(MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Schema not found'));
@@ -468,12 +469,12 @@ export const schemaAPI = async function (
 
     /**
      * Preview schema by message identifier
-     * 
+     *
      * @param {string} [payload.messageId] Message identifier
-     * 
+     *
      * @returns {Schema} Found or uploaded schema
      */
-    channel.response(MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Schema not found'));
@@ -541,13 +542,13 @@ export const schemaAPI = async function (
 
     /**
      * Change the status of a schema on PUBLISHED.
-     * 
+     *
      * @param {Object} payload - filters
-     * @param {string} payload.id - schema id 
-     * 
+     * @param {string} payload.id - schema id
+     *
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
         try {
             if (msg.payload) {
                 const id = msg.payload.id as string;
@@ -639,13 +640,13 @@ export const schemaAPI = async function (
 
     /**
      * Delete a schema.
-     * 
+     *
      * @param {Object} payload - filters
-     * @param {string} payload.id - schema id 
-     * 
+     * @param {string} payload.id - schema id
+     *
      * @returns {ISchema[]} - all schemes
      */
-    channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.DELETE_SCHEMA, async (msg, res) => {
         try {
             if (msg.payload) {
                 const id = msg.payload as string;
@@ -663,13 +664,13 @@ export const schemaAPI = async function (
 
     /**
      * Export schemes
-     * 
+     *
      * @param {Object} payload - filters
      * @param {string[]} payload.ids - schema ids
-     * 
+     *
      * @returns {any} - Response result
      */
-    channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
         try {
             const ids = msg.payload as string[];
             const schemas = await schemaRepository.findByIds(ids);
@@ -700,7 +701,7 @@ export const schemaAPI = async function (
         }
     });
 
-    channel.response(MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg, res) => {
         try {
             const { owner, iri } = msg.payload as { owner: string, iri: string };
             if (!owner || !iri) {

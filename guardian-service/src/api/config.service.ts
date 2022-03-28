@@ -5,6 +5,7 @@ import { Logger } from 'logger-helper';
 import path from 'path';
 import { MongoRepository } from 'typeorm';
 import { HederaHelper } from 'vc-modules';
+import { ApiResponse } from '@api/api-response';
 
 /**
  * Create or read default address book.
@@ -70,7 +71,7 @@ export const readConfig = async function (settingsRepository: MongoRepository<Se
 
 /**
  * Connecting to the message broker methods of working with root address book.
- * 
+ *
  * @param channel - channel
  * @param approvalDocumentRepository - table with approve documents
  */
@@ -81,10 +82,10 @@ export const configAPI = async function (
 ): Promise<void> {
     /**
      * Return Root Address book
-     * 
+     *
      * @returns {IAddressBookConfig} - Address book
      */
-    channel.response(MessageAPI.GET_ROOT_ADDRESS_BOOK, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_ROOT_ADDRESS_BOOK, async (msg, res) => {
         try {
             if (!fileContent) {
                 throw new Error("Invalid Address Book settings");
@@ -107,9 +108,9 @@ export const configAPI = async function (
 
     /**
      * Update settings
-     * 
+     *
      */
-     channel.response(MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
+     ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
         try {
             const settings = msg.payload as CommonSettings;
             const oldSchemaTopicId = await settingsRepository.findOne({
@@ -143,7 +144,7 @@ export const configAPI = async function (
                     value: settings.operatorId
                 });
             }
-            
+
             const oldOperatorKey = await settingsRepository.findOne({
                 name: 'OPERATOR_KEY'
             });
@@ -172,9 +173,9 @@ export const configAPI = async function (
 
     /**
      * Get settings
-     * 
+     *
      */
-     channel.response(MessageAPI.GET_SETTINGS, async (msg, res) => {
+     ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg, res) => {
         try {
             const operatorId = await settingsRepository.findOne({
                 name: 'OPERATOR_ID'

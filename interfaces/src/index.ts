@@ -34,7 +34,7 @@ export { SchemaCondition } from './interface/schema-condition.interface';
 export { ModelHelper } from './helpers/model-helper'
 export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';
-export { IMessageResponse, MessageResponse, MessageError, Response } from './models/message-response';
+export { IMessageResponse, MessageResponse, MessageError, MessageInitialization, Response } from './models/message-response';
 export { WalletEvents } from './type/wallet-events';
 export { SchemaCategory } from './type/schema-category.type';
 export { CommonSettings } from './interface/common-settings.interface';

@@ -4,10 +4,11 @@ import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';
 import { Logger } from 'logger-helper';
+import { ApiResponse } from '@api/api-response';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
- * 
+ *
  * @param channel - channel
  * @param didDocumentLoader - DID Documents Loader
  * @param schemaDocumentLoader - Schema Documents Loader
@@ -19,13 +20,13 @@ export const loaderAPI = async function (
 ): Promise<void> {
     /**
      * Return DID Document
-     * 
+     *
      * @param {Object} payload - filters
      * @param {string} payload.did - DID
-     * 
+     *
      * @returns {any} - DID Document
      */
-    channel.response(MessageAPI.LOAD_DID_DOCUMENT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.LOAD_DID_DOCUMENT, async (msg, res) => {
         try {
             const iri = msg.payload.did;
             const did = HcsDidRootKey.fromId(iri).getController();
@@ -45,10 +46,10 @@ export const loaderAPI = async function (
     /**
      * Load schema document
      * @param {string} [payload.url] Document URL
-     * 
+     *
      * @returns Schema document
      */
-    channel.response(MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Document not found'));
@@ -76,10 +77,10 @@ export const loaderAPI = async function (
     /**
      * Get schema context
      * @param {string} [payload.url] Context URL
-     * 
+     *
      * @returns Schema context
      */
-    channel.response(MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg, res) => {
         try {
             if (!msg.payload) {
                 res.send(new MessageError('Document not found'))

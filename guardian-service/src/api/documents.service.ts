@@ -16,6 +16,7 @@ import {
 import { MongoRepository } from 'typeorm';
 import { VCHelper } from 'vc-modules';
 import {VcHelper} from '@helpers/vcHelper';
+import { ApiResponse } from '@api/api-response';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
@@ -77,7 +78,7 @@ export const documentsAPI = async function (
      *
      * @returns {IDidDocument[]} - DID Documents
      */
-    channel.response(MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
         const reqObj = { where: { did: { $eq: msg.payload.did } } };
         const didDocuments: IDidDocument[] = await didDocumentRepository.find(reqObj);
         res.send(new MessageResponse(didDocuments));
@@ -96,7 +97,7 @@ export const documentsAPI = async function (
      *
      * @returns {IVCDocument[]} - VC Documents
      */
-    channel.response(MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
         try{
             if (msg.payload) {
                 const reqObj: any = { where: {} };
@@ -147,7 +148,7 @@ export const documentsAPI = async function (
      *
      * @returns {IDidDocument} - new DID Document
      */
-    channel.response(MessageAPI.SET_DID_DOCUMENT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_DID_DOCUMENT, async (msg, res) => {
         if (msg.payload.did && msg.payload.operation) {
             const did = msg.payload.did;
             const operation = msg.payload.operation;
@@ -175,7 +176,7 @@ export const documentsAPI = async function (
      *
      * @returns {IVCDocument} - new VC Document
      */
-    channel.response(MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
         let result: IVCDocument;
 
         const hash = msg.payload.hash;
@@ -237,7 +238,7 @@ export const documentsAPI = async function (
      *
      * @returns {IVPDocument} - new VP Document
      */
-    channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
         const vpDocumentObject = vpDocumentRepository.create(msg.payload);
         const result: any = await vpDocumentRepository.save(vpDocumentObject);
         res.send(new MessageResponse(result));
@@ -250,7 +251,7 @@ export const documentsAPI = async function (
      *
      * @returns {IVPDocument[]} - VP Documents
      */
-    channel.response(MessageAPI.GET_VP_DOCUMENTS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_VP_DOCUMENTS, async (msg, res) => {
         if (msg.payload) {
             const document: IVPDocument[] = await vpDocumentRepository.find(msg.payload);
             res.send(new MessageResponse(document));
