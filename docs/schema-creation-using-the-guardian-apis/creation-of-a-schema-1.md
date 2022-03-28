@@ -47,5 +47,3 @@ Returns all schemas
 ```
 {% endswagger-response %}
 {% endswagger %}
-
-****

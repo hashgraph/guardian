@@ -47,5 +47,3 @@ Returns all users except those with roles Root Authority and Auditor. Only users
 ```
 {% endswagger-response %}
 {% endswagger %}
-
-****

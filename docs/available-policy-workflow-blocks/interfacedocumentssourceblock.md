@@ -30,14 +30,6 @@
 | Dialogue Content   | Provide content for the dialogue box. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                               |
 | Dialogue Class     | Dialog style. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                                                       |
 
-### Filter Properties
-
-| Filter Property    | Definition                                                                                  | Example Input                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Schema             | Filter on the basis of schema ID.                                                           | Inverter (to be selected from the drop down of available schemas in your Guardian instance). |
-| Entity Type        | Filter on the basis of the "entityType" field in the "sendToGuardian" Block.                | Inverter.                                                                                    |
-| Only Own Documents | When checked, this filter out the documents not created by the current user when rendering. | It can be either checked or unchecked.                                                       |
-
 ### API Parameters
 
 {% swagger method="get" path="" baseUrl="blockType: 'InterfaceDocumentsSource'" summary="" %}
