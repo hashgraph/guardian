@@ -1,5 +1,9 @@
 import { IMessageResponse } from 'interfaces';
 
+export class ServiceError extends Error {
+    public code: number;
+}
+
 export abstract class ServiceRequestsBase {
     abstract readonly target: string;
     protected channel: any;
@@ -29,14 +33,16 @@ export abstract class ServiceRequestsBase {
         try {
             const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
             if (!response) {
-                throw 'Server is not available';
+                throw {error: 'Server is not available'};
             }
-            if (response.error) {
-                throw response.error;
+            if (response.code !== 200) {
+                throw response;
             }
             return response.body;
         } catch (e) {
-            throw new Error(`${this.target} (${entity}) send: ` + e);
+            const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
+            err.code = e.code;
+            throw err
         }
     }
 
@@ -44,11 +50,16 @@ export abstract class ServiceRequestsBase {
         try {
             const response = (await this.channel.request(this.target, entity, params, type)).payload;
             if (!response) {
-                throw 'Server is not available';
+                throw {error: 'Server is not available'};
+            }
+            if (response.code !== 200) {
+                throw response;
             }
             return response;
         } catch (e) {
-            throw new Error(`Guardian (${entity}) send: ` + e);
+            const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
+            err.code = e.code;
+            throw err
         }
     }
 }

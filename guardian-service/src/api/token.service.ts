@@ -2,10 +2,11 @@ import { Token } from '@entity/token';
 import { IToken, MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
+import { ApiResponse } from '@api/api-response';
 
 /**
  * Connect to the message broker methods of working with tokens.
- * 
+ *
  * @param channel - channel
  * @param tokenRepository - table with tokens
  */
@@ -15,12 +16,12 @@ export const tokenAPI = async function (
 ): Promise<void> {
     /**
      * Create new token
-     * 
+     *
      * @param {IToken} payload - token
-     * 
+     *
      * @returns {IToken[]} - all tokens
      */
-    channel.response(MessageAPI.SET_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_TOKEN, async (msg, res) => {
         const tokenObject = tokenRepository.create(msg.payload);
         const result = await tokenRepository.save(tokenObject);
         const tokens = await tokenRepository.find();
@@ -29,13 +30,13 @@ export const tokenAPI = async function (
 
     /**
      * Return tokens
-     * 
+     *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.tokenId] - token id 
-     * 
+     * @param {string} [payload.tokenId] - token id
+     *
      * @returns {IToken[]} - tokens
      */
-    channel.response(MessageAPI.GET_TOKENS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_TOKENS, async (msg, res) => {
         if (msg.payload) {
             if (msg.payload.tokenId) {
                 const reqObj: any = { where: {} };
@@ -58,12 +59,12 @@ export const tokenAPI = async function (
 
     /**
      * Import tokens
-     * 
+     *
      * @param {IToken[]} payload - tokens
-     * 
+     *
      * @returns {IToken[]} - all tokens
      */
-    channel.response(MessageAPI.IMPORT_TOKENS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.IMPORT_TOKENS, async (msg, res) => {
         try {
             let items: IToken[] = msg.payload;
             if (!Array.isArray(items)) {

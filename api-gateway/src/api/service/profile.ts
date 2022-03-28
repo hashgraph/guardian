@@ -182,7 +182,7 @@ profileAPI.get('/:username/', async (req: Request, res: Response) => {
         res.json(result);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ code: 500, message: error.message });
+        res.status(500).json({ code: error.code, message: error.message });
     }
 });
 
