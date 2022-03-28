@@ -108,7 +108,6 @@ Promise.all([
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
 
     await setDefaultSchema(schemaRepository);
-    await sleep(2000000);
     new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
     state.updateState(ApplicationStates.READY);
