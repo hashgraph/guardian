@@ -4,7 +4,7 @@
     "@hashgraph/did-sdk-js": "0.1.1",
     "@hashgraph/sdk": "2.6.0",
     "@transmute/credentials-context": "0.7.0-unstable.40",
-    "@transmute/did-context": "0.7.0-unstable.40",
+    "@transmute/did-context": "0.7.0-unstable.57",
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.40",
     "@transmute/json-web-signature": "0.7.0-unstable.40",
     "@transmute/jsonld-schema": "0.7.0-unstable.40",
@@ -12,7 +12,7 @@
     "@transmute/vc.js": "0.7.0-unstable.40",
     "ajv": "^8.10.0",
     "ajv-formats": "^2.1.1",
-    "axios": "^0.25.0",
+    "axios": "^0.26.1",
     "jose": "4.3.8"
   },
   "description": "",
