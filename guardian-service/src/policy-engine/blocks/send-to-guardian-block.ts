@@ -92,7 +92,9 @@ export class SendToGuardianBlock {
         console.log(`sendToGuardianBlock: runAction: ${ref.tag}`);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
-        ref.updateBlock(state, user, '');
+        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
+        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+        // ref.updateBlock(state, user, '');
     }
 
     async sendToHedera(document: any, ref: any) {

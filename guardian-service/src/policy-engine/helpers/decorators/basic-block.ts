@@ -10,6 +10,8 @@ import {IAuthUser} from '../../../auth/auth.interface';
 import {getMongoRepository} from 'typeorm';
 import {BlockState} from '@entity/block-state';
 import deepEqual from 'deep-equal';
+import { Policy } from '@entity/policy';
+import { Users } from '@helpers/users';
 
 /**
  * Basic block decorator
@@ -179,14 +181,24 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             public async updateBlock(state:any, user:IAuthUser, tag:string) {
-                if (!!this.tag) {
-                    PolicyComponentsUtils.CallDependencyCallbacks(this.tag, this.policyId, user);
-                }
-                // for (let child of this.children) {
-                //     child.updateBlock(state, user, tag);
-                // }
                 await this.saveState();
-                PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
+                if (!this.options.followUser) {
+                    const policy = await getMongoRepository(Policy).findOne(this.policyId);
+
+                    for (let [role, did] of Object.entries(policy.registeredUsers)) {
+                        if (this.permissions.includes(role)) {
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
+                        } else if (this.permissions.includes('ANY_ROLE')) {
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
+                        }
+                    }
+
+                    if (this.permissions.includes('OWNER')) {
+                        PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did: this.policyOwner} as any, tag);
+                    }
+                } else {
+                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
+                }
 
             }
 

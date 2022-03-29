@@ -108,6 +108,17 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Find and block container parent
+     * @param block
+     * @param user
+     */
+    public static CallParentContainerCallback(block: AnyBlockType, user: any): void {
+        if (block.parent?.blockClassName === 'ContainerBlock') {
+            block.parent.updateBlock({}, user, '');
+        }
+    }
+
+    /**
      * Run policy block instance action when external data income
      * @param data
      */
