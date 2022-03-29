@@ -26,7 +26,7 @@ export const demoAPI = async function (
                 key: treasury.key.toString()
             }));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error));
         }
     })

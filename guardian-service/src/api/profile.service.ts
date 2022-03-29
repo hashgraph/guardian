@@ -58,7 +58,7 @@ export const profileAPI = async function (
             const balance = await client.balance(user.hederaAccountId);
             res.send(new MessageResponse(balance));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message, 500));
         }
@@ -143,7 +143,7 @@ export const profileAPI = async function (
                 didDoc.status = DidDocumentStatus.CREATE;
                 getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                new Logger().error(error.message, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 didDoc.status = DidDocumentStatus.FAILED;
                 getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
@@ -154,7 +154,7 @@ export const profileAPI = async function (
                     vcDoc.hederaStatus = DocumentStatus.ISSUE;
                     getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
                 } catch (error) {
-                    new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                    new Logger().error(error.message, ['GUARDIAN_SERVICE']);
                     console.error(error);
                     vcDoc.hederaStatus = DocumentStatus.FAILED;
                     getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
@@ -163,7 +163,7 @@ export const profileAPI = async function (
 
             res.send(new MessageResponse(userDID));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message, 500));
         }

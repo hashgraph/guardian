@@ -85,7 +85,7 @@ export const configAPI = async function (
             res.send(new MessageResponse(null));
         }
         catch (e) {
-            new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(e.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(e))
         }
     });
@@ -113,7 +113,7 @@ export const configAPI = async function (
             }));
         }
         catch (e) {
-            new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(e.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(e))
         }
     });

@@ -38,7 +38,7 @@ export const loaderAPI = async function (
             }
             res.send(new MessageError('Document not found'));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -69,7 +69,7 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -99,7 +99,7 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });

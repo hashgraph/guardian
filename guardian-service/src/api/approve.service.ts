@@ -34,6 +34,9 @@ export const approveAPI = async function (
             if (owner) {
                 reqObj.where['owner'] = { $eq: owner }
             }
+            if (approver) {
+                reqObj.where['approver'] = { $eq: approver }
+            }
             if (issuer) {
                 reqObj.where['document.issuer'] = { $eq: issuer }
             }

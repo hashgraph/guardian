@@ -219,7 +219,7 @@ export const trustChainAPI = async function (
             const chain: IChainItem[] = [];
             let root: VcDocument | VpDocument;
 
-            root = await vcDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
+            root = await vcDocumentRepository.findOne({ hash: hash });
             if (root) {
                 const policyId = root.policyId;
                 await getParents(chain, root, {}, policyId);
@@ -228,7 +228,7 @@ export const trustChainAPI = async function (
                 return;
             }
 
-            root = await vpDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
+            root = await vpDocumentRepository.findOne({ hash: hash });
             if (root) {
                 const policyId = root.policyId;
                 chain.push({
@@ -242,9 +242,9 @@ export const trustChainAPI = async function (
                     tag: root.tag
                 });
                 const vpDocument = HVpDocument.fromJsonTree(root.document);
-                const vcpDocument = vpDocument.getVerifiableCredential()[0];
+                const vcpDocument = vpDocument.getVerifiableCredential(0);
                 const hashVc = vcpDocument.toCredentialHash();
-                const vc = await vcDocumentRepository.findOne({ where: { hash: { $eq: hashVc } } });
+                const vc = await vcDocumentRepository.findOne({ hash: hashVc });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
                 res.send(new MessageResponse(chain));
@@ -265,9 +265,9 @@ export const trustChainAPI = async function (
                     tag: root.tag
                 });
                 const vpDocument = HVpDocument.fromJsonTree(root.document);
-                const vcpDocument = vpDocument.getVerifiableCredential()[0];
+                const vcpDocument = vpDocument.getVerifiableCredential(0);
                 const hashVc = vcpDocument.toCredentialHash();
-                const vc = await vcDocumentRepository.findOne({ where: { hash: { $eq: hashVc } } });
+                const vc = await vcDocumentRepository.findOne({ hash: hashVc });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
                 res.send(new MessageResponse(chain));
@@ -277,7 +277,7 @@ export const trustChainAPI = async function (
             await getPolicyInfo(chain, null);
             res.send(new MessageResponse(chain));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }

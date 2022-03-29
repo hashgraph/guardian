@@ -133,7 +133,7 @@ export const tokenAPI = async function (
             const tokens = await tokenRepository.find();
             res.send(new MessageResponse(tokens));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
@@ -170,7 +170,7 @@ export const tokenAPI = async function (
             const result = getTokenInfo(info, { tokenId });
             res.send(new MessageResponse(result));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message, 400));
         }
@@ -208,7 +208,7 @@ export const tokenAPI = async function (
             const result = getTokenInfo(info, { tokenId });
             res.send(new MessageResponse(result));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message, 400));
         }
@@ -247,7 +247,7 @@ export const tokenAPI = async function (
 
             res.send(new MessageResponse(status));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message, 400));
         }
@@ -278,7 +278,7 @@ export const tokenAPI = async function (
 
             res.send(new MessageResponse(result));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message, 400));
         }
@@ -314,7 +314,7 @@ export const tokenAPI = async function (
             }
             res.send(new MessageResponse(result));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message, 400));
         }
@@ -373,7 +373,7 @@ export const tokenAPI = async function (
             const tokens = await tokenRepository.find();
             res.send(new MessageResponse(tokens));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }
