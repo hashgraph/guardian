@@ -11,6 +11,7 @@ import { getMongoRepository } from 'typeorm';
 import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
 import { BlockActionError } from '@policy-engine/errors';
+import { Policy } from '@entity/policy';
 
 /**
  * Basic block decorator
