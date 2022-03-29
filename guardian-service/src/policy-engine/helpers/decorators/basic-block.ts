@@ -181,17 +181,26 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-            public async updateBlock(state: any, user: IAuthUser, tag: string) {
-                try {
-                    if (!!this.tag) {
-                        PolicyComponentsUtils.CallDependencyCallbacks(this.tag, this.policyId, user);
+            public async updateBlock(state:any, user:IAuthUser, tag:string) {
+                await this.saveState();
+                if (!this.options.followUser) {
+                    const policy = await getMongoRepository(Policy).findOne(this.policyId);
+
+                    for (let [role, did] of Object.entries(policy.registeredUsers)) {
+                        if (this.permissions.includes(role)) {
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
+                        } else if (this.permissions.includes('ANY_ROLE')) {
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
+                        }
                     }
-                    await this.saveState();
+
+                    if (this.permissions.includes('OWNER')) {
+                        PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did: this.policyOwner} as any, tag);
+                    }
+                } else {
                     PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
-                } catch (error) {
-                    this.error(`Update Stage: ${error.message}`);
-                    throw new BlockActionError(error.message, this.blockType, this.uuid);
                 }
+
             }
 
             public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {

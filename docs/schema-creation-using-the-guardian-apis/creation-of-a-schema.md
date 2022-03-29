@@ -46,5 +46,3 @@ Object that contains a valid schema
 ```
 {% endswagger-response %}
 {% endswagger %}
-
-****

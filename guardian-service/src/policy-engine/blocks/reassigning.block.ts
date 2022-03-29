@@ -50,6 +50,8 @@ export class ReassigningBlock {
         const { item, owner } = await this.documentReassigning(state, user);
         state.data = item;
         await ref.runNext(owner, state);
-        ref.updateBlock(state, user, '');
+        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
+        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+        // ref.updateBlock(state, user, '');
     }
 }

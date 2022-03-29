@@ -41,6 +41,8 @@ export class RequestVcDocumentBlock {
         }
         blockState.active = active;
         ref.updateBlock(blockState, user);
+        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
+        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
     }
 
     getActive(user: IAuthUser) {

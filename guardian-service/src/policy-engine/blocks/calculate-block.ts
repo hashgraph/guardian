@@ -100,7 +100,9 @@ export class CalculateContainerBlock {
         const newDocument = await this.calculate(document);
         state.data = newDocument;
         await ref.runNext(user, state);
-        ref.updateBlock(state, user, '');
+        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
+        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+        // ref.updateBlock(state, user, '');
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
