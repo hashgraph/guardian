@@ -1,12 +1,13 @@
-import { Inject } from "@helpers/decorators/inject";
-import { Guardians } from "@helpers/guardians";
-import { Users } from "@helpers/users";
-import { findOptions, getVCIssuer } from "@helpers/utils";
-import { ReportItem } from "@policy-engine/helpers/decorators";
+import { Inject } from '@helpers/decorators/inject';
+import { Users } from '@helpers/users';
+import { findOptions, getVCIssuer } from '@helpers/utils';
+import { ReportItem } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IPolicyReportItemBlock } from "@policy-engine/policy-engine.interface";
-import { IconType, IReportItem } from "interfaces";
+import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
+import { IconType, IReportItem } from 'interfaces';
 import { BlockActionError } from '@policy-engine/errors';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument } from '@entity/vc-document';
 
 /**
  * Report item block
@@ -16,9 +17,6 @@ import { BlockActionError } from '@policy-engine/errors';
     commonBlock: true
 })
 export class ReportItemBlock {
-    @Inject()
-    public guardians: Guardians;
-
     @Inject()
     public users: Users;
 
@@ -50,27 +48,26 @@ export class ReportItemBlock {
                 let expr: any;
                 if (filter.typeValue === 'value') {
                     expr = filter.value;
-                }
-                else if (filter.typeValue === 'variable') {
+                } else if (filter.typeValue === 'variable') {
                     expr = variables[filter.value];
                 }
                 switch (filter.type) {
                     case 'equal':
                         expr = { $eq: expr };
                         break;
-    
+
                     case 'not_equal':
                         expr = { $ne: expr };
                         break;
-    
+
                     case 'in':
                         expr = { $in: expr.split(',') };
                         break;
-    
+
                     case 'not_in':
                         expr = { $nin: expr.split(',') };
                         break;
-    
+
                     default:
                         throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
                 }
@@ -78,7 +75,7 @@ export class ReportItemBlock {
             }
         }
 
-        const vcDocument = (await this.guardians.getVcDocuments(filtersToVc))[0];
+        const vcDocument = await getMongoRepository(VcDocument).findOne(filtersToVc);
 
         if (vcDocument) {
             item.tag = vcDocument.tag;

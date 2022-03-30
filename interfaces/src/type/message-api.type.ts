@@ -1,6 +1,4 @@
 export enum MessageAPI {
-    GET_ROOT_ADDRESS_BOOK = 'get-root-address-book',
-    GET_ADDRESS_BOOK = 'get-address-book',
     GET_DID_DOCUMENTS = 'get-did-documents',
     GET_VC_DOCUMENTS = 'get-vc-documents',
     SET_DID_DOCUMENT = 'set-did-document',
@@ -13,8 +11,6 @@ export enum MessageAPI {
     LOAD_DID_DOCUMENT = 'load-did-document',
     LOAD_SCHEMA_DOCUMENT = 'load-schema-document',
     LOAD_SCHEMA_CONTEXT = 'load-schema-context',
-    GET_ROOT_CONFIG = 'get-root-config',
-    SET_ROOT_CONFIG = 'set-root-config',
     SET_APPROVE_DOCUMENTS = 'set-approve-documents',
     GET_APPROVE_DOCUMENTS = 'get-approve-documents',
     UPDATE_APPROVE_DOCUMENTS = 'update-approve-documents',
@@ -38,5 +34,14 @@ export enum MessageAPI {
     GET_SETTINGS = 'GET_SETTINGS',
     WRITE_LOG = 'WRITE_LOG',
     GET_LOGS = 'GET_LOGS',
+    FREEZE_TOKEN = 'FREEZE_TOKEN',
+    KYC_TOKEN = 'KYC_TOKEN',
+    ASSOCIATE_TOKEN = 'ASSOCIATE_TOKEN',
+    GET_ASSOCIATED_TOKENS = 'GET_ASSOCIATED_TOKENS',
+    GET_INFO_TOKEN = 'GET_INFO_TOKEN',
+    CREATE_ROOT_AUTHORITY='CREATE_ROOT_AUTHORITY',
+    CREATE_USER_PROFILE='CREATE_USER_PROFILE',
+    GET_USER_BALANCE='GET_USER_BALANCE',
+    GET_TOPIC = 'GET_TOPIC',
     GET_ATTRIBUTES = 'GET_ATTRIBUTES'
 }

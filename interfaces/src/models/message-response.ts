@@ -9,22 +9,27 @@ export class MessageResponse<T> implements IMessageResponse<T> {
     public readonly body: T;
     public readonly error: string;
 
-    constructor(body: T) {
-        this.code = 200;
+    constructor(body: T, code: number = 200) {
+        this.code = code;
         this.body = body;
         this.error = null;
     }
 }
 
-export class MessageError<T> implements IMessageResponse<T> {
-    public readonly code: number;
+export class MessageError<T> implements IMessageResponse<T>, Error {
     public readonly body: T;
     public readonly error: string;
+    public readonly code: number;
+    public name: string;
+    public message: string;
 
-    constructor(error: string) {
-        this.code = 500;
+    constructor(error: string, code: number = 500) {
+        this.code = code;
         this.body = null;
         this.error = error;
+        
+        this.name = error;
+        this.message = error;
     }
 }
 
@@ -45,11 +50,11 @@ export function Response<T>() {
         let oldFunc = descriptor.value;
         descriptor.value = async function () {
             const response: IMessageResponse<T> = await oldFunc.apply(this, arguments);
-            if (response.code === 500) {
-                throw response.error;
-            }
-            if (response.code === 0) {
+	    if (response.code === 0) {
                 throw new Error('Initialization');
+            }
+	    if (response.error) {
+                throw response.error;
             }
             return response.body;
         }

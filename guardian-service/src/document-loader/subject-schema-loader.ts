@@ -1,7 +1,7 @@
-import { SchemaLoader } from 'vc-modules';
 import { Schema } from '@entity/schema';
 import { getMongoRepository, MongoRepository } from 'typeorm';
 import { ISchema } from 'interfaces';
+import { SchemaLoader } from '@hedera-modules';
 
 /**
  * Subject schema loader
@@ -49,7 +49,7 @@ export class SubjectSchemaLoader extends SchemaLoader {
                 if (!schema.document) {
                     throw new Error('Document not found');
                 }
-                const document = JSON.parse(schema.document);
+                const document = schema.document;
                 return document;
             }
         }

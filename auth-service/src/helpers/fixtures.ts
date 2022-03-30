@@ -11,8 +11,7 @@ export const fixtures = async function (): Promise<void> {
             username: 'RootAuthority',
             password: crypto.createHash('sha256').update('test').digest('hex'),
             walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            role: UserRole.ROOT_AUTHORITY,
-            did: "did"
+            role: UserRole.ROOT_AUTHORITY
         });
         let result = await usersRepository.save(user);
         console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));

@@ -16,7 +16,7 @@ export class NewPolicyDialog {
         name: ['', Validators.required],
         description: [''],
         topicDescription: [''],
-        policyTag: ['', Validators.required],
+        policyTag: [`Tag_${Date.now()}`, Validators.required],
     });
 
     constructor(

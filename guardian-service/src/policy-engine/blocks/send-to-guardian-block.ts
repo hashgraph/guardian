@@ -1,8 +1,6 @@
-import { Guardians } from '@helpers/guardians';
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus } from 'interfaces';
-import { HcsVcDocument, HederaHelper, VcSubject } from 'vc-modules';
+import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -11,15 +9,18 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from '@hedera-modules';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument } from '@entity/vc-document';
+import { DidDocument } from '@entity/did-document';
+import { ApprovalDocument } from '@entity/approval-document';
+import { Topic } from '@entity/topic';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
     commonBlock: true
 })
 export class SendToGuardianBlock {
-    @Inject()
-    private guardians: Guardians;
-
     @Inject()
     private wallet: Wallet;
 
@@ -47,10 +48,12 @@ export class SendToGuardianBlock {
             }
         }
 
+        ref.log(`Send Document: ${JSON.stringify(document)}`);
+
         let result: any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
-                const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
+                const vc = HVcDocument.fromJsonTree(document.document);
                 const doc = {
                     hash: vc.toCredentialHash(),
                     owner: document.owner,
@@ -64,15 +67,50 @@ export class SendToGuardianBlock {
                     tag: ref.tag,
                     document: vc.toJsonTree()
                 };
-                result = await this.guardians.setVcDocument(doc);
+                let item = await getMongoRepository(VcDocument).findOne({ hash: doc.hash });
+                if (item) {
+                    item.owner = doc.owner;
+                    item.assign = doc.assign;
+                    item.option = doc.option;
+                    item.schema = doc.schema;
+                    item.hederaStatus = doc.hederaStatus;
+                    item.signature = doc.signature;
+                    item.type = doc.type;
+                    item.tag = doc.tag;
+                    item.document = doc.document;
+                } else {
+                    item = getMongoRepository(VcDocument).create(doc);
+                }
+                result = await getMongoRepository(VcDocument).save(item);
                 break;
             }
             case 'did-documents': {
-                result = await this.guardians.setDidDocument(document);
+                let item = await getMongoRepository(DidDocument).findOne({ did: document.did });
+                if (item) {
+                    item.document = document.document;
+                    item.status = document.status;
+                } else {
+                    item = getMongoRepository(DidDocument).create(document as DidDocument);
+                }
+                result = await getMongoRepository(DidDocument).save(item);
                 break;
             }
             case 'approve': {
-                result = await this.guardians.setApproveDocuments(document);
+                let item: ApprovalDocument;
+                if (document.id) {
+                    item = await getMongoRepository(ApprovalDocument).findOne(document.id);
+                }
+                if (item) {
+                    item.owner = document.owner;
+                    item.option = document.option;
+                    item.schema = document.schema;
+                    item.document = document.document;
+                    item.tag = document.tag;
+                    item.type = document.type;
+                } else {
+                    item = getMongoRepository(ApprovalDocument).create(document as ApprovalDocument);
+                }
+                result = await getMongoRepository(ApprovalDocument).save(item);
                 break;
             }
             case 'hedera': {
@@ -89,7 +127,7 @@ export class SendToGuardianBlock {
     @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        console.log(`sendToGuardianBlock: runAction: ${ref.tag}`);
+        ref.log(`runAction`);
         await this.documentSender(state, user);
         await ref.runNext(user, state);
         PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
@@ -102,21 +140,28 @@ export class SendToGuardianBlock {
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
-        const hederaHelper = HederaHelper
-            .setOperator(userID, userKey)
-            .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
-        const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
-        const result = await hederaHelper.DID.createVcTransaction(vc, userKey);
-        document.hederaStatus = result.getOperation();
+        const topic = await getMongoRepository(Topic).findOne({
+            policyId: ref.policyId,
+            type: TopicType.RootPolicyTopic
+        });
+        const vc = HVcDocument.fromJsonTree(document.document);
+        const vcMessage = new VCMessage(MessageAction.CreateVC);
+        vcMessage.setDocument(vc);
+        const messageServer = new MessageServer(userID, userKey);
+        messageServer.setSubmitKey(topic.key);
+        await messageServer.sendMessage(topic.topicId, vcMessage)
+        document.hederaStatus = DocumentStatus.ISSUE;
         return document;
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+        try {
+            if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

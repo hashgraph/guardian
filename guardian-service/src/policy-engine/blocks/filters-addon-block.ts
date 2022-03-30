@@ -1,12 +1,10 @@
 import { DataSourceAddon } from '@policy-engine/helpers/decorators/data-source-addon';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { BlockActionError, BlockInitError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import {PolicyComponentsUtils} from '../policy-components-utils';
-import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
+import { PolicyComponentsUtils } from '../policy-components-utils';
+import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 
 @DataSourceAddon({
     blockType: 'filtersAddon'
@@ -22,7 +20,7 @@ export class FiltersAddonBlock {
         const filters = ref.filters[user.did] || {};
         if (ref.options.type == 'dropdown') {
             if (!filters[ref.options.field] && !ref.options.canBeEmpty) {
-                filters[ref.options.field] = "";
+                filters[ref.options.field] = '';
             }
         }
         return filters;
@@ -85,15 +83,19 @@ export class FiltersAddonBlock {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        if (!ref.options.type) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
-        } else {
-            switch (ref.options.type) {
-                case 'dropdown':
-                    break;
-                default:
-                    resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "dropdown"');
+        try {
+            if (!ref.options.type) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
+            } else {
+                switch (ref.options.type) {
+                    case 'dropdown':
+                        break;
+                    default:
+                        resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "dropdown"');
+                }
             }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

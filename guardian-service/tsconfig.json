@@ -19,12 +19,14 @@
             "@subscribers/*": ["subscribers/*"],
             "@helpers/*": ["helpers/*"],
             "@policy-engine/*": ["policy-engine/*"],
-            "@auth/*": ["auth/*"]
+            "@auth/*": ["auth/*"],
+            "@hedera-modules": ["hedera-modules/index"],
+            "@document-loader/*": ["document-loader/*"]
         }
     },
     "include": [
         "src/**/*"
-    ],
+, "../interfaces/src/type/TopicType.ts"    ],
     "exclude": [
         "node_modules"
     ],

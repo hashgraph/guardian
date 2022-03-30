@@ -137,9 +137,9 @@ form {
 }
 
 .delimiter {
-    padding: 30px 50px 50px 50px;
+    padding: 30px 50px 30px 50px;
     width: 100%;
-    height: 80px;
+    height: 65px;
     box-sizing: border-box;
     position: relative;
 }

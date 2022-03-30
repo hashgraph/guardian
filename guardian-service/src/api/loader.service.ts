@@ -1,14 +1,14 @@
 import { MessageAPI, MessageError, MessageResponse } from 'interfaces';
-import { HcsDidRootKey } from '@hashgraph/did-sdk-js';
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';
 import { Logger } from 'logger-helper';
+import { DidRootKey } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
- *
+ * 
  * @param channel - channel
  * @param didDocumentLoader - DID Documents Loader
  * @param schemaDocumentLoader - Schema Documents Loader
@@ -20,16 +20,16 @@ export const loaderAPI = async function (
 ): Promise<void> {
     /**
      * Return DID Document
-     *
+     * 
      * @param {Object} payload - filters
      * @param {string} payload.did - DID
-     *
+     * 
      * @returns {any} - DID Document
      */
     ApiResponse(channel, MessageAPI.LOAD_DID_DOCUMENT, async (msg, res) => {
         try {
             const iri = msg.payload.did;
-            const did = HcsDidRootKey.fromId(iri).getController();
+            const did = DidRootKey.create(iri).getController();
             const reqObj = { where: { did: { $eq: did } } };
             const didDocuments = await didDocumentRepository.findOne(reqObj);
             if (didDocuments) {
@@ -38,7 +38,7 @@ export const loaderAPI = async function (
             }
             res.send(new MessageError('Document not found'));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -46,7 +46,7 @@ export const loaderAPI = async function (
     /**
      * Load schema document
      * @param {string} [payload.url] Document URL
-     *
+     * 
      * @returns Schema document
      */
     ApiResponse(channel, MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg, res) => {
@@ -69,7 +69,7 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });
@@ -77,7 +77,7 @@ export const loaderAPI = async function (
     /**
      * Get schema context
      * @param {string} [payload.url] Context URL
-     *
+     * 
      * @returns Schema context
      */
     ApiResponse(channel, MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg, res) => {
@@ -99,7 +99,7 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             res.send(new MessageError(error.message));
         }
     });

@@ -1,7 +1,7 @@
 import { Schema } from '@entity/schema';
 import { getMongoRepository, MongoRepository } from 'typeorm';
-import { DocumentLoader, IDocumentFormat } from 'vc-modules';
 import { ISchema } from 'interfaces';
+import { DocumentLoader, IDocumentFormat } from '@hedera-modules';
 
 /**
  * Schema Documents Loader.
@@ -39,7 +39,7 @@ export class ContextDocumentLoader extends DocumentLoader {
         if (!schema.context) {
             throw new Error('context not found');
         }
-        const document = JSON.parse(schema.context);
+        const document = schema.context;
         return document;
     }
 

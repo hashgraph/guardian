@@ -100,3 +100,21 @@ export function findOptions(document: any, field: any) {
     }
     return value;
 }
+
+
+export function replaceValueRecursive(document: any, replaceMap: Map<string, string>): any {
+    let str: string;
+    switch (typeof document) {
+        case 'string':
+            str = document;
+            break;
+
+        case 'object':
+            str = JSON.stringify(document)
+    }
+
+    for (let [oldVal, newVal] of replaceMap.entries()) {
+        str = str.replace(new RegExp(oldVal, 'g'), newVal);
+    }
+    return JSON.parse(str);
+}

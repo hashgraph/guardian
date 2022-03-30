@@ -1,15 +1,16 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@hashgraph/sdk": "2.5.0",
-    "@transmute/credentials-context": "0.7.0-unstable.8",
-    "@transmute/did-context": "0.7.0-unstable.8",
-    "@transmute/ed25519-signature-2018": "0.7.0-unstable.8",
-    "@transmute/security-context": "0.7.0-unstable.8",
-    "@transmute/vc.js": "0.7.0-unstable.8",
+    "@transmute/credentials-context": "0.7.0-unstable.40",
+    "@transmute/did-context": "0.7.0-unstable.40",
+    "@transmute/ed25519-signature-2018": "0.7.0-unstable.40",
+    "@transmute/json-web-signature": "0.7.0-unstable.40",
+    "@transmute/jsonld-schema": "0.7.0-unstable.40",
+    "@transmute/security-context": "0.7.0-unstable.40",
+    "@transmute/vc.js": "0.7.0-unstable.40",
     "axios": "^0.26.1",
     "express": "^4.17.3",
-    "vc-modules": "file:../vc-modules"
+    "jose": "4.3.8"
   },
   "description": "",
   "devDependencies": {
@@ -22,9 +23,9 @@
   "name": "mrv-sender",
   "scripts": {
     "build": "tsc",
+    "debug": "nodemon dist/index.js",
     "dev": "tsc -w",
-    "start": "node dist/index.js",
-    "debug": "nodemon dist/index.js"
+    "start": "node dist/index.js"
   },
   "version": "1.0.5"
 }

@@ -1,20 +1,18 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import {
     CommonSettings,
-    IAddressBookConfig,
-    IApprovalDocument,
     IChainItem,
-    IDidDocument,
-    IMessageResponse,
-    IRootConfig,
+    IDidObject,
     ISchema,
     IToken,
+    ITokenInfo,
+    IUser,
     IVCDocument,
     IVPDocument,
     MessageAPI,
-    SchemaEntity
+    TopicType
 } from 'interfaces';
-import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
+import { ServiceRequestsBase } from './serviceRequestsBase';
 
 type IFilter = any;
 
@@ -24,16 +22,7 @@ type IFilter = any;
 @Singleton
 export class Guardians extends ServiceRequestsBase {
     public target: string = 'guardian.*';
-
-    /**
-     * Return Root Address book
-     *
-     * @returns {IAddressBookConfig} - Address book
-     */
-    public async getRootAddressBook(): Promise<IAddressBookConfig> {
-        return await this.request(MessageAPI.GET_ROOT_ADDRESS_BOOK);
-    }
-
+    
     /**
      * Update settings
      *
@@ -50,18 +39,6 @@ export class Guardians extends ServiceRequestsBase {
         return await this.request(MessageAPI.GET_SETTINGS);
     }
 
-
-    /**
-     * Return Address book
-     *
-     * @param {string} owner - owner DID
-     *
-     * @returns {IAddressBookConfig} - Address book
-     */
-    public async getAddressBook(owner: string): Promise<IAddressBookConfig> {
-        return await this.request(MessageAPI.GET_ADDRESS_BOOK, {owner: owner});
-    }
-
     /**
      * Return DID Documents
      *
@@ -70,7 +47,7 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {IDidDocument[]} - DID Documents
      */
-    public async getDidDocuments(params: IFilter): Promise<IDidDocument[]> {
+    public async getDidDocuments(params: IFilter): Promise<IDidObject[]> {
         return await this.request(MessageAPI.GET_DID_DOCUMENTS, params);
     }
 
@@ -115,17 +92,6 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
-     * Return Address books, VC Document and DID Document
-     *
-     * @param {string} did - DID
-     *
-     * @returns {IFullConfig} - Address books, VC Document and DID Document
-     */
-    public async getRootConfig(did: string): Promise<IRootConfig> {
-        return await this.request(MessageAPI.GET_ROOT_CONFIG, did);
-    }
-
-    /**
      * Return trust chain
      *
      * @param {string} id - hash or uuid
@@ -134,55 +100,6 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async getChain(id: string): Promise<IChainItem[]> {
         return await this.request(MessageAPI.GET_CHAIN, id);
-    }
-
-    /**
-     * Return DID Document
-     *
-     * @param {Object} params - filters
-     * @param {string} params.did - DID
-     *
-     * @returns {any} - DID Document
-     */
-    public async loadDidDocument(params: IFilter): Promise<any> {
-        return await this.request(MessageAPI.LOAD_DID_DOCUMENT, params);
-    }
-
-    /**
-     * Create or update DID Documents
-     *
-     * @param {IDidDocument} item - document
-     * @param {string} [item.did] - did
-     * @param {string} [item.operation] - document status
-     *
-     * @returns {IDidDocument} - new DID Documents
-     */
-    public async setDidDocument(item: IDidDocument | any): Promise<IDidDocument> {
-        return await this.request(MessageAPI.SET_DID_DOCUMENT, item);
-    }
-
-    /**
-     * Create or update VC Documents
-     *
-     * @param {IVCDocument} item - document
-     * @param {string} [item.hash] - hash
-     * @param {string} [item.operation] - document status
-     *
-     * @returns {IVCDocument} - new VC Documents
-     */
-    public async setVcDocument(item: IVCDocument | any): Promise<IVCDocument> {
-        return await this.request(MessageAPI.SET_VC_DOCUMENT, item);
-    }
-
-    /**
-     * Create new VP Document
-     *
-     * @param {IVPDocument} item - document
-     *
-     * @returns {IVPDocument} - new VP Document
-     */
-    public async setVpDocument(item: IVPDocument): Promise<IVPDocument> {
-        return await this.request(MessageAPI.SET_VP_DOCUMENT, item);
     }
 
     /**
@@ -196,63 +113,80 @@ export class Guardians extends ServiceRequestsBase {
         return await this.request(MessageAPI.SET_TOKEN, item);
     }
 
-    /**
-     * Import tokens
-     *
-     * @param {IToken[]} items - tokens
-     *
-     * @returns {IToken[]} - all tokens
-     */
-    public async importTokens(items: IToken[]): Promise<void> {
-        return await this.request(MessageAPI.IMPORT_TOKENS, items);
+    public async freezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.FREEZE_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            freeze: true,
+        });
     }
 
-    /**
-     * Create Address books
-     *
-     * @param {Object} item - Address books config
-     *
-     * @returns {IFullConfig} - Address books config
-     */
-    public async setRootConfig(item: IRootConfig | any): Promise<IRootConfig> {
-        return await this.request(MessageAPI.SET_ROOT_CONFIG, item);
+    public async unfreezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.FREEZE_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            freeze: false,
+        });
     }
 
-    /**
-     * Create or update approve documents
-     *
-     * @param {IApprovalDocument[]} items - documents
-     *
-     * @returns {IApprovalDocument[]} - new approve documents
-     */
-    public async setApproveDocuments(items: IApprovalDocument[] | any): Promise<IApprovalDocument[]> {
-        return await this.request(MessageAPI.SET_APPROVE_DOCUMENTS, items);
+    public async grantKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.KYC_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            grant: true,
+        });
     }
 
-    /**
-     * Return approve documents
-     *
-     * @param {Object} [params] - filters
-     * @param {string} [params.id] - document id
-     * @param {string} [params.owner] - document owner
-     * @param {string} [params.approver] - document approver
-     * @param {string} [params.policyId] - policy id
-     *
-     * @returns {IApprovalDocument[]} - approve documents
-     */
-    public async getApproveDocuments(params: IFilter): Promise<IApprovalDocument[]> {
-        return await this.request(MessageAPI.GET_APPROVE_DOCUMENTS, params);
+    public async revokeKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.KYC_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner,
+            grant: false,
+        });
     }
 
-    /**
-     * Update approve document
-     *
-     * @param {IApprovalDocument} item - document
-     *
-     * @returns {IApprovalDocument} - new approve document
-     */
-    public async updateApproveDocument(item: IApprovalDocument): Promise<void> {
-        return await this.request(MessageAPI.UPDATE_APPROVE_DOCUMENTS, item);
+    public async associateToken(tokenId: string, did: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.ASSOCIATE_TOKEN, {
+            tokenId: tokenId,
+            did: did,
+            associate: true,
+        });
+    }
+
+    public async dissociateToken(tokenId: string, did: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.ASSOCIATE_TOKEN, {
+            tokenId: tokenId,
+            did: did,
+            associate: false,
+        });
+    }
+
+    public async getInfoToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+        return await this.request(MessageAPI.GET_INFO_TOKEN, {
+            tokenId: tokenId,
+            username: username,
+            owner: owner
+        });
+    }
+
+    public async getAssociatedTokens(did: string): Promise<ITokenInfo[]> {
+        return await this.request(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
+    }
+
+    public async createRootAuthorityProfile(profile: IUser): Promise<string> {
+        return await this.request(MessageAPI.CREATE_USER_PROFILE, profile);
+    }
+
+    public async createUserProfile(profile: IUser): Promise<string> {
+        return await this.request(MessageAPI.CREATE_USER_PROFILE, profile);
+    }
+
+    public async getUserBalance(username: string): Promise<string> {
+        return await this.request(MessageAPI.GET_USER_BALANCE, { username });
     }
 
     /**
@@ -285,7 +219,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemesByOwner(did: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.GET_SCHEMES, {owner: did});
+        return await this.request(MessageAPI.GET_SCHEMES, { owner: did });
     }
 
     /**
@@ -298,51 +232,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemesByUUID(uuid: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.GET_SCHEMES, {uuid: uuid});
-    }
-
-    /**
-     * Return schema by id
-     *
-     * @param {string} [id] - schema id
-     *
-     * @returns {ISchema} - schema
-     */
-    public async getSchemaByMessage(messageId: string): Promise<ISchema> {
-        return await this.request(MessageAPI.GET_SCHEMA, {messageId});
-    }
-
-    /**
-     * Return schema by id
-     *
-     * @param {string} [id] - schema id
-     *
-     * @returns {ISchema} - schema
-     */
-    public async getSchemaByIRI(iri: string): Promise<ISchema> {
-        return await this.request(MessageAPI.GET_SCHEMA, {iri});
-    }
-
-    /**
-     * Return schema by id
-     *
-     * @param {string} [id] - schema id
-     *
-     * @returns {ISchema} - schema
-     */
-    public async getSchemaByIRIs(iris: string[], includes: boolean): Promise<ISchema[]> {
-        return await this.request(MessageAPI.GET_SCHEMES, {iris, includes: includes});
-    }
-
-    /**
-     * Return schema by id
-     *
-     * @param {string} [id] - schema id
-     *
-     * @returns {ISchema} - schema
-     */
-    public async getSchemaByEntity(entity: SchemaEntity): Promise<ISchema> {
-        return await this.request(MessageAPI.GET_SCHEMA, {entity});
+        return await this.request(MessageAPI.GET_SCHEMES, { uuid: uuid });
     }
 
     /**
@@ -353,40 +243,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema} - schema
      */
     public async getSchemaById(id: string): Promise<ISchema> {
-        return await this.request(MessageAPI.GET_SCHEMA, {id: id});
-    }
-
-    /**
-     * Return Schema Document
-     *
-     * @param {string} [uuid] - document url
-     *
-     * @returns {any} - Schema Document
-     */
-    public async loadSchemaDocument(url: string): Promise<ISchema> {
-        return await this.request(MessageAPI.LOAD_SCHEMA_DOCUMENT, url);
-    }
-
-    /**
-     * Return Schema Context
-     *
-     * @param {string} [url] - context url
-     *
-     * @returns {any} - Schema Context
-     */
-    public async loadSchemaContext(url: string): Promise<ISchema> {
-        return await this.request(MessageAPI.LOAD_SCHEMA_CONTEXT, url);
-    }
-
-    /**
-     * Return Schemes Context
-     *
-     * @param {string[]} [urls] - context url
-     *
-     * @returns {any} - Schemes Context
-     */
-    public async loadSchemaContexts(urls: string[]): Promise<ISchema[]> {
-        return await this.request(MessageAPI.LOAD_SCHEMA_CONTEXT, urls);
+        return await this.request(MessageAPI.GET_SCHEMA, { id: id });
     }
 
     /**
@@ -397,7 +254,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {any} - Schema Document
      */
     public async importSchemesByMessages(messageIds: string[], owner: string): Promise<any[]> {
-        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, {messageIds, owner});
+        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, { messageIds, owner });
     }
 
     /**
@@ -408,7 +265,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {any} - Schema Document
      */
     public async importSchemesByFile(files: ISchema[], owner: string): Promise<any[]> {
-        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_FILE, {files, owner});
+        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_FILE, { files, owner });
     }
 
     /**
@@ -419,7 +276,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {any} Schema preview
      */
     public async previewSchemesByMessages(messageIds: string[]): Promise<ISchema[]> {
-        return await this.request(MessageAPI.PREVIEW_SCHEMA, {messageIds});
+        return await this.request(MessageAPI.PREVIEW_SCHEMA, { messageIds });
     }
 
     /**
@@ -463,7 +320,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchemaSubmitMessage} - message
      */
     public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
-        return await this.request(MessageAPI.PUBLISH_SCHEMA, {id, version, owner});
+        return await this.request(MessageAPI.PUBLISH_SCHEMA, { id, version, owner });
     }
 
     /**
@@ -478,7 +335,7 @@ export class Guardians extends ServiceRequestsBase {
     }
 
 
-    public async incrementSchemaVersion(iri: string, owner: string): Promise<ISchema> {
-        return await this.request(MessageAPI.INCREMENT_SCHEMA_VERSION, {iri, owner});
+    public async getTopic(type: TopicType, owner: string): Promise<any> {
+        return await this.request(MessageAPI.GET_TOPIC, { type, owner });
     }
 }

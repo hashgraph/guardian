@@ -1,5 +1,5 @@
 import { UserRole } from '../type/user-role.type';
-import { IDidDocument } from './did-document.interface';
+import { IDidObject } from './did-object.interface';
 import { IVCDocument } from './vc-document.interface';
 
 export class ISession {
@@ -16,15 +16,7 @@ export interface IUser {
     hederaAccountKey?: string;
     walletToken?: string;
     did?: string;
-    didDocument?: IDidDocument;
+    didDocument?: IDidObject;
     vcDocument?: IVCDocument;
-    addressBook?: {
-        appnetName: string;
-        addressBook: string;
-        didTopic: string;
-        vcTopic: string;
-        didServerUrl: string;
-        didTopicMemo: string;
-        vcTopicMemo: string;
-    }
+    topicId?: string;
 }

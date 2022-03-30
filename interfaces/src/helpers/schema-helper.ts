@@ -17,7 +17,7 @@ export class SchemaHelper {
             if (typeof data == "string") {
                 ref = data;
             } else {
-                const document = JSON.parse(data.document);
+                const document = data.document;
                 ref = document.$id;
             }
             if (ref) {
@@ -71,7 +71,7 @@ export class SchemaHelper {
             }
 
             const ifConditionFieldName = Object.keys(condition.if.properties)[0];
-            
+
             let conditionToAdd: SchemaCondition = {
                 ifCondition: {
                     field: fields.find(field => field.name === ifConditionFieldName),
@@ -79,7 +79,7 @@ export class SchemaHelper {
                 },
                 thenFields: this.parseFields(condition.then, context, document.$defs || defs) as SchemaField[],
                 elseFields: this.parseFields(condition.else, context, document.$defs || defs) as SchemaField[]
-            }; 
+            };
 
             conditions.push(conditionToAdd);
         }
@@ -202,7 +202,7 @@ export class SchemaHelper {
 
         const properties = document.properties;
         const required = document.required;
-        
+
         this.getFieldsFromObject(fields, required, properties, schema);
 
         if (conditions.length === 0) {
@@ -333,7 +333,7 @@ export class SchemaHelper {
 
     public static getVersion(data: ISchema) {
         try {
-            const document = JSON.parse(data.document);
+            const document = data.document;
             const { version } = SchemaHelper.parseRef(document.$id);
             const { previousVersion } = SchemaHelper.parseComment(document.$comment);
             return { version, previousVersion };
@@ -343,19 +343,19 @@ export class SchemaHelper {
     }
 
     public static setVersion(data: ISchema, version: string, previousVersion: string) {
-        const document = JSON.parse(data.document);
+        const document = data.document;
         const uuid = data.uuid;
         const type = SchemaHelper.buildType(uuid, version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
         data.version = version;
-        data.document = JSON.stringify(document);
+        data.document = document;
         return data;
     }
 
     public static updateVersion(data: ISchema, newVersion: string) {
-        const document = JSON.parse(data.document);
+        const document = data.document;
 
         let { version, uuid } = SchemaHelper.parseRef(document.$id);
         let { previousVersion } = SchemaHelper.parseComment(document.$comment);
@@ -382,12 +382,12 @@ export class SchemaHelper {
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
-        data.document = JSON.stringify(document);
+        data.document = document;
         return data;
     }
 
     public static updateOwner(data: ISchema, newOwner: string) {
-        const document = JSON.parse(data.document);
+        const document = data.document;
         const { version, uuid } = SchemaHelper.parseRef(document.$id);
         const { previousVersion } = SchemaHelper.parseComment(document.$comment);
         data.version = data.version || version;
@@ -398,7 +398,7 @@ export class SchemaHelper {
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
-        data.document = JSON.stringify(document);
+        data.document = document;
         return data;
     }
 
@@ -428,7 +428,7 @@ export class SchemaHelper {
             if (!schema.document) {
                 return false;
             }
-            const doc = JSON.parse(schema.document);
+            const doc = schema.document;
             if (!doc.$id) {
                 return false;
             }
@@ -443,7 +443,7 @@ export class SchemaHelper {
         const schemaMap = {};
         for (let i = 0; i < schemes.length; i++) {
             const element = schemes[i];
-            schemaMap[element.iri] = element.documentObject;
+            schemaMap[element.iri] = element.document;
         }
         for (let i = 0; i < target.fields.length; i++) {
             const field = target.fields[i];

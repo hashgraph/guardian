@@ -1,15 +1,18 @@
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
-import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { Schema, SchemaStatus } from 'interfaces';
-import { HederaHelper, HederaUtils } from 'vc-modules';
+import { DidDocumentStatus, Schema, TopicType } from 'interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { StateField } from '@policy-engine/helpers/decorators';
+import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from '@hedera-modules';
+import { VcHelper } from '@helpers/vcHelper';
+import { getMongoRepository } from 'typeorm';
+import { Schema as SchemaCollection } from '@entity/schema';
+import { DidDocument as DidDocumentCollection } from '@entity/did-document';
+import { Topic } from '@entity/topic';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -20,12 +23,6 @@ export class RequestVcDocumentBlock {
     state: { [key: string]: any } = { active: true };
 
     @Inject()
-    private guardians: Guardians;
-
-    @Inject()
-    private vcHelper: VcHelper;
-
-    @Inject()
     private wallet: Wallet;
 
     private schema: Schema | null;
@@ -33,7 +30,7 @@ export class RequestVcDocumentBlock {
     constructor() {
     }
 
-    async changeActive(user:IAuthUser, active) {
+    async changeActive(user: IAuthUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
@@ -48,7 +45,7 @@ export class RequestVcDocumentBlock {
         PolicyComponentsUtils.CallParentContainerCallback(ref, user);
     }
 
-    getActive(user:IAuthUser) {
+    getActive(user: IAuthUser) {
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -67,7 +64,9 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         if (!this.schema) {
-            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
+            const schema = await getMongoRepository(SchemaCollection).findOne({
+                iri: ref.options.schema
+            });
             this.schema = schema ? new Schema(schema) : null;
         }
         if (!this.schema) {
@@ -87,7 +86,7 @@ export class RequestVcDocumentBlock {
 
     async setData(user: IAuthUser, _data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        console.log(`requestVcDocumentBlock: setData: ${ref.tag}`);
+        ref.log(`setData`);
 
         if (!user.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
@@ -111,7 +110,7 @@ export class RequestVcDocumentBlock {
             const idType = ref.options.idType;
 
             const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
-
+            const VCHelper = new VcHelper();
             if (id) {
                 credentialSubject.id = id;
             }
@@ -119,12 +118,13 @@ export class RequestVcDocumentBlock {
                 credentialSubject.ref = documentRef;
             }
             credentialSubject.policyId = ref.policyId;
-            const res = await this.vcHelper.verifySubject(credentialSubject);
+
+            const res = await VCHelper.verifySubject(credentialSubject);
             if (!res.ok) {
                 throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
             }
 
-            const vc = await this.vcHelper.createVC(user.did, userHederaKey, credentialSubject);
+            const vc = await VCHelper.createVC(user.did, userHederaKey, credentialSubject);
             const item = {
                 hash: vc.toCredentialHash(),
                 owner: user.did,
@@ -132,11 +132,11 @@ export class RequestVcDocumentBlock {
                 schema: schema,
                 type: schema
             };
-
             await this.changeActive(user, true);
 
             await ref.runNext(user, { data: item });
         } catch (error) {
+            ref.error(`setData: ${error.message}`);
             await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
@@ -152,60 +152,70 @@ export class RequestVcDocumentBlock {
             }
             if (idType == 'DID') {
                 const ref = PolicyComponentsUtils.GetBlockRef(this);
-                const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
-                const hederaHelper = HederaHelper
-                    .setOperator(userHederaAccount, userHederaKey)
-                    .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
+                const topic = await getMongoRepository(Topic).findOne({
+                    owner: ref.policyOwner,
+                    type: TopicType.RootPolicyTopic
+                });
+                const didObject = DIDDocument.create(null, topic.topicId);
 
-                // did generation
-                const newDid = await hederaHelper.DID.createDid();
-                const DID = newDid.did;
-                const DIDDocument = newDid.document;
-                const key = newDid.key;
-                const hcsDid = newDid.hcsDid;
+                const did = didObject.getDid();
+                const key = didObject.getPrivateKeyString();
+                const document = didObject.getDocument();
 
-                const message = await hederaHelper.DID.createDidTransaction(hcsDid)
-                const did = message.getDid();
-                const operation = message.getOperation();
+                const message = new DIDMessage(MessageAction.CreateDID);
+                message.setDocument(didObject);
 
-                await this.guardians.setDidDocument({ did: DID, document: DIDDocument });
-                await this.guardians.setDidDocument({ did, operation });
-                await this.wallet.setKey(user.walletToken, KeyType.KEY, DID, key);
+                const client = new MessageServer(userHederaAccount, userHederaKey);
+                client.setSubmitKey(topic.key);
+                await client.sendMessage(topic.topicId, message);
 
-                return DID;
+                const doc = getMongoRepository(DidDocumentCollection).create({
+                    did: did,
+                    document: document,
+                    status: DidDocumentStatus.CREATE
+                });
+
+                await getMongoRepository(DidDocumentCollection).save(doc);
+
+                await this.wallet.setKey(user.walletToken, KeyType.KEY, did, key);
+                return did;
             }
             if (idType == 'OWNER') {
                 return user.did;
             }
             return undefined;
         } catch (error) {
+            ref.error(`generateId: ${idType} : ${error.message}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        // Test schema options
-        if (!ref.options.schema) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
-            return;
-        }
-        if (typeof ref.options.schema !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-            return;
-        }
-        const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
-        if (!schema) {
-            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-            return;
-        }
-        if (ref.options.presetSchema) {
-            const presetSchema = await this.guardians.getSchemaByIRI(ref.options.presetSchema);
-            if (!presetSchema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
+        try {
+            // Test schema options
+            if (!ref.options.schema) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
                 return;
             }
+            if (typeof ref.options.schema !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+                return;
+            }
+            const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+            if (!schema) {
+                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+                return;
+            }
+            if (ref.options.presetSchema) {
+                const presetSchema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.presetSchema });
+                if (!presetSchema) {
+                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
+                    return;
+                }
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

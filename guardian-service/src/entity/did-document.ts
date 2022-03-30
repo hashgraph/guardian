@@ -1,8 +1,8 @@
-import { DidDocumentStatus, IDidDocument } from 'interfaces';
+import { DidDocumentStatus, IDidObject } from 'interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
-export class DidDocument implements IDidDocument {
+export class DidDocument implements IDidObject {
     @ObjectIdColumn()
     id: string;
 
@@ -25,6 +25,6 @@ export class DidDocument implements IDidDocument {
 
     @BeforeInsert()
     setDefaults() {
-        this.status = DidDocumentStatus.NEW;
+        this.status = this.status || DidDocumentStatus.NEW;
     }
 }

@@ -56,6 +56,12 @@ export interface IPolicyBlock {
     isActive(user: IAuthUser): boolean;
 
     checkDataStateDiffer?: (user) => boolean
+
+    log(message: string):void;
+
+    error(message: string):void;
+
+    warn(message: string):void;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {

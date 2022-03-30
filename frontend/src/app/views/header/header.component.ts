@@ -49,7 +49,7 @@ export class HeaderComponent implements OnInit {
       link: '/policy-viewer'
     }];
     this.linksConfig[UserRole.ROOT_AUTHORITY] = [{
-      name: "Config",
+      name: "Profile",
       disabled: false,
       link: '/config'
     }, {

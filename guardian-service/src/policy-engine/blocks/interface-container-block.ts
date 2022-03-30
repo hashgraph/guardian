@@ -1,6 +1,6 @@
 import { IAuthUser } from '@auth/auth.interface';
-import {ContainerBlock} from '@policy-engine/helpers/decorators/container-block';
-import {PolicyComponentsUtils} from '../policy-components-utils';
+import { ContainerBlock } from '@policy-engine/helpers/decorators/container-block';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 
 /**
  * Container block with UI

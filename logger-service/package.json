@@ -12,8 +12,8 @@
     "fs-extra": "^10.0.0",
     "interfaces": "file:../interfaces",
     "module-alias": "^2.2.2",
+    "mongodb": "^4.2.1",
     "reflect-metadata": "^0.1.13",
-    "mongodb": "^3.7.3",
     "typeorm": "^0.2.41"
   },
   "description": "",

@@ -1,6 +1,6 @@
-import {ApprovalDocument} from '@entity/approval-document';
-import {IApprovalDocument, MessageAPI, MessageResponse} from 'interfaces';
-import {MongoRepository} from 'typeorm';
+import { ApprovalDocument } from '@entity/approval-document';
+import { IApprovalDocument, MessageAPI, MessageResponse } from 'interfaces';
+import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
 
 /**
@@ -33,6 +33,9 @@ export const approveAPI = async function (
             const { owner, approver, id, hash, policyId, schema, issuer, ...otherArgs } = msg.payload;
             if (owner) {
                 reqObj.where['owner'] = { $eq: owner }
+            }
+            if (approver) {
+                reqObj.where['approver'] = { $eq: approver }
             }
             if (issuer) {
                 reqObj.where['document.issuer'] = { $eq: issuer }

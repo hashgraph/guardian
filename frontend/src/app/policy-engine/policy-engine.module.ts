@@ -36,7 +36,7 @@ import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { AppRoutingModule } from '../app-routing.module';
 import { RegisteredBlocks } from './registered-blocks';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { SavePolicyDialog } from './save-policy-dialog/save-policy-dialog.component';
+import { SavePolicyDialog } from './helpers/save-policy-dialog/save-policy-dialog.component';
 import { ImportPolicyDialog } from './helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from './helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { ExportPolicyDialog } from './helpers/export-policy-dialog/export-policy-dialog.component';

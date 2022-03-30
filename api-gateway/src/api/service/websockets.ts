@@ -35,7 +35,7 @@ export class WebSocketsService {
                 const token = new URLSearchParams(params).get('token');
                 ws.user = await new Users().getUserByToken(token);
             } catch (e) {
-                new Logger().error(e.toString(), ['API_GATEWAY']);
+                new Logger().error(e.message, ['API_GATEWAY']);
                 console.error(e.message);
             }
         });
@@ -68,7 +68,7 @@ export class WebSocketsService {
                         }));
                     }
                 } catch (e) {
-                    new Logger().error(e.toString(), ['API_GATEWAY']);
+                    new Logger().error(e.message, ['API_GATEWAY']);
                     console.error('WS Error', e);
                 }
             });

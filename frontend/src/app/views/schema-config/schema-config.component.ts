@@ -108,7 +108,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
-                document: element.documentObject,
+                document: element.document,
                 title: 'Schema',
                 type: 'JSON',
             }
