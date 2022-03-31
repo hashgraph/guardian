@@ -26,5 +26,5 @@
     "start": "node dist/index.js",
     "debug": "nodemon dist/index.js"
   },
-  "version": "1.0.5"
+  "version": "1.2.1"
 }

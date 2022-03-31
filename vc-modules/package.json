@@ -39,5 +39,5 @@
     "test:network": "mocha tests/network-tests/**/*.test.js",
     "test:stability": "mocha tests/stability.test.js"
   },
-  "version": "1.0.5"
+  "version": "1.2.1"
 }
