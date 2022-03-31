@@ -21,12 +21,14 @@
 | Field Title        | Title of the column.                                                                                                                                                                   |
 | Field Tooltip      | Provide a tooltip for the field.                                                                                                                                                       |
 | Field Cell Content | Content inside the cell.                                                                                                                                                               |
-| Field UI Class     | Button style.                                                                                                                                                                          |
+| Field UI Class     | Arbitrary Class                                                                                                                                                                        |
+| Width              | For example : 100px                                                                                                                                                                    |
+| Bind Group         | If interfaceDocumentsSourceBlock has more than one documentsSourceAddon, then you can create different columns for each (names must be the same)                                       |
+| Bind Block         | Specifying a "bindBlock" field would result in the display of the linked block in side the dialog.. Needs for the field type to be a BLOCK or BUTTON with the Action type as DIALOGUE. |
 | Action             | Needs for the field type to be a BUTTON. Specifies what action will happen when the button is clicked. Action options are currently: LINK to a URL or prompt a DIALOGUE box.           |
 | Dialogue Type      | Currently only json type is supported. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                              |
 | Dialogue Content   | Provide content for the dialogue box. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                               |
 | Dialogue Class     | Dialog style. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                                                       |
-| Bind Block         | Specifying a "bindBlock" field would result in the display of the linked block in side the dialog.. Needs for the field type to be a BLOCK or BUTTON with the Action type as DIALOGUE. |
 
 ### Filter Properties
 
