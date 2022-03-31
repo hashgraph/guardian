@@ -10,7 +10,7 @@ The Guardian uses semantic versioning for releases in the major.minor.build form
 - minor: the release contains notable new capabilities
 - build: incremental release brining enhancements and bug fixes
 
-In the future there will likely be backwards compatibility meaning assigned to these changes.
+Guardian version numbers also reflect changes in the API delivered by the release. Detailed description of the API lifecycle management and versioning is available in the [API Versioning and Deprecation Policy](https://docs.hedera.com/guardian/getting-started/api-versioning-and-deprecation-policy).
 
 ### Release process
 The Guardian release process is built around the sprint cycle, where each sprint ends with the codebase in the 'releasable' state. The only difference between the alternating release sprints and non-release sprints is the activities of packaging and uploading artifacts into external repositories.
