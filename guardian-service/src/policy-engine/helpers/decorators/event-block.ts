@@ -34,6 +34,15 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 return {};
             }
 
+            protected async getSources(...args): Promise<any[]> {
+                let data = [];
+                for (let child of this.children) {
+                    if (child.blockClassName === 'SourceAddon') {
+                        data = data.concat(await child.getFromSource(...args))
+                    }
+                }
+                return data;
+            }
         }
     }
 }

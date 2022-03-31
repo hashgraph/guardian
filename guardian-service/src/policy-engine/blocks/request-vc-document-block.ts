@@ -10,6 +10,7 @@ import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { StateField } from '@policy-engine/helpers/decorators';
+import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -62,7 +63,7 @@ export class RequestVcDocumentBlock {
 
     async getData(user: IAuthUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (!this.schema) {
             const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
@@ -71,6 +72,9 @@ export class RequestVcDocumentBlock {
         if (!this.schema) {
             throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
         }
+
+        const sources = await ref.getSources(user);
+        
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -79,7 +83,8 @@ export class RequestVcDocumentBlock {
             presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
-            active: this.getActive(user)
+            active: this.getActive(user),
+            data: sources && sources.length && sources[0] || null,
         };
     }
 
