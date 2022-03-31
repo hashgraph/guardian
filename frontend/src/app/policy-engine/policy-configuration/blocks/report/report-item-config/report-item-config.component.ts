@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { IconType, Schema, Token } from 'interfaces';
+import { Schema, Token } from 'interfaces';
 import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
 import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
@@ -57,7 +57,7 @@ export class ReportItemConfigComponent implements OnInit {
         this.block.filters = this.block.filters || [];
         this.block.variables = this.block.variables || [];
         this.block.visible = block.visible !== false;
-        this.block.iconType = block.iconType || IconType.COMMON
+        this.block.iconType = block.iconType;
     }
 
     onHide(item: any, prop: any) {
