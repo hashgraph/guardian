@@ -7,11 +7,6 @@
 * [Getting Started](getting-started/getting-started/README.md)
   * [Prerequisites](getting-started/getting-started/prerequisites.md)
   * [Installation](getting-started/getting-started/installation.md)
-* [Demo Usage Guide](getting-started/demo-usage-guide.md)
-* [API Versioning & Deprecation Policy](getting-started/api-versioning-and-deprecation-policy.md)
-* [Policy Versioning & Deprecation Policy](getting-started/policy-versioning-and-deprecation-policy.md)
-* [Schema Versioning & Deprecation Policy](getting-started/schema-versioning-and-deprecation-policy.md)
-* [Demo Using APIs](getting-started/demo-using-apis.md)
 * [Contributing](getting-started/contributing/README.md)
   * [Contribute a New Policy](getting-started/contributing/contribute-a-new-policy.md)
 * [Frameworks/Libraries](getting-started/built-with.md)
@@ -21,6 +16,17 @@
 * [Contact](getting-started/contact.md)
 * [Security](getting-started/security.md)
 * [Reference Implementation](getting-started/reference-implementation.md)
+
+## Demo Guide
+
+* [Demo Usage Guide](demo-guide/demo-usage-guide.md)
+* [Demo Using APIs](demo-guide/demo-using-apis.md)
+
+## Versioning and Deprecation Policy
+
+* [API Versioning & Deprecation Policy](versioning-and-deprecation-policy/api-versioning-and-deprecation-policy.md)
+* [Policy Versioning & Deprecation Policy](versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy.md)
+* [Schema Versioning & Deprecation Policy](versioning-and-deprecation-policy/schema-versioning-and-deprecation-policy.md)
 
 ## User Guide Glossary
 
@@ -39,6 +45,7 @@
 * [InterfaceStepBlock](available-policy-workflow-blocks/step-workflow-block.md)
 * [requestVCDocumentBlock](available-policy-workflow-blocks/request-workflow-block.md)
 * [sendToGuardianBlock](available-policy-workflow-blocks/send-workflow-block.md)
+* [reassigningBlock](available-policy-workflow-blocks/reassigningblock.md)
 * [InformationBlock](available-policy-workflow-blocks/information-workflow-block.md)
 * [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/interfacedocumentssourceblock.md)
 * [DocumentsSourceAddOnBlock](available-policy-workflow-blocks/documentssourceaddonblock.md)
