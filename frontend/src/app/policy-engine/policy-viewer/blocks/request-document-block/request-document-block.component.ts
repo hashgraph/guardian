@@ -1,8 +1,10 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { IUser } from 'interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
+import { ProfileService } from 'src/app/services/profile.service';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -39,9 +41,11 @@ export class RequestDocumentBlockComponent implements OnInit {
     needPreset: any;
     presetFields: any;
     buttonClass: any;
+    user!: IUser;
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private profile: ProfileService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder,
         private dialog: MatDialog,
@@ -54,7 +58,11 @@ export class RequestDocumentBlockComponent implements OnInit {
         if (!this.static) {
             this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
         }
-        this.loadData();
+        this.profile.getProfile()
+            .subscribe((user: IUser) => {
+                this.user = user;
+                this.loadData();
+            });
         (window as any).__requestLast = this;
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
@@ -119,6 +127,15 @@ export class RequestDocumentBlockComponent implements OnInit {
                 }
                 for (let i = 0; i < presetFields.length; i++) {
                     const f = presetFields[i];
+                    if (f.value === 'username') {
+                        json[f.name] = this.user.username;
+                        continue;
+                    }
+                    if (f.value === 'hederaAccountId') {
+                        json[f.name] = this.user.hederaAccountId;
+                        continue;
+                    }
+
                     json[f.name] = cs[f.value];
                 }
                 return json;
