@@ -699,7 +699,7 @@ capacity
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (23).png>)
+![](<../.gitbook/assets/image (11).png>)
 
 ![](../.gitbook/assets/image.png)
 
