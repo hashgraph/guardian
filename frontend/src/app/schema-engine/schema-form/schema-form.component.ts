@@ -25,7 +25,7 @@ enum PlaceholderByFieldType {
     Email = "example@email.com",
     Number = "123",
     URL = "example.com",
-    String = "example string",
+    String = "Please enter text here",
     IPFS = 'ipfs.io/ipfs/example-hash'
 }
 

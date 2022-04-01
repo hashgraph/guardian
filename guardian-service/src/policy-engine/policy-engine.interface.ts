@@ -119,4 +119,12 @@ export interface IPolicyReportItemBlock extends IPolicyBlock {
     getItems(): IPolicyReportItemBlock[];
 }
 
-export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock | IPolicyCalculateBlock | IPolicyCalculateAddon;
+export interface IPolicyRequestBlock extends IPolicyBlock {
+    getData(user: IAuthUser): Promise<any>;
+
+    setData(user: IAuthUser, _data: any): Promise<any>;
+
+    getSources(user: IAuthUser): Promise<any[]>
+}
+
+export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock | IPolicyCalculateBlock | IPolicyCalculateAddon | IPolicyRequestBlock;

@@ -76,7 +76,7 @@ export class SchemaFormViewComponent implements OnInit {
           value = this.values[item.name];
         }
 
-        item.value = value;
+        item.value = value || "";
       }
       if (!field.isArray && field.isRef) {
         item.fields = field.fields;
