@@ -1,5 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import {
+    ApplicationStates,
     CommonSettings,
     IChainItem,
     IDidObject,
@@ -337,5 +338,19 @@ export class Guardians extends ServiceRequestsBase {
 
     public async getTopic(type: TopicType, owner: string): Promise<any> {
         return await this.request(MessageAPI.GET_TOPIC, { type, owner });
+    }
+
+    /**
+     * Get service status
+     * 
+     * @returns {ApplicationStates} Service state
+     */
+    public async getStatus(): Promise<ApplicationStates> {
+        try {
+            return await this.request(MessageAPI.GET_STATUS);
+        }
+        catch {
+            return ApplicationStates.STOPPED;
+        }
     }
 }

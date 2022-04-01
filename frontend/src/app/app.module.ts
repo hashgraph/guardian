@@ -38,6 +38,7 @@ import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
 import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview-dialog.component';
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
+import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 
 @NgModule({
     declarations: [
@@ -58,7 +59,8 @@ import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-d
         SettingsViewComponent,
         AdminHeaderComponent,
         IconPreviewDialog,
-        DetailsLogDialog
+        DetailsLogDialog,
+        ServiceStatusComponent
     ],
     imports: [
         BrowserModule,

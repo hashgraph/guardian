@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 export { BlockErrorActions } from './type/block-error-actions';
 export { AuthEvents } from './type/auth-events';
 export { ApproveStatus } from './type/approve-status.type';
@@ -31,7 +32,7 @@ export { SchemaStatus } from './type/schema-status.type';
 export { ISchemaDocument } from './interface/schema-document.interface';
 export { SchemaField } from './interface/schema-field.interface';
 export { SchemaCondition } from './interface/schema-condition.interface';
-export { ModelHelper } from './helpers/model-helper'
+export { ModelHelper } from './helpers/model-helper';
 export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';
 export { IMessageResponse, MessageResponse, MessageError, MessageInitialization, Response } from './models/message-response';
@@ -47,3 +48,5 @@ export { IconType } from './type/icon.type';
 export { UserType } from './type/user.type';
 export { IDidDocument } from './interface/did-document';
 export { IVerificationMethod } from './interface/verification-method';
+export { ApplicationStates } from './type/application-states.type';
+export { ApplicationState } from './helpers/application-state';
