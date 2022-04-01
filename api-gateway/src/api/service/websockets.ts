@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import {IncomingMessage, Server} from 'http';
 import { Users } from '@helpers/users';
 import { Logger } from 'logger-helper';
-import { ApplicationStates, MessageAPI } from 'interfaces';
+import { MessageAPI } from 'interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
 
@@ -58,10 +58,10 @@ export class WebSocketsService {
                         const auth = new Users();
                         try {
                             const [
-                                logger_service, 
-                                guardians_service,
-                                ipfs_client,
-                                auth_service
+                                LOGGER_SERVICE, 
+                                GUARDIANS_SERVICE,
+                                IPFS_CLIENT,
+                                AUTH_SERVICE
                             ] = await Promise.all([
                                 logger.getStatus(),
                                 guardians.getStatus(),
@@ -73,10 +73,10 @@ export class WebSocketsService {
                                 {
                                     type: MessageAPI.GET_STATUS,
                                     data: {
-                                        logger_service, 
-                                        guardians_service,
-                                        ipfs_client,
-                                        auth_service
+                                        LOGGER_SERVICE: LOGGER_SERVICE, 
+                                        GUARDIANS_SERVICE: GUARDIANS_SERVICE,
+                                        IPFS_CLIENT: IPFS_CLIENT,
+                                        AUTH_SERVICE: AUTH_SERVICE
                                     }
                                 }
                             ));

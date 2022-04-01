@@ -26,7 +26,7 @@ Promise.all([
     FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS),
 ]).then(async values => {
     const [db, channel] = values;
-    const state = new ApplicationState('ipfs_client');
+    const state = new ApplicationState('IPFS_CLIENT');
     state.setChannel(channel);
     state.updateState(ApplicationStates.STARTED);
     const settingsRepository = db.getMongoRepository(Settings);

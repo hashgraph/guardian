@@ -82,7 +82,12 @@ export class Logger {
      */
     public async getStatus(): Promise<ApplicationStates> {
         try {
-            return await this.request(MessageAPI.GET_STATUS);
+            const res = await this.request(MessageAPI.GET_STATUS);
+            if (!res) {
+                throw new Error();
+            }
+
+            return res as ApplicationStates;
         }
         catch {
             return ApplicationStates.STOPPED;

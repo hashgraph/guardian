@@ -23,7 +23,7 @@ Promise.all([
 ]).then(async values => {
     const [db, channel] = values;
 
-    const state = new ApplicationState('logger_service');
+    const state = new ApplicationState('LOGGER_SERVICE');
     state.setChannel(channel);
     state.updateState(ApplicationStates.STARTED);
     const logRepository = db.getMongoRepository(Log);

@@ -44,7 +44,7 @@ Promise.all([
 ]).then(async values => {
     const [db, channel] = values;
 
-    const state = new ApplicationState('guardians_service');
+    const state = new ApplicationState('GUARDIANS_SERVICE');
     state.setChannel(channel);
     state.updateState(ApplicationStates.STARTED);
 

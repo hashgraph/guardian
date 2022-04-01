@@ -131,7 +131,7 @@ export class StatusService {
     }
 
     private getUrl() {
-        return `${this.getBaseUrl()}/ws`;
+        return `${this.getBaseUrl()}/ws/`;
     }
 
     private updateStatus(serviceStatus: any) {

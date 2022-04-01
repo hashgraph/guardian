@@ -25,7 +25,7 @@ Promise.all([
     }),
     FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
 ]).then(async ([db, channel]) => {
-    const state = new ApplicationState('auth_service');
+    const state = new ApplicationState('AUTH_SERVICE');
     state.setChannel(channel);
     state.updateState(ApplicationStates.INITIALIZING);
     await fixtures();
