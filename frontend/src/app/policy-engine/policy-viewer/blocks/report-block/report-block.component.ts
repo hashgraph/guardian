@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IconType, IPolicyReport, IReport, IReportItem, ITokenReport, IVC, IVCReport, IVPReport, Schema, SchemaHelper } from 'interfaces';
+import { IPolicyReport, IReport, IReportItem, ITokenReport, IVC, IVCReport, IVPReport, Schema, SchemaHelper } from 'interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -152,8 +152,6 @@ export class ReportBlockComponent implements OnInit {
         if (this.policyDocument) {
             this.documents.push({
                 type: this.policyDocument.type,
-                icon: 'format_list_bulleted',
-                iconType: IconType.COMMON,
                 title: 'Policy',
                 description: this.policyDocument.tag,
                 tag: this.policyDocument.tag,

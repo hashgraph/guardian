@@ -5,7 +5,7 @@ import { findOptions, getVCIssuer } from "@helpers/utils";
 import { ReportItem } from "@policy-engine/helpers/decorators";
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportItemBlock } from "@policy-engine/policy-engine.interface";
-import { IconType, IReportItem } from "interfaces";
+import { IReportItem } from "interfaces";
 import { BlockActionError } from '@policy-engine/errors';
 
 /**
@@ -28,7 +28,7 @@ export class ReportItemBlock {
         const title = ref.options.title;
         const description = ref.options.description;
         const visible = ref.options.visible;
-        const iconType = ref.options.iconType || IconType.COMMON;
+        const iconType = ref.options.iconType;
         const item: IReportItem = {
             type: 'VC',
             icon: icon,

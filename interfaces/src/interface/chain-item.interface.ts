@@ -54,7 +54,7 @@ export interface IPolicyReport {
 
 export interface IReportItem {
     type: string;
-    icon: string;
+    icon?: string;
     title: string;
     description: string;
     tag: string;
@@ -63,7 +63,7 @@ export interface IReportItem {
     document: IVCDocument;
     documents?: IReportItem[];
     visible: boolean,
-    iconType: IconType
+    iconType?: IconType
 }
 
 export interface IReport {
