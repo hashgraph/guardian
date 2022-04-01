@@ -1,5 +1,4 @@
-import { ApplicationState, ApplicationStates } from '@helpers/application-state';
-import { MessageInitialization } from 'interfaces';
+import { ApplicationState, ApplicationStates, MessageInitialization } from 'interfaces';
 
 export function ApiResponse(channel: any, event: any, cb: (msg, res) => Promise<void>): void {
     const state = new ApplicationState();

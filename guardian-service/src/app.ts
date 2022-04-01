@@ -21,9 +21,9 @@ import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
+import { ApplicationState, ApplicationStates } from 'interfaces';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
-import { ApplicationState, ApplicationStates } from '@helpers/application-state';
 
 Promise.all([
     createConnection({
@@ -44,7 +44,9 @@ Promise.all([
 ]).then(async values => {
     const [db, channel] = values;
 
-    const state = new ApplicationState();
+    const state = new ApplicationState('guardians_service');
+    state.setChannel(channel);
+    state.updateState(ApplicationStates.STARTED);
 
     IPFS.setChannel(channel);
     new Logger().setChannel(channel);

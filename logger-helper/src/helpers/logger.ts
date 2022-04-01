@@ -1,4 +1,4 @@
-import { ILog, IPageParameters, LogType, MessageAPI, Singleton } from 'interfaces';
+import { ApplicationStates, ILog, IPageParameters, LogType, MessageAPI, Singleton } from 'interfaces';
 import { IMessageResponse } from 'interfaces';
 
 @Singleton
@@ -73,5 +73,19 @@ export class Logger {
 
     public async getAttributes(name?: string, existingAttributes: string[] = []): Promise<string[]> {
         return await this.request(MessageAPI.GET_ATTRIBUTES, { name, existingAttributes});
+    }
+
+    /**
+     * Get service status
+     * 
+     * @returns {ApplicationStates} Service state
+     */
+    public async getStatus(): Promise<ApplicationStates> {
+        try {
+            return await this.request(MessageAPI.GET_STATUS);
+        }
+        catch {
+            return ApplicationStates.STOPPED;
+        }
     }
 }

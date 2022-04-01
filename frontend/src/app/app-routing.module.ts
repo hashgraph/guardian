@@ -18,6 +18,8 @@ import { AuthService } from './services/auth.service';
 import { AdminHeaderComponent } from './views/admin/admin-header/admin-panel.component';
 import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
+import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
+import { StatusService } from './services/status.service';
 
 
 class Guard {
@@ -96,27 +98,45 @@ export class AuditorGuard extends Guard implements CanActivate {
   }
 }
 
+@Injectable({
+  providedIn: 'root'
+})
+export class ServicesStatusGuard implements CanActivate {
+  constructor(
+    private router: Router,
+    private status: StatusService
+  ) {
+  }
+
+  canActivate() {
+    return this.status.IsServicesReady().pipe(
+      map(item => item || this.router.parseUrl('/status'))
+    );
+  }
+}
+
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
 
-  { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard] },
+  { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
 
-  { path: 'config', component: RootConfigComponent, canActivate: [RootAuthorityGuard] },
-  { path: 'tokens', component: TokenConfigComponent, canActivate: [RootAuthorityGuard] },
-  { path: 'schemes', component: SchemaConfigComponent, canActivate: [RootAuthorityGuard] },
+  { path: 'config', component: RootConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
+  { path: 'tokens', component: TokenConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
+  { path: 'schemes', component: SchemaConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
   { path: 'admin', component: AdminHeaderComponent, canActivate: [RootAuthorityGuard], canActivateChild: [RootAuthorityGuard],
     children: [
-      { path: 'settings', component: SettingsViewComponent },
-      { path: 'logs', component: LogsViewComponent }
+      { path: 'status', component: ServiceStatusComponent },
+      { path: 'settings', component: SettingsViewComponent, canActivate: [ServicesStatusGuard]},
+      { path: 'logs', component: LogsViewComponent, canActivate: [ServicesStatusGuard]}
     ]
   },
-  
-  { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard] },
-  { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard] },
+  { path: 'status', component: ServiceStatusComponent },
+  { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
+  { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
 
-  { path: 'policy-viewer', component: PolicyViewerComponent },
-  { path: 'policy-configuration', component: PolicyConfigurationComponent },
+  { path: 'policy-viewer', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
+  { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
 
   { path: '', component: HomeComponent },
   { path: '**', redirectTo: '', pathMatch: 'full' },

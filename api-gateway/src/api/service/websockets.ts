@@ -2,6 +2,9 @@ import WebSocket from 'ws';
 import {IncomingMessage, Server} from 'http';
 import { Users } from '@helpers/users';
 import { Logger } from 'logger-helper';
+import { ApplicationStates, MessageAPI } from 'interfaces';
+import { IPFS } from '@helpers/ipfs';
+import { Guardians } from '@helpers/guardians';
 
 export class WebSocketsService {
     private wss: WebSocket.Server;
@@ -14,6 +17,7 @@ export class WebSocketsService {
         this.registerHeartbeatAnswers();
         this.registerAuthorisation();
         this.registerMessageHandler();
+        this.registerServiceStatusHandler();
     }
 
     private registerHeartbeatAnswers(): void {
@@ -33,11 +37,69 @@ export class WebSocketsService {
             try {
                 const params = req.url.split('?')[1];
                 const token = new URLSearchParams(params).get('token');
-                ws.user = await new Users().getUserByToken(token);
+                if (token) {
+                    ws.user = await new Users().getUserByToken(token);
+                }
             } catch (e) {
                 new Logger().error(e.message, ['API_GATEWAY']);
                 console.error(e.message);
             }
+        });
+    }
+
+    private registerServiceStatusHandler(): void {
+        this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
+            ws.on('message', async (data: Buffer) => {
+                switch (data.toString()) {
+                    case MessageAPI.GET_STATUS:
+                        const logger = new Logger();
+                        const guardians = new Guardians();
+                        const ipfs = new IPFS();
+                        const auth = new Users();
+                        try {
+                            const [
+                                logger_service, 
+                                guardians_service,
+                                ipfs_client,
+                                auth_service
+                            ] = await Promise.all([
+                                logger.getStatus(),
+                                guardians.getStatus(),
+                                ipfs.getStatus(),
+                                auth.getStatus()
+                            ]);
+
+                            ws.send(JSON.stringify(
+                                {
+                                    type: MessageAPI.GET_STATUS,
+                                    data: {
+                                        logger_service, 
+                                        guardians_service,
+                                        ipfs_client,
+                                        auth_service
+                                    }
+                                }
+                            ));
+                        }
+                        catch (error) {
+                            logger.error(error.toString(), ['API_GATEWAY'])
+                        }
+                        break;
+                }
+            });
+        });
+
+        this.channel.response(MessageAPI.UPDATE_STATUS, async (msg, res) => {
+            this.wss.clients.forEach((client: any) => {
+                try {
+                    client.send(JSON.stringify({
+                        type: MessageAPI.UPDATE_STATUS,
+                        data: msg.payload
+                    }));
+                } catch (e) {
+                    console.error('WS Error', e);
+                }
+            });
         });
     }
 

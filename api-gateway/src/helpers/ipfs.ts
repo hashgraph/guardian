@@ -1,4 +1,4 @@
-import { CommonSettings, MessageAPI } from "interfaces";
+import { ApplicationStates, CommonSettings, MessageAPI } from "interfaces";
 import { Singleton } from "./decorators/singleton";
 
 /**
@@ -86,6 +86,20 @@ export class IPFS {
         if (res.error) {
             throw new Error(res.error);
         }
+        return res.body;
+    }
+
+    /**
+     * Get service status
+     * 
+     * @returns {ApplicationStates} Service state
+     */
+    public async getStatus(): Promise<ApplicationStates> {
+        const res = (await this.channel.request(this.target, MessageAPI.GET_STATUS)).payload;
+        if (!res || res.error) {
+            return ApplicationStates.STOPPED;
+        }
+        
         return res.body;
     }
 }
