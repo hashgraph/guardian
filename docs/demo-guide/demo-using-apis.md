@@ -68,7 +68,7 @@
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (9).png>)
+![](<../.gitbook/assets/image (11).png>)
 
 ### 1.5 At present only PolicyRolesBlock is available to the user. Select the "INSTALLER" role.
 
@@ -79,8 +79,6 @@ Request the role
 
 {% swagger-parameter in="path" name="role" type="String" required="true" %}
 INSTALLER
-
-
 {% endswagger-parameter %}
 {% endswagger %}
 
@@ -233,13 +231,11 @@ Years of registration
 {% swagger-parameter in="body" name="@context" type="array" required="true" %}
 \["https://ipfs.io/ipfs/bafkreihj5c6npywzkfx2pylalh5f23lhy2ogofxhdqctvpoh3gczwtzjg4"]
 
-![](<../.gitbook/assets/image (10).png>)
-
-
+![](<../.gitbook/assets/image (3).png>)
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (3).png>)
+![](<../.gitbook/assets/image (10).png>)
 
 ### 1.8 Request the root block and all contained blocks again.
 
@@ -703,7 +699,7 @@ capacity
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (11).png>)
+![](../.gitbook/assets/Sensor.png)
 
 ![](<../.gitbook/assets/image (2).png>)
 
