@@ -105,7 +105,7 @@ npm install
 npm run build
 ```
 
-To start the service (found on [http://localhost:3002](http://localhost:3002)):
+To start the service (found on [http://localhost:3000](http://localhost:3000)):
 
 ```
 npm start

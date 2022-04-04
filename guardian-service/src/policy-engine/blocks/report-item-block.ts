@@ -26,7 +26,7 @@ export class ReportItemBlock {
         const title = ref.options.title;
         const description = ref.options.description;
         const visible = ref.options.visible;
-        const iconType = ref.options.iconType || IconType.COMMON;
+        const iconType = ref.options.iconType;
         const item: IReportItem = {
             type: 'VC',
             icon: icon,

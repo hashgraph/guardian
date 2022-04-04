@@ -195,8 +195,6 @@ export class ReportBlock {
                 if (policyCreator) {
                     const policyCreatorDocument: IReportItem = {
                         type: 'VC',
-                        icon: 'account_circle',
-                        iconType: IconType.COMMON,
                         title: 'RootAuthority',
                         description: 'Account Creation',
                         visible: true,

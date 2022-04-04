@@ -13,6 +13,7 @@ import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { Topic } from '@entity/topic';
+import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -61,7 +62,7 @@ export class RequestVcDocumentBlock {
 
     async getData(user: IAuthUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (!this.schema) {
             const schema = await getMongoRepository(SchemaCollection).findOne({
@@ -72,6 +73,9 @@ export class RequestVcDocumentBlock {
         if (!this.schema) {
             throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
         }
+	
+	const sources = await ref.getSources(user);
+	
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -80,7 +84,8 @@ export class RequestVcDocumentBlock {
             presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
-            active: this.getActive(user)
+            active: this.getActive(user),
+            data: sources && sources.length && sources[0] || null
         };
     }
 
