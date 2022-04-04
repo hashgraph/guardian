@@ -110,8 +110,8 @@
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
-* [Creation of a schema](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
-* [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
+* [Creation of a schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
+* [Listing of Schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
 * [Publishing schema based on schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
 * [Updating schema](schema-creation-using-the-guardian-apis/updating-schema.md)
 * [Deleting a schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
