@@ -11,7 +11,6 @@ import { Schema, UserType } from 'interfaces';
 import { Schema as SchemaEntity } from '@entity/schema'
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
 

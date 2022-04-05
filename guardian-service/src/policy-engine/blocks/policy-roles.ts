@@ -1,5 +1,5 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { IAuthUser } from '../../auth/auth.interface';
+import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { PolicyComponentsUtils } from '../policy-components-utils';
