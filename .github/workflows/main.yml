@@ -88,6 +88,9 @@ jobs:
         env:
           CI: true
       - name: Publish Unit Test Results
+        permissions:
+          checks: write
+          pull-requests: write
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
