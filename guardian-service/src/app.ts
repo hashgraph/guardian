@@ -79,15 +79,9 @@ Promise.all([
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await setDefaultSchema(schemaRepository);
-    
+
     new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
-    
+
     state.updateState(ApplicationStates.READY);
 });
-
-function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    })
-}

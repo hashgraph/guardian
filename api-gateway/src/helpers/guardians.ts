@@ -191,17 +191,6 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
-     * Register MRV reciever
-     * @param cb
-     */
-    public registerMRVReceiver(cb: (data: any) => Promise<void>): void {
-        this.channel.response('mrv-data', async (msg, res) => {
-            await cb(msg.payload);
-            res.send();
-        });
-    }
-
-    /**
      * Generate Demo Key
      *
      * @returns {any} Demo Key

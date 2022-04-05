@@ -159,9 +159,8 @@ export class RetirementBlock {
         const vcs = [].concat(document, wipeVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-        let status = false;
-        status = await this.saveVC(wipeVC, user.did, ref);
-        status = await this.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
+        await this.saveVC(wipeVC, user.did, ref);
+        await this.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
 
         return vp;
     }

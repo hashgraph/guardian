@@ -1,5 +1,5 @@
-import { PolicyRole, UserRole } from 'interfaces';
-import { IAuthUser } from '../auth/auth.interface';
+import { PolicyRole } from 'interfaces';
+import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 export interface IPolicyRoles {
