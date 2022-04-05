@@ -158,6 +158,7 @@ export class PolicyViewerComponent implements OnInit {
     newPolicy() {
         const dialogRef = this.dialog.open(NewPolicyDialog, {
             width: '500px',
+            disableClose: true,
             data: {
                 tokens: this.tokens
             }
@@ -181,6 +182,7 @@ export class PolicyViewerComponent implements OnInit {
     setVersion(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
+            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe((version) => {
