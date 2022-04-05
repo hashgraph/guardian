@@ -27,12 +27,12 @@ To get a local copy up and running, follow these simple example steps. When buil
 
 #### Installation
 
-1.  Clone the repo
+1. Clone the repo
 
     ```
     git clone https://github.com/hashgraph/guardian.git
     ```
-2.  Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
     For example:
 
@@ -73,9 +73,55 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    docker-compose up -d --build
    ```
-5. If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+5. If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+
+   **From the interfaces folder**
+
+   Build package
+   ```
+   npm install
+   npm run build
+   ```
+
+   **From the logger-helper folder**
+
+   Build package
+   ```
+   npm install
+   npm run build
+   ```
 
     **From the Message broker folder (Need to run first)**
+
+   To build the service:
+
+   ```
+   npm install
+   npm run build
+   ```
+
+   To start the service:
+
+   ```
+   npm start
+   ```
+
+   **From the Logger service folder**
+
+   To build the service:
+
+   ```
+   npm install
+   npm run build
+   ```
+
+   To start the service:
+
+   ```
+   npm start
+   ```
+
+   **From the Auth service folder**
 
    To build the service:
 
@@ -105,7 +151,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
  
- **From the Guardian Service folder**
+   **From the Guardian Service folder**
 
    To build the service:
 
@@ -173,13 +219,6 @@ To run **guardian-service** unit tests, following commands needs to be executed:
 
 ```
 cd guardian-service 
-npm run test
-```
-
-To run **vc-modules** unit tests, following commands needs to be executed:
-
-```
-cd vc-modules
 npm run test
 ```
 

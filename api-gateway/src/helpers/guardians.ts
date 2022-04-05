@@ -23,7 +23,7 @@ type IFilter = any;
 @Singleton
 export class Guardians extends ServiceRequestsBase {
     public target: string = 'guardian.*';
-    
+
     /**
      * Update settings
      *
@@ -213,9 +213,7 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Return schemes
      *
-     * @param {Object} [params] - filters
-     * @param {string} [params.type] - schema type
-     * @param {string} [params.entity] - schema entity type
+     * @param {string} did - owner did
      *
      * @returns {ISchema[]} - all schemes
      */
@@ -226,9 +224,7 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Return schemes
      *
-     * @param {Object} [params] - filters
-     * @param {string} [params.type] - schema type
-     * @param {string} [params.entity] - schema entity type
+     * @param {string} uuid
      *
      * @returns {ISchema[]} - all schemes
      */
@@ -250,9 +246,9 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Import schema
      *
-     * @param {string} messageId - schema uuid
-     *
-     * @returns {any} - Schema Document
+     * @param {string[]} messageIds - schema uuid
+     * @param {string} owner
+     * @returns {any[]} - Schema Document
      */
     public async importSchemesByMessages(messageIds: string[], owner: string): Promise<any[]> {
         return await this.request(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, { messageIds, owner });
@@ -261,9 +257,9 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Import schema
      *
-     * @param {string} messageId - schema uuid
-     *
-     * @returns {any} - Schema Document
+     * @returns {any[]} - Schema Document
+     * @param {ISchema[]} files
+     * @param {owner} owner
      */
     public async importSchemesByFile(files: ISchema[], owner: string): Promise<any[]> {
         return await this.request(MessageAPI.IMPORT_SCHEMES_BY_FILE, { files, owner });
@@ -283,9 +279,8 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Get schema preview
      *
-     * @param {string} messageId Message identifier
-     *
-     * @returns {any} Schema preview
+     * @param {ISchema[]} files
+     * @returns {ISchema[]} Schema preview
      */
     public async previewSchemesByFile(files: ISchema[]): Promise<ISchema[]> {
         return files;
@@ -318,7 +313,9 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @param {string} id - schema id
      *
-     * @returns {ISchemaSubmitMessage} - message
+     * @param {string} version - schema version
+     * @param {string} owner - schema message
+     * @returns {ISchema} - message
      */
     public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
         return await this.request(MessageAPI.PUBLISH_SCHEMA, { id, version, owner });
@@ -342,7 +339,7 @@ export class Guardians extends ServiceRequestsBase {
 
     /**
      * Get service status
-     * 
+     *
      * @returns {ApplicationStates} Service state
      */
     public async getStatus(): Promise<ApplicationStates> {
