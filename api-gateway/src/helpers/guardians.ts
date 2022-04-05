@@ -23,7 +23,7 @@ type IFilter = any;
 @Singleton
 export class Guardians extends ServiceRequestsBase {
     public target: string = 'guardian.*';
-    
+
     /**
      * Update settings
      *
@@ -191,17 +191,6 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
-     * Register MRV reciever
-     * @param cb
-     */
-    public registerMRVReceiver(cb: (data: any) => Promise<void>): void {
-        this.channel.response('mrv-data', async (msg, res) => {
-            await cb(msg.payload);
-            res.send();
-        });
-    }
-
-    /**
      * Generate Demo Key
      *
      * @returns {any} Demo Key
@@ -342,7 +331,7 @@ export class Guardians extends ServiceRequestsBase {
 
     /**
      * Get service status
-     * 
+     *
      * @returns {ApplicationStates} Service state
      */
     public async getStatus(): Promise<ApplicationStates> {

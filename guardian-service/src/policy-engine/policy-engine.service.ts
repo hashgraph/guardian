@@ -22,9 +22,7 @@ import {
 } from '@hedera-modules'
 import {
     IPolicyBlock,
-    IPolicyInterfaceBlock,
-    ISerializedBlock,
-    ISerializedBlockExtend
+    IPolicyInterfaceBlock
 } from './policy-engine.interface';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
@@ -586,4 +584,3 @@ export class PolicyEngineService {
         });
     }
 }
-
