@@ -60,6 +60,15 @@ npm install
 npm run build
 ```
 
+#### From the vc-modules folder
+
+Build package
+
+```
+npm install
+npm run build
+```
+
 #### **From the logger-helper folder**
 
 Build package
