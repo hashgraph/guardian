@@ -155,3 +155,7 @@ button.mat-button {
 *::-webkit-scrollbar-thumb:hover {
     background: rgba(0,0,0,0.55);
 }
+
+.mat-datepicker-content .mat-calendar {
+    height: unset !important;
+}

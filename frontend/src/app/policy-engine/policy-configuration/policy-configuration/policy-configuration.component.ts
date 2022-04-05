@@ -237,6 +237,7 @@ export class PolicyConfigurationComponent implements OnInit {
     setVersion() {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
+            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe((version) => {
@@ -300,6 +301,7 @@ export class PolicyConfigurationComponent implements OnInit {
     saveAsPolicy() {
         const dialogRef = this.dialog.open(SavePolicyDialog, {
             width: '500px',
+            disableClose: true,
             data: {
                 policy: this.policy,
                 action: this.policy.status === 'DRAFT'
@@ -440,7 +442,3 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.objectToYaml(root);
     }
 }
-
-
-
-

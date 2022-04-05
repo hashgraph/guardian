@@ -101,6 +101,7 @@ export class TokenConfigComponent implements OnInit {
     newToken() {
         const dialogRef = this.dialog.open(TokenDialog, {
             width: '500px',
+            disableClose: true
         });
 
         dialogRef.afterClosed().subscribe(async (result) => {

@@ -261,6 +261,7 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
         this.dialogRef = this.dialog.open(this.dialogTemplate, {
             width: '850px',
+            disableClose: true,
             data: this
         });
     }
