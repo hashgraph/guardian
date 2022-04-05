@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, Schema, SchemaEntity } from 'interfaces';
 import { Observable } from 'rxjs';
@@ -30,8 +30,23 @@ export class SchemaService {
     return this.http.post<any[]>(`${this.url}`, data);
   }
 
-  public getSchemes(): Observable<ISchema[]> {
-    return this.http.get<any[]>(`${this.url}`);
+  public getSchemes(currentPolicy?: string): Observable<ISchema[]> {
+    let url = `${this.url}`;
+    if (currentPolicy) {
+      return this.http.get<ISchema[]>(`${this.url}/${currentPolicy}`);
+    }
+    return this.http.get<ISchema[]>(`${this.url}`);
+  }
+
+  public getSchemesByPage(currentPolicy?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+    let url = `${this.url}`;
+    if (currentPolicy) {
+      url += `/${currentPolicy}`
+    }
+    if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+      url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+    }
+    return this.http.get<any>(url, { observe: 'response' });
   }
 
   public publish(id: string, version: string): Observable<ISchema[]> {

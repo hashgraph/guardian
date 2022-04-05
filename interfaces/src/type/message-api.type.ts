@@ -4,7 +4,6 @@ export enum MessageAPI {
     SET_DID_DOCUMENT = 'set-did-document',
     SET_VC_DOCUMENT = 'set-vc-document',
     GET_SCHEMES = 'get-schemes',
-    SET_SCHEMA = 'set-schema',
     GET_TOKENS = 'get-tokens',
     SET_TOKEN = 'set-token',
     IMPORT_TOKENS = 'import-tokens',
@@ -45,5 +44,7 @@ export enum MessageAPI {
     GET_TOPIC = 'GET_TOPIC',
     GET_ATTRIBUTES = 'GET_ATTRIBUTES',
     GET_STATUS = 'GET_STATUS',
-    UPDATE_STATUS = 'UPDATE_STATUS'
+    UPDATE_STATUS = 'UPDATE_STATUS',
+    CREATE_SCHEMA = 'CREATE_SCHEMA',
+    UPDATE_SCHEMA = 'UPDATE_SCHEMA'
 }

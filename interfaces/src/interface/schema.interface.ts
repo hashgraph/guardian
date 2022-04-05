@@ -1,6 +1,6 @@
-import {SchemaEntity} from '../type/schema-entity.type';
-import {SchemaStatus} from '../type/schema-status.type';
-import {SchemaCategory} from '../type/schema-category.type';
+import { SchemaEntity } from '../type/schema-entity.type';
+import { SchemaStatus } from '../type/schema-status.type';
+import { SchemaCategory } from '../type/schema-category.type';
 import { ISchemaDocument } from './schema-document.interface';
 
 export interface ISchema {
@@ -26,4 +26,5 @@ export interface ISchema {
     isCreator?: boolean;
     relationships?: string;
     category?: SchemaCategory;
+    policyId?: string;
 }

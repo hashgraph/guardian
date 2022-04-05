@@ -30,6 +30,7 @@ export class Schema implements ISchema {
     public fields: SchemaField[];
     public conditions: SchemaCondition[];
     public previousVersion: string;
+    public policyId?: string;
 
     private userDID: string;
 
@@ -54,6 +55,7 @@ export class Schema implements ISchema {
             this.documentURL = schema.documentURL || "";
             this.contextURL = schema.contextURL || "";
             this.iri = schema.iri || "";
+            this.policyId = schema.policyId || "";
             if(schema.isOwner) {
                 this.userDID = this.owner;
             }
@@ -75,6 +77,7 @@ export class Schema implements ISchema {
             this.creator = "";
             this.owner = "";
             this.topicId = "";
+            this.policyId = "";
             this.messageId = "";
             this.documentURL = "";
             this.contextURL = "";
@@ -134,6 +137,7 @@ export class Schema implements ISchema {
         clone.creator = this.creator;
         clone.owner = this.owner;
         clone.topicId = this.topicId;
+        clone.policyId = this.policyId;
         clone.messageId = this.messageId;
         clone.documentURL = this.documentURL;
         clone.contextURL = this.contextURL;

@@ -23,7 +23,7 @@ type IFilter = any;
 @Singleton
 export class Guardians extends ServiceRequestsBase {
     public target: string = 'guardian.*';
-    
+
     /**
      * Update settings
      *
@@ -213,14 +213,23 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Return schemes
      *
-     * @param {Object} [params] - filters
-     * @param {string} [params.type] - schema type
-     * @param {string} [params.entity] - schema entity type
-     *
      * @returns {ISchema[]} - all schemes
      */
-    public async getSchemesByOwner(did: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.GET_SCHEMES, { owner: did });
+    public async getSchemesByOwner(
+        did: string,
+        policyId?: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<{
+        schemes: ISchema[],
+        count: number
+    }> {
+        return await this.request(MessageAPI.GET_SCHEMES, {
+            owner: did,
+            policyId: policyId,
+            pageIndex: pageIndex,
+            pageSize: pageSize
+        });
     }
 
     /**
@@ -233,7 +242,8 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemesByUUID(uuid: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.GET_SCHEMES, { uuid: uuid });
+        const { schemes, count } = await this.request(MessageAPI.GET_SCHEMES, { uuid: uuid });
+        return schemes;
     }
 
     /**
@@ -298,8 +308,19 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema[]} - all schemes
      */
-    public async setSchema(item: ISchema | any): Promise<ISchema[]> {
-        return await this.request(MessageAPI.SET_SCHEMA, item);
+    public async createSchema(item: ISchema | any): Promise<ISchema[]> {
+        return await this.request(MessageAPI.CREATE_SCHEMA, item);
+    }
+
+    /**
+     * Create or update schema
+     *
+     * @param {ISchema} item - schema
+     *
+     * @returns {ISchema[]} - all schemes
+     */
+    public async updateSchema(item: ISchema | any): Promise<ISchema[]> {
+        return await this.request(MessageAPI.UPDATE_SCHEMA, item);
     }
 
     /**

@@ -184,7 +184,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
         this.fieldsForm = this.fb.group({});
         this.conditionsForm = new FormGroup({});
-        this.defaultFields = new FormControl("NONE", Validators.required);
+        this.defaultFields = new FormControl("VC", Validators.required);
         this.dataForm = this.fb.group({
             name: ['', Validators.required],
             description: [''],

@@ -78,7 +78,7 @@ Promise.all([
     await demoAPI(channel, settingsRepository);
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-    await setDefaultSchema(schemaRepository);
+    await setDefaultSchema();
     
     new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
