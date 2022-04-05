@@ -73,7 +73,31 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    docker-compose up -d --build
    ```
-5. If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+5. If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+
+   **From the interfaces folder**
+
+   Build package
+   ```
+   npm install
+   npm run build
+   ```
+
+  **From the vc-modules folder**
+
+  Build package
+  ```
+  npm install
+  npm run build
+  ```
+
+   **From the logger-helper folder**
+
+   Build package
+   ```
+   npm install
+   npm run build
+   ```
 
     **From the Message broker folder (Need to run first)**
 
