@@ -45,10 +45,17 @@
           <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>
         </div>
         <div class="debug-user">
-          <div class="current-user" *ngFor="let user of testUsers$ | async"
-            (click)="authState.doLogin(user.username, 'test')">
-            <div class="current-user-name">{{user.username}}</div>
-            <div class="current-user-role">{{user.role}}</div>
+          <div class="current-user" *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"
+            (click)="authState.doLogin(user.username, 'test')"
+            [ngClass]="{ 'current-user-first' : isFirst, 'current-user-last': i === users.length - 1 }">
+            <div class="current-user-name"><span>{{user.username}}</span> <span class="current-user-role">({{user.role}})</span></div>
+            <div 
+              class="current-user-policy-roles" 
+              *ngIf="user.policyRoles && user.policyRoles.length" 
+              [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
+              matTooltipClass="policy-roles-tooltip"> 
+                <b>User participates in {{user.policyRoles.length}} policies in {{getPoliciesRolesLength(user.policyRoles)}} roles </b>
+            </div>
           </div>
         </div>
       </div>

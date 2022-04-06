@@ -43,7 +43,8 @@ export class UserProfileComponent implements OnInit {
         'associated',
         'tokenBalance',
         'frozen',
-        'kyc'
+        'kyc',
+        'policies'
     ];
 
     private interval: any;
@@ -86,7 +87,12 @@ export class UserProfileComponent implements OnInit {
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
             this.balance = value[1] as string;
-            this.tokens = value[2].map(e => new Token(e));
+            this.tokens = value[2].map((e: any) =>{ 
+                return { 
+                    ...new Token(e), 
+                    policies: e.policies
+                }
+            });
 
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;

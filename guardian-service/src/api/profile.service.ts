@@ -26,6 +26,8 @@ import { Topic } from '@entity/topic';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { ApiResponse } from '@api/api-response';
+import { Policy } from '@entity/policy';
+import { ObjectId } from 'mongodb';
 
 /**
  * Connect to the message broker methods of working with Address books.
@@ -162,6 +164,60 @@ export const profileAPI = async function (
             }
 
             res.send(new MessageResponse(userDID));
+        } catch (error) {
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message, 500));
+        }
+    })
+
+    ApiResponse(channel, MessageAPI.GET_USER_ROLES, async (msg, res) => {
+        try {
+            const aggregateFunctions: any = [
+                { $project: { name: "$name", version: "$version", registeredUsers: { $objectToArray: "$registeredUsers" }}},
+                { $unwind: { path: "$registeredUsers" }},
+                { $project:
+                    {
+                        _id: "$_id",
+                        name: "$name",
+                        version: "$version",
+                        "registeredUsers.did":"$registeredUsers.k",
+                        "registeredUsers.role": "$registeredUsers.v"
+                    }
+                }
+             ];
+            if (msg.payload) {
+                const match = {};
+                if (msg.payload.policyId) {
+                    match['_id'] = new ObjectId(msg.payload.policyId);
+                }
+                if (!msg.payload.did) {
+                    res.send(new MessageResponse([]));
+                    return;
+                }
+                match['registeredUsers.did'] = msg.payload.did;
+                aggregateFunctions.push({ $match: match });
+            }
+            aggregateFunctions.push({ $group:
+                {
+                    _id: {
+                      "id": "$_id",
+                      "name": "$name",
+                      "version": "$version"
+                    },
+                    "userRoles": { $addToSet: "$registeredUsers" }
+                  }
+            }, { $project:
+                {
+                    _id: 0,
+                    policy: "$_id",
+                    userRoles: "$userRoles"
+                }
+            });
+            const policies = await getMongoRepository(Policy).aggregate(aggregateFunctions);
+            const userRoles = await policies.toArray();
+            await policies.close();
+            res.send(new MessageResponse(userRoles));
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);

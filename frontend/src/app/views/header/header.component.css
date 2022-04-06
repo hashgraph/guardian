@@ -85,17 +85,19 @@ a[hidden="true"] {
 
 .current-user-name {
     font-size: 20px;
-    line-height: 23px;
+    line-height: 0px;
+    display: inline-block;
 }
 
 .current-user-role {
     font-size: 16px;
-    line-height: 18px;
+    line-height: 0px;
     color: #707070;
+    margin-left: 5px;
 }
 
 .current-user {
-    margin: 12px 0;
+    border-bottom: 1px dashed gray;
 }
 
 .debug-user button {
@@ -128,4 +130,25 @@ a[hidden="true"] {
     overflow: visible;
     position: relative;
     margin-right: 20px;
+}
+
+.current-user-policy-roles {
+    line-height: 0px;
+    margin-bottom: 15px;
+    color: var(--button-primary-color);
+}
+
+::ng-deep .policy-roles-tooltip  {
+    white-space: pre-line !important;
+    max-width: 350px !important;
+    font-size: 15px;
+    width: 100%;
+}
+
+.current-user-first {
+    margin-top: 20px;
+}
+
+.current-user-last {
+    border: unset;
 }

@@ -353,4 +353,18 @@ export class Guardians extends ServiceRequestsBase {
             return ApplicationStates.STOPPED;
         }
     }
+
+    /**
+     * Get user roles in policy
+     *
+     * @param {string} did - User did
+     * @param {string} policyId - Policy identifier
+     *
+     * @returns {any[]} - Policies and user roles
+     */
+    public async getUserRoles(did: string, policyId?: string){
+        return await this.request(MessageAPI.GET_USER_ROLES, {
+            did, policyId
+        });
+    }
 }

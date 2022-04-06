@@ -24,6 +24,7 @@ import { Logger } from 'logger-helper';
 import { ApplicationState, ApplicationStates } from 'interfaces';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
+import { Policy } from '@entity/policy';
 
 Promise.all([
     createConnection({
@@ -66,12 +67,13 @@ Promise.all([
     const schemaRepository = db.getMongoRepository(Schema);
     const settingsRepository = db.getMongoRepository(Settings);
     const topicRepository = db.getMongoRepository(Topic);
+    const policyRepository = db.getMongoRepository(Policy);
 
     state.updateState(ApplicationStates.INITIALIZING);
 
     await configAPI(channel, settingsRepository, topicRepository);
     await schemaAPI(channel, schemaRepository);
-    await tokenAPI(channel, tokenRepository);
+    await tokenAPI(channel, tokenRepository, policyRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await profileAPI(channel, topicRepository);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);

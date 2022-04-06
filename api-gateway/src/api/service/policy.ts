@@ -4,11 +4,13 @@ import { UserRole } from 'interfaces';
 import { PolicyEngine } from '@helpers/policyEngine';
 import { Users } from '@helpers/users';
 import { Logger } from 'logger-helper';
+import { Guardians } from '@helpers/guardians';
 
 export const policyAPI = Router();
 
 policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
-    const users = new Users()
+    const users = new Users();
+    const guardians = new Guardians();
     const engineService = new PolicyEngine();
     try {
         const user = await users.getUser(req.user.username);
@@ -18,12 +20,24 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         } else {
             result = await engineService.getPolicies({ status: 'PUBLISH' });
         }
+
+        for (let i = 0; i < result.length; i++) {
+            const policy = result[i];
+            const role = await guardians.getUserRoles(user.did, policy.id);
+            policy.userRoles = role[0]?.userRoles?.map(role => role.role) || [];
+            if (policy.owner === user.did) {
+                policy.userRoles.push('Administrator');
+            }
+            if (!policy.userRoles.length) {
+                policy.userRoles.push('The user does not have a role');
+            }
+        }
         res.json(result.map(item => {
             delete item.registeredUsers;
             return item;
         }));
     } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
