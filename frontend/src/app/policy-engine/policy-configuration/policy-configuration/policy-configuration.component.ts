@@ -94,7 +94,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         this.policyId = policyId;
         forkJoin([
-            this.schemaService.getSchemes(),
+            this.schemaService.getSchemes(policyId),
             this.tokenService.getTokens(),
             this.policyEngineService.policy(policyId)
         ]).subscribe((data: any) => {
@@ -105,7 +105,6 @@ export class PolicyConfigurationComponent implements OnInit {
             this.schemes.unshift({
                 type: ""
             } as any);
-
             this.tokens = tokens.map((e: any) => new Token(e));
             this.setPolicy(policy);
             setTimeout(() => {

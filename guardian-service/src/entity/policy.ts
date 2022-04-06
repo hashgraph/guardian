@@ -1,4 +1,4 @@
-import {BeforeInsert, Column, Entity, ObjectIdColumn} from 'typeorm';
+import {BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn} from 'typeorm';
 import { ModelHelper } from 'interfaces';
 
 /**
@@ -58,6 +58,9 @@ export class Policy {
     
     @Column()
     messageId: string;
+    
+    @CreateDateColumn()
+    createDate: Date;
 
     @BeforeInsert()
     setDefaults() {

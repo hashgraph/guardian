@@ -9,17 +9,17 @@ import { API_BASE_URL } from './api';
  */
 @Injectable()
 export class DemoService {
-  private readonly url: string = `${API_BASE_URL}/demo`;
-  constructor(
-    private http: HttpClient
-  ) {
-  }
+    private readonly url: string = `${API_BASE_URL}/demo`;
+    constructor(
+        private http: HttpClient
+    ) {
+    }
 
-  public getRandomKey(): Observable<any> {
-    return this.http.get<any>(`${this.url}/randomKey`);
-  }
+    public getRandomKey(): Observable<any> {
+        return this.http.get<any>(`${this.url}/randomKey`);
+    }
 
-  public getAllUsers(): Observable<ISession[]> {
-    return this.http.get<any>(`${this.url}/registeredUsers`);
-  }
+    public getAllUsers(): Observable<ISession[]> {
+        return this.http.get<any>(`${this.url}/registeredUsers`);
+    }
 }

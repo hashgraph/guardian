@@ -28,10 +28,10 @@ export class SchemaConfigComponent implements OnInit {
     isConfirmed: boolean = false;
     schemes: Schema[] = [];
     schemesCount: any;
-    publishSchemes: Schema[] = [];
     schemaColumns: string[] = [
         'policy',
         'type',
+        'topic',
         'version',
         'entity',
         'status',
@@ -43,9 +43,11 @@ export class SchemaConfigComponent implements OnInit {
     ];
     selectedAll!: boolean;
     policies: any[] | null;
-    currentPolicy: any;
+    currentPolicy: any = '';
     pageIndex: number;
     pageSize: number;
+    schemesMap: any;
+    policyNames: any;
 
     constructor(
         private auth: AuthService,
@@ -88,10 +90,12 @@ export class SchemaConfigComponent implements OnInit {
         ]).subscribe((value) => {
             const policies: any[] = value[0];
             const schemesResponse = value[1] as HttpResponse<ISchema[]>;
-            this.policies = policies;
+            this.policies = policies || [];
+            this.policyNames = {};
+            this.policies.forEach(p => { this.policyNames[p.id] = p.name })
             this.schemes = SchemaHelper.map(schemesResponse.body || []);
             this.schemesCount = schemesResponse.headers.get('X-Total-Count') || this.schemes.length;
-            this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
+            this.schemaMapping(this.schemes);
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -121,7 +125,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     onPage(event: any) {
-        if(this.pageSize != event.pageSize) {
+        if (this.pageSize != event.pageSize) {
             this.pageIndex = 0;
             this.pageSize = event.pageSize;
         } else {
@@ -131,19 +135,35 @@ export class SchemaConfigComponent implements OnInit {
         this.loadSchemes();
     }
 
+    schemaMapping(schemes: ISchema[]) {
+        this.schemesMap = {};
+        for (let i = 0; i < schemes.length; i++) {
+            const schema = schemes[i];
+            if (schema.policyId) {
+                if (this.schemesMap[schema.policyId]) {
+                    this.schemesMap[schema.policyId].push(schema);
+                } else {
+                    this.schemesMap[schema.policyId] = [schema];
+                }
+            }
+        }
+    }
+
     newSchemes() {
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
                 type: 'new',
-                schemes: this.publishSchemes
+                schemesMap: this.schemesMap,
+                policy: this.currentPolicy,
+                policies: this.policies
             }
         });
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.create(schema).subscribe((data) => {
+                this.schemaService.create(schema, schema.policyId).subscribe((data) => {
                     this.loadSchemes();
                 }, (e) => {
                     console.error(e.error);
@@ -171,7 +191,9 @@ export class SchemaConfigComponent implements OnInit {
             panelClass: 'g-dialog',
             data: {
                 type: 'edit',
-                schemes: this.publishSchemes,
+                schemesMap: this.schemesMap,
+                policy: this.currentPolicy,
+                policies: this.policies,
                 scheme: element
             }
         });
@@ -194,7 +216,9 @@ export class SchemaConfigComponent implements OnInit {
             panelClass: 'g-dialog',
             data: {
                 type: 'version',
-                schemes: this.publishSchemes,
+                schemesMap: this.schemesMap,
+                policy: this.currentPolicy,
+                policies: this.policies,
                 scheme: element
             }
         });
@@ -211,7 +235,7 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
-    newDocument(element: Schema) {
+    cloneDocument(element: Schema) {
         const newDocument: any = { ...element };
         delete newDocument.id;
         delete newDocument.uuid;
@@ -224,14 +248,18 @@ export class SchemaConfigComponent implements OnInit {
             panelClass: 'g-dialog',
             data: {
                 type: 'version',
-                schemes: this.publishSchemes,
+                schemesMap: this.schemesMap,
+                policy: this.currentPolicy,
+                policies: this.policies,
                 scheme: newDocument
             }
         });
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.create(schema).subscribe((data) => {
+                this.schemaService.create(schema, schema.policyId).subscribe((data) => {
+                    const schemes = SchemaHelper.map(data);
+                    this.schemaMapping(schemes);
                     this.loadSchemes();
                 }, (e) => {
                     console.error(e.error);
@@ -252,6 +280,8 @@ export class SchemaConfigComponent implements OnInit {
             if (version) {
                 this.loading = true;
                 this.schemaService.publish(element.id, version).subscribe((data: any) => {
+                    const schemes = SchemaHelper.map(data);
+                    this.schemaMapping(schemes);
                     this.loadSchemes();
                 }, (e) => {
                     this.loading = false;
@@ -263,6 +293,8 @@ export class SchemaConfigComponent implements OnInit {
     unpublished(element: any) {
         this.loading = true;
         this.schemaService.unpublished(element.id).subscribe((data: any) => {
+            const schemes = SchemaHelper.map(data);
+            this.schemaMapping(schemes);
             this.loadSchemes();
         }, (e) => {
             this.loading = false;
@@ -272,6 +304,8 @@ export class SchemaConfigComponent implements OnInit {
     deleteSchema(element: any) {
         this.loading = true;
         this.schemaService.delete(element.id).subscribe((data: any) => {
+            const schemes = SchemaHelper.map(data);
+            this.schemaMapping(schemes);
             this.loadSchemes();
         }, (e) => {
             this.loading = false;
@@ -297,25 +331,27 @@ export class SchemaConfigComponent implements OnInit {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
-                schemes: schemes
+                schemes: schemes,
+                policy: this.currentPolicy,
+                policies: this.policies,
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-                if (result.messageId) {
-                    this.importSchemes(result.messageId);
-                    return;
-                }
+            if (result && result.messageId) {
+                this.importSchemes(result.messageId);
+                return;
+            }
 
+            if (result && result.policy) {
                 this.loading = true;
                 if (type == 'message') {
-                    this.schemaService.importByMessage(data).subscribe((schemes) => {
+                    this.schemaService.importByMessage(data, result.policy).subscribe((schemes) => {
                         this.loadSchemes();
                     }, (e) => {
                         this.loading = false;
                     });
                 } else if (type == 'file') {
-                    this.schemaService.importByFile(data).subscribe((schemes) => {
+                    this.schemaService.importByFile(data, result.policy).subscribe((schemes) => {
                         this.loadSchemes();
                     }, (e) => {
                         this.loading = false;

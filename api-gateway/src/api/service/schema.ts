@@ -200,6 +200,9 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
     }
 });
 
+/**
+ * @deprecated 2022-08-04
+ */
 schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
@@ -215,6 +218,9 @@ schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), asy
     }
 });
 
+/**
+ * @deprecated 2022-08-04
+ */
 schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
@@ -261,6 +267,40 @@ schemaAPI.post('/import/file/preview', permissionHelper(UserRole.ROOT_AUTHORITY)
         const files = await parseZipFile(zip);
         const schemaToPreview = await guardians.previewSchemesByFile(files);
         res.status(200).json(schemaToPreview);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.post('/:policyId/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const messageId = req.body.messageId as string;
+        const map = await guardians.importSchemesByMessages([messageId], req.user.did);
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.post('/:policyId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const zip = req.body;
+        if (!zip) {
+            throw new Error('file in body is empty');
+        }
+        const files = await parseZipFile(zip);
+        const map = await guardians.importSchemesByFile(files, req.user.did);
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });

@@ -12,7 +12,7 @@ import { ApplicationStates, MessageAPI } from 'interfaces';
     providedIn: 'root'
 })
 export class StatusService {
-    
+
     private static HEARTBEAT_DELAY = 30 * 1000;
 
     private socket: any;

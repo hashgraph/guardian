@@ -202,8 +202,10 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
             topicId: topicId,
             description: TopicType.SchemaTopic,
             owner: owner,
-            type: TopicType.PolicyTopic,
-            key: root.hederaAccountKey
+            type: TopicType.SchemaTopic,
+            key: root.hederaAccountKey,
+            policyId: null,
+            policyUUID: null
         });
         topic = await getMongoRepository(Topic).save(topicObject);
     }
@@ -325,6 +327,7 @@ export const schemaAPI = async function (channel: any, schemaRepository): Promis
     ApiResponse(channel, MessageAPI.CREATE_SCHEMA, async (msg, res) => {
         try {
             const schemaObject = msg.payload as ISchema;
+            console.log('c', schemaObject)
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
             await createSchema(schemaObject, schemaObject.owner);
             const schemes = await schemaRepository.find();

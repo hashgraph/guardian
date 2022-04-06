@@ -45,6 +45,7 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
 import { JsonPropertiesComponent } from './policy-configuration/json-properties/json-properties.component';
 import { ReportBlockComponent } from './policy-viewer/blocks/report-block/report-block.component';
 import { ReportItemConfigComponent } from './policy-configuration/blocks/report/report-item-config/report-item-config.component';
+import { Dragonglass } from './helpers/dragonglass/dragonglass.component';
 
 @NgModule({
     declarations: [
@@ -85,7 +86,8 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
         ReportBlockComponent,
-        ReportItemConfigComponent
+        ReportItemConfigComponent,
+        Dragonglass
     ],
     imports: [
         CommonModule,
@@ -94,8 +96,7 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
         MaterialModule,
         SchemaEngineModule,
         AppRoutingModule,
-        DragDropModule,
-        SchemaEngineModule
+        DragDropModule
     ],
     exports: [
         PolicyConfigurationComponent,
@@ -133,7 +134,8 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
         ExportPolicyDialog,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
-        JsonPropertiesComponent
+        JsonPropertiesComponent,
+        Dragonglass
     ],
     providers: [
         RegisteredBlocks

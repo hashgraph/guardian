@@ -8,16 +8,16 @@ import { API_BASE_URL } from './api';
  */
 @Injectable()
 export class SettingsService {
-  private readonly url: string = `${API_BASE_URL}/settings/`;
-  constructor(
-    private http: HttpClient
-  ) {
-  }
-  public updateSettings(settings: CommonSettings): Observable<void> {
-    return this.http.post<void>(`${this.url}`, settings);
-  }
+    private readonly url: string = `${API_BASE_URL}/settings/`;
+    constructor(
+        private http: HttpClient
+    ) {
+    }
+    public updateSettings(settings: CommonSettings): Observable<void> {
+        return this.http.post<void>(`${this.url}`, settings);
+    }
 
-  public getSettings (): Observable<CommonSettings> {
-    return this.http.get<CommonSettings>(`${this.url}`);
-  }
+    public getSettings(): Observable<CommonSettings> {
+        return this.http.get<CommonSettings>(`${this.url}`);
+    }
 }
