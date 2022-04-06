@@ -81,9 +81,21 @@ form {
 
 
 .token-table {
+    table-layout: fixed;
     width: 100%;
+    min-width: 900px;
 }
 
+.token-table .mat-column-policies .policies-info {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: auto;
+}
+
+.token-table .mat-column-name {
+    width: 200px;
+}
 
 a {
     color: rgb(0, 0, 238);

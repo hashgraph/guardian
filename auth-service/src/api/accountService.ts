@@ -112,6 +112,7 @@ export class AccountService {
         this.channel.response(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (msg, res) => {
             try {
                 const userAccounts = (await getMongoRepository(User).find()).map((e) => ({
+                    did: e.did,
                     username: e.username,
                     role: e.role
                 }));

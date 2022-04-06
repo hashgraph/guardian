@@ -6,6 +6,8 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
+import { Policy } from '@entity/policy';
+import { findAllEntities } from '@helpers/utils';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
@@ -16,6 +18,7 @@ function getTokenInfo(info: any, token: any) {
         tokenSymbol: token.tokenSymbol,
         tokenType: token.tokenType,
         decimals: token.decimals,
+        policies: token.policies,
         associated: false,
         balance: null,
         hBarBalance: null,
@@ -49,7 +52,8 @@ function getTokenInfo(info: any, token: any) {
  */
 export const tokenAPI = async function (
     channel: any,
-    tokenRepository: MongoRepository<Token>
+    tokenRepository: MongoRepository<Token>,
+    policyRepository: MongoRepository<Policy>
 ): Promise<void> {
     /**
      * Create new token
@@ -307,7 +311,24 @@ export const tokenAPI = async function (
             const client = new HederaSDKHelper(userID, userKey);
             const info = await client.accountInfo(user.hederaAccountId);
 
-            const tokens = await tokenRepository.find();
+            const tokens: any = await tokenRepository.find();
+
+            const policies = await policyRepository.find();
+            const tokenPolicies = [];
+            for (let i = 0; i < tokens.length; i++) {
+                const tokenPolicies = [];
+                const token = tokens[i];
+                for (let j = 0; j < policies.length; j++) {
+                    const policyObject = policies[j];
+                    const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
+                    if (tokenIds.includes(token.tokenId)) {
+                        tokenPolicies.push(`${policyObject.name} (${policyObject.version})`);
+                        continue;
+                    }
+                }
+                token.policies = tokenPolicies;
+            }
+
             const result: any[] = [];
             for (let i = 0; i < tokens.length; i++) {
                 result.push(getTokenInfo(info, tokens[i]));
@@ -345,7 +366,22 @@ export const tokenAPI = async function (
                 return;
             }
         }
-        const tokens: IToken[] = await tokenRepository.find();
+        const tokens: any[] = await tokenRepository.find();
+        const policies = await policyRepository.find();
+        const tokenPolicies = [];
+        for (let i = 0; i < tokens.length; i++) {
+            const tokenPolicies = [];
+            const token = tokens[i];
+            for (let j = 0; j < policies.length; j++) {
+                const policyObject = policies[j];
+                const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
+                if (tokenIds.includes(token.tokenId)) {
+                    tokenPolicies.push(`${policyObject.name} (${policyObject.version})`);
+                    continue;
+                }
+            }
+            token.policies = tokenPolicies;
+        }
         res.send(new MessageResponse(tokens));
     })
 

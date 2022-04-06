@@ -186,3 +186,7 @@ a.go-back-link mat-icon {
 .table-container[role='ROOT_AUTHORITY'] {
     top: 77px;
 }
+
+.current-user-role {
+    float: right;
+}
