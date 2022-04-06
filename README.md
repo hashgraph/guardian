@@ -99,7 +99,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm run build
    ```
 
-    **From the Message broker folder (Need to run first)**
+   **From the Message broker folder (Need to run first)**
 
    To build the service:
 
