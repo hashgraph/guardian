@@ -13,11 +13,12 @@ import { findAllEntities } from '@helpers/utils';
  */
 export const tokenAPI = Router();
 
-async function setTokensPolicies(tokens: any[], engineService: PolicyEngine) {
+async function setTokensPolicies(tokens: any[], engineService: PolicyEngine, userDid?: string) {
     if (!tokens || !engineService) {
         return;
     }
-    const policies = await engineService.getPolicies({});
+    const policiesFilter = userDid ? { owner: userDid } : { status: 'PUBLISH' }
+    const policies = await engineService.getPolicies(policiesFilter);
     for (let i = 0; i < tokens.length; i++) {
         const tokenPolicies = [];
         const token = tokens[i];
@@ -59,8 +60,10 @@ tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), asyn
         const guardians = new Guardians();
         const user = req.user;
         let tokens = [];
+        let ownerDid = "";
         if (user.role === UserRole.ROOT_AUTHORITY) {
             tokens = await guardians.getTokens();
+            ownerDid = user.did;
         } else {
             const userDID = user.did;
             if(userDID) {
@@ -70,7 +73,7 @@ tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), asyn
 
         tokens = tokens || [];
 
-        await setTokensPolicies(tokens, new PolicyEngine());
+        await setTokensPolicies(tokens, new PolicyEngine(), ownerDid);
 
         res.status(200).json(tokens);
     } catch (error) {
