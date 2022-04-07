@@ -204,6 +204,20 @@ npm start
 **Note**: Once you start the service, please wait for the Initialization Process to be completed.
 {% endhint %}
 
+### Troubleshoot
+
+To delete all the Docker Containers
+
+```
+docker builder prune --all
+```
+
+To run by cleaning Docker Cache
+
+```
+docker-compose build --no-cache
+```
+
 ### Unit Tests
 
 To run **guardian-service** unit tests, following commands needs to be executed:
