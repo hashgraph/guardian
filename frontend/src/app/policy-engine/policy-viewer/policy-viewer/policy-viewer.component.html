@@ -52,7 +52,7 @@
                 <ng-container matColumnDef="roles">
                     <th mat-header-cell *matHeaderCellDef> Roles </th>
                     <td mat-cell *matCellDef="let element">
-                        {{ element.userRoles.join(', ') }}
+                        {{ element.userRoles?.join(', ') }}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="version">

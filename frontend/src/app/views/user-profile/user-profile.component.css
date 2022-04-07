@@ -94,7 +94,7 @@ form {
 }
 
 .token-table .mat-column-name {
-    width: 200px;
+    min-width: 300px;
 }
 
 a {

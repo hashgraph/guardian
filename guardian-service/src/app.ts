@@ -67,13 +67,12 @@ Promise.all([
     const schemaRepository = db.getMongoRepository(Schema);
     const settingsRepository = db.getMongoRepository(Settings);
     const topicRepository = db.getMongoRepository(Topic);
-    const policyRepository = db.getMongoRepository(Policy);
 
     state.updateState(ApplicationStates.INITIALIZING);
 
     await configAPI(channel, settingsRepository, topicRepository);
     await schemaAPI(channel, schemaRepository);
-    await tokenAPI(channel, tokenRepository, policyRepository);
+    await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await profileAPI(channel, topicRepository);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);

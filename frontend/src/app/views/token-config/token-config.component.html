@@ -22,8 +22,8 @@
                     </ng-container>
                     <ng-container matColumnDef="policies">
                         <th mat-header-cell *matHeaderCellDef> Policies </th>
-                        <td mat-cell *matCellDef="let element" [matTooltip]="element.policies.join(', ')">
-                            <div class="policies-info">{{element.policies.join(', ')}}</div>
+                        <td mat-cell *matCellDef="let element" [matTooltip]="element.policies?.join(', ')">
+                            <div class="policies-info">{{element.policies?.join(', ')}}</div>
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="users">
