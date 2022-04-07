@@ -114,7 +114,12 @@ export class TokenConfigComponent implements OnInit {
             if (result) {
                 this.loading = true;
                 this.tokenService.create(result).subscribe((data) => {
-                    this.tokens = data.map(e => new Token(e));
+                    this.tokens = data.map((e: any) => { 
+                        return {
+                            ...new Token(e),
+                            policies: e.policies
+                        }
+                    });
                     this.loading = false;
                 }, (e) => {
                     console.error(e.error);
