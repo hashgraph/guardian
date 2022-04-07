@@ -94,22 +94,26 @@ export class PolicyConfigurationComponent implements OnInit {
 
         this.policyId = policyId;
         forkJoin([
-            this.schemaService.getSchemes(policyId),
             this.tokenService.getTokens(),
             this.policyEngineService.policy(policyId)
         ]).subscribe((data: any) => {
-            const schemes = data[0] || [];
-            const tokens = data[1] || [];
-            const policy = data[2];
-            this.schemes = SchemaHelper.map(schemes) || [];
-            this.schemes.unshift({
-                type: ""
-            } as any);
+            const tokens = data[0] || [];
+            const policy = data[1];
             this.tokens = tokens.map((e: any) => new Token(e));
             this.setPolicy(policy);
-            setTimeout(() => {
+            if (!policy) {
+                setTimeout(() => { this.loading = false; }, 500);
+                return;
+            }
+            this.schemaService.getSchemes(policy.topicId).subscribe((data2: any) => {
+                const schemes = data2 || [];
+                this.schemes = SchemaHelper.map(schemes) || [];
+                this.schemes.unshift({ type: "" } as any);
+                setTimeout(() => { this.loading = false; }, 500);
+            }, (e) => {
                 this.loading = false;
-            }, 500);
+                console.error(e.error);
+            });
         }, (error) => {
             this.loading = false;
             console.error(error);

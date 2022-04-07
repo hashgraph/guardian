@@ -7,8 +7,8 @@
     <div class="optional-row">
         <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
             <mat-label>* Policy</mat-label>
-            <mat-select formControlName="policyId" tabindex='-1' (selectionChange)="onFilter($event)">
-                <mat-option *ngFor="let policy of policies" [value]="policy.id">{{policy.name}}</mat-option>          
+            <mat-select formControlName="topicId" tabindex='-1' (selectionChange)="onFilter($event)">
+                <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>          
             </mat-select>
         </mat-form-field>
 

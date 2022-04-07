@@ -26,5 +26,4 @@ export interface ISchema {
     isCreator?: boolean;
     relationships?: string;
     category?: SchemaCategory;
-    policyId?: string;
 }

@@ -5,6 +5,7 @@ import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
 import { Logger } from 'logger-helper';
+import { PolicyEngine } from '@helpers/policyEngine';
 
 export async function parseZipFile(zipFile: any): Promise<any[]> {
     const zip = new JSZip();
@@ -24,8 +25,10 @@ export async function generateZipFile(schemes: ISchema[]): Promise<JSZip> {
     return zip;
 }
 
-export async function createSchema(newSchema: ISchema, owner: string, policyId?: string): Promise<ISchema[]> {
+export async function createSchema(newSchema: ISchema, owner: string, topicId?: string): Promise<ISchema[]> {
     const guardians = new Guardians();
+    const engineService = new PolicyEngine();
+
     if (newSchema.id) {
         const schema = await guardians.getSchemaById(newSchema.id);
         if (!schema) {
@@ -38,10 +41,12 @@ export async function createSchema(newSchema: ISchema, owner: string, policyId?:
     } else {
         newSchema.version = "";
     }
-    newSchema.policyId = policyId || null;
-
     delete newSchema.id;
     delete newSchema.status;
+
+    if (topicId) {
+        newSchema.topicId = topicId;
+    }
 
     SchemaHelper.updateOwner(newSchema, owner);
     const schemes = (await guardians.createSchema(newSchema));
@@ -84,12 +89,12 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
     }
 });
 
-schemaAPI.post('/:policyId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const newSchema = req.body;
-        const policyId = req.params.policyId as string;
-        const schemes = await createSchema(newSchema, user.did, policyId);
+        const topicId = req.params.topicId as string;
+        const schemes = await createSchema(newSchema, user.did, topicId);
         res.status(201).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
@@ -115,17 +120,17 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     }
 });
 
-schemaAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
-        const policyId = req.params.policyId as string;
+        const topicId = req.params.topicId as string;
         const guardians = new Guardians();
         let pageIndex: any, pageSize: any;
         if (req.query && req.query.pageIndex && req.query.pageSize) {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
         }
-        const { schemes, count } = await guardians.getSchemesByOwner(user.did, policyId, pageIndex, pageSize);
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did, topicId, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(schemes);
     } catch (error) {
@@ -208,7 +213,7 @@ schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), asy
         const user = req.user;
         const guardians = new Guardians();
         const messageId = req.body.messageId as string;
-        const map = await guardians.importSchemesByMessages([messageId], req.user.did);
+        const map = await guardians.importSchemesByMessages([messageId], req.user.did, null);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(schemes);
@@ -230,7 +235,7 @@ schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async 
             throw new Error('file in body is empty');
         }
         const files = await parseZipFile(zip);
-        const map = await guardians.importSchemesByFile(files, req.user.did);
+        const map = await guardians.importSchemesByFile(files, req.user.did, null);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(schemes);
@@ -273,12 +278,13 @@ schemaAPI.post('/import/file/preview', permissionHelper(UserRole.ROOT_AUTHORITY)
     }
 });
 
-schemaAPI.post('/:policyId/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
+        const topicId = req.params.topicId as string;
         const guardians = new Guardians();
         const messageId = req.body.messageId as string;
-        const map = await guardians.importSchemesByMessages([messageId], req.user.did);
+        const map = await guardians.importSchemesByMessages([messageId], req.user.did, topicId);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(schemes);
@@ -288,16 +294,17 @@ schemaAPI.post('/:policyId/import/message', permissionHelper(UserRole.ROOT_AUTHO
     }
 });
 
-schemaAPI.post('/:policyId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
         const zip = req.body;
+        const topicId = req.params.topicId as string;
         if (!zip) {
             throw new Error('file in body is empty');
         }
         const files = await parseZipFile(zip);
-        const map = await guardians.importSchemesByFile(files, req.user.did);
+        const map = await guardians.importSchemesByFile(files, req.user.did, topicId);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(schemes);

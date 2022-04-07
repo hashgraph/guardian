@@ -46,9 +46,6 @@ export class Schema implements ISchema {
     topicId: string;
     
     @Column()
-    policyId: string;
-    
-    @Column()
     messageId: string;
 
     @Column()

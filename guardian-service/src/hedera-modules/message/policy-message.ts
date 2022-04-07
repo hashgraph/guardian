@@ -1,6 +1,6 @@
 import { Policy } from '@entity/policy';
 import { Message } from './message';
-import { IURL } from "./i-url";
+import { IURL, UrlType } from "./i-url";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
 
@@ -40,9 +40,6 @@ export class PolicyMessage extends Message {
     }
 
     public toMessage(): string {
-        const iurl = this.getUrl();
-        const cid = iurl ? iurl.cid : undefined;
-        const url = iurl ? iurl.url : undefined;
         return JSON.stringify({
             action: this.action,
             type: this.type,
@@ -55,12 +52,15 @@ export class PolicyMessage extends Message {
             owner: this.owner,
             topicId: this.topicId,
             rootTopicId: this.rootTopicId,
-            cid: cid,
-            url: url
+            cid: this.getDocumentUrl(UrlType.cid),
+            url: this.getDocumentUrl(UrlType.url),
         });
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
+        if (this.action !== MessageAction.PublishPolicy) {
+            return [];
+        }
         if (this.document) {
             return [this.document];
         }
@@ -110,5 +110,9 @@ export class PolicyMessage extends Message {
 
     public override validate(): boolean {
         return true;
+    }
+
+    public getDocumentUrl(type: UrlType): string | null {
+        return this.getUrlValue(0, type);
     }
 }

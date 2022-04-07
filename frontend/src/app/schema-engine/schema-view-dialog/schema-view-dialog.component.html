@@ -9,7 +9,7 @@
             Schema Import Preview
         </div>
         <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onImport()" [attr.disabled]="!policy">
+            <div class="g-dialog-actions-btn" (click)="onImport()" [attr.disabled]="!topicId">
                 Import
             </div>
         </div>
@@ -29,10 +29,10 @@
                         <div class="field">
                             <div class="field-name">Policy</div>
                             <div>
-                                <mat-form-field appearance="outline" class="{{ policy ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
+                                <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
                                     <mat-label>* Policy</mat-label>
-                                    <mat-select [(value)]="policy" class="{{ policy ? '' : 'mat-select-invalid'}}" >
-                                        <mat-option *ngFor="let policy of policies" [value]="policy.id">{{policy.name}}</mat-option>          
+                                    <mat-select [(value)]="topicId" class="{{ topicId ? '' : 'mat-select-invalid'}}" >
+                                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>          
                                     </mat-select>
                                 </mat-form-field>
                             </div>

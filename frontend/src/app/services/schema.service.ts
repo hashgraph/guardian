@@ -16,8 +16,8 @@ export class SchemaService {
     ) {
     }
 
-    public create(schema: Schema, policyId: any): Observable<ISchema[]> {
-        return this.http.post<any[]>(`${this.url}/${policyId}`, schema);
+    public create(schema: Schema, topicId: any): Observable<ISchema[]> {
+        return this.http.post<any[]>(`${this.url}/${topicId}`, schema);
     }
 
     public update(schema: Schema, id?: string): Observable<ISchema[]> {
@@ -30,17 +30,17 @@ export class SchemaService {
         return this.http.post<any[]>(`${this.url}`, data);
     }
 
-    public getSchemes(currentPolicy?: string): Observable<ISchema[]> {
-        if (currentPolicy) {
-            return this.http.get<ISchema[]>(`${this.url}/${currentPolicy}`);
+    public getSchemes(topicId?: string): Observable<ISchema[]> {
+        if (topicId) {
+            return this.http.get<ISchema[]>(`${this.url}/${topicId}`);
         }
         return this.http.get<ISchema[]>(`${this.url}`);
     }
 
-    public getSchemesByPage(currentPolicy?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+    public getSchemesByPage(topicId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
         let url = `${this.url}`;
-        if (currentPolicy) {
-            url += `/${currentPolicy}`
+        if (topicId) {
+            url += `/${topicId}`
         }
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
             url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
@@ -70,12 +70,12 @@ export class SchemaService {
         return this.http.get<any[]>(`${this.url}/${id}/export/message`);
     }
 
-    public importByMessage(messageId: string, policyId: any): Observable<ISchema[]> {
-        return this.http.post<any[]>(`${this.url}/${policyId}/import/message`, { messageId });
+    public importByMessage(messageId: string, topicId: any): Observable<ISchema[]> {
+        return this.http.post<any[]>(`${this.url}/${topicId}/import/message`, { messageId });
     }
 
-    public importByFile(schemesFile: any, policyId: any): Observable<ISchema[]> {
-        return this.http.post<any[]>(`${this.url}/${policyId}/import/file`, schemesFile, {
+    public importByFile(schemesFile: any, topicId: any): Observable<ISchema[]> {
+        return this.http.post<any[]>(`${this.url}/${topicId}/import/file`, schemesFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
             }

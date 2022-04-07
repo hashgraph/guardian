@@ -19,9 +19,9 @@ export class SchemaDialog {
     schemesMap: any;
     started: boolean = false;
     type: 'new' | 'edit' | 'version' = 'new';
-    policy: any;
+    topicId: any;
     policies: any[];
-    
+
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
         private fb: FormBuilder,
@@ -29,7 +29,7 @@ export class SchemaDialog {
         this.schemesMap = data.schemesMap || {};
         this.scheme = data.scheme || null;
         this.type = data.type || null;
-        this.policy = data.policy || null;
+        this.topicId = data.topicId || null;
         this.policies = data.policies || [];
     }
 

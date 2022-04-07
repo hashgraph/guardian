@@ -4,12 +4,11 @@
             <div>
                 <mat-form-field appearance="outline">
                     <mat-label>Policy</mat-label>
-                    <mat-select [(value)]="currentPolicy" (selectionChange)="onFilter()">
+                    <mat-select [(value)]="currentTopicPolicy" (selectionChange)="onFilter()">
                         <mat-option value="">All policies</mat-option>
-                        <mat-option *ngFor="let policy of policies" [value]="policy.id">
-                            {{policy.name}}
-                            <span *ngIf="policy.version"> ({{policy.version}})</span>
-                            <span *ngIf="policy.status"> ({{policy.status}})</span>
+                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
+                            <span>{{policy.name}}</span>
+                            <span> ({{policy.topicId}})</span>
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
@@ -39,7 +38,7 @@
                 </ng-container>
                 <ng-container matColumnDef="policy">
                     <th mat-header-cell *matHeaderCellDef> Policy </th>
-                    <td mat-cell *matCellDef="let element">{{policyNames[element.policyId]}}</td>
+                    <td mat-cell *matCellDef="let element">{{policyNameByTopic[element.topicId]}}</td>
                 </ng-container>
                 <ng-container matColumnDef="type">
                     <th mat-header-cell *matHeaderCellDef> Name </th>

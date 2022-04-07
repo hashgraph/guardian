@@ -16,7 +16,7 @@ import path from 'path';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
-import { HederaSDKHelper, MessageAction, MessageServer, MessageType, SchemaMessage } from '@hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, MessageType, SchemaMessage, UrlType } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
@@ -122,8 +122,8 @@ const loadSchema = async function (messageId: string, owner: string) {
             owner: owner,
             topicId: message.getTopicId(),
             messageId: messageId,
-            documentURL: message.getDocumentUrl().url,
-            contextURL: message.getContextUrl().url,
+            documentURL: message.getDocumentUrl(UrlType.url),
+            contextURL: message.getContextUrl(UrlType.url),
             iri: null
         }
         SchemaHelper.updateIRI(schemaToImport);
@@ -191,8 +191,8 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
     const schemaObject = getMongoRepository(SchemaCollection).create(newSchema);
 
     let topic: Topic;
-    if (newSchema.policyId) {
-        topic = await getMongoRepository(Topic).findOne({ policyId: newSchema.policyId });
+    if (newSchema.topicId) {
+        topic = await getMongoRepository(Topic).findOne({ topicId: newSchema.topicId });
     }
 
     if (!topic) {
@@ -223,7 +223,7 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
     return await getMongoRepository(SchemaCollection).save(schemaObject);
 }
 
-export async function importSchemaByFiles(owner: string, files: ISchema[]) {
+export async function importSchemaByFiles(owner: string, files: ISchema[], topicId: string) {
     const uuidMap: Map<string, string> = new Map();
     for (let i = 0; i < files.length; i++) {
         const file = files[i] as ISchema;
@@ -243,6 +243,8 @@ export async function importSchemaByFiles(owner: string, files: ISchema[]) {
         file.messageId = null;
         file.creator = owner;
         file.owner = owner;
+        file.topicId = topicId;
+        file.status = SchemaStatus.DRAFT;
         SchemaHelper.setVersion(file, '', '');
         await createSchema(file, owner);
     }
@@ -294,12 +296,12 @@ export async function publishSchema(id: string, version: string, owner: string):
     const result = await messageServer.sendMessage(topic.topicId, message);
 
     const messageId = result.getId();
-    const contextUrl = result.getDocumentUrl();
-    const documentUrl = result.getContextUrl();
+    const contextUrl = result.getDocumentUrl(UrlType.url);
+    const documentUrl = result.getContextUrl(UrlType.url);
 
     item.status = SchemaStatus.PUBLISHED;
-    item.documentURL = documentUrl.url;
-    item.contextURL = contextUrl.url;
+    item.documentURL = documentUrl;
+    item.contextURL = contextUrl;
     item.messageId = messageId;
 
     SchemaHelper.updateIRI(item);
@@ -405,17 +407,19 @@ export const schemaAPI = async function (channel: any, schemaRepository): Promis
                 return;
             }
 
-            const { owner, uuid, policyId, pageIndex, pageSize } = msg.payload;
-            const filter: any = { where: {
-                readonly: false
-            } }
+            const { owner, uuid, topicId, pageIndex, pageSize } = msg.payload;
+            const filter: any = {
+                where: {
+                    readonly: false
+                }
+            }
 
             if (owner) {
                 filter.where.owner = owner;
             }
 
-            if (policyId) {
-                filter.where.policyId = policyId;
+            if (topicId) {
+                filter.where.topicId = topicId;
             }
 
             if (uuid) {
@@ -482,6 +486,18 @@ export const schemaAPI = async function (channel: any, schemaRepository): Promis
                 const id = msg.payload as string;
                 const item = await schemaRepository.findOne(id);
                 if (item) {
+                    if (item.topicId) {
+                        const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
+                        if (topic) {
+                            const users = new Users();
+                            const root = await users.getHederaAccount(item.owner);
+                            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                            messageServer.setSubmitKey(topic.key);
+                            const message = new SchemaMessage(MessageAction.DeleteSchema);
+                            message.setDocument(item);
+                            await messageServer.sendMessage(topic.topicId, message);
+                        }
+                    }
                     await schemaRepository.delete(item.id);
                 }
             }
@@ -505,7 +521,7 @@ export const schemaAPI = async function (channel: any, schemaRepository): Promis
                 res.send(new MessageError('Invalid import schema parameter'));
                 return;
             }
-            const { owner, messageIds } = msg.payload as { owner: string, messageIds: string[] };
+            const { owner, messageIds, topicId } = msg.payload;
             if (!owner || !messageIds) {
                 res.send(new MessageError('Invalid import schema parameter'));
                 return;
@@ -518,7 +534,7 @@ export const schemaAPI = async function (channel: any, schemaRepository): Promis
                 files.push(newSchema);
             }
 
-            const schemesMap = await importSchemaByFiles(owner, files);
+            const schemesMap = await importSchemaByFiles(owner, files, topicId);
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {
@@ -541,13 +557,13 @@ export const schemaAPI = async function (channel: any, schemaRepository): Promis
                 res.send(new MessageError('Invalid import schema parameter'));
                 return;
             }
-            const { owner, files } = msg.payload as { owner: string, files: ISchema[] };
+            const { owner, files, topicId } = msg.payload;
             if (!owner || !files) {
                 res.send(new MessageError('Invalid import schema parameter'));
                 return;
             }
 
-            const schemesMap = await importSchemaByFiles(owner, files);
+            const schemesMap = await importSchemaByFiles(owner, files, topicId);
             res.send(new MessageResponse(schemesMap));
         }
         catch (error) {

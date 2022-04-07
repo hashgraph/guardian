@@ -13,8 +13,9 @@ import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
 import { ModelHelper, SchemaHelper, SchemaStatus, TopicType } from 'interfaces';
 import { Users } from '@helpers/users';
-import { HederaSDKHelper } from '@hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
+import { importSchemaByFiles } from '@api/schema.service';
 
 export class PolicyImportExportHelper {
     /**
@@ -110,89 +111,6 @@ export class PolicyImportExportHelper {
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
         const { policy, tokens, schemes } = policyToImport;
 
-        policy.policyTag = 'Tag_' + Date.now();
-        policy.uuid = GenerateUUIDv4();
-        policy.creator = policyOwner;
-        policy.owner = policyOwner;
-        policy.status = 'DRAFT';
-        delete policy.id;
-        delete policy.uuid;
-        delete policy.messageId;
-        delete policy.topicId;
-        delete policy.version;
-        delete policy.previousVersion;
-        delete policy.registeredUsers;
-
-        for (let token of tokens) {
-            delete token.id;
-            delete token.selected;
-        }
-
-        const existingTokens = await getMongoRepository(Token).find();
-        const existingTokensMap = {};
-        for (let i = 0; i < existingTokens.length; i++) {
-            existingTokensMap[existingTokens[i].tokenId] = true;
-        }
-
-        const tokenObject = getMongoRepository(Token).create(tokens.filter((token: any) => !existingTokensMap[token.tokenId]));
-        await getMongoRepository(Token).save(tokenObject);
-
-        const uuidMap: Map<string, string> = new Map();
-        for (let i = 0; i < schemes.length; i++) {
-            const file = schemes[i];
-            const newUUID = ModelHelper.randomUUID();
-            const uuid = file.iri ? file.iri.substring(1) : null;
-            if (uuid) {
-                uuidMap.set(uuid, newUUID);
-            }
-            file.uuid = newUUID;
-            file.iri = '#' + newUUID;
-        }
-
-        for (let i = 0; i < schemes.length; i++) {
-            const file = schemes[i];
-
-            file.document = replaceValueRecursive(file.document, uuidMap)
-            file.context = replaceValueRecursive(file.context, uuidMap)
-
-            file.messageId = null;
-            file.creator = policyOwner;
-            file.owner = policyOwner;
-            file.status = SchemaStatus.DRAFT;
-            SchemaHelper.setVersion(file, '', '');
-            const schema = getMongoRepository(Schema).create(file);
-            await getMongoRepository(Schema).save(schema);
-        }
-
-        const schemesMap = [];
-        uuidMap.forEach((v, k) => {
-            schemesMap.push({
-                oldUUID: k,
-                newUUID: v,
-                oldIRI: `#${k}`,
-                newIRI: `#${v}`
-            })
-        })
-
-        for (let index = 0; index < schemesMap.length; index++) {
-            const item = schemesMap[index];
-            replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
-        }
-        // compatibility with older versions
-        replaceAllEntities(policy.config, ['blockType'], 'interfaceDocumentsSource', 'interfaceDocumentsSourceBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'requestVcDocument', 'requestVcDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'sendToGuardian', 'sendToGuardianBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'interfaceAction', 'interfaceActionBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'mintDocument', 'mintDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'aggregateDocument', 'aggregateDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'wipeDocument', 'retirementDocumentBlock');
-
-        regenerateIds(policy.config);
-
-        if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
-            policy.name = policy.name + '_' + Date.now();
-        }
-
         const users = new Users();
         const root = await users.getHederaAccount(policyOwner);
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
@@ -203,13 +121,82 @@ export class PolicyImportExportHelper {
             description: description,
             owner: policyOwner,
             type: TopicType.PolicyTopic,
-            key: root.hederaAccountKey
+            key: root.hederaAccountKey,
+            policyId: null,
+            policyUUID: null
         };
         const topicObject = getMongoRepository(Topic).create(topic);
-        await getMongoRepository(Topic).save(topicObject);
+        const topicRow = await getMongoRepository(Topic).save(topicObject);
+
+        delete policy.id;
+        delete policy.messageId;
+        delete policy.version;
+        delete policy.previousVersion;
+        delete policy.registeredUsers;
+
+        policy.policyTag = 'Tag_' + Date.now();
+        policy.uuid = GenerateUUIDv4();
+        policy.creator = policyOwner;
+        policy.owner = policyOwner;
+        policy.status = 'DRAFT';
         policy.topicId = topicId;
 
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        messageServer.setSubmitKey(topic.key);
+        const message = new PolicyMessage(MessageAction.CreatePolicy);
+        message.setDocument(policy);
+        await messageServer.sendMessage(topic.topicId, message);
+
+
+        // Import Tokens
+        for (let token of tokens) {
+            delete token.id;
+            delete token.selected;
+        }
+        const existingTokens = await getMongoRepository(Token).find();
+        const existingTokensMap = {};
+        for (let i = 0; i < existingTokens.length; i++) {
+            existingTokensMap[existingTokens[i].tokenId] = true;
+        }
+        const tokenObject = getMongoRepository(Token).create(tokens.filter((token: any) => !existingTokensMap[token.tokenId]));
+        await getMongoRepository(Token).save(tokenObject);
+
+        // Import Schemes
+        const schemesMap = await importSchemaByFiles(policyOwner, schemes, topicId);
+
+        // Replace id
+        await this.replaceConfig(policy, schemesMap);
+
+        // Save
         const model = getMongoRepository(Policy).create(policy as Policy);
-        return await getMongoRepository(Policy).save(model);
+        const result = await getMongoRepository(Policy).save(model);
+
+        topicRow.policyId = result.id.toString();
+        topicRow.policyUUID = result.uuid;
+        await getMongoRepository(Topic).update(topicRow.id, topicRow);
+
+        return result;
+    }
+
+    static async replaceConfig(policy: Policy, schemesMap: any) {
+        if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
+            policy.name = policy.name + '_' + Date.now();
+        }
+
+        for (let index = 0; index < schemesMap.length; index++) {
+            const item = schemesMap[index];
+            replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
+        }
+
+        // compatibility with older versions
+        replaceAllEntities(policy.config, ['blockType'], 'interfaceDocumentsSource', 'interfaceDocumentsSourceBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'requestVcDocument', 'requestVcDocumentBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'sendToGuardian', 'sendToGuardianBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'interfaceAction', 'interfaceActionBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'mintDocument', 'mintDocumentBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'aggregateDocument', 'aggregateDocumentBlock');
+        replaceAllEntities(policy.config, ['blockType'], 'wipeDocument', 'retirementDocumentBlock');
+
+        regenerateIds(policy.config);
     }
 }

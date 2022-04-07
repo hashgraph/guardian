@@ -25,7 +25,7 @@ export class SchemaConfigurationComponent implements OnInit {
     @Input('type') type!: string;
     @Input('schemes-map') schemesMap!: { [x: string]: Schema[] };
     @Input('policies') policies!: any[];
-    @Input('policy') policy!: any;
+    @Input('topicId') topicId!: any;
 
     started = false;
     fieldsForm!: FormGroup;
@@ -191,7 +191,7 @@ export class SchemaConfigurationComponent implements OnInit {
         this.dataForm = this.fb.group({
             name: ['', Validators.required],
             description: [''],
-            policyId: ['', Validators.required],
+            topicId: ['', Validators.required],
             entity: this.defaultFields,
             fields: this.fieldsForm,
             conditions: this.conditionsForm
@@ -208,12 +208,12 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.updateSubSchemes(this.value?.policyId || this.policy);
+        this.updateSubSchemes(this.value?.topicId || this.topicId);
         this.dataForm.setValue({
             name: '',
             description: '',
             entity: 'VC',
-            policyId: this.policy,
+            topicId: this.topicId,
             fields: {},
             conditions: {}
         })
@@ -223,14 +223,14 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     onFilter(event: any) {
-        const policyId = event.value;
-        this.updateSubSchemes(policyId);
+        const topicId = event.value;
+        this.updateSubSchemes(topicId);
     }
 
-    updateSubSchemes(policyId: any) {
+    updateSubSchemes(topicId: any) {
         this.schemaTypes = [];
         if (this.schemesMap) {
-            this.schemes = this.schemesMap[policyId];
+            this.schemes = this.schemesMap[topicId];
         }
         if (this.schemes) {
             for (let i = 0; i < this.schemes.length; i++) {
@@ -380,7 +380,7 @@ export class SchemaConfigurationComponent implements OnInit {
             name: this.value.name,
             description: this.value.description,
             entity: this.value.entity,
-            policyId: this.value.policyId,
+            topicId: this.value.topicId,
             fields: {},
             conditions: {}
         });
@@ -563,13 +563,12 @@ export class SchemaConfigurationComponent implements OnInit {
         }
     }
 
-    public getSchema() {
-        const value = this.dataForm.value;
+    buildSchema(value: any) {
         const schema = new Schema(this.value);
         schema.name = value.name;
         schema.description = value.description;
         schema.entity = value.entity;
-        schema.policyId = value.policyId;
+
         const fields: SchemaField[] = [];
         const fieldsWithNames: any[] = []
         for (let i = 0; i < this.fields.length; i++) {
@@ -673,6 +672,13 @@ export class SchemaConfigurationComponent implements OnInit {
         }
         schema.update(fields, conditions);
         schema.updateRefs(this.schemes);
+        return schema;
+    }
+
+    public getSchema() {
+        const value = this.dataForm.value;
+        const schema = this.buildSchema(value);
+        schema.topicId = value.topicId;
         return schema;
     }
 

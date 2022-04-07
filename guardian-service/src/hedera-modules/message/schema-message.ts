@@ -1,7 +1,7 @@
 
 import { Schema } from '@entity/schema';
 import { Message } from './message';
-import { IURL } from "./i-url";
+import { IURL, UrlType } from "./i-url";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
 
@@ -26,7 +26,6 @@ export class SchemaMessage extends Message {
         this.owner = schema.owner;
         this.uuid = schema.uuid;
         this.version = schema.version;
-
         const document = schema.document;
         const context = schema.context;
         this.documents = [document, context];
@@ -50,14 +49,17 @@ export class SchemaMessage extends Message {
             owner: this.owner,
             uuid: this.uuid,
             version: this.version,
-            document_cid: this.urls[0].cid,
-            document_url: this.urls[0].url,
-            context_cid: this.urls[1].cid,
-            context_url: this.urls[1].url
+            document_cid: this.getDocumentUrl(UrlType.cid),
+            document_url: this.getDocumentUrl(UrlType.url),
+            context_cid: this.getContextUrl(UrlType.cid),
+            context_url: this.getContextUrl(UrlType.url)
         });
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
+        if (this.action !== MessageAction.PublishSchema) {
+            return [];
+        }
         const result = new Array(this.documents.length);
         for (let i = 0; i < this.documents.length; i++) {
             const json = JSON.stringify(this.documents[i]);
@@ -101,12 +103,12 @@ export class SchemaMessage extends Message {
         return this.urls;
     }
 
-    public getDocumentUrl(): IURL {
-        return this.urls[0];
+    public getDocumentUrl(type: UrlType): string | null {
+        return this.getUrlValue(0, type);
     }
 
-    public getContextUrl(): IURL {
-        return this.urls[1];
+    public getContextUrl(type: UrlType): string | null {
+        return this.getUrlValue(1, type);
     }
 
     public override validate(): boolean {

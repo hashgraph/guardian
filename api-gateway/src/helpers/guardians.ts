@@ -217,7 +217,7 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async getSchemesByOwner(
         did: string,
-        policyId?: string,
+        topicId?: string,
         pageIndex?: any,
         pageSize?: any
     ): Promise<{
@@ -226,7 +226,7 @@ export class Guardians extends ServiceRequestsBase {
     }> {
         return await this.request(MessageAPI.GET_SCHEMES, {
             owner: did,
-            policyId: policyId,
+            topicId: topicId,
             pageIndex: pageIndex,
             pageSize: pageSize
         });
@@ -264,8 +264,8 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {any} - Schema Document
      */
-    public async importSchemesByMessages(messageIds: string[], owner: string): Promise<any[]> {
-        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, { messageIds, owner });
+    public async importSchemesByMessages(messageIds: string[], owner: string, topicId:string): Promise<any[]> {
+        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, { messageIds, owner, topicId });
     }
 
     /**
@@ -275,8 +275,8 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {any} - Schema Document
      */
-    public async importSchemesByFile(files: ISchema[], owner: string): Promise<any[]> {
-        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_FILE, { files, owner });
+    public async importSchemesByFile(files: ISchema[], owner: string, topicId:string): Promise<any[]> {
+        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_FILE, { files, owner, topicId });
     }
 
     /**
