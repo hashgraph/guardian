@@ -32,6 +32,7 @@ export class PolicyViewerComponent implements OnInit {
         "ROOT_AUTHORITY": [
             'name',
             'description',
+            'roles',
             'topic',
             'version',
             'status',
@@ -43,6 +44,7 @@ export class PolicyViewerComponent implements OnInit {
         "USER": [
             'name',
             'description',
+            'roles',
             'version',
             'open',
         ]

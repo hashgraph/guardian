@@ -1,5 +1,7 @@
 .sensors-table {
+    table-layout: fixed;
     width: 100%;
+    min-width: 615px;
 }
 
 .sensors-table .mat-column-tokenId {
@@ -8,8 +10,20 @@
     padding-right: 8px;
 }
 
-.sensors-table .mat-column-tokenName {
+.sensors-table .mat-column-tokenName, .sensors-table .mat-column-tokenSymbol{
+    width: 10%;
     padding-left: 8px;
+}
+
+.sensors-table .mat-column-users {
+    width: 60px;
+}
+
+.sensors-table .mat-column-policies .policies-info {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: auto;
 }
 
 .content {
@@ -47,6 +61,12 @@ a {
 
 .users-table .mat-column-username {
     width: 200px;
+    border-right: 1px solid currentColor;
+    padding-right: 8px;
+}
+
+.users-table .mat-column-policies {
+    max-width: 200px;
     border-right: 1px solid currentColor;
     padding-right: 8px;
 }

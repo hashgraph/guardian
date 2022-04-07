@@ -60,9 +60,3 @@ updates:
     interval: weekly
   open-pull-requests-limit: 5
   target-branch: "develop"
-- package-ecosystem: npm
-  directory: "/vc-modules"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 5
-  target-branch: "develop"

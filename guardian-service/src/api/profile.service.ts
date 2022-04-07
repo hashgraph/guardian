@@ -18,7 +18,6 @@ import {
     HederaSDKHelper,
     MessageAction,
     MessageServer,
-    VcDocument,
     VCMessage
 } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';

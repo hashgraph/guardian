@@ -22,9 +22,7 @@ import {
 } from '@hedera-modules'
 import {
     IPolicyBlock,
-    IPolicyInterfaceBlock,
-    ISerializedBlock,
-    ISerializedBlockExtend
+    IPolicyInterfaceBlock
 } from './policy-engine.interface';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
@@ -275,9 +273,11 @@ export class PolicyEngineService {
 
         this.channel.response(PolicyEngineEvents.GET_POLICIES, async (msg, res) => {
             try {
-                const { pageIndex, pageSize } = msg.payload;
+                const { pageIndex, pageSize, userDid } = msg.payload;
                 delete msg.payload.pageIndex;
                 delete msg.payload.pageSize;
+                delete msg.payload.userDid;
+
                 const filter: any = { where: msg.payload }
                 const _pageSize = parseInt(pageSize);
                 const _pageIndex = parseInt(pageIndex);
@@ -287,9 +287,24 @@ export class PolicyEngineService {
                     filter.skip = _pageIndex * _pageSize;
                 }
                 const [policies, count] = await getMongoRepository(Policy).findAndCount(filter);
-                policies.forEach(p => {
-                    delete p.registeredUsers;
+                if (userDid) {
+                    policies.forEach((policy: any) => {
+                        policy.userRoles = [];
+                        if (policy.owner === userDid) {
+                            policy.userRoles.push('Administrator');
+                        }
+                        if(policy.registeredUsers && policy.registeredUsers[userDid]) {
+                            policy.userRoles.push(policy.registeredUsers[userDid]);
+                        }
+                        if (!policy.userRoles.length) {
+                            policy.userRoles.push('The user does not have a role');
+                        }
+                    });
+                }
+                policies.forEach(policy => {
+                    delete policy.registeredUsers;
                 });
+
                 res.send(new MessageResponse({ policies, count }));
             } catch (error) {
                 res.send(new MessageError(error.message));
@@ -621,4 +636,3 @@ export class PolicyEngineService {
         });
     }
 }
-

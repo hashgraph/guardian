@@ -1149,7 +1149,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TokenInfo'
+                  allOf:
+                    - $ref: '#/components/schemas/TokenInfo'
+                    - type: object
+                      properties:
+                        policies:
+                          type: array
+                          items:
+                            type: string
         401:
           description: Unauthorized.
         403:
@@ -1174,7 +1181,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Token"
+              allOf:
+                - $ref: "#/components/schemas/Token"
+                - type: object
+                  properties:
+                    policies:
+                      type: array
+                      items:
+                        type: string
       responses:
         201:
           description: Successful operation.
@@ -1560,7 +1574,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PolicyConfig'
+                  allOf:
+                    - $ref: '#/components/schemas/PolicyConfig'
+                    - type: object
+                      properties:
+                        userRoles:
+                          type: array
+                          items:
+                            type: string
         401:
           description: Unauthorized.
         403:
@@ -1585,7 +1606,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PolicyConfig"
+              allOf:
+                - $ref: '#/components/schemas/PolicyConfig'
+                - type: object
+                  properties:
+                    userRoles:
+                      type: array
+                      items:
+                        type: string
       responses:
         200:
           description: Successful operation.
@@ -1993,7 +2021,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PolicyConfig'
+                  allOf:
+                    - $ref: '#/components/schemas/PolicyConfig'
+                    - type: object
+                      properties:
+                        userRoles:
+                          type: array
+                          items:
+                            type: string
         401:
           description: Unauthorized.
         403:
@@ -2024,7 +2059,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PolicyConfig'
+                  allOf:
+                    - $ref: '#/components/schemas/PolicyConfig'
+                    - type: object
+                      properties:
+                        userRoles:
+                          type: array
+                          items:
+                            type: string
         401:
           description: Unauthorized.
         403:
@@ -2138,7 +2180,29 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Account'
+                  allOf:
+                    - $ref: '#/components/schemas/Account'
+                    - type: object
+                      properties:
+                        policyRoles:
+                          type: object
+                          properties:
+                            policy: 
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                name: 
+                                  type: string
+                                version:
+                                  type: string
+                            userRoles: 
+                              type: object
+                              properties:
+                                did:
+                                  type: string
+                                role:
+                                  type: string
         500:
           description: Internal server error.
           content:

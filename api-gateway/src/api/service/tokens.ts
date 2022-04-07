@@ -5,11 +5,34 @@ import { permissionHelper } from '@auth/authorizationHelper';
 import { Request, Response, Router } from 'express';
 import { ITokenInfo, UserRole } from 'interfaces';
 import { Logger } from 'logger-helper';
+import { PolicyEngine } from '@helpers/policyEngine';
+import { findAllEntities } from '@helpers/utils';
 
 /**
  * Token route
  */
 export const tokenAPI = Router();
+
+async function setTokensPolicies(tokens: any[], engineService: PolicyEngine, userDid?: string) {
+    if (!tokens || !engineService) {
+        return;
+    }
+    const policiesFilter = userDid ? { owner: userDid } : { status: 'PUBLISH' }
+    const policies = await engineService.getPolicies(policiesFilter);
+    for (let i = 0; i < tokens.length; i++) {
+        const tokenPolicies = [];
+        const token = tokens[i];
+        for (let j = 0; j < policies.length; j++) {
+            const policyObject = policies[j];
+            const tokenIds = findAllEntities(policyObject.config, 'tokenId');
+            if (tokenIds.includes(token.tokenId)) {
+                tokenPolicies.push(`${policyObject.name} (${policyObject.version || "DRAFT"})`);
+                continue;
+            }
+        }
+        token.policies = tokenPolicies;
+    }
+}
 
 tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
@@ -23,6 +46,8 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
             token: req.body,
             owner: user.did
         }));
+
+        await setTokensPolicies(tokens, new PolicyEngine());
         res.status(201).json(tokens);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
@@ -33,19 +58,24 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
 tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
-        const user = req.user; 
+        const user = req.user;
+        let tokens = [];
+        let ownerDid = "";
         if (user.role === UserRole.ROOT_AUTHORITY) {
-            const tokens = await guardians.getTokens();
-            res.status(200).json(tokens || []);
+            tokens = await guardians.getTokens();
+            ownerDid = user.did;
         } else {
             const userDID = user.did;
-            if(!userDID) {
-                res.status(200).json([]);
-            } else {
-                const tokens = await guardians.getAssociatedTokens(userDID);
-                res.status(200).json(tokens || []);
+            if(userDID) {
+                tokens = await guardians.getAssociatedTokens(userDID);
             }
         }
+
+        tokens = tokens || [];
+
+        await setTokensPolicies(tokens, new PolicyEngine(), ownerDid);
+
+        res.status(200).json(tokens);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).send({ code: error.code || 500, message: error.message });

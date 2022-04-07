@@ -20,12 +20,14 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         let result: any;
         if (user.role === UserRole.ROOT_AUTHORITY) {
             result = await engineService.getPolicies({
+                userDid: user.did,
                 owner: user.did,
                 pageIndex: pageIndex,
                 pageSize: pageSize
             });
         } else {
             result = await engineService.getPolicies({
+                userDid: user.did,
                 status: 'PUBLISH',
                 pageIndex: pageIndex,
                 pageSize: pageSize
@@ -187,7 +189,8 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
 policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        res.send(await engineService.importMessage(req.user, req.body.messageId));
+        const policies = await engineService.importMessage(req.user, req.body.messageId);
+        res.send(policies);
     } catch (e) {
         console.error(e);
         new Logger().error(e.message, ['API_GATEWAY']);
@@ -198,7 +201,8 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        res.send(await engineService.importFile(req.user, req.body));
+        const policies = await engineService.importFile(req.user, req.body);
+        res.send(policies);
     } catch (e) {
         console.error(e);
         new Logger().error(e.message, ['API_GATEWAY']);

@@ -191,17 +191,6 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
-     * Register MRV reciever
-     * @param cb
-     */
-    public registerMRVReceiver(cb: (data: any) => Promise<void>): void {
-        this.channel.response('mrv-data', async (msg, res) => {
-            await cb(msg.payload);
-            res.send();
-        });
-    }
-
-    /**
      * Generate Demo Key
      *
      * @returns {any} Demo Key
@@ -212,7 +201,11 @@ export class Guardians extends ServiceRequestsBase {
 
     /**
      * Return schemes
-     *
+     * @param {string} did
+     * @param {string} [topicId]
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     * 
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemesByOwner(
@@ -235,9 +228,7 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Return schemes
      *
-     * @param {Object} [params] - filters
-     * @param {string} [params.type] - schema type
-     * @param {string} [params.entity] - schema entity type
+     * @param {Object} uuid - filters
      *
      * @returns {ISchema[]} - all schemes
      */
@@ -249,7 +240,7 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Return schema by id
      *
-     * @param {string} [id] - schema id
+     * @param {string} id - schema id
      *
      * @returns {ISchema} - schema
      */
@@ -260,22 +251,26 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Import schema
      *
-     * @param {string} messageId - schema uuid
-     *
-     * @returns {any} - Schema Document
+     * @param {string[]} messageIds - schema uuid
+     * @param {string} owner
+     * @param {string} topicId
+     * 
+     * @returns {any[]} - Schema Document
      */
-    public async importSchemesByMessages(messageIds: string[], owner: string, topicId:string): Promise<any[]> {
+    public async importSchemesByMessages(messageIds: string[], owner: string, topicId: string): Promise<any[]> {
         return await this.request(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, { messageIds, owner, topicId });
     }
 
     /**
      * Import schema
      *
-     * @param {string} messageId - schema uuid
-     *
-     * @returns {any} - Schema Document
+     * @param {ISchema[]} files
+     * @param {owner} owner
+     * @param {string} topicId
+     * 
+     * @returns {any[]} - Schema Document
      */
-    public async importSchemesByFile(files: ISchema[], owner: string, topicId:string): Promise<any[]> {
+    public async importSchemesByFile(files: ISchema[], owner: string, topicId: string): Promise<any[]> {
         return await this.request(MessageAPI.IMPORT_SCHEMES_BY_FILE, { files, owner, topicId });
     }
 
@@ -293,9 +288,9 @@ export class Guardians extends ServiceRequestsBase {
     /**
      * Get schema preview
      *
-     * @param {string} messageId Message identifier
-     *
-     * @returns {any} Schema preview
+     * @param {ISchema[]} files
+     * 
+     * @returns {ISchema[]} Schema preview
      */
     public async previewSchemesByFile(files: ISchema[]): Promise<ISchema[]> {
         return files;
@@ -338,8 +333,10 @@ export class Guardians extends ServiceRequestsBase {
      * Changing the status of a schema on PUBLISHED.
      *
      * @param {string} id - schema id
-     *
-     * @returns {ISchemaSubmitMessage} - message
+     * @param {string} version - schema version
+     * @param {string} owner - schema message
+     * 
+     * @returns {ISchema} - message
      */
     public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
         return await this.request(MessageAPI.PUBLISH_SCHEMA, { id, version, owner });
@@ -373,5 +370,17 @@ export class Guardians extends ServiceRequestsBase {
         catch {
             return ApplicationStates.STOPPED;
         }
+    }
+
+    /**
+     * Get user roles in policy
+     *
+     * @param {string} did - User did
+     * @param {string} policyId - Policy identifier
+     *
+     * @returns {any[]} - Policies and user roles
+     */
+    public async getUserRoles(did: string): Promise<string[]> {
+        return await this.request(MessageAPI.GET_USER_ROLES, { did });
     }
 }

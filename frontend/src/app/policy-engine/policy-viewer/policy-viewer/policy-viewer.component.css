@@ -204,3 +204,6 @@ a.go-back-link mat-icon {
     border-top: 1px solid #eee;
     margin-top: 5px;
 }
+.current-user-role {
+    float: right;
+}

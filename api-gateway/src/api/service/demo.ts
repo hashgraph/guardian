@@ -10,8 +10,20 @@ export const demoAPI = Router();
 
 demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
     const users = new Users();
+    const guardians = new Guardians();
     try {
-        res.json(await users.getAllUserAccountsDemo());
+        const demoUsers: any = await users.getAllUserAccountsDemo();
+        
+        for (let i = 0; i < demoUsers.length; i++) {
+            const element = demoUsers[i];
+            if(element.did) {
+                element.policyRoles = await guardians.getUserRoles(element.did);
+            } else {
+                element.policyRoles = [];
+            }
+        }
+
+        res.json(demoUsers);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         console.error(error);

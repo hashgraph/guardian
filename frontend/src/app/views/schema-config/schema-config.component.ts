@@ -161,6 +161,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
+            disableClose: true,
             data: {
                 type: 'new',
                 schemesMap: this.schemesMap,
@@ -197,6 +198,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
+            disableClose: true,
             data: {
                 type: 'edit',
                 schemesMap: this.schemesMap,
@@ -222,6 +224,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
+            disableClose: true,
             data: {
                 type: 'version',
                 schemesMap: this.schemesMap,
@@ -254,6 +257,7 @@ export class SchemaConfigComponent implements OnInit {
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
+            disableClose: true,
             data: {
                 type: 'version',
                 schemesMap: this.schemesMap,
@@ -280,6 +284,7 @@ export class SchemaConfigComponent implements OnInit {
     publish(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
+            disableClose: true,
             data: {
                 schemes: this.schemes
             }

@@ -161,4 +161,14 @@ export class HeaderComponent implements OnInit {
   onHome() {
     this.router.navigate(['/']);
   }
+
+  getPoliciesRolesLength(policyRoles: any) {
+    return policyRoles.length;
+  }
+  
+  getPoliciesRolesTooltip(policyRoles: any) {
+    return policyRoles.map((item: any) => {
+      return `${item.name} (${item.version}): ${item.role}`
+    }).join('\r\n');
+  }
 }

@@ -24,6 +24,7 @@ import { Logger } from 'logger-helper';
 import { ApplicationState, ApplicationStates } from 'interfaces';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
+import { Policy } from '@entity/policy';
 
 Promise.all([
     createConnection({
@@ -79,15 +80,9 @@ Promise.all([
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await setDefaultSchema();
-    
+
     new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
-    
+
     state.updateState(ApplicationStates.READY);
 });
-
-function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    })
-}
