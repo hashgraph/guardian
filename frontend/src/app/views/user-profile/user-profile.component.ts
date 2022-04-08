@@ -30,9 +30,11 @@ export class UserProfileComponent implements OnInit {
     profile?: IUser | null;
     balance?: string | null;
     tokens?: Token[] | null;
-    didDocument?:string;
+    didDocument?: string;
+    rootAuthorities?: IUser[];
 
     hederaForm = this.fb.group({
+        rootAuthority: ['', Validators.required],
         id: ['', Validators.required],
         key: ['', Validators.required],
     });
@@ -56,6 +58,7 @@ export class UserProfileComponent implements OnInit {
         private otherService: DemoService,
         private fb: FormBuilder,
         public dialog: MatDialog) {
+            this.rootAuthorities = [];
     }
 
     ngOnInit() {
@@ -83,26 +86,28 @@ export class UserProfileComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.tokenService.getTokens()
+            this.tokenService.getTokens(),
+            this.auth.getRootAuthorities()
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
             this.balance = value[1] as string;
-            this.tokens = value[2].map((e: any) =>{ 
-                return { 
-                    ...new Token(e), 
+            this.tokens = value[2].map((e: any) => {
+                return {
+                    ...new Token(e),
                     policies: e.policies
                 }
             });
+            this.rootAuthorities = value[3] || [];
 
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;
             this.isNewAccount = !this.profile.didDocument;
-            
-            this.didDocument= "";
-            if(this.isConfirmed) {
+
+            this.didDocument = "";
+            if (this.isConfirmed) {
                 const didDocument = this.profile?.didDocument?.document;
-                if(didDocument) {
-                    this.didDocument= JSON.stringify((didDocument), null, 4);
+                if (didDocument) {
+                    this.didDocument = JSON.stringify((didDocument), null, 4);
                 }
             }
 
@@ -140,14 +145,16 @@ export class UserProfileComponent implements OnInit {
         this.otherService.getRandomKey().subscribe((treasury) => {
             this.loading = false;
             this.hederaForm.setValue({
+                rootAuthority: this.hederaForm.value.rootAuthority,
                 id: treasury.id,
                 key: treasury.key
             });
         }, (error) => {
             this.loading = false;
             this.hederaForm.setValue({
+                rootAuthority: this.hederaForm.value.rootAuthority,
                 id: '',
-                key: ''
+                key: '',
             });
         });
     }

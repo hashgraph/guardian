@@ -266,19 +266,30 @@ export class PolicyEngineService {
         });
 
         this.channel.response(PolicyEngineEvents.GET_POLICY, async (msg, res) => {
-            const data = await getMongoRepository(Policy).findOne(msg.payload);
-            delete data.registeredUsers;
+            const { filters, userDid } = msg.payload;
+            const data: any = await getMongoRepository(Policy).findOne(filters);
+            if (data) {
+                if (userDid) {
+                    data.userRoles = [];
+                    if (data.owner === userDid) {
+                        data.userRoles.push('Administrator');
+                    }
+                    if (data.registeredUsers && data.registeredUsers[userDid]) {
+                        data.userRoles.push(data.registeredUsers[userDid]);
+                    }
+                    if (!data.userRoles.length) {
+                        data.userRoles.push('The user does not have a role');
+                    }
+                }
+                delete data.registeredUsers;
+            }
             res.send(new MessageResponse(data));
         });
 
         this.channel.response(PolicyEngineEvents.GET_POLICIES, async (msg, res) => {
             try {
-                const { pageIndex, pageSize, userDid } = msg.payload;
-                delete msg.payload.pageIndex;
-                delete msg.payload.pageSize;
-                delete msg.payload.userDid;
-
-                const filter: any = { where: msg.payload }
+                const { filters, pageIndex, pageSize, userDid } = msg.payload;
+                const filter: any = { where: filters }
                 const _pageSize = parseInt(pageSize);
                 const _pageIndex = parseInt(pageIndex);
                 if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
@@ -293,7 +304,7 @@ export class PolicyEngineService {
                         if (policy.owner === userDid) {
                             policy.userRoles.push('Administrator');
                         }
-                        if(policy.registeredUsers && policy.registeredUsers[userDid]) {
+                        if (policy.registeredUsers && policy.registeredUsers[userDid]) {
                             policy.userRoles.push(policy.registeredUsers[userDid]);
                         }
                         if (!policy.userRoles.length) {

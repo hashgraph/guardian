@@ -70,6 +70,10 @@ export class AuthService {
     ): Subscription {
         return this.accessTokenSubject.subscribe(next, error, complete);
     }
+
+    public getRootAuthorities(): Observable<IUser[]> {
+        return this.http.get<any>(`${this.url}/root-authorities`);
+    }
 }
 
 @Injectable()

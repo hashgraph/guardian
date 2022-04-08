@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { AuthenticatedRequest } from '@auth/auth.interface';
+import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Request, Response, Router } from 'express';
 import { ITokenInfo, UserRole } from 'interfaces';
@@ -13,12 +13,20 @@ import { findAllEntities } from '@helpers/utils';
  */
 export const tokenAPI = Router();
 
-async function setTokensPolicies(tokens: any[], engineService: PolicyEngine, userDid?: string) {
-    if (!tokens || !engineService) {
+async function setTokensPolicies(tokens: any[], user: IAuthUser) {
+    if (!tokens) {
         return;
     }
-    const policiesFilter = userDid ? { owner: userDid } : { status: 'PUBLISH' }
-    const policies = await engineService.getPolicies(policiesFilter);
+    const engineService = new PolicyEngine();
+
+    let result: any;
+    if (user.role === UserRole.ROOT_AUTHORITY) {
+        result = await engineService.getPolicies({ filters: { owner: user.did } });
+    } else {
+        result = await engineService.getPolicies({ filters: { status: 'PUBLISH' } });
+    }
+    const { policies, count } = result;
+    
     for (let i = 0; i < tokens.length; i++) {
         const tokenPolicies = [];
         const token = tokens[i];
@@ -38,7 +46,7 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
     try {
         const guardians = new Guardians();
         const user = req.user;
-        if(!user.did) {
+        if (!user.did) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
         }
@@ -47,7 +55,7 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
             owner: user.did
         }));
 
-        await setTokensPolicies(tokens, new PolicyEngine());
+        await setTokensPolicies(tokens, user);
         res.status(201).json(tokens);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
@@ -60,21 +68,14 @@ tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), asyn
         const guardians = new Guardians();
         const user = req.user;
         let tokens = [];
-        let ownerDid = "";
+
         if (user.role === UserRole.ROOT_AUTHORITY) {
             tokens = await guardians.getTokens();
-            ownerDid = user.did;
-        } else {
-            const userDID = user.did;
-            if(userDID) {
-                tokens = await guardians.getAssociatedTokens(userDID);
-            }
+        } else if (user.did) {
+            tokens = await guardians.getAssociatedTokens(user.did);
         }
-
         tokens = tokens || [];
-
-        await setTokensPolicies(tokens, new PolicyEngine(), ownerDid);
-
+        await setTokensPolicies(tokens, user);
         res.status(200).json(tokens);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
@@ -87,7 +88,7 @@ tokenAPI.put('/:tokenId/associate', permissionHelper(UserRole.USER), async (req:
         const guardians = new Guardians();
         const tokenId = req.params.tokenId;
         const userDID = req.user.did;
-        if(!userDID) {
+        if (!userDID) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
         }
@@ -104,7 +105,7 @@ tokenAPI.put('/:tokenId/dissociate', permissionHelper(UserRole.USER), async (req
         const guardians = new Guardians();
         const tokenId = req.params.tokenId;
         const userDID = req.user.did;
-        if(!userDID) {
+        if (!userDID) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
         }
@@ -122,7 +123,7 @@ tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTH
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const owner = req.user.did;
-        if(!owner) {
+        if (!owner) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
         }
@@ -140,7 +141,7 @@ tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUT
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const owner = req.user.did;
-        if(!owner) {
+        if (!owner) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
         }
@@ -158,7 +159,7 @@ tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHOR
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const owner = req.user.did;
-        if(!owner) {
+        if (!owner) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
         }
@@ -176,7 +177,7 @@ tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTH
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const owner = req.user.did;
-        if(!owner) {
+        if (!owner) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
         }
@@ -194,7 +195,7 @@ tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.ROOT_AUTHORIT
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const owner = req.user.did;
-        if(!owner) {
+        if (!owner) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
         }

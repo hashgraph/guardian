@@ -8,7 +8,7 @@ import { Logger } from 'logger-helper';
 export const policyAPI = Router();
 
 policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
-    const users = new Users()
+    const users = new Users();
     const engineService = new PolicyEngine();
     try {
         const user = await users.getUser(req.user.username);
@@ -20,15 +20,19 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         let result: any;
         if (user.role === UserRole.ROOT_AUTHORITY) {
             result = await engineService.getPolicies({
+                filters: {
+                    owner: user.did,
+                },
                 userDid: user.did,
-                owner: user.did,
                 pageIndex: pageIndex,
                 pageSize: pageSize
             });
         } else {
             result = await engineService.getPolicies({
+                filters: {
+                    status: 'PUBLISH',
+                },
                 userDid: user.did,
-                status: 'PUBLISH',
                 pageIndex: pageIndex,
                 pageSize: pageSize
             });
@@ -53,9 +57,14 @@ policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
+    const users = new Users();
     const engineService = new PolicyEngine();
     try {
-        const model = (await engineService.getPolicy(req.params.policyId)) as any;
+        const user = await users.getUser(req.user.username);
+        const model = (await engineService.getPolicy({
+            filters: req.params.policyId,
+            userDid: user.did,
+        })) as any;
         res.send(model);
     } catch (e) {
         new Logger().error(e.message, ['API_GATEWAY']);
@@ -66,7 +75,7 @@ policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
 policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        const model = await engineService.getPolicy(req.params.policyId) as any;
+        const model = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         const policy = req.body;
 
         model.config = policy.config;
@@ -164,7 +173,7 @@ policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: R
     const engineService = new PolicyEngine();
     try {
         const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
-        const policy: any = await engineService.getPolicy(req.params.policyId);
+        const policy: any = await engineService.getPolicy({ filters: req.params.policyId });
         res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
         res.setHeader('Content-type', 'application/zip');
         res.send(policyFile);
