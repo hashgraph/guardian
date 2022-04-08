@@ -86,6 +86,10 @@ form {
     min-width: 900px;
 }
 
+.token-table .mat-column-policies {
+    width: 200px;
+}
+
 .token-table .mat-column-policies .policies-info {
     white-space: nowrap;
     overflow: hidden;
