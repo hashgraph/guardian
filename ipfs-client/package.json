@@ -19,7 +19,7 @@
     "nft.storage": "^5.2.0",
     "mongodb": "^4.2.1",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.41",
+    "typeorm": "^0.3.5",
     "logger-helper": "file:../logger-helper"
   },
   "description": "",
