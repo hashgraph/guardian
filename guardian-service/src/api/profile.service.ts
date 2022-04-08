@@ -68,23 +68,20 @@ export const profileAPI = async function (
             const {
                 hederaAccountId,
                 hederaAccountKey,
-                owner,
+                parent,
                 vcDocument
             } = msg.payload;
 
-            let topic: any, topicId: string, topicKey: string;
-
-            if (owner) {
-                const topic = await topicRepository.findOne({
-                    owner: owner,
+            let topic: any, newTopic = false;
+            if (parent) {
+                topic = await topicRepository.findOne({
+                    owner: parent,
                     type: TopicType.UserTopic
                 });
-                if (!topic) {
-                    throw 'Topic not found';
-                }
-                topicId = topic.topicId;
-                topicKey = topic.key;
-            } else {
+            }
+
+            if(!topic) {
+                newTopic = true;
                 const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey);
                 const _topicId = await client.newTopic(hederaAccountKey, null, TopicType.UserTopic);
                 topic = {
@@ -94,8 +91,6 @@ export const profileAPI = async function (
                     type: TopicType.UserTopic,
                     key: null
                 };
-                topicId = topic.topicId;
-                topicKey = topic.key;
             }
 
             let didMessage: DIDMessage;
@@ -103,7 +98,7 @@ export const profileAPI = async function (
             let didDoc: DidDocumentCollection;
             let vcDoc: VcDocumentCollection;
 
-            const didObject = DIDDocument.create(hederaAccountKey, topicId);
+            const didObject = DIDDocument.create(hederaAccountKey, topic.topicId);
             const userDID = didObject.getDid();
             didMessage = new DIDMessage(MessageAction.CreateDID);
             didMessage.setDocument(didObject);
@@ -129,16 +124,16 @@ export const profileAPI = async function (
                 vcDoc = await getMongoRepository(VcDocumentCollection).save(vcDoc);
             }
 
-            if (topic) {
+            if (newTopic) {
                 topic.owner = didMessage.did;
                 const topicObject = topicRepository.create(topic);
                 await topicRepository.save(topicObject);
             }
 
             const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
-            messageServer.setSubmitKey(topicKey);
+            messageServer.setSubmitKey(topic.key);
             try {
-                await messageServer.sendMessage(topicId, didMessage)
+                await messageServer.sendMessage(topic.topicId, didMessage)
                 didDoc.status = DidDocumentStatus.CREATE;
                 getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             } catch (error) {
@@ -149,7 +144,7 @@ export const profileAPI = async function (
             }
             if (vcMessage) {
                 try {
-                    await messageServer.sendMessage(topicId, vcMessage)
+                    await messageServer.sendMessage(topic.topicId, vcMessage)
                     vcDoc.hederaStatus = DocumentStatus.ISSUE;
                     getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
                 } catch (error) {

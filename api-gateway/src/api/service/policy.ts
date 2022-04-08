@@ -28,10 +28,14 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
                 pageSize: pageSize
             });
         } else {
+            const filters: any = {
+                status: 'PUBLISH',
+            }
+            if (user.parent) {
+                filters.owner = user.parent;
+            }
             result = await engineService.getPolicies({
-                filters: {
-                    status: 'PUBLISH',
-                },
+                filters: filters,
                 userDid: user.did,
                 pageIndex: pageIndex,
                 pageSize: pageSize

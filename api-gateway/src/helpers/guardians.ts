@@ -354,8 +354,8 @@ export class Guardians extends ServiceRequestsBase {
     }
 
 
-    public async getTopic(type: TopicType, owner: string): Promise<any> {
-        return await this.request(MessageAPI.GET_TOPIC, { type, owner });
+    public async getTopic(filter: any): Promise<any> {
+        return await this.request(MessageAPI.GET_TOPIC, filter);
     }
 
     /**

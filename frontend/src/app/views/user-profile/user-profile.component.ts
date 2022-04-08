@@ -12,6 +12,7 @@ import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.compon
 interface IHederaForm {
     id: string,
     key: string,
+    rootAuthority: string,
 }
 
 /**
@@ -131,6 +132,7 @@ export class UserProfileComponent implements OnInit {
         const profile = {
             hederaAccountId: data.id,
             hederaAccountKey: data.key,
+            parent: data.rootAuthority
         }
         this.profileService.setProfile(profile).subscribe(() => {
             this.loadDate();
