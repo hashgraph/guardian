@@ -15,6 +15,8 @@ import { VcDocument } from '@entity/vc-document';
 import { DidDocument } from '@entity/did-document';
 import { ApprovalDocument } from '@entity/approval-document';
 import { Topic } from '@entity/topic';
+import { Policy } from '@entity/policy';
+import { TopicHelper } from '@helpers/topicHelper';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -135,15 +137,13 @@ export class SendToGuardianBlock {
         // ref.updateBlock(state, user, '');
     }
 
-    async sendToHedera(document: any, ref: any) {
+    async sendToHedera(document: any, ref: IPolicyBlock) {
         const userFull = await this.users.getUserById(document.owner);
         const userID = userFull.hederaAccountId;
         const userDID = userFull.did;
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const topic = await getMongoRepository(Topic).findOne({
-            policyId: ref.policyId,
-            type: TopicType.RootPolicyTopic
-        });
+
+        const topic = await this.getTopic(ref, userDID, userID, userKey);
         const vc = HVcDocument.fromJsonTree(document.document);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vc);
@@ -154,11 +154,66 @@ export class SendToGuardianBlock {
         return document;
     }
 
+    async getTopic(ref: IPolicyBlock, userDID: string, userID: string, userKey: string): Promise<Topic> {
+        const rootTopic = await getMongoRepository(Topic).findOne({
+            policyId: ref.policyId,
+            type: TopicType.RootPolicyTopic
+        });
+
+        let topic: any;
+        if (ref.options.topic && ref.options.topic !== 'root') {
+            const policy = await getMongoRepository(Policy).findOne(ref.policyId);
+            const root = await this.users.getHederaAccount(ref.policyOwner);
+            const policyTopics = policy.policyTopics || [];
+            const config = policyTopics.find(e => e.name == ref.options.topic);
+            if (!config) {
+                throw new BlockActionError(`Topic "${ref.options.topic}" does not exist`, ref.blockType, ref.uuid)
+            }
+
+            const topicOwner = config.static ? root.did : userDID;
+            const topicAccountId = config.static ? root.hederaAccountId : userID;
+            const topicAccountKey = config.static ? root.hederaAccountKey : userKey;
+
+            topic = await getMongoRepository(Topic).findOne({
+                policyId: ref.policyId,
+                type: TopicType.ProjectTopic,
+                name: ref.options.topic,
+                owner: topicOwner
+            });
+            if (!topic) {
+                const topicHelper = new TopicHelper(topicAccountId, topicAccountKey);
+                topic = await topicHelper.create({
+                    type: TopicType.ProjectTopic,
+                    owner: topicOwner,
+                    name: config.name,
+                    description: config.description,
+                    policyId: ref.policyId,
+                    policyUUID: null
+                });
+                await topicHelper.link(topic, rootTopic);
+            }
+        } else {
+            topic = rootTopic;
+        }
+
+        return topic;
+    }
+
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+            }
+            if (ref.options.dataType == 'hedera') {
+                if (ref.options.topic && ref.options.topic !== 'root') {
+                    const policy = await getMongoRepository(Policy).findOne(ref.policyId);
+                    const policyTopics = policy.policyTopics || [];
+                    const config = policyTopics.find(e => e.name == ref.options.topic);
+                    if (!config) {
+                        resultsContainer.addBlockError(ref.uuid, 'Topic "${ref.options.topic}" does not exist');
+                    }
+                }
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

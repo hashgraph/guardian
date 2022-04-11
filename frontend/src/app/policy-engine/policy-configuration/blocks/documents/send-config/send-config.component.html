@@ -12,6 +12,28 @@
             </mat-select>
         </td>
     </tr>
+    <tr *ngIf="block.dataType=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Hedera Topic</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">
+                <mat-option class="link" value="new">
+                    <span class="mat-option-link">
+                        <mat-icon>add</mat-icon>
+                        <span>Create new topic</span>
+                    </span>
+                </mat-option>
+                <mat-option value="root">Root</mat-option>
+                <mat-option *ngFor="let topic of topics" 
+                    [value]="topic.name"
+                    [matTooltip]="topic.description" 
+                    matTooltipPosition="above" 
+                    matTooltipClass="guardian-tooltip">
+                    {{topic.name}}
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Entity Type</td>

@@ -20,3 +20,5 @@ export { SchemaLoader, SchemaLoaderFunction } from './document-loader/schema-loa
 export { DIDDocument, DidRootKey, DidDocumentBase } from './vcjs/did-document';
 export { PolicyMessage } from './message/policy-message';
 export { UrlType } from './message/i-url';
+export { TopicMessage } from './message/topic-message';
+

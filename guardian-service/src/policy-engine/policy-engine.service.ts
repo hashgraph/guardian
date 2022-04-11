@@ -39,6 +39,7 @@ import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
+import { TopicHelper } from '@helpers/topicHelper';
 
 export class PolicyEngineService {
     @Inject()
@@ -127,38 +128,35 @@ export class PolicyEngineService {
             delete model.messageId;
         }
 
-        let newTopic: any, topic: Topic;
+        let newTopic: Topic, topic: Topic;
         const root = await this.users.getHederaAccount(owner);
         if (model.topicId) {
             topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
         } else {
-            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-            const description = model.topicDescription || TopicType.PolicyTopic;
-            const topicId = await client.newTopic(root.hederaAccountKey, root.hederaAccountKey, description);
-            model.topicId = topicId;
-            newTopic = {
-                topicId: topicId,
-                description: description,
-                owner: owner,
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+            topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
-                key: root.hederaAccountKey,
+                name: model.name || TopicType.PolicyTopic,
+                description: model.topicDescription || TopicType.PolicyTopic,
+                owner: owner,
                 policyId: null,
-            };
-            topic = newTopic;
+                policyUUID: null
+            });
+            await topicHelper.link(topic, null);
+            newTopic = topic;
         }
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         messageServer.setSubmitKey(topic.key);
         const message = new PolicyMessage(MessageAction.CreatePolicy);
         message.setDocument(model);
-        const result = await messageServer.sendMessage(topic.topicId, message);
-        const policy = await getMongoRepository(Policy).save(model);
+        await messageServer.sendMessage(topic.topicId, message);
 
+        const policy = await getMongoRepository(Policy).save(model);
         if (newTopic) {
             newTopic.policyId = policy.id.toString();
             newTopic.policyUUID = policy.uuid;
-            const topicObject = getMongoRepository(Topic).create(newTopic);
-            await getMongoRepository(Topic).save(topicObject);
+            await getMongoRepository(Topic).update(newTopic.id, newTopic);
         }
 
         return policy;
@@ -204,20 +202,18 @@ export class PolicyEngineService {
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         messageServer.setSubmitKey(topic.key);
 
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-        const rootTopicId = await client.newTopic(root.hederaAccountKey, null, TopicType.RootPolicyTopic);
-        const rootTopic = {
-            topicId: rootTopicId,
-            description: TopicType.RootPolicyTopic,
-            owner: owner,
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const rootTopic = await topicHelper.create({
             type: TopicType.RootPolicyTopic,
+            name: model.name || TopicType.RootPolicyTopic,
+            description: model.topicDescription || TopicType.RootPolicyTopic,
+            owner: owner,
             policyId: model.id.toString(),
-            policyUUID: model.uuid,
-            key: null
-        };
-        const topicObject = getMongoRepository(Topic).create(rootTopic);
-        await getMongoRepository(Topic).save(topicObject);
-        model.rootTopicId = rootTopicId;
+            policyUUID: model.uuid
+        });
+        await topicHelper.link(topic, null);
+
+        model.rootTopicId = rootTopic.topicId;
 
         const message = new PolicyMessage(MessageAction.PublishPolicy);
         message.setDocument(model, buffer);

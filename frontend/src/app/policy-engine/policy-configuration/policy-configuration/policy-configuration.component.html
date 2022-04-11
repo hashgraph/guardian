@@ -126,19 +126,27 @@
                         <mat-icon>expand_more</mat-icon>
                     </div>
                 </div>
-                <div class="group-body">
-                    <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Main'"></policy-properties>
+                <div class="group-body" style="margin-bottom: 24px;">
+                    <ng-container *ngIf="policyTab=='Description'">
+                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Main'"></policy-properties>
+                    </ng-container>
+                    <ng-container *ngIf="policyTab=='Roles'">
+                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Role'"></policy-properties>
+                    </ng-container>
+                    <ng-container *ngIf="policyTab=='Topics'">
+                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Topics'"></policy-properties>
+                    </ng-container>
                 </div>
-            </div>
-            <div class="group policy-role" [attr.col-group]="colGroup3">
-                <div class="group-header">
-                    <div class="group-title">Policy Roles</div>
-                    <div class="group-col" (click)="onColGroup(3)">
-                        <mat-icon>expand_more</mat-icon>
+                <div class="group-tab">
+                    <div class="group-tab-item" [attr.active]="policyTab=='Description'" (click)="policyTab='Description'">
+                        Description
                     </div>
-                </div>
-                <div class="group-body">
-                    <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Role'"></policy-properties>
+                    <div class="group-tab-item" [attr.active]="policyTab=='Roles'" (click)="policyTab='Roles'">
+                        Roles
+                    </div>
+                    <div class="group-tab-item" [attr.active]="policyTab=='Topics'" (click)="policyTab='Topics'">
+                        Topics
+                    </div>
                 </div>
             </div>
             <div class="group properties-config" *ngIf="currentBlock" [attr.col-group]="colGroup2"
@@ -158,12 +166,12 @@
                     <div class="common-properties">
                         <ng-container *ngIf="propTab=='Properties'">
                             <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles">
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.topics">
                             </common-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='JSON'">
                             <json-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles">
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.topics">
                             </json-properties>
                         </ng-container>
                     </div>

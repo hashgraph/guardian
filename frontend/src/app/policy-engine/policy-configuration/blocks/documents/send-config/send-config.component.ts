@@ -20,6 +20,7 @@ export class SendConfigComponent implements OnInit {
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Input('roles') roles!: string[];
+    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
@@ -59,7 +60,20 @@ export class SendConfigComponent implements OnInit {
         })
     }
 
-    removeOption(i:number) {
+    removeOption(i: number) {
         this.block.options.splice(i, 1);
+    }
+
+    selectTopic(event: any) {
+        if (event.value === 'new') {
+            const name = `New Topic ${this.topics.length}`
+            this.topics.push({
+                name: name,
+                description: "",
+                type: "any",
+                static: false
+            });
+            this.block.topic = name;
+        }
     }
 }

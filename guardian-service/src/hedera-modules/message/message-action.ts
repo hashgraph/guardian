@@ -6,5 +6,6 @@ export enum MessageAction {
     PublishPolicy = 'publish-policy',
     CreateSchema = 'create-schema',
     PublishSchema = 'publish-schema',
-    DeleteSchema = 'delete-schema'
+    DeleteSchema = 'delete-schema',
+    CreateTopic = 'create-topic'
 }

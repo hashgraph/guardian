@@ -16,6 +16,7 @@ import { Users } from '@helpers/users';
 import { HederaSDKHelper, MessageAction, MessageServer, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles } from '@api/schema.service';
+import { TopicHelper } from '@helpers/topicHelper';
 
 export class PolicyImportExportHelper {
     /**
@@ -113,20 +114,17 @@ export class PolicyImportExportHelper {
 
         const users = new Users();
         const root = await users.getHederaAccount(policyOwner);
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-        const description = policy.topicDescription || TopicType.PolicyTopic;
-        const topicId = await client.newTopic(root.hederaAccountKey, root.hederaAccountKey, description);
-        const topic = {
-            topicId: topicId,
-            description: description,
-            owner: policyOwner,
+
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const topicRow = await topicHelper.create({
             type: TopicType.PolicyTopic,
-            key: root.hederaAccountKey,
+            name: policy.name || TopicType.PolicyTopic,
+            description: policy.topicDescription || TopicType.PolicyTopic,
+            owner: policyOwner,
             policyId: null,
             policyUUID: null
-        };
-        const topicObject = getMongoRepository(Topic).create(topic);
-        const topicRow = await getMongoRepository(Topic).save(topicObject);
+        });
+        await topicHelper.link(topicRow, null);
 
         delete policy.id;
         delete policy.messageId;
@@ -139,13 +137,13 @@ export class PolicyImportExportHelper {
         policy.creator = policyOwner;
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
-        policy.topicId = topicId;
+        policy.topicId = topicRow.topicId;
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-        messageServer.setSubmitKey(topic.key);
+        messageServer.setSubmitKey(topicRow.key);
         const message = new PolicyMessage(MessageAction.CreatePolicy);
         message.setDocument(policy);
-        await messageServer.sendMessage(topic.topicId, message);
+        await messageServer.sendMessage(topicRow.topicId, message);
 
 
         // Import Tokens
@@ -162,7 +160,7 @@ export class PolicyImportExportHelper {
         await getMongoRepository(Token).save(tokenObject);
 
         // Import Schemes
-        const schemesMap = await importSchemaByFiles(policyOwner, schemes, topicId);
+        const schemesMap = await importSchemaByFiles(policyOwner, schemes, topicRow.topicId);
 
         // Replace id
         await this.replaceConfig(policy, schemesMap);

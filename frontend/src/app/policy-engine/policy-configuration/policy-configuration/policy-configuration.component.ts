@@ -39,7 +39,7 @@ export class PolicyConfigurationComponent implements OnInit {
     errorsCount: number = -1;
     errorsMap: any;
 
-    colGroup1 = true;
+    colGroup1 = false;
     colGroup2 = false;
     colGroup3 = true;
 
@@ -64,6 +64,7 @@ export class PolicyConfigurationComponent implements OnInit {
         viewportMargin: Infinity
     };
     propTab: string = 'Properties';
+    policyTab: string = 'Description';
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -125,6 +126,7 @@ export class PolicyConfigurationComponent implements OnInit {
             return;
         }
         policy.policyRoles = policy.policyRoles || [];
+        policy.policyTopics = policy.policyTopics || [];
         policy.config = policy.config || {
             blockType: 'interfaceContainerBlock',
         };
@@ -278,6 +280,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.validate({
             policyRoles: this.policy?.policyRoles,
+            policyTopics: this.policy?.policyTopics,
             config: this.root
         }).subscribe((data: any) => {
             const { policy, results } = data;

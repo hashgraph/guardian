@@ -39,7 +39,7 @@ export class MessageServer {
     }
 
     private async loadIPFS<T extends Message>(message: T): Promise<T> {
-        const urls = message.urls;
+        const urls = message.getUrls();
         const documents = [];
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];

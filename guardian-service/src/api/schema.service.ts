@@ -23,6 +23,7 @@ import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { Policy } from '@entity/policy';
 import { Topic } from '@entity/topic';
+import { TopicHelper } from '@helpers/topicHelper';
 
 export const schemaCache = {};
 
@@ -196,18 +197,16 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
     }
 
     if (!topic) {
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-        const topicId = await client.newTopic(root.hederaAccountKey, root.hederaAccountKey, TopicType.SchemaTopic);
-        const topicObject = getMongoRepository(Topic).create({
-            topicId: topicId,
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        topic = await topicHelper.create({
+            type: TopicType.SchemaTopic,
+            name: TopicType.SchemaTopic,
             description: TopicType.SchemaTopic,
             owner: owner,
-            type: TopicType.SchemaTopic,
-            key: root.hederaAccountKey,
             policyId: null,
             policyUUID: null
         });
-        topic = await getMongoRepository(Topic).save(topicObject);
+        await topicHelper.link(topic, null);
     }
 
     SchemaHelper.updateIRI(schemaObject);

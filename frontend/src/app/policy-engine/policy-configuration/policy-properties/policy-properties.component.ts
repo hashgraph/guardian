@@ -23,8 +23,10 @@ export class PolicyPropertiesComponent implements OnInit {
     propHidden: any = {
         metaData: false,
         rolesGroup: false,
+        topicsGroup: {}
     };
     roles: any[] = [];
+    topics: any[] = [];
 
     constructor() {
     }
@@ -42,6 +44,7 @@ export class PolicyPropertiesComponent implements OnInit {
                 })
             }
         }
+        this.topics = this.policy.policyTopics;
     }
 
     onHide(item: any, prop: any) {
@@ -75,5 +78,14 @@ export class PolicyPropertiesComponent implements OnInit {
     onRemoveRole(i: number) {
         this.policy.policyRoles.splice(i, 1);
         this.roles.splice(i, 1);
+    }
+
+    addTopic() {
+        this.topics.push({
+            name: "",
+            description: "",
+            type: "any",
+            static: false
+        });
     }
 }

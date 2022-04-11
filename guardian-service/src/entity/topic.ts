@@ -11,6 +11,9 @@ export class Topic {
     topicId: string;
 
     @Column()
+    name: string;
+
+    @Column()
     description: string;
 
     @Column()

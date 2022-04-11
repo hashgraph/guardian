@@ -31,6 +31,10 @@ export abstract class Message {
         this.urls = url;
     }
 
+    public getUrls(): IURL[] {
+        return this.urls;
+    }
+
     public setId(id: string): void {
         this.id = id;
     }
