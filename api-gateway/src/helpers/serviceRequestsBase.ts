@@ -50,11 +50,9 @@ export abstract class ServiceRequestsBase {
         try {
             const response = (await this.channel.request(this.target, entity, params, type)).payload;
             if (!response) {
-                throw {error: 'Server is not available'};
+                throw { error: 'Server is not available' };
             }
-            if (response.code !== 200) {
-                throw response;
-            }
+
             return response;
         } catch (e) {
             const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
