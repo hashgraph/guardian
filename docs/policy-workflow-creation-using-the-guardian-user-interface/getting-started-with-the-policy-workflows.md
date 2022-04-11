@@ -4,7 +4,7 @@ First, note that we are in the Policies Configuration Tab of the Guardian interf
 
 Second, you click on the blue **Create Policy** button!
 
-![](<../.gitbook/assets/image (1) (1) (1) (1).png>)
+![](<../.gitbook/assets/image (8).png>)
 
 When the pop-up appears on the screen, fill out all the fields and then click on “Ok”.
 
@@ -12,15 +12,15 @@ When the pop-up appears on the screen, fill out all the fields and then click on
 **Note :** The "tag" field is important to be able to reference this policy in possibly other policies as a dependent policy
 {% endhint %}
 
-![](<../.gitbook/assets/image (1) (1) (1).png>)
+![](<../.gitbook/assets/image (4).png>)
 
 Once we have created the Draft of the policy – notice the status field showing draft – click on the “Edit” link on the right.
 
-![](<../.gitbook/assets/image (9) (1).png>)
+![](<../.gitbook/assets/image (15).png>)
 
 The edit screen will open and you will notice two boxes on the right side of the screen. The top Policy box is static and offers the ability to add high-level “Policy properties.” You can edit the name, Policy Tag, etc. Note that you can also create custom roles that are specific to your policy.
 
-![](<../.gitbook/assets/image (18).png>)
+![](<../.gitbook/assets/image (2) (1) (1) (1).png>)
 
 The second Interface ContainerBlock is specific to the first workflow block. We will begin editing this block to build our policy!
 
@@ -36,7 +36,7 @@ And we select Root-Authority and Installer in the drop-down as available roles i
 
 Then we select the “type” of UI we want to utilize. In our example, we choose the “Blank” template.
 
-![](<../.gitbook/assets/image (4) (1).png>)
+![](<../.gitbook/assets/image (6).png>)
 
 **Programmatically you begin like this:**
 
@@ -44,9 +44,9 @@ Then we select the “type” of UI we want to utilize. In our example, we choos
 //Policy logic starts with block 1.
 {
   //blockType - the type of the block:
-  //  "interfaceContainerBlock" - a block which contains and organizes other blocks.
+  //  "InterfaceContainerBlock" - a block which contains and organizes other blocks.
   //  First block should always be of the "interfaceContainerBlock" type.
-  "blockType": "interfaceContainerBlock",
+  "blockType": "InterfaceContainerBlock",
   //defaultActive shows whether this block is active at this time and whether it needs to be shown.
   "defaultActive": true,
   //permissions - users with these roles are allowed to interact with the block. Can contain the following values:
@@ -78,8 +78,8 @@ Then we select the “type” of UI we want to utilize. In our example, we choos
   "children": [
     //First policy step - select a role.
     {
-      //"policyRolesBlock" - block which determines a role for the user.
-      "blockType": "policyRolesBlock",
+      //"PolicyRolesBlock" - block which determines a role for the user.
+      "blockType": "PolicyRolesBlock",
       //"tag" - a unique (for the Policy) textual tag for the block which can be used in other blocks for linking.
       "tag": "choose_role",
       //Non ContainerBlock do not contain child elements. They can exist but they are ignored for rendering.

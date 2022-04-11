@@ -12,7 +12,7 @@ We then name the block through the tag, set permissions, activate by default suc
     // Block to display rejection info (i.e. the INSTALLER was not approved by RootAuthority).
     {
       "tag": "installer_rejected",
-      "blockType": "informationBlock",
+      "blockType": "InformationBlock",
       "children": [],
       "uiMetaData": {
         "type": "text",

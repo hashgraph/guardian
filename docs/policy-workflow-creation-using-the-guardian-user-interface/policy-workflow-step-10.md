@@ -20,15 +20,9 @@ Below are screenshots of the UI field inputs
 
 ![](https://i.imgur.com/ZHLujkk.png)
 
-***
-
 ![](https://i.imgur.com/PSbFR16.png)
 
-***
-
 ![](https://i.imgur.com/xRhVGAm.png)
-
-***
 
 ![](https://i.imgur.com/JH45eMa.png)
 
