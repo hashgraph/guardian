@@ -1,7 +1,7 @@
 .sensors-table {
     table-layout: fixed;
     width: 100%;
-    min-width: 615px;
+    min-width: 800px;
 }
 
 .sensors-table .mat-column-tokenId {
@@ -11,12 +11,12 @@
 }
 
 .sensors-table .mat-column-tokenName, .sensors-table .mat-column-tokenSymbol{
-    width: 10%;
+    width: 15%;
     padding-left: 8px;
 }
 
 .sensors-table .mat-column-users {
-    width: 60px;
+    width: 80px;
 }
 
 .sensors-table .mat-column-policies .policies-info {
