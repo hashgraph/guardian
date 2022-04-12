@@ -36,7 +36,7 @@ export class SendToGuardianBlock {
         document.type = ref.options.entityType;
 
         if (ref.options.forceNew) {
-            document = { ...document };
+            document = {...document};
             document.id = undefined;
             state.data = document;
         }
@@ -67,7 +67,7 @@ export class SendToGuardianBlock {
                     tag: ref.tag,
                     document: vc.toJsonTree()
                 };
-                let item = await getMongoRepository(VcDocument).findOne({ hash: doc.hash });
+                let item = await getMongoRepository(VcDocument).findOne({hash: doc.hash});
                 if (item) {
                     item.owner = doc.owner;
                     item.assign = doc.assign;
@@ -85,7 +85,7 @@ export class SendToGuardianBlock {
                 break;
             }
             case 'did-documents': {
-                let item = await getMongoRepository(DidDocument).findOne({ did: document.did });
+                let item = await getMongoRepository(DidDocument).findOne({did: document.did});
                 if (item) {
                     item.document = document.document;
                     item.status = document.status;

@@ -19,18 +19,7 @@ import { Logger } from 'logger-helper';
 export class BlockTreeGenerator {
     private models: Map<string, IPolicyBlock> = new Map();
 
-    constructor() { }
-
-    public async init(): Promise<void> {
-        const policies = await getMongoRepository(Policy).find({ status: 'PUBLISH' });
-        for (let policy of policies) {
-            try {
-                await this.generate(policy.id.toString());
-            } catch (e) {
-                new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
-                console.error(e.message);
-            }
-        }
+    constructor() {
     }
 
     /**
@@ -41,6 +30,18 @@ export class BlockTreeGenerator {
         const connection = getConnection();
         const policyRepository = connection.getMongoRepository(Policy);
         return await policyRepository.findOne(id);
+    }
+
+    public async init(): Promise<void> {
+        const policies = await getMongoRepository(Policy).find({status: 'PUBLISH'});
+        for (let policy of policies) {
+            try {
+                await this.generate(policy.id.toString());
+            } catch (e) {
+                new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
+                console.error(e.message);
+            }
+        }
     }
 
     /**
@@ -70,7 +71,7 @@ export class BlockTreeGenerator {
         const configObject = policy.config as ISerializedBlock;
 
         async function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): Promise<IPolicyBlock> {
-            const { blockType, children, ...params }: ISerializedBlockExtend = block;
+            const {blockType, children, ...params}: ISerializedBlockExtend = block;
             if (parent) {
                 params._parent = parent;
             }
@@ -127,17 +128,6 @@ export class BlockTreeGenerator {
         return resultsContainer.getSerializedErrors();
     }
 
-    private async tagFinder(instance: any, resultsContainer: PolicyValidationResultsContainer) {
-        if (instance.tag) {
-            resultsContainer.addTag(instance.tag);
-        }
-        if (Array.isArray(instance.children)) {
-            for (let child of instance.children) {
-                this.tagFinder(child, resultsContainer);
-            }
-        }
-    }
-
     public regenerateIds(block: any) {
         block.id = GenerateUUIDv4();
         if (Array.isArray(block.children)) {
@@ -153,5 +143,16 @@ export class BlockTreeGenerator {
             throw new Error('Unexisting policy');
         }
         return model;
+    }
+
+    private async tagFinder(instance: any, resultsContainer: PolicyValidationResultsContainer) {
+        if (instance.tag) {
+            resultsContainer.addTag(instance.tag);
+        }
+        if (Array.isArray(instance.children)) {
+            for (let child of instance.children) {
+                this.tagFinder(child, resultsContainer);
+            }
+        }
     }
 }

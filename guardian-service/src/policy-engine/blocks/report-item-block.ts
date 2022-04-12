@@ -4,7 +4,7 @@ import { findOptions, getVCIssuer } from '@helpers/utils';
 import { ReportItem } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
-import { IconType, IReportItem } from 'interfaces';
+import { IReportItem } from 'interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument } from '@entity/vc-document';
@@ -53,19 +53,19 @@ export class ReportItemBlock {
                 }
                 switch (filter.type) {
                     case 'equal':
-                        expr = { $eq: expr };
+                        expr = {$eq: expr};
                         break;
 
                     case 'not_equal':
-                        expr = { $ne: expr };
+                        expr = {$ne: expr};
                         break;
 
                     case 'in':
-                        expr = { $in: expr.split(',') };
+                        expr = {$in: expr.split(',')};
                         break;
 
                     case 'not_in':
-                        expr = { $nin: expr.split(',') };
+                        expr = {$nin: expr.split(',')};
                         break;
 
                     default:

@@ -24,7 +24,7 @@ export class PolicyImportExportHelper {
      * @returns Zip file
      */
     static async generateZipFile(policy: Policy): Promise<JSZip> {
-        const policyObject = { ...policy };
+        const policyObject = {...policy};
         delete policyObject.id;
         delete policyObject.messageId;
         delete policyObject.registeredUsers;
@@ -32,9 +32,9 @@ export class PolicyImportExportHelper {
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
         const schemesIds = findAllEntities(policyObject.config, SchemaFields);
 
-        const tokens = await getMongoRepository(Token).find({ where: { tokenId: { $in: tokenIds } } });
+        const tokens = await getMongoRepository(Token).find({where: {tokenId: {$in: tokenIds}}});
         const rootSchemes = await getMongoRepository(Schema).find({
-            where: { iri: { $in: schemesIds } }
+            where: {iri: {$in: schemesIds}}
         });
         const defs: any[] = rootSchemes.map(s => s.document.$defs);
         const map: any = {};
@@ -53,7 +53,7 @@ export class PolicyImportExportHelper {
         }
         const allSchemesIds = Object.keys(map);
         const schemes = await getMongoRepository(Schema).find({
-            where: { iri: { $in: allSchemesIds } }
+            where: {iri: {$in: allSchemesIds}}
         });
 
         const zip = new JSZip();
@@ -63,7 +63,7 @@ export class PolicyImportExportHelper {
         }
         zip.folder('schemes')
         for (let schema of schemes) {
-            const item = { ...schema };
+            const item = {...schema};
             delete item.id;
             delete item.status;
             delete item.readonly;
@@ -97,7 +97,7 @@ export class PolicyImportExportHelper {
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemes = schemesStringArray.map(item => JSON.parse(item));
 
-        return { policy, tokens, schemes };
+        return {policy, tokens, schemes};
     }
 
     /**
@@ -108,7 +108,7 @@ export class PolicyImportExportHelper {
      * @returns Policies by owner
      */
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
-        const { policy, tokens, schemes } = policyToImport;
+        const {policy, tokens, schemes} = policyToImport;
 
         policy.policyTag = 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
@@ -189,7 +189,7 @@ export class PolicyImportExportHelper {
 
         regenerateIds(policy.config);
 
-        if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
+        if (await getMongoRepository(Policy).findOne({name: policy.name})) {
             policy.name = policy.name + '_' + Date.now();
         }
 

@@ -8,7 +8,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper } from '@hedera-modules';
+import { HederaSDKHelper, HederaUtils, VcDocument, VpDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
@@ -47,6 +47,81 @@ export class RetirementBlock {
     private tokenId: any;
     private rule: any;
 
+    @CatchErrors()
+    async runAction(state: any, user: IAuthUser) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const {
+            tokenId,
+            rule
+        } = ref.options;
+        const token = await getMongoRepository(TokenCollection).findOne({tokenId});
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
+        }
+
+        const root = await this.users.getHederaAccount(ref.policyOwner);
+
+        let docs = [];
+        if (Array.isArray(state.data)) {
+            docs = state.data as any[];
+        } else {
+            docs = [state.data];
+        }
+
+        if (!docs.length && docs[0]) {
+            throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
+        }
+
+        const vcs: VcDocument[] = [];
+        for (let i = 0; i < docs.length; i++) {
+            const element = docs[i];
+            if (element.signature === DocumentSignature.INVALID) {
+                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
+            }
+            vcs.push(VcDocument.fromJsonTree(element.document));
+        }
+
+        const curUser = await this.users.getUserById(docs[0].owner);
+
+        if (!curUser) {
+            throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
+        }
+
+        try {
+            const doc = await this.retirementProcessing(token, vcs, rule, root, curUser, ref);
+            ref.runNext(null, {data: doc}).then(
+                function () {
+                },
+                function (error: any) {
+                    console.error(error);
+                }
+            );
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        try {
+            if (!ref.options.tokenId) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+            } else if (typeof ref.options.tokenId !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+            } else if (!(await getMongoRepository(TokenCollection).findOne({tokenId: ref.options.tokenId}))) {
+                resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+            }
+
+            if (!ref.options.rule) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+            } else if (typeof ref.options.rule !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+        }
+    }
+
     private getScope(item: VcDocument) {
         return item.getCredentialSubject().toJsonTree();
     }
@@ -79,7 +154,8 @@ export class RetirementBlock {
                 tag: ref.tag,
                 schema: `#${vc.getCredentialSubject()[0].getType()}`
             });
-            await getMongoRepository(VcDocumentCollection).save(doc);;
+            await getMongoRepository(VcDocumentCollection).save(doc);
+
             return true;
         } catch (error) {
             return false;
@@ -163,77 +239,5 @@ export class RetirementBlock {
         await this.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
 
         return vp;
-    }
-
-    @CatchErrors()
-    async runAction(state: any, user: IAuthUser) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const {
-            tokenId,
-            rule
-        } = ref.options;
-        const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
-        if (!token) {
-            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
-        }
-
-        const root = await this.users.getHederaAccount(ref.policyOwner);
-
-        let docs = [];
-        if (Array.isArray(state.data)) {
-            docs = state.data as any[];
-        } else {
-            docs = [state.data];
-        }
-
-        if (!docs.length && docs[0]) {
-            throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
-        }
-
-        const vcs: VcDocument[] = [];
-        for (let i = 0; i < docs.length; i++) {
-            const element = docs[i];
-            if (element.signature === DocumentSignature.INVALID) {
-                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
-            }
-            vcs.push(VcDocument.fromJsonTree(element.document));
-        }
-
-        const curUser = await this.users.getUserById(docs[0].owner);
-
-        if (!curUser) {
-            throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
-        }
-
-        try {
-            const doc = await this.retirementProcessing(token, vcs, rule, root, curUser, ref);
-            ref.runNext(null, { data: doc }).then(
-                function () { },
-                function (error: any) { console.error(error); }
-            );
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.tokenId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-            } else if (typeof ref.options.tokenId !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
-                resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
-            }
-
-            if (!ref.options.rule) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-            } else if (typeof ref.options.rule !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
-        }
     }
 }

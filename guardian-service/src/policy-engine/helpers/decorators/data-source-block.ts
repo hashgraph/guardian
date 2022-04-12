@@ -1,6 +1,6 @@
-import {BasicBlock} from '@policy-engine/helpers/decorators/basic-block';
-import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces/block-options';
-import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
+import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
+import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
+import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 
 /**
  * Datasource block decorator
@@ -13,6 +13,13 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
         return class extends basicClass {
 
             public readonly blockClassName = 'DataSourceBlock';
+
+            async getData(...args: any[]): Promise<any> {
+                if (typeof super.getData === 'function') {
+                    return super.getData(...args);
+                }
+                return {}
+            }
 
             protected getFiltersAddons(): IPolicyBlock[] {
                 const filters: IPolicyBlock[] = [];
@@ -36,13 +43,6 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     }
                 }
                 return data;
-            }
-
-            async getData(...args: any[]): Promise<any> {
-                if (typeof super.getData === 'function') {
-                    return super.getData(...args);
-                }
-                return {}
             }
         }
     }

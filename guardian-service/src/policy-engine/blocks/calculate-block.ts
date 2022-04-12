@@ -48,7 +48,7 @@ export class CalculateContainerBlock {
         if (ref.options.outputFields) {
             for (let i = 0; i < ref.options.outputFields.length; i++) {
                 const field = ref.options.outputFields[i];
-                if(scope[field.value]) {
+                if (scope[field.value]) {
                     newJson[field.name] = scope[field.value];
                 }
             }

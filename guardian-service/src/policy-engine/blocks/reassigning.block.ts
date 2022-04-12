@@ -47,7 +47,7 @@ export class ReassigningBlock {
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         console.log(`reassigningBlock: runAction: ${ref.tag}`);
-        const { item, owner } = await this.documentReassigning(state, user);
+        const {item, owner} = await this.documentReassigning(state, user);
         state.data = item;
         await ref.runNext(owner, state);
         PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);

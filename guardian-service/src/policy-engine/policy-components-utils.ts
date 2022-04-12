@@ -4,24 +4,23 @@ import {
     PolicyBlockMap,
     PolicyTagMap
 } from '@policy-engine/interfaces';
-import {PolicyRole, UserRole} from 'interfaces';
-import {IAuthUser} from '@auth/auth.interface';
-import {GenerateUUIDv4} from './helpers/uuidv4';
-import {AnyBlockType, IPolicyBlock, IPolicyInterfaceBlock} from './policy-engine.interface';
-import {getMongoRepository} from 'typeorm';
-import {Policy} from '@entity/policy';
-import {STATE_KEY} from '@policy-engine/helpers/constants';
-import {GetBlockByType} from '@policy-engine/blocks/get-block-by-type';
-import {GetOtherOptions} from '@policy-engine/helpers/get-other-options';
+import { PolicyRole } from 'interfaces';
+import { IAuthUser } from '@auth/auth.interface';
+import { GenerateUUIDv4 } from './helpers/uuidv4';
+import { AnyBlockType, IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
+import { getMongoRepository } from 'typeorm';
+import { Policy } from '@entity/policy';
+import { STATE_KEY } from '@policy-engine/helpers/constants';
+import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
+import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
 
 export class PolicyComponentsUtils {
+    public static BlockUpdateFn: (uuid: string, state: any, user: IAuthUser, tag?: string) => void;
+    public static BlockErrorFn: (blockType: string, message: any, user: IAuthUser) => void;
     private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
     private static PolicyBlockMapObject: PolicyBlockMap = new Map();
     private static PolicyTagMapObject: Map<string, PolicyTagMap> = new Map();
     private static BlockSubscriptions: Map<string, Map<string, Function[]>> = new Map();
-
-    public static BlockUpdateFn: (uuid: string, state: any, user: IAuthUser, tag?:string) => void;
-    public static BlockErrorFn: (blockType: string, message: any, user: IAuthUser) => void;
 
     /**
      * Register dependency
@@ -87,7 +86,7 @@ export class PolicyComponentsUtils {
 
         const componentRef = component as any;
         for (let dep of componentRef.dependencies) {
-            PolicyComponentsUtils.RegisterDependencyCallback(dep, policyId,(user) => {
+            PolicyComponentsUtils.RegisterDependencyCallback(dep, policyId, (user) => {
                 component.updateBlock({}, user, '');
             })
         }
@@ -183,8 +182,8 @@ export class PolicyComponentsUtils {
      * @param skipRegistration
      */
     public static ConfigureBlock(policyId: string, blockType: string,
-                                   options: Partial<PolicyBlockConstructorParams>,
-                                   skipRegistration?: boolean): any {
+                                 options: Partial<PolicyBlockConstructorParams>,
+                                 skipRegistration?: boolean): any {
         if (options.options) {
             options = Object.assign(options, options.options);
         }

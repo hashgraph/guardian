@@ -32,6 +32,8 @@ export interface IPolicyBlock {
     blockClassName: string;
     policyId: string;
     policyOwner: string;
+    changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
+    checkDataStateDiffer?: (user) => boolean
 
     serialize(): ISerializedBlock;
 
@@ -45,8 +47,6 @@ export interface IPolicyBlock {
 
     validate(resultsContainer: PolicyValidationResultsContainer);
 
-    changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
-
     runNext(user: IAuthUser, data: any);
 
     runTarget(user: IAuthUser, data: any, target: AnyBlockType)
@@ -55,13 +55,11 @@ export interface IPolicyBlock {
 
     isActive(user: IAuthUser): boolean;
 
-    checkDataStateDiffer?: (user) => boolean
+    log(message: string): void;
 
-    log(message: string):void;
+    error(message: string): void;
 
-    error(message: string):void;
-
-    warn(message: string):void;
+    warn(message: string): void;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {
@@ -133,4 +131,12 @@ export interface IPolicyRequestBlock extends IPolicyBlock {
     getSources(user: IAuthUser): Promise<any[]>
 }
 
-export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock | IPolicyCalculateBlock | IPolicyCalculateAddon | IPolicyRequestBlock;
+export type AnyBlockType =
+    IPolicyBlock
+    | IPolicyInterfaceBlock
+    | IPolicyContainerBlock
+    | IPolicySourceBlock
+    | IPolicyAddonBlock
+    | IPolicyCalculateBlock
+    | IPolicyCalculateAddon
+    | IPolicyRequestBlock;

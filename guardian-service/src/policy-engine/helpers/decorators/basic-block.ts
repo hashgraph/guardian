@@ -1,16 +1,15 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
-import { PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
+import { PolicyBlockDependencies } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
 import { PolicyRole } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IAuthUser } from '../../../auth/auth.interface';
+import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
-import { BlockActionError } from '@policy-engine/errors';
 import { Policy } from '@entity/policy';
 
 /**
@@ -69,15 +68,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
         return class extends basicClass {
             static blockType = o.blockType;
-
+            public policyId: string;
+            public policyOwner: string;
+            public readonly blockClassName = 'BasicBlock';
             protected oldDataState: any = {};
             protected currentDataState: any = {};
             protected logger: Logger;
-
-            public policyId: string;
-            public policyOwner: string;
-
-            public readonly blockClassName = 'BasicBlock';
 
             constructor(
                 _uuid: string,
@@ -182,7 +178,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-            public async updateBlock(state:any, user:IAuthUser, tag:string) {
+            public async updateBlock(state: any, user: IAuthUser, tag: string) {
                 await this.saveState();
                 if (!this.options.followUser) {
                     const policy = await getMongoRepository(Policy).findOne(this.policyId);
@@ -216,28 +212,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return true;
                 }
                 return this.parent.isChildActive(this as any, user);
-            }
-
-            private async saveState(): Promise<void> {
-                const stateFields = PolicyComponentsUtils.GetStateFields(this);
-                if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
-                    const repo = getMongoRepository(BlockState);
-                    let stateEntity = await repo.findOne({
-                        policyId: this.policyId,
-                        blockId: this.uuid
-                    });
-                    if (!stateEntity) {
-                        stateEntity = repo.create({
-                            policyId: this.policyId,
-                            blockId: this.uuid,
-                        })
-                    }
-
-                    stateEntity.blockState = JSON.stringify(stateFields);
-
-                    await repo.save(stateEntity)
-
-                }
             }
 
             public async restoreState(): Promise<void> {
@@ -314,12 +288,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-            private init() {
-                if (typeof super.init === 'function') {
-                    super.init();
-                }
-            }
-
             protected log(message: string) {
                 this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
             }
@@ -330,6 +298,34 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             protected warn(message: string) {
                 this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+            }
+
+            private async saveState(): Promise<void> {
+                const stateFields = PolicyComponentsUtils.GetStateFields(this);
+                if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
+                    const repo = getMongoRepository(BlockState);
+                    let stateEntity = await repo.findOne({
+                        policyId: this.policyId,
+                        blockId: this.uuid
+                    });
+                    if (!stateEntity) {
+                        stateEntity = repo.create({
+                            policyId: this.policyId,
+                            blockId: this.uuid,
+                        })
+                    }
+
+                    stateEntity.blockState = JSON.stringify(stateFields);
+
+                    await repo.save(stateEntity)
+
+                }
+            }
+
+            private init() {
+                if (typeof super.init === 'function') {
+                    super.init();
+                }
             }
         };
     };
