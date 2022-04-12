@@ -19,4 +19,6 @@ We name the tag, add permissions – again installer since this action will stil
               "uiMetaData": {
                 "type": "blank"
               },
+              "cyclic" : true,
+              }
 ```

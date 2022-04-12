@@ -28,9 +28,6 @@ Below are screenshots of the field inputs
                 "INSTALLER"
               ],
               "blockType": "InterfaceDocumentsSourceBlock",
-              "dependencies": [
-                "SendVCtoGuardian"
-              ],
               "onlyOwnDocuments": true,
               "dataType": "vc-documents",
               "filters": {

@@ -70,6 +70,8 @@ Then we select the “type” of UI we want to utilize. In our example, we choos
 **Note:** In Guardian Version 1.0.2 there was new functionality implemented that allows for creation of choose Role Block.
 {% endhint %}
 
+![](../.gitbook/assets/PW\_33.png)
+
 **Programmatically you begin like this:**
 
 ```

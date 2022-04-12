@@ -27,11 +27,6 @@ To do that, we click on the “sensors\_grid” button, and then click on “Bin
               "permissions": [
                 "INSTALLER"
               ],
-              //"dependencies" - automatic update. The block is automatically re-rendered if any of the linked components gets updated.
-              "dependencies": [
-                // Tag of the blocks as a link.
-                "SendVCtoGuardian"
-              ],
               // When true, this filter out the documents not created by the current user when rendering.
               "onlyOwnDocuments": true,
               //"dataType" - Specificy the table to request the data from. Possible values:
