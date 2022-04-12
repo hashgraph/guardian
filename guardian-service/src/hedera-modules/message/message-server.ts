@@ -13,17 +13,28 @@ import { Logger } from 'logger-helper';
 import { PolicyMessage } from './policy-message';
 import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
+import { VPMessage } from './vp-message';
 
 export class MessageServer {
     private client: HederaSDKHelper;
+
     private submitKey: PrivateKey | string;
+    private topicId: TopicId | string;
 
     constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         this.client = new HederaSDKHelper(operatorId, operatorKey);
     }
 
-    public setSubmitKey(submitKey: PrivateKey | string): void {
+    public setTopicObject(topic: { topicId: string, key: string }): MessageServer {
+        this.submitKey = topic.key;
+        this.topicId = topic.topicId;
+        return this;
+    }
+
+    public setTopic(topicId: TopicId | string, submitKey?: PrivateKey | string): MessageServer {
         this.submitKey = submitKey;
+        this.topicId = topicId;
+        return this;
     }
 
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
@@ -50,11 +61,14 @@ export class MessageServer {
         return message;
     }
 
-    private async sendHedera<T extends Message>(topicId: string | TopicId, message: T): Promise<T> {
+    private async sendHedera<T extends Message>(message: T): Promise<T> {
+        if (!this.topicId) {
+            throw 'Topic not set';
+        }
         const buffer = message.toMessage();
-        const id = await this.client.submitMessage(topicId, buffer, this.submitKey);
+        const id = await this.client.submitMessage(this.topicId, buffer, this.submitKey);
         message.setId(id);
-        message.setTopicId(topicId);
+        message.setTopicId(this.topicId);
         return message;
     }
 
@@ -72,21 +86,31 @@ export class MessageServer {
             case MessageType.DIDDocument:
                 message = DIDMessage.fromMessageObject(json);
                 break;
-            case MessageType.SchemaDocument:
+            case MessageType.Schema:
                 message = SchemaMessage.fromMessageObject(json);
                 break;
-            case MessageType.PolicyDocument:
+            case MessageType.Policy:
                 message = PolicyMessage.fromMessageObject(json);
+                break;
+            case MessageType.InstancePolicy:
+                message = PolicyMessage.fromMessageObject(json);
+                break;
+            case MessageType.VPDocument:
+                message = VPMessage.fromMessageObject(json);
+                break;
+            //Default schemes
+            case 'schema-document':
+                message = SchemaMessage.fromMessageObject(json);
                 break;
             default:
                 new Logger().error(`Invalid format message: ${json.type}`, ['GUARDIAN_SERVICE']);
                 console.error(`Invalid format message: ${json.type}`);
-                throw 'Invalid format';
+                throw `Invalid format message: ${json.type}`;
         }
-        if(!message.validate()) {
+        if (!message.validate()) {
             new Logger().error(`Invalid json: ${json.type}`, ['GUARDIAN_SERVICE']);
             console.error(`Invalid json: ${json.type}`);
-            throw 'Invalid json';
+            throw `Invalid json: ${json.type}`;
         }
         return message;
     }
@@ -120,9 +144,9 @@ export class MessageServer {
         return result;
     }
 
-    public async sendMessage<T extends Message>(topicId: string | TopicId, message: T): Promise<T> {
+    public async sendMessage<T extends Message>(message: T): Promise<T> {
         message = await this.sendIPFS(message);
-        message = await this.sendHedera(topicId, message);
+        message = await this.sendHedera(message);
         return message;
     }
 

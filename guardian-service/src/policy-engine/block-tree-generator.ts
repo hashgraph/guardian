@@ -77,6 +77,7 @@ export class BlockTreeGenerator {
             const blockInstance = PolicyComponentsUtils.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
             blockInstance.setPolicyId(policyId.toString())
             blockInstance.setPolicyOwner(policy.owner);
+            blockInstance.setPolicyInstance(policy);
             if (children && children.length) {
                 for (let child of children) {
                     await BuildInstances(child, blockInstance);

@@ -88,4 +88,8 @@ export class PolicyPropertiesComponent implements OnInit {
             static: false
         });
     }
+
+    onRemoveTopic(i: number) {
+        this.topics.splice(i, 1);
+    }
 }

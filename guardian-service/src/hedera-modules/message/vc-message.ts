@@ -8,6 +8,7 @@ export class VCMessage extends Message {
     public vcDocument: VcDocument;
     public document: any;
     public hash: string;
+    public issuer: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.VCDocument);
@@ -17,6 +18,7 @@ export class VCMessage extends Message {
         this.vcDocument = document;
         this.document = document.getDocument();
         this.hash = document.toCredentialHash();
+        this.issuer = document.getIssuerDid();
     }
 
     public getDocument(): any {
@@ -27,6 +29,7 @@ export class VCMessage extends Message {
         return JSON.stringify({
             action: this.action,
             type: this.type,
+            issuer: this.issuer,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
         });

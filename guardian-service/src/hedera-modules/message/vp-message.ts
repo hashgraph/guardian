@@ -1,22 +1,24 @@
-import { DIDDocument } from './../vcjs/did-document';
+import { VpDocument } from '../vcjs/vp-document';
 import { Message } from './message';
-import { IURL } from "./i-url";
+import { IURL, UrlType } from "./i-url";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
 
-export class DIDMessage extends Message {
+export class VPMessage extends Message {
+    public vpDocument: VpDocument;
     public document: any;
-    public didDocument: DIDDocument;
-    public did: string;
+    public hash: string;
+    public issuer: string;
 
     constructor(action: MessageAction) {
-        super(action, MessageType.DIDDocument);
+        super(action, MessageType.VPDocument);
     }
 
-    public setDocument(document: DIDDocument): void {
-        this.didDocument = document;
+    public setDocument(document: VpDocument): void {
+        this.vpDocument = document;
         this.document = document.getDocument();
-        this.did = document.getDid();
+        this.hash = document.toCredentialHash();
+        this.issuer = document.getIssuerDid();
     }
 
     public getDocument(): any {
@@ -27,9 +29,9 @@ export class DIDMessage extends Message {
         return JSON.stringify({
             action: this.action,
             type: this.type,
-            did: this.did,
-            cid: this.urls[0].cid,
-            url: this.urls[0].url
+            issuer: this.issuer,
+            cid: this.getDocumentUrl(UrlType.cid),
+            url: this.getDocumentUrl(UrlType.url),
         });
     }
 
@@ -39,18 +41,18 @@ export class DIDMessage extends Message {
         return [buffer];
     }
 
-    public loadDocuments(documents: string[]): DIDMessage {
+    public loadDocuments(documents: string[]): VPMessage {
         this.document = JSON.parse(documents[0]);
         return this;
     }
 
-    public static fromMessage(message: string): DIDMessage {
+    public static fromMessage(message: string): VPMessage {
         const json = JSON.parse(message);
         return this.fromMessageObject(json);
     }
 
-    public static fromMessageObject(json: any): DIDMessage {
-        const message = new DIDMessage(json.action);
+    public static fromMessageObject(json: any): VPMessage {
+        const message = new VPMessage(json.action);
         const urls = [{
             cid: json.cid,
             url: json.url
@@ -65,5 +67,9 @@ export class DIDMessage extends Message {
 
     public override validate(): boolean {
         return true;
+    }
+
+    public getDocumentUrl(type: UrlType): string | null {
+        return this.getUrlValue(0, type);
     }
 }

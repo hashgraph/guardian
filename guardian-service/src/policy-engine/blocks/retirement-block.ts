@@ -1,37 +1,18 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
-import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper } from '@hedera-modules';
+import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
-
-function evaluate(formula: string, scope: any) {
-    return (function (formula: string, scope: any) {
-        try {
-            return this.evaluate(formula, scope);
-        } catch (error) {
-            return 'Incorrect formula';
-        }
-    }).call(mathjs, formula, scope);
-}
-
-enum DataTypes {
-    MRV = 'mrv',
-    REPORT = 'report',
-    MINT = 'mint',
-    RETIREMENT = 'retirement'
-}
+import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Retirement block
@@ -46,66 +27,6 @@ export class RetirementBlock {
 
     private tokenId: any;
     private rule: any;
-
-    private getScope(item: VcDocument) {
-        return item.getCredentialSubject().toJsonTree();
-    }
-
-    private aggregate(rule, vcs: VcDocument[]) {
-        let amount = 0;
-        for (let i = 0; i < vcs.length; i++) {
-            const element = vcs[i];
-            const scope = this.getScope(element);
-            const value = parseFloat(evaluate(rule, scope));
-            amount += value;
-        }
-        return amount;
-    }
-
-    private tokenAmount(token, amount: number) {
-        const decimals = parseFloat(token.decimals) || 0;
-        const _decimals = Math.pow(10, decimals);
-        return Math.round(amount * _decimals);
-    }
-
-    private async saveVC(vc: VcDocument, owner: string, ref: any): Promise<boolean> {
-        try {
-            const doc = getMongoRepository(VcDocumentCollection).create({
-                hash: vc.toCredentialHash(),
-                owner: owner,
-                document: vc.toJsonTree(),
-                type: DataTypes.RETIREMENT as any,
-                policyId: ref.policyId,
-                tag: ref.tag,
-                schema: `#${vc.getCredentialSubject()[0].getType()}`
-            });
-            await getMongoRepository(VcDocumentCollection).save(doc);;
-            return true;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    private async saveVP(vp: VpDocument, sensorDid: string, type: DataTypes, ref: any): Promise<boolean> {
-        try {
-            if (!vp) {
-                return false;
-            }
-            const doc = getMongoRepository(VpDocumentCollection).create({
-                hash: vp.toCredentialHash(),
-                document: vp.toJsonTree(),
-                owner: sensorDid,
-                type: type as any,
-                policyId: ref.policyId,
-                tag: ref.tag
-            })
-            await getMongoRepository(VpDocumentCollection).save(doc);
-            return true;
-        } catch (error) {
-            return false;
-        }
-    }
-
     private async createWipeVC(root, token, data: number): Promise<VcDocument> {
         const VCHelper = new VcHelper();
         const policySchema = await getMongoRepository(SchemaCollection).findOne({
@@ -138,29 +59,28 @@ export class RetirementBlock {
     }
 
     private async retirementProcessing(token, document, rule, root, user, ref): Promise<any> {
-        const tokenId = token.tokenId;
-        const wipeKey = token.wipeKey;
-        const adminId = token.adminId;
-        const adminKey = token.adminKey;
-
         const uuid = HederaUtils.randomUUID();
-        const amount = this.aggregate(rule, document);
-        const tokenValue = this.tokenAmount(token, amount);
-
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-
-        let wipeVC: VcDocument;
-        if (token.tokenType == 'non-fungible') {
-            throw 'unsupported operation';
-        } else {
-            await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
-            wipeVC = await this.createWipeVC(root, token, tokenValue);
-        }
+        const amount = PolicyUtils.aggregate(rule, document);
+        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+        await PolicyUtils.wipe(token, tokenValue, root, user, uuid);
+        const wipeVC = await this.createWipeVC(root, token, tokenValue);
         const vcs = [].concat(document, wipeVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-        await this.saveVC(wipeVC, user.did, ref);
-        await this.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
+
+        await PolicyUtils.saveVC(wipeVC, user.did, DataTypes.RETIREMENT, ref);
+        await PolicyUtils.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
+
+        const topic = await PolicyUtils.getTopic('root', root, user, ref);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+
+        const vcMessage = new VCMessage(MessageAction.CreateVC);
+        vcMessage.setDocument(wipeVC);
+        await messageServer.setTopicObject(topic).sendMessage(vcMessage);
+
+        const vpMessage = new VPMessage(MessageAction.CreateVP);
+        vpMessage.setDocument(vp);
+        await messageServer.setTopicObject(topic).sendMessage(vpMessage);
 
         return vp;
     }

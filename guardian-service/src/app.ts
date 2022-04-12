@@ -74,7 +74,7 @@ Promise.all([
     await schemaAPI(channel, schemaRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await profileAPI(channel, topicRepository);
+    await profileAPI(channel);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await demoAPI(channel, settingsRepository);
     await approveAPI(channel, approvalDocumentRepository);

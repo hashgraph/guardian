@@ -88,6 +88,7 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
         model.description = policy.description;
         model.topicDescription = policy.topicDescription;
         model.policyRoles = policy.policyRoles;
+        model.policyTopics = policy.policyTopics;
         const result = await engineService.savePolicy(model, req.user, req.params.policyId);
         res.json(result);
     } catch (e) {

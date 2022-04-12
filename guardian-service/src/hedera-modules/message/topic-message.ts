@@ -11,10 +11,9 @@ export class TopicMessage extends Message {
     public topicId: string;
     public parentId: string;
 
-    constructor(action: MessageAction) {
-        super(action, MessageType.TopicDocument);
+    constructor(type: MessageType.Topic | MessageType.DynamicTopic, action: MessageAction) {
+        super(action, type);
     }
-
 
     public setDocument(topic: {
         name: string,
@@ -59,7 +58,7 @@ export class TopicMessage extends Message {
     }
 
     public static fromMessageObject(json: any): TopicMessage {
-        const message = new TopicMessage(json.action);
+        const message = new TopicMessage(json.type, json.action);
         message.name = json.name;
         message.description = json.description;
         message.owner = json.owner;

@@ -214,10 +214,9 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
     schemaObject.topicId = topic.topicId;
 
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-    messageServer.setSubmitKey(topic.key);
     const message = new SchemaMessage(MessageAction.CreateSchema);
     message.setDocument(schemaObject);
-    const result = await messageServer.sendMessage(topic.topicId, message);
+    await messageServer.setTopicObject(topic).sendMessage(message);
 
     return await getMongoRepository(SchemaCollection).save(schemaObject);
 }
@@ -289,10 +288,9 @@ export async function publishSchema(id: string, version: string, owner: string):
     const users = new Users();
     const root = await users.getHederaAccount(owner);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-    messageServer.setSubmitKey(topic.key);
     const message = new SchemaMessage(MessageAction.PublishSchema);
     message.setDocument(item);
-    const result = await messageServer.sendMessage(topic.topicId, message);
+    const result = await messageServer.setTopicObject(topic).sendMessage(message);
 
     const messageId = result.getId();
     const contextUrl = result.getDocumentUrl(UrlType.url);
@@ -491,10 +489,9 @@ export const schemaAPI = async function (channel: any, schemaRepository): Promis
                             const users = new Users();
                             const root = await users.getHederaAccount(item.owner);
                             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                            messageServer.setSubmitKey(topic.key);
                             const message = new SchemaMessage(MessageAction.DeleteSchema);
                             message.setDocument(item);
-                            await messageServer.sendMessage(topic.topicId, message);
+                            await messageServer.setTopicObject(topic).sendMessage(message);
                         }
                     }
                     await schemaRepository.delete(item.id);
@@ -603,7 +600,7 @@ export const schemaAPI = async function (channel: any, schemaRepository): Promis
             for (let i = 0; i < uniqueTopics.length; i++) {
                 const topicId = uniqueTopics[i];
                 const anotherVersions = await messageServer.getMessages<SchemaMessage>(
-                    topicId, MessageType.SchemaDocument, MessageAction.PublishSchema
+                    topicId, MessageType.Schema, MessageAction.PublishSchema
                 );
                 for (let j = 0; j < anotherVersions.length; j++) {
                     anotherSchemas.push(anotherVersions[j]);

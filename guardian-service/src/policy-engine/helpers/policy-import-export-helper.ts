@@ -13,7 +13,7 @@ import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
 import { ModelHelper, SchemaHelper, SchemaStatus, TopicType } from 'interfaces';
 import { Users } from '@helpers/users';
-import { HederaSDKHelper, MessageAction, MessageServer, PolicyMessage } from '@hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles } from '@api/schema.service';
 import { TopicHelper } from '@helpers/topicHelper';
@@ -115,6 +115,7 @@ export class PolicyImportExportHelper {
         const users = new Users();
         const root = await users.getHederaAccount(policyOwner);
 
+        const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const topicRow = await topicHelper.create({
             type: TopicType.PolicyTopic,
@@ -124,7 +125,7 @@ export class PolicyImportExportHelper {
             policyId: null,
             policyUUID: null
         });
-        await topicHelper.link(topicRow, null);
+        await topicHelper.link(topicRow, parent);
 
         delete policy.id;
         delete policy.messageId;
@@ -140,10 +141,11 @@ export class PolicyImportExportHelper {
         policy.topicId = topicRow.topicId;
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-        messageServer.setSubmitKey(topicRow.key);
-        const message = new PolicyMessage(MessageAction.CreatePolicy);
+        const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
-        await messageServer.sendMessage(topicRow.topicId, message);
+        await messageServer
+            .setTopicObject(topicRow)
+            .sendMessage(message);
 
 
         // Import Tokens

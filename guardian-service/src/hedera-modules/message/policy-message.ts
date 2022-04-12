@@ -14,10 +14,10 @@ export class PolicyMessage extends Message {
     public version: string;
     public policyTag: string;
     public owner: string;
-    public rootTopicId: string;
+    public instanceTopicId: string;
 
-    constructor(action: MessageAction) {
-        super(action, MessageType.PolicyDocument);
+    constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
+        super(action, type);
         this._responseType = "raw";
         this.urls = [];
     }
@@ -31,7 +31,7 @@ export class PolicyMessage extends Message {
         this.policyTag = model.policyTag;
         this.owner = model.owner;
         this.topicId = model.topicId;
-        this.rootTopicId = model.rootTopicId;
+        this.instanceTopicId = model.instanceTopicId;
         this.document = zip;
     }
 
@@ -51,7 +51,7 @@ export class PolicyMessage extends Message {
             policyTag: this.policyTag,
             owner: this.owner,
             topicId: this.topicId,
-            rootTopicId: this.rootTopicId,
+            instanceTopicId: this.instanceTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
         });
@@ -80,7 +80,7 @@ export class PolicyMessage extends Message {
     }
 
     public static fromMessageObject(json: any): PolicyMessage {
-        const message = new PolicyMessage(json.action);
+        const message = new PolicyMessage(json.type, json.action);
         message.uuid = json.uuid;
         message.name = json.name;
         message.description = json.description;
@@ -89,7 +89,7 @@ export class PolicyMessage extends Message {
         message.policyTag = json.policyTag;
         message.policyTag = json.owner;
         message.topicId = json.topicId;
-        message.rootTopicId = json.rootTopicId;
+        message.instanceTopicId = json.instanceTopicId;
 
         if (json.cid && json.url) {
             const urls = [{

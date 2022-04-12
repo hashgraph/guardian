@@ -133,6 +133,7 @@ export class PolicyEngineService {
         if (model.topicId) {
             topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
         } else {
+            const parent = await getMongoRepository(Topic).findOne({ owner: owner, type: TopicType.UserTopic });
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
             topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
@@ -142,15 +143,16 @@ export class PolicyEngineService {
                 policyId: null,
                 policyUUID: null
             });
-            await topicHelper.link(topic, null);
+            await topicHelper.link(topic, parent);
             newTopic = topic;
         }
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-        messageServer.setSubmitKey(topic.key);
-        const message = new PolicyMessage(MessageAction.CreatePolicy);
+        const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(model);
-        await messageServer.sendMessage(topic.topicId, message);
+        await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message);
 
         const policy = await getMongoRepository(Policy).save(model);
         if (newTopic) {
@@ -170,6 +172,7 @@ export class PolicyEngineService {
         model.description = data.description;
         model.topicDescription = data.topicDescription;
         model.policyRoles = data.policyRoles;
+        model.policyTopics = data.policyTopics;
         delete model.registeredUsers;
         return await getMongoRepository(Policy).save(model);
     }
@@ -200,24 +203,23 @@ export class PolicyEngineService {
         const root = await this.users.getHederaAccount(owner);
         const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-        messageServer.setSubmitKey(topic.key);
 
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const rootTopic = await topicHelper.create({
-            type: TopicType.RootPolicyTopic,
-            name: model.name || TopicType.RootPolicyTopic,
-            description: model.topicDescription || TopicType.RootPolicyTopic,
+            type: TopicType.InstancePolicyTopic,
+            name: model.name || TopicType.InstancePolicyTopic,
+            description: model.topicDescription || TopicType.InstancePolicyTopic,
             owner: owner,
             policyId: model.id.toString(),
             policyUUID: model.uuid
         });
-        await topicHelper.link(topic, null);
+        await topicHelper.link(rootTopic, topic);
 
-        model.rootTopicId = rootTopic.topicId;
+        model.instanceTopicId = rootTopic.topicId;
 
-        const message = new PolicyMessage(MessageAction.PublishPolicy);
+        const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.sendMessage(topic.topicId, message);
+        const result = await messageServer.setTopicObject(topic).sendMessage(message);
         model.messageId = result.getId();
 
         const messageId = result.getId();
@@ -566,7 +568,7 @@ export class PolicyEngineService {
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
-                if (message.type !== MessageType.PolicyDocument) {
+                if (message.type !== MessageType.InstancePolicy) {
                     throw new Error('Invalid Message Type');
                 }
 
@@ -577,7 +579,7 @@ export class PolicyEngineService {
                 const newVersions: any = [];
                 if (message.version) {
                     const anotherVersions = await messageServer.getMessages<PolicyMessage>(
-                        message.getTopicId(), MessageType.PolicyDocument, MessageAction.PublishPolicy
+                        message.getTopicId(), MessageType.InstancePolicy, MessageAction.PublishPolicy
                     );
                     for (let i = 0; i < anotherVersions.length; i++) {
                         let element = anotherVersions[i];
@@ -614,7 +616,7 @@ export class PolicyEngineService {
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
-                if (message.type !== MessageType.PolicyDocument) {
+                if (message.type !== MessageType.InstancePolicy) {
                     throw new Error('Invalid Message Type');
                 }
 

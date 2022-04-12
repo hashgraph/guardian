@@ -25,6 +25,7 @@ import { Topic } from '@entity/topic';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { ApiResponse } from '@api/api-response';
+import { TopicHelper } from '@helpers/topicHelper';
 
 /**
  * Connect to the message broker methods of working with Address books.
@@ -34,10 +35,7 @@ import { ApiResponse } from '@api/api-response';
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
  */
-export const profileAPI = async function (
-    channel: any,
-    topicRepository: MongoRepository<Topic>
-) {
+export const profileAPI = async function (channel: any) {
     ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg, res) => {
         try {
             const { username } = msg.payload;
@@ -74,23 +72,24 @@ export const profileAPI = async function (
 
             let topic: any, newTopic = false;
             if (parent) {
-                topic = await topicRepository.findOne({
+                topic = await getMongoRepository(Topic).findOne({
                     owner: parent,
                     type: TopicType.UserTopic
                 });
             }
 
-            if(!topic) {
-                newTopic = true;
-                const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey);
-                const _topicId = await client.newTopic(hederaAccountKey, null, TopicType.UserTopic);
-                topic = {
-                    topicId: _topicId,
-                    description: TopicType.UserTopic,
-                    owner: null,
+            if (!topic) {
+                const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
+                topic = await topicHelper.create({
                     type: TopicType.UserTopic,
-                    key: null
-                };
+                    name: TopicType.UserTopic,
+                    description: TopicType.UserTopic,
+                    owner: topic,
+                    policyId: null,
+                    policyUUID: null
+                });
+                await topicHelper.link(topic, null);
+                newTopic = true;
             }
 
             let didMessage: DIDMessage;
@@ -126,14 +125,12 @@ export const profileAPI = async function (
 
             if (newTopic) {
                 topic.owner = didMessage.did;
-                const topicObject = topicRepository.create(topic);
-                await topicRepository.save(topicObject);
+                await getMongoRepository(Topic).update(topic.id, topic);
             }
 
             const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
-            messageServer.setSubmitKey(topic.key);
             try {
-                await messageServer.sendMessage(topic.topicId, didMessage)
+                await messageServer.setTopicObject(topic).sendMessage(didMessage)
                 didDoc.status = DidDocumentStatus.CREATE;
                 getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             } catch (error) {
@@ -144,7 +141,7 @@ export const profileAPI = async function (
             }
             if (vcMessage) {
                 try {
-                    await messageServer.sendMessage(topic.topicId, vcMessage)
+                    await messageServer.setTopicObject(topic).sendMessage(vcMessage);
                     vcDoc.hederaStatus = DocumentStatus.ISSUE;
                     getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
                 } catch (error) {

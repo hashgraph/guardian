@@ -52,6 +52,13 @@ export class VcDocument {
         return this.issuer;
     }
 
+    public getIssuerDid(): string {
+        if (this.issuer) {
+            return this.issuer.getId();
+        }
+        return null;
+    }
+
     public setIssuer(issuer: string | Issuer | DIDDocument): void {
         if (typeof issuer === 'string') {
             this.issuer = new Issuer(issuer);

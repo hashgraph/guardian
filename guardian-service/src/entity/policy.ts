@@ -52,7 +52,7 @@ export class Policy {
     topicId: string;
     
     @Column()
-    rootTopicId: string;
+    instanceTopicId: string;
 
     @Column({
         unique: true

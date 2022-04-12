@@ -166,12 +166,12 @@
                     <div class="common-properties">
                         <ng-container *ngIf="propTab=='Properties'">
                             <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.topics">
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.policyTopics">
                             </common-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='JSON'">
                             <json-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.topics">
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.policyTopics">
                             </json-properties>
                         </ng-container>
                     </div>

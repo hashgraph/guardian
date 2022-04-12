@@ -1,5 +1,5 @@
 import { Topic } from '@entity/topic';
-import { HederaSDKHelper, MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, MessageType, TopicMessage } from '@hedera-modules';
 import { TopicType } from 'interfaces';
 import { getMongoRepository } from 'typeorm';
 
@@ -38,31 +38,35 @@ export class TopicHelper {
         return topic;
     }
 
-    public async link(topic: Topic, parent: Topic) {
+    public async link(topic: Topic, parent?: Topic) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey);
 
-        const message1 = new TopicMessage(MessageAction.CreateTopic);
+        const message1 = new TopicMessage(MessageType.Topic, MessageAction.CreateTopic);
         message1.setDocument({
             name: topic.name,
             description: topic.description,
             owner: topic.owner,
             topicType: topic.type,
             topicId: null,
-            parentId: parent.topicId
+            parentId: parent?.topicId
         });
-        messageServer.setSubmitKey(topic.key);
-        await messageServer.sendMessage(topic.topicId, message1);
+        await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message1);
 
-        const message2 = new TopicMessage(MessageAction.CreateTopic);
-        message2.setDocument({
-            name: topic.name,
-            description: topic.description,
-            owner: topic.owner,
-            topicType: topic.type,
-            topicId: topic.topicId,
-            parentId: null
-        });
-        messageServer.setSubmitKey(parent.key);
-        await messageServer.sendMessage(parent.topicId, message2);
+        if (parent) {
+            const message2 = new TopicMessage(MessageType.DynamicTopic, MessageAction.CreateTopic);
+            message2.setDocument({
+                name: topic.name,
+                description: topic.description,
+                owner: topic.owner,
+                topicType: topic.type,
+                topicId: topic.topicId,
+                parentId: null
+            });
+            await messageServer
+                .setTopicObject(parent)
+                .sendMessage(message2);
+        }
     }
 }

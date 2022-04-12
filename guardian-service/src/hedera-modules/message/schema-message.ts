@@ -16,7 +16,7 @@ export class SchemaMessage extends Message {
     public documents: any[];
 
     constructor(action: MessageAction) {
-        super(action, MessageType.SchemaDocument);
+        super(action, MessageType.Schema);
     }
 
     public setDocument(schema: Schema): void {
@@ -94,7 +94,7 @@ export class SchemaMessage extends Message {
         {
             cid: json.context_cid,
             url: json.context_url
-        }]
+        }];
         message.setUrls(urls);
         return message;
     }
