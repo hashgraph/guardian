@@ -21,9 +21,10 @@ export class TokenConfigComponent implements OnInit {
         'tokenId',
         'tokenName',
         'tokenSymbol',
-        'users'
+        'policies',
+        'users',
     ];
-    tokens: Token[] = [];
+    tokens: any[] = [];
     loading: boolean = true;
     tokenId: string = "";
     users: any[] = [];
@@ -33,7 +34,7 @@ export class TokenConfigComponent implements OnInit {
         'tokenBalance',
         'frozen',
         'kyc',
-        'refresh'
+        'refresh',
     ];
 
     constructor(
@@ -73,8 +74,13 @@ export class TokenConfigComponent implements OnInit {
                 this.loading = false;
             });
         } else {
-            this.tokenService.getTokens().subscribe((data) => {
-                this.tokens = data.map(e => new Token(e));
+            this.tokenService.getTokens().subscribe((data: any) => {
+                this.tokens = data.map((e: any) => { 
+                    return {
+                        ...new Token(e),
+                        policies: e.policies
+                    }
+                });
                 this.loading = false;
             }, (e) => {
                 console.error(e.error);
@@ -108,7 +114,12 @@ export class TokenConfigComponent implements OnInit {
             if (result) {
                 this.loading = true;
                 this.tokenService.create(result).subscribe((data) => {
-                    this.tokens = data.map(e => new Token(e));
+                    this.tokens = data.map((e: any) => { 
+                        return {
+                            ...new Token(e),
+                            policies: e.policies
+                        }
+                    });
                     this.loading = false;
                 }, (e) => {
                     console.error(e.error);

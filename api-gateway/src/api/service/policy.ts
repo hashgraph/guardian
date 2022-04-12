@@ -4,11 +4,30 @@ import { UserRole } from 'interfaces';
 import { PolicyEngine } from '@helpers/policyEngine';
 import { Users } from '@helpers/users';
 import { Logger } from 'logger-helper';
+import { Guardians } from '@helpers/guardians';
 
 export const policyAPI = Router();
 
+async function setPolicyUserRoles(policies: any[], userDid: string, guardians: Guardians) {
+    if (!policies || !userDid || !guardians)  {
+        return;
+    }
+
+    for (let i = 0; i < policies.length; i++) {
+        const policy = policies[i];
+        const role = await guardians.getUserRoles(userDid, policy.id);
+        policy.userRoles = role[0]?.userRoles?.map(role => role.role) || [];
+        if (policy.owner === userDid) {
+            policy.userRoles.push('Administrator');
+        }
+        if (!policy.userRoles.length) {
+            policy.userRoles.push('The user does not have a role');
+        }
+    }
+}
+
 policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
-    const users = new Users()
+    const users = new Users();
     const engineService = new PolicyEngine();
     try {
         const user = await users.getUser(req.user.username);
@@ -18,20 +37,28 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         } else {
             result = await engineService.getPolicies({ status: 'PUBLISH' });
         }
+
+        await setPolicyUserRoles(result, user.did, new Guardians());
+
         res.json(result.map(item => {
             delete item.registeredUsers;
             return item;
         }));
     } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
 
 policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
+    const users = new Users();
     try {
-        const policies = await engineService.createPolicy(req.body, req.user)
+        const policies: any = await engineService.createPolicy(req.body, req.user);
+        const user = await users.getUser(req.user.username);
+
+        await setPolicyUserRoles(policies, user.did, new Guardians());
+
         res.json(policies);
     } catch (e) {
          new Logger().error(e.message, ['API_GATEWAY']);
@@ -78,7 +105,9 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
 policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
+        const result: any = await engineService.publishPolicy(req.body, req.user, req.params.policyId);
+        await setPolicyUserRoles(result.policies, req.user.did, new Guardians());
+        res.json(result);
     } catch (e) {
         new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: e.message || e });
@@ -180,7 +209,9 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
 policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        res.send(await engineService.importMessage(req.user, req.body.messageId));
+        const result: any = await engineService.importMessage(req.user, req.body.messageId)
+        await setPolicyUserRoles(result, req.user.did, new Guardians());
+        res.send(result);
     } catch (e) {
         console.error(e);
          new Logger().error(e.message, ['API_GATEWAY']);
@@ -191,7 +222,9 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        res.send(await engineService.importFile(req.user, req.body));
+        const result: any = await engineService.importFile(req.user, req.body)
+        await setPolicyUserRoles(result, req.user.did, new Guardians());
+        res.send(result);
     } catch (e) {
         console.error(e);
          new Logger().error(e.message, ['API_GATEWAY']);

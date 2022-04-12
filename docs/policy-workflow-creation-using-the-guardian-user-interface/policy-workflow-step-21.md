@@ -20,7 +20,7 @@ Next, we return to the “approve\_documents\_grid” step and add the “approv
         // Block with the Approve/Reject buttons, embedded into the grid
         {
           "tag": "approve_documents_btn",
-          "blockType": "interfaceAction",
+          "blockType": "InterfaceActionBlock",
           "permissions": [
             "OWNER"
           ],

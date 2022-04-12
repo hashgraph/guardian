@@ -44,9 +44,9 @@ Then we select the “type” of UI we want to utilize. In our example, we choos
 //Policy logic starts with block 1.
 {
   //blockType - the type of the block:
-  //  "interfaceContainerBlock" - a block which contains and organizes other blocks.
+  //  "InterfaceContainerBlock" - a block which contains and organizes other blocks.
   //  First block should always be of the "interfaceContainerBlock" type.
-  "blockType": "interfaceContainerBlock",
+  "blockType": "InterfaceContainerBlock",
   //defaultActive shows whether this block is active at this time and whether it needs to be shown.
   "defaultActive": true,
   //permissions - users with these roles are allowed to interact with the block. Can contain the following values:
@@ -78,8 +78,8 @@ Then we select the “type” of UI we want to utilize. In our example, we choos
   "children": [
     //First policy step - select a role.
     {
-      //"policyRolesBlock" - block which determines a role for the user.
-      "blockType": "policyRolesBlock",
+      //"PolicyRolesBlock" - block which determines a role for the user.
+      "blockType": "PolicyRolesBlock",
       //"tag" - a unique (for the Policy) textual tag for the block which can be used in other blocks for linking.
       "tag": "choose_role",
       //Non ContainerBlock do not contain child elements. They can exist but they are ignored for rendering.

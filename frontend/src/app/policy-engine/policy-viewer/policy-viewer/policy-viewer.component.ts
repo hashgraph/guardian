@@ -31,6 +31,7 @@ export class PolicyViewerComponent implements OnInit {
     columnsRole = {
         "ROOT_AUTHORITY": [
             'name',
+            'roles',
             'id',
             'version',
             'description',
@@ -42,6 +43,7 @@ export class PolicyViewerComponent implements OnInit {
         ],
         "USER": [
             'name',
+            'roles',
             'version',
             'description',
             'open',

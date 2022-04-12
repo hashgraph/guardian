@@ -134,7 +134,7 @@ After selecting the Installer role, we will see the form that is based on the im
 
 ![](https://user-images.githubusercontent.com/40637665/148989161-d9ced7c4-8e9e-4987-b6a0-cb9719a92e1d.png)
 
-16\. Open another tab on your browser and enter [http://localhost:3005/](http://localhost:3005). We now see our IoT simulator. You can either drag and drop the sensor configuration file to the big `+` sign in the upper left, or you click the button to browse your computer. For simplicity's sake, click the button next to **Random Value** for the IoT simulator to generate random Measurement, Reporting, and Validation (MRV) data. Click **OK**.
+16\. Open another tab on your browser and enter [http://localhost:3000/mrv-sender/](https://localhost:3000/mrv-sender/). We now see our IoT simulator. You can either drag and drop the sensor configuration file to the big `+` sign in the upper left, or you click the button to browse your computer. For simplicity's sake, click the button next to **Random Value** for the IoT simulator to generate random Measurement, Reporting, and Validation (MRV) data. Click **OK**.
 
 ![](https://user-images.githubusercontent.com/40637665/137971538-94b68559-a8e2-464d-b595-fd13f23b97e9.png)
 

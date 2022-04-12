@@ -183,7 +183,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!this.options.followUser) {
                     const policy = await getMongoRepository(Policy).findOne(this.policyId);
 
-                    for (let [role, did] of Object.entries(policy.registeredUsers)) {
+                    for (let [did, role] of Object.entries(policy.registeredUsers)) {
                         if (this.permissions.includes(role)) {
                             PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
                         } else if (this.permissions.includes('ANY_ROLE')) {

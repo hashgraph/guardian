@@ -24,6 +24,7 @@ import { Logger } from 'logger-helper';
 import { ApplicationState, ApplicationStates } from 'interfaces';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
+import { Policy } from '@entity/policy';
 
 Promise.all([
     createConnection({

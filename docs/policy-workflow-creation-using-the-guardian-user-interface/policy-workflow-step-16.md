@@ -12,11 +12,7 @@ Below are screenshots of the field inputs
 
 ![](https://i.imgur.com/mUUIMav.png)
 
-***
-
 ![](https://i.imgur.com/2k3zzb4.png)
-
-***
 
 ![](https://i.imgur.com/wWYh1qG.png)
 
@@ -31,9 +27,9 @@ Below are screenshots of the field inputs
               "permissions": [
                 "INSTALLER"
               ],
-              "blockType": "interfaceDocumentsSource",
+              "blockType": "InterfaceDocumentsSourceBlock",
               "dependencies": [
-                "SendVCtoGuardian"
+                "sendToGuardianBlock"
               ],
               "onlyOwnDocuments": true,
               "dataType": "vc-documents",

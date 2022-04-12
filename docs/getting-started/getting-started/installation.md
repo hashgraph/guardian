@@ -49,9 +49,66 @@ NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNz
 docker-compose up -d --build
 ```
 
-5\. If you want to manually build every component with debug information, then build and run the services in the following sequence: Message Broker, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+5\. If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+
+#### From the interfaces folder
+
+Build package
+
+```
+npm install
+npm run build
+```
+
+#### From the vc-modules folder
+
+Build package
+
+```
+npm install
+npm run build
+```
+
+#### **From the logger-helper folder**
+
+Build package
+
+```
+npm install
+npm run build
+```
 
 **From the Message broker folder (Need to run first)**
+
+To build the service:
+
+```
+npm install
+npm run build
+```
+
+To start the service:
+
+```
+npm start
+```
+
+#### From the Logger service folder
+
+To build the service:
+
+```
+npm install
+npm run build
+```
+
+To start the service:
+
+```
+npm start
+```
+
+#### From the Auth service folder
 
 To build the service:
 
@@ -105,7 +162,7 @@ npm install
 npm run build
 ```
 
-To start the service (found on [http://localhost:3000](http://localhost:3000)):
+To start the service (found on [http://localhost:3002](https://localhost:3002)):
 
 ```
 npm start
@@ -147,19 +204,26 @@ npm start
 **Note**: Once you start the service, please wait for the Initialization Process to be completed.
 {% endhint %}
 
+### Troubleshoot
+
+To delete all the Docker Containers
+
+```
+docker builder prune --all
+```
+
+To run by cleaning Docker Cache
+
+```
+docker-compose build --no-cache
+```
+
 ### Unit Tests
 
 To run **guardian-service** unit tests, following commands needs to be executed:
 
 ```
 cd guardian-service 
-npm run test
-```
-
-To run **vc-modules** unit tests, following commands needs to be executed:
-
-```
-cd vc-modules
 npm run test
 ```
 

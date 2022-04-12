@@ -16,6 +16,7 @@ function getTokenInfo(info: any, token: any) {
         tokenSymbol: token.tokenSymbol,
         tokenType: token.tokenType,
         decimals: token.decimals,
+        policies: token.policies,
         associated: false,
         balance: null,
         hBarBalance: null,
@@ -306,8 +307,8 @@ export const tokenAPI = async function (
 
             const client = new HederaSDKHelper(userID, userKey);
             const info = await client.accountInfo(user.hederaAccountId);
+            const tokens: any = await tokenRepository.find();
 
-            const tokens = await tokenRepository.find();
             const result: any[] = [];
             for (let i = 0; i < tokens.length; i++) {
                 result.push(getTokenInfo(info, tokens[i]));
@@ -345,8 +346,7 @@ export const tokenAPI = async function (
                 return;
             }
         }
-        const tokens: IToken[] = await tokenRepository.find();
-        res.send(new MessageResponse(tokens));
+        res.send(new MessageResponse(await tokenRepository.find()));
     })
 
     /**

@@ -1,7 +1,5 @@
 # Policy Workflow Step 11
 
-
-
 After the sensor gird information is captured, we need to do something with it. Therefore, we add an action step from the “sensors\_page” policy action step by clicking on the Action button in the top navigation bar.
 
 As before, we set the tag, the permissions, and stop advancing the process until the download is complete via the “stop propagation” flag, and since this will be a download action, the action type is selected to be “download”.
@@ -22,8 +20,8 @@ To do that, we click on the “sensors\_grid” button, and then click on “Bin
           // Sensor page. Contains a grid and a "create new sensor" button.
           "children": [
             {
-              //"interfaceDocumentsSource" - block type which outputs information from the DB as grid.
-              "blockType": "interfaceDocumentsSource",
+              //"InterfaceDocumentsSourceBlock" - block type which outputs information from the DB as grid.
+              "blockType": "InterfaceDocumentsSourceBlock",
               "tag": "sensors_grid",
               "defaultActive": true,
               "permissions": [
@@ -32,7 +30,7 @@ To do that, we click on the “sensors\_grid” button, and then click on “Bin
               //"dependencies" - automatic update. The block is automatically re-rendered if any of the linked components gets updated.
               "dependencies": [
                 // Tag of the blocks as a link.
-                "SendVCtoGuardian"
+                "sendToGuardianBlock"
               ],
               // When true, this filter out the documents not created by the current user when rendering.
               "onlyOwnDocuments": true,
@@ -107,8 +105,8 @@ To do that, we click on the “sensors\_grid” button, and then click on “Bin
             },
             // Block to download the config file.
             {
-              //"interfaceAction" -  block to create custom actions.
-              "blockType": "interfaceAction",
+              //"InterfaceActionBlock" -  block to create custom actions.
+              "blockType": "InterfaceActionBlock",
               // The block in embedded into the grid, not rendered independently
               "defaultActive": false,
               "tag": "download_config_btn",

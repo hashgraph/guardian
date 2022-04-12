@@ -1,4 +1,4 @@
-# Step 3
+# Policy Workflow Step 3
 
 Now we want to add another step in the Policy Action. To do this we go back to the Policy Action we are defining by clicking on the “init\_installer\_steps” Policy Action icon on the left.
 
@@ -21,9 +21,9 @@ Also, note, that this step does not create a new document, so the “Force New D
 ```
     // Next step is to save it in the DB.
     {
-      //"sendToGuardian" - a type of the block which can save a new or updated document.
+      //"sendToGuardianBlock" - a type of the block which can save a new or updated document.
       //This block does not contain defaultActive and does not render, only relevant on the server side.
-      "blockType": "sendToGuardian",
+      "blockType": "sendToGuardianBlock",
       "tag": "save_new_approve_document",
       //"dataType" - where to save the document, possible values:
       //  "approve" - approve DB table.

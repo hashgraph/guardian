@@ -24,8 +24,8 @@ Next, we select the “Type” drop-down in the UI box and select “PAGE” ind
  "children": [
     //First step after the selection of the INSTALLER roles is to fill out the VC form.
     {
-      //"requestVcDocument" - a type of the block which creates a form from the schema, and sends the document to the server.
-      "blockType": "requestVcDocument",
+      //"requestVCDocumentBlock" - a type of the block which creates a form from the schema, and sends the document to the server.
+      "blockType": "requestVCDocumentBlock",
       "tag": "add_new_installer_request",
       "defaultActive": true,
       "permissions": [

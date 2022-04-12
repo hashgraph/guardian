@@ -24,7 +24,7 @@ export class PolicyImportExportHelper {
      * @returns Zip file
      */
     static async generateZipFile(policy: Policy): Promise<JSZip> {
-        const policyObject = {...policy};
+        const policyObject = { ...policy };
         delete policyObject.id;
         delete policyObject.messageId;
         delete policyObject.registeredUsers;
@@ -32,9 +32,9 @@ export class PolicyImportExportHelper {
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
         const schemesIds = findAllEntities(policyObject.config, SchemaFields);
 
-        const tokens = await getMongoRepository(Token).find({where: {tokenId: {$in: tokenIds}}});
+        const tokens = await getMongoRepository(Token).find({ where: { tokenId: { $in: tokenIds } } });
         const rootSchemes = await getMongoRepository(Schema).find({
-            where: {iri: {$in: schemesIds}}
+            where: { iri: { $in: schemesIds } }
         });
         const defs: any[] = rootSchemes.map(s => s.document.$defs);
         const map: any = {};
@@ -53,7 +53,7 @@ export class PolicyImportExportHelper {
         }
         const allSchemesIds = Object.keys(map);
         const schemes = await getMongoRepository(Schema).find({
-            where: {iri: {$in: allSchemesIds}}
+            where: { iri: { $in: allSchemesIds } }
         });
 
         const zip = new JSZip();
@@ -63,7 +63,7 @@ export class PolicyImportExportHelper {
         }
         zip.folder('schemes')
         for (let schema of schemes) {
-            const item = {...schema};
+            const item = { ...schema };
             delete item.id;
             delete item.status;
             delete item.readonly;
@@ -97,7 +97,7 @@ export class PolicyImportExportHelper {
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemes = schemesStringArray.map(item => JSON.parse(item));
 
-        return {policy, tokens, schemes};
+        return { policy, tokens, schemes };
     }
 
     /**
@@ -108,8 +108,11 @@ export class PolicyImportExportHelper {
      * @returns Policies by owner
      */
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
-        const {policy, tokens, schemes} = policyToImport;
-
+        const { policy, tokens, schemes } = policyToImport;
+        const users = new Users();
+        const root = await users.getHederaAccount(policyOwner);
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        
         policy.policyTag = 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;
@@ -123,19 +126,58 @@ export class PolicyImportExportHelper {
         delete policy.previousVersion;
         delete policy.registeredUsers;
 
-        for (let token of tokens) {
-            delete token.id;
-            delete token.selected;
-        }
+        // Import Tokens
 
-        const existingTokens = await getMongoRepository(Token).find();
-        const existingTokensMap = {};
-        for (let i = 0; i < existingTokens.length; i++) {
-            existingTokensMap[existingTokens[i].tokenId] = true;
-        }
+        if (tokens) {
+            const tokenRepository = await getMongoRepository(Token);
+            for (const token of tokens) {
+                const treasury = await client.newAccount(2);
+                const treasuryId = treasury.id;
+                const treasuryKey = treasury.key;
+                const tokenName = token.tokenName;
+                const tokenSymbol = token.tokenSymbol;
+                const tokenType = token.tokenType;
+                const adminKey = token.adminKey ? treasuryKey : null;
+                const kycKey = token.kycKey ? treasuryKey : null;
+                const freezeKey = token.freezeKey ? treasuryKey : null;
+                const wipeKey = token.wipeKey ? treasuryKey : null;
+                const supplyKey = token.supplyKey ? treasuryKey : null;
+                const nft = tokenType == 'non-fungible';
+                const _decimals = nft ? 0 : token.decimals;
+                const _initialSupply = nft ? 0 : token.initialSupply;
+                const tokenId = await client.newToken(
+                    tokenName,
+                    tokenSymbol,
+                    nft,
+                    _decimals,
+                    _initialSupply,
+                    '',
+                    treasury,
+                    adminKey,
+                    kycKey,
+                    freezeKey,
+                    wipeKey,
+                    supplyKey,
+                );
+                const tokenObject = tokenRepository.create({
+                    tokenId,
+                    tokenName,
+                    tokenSymbol,
+                    tokenType,
+                    decimals: _decimals,
+                    initialSupply: _initialSupply,
+                    adminId: treasuryId ? treasuryId.toString() : null,
+                    adminKey: adminKey ? adminKey.toString() : null,
+                    kycKey: kycKey ? kycKey.toString() : null,
+                    freezeKey: freezeKey ? freezeKey.toString() : null,
+                    wipeKey: wipeKey ? wipeKey.toString() : null,
+                    supplyKey: supplyKey ? supplyKey.toString() : null,
+                });
+                await tokenRepository.save(tokenObject);
 
-        const tokenObject = getMongoRepository(Token).create(tokens.filter((token: any) => !existingTokensMap[token.tokenId]));
-        await getMongoRepository(Token).save(tokenObject);
+                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);
+            }
+        }
 
         const uuidMap: Map<string, string> = new Map();
         for (let i = 0; i < schemes.length; i++) {
@@ -189,13 +231,10 @@ export class PolicyImportExportHelper {
 
         regenerateIds(policy.config);
 
-        if (await getMongoRepository(Policy).findOne({name: policy.name})) {
+        if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
 
-        const users = new Users();
-        const root = await users.getHederaAccount(policyOwner);
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
         const description = policy.topicDescription || TopicType.PolicyTopic;
         const topicId = await client.newTopic(root.hederaAccountKey, root.hederaAccountKey, description);
         const topic = {

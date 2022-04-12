@@ -1,7 +1,5 @@
 # Policy Workflow Step 7
 
-
-
 Next, we want to add another step to our policy action. To do this we again go back to the Policy Action itself by clicking on the “init\_installer\_steps” Policy Action icon on the left.
 
 Again we need a Send step since we now have to submit the CSD01, the official IREC Participant Application form, as an official verifiable credential.
@@ -16,7 +14,7 @@ Note that compared to the previous “Send” step, the Data Type is now a VC si
     // Finally save the VC document in the vc-documents DB table.
     {
       "tag": "Submission_of_CSD01_Documentation",
-      "blockType": "sendToGuardian",
+      "blockType": "sendToGuardianBlock",
       "dataType": "vc-documents",
       "entityType": "Installer",
       "uiMetaData": {}

@@ -1,7 +1,5 @@
 # Policy Workflow Step 19
 
-
-
 After we added the “root\_authority\_header”, we add another container block by clicking on the Container button in the top navigation bar.
 
 We then fill in the fields as we did for the installer, except now the permission is for the RootAuthority.
@@ -18,7 +16,7 @@ We then fill in the fields as we did for the installer, except now the permissio
       "permissions": [
         "OWNER"
       ],
-      "blockType": "interfaceContainerBlock",
+      "blockType": "InterfaceContainerBlock",
       "uiMetaData": {
         "type": "blank",
         "title": "Approve Documents"
