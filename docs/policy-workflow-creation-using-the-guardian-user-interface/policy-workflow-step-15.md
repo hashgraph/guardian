@@ -14,7 +14,7 @@ We then add a tag, type - of course, a verifiable credential, and entity – our
                 // Also save it in the DB.
                 {
                   "tag": "CSD02_device_registration",
-                  "blockType": "sendToGuardian",
+                  "blockType": "sendToGuardianBlock",
                   "dataType": "vc-documents",
                   // Document in the DB is labeled as "Inverter" to enable later filtering in the grid.
                   "entityType": "Inverter",
@@ -38,7 +38,7 @@ Lastly, just create a new Container Block to group all components on the page wi
 ```
         // Create interfaceContainerBlock to group all components on the page with MRV data.
         {
-          "blockType": "interfaceContainerBlock",
+          "blockType": "InterfaceContainerBlock",
           "tag": "mrv_page",
           "defaultActive": true,
           "permissions": [

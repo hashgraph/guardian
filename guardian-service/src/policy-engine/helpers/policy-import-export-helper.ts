@@ -147,19 +147,57 @@ export class PolicyImportExportHelper {
             .setTopicObject(topicRow)
             .sendMessage(message);
 
-
         // Import Tokens
-        for (let token of tokens) {
-            delete token.id;
-            delete token.selected;
+        if (tokens) {
+            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+            const tokenRepository = getMongoRepository(Token);
+            for (const token of tokens) {
+                const treasury = await client.newAccount(2);
+                const treasuryId = treasury.id;
+                const treasuryKey = treasury.key;
+                const tokenName = token.tokenName;
+                const tokenSymbol = token.tokenSymbol;
+                const tokenType = token.tokenType;
+                const nft = tokenType == 'non-fungible';
+                const decimals = nft ? 0 : token.decimals;
+                const initialSupply = nft ? 0 : token.initialSupply;
+                const adminKey = token.adminKey ? treasuryKey : null;
+                const kycKey = token.kycKey ? treasuryKey : null;
+                const freezeKey = token.freezeKey ? treasuryKey : null;
+                const wipeKey = token.wipeKey ? treasuryKey : null;
+                const supplyKey = token.supplyKey ? treasuryKey : null;
+                const tokenId = await client.newToken(
+                    tokenName,
+                    tokenSymbol,
+                    nft,
+                    decimals,
+                    initialSupply,
+                    '',
+                    treasury,
+                    adminKey,
+                    kycKey,
+                    freezeKey,
+                    wipeKey,
+                    supplyKey,
+                );
+                const tokenObject = tokenRepository.create({
+                    tokenId,
+                    tokenName,
+                    tokenSymbol,
+                    tokenType,
+                    decimals: decimals,
+                    initialSupply: initialSupply,
+                    adminId: treasuryId ? treasuryId.toString() : null,
+                    adminKey: adminKey ? adminKey.toString() : null,
+                    kycKey: kycKey ? kycKey.toString() : null,
+                    freezeKey: freezeKey ? freezeKey.toString() : null,
+                    wipeKey: wipeKey ? wipeKey.toString() : null,
+                    supplyKey: supplyKey ? supplyKey.toString() : null,
+                });
+                await tokenRepository.save(tokenObject);
+                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);
+            }
         }
-        const existingTokens = await getMongoRepository(Token).find();
-        const existingTokensMap = {};
-        for (let i = 0; i < existingTokens.length; i++) {
-            existingTokensMap[existingTokens[i].tokenId] = true;
-        }
-        const tokenObject = getMongoRepository(Token).create(tokens.filter((token: any) => !existingTokensMap[token.tokenId]));
-        await getMongoRepository(Token).save(tokenObject);
 
         // Import Schemes
         const schemesMap = await importSchemaByFiles(policyOwner, schemes, topicRow.topicId);

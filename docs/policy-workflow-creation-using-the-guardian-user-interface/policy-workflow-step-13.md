@@ -1,7 +1,5 @@
 # Policy Workflow Step 13
 
-
-
 Since this is a cyclic step, we need to add the requirements as sub-steps to be completed in each cycle, and an exit condition.
 
 We add the first sub-step by clicking on the “Request” button in the top navigation bar.
@@ -23,7 +21,7 @@ Next, we select the UI as a “Dialog” as we have done before from the drop-do
                   "permissions": [
                     "INSTALLER"
                   ],
-                  "blockType": "requestVcDocument",
+                  "blockType": "requestVCDocumentBlock",
                   "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802",
                   // Generate new DID for the new sensor.
                   "idType": "DID",
