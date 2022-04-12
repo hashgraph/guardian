@@ -16,7 +16,7 @@ For the approval UI, we then specify what Type it is from the drop-down. In our 
 
 We then finish by giving the UI a Title and Description.
 
-![](https://i.imgur.com/OfodRPF.png)
+![](../.gitbook/assets/PW\_9.png)
 
 **Programmatically this workflow step looks like this:**
 

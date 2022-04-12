@@ -6,7 +6,7 @@ We configure the “mrv\_grid” UI page in the same way as we did the “sensor
 
 Note that in contrast to the download functionality for Field 2 for the “sensors\_grid” we are now using the link functionality to view the document.
 
-![](https://i.imgur.com/Revddk6.png)
+![](../.gitbook/assets/PW\_21.png)
 
 Below are screenshots of the field inputs
 
@@ -29,7 +29,7 @@ Below are screenshots of the field inputs
               ],
               "blockType": "InterfaceDocumentsSourceBlock",
               "dependencies": [
-                "sendToGuardianBlock"
+                "SendVCtoGuardian"
               ],
               "onlyOwnDocuments": true,
               "dataType": "vc-documents",
@@ -70,4 +70,4 @@ Below are screenshots of the field inputs
     },
 ```
 
-This completes this sequence of sub-steps for the MRV data. We have completed the installation set-up, and we can first hide the “Installer\_header” policy action steps, and then return to the top level, the “int\_installer\_steps”
+This completes this sequence of sub-steps for the MRV data. We have completed the installation set-up, and we can first hide the “Installer\_header” policy action steps, and then return to the top level, the “init\_installer\_steps”
