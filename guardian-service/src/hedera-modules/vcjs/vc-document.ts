@@ -105,6 +105,10 @@ export class VcDocument {
         this.proof = proof;
     }
 
+    public getSubjectType(): string {
+        return this.getCredentialSubject(0)?.getType();
+    }
+
     public get length(): number {
         return this.subject.length;
     }

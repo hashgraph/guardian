@@ -13,6 +13,7 @@ import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
+import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 
 /**
  * Retirement block
@@ -25,10 +26,8 @@ export class RetirementBlock {
     @Inject()
     private users: Users;
 
-    private tokenId: any;
-    private rule: any;
-    private async createWipeVC(root, token, data: number): Promise<VcDocument> {
-        const VCHelper = new VcHelper();
+    private async createWipeVC(root: any, token: any, data: number): Promise<VcDocument> {
+        const vcHelper = new VcHelper();
         const policySchema = await getMongoRepository(SchemaCollection).findOne({
             entity: SchemaEntity.WIPE_TOKEN
         });
@@ -38,7 +37,7 @@ export class RetirementBlock {
             tokenId: token.tokenId,
             amount: data.toString()
         }
-        const wipeVC = await VCHelper.createVC(
+        const wipeVC = await vcHelper.createVC(
             root.did,
             root.hederaAccountKey,
             vcSubject
@@ -46,10 +45,9 @@ export class RetirementBlock {
         return wipeVC;
     }
 
-    private async createVP(root, uuid: string, vcs: VcDocument[]) {
-        const VCHelper = new VcHelper();
-
-        const vp = await VCHelper.createVP(
+    private async createVP(root: any, uuid: string, vcs: VcDocument[]) {
+        const vcHelper = new VcHelper();
+        const vp = await vcHelper.createVP(
             root.did,
             root.hederaAccountKey,
             vcs,
@@ -58,17 +56,30 @@ export class RetirementBlock {
         return vp;
     }
 
-    private async retirementProcessing(token, document, rule, root, user, ref): Promise<any> {
+    private async retirementProcessing(
+        token: TokenCollection,
+        document: VcDocument[],
+        rule: string,
+        root: any,
+        user: IAuthUser,
+        ref: AnyBlockType
+    ): Promise<any> {
         const uuid = HederaUtils.randomUUID();
         const amount = PolicyUtils.aggregate(rule, document);
-        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
-        await PolicyUtils.wipe(token, tokenValue, root, user, uuid);
-        const wipeVC = await this.createWipeVC(root, token, tokenValue);
+        const vcDate = await PolicyUtils.wipe(token, amount, root, user, uuid);
+        const wipeVC = await this.createWipeVC(root, token, vcDate);
         const vcs = [].concat(document, wipeVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-
-        await PolicyUtils.saveVC(wipeVC, user.did, DataTypes.RETIREMENT, ref);
+        await PolicyUtils.updateVCRecord({
+            hash: wipeVC.toCredentialHash(),
+            owner: user.did,
+            document: wipeVC.toJsonTree(),
+            type: DataTypes.RETIREMENT,
+            policyId: ref.policyId,
+            tag: ref.tag,
+            schema: `#${wipeVC.getSubjectType()}`
+        } as any);
         await PolicyUtils.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
 
         const topic = await PolicyUtils.getTopic('root', root, user, ref);
@@ -88,24 +99,13 @@ export class RetirementBlock {
     @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const {
-            tokenId,
-            rule
-        } = ref.options;
+        const { tokenId, rule } = ref.options;
         const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        const root = await this.users.getHederaAccount(ref.policyOwner);
-
-        let docs = [];
-        if (Array.isArray(state.data)) {
-            docs = state.data as any[];
-        } else {
-            docs = [state.data];
-        }
-
+        const docs = PolicyUtils.getArray<any>(state.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
@@ -126,11 +126,11 @@ export class RetirementBlock {
         }
 
         try {
+            const root = await this.users.getHederaAccount(ref.policyOwner);
             const doc = await this.retirementProcessing(token, vcs, rule, root, curUser, ref);
-            ref.runNext(null, { data: doc }).then(
-                function () { },
-                function (error: any) { console.error(error); }
-            );
+            await ref.runNext(curUser, state);
+            PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, curUser);
+            PolicyComponentsUtils.CallParentContainerCallback(ref, curUser);
         } catch (e) {
             throw e;
         }

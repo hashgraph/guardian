@@ -15,8 +15,6 @@ import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 
-
-
 /**
  * Mint block
  */
@@ -25,12 +23,8 @@ import { AnyBlockType } from '@policy-engine/policy-engine.interface';
     commonBlock: true
 })
 export class MintBlock {
-
     @Inject()
     private users: Users;
-
-    private tokenId: any;
-    private rule: any;
 
     private async createMintVC(root: any, token: any, data: any): Promise<VcDocument> {
         const vcHelper = new VcHelper();
@@ -93,9 +87,16 @@ export class MintBlock {
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-        await PolicyUtils.saveVC(mintVC, user.did, DataTypes.MINT, ref);
-        await PolicyUtils.saveVP(vp, user.did, DataTypes.MINT, ref);
-
+        await PolicyUtils.updateVCRecord({
+            hash: mintVC.toCredentialHash(),
+            owner: user.did,
+            document: mintVC.toJsonTree(),
+            type: DataTypes.MINT,
+            policyId: ref.policyId,
+            tag: ref.tag,
+            schema: `#${mintVC.getSubjectType()}`
+        } as any);
+        
         const topic = await PolicyUtils.getTopic('root', root, user, ref);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
 
@@ -103,6 +104,7 @@ export class MintBlock {
         vcMessage.setDocument(mintVC);
         await messageServer.setTopicObject(topic).sendMessage(vcMessage);
 
+        await PolicyUtils.saveVP(vp, user.did, DataTypes.MINT, ref);
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
         await messageServer.setTopicObject(topic).sendMessage(vpMessage);
@@ -141,10 +143,9 @@ export class MintBlock {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
-            ref.runNext(null, state).then(
-                function () { },
-                function (error: any) { console.error(error); }
-            );
+            await ref.runNext(curUser, state);
+            PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, curUser);
+            PolicyComponentsUtils.CallParentContainerCallback(ref, curUser);
         } catch (e) {
             throw e;
         }

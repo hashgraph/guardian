@@ -56,7 +56,7 @@ export class SendToGuardianBlock {
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc = {
+                const doc: any = {
                     hash: vc.toCredentialHash(),
                     owner: document.owner,
                     assign: document.assign,
@@ -69,21 +69,7 @@ export class SendToGuardianBlock {
                     tag: ref.tag,
                     document: vc.toJsonTree()
                 };
-                let item = await getMongoRepository(VcDocument).findOne({ hash: doc.hash });
-                if (item) {
-                    item.owner = doc.owner;
-                    item.assign = doc.assign;
-                    item.option = doc.option;
-                    item.schema = doc.schema;
-                    item.hederaStatus = doc.hederaStatus;
-                    item.signature = doc.signature;
-                    item.type = doc.type;
-                    item.tag = doc.tag;
-                    item.document = doc.document;
-                } else {
-                    item = getMongoRepository(VcDocument).create(doc);
-                }
-                result = await getMongoRepository(VcDocument).save(item);
+                result = await PolicyUtils.updateVCRecord(doc);
                 break;
             }
             case 'did-documents': {
@@ -117,6 +103,7 @@ export class SendToGuardianBlock {
             }
             case 'hedera': {
                 result = await this.sendToHedera(document, ref);
+
                 break;
             }
             default:

@@ -6,7 +6,7 @@ import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { getMongoRepository } from "typeorm";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { IAuthUser } from "@auth/auth.interface";
-import { TopicType } from "interfaces";
+import { DocumentSignature, DocumentStatus, TopicType } from "interfaces";
 import { Topic } from "@entity/topic";
 import { TopicHelper } from "@helpers/topicHelper";
 
@@ -29,7 +29,7 @@ export class PolicyUtils {
     }
 
     public static getVCScope(item: VcDocument) {
-        return item.getCredentialSubject().toJsonTree();
+        return item.getCredentialSubject(0).toJsonTree();
     }
 
     public static aggregate(rule: string, vcs: VcDocument[]): number {
@@ -68,23 +68,26 @@ export class PolicyUtils {
         }
     }
 
-    public static async saveVC(vc: VcDocument, owner: string, type: DataTypes, ref: AnyBlockType): Promise<boolean> {
-        try {
-            const doc = getMongoRepository(VcDocumentCollection).create({
-                hash: vc.toCredentialHash(),
-                owner: owner,
-                document: vc.toJsonTree(),
-                type: type as any,
-                policyId: ref.policyId,
-                tag: ref.tag,
-                schema: `#${vc.getCredentialSubject()[0].getType()}`
-            });
-            await getMongoRepository(VcDocumentCollection).save(doc);
-            return true;
-        } catch (error) {
-            return false;
+    public static async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
+        let item = await getMongoRepository(VcDocumentCollection).findOne({ hash: row.hash });
+        if (item) {
+            item.owner = row.owner;
+            item.assign = row.assign;
+            item.option = row.option;
+            item.schema = row.schema;
+            item.hederaStatus = row.hederaStatus;
+            item.signature = row.signature;
+            item.type = row.type;
+            item.tag = row.tag;
+            item.document = row.document;
+            await getMongoRepository(VcDocumentCollection).update(item.id, item);
+            return item;
+        } else {
+            item = getMongoRepository(VcDocumentCollection).create(row);
+            return await getMongoRepository(VcDocumentCollection).save(item);
         }
     }
+
 
     public static async saveVP(vp: VpDocument, owner: string, type: DataTypes, ref: AnyBlockType): Promise<boolean> {
         try {
@@ -165,16 +168,17 @@ export class PolicyUtils {
         const wipeKey = token.wipeKey;
         const adminId = token.adminId;
         const adminKey = token.adminKey;
+        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
         if (token.tokenType == 'non-fungible') {
             throw 'unsupported operation';
         } else {
-            await client.wipe(tokenId, user.hederaAccountId, wipeKey, amount, uuid);
-
+            await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
         }
+        return tokenValue;
     }
 
-    public static async getTopic(topicName:string, root: any, user: any, ref: AnyBlockType): Promise<Topic> {
+    public static async getTopic(topicName: string, root: any, user: any, ref: AnyBlockType): Promise<Topic> {
         const rootTopic = await getMongoRepository(Topic).findOne({
             policyId: ref.policyId,
             type: TopicType.InstancePolicyTopic
