@@ -155,7 +155,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         // Update document status in the DB.
         {
           "tag": "update_approve_document_status",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "dataType": "approve",
           "entityType": "Installer",
           "uiMetaData": {}
@@ -214,11 +214,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                   "permissions": [
                     "INSTALLER"
                   ],
-                  //"dependencies" - automatic update. The block is automatically re-rendered if any of the linked components gets updated.
-                  "dependencies": [
-                    // Tag of the blocks as a link.
-                    "SendToGuardianBlock"
-                  ],
+                  
                   // When true, this filter out the documents not created by the current user when rendering.
                   "onlyOwnDocuments": true,
                   //"dataType" - Specificy the table to request the data from. Possible values:
