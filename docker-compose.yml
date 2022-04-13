@@ -82,6 +82,13 @@ services:
     expose:
       - 3005
 
+  topic-viewer:
+    build:
+      context: .
+      dockerfile: ./topic-viewer/Dockerfile
+    expose:
+      - 3006
+
   web-proxy:
     build:
       context: .

@@ -2,19 +2,12 @@ FROM node:16
 ENV PLATFORM="docker"
 #ENV NODE_ENV="production"
 
-WORKDIR /usr/interfaces
-COPY ./interfaces/package*.json ./
-COPY ./interfaces/tsconfig.json ./
+WORKDIR /usr/topic-viewer
+COPY ./topic-viewer/package*.json ./
+COPY ./topic-viewer/tsconfig.json ./
 RUN npm install
-ADD ./interfaces/src ./src/.
-RUN npm run build
-
-WORKDIR /usr/mrv-sender
-COPY ./mrv-sender/package*.json ./
-COPY ./mrv-sender/tsconfig.json ./
-RUN npm install
-ADD ./mrv-sender/src ./src/.
-ADD ./mrv-sender/public ./public/.
+ADD ./topic-viewer/src ./src/.
+ADD ./topic-viewer/public ./public/.
 RUN npm run build
 
 CMD npm start
