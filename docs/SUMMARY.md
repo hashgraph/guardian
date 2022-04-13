@@ -22,6 +22,7 @@
 * [Demo Usage Guide](demo-guide/demo-usage-guide.md)
 * [Demo Using APIs](demo-guide/demo-using-apis.md)
 * [Verra Redd+ Demo Guide](demo-guide/verra-redd+-demo-guide.md)
+* [iREC Demo Guide](demo-guide/irec-demo-guide.md)
 
 ## Versioning and Deprecation Policy
 
@@ -49,7 +50,7 @@
 * [reassigningBlock](available-policy-workflow-blocks/reassigningblock.md)
 * [InformationBlock](available-policy-workflow-blocks/information-workflow-block.md)
 * [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/interfacedocumentssourceblock.md)
-* [DocumentsSourceAddOnBlock](available-policy-workflow-blocks/documentssourceaddonblock.md)
+* [DocumentsSourceAddOn](available-policy-workflow-blocks/documentssourceaddonblock.md)
 * [filtersAddOnBlock](available-policy-workflow-blocks/filtersaddonblock.md)
 * [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
 * [externalDataBlock](available-policy-workflow-blocks/external-data-workflow-block.md)
