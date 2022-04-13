@@ -4,7 +4,7 @@ We then click back to the “sensors\_page” button on the left side to add a �
 
 We name the tag, add permissions – again installer since this action will still be performed by the installer, select the UI type as “Blank” and set the cyclic flag since we want to add more than one sensor to the grid.
 
-![](https://i.imgur.com/DswrHB4.png)
+![](../.gitbook/assets/PW\_17.3.png)
 
 **Programmatically this workflow step looks like this:**
 
@@ -19,4 +19,6 @@ We name the tag, add permissions – again installer since this action will stil
               "uiMetaData": {
                 "type": "blank"
               },
+              "cyclic" : true,
+              }
 ```

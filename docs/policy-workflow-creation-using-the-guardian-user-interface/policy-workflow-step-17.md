@@ -4,7 +4,7 @@ Next, we need to add an information block to our policy to specify what happens 
 
 We then name the block through the tag, set permissions, activate by default such that rejection notifications are caught, stop the process if received, and then name the notification and define the message.
 
-![](https://i.imgur.com/NO03gnI.png)
+![](../.gitbook/assets/PW\_22.png)
 
 **Programmatically this workflow step looks like this:**
 

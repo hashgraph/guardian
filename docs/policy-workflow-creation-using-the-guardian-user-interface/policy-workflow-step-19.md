@@ -4,7 +4,7 @@ After we added the “root\_authority\_header”, we add another container block
 
 We then fill in the fields as we did for the installer, except now the permission is for the RootAuthority.
 
-![](https://i.imgur.com/hb0dIha.png)
+![](../.gitbook/assets/PW\_24.png)
 
 **Programmatically this workflow step looks like this:**
 

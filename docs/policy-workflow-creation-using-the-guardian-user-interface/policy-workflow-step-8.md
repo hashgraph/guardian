@@ -6,7 +6,7 @@ At this point, we need to create a sub Policy Action process as a dependent work
 
 We now configure this new container block through the “Tag”, Permissions, setting the Default Active (since this step must be initiated), and selecting the UI type (TABS in our case since we will have to fill in different types of information in different sections).
 
-![](https://i.imgur.com/cT6JAa1.png)
+![](../.gitbook/assets/PW\_13.png)
 
 **Programmatically this workflow step looks like this:**
 

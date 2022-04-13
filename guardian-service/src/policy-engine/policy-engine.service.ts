@@ -288,8 +288,8 @@ export class PolicyEngineService {
             try {
                 const { filters, pageIndex, pageSize, userDid } = msg.payload;
                 const filter: any = { where: filters }
-                const _pageSize = parseInt(pageSize);
-                const _pageIndex = parseInt(pageIndex);
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
                 if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
                     filter.order = { createDate: "DESC" };
                     filter.take = _pageSize;

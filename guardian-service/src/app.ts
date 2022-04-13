@@ -1,5 +1,5 @@
 import FastMQ from 'fastmq'
-import { createConnection, getMongoRepository } from 'typeorm';
+import { createConnection } from 'typeorm';
 import { approveAPI } from '@api/approve.service';
 import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -56,7 +56,7 @@ Promise.all([
 
     const policyGenerator = new BlockTreeGenerator();
     const policyService = new PolicyEngineService(channel);
-    policyGenerator.init();
+    await policyGenerator.init();
     policyService.registerListeners();
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);

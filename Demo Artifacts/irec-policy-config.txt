@@ -32,7 +32,7 @@
         {
           "id": "42a91a0c-26d5-4217-82b9-3904a7e43d48",
           "tag": "add_new_installer_request",
-          "blockType": "requestVcDocument",
+          "blockType": "requestVcDocumentBlock",
           "defaultActive": true,
           "children": [],
           "permissions": [
@@ -50,7 +50,7 @@
         {
           "id": "afc3c09b-c149-4be7-9fbb-77e537415d5f",
           "tag": "save_new_approve_document",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "defaultActive": false,
           "children": [],
           "permissions": [
@@ -79,7 +79,7 @@
         {
           "id": "2636988f-cbd2-4c53-bb65-960a74b5191e",
           "tag": "update_approve_document_status",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "defaultActive": false,
           "children": [],
           "permissions": [
@@ -92,7 +92,7 @@
         {
           "id": "9937df86-0035-4eff-a824-aaecb06dee5b",
           "tag": "send_installer_vc_to_hedera",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "defaultActive": false,
           "children": [],
           "permissions": [
@@ -105,7 +105,7 @@
         {
           "id": "4094b77f-4b6d-4aeb-b0ad-ca5c342a3e94",
           "tag": "Submission_of_CSD01_Documentation",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "defaultActive": false,
           "children": [],
           "permissions": [
@@ -130,13 +130,13 @@
                 {
                   "id": "f1fc20b1-14f4-451a-b351-7cf1055b8c6e",
                   "tag": "sensors_grid",
-                  "blockType": "interfaceDocumentsSource",
+                  "blockType": "interfaceDocumentsSourceBlock",
                   "defaultActive": true,
                   "children": [
                     {
                       "id": "af64afb4-f0c7-4e8f-912e-5554ae606a2c",
                       "tag": "sensors_grid_source",
-                      "blockType": "documentsSourceAddon",
+                      "blockType": "documentsSourceAddonBlock",
                       "defaultActive": true,
                       "children": [],
                       "permissions": [
@@ -203,7 +203,7 @@
                 {
                   "id": "54a39d18-fc75-4988-a342-98e6aa1680ff",
                   "tag": "download_config_btn",
-                  "blockType": "interfaceAction",
+                  "blockType": "interfaceActionBlock",
                   "defaultActive": false,
                   "children": [],
                   "permissions": [
@@ -227,7 +227,7 @@
                     {
                       "id": "0f424cc7-3e2c-44c2-9eb0-343fce70e40b",
                       "tag": "add_sensor_bnt",
-                      "blockType": "requestVcDocument",
+                      "blockType": "requestVcDocumentBlock",
                       "defaultActive": true,
                       "children": [],
                       "permissions": [
@@ -246,7 +246,7 @@
                     {
                       "id": "6f6d36ce-7846-478f-b12e-d01ca7002ce6",
                       "tag": "send_sensor_vc_to_hedera",
-                      "blockType": "sendToGuardian",
+                      "blockType": "sendToGuardianBlock",
                       "defaultActive": true,
                       "children": [],
                       "permissions": [
@@ -259,7 +259,7 @@
                     {
                       "id": "da927309-0cff-439a-afcc-a6bc9046b964",
                       "tag": "CSD02_device_registration",
-                      "blockType": "sendToGuardian",
+                      "blockType": "sendToGuardianBlock",
                       "defaultActive": true,
                       "children": [],
                       "permissions": [
@@ -296,13 +296,13 @@
                 {
                   "id": "74a90ccf-c1a7-4a66-aa2b-efb789d39f75",
                   "tag": "mrv_grid",
-                  "blockType": "interfaceDocumentsSource",
+                  "blockType": "interfaceDocumentsSourceBlock",
                   "defaultActive": true,
                   "children": [
                     {
                       "id": "066740ce-9072-4dcb-8473-c5ec72611a84",
                       "tag": "mrv_grid_source",
-                      "blockType": "documentsSourceAddon",
+                      "blockType": "documentsSourceAddonBlock",
                       "defaultActive": true,
                       "children": [],
                       "permissions": [
@@ -375,7 +375,7 @@
         {
           "id": "43b9fda3-94e8-43fe-bd99-7e58f1328291",
           "tag": "rejected_approve_document_status",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "defaultActive": false,
           "children": [],
           "permissions": [
@@ -424,13 +424,13 @@
             {
               "id": "e48a1947-7c46-4f10-9dd3-7d5225fbea21",
               "tag": "approve_documents_grid",
-              "blockType": "interfaceDocumentsSource",
+              "blockType": "interfaceDocumentsSourceBlock",
               "defaultActive": true,
               "children": [
                 {
                   "id": "46b47948-ae2f-44b9-b7ae-1f22a2d8262c",
                   "tag": "approve_documents_grid_source",
-                  "blockType": "documentsSourceAddon",
+                  "blockType": "documentsSourceAddonBlock",
                   "defaultActive": true,
                   "children": [],
                   "permissions": [
@@ -503,7 +503,7 @@
             {
               "id": "c2916df4-6987-4aac-81ba-34705388bcfa",
               "tag": "approve_documents_btn",
-              "blockType": "interfaceAction",
+              "blockType": "interfaceActionBlock",
               "defaultActive": false,
               "children": [],
               "permissions": [
@@ -564,7 +564,7 @@
         {
           "id": "148e1e66-47f0-4736-a932-7f5606d0b417",
           "tag": "CSD04_requesting_i_Rec_issuance",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "defaultActive": true,
           "children": [],
           "permissions": [],
@@ -575,7 +575,7 @@
         {
           "id": "802d9209-35b6-4851-864f-1c425e5fae81",
           "tag": "mint_token",
-          "blockType": "mintDocument",
+          "blockType": "mintDocumentBlock",
           "defaultActive": true,
           "children": [],
           "permissions": [],

@@ -1,12 +1,10 @@
 # Policy Workflow Step 23
 
-
-
 Then we add another workflow block below the “mint\_events” block by clicking on the “External Data” button in the top navigation bar which captures the MRV data from the sensors.
 
 We enter the Entity type as MRV and select the Schema from the drop-down as “MRV”
 
-![](https://i.imgur.com/OCHxrkU.png)
+![](../.gitbook/assets/PW\_28.png)
 
 **Programmatically this workflow step looks like this:**
 

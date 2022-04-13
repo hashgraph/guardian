@@ -1,0 +1,98 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Data Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.dataType" [disabled]="readonly">
+                <mat-option value="vc-documents">Collection (VC)</mat-option>
+                <mat-option value="did-documents">Collection (DID)</mat-option>
+                <mat-option value="approve">Collection (Approve)</mat-option>
+                <mat-option value="vp-documents">Collection (VP)</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Schema</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.schema" [disabled]="readonly">
+                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Only Own Documents</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.onlyOwnDocuments" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Only Assign Documents</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.onlyAssignDocuments" [readonly]="readonly">
+        </td>
+    </tr>
+
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'filtersGroup')" [attr.collapse]="propHidden.filtersGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Filters</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addField()">
+                <mat-icon>add</mat-icon>
+                <span>Add Field</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let field of block.filters; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">Field {{i}}</td>
+            <td class="propRowCell">
+                <span *ngIf="field.field&&field.type&&field.value">
+                    {{field.field}} {{field.type}} {{field.value}}
+                </span>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Type</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="field.type" [disabled]="readonly">
+                    <mat-option value="equal">Equal</mat-option>
+                    <mat-option value="not_equal">Not Equal</mat-option>
+                    <mat-option value="in">In</mat-option>
+                    <mat-option value="not_in">Not In</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Field</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.field" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Value</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="field.value" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+</table>

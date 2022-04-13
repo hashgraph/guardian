@@ -5,7 +5,7 @@ import {
 } from '@hashgraph/sdk';
 import { IPFS } from '@helpers/ipfs';
 import { Message } from './message';
-import { HederaSDKHelper } from './../hedera-sdk-helper';
+import { HederaSDKHelper } from '../hedera-sdk-helper';
 import { MessageType } from './message-type';
 import { VCMessage } from './vc-message';
 import { DIDMessage } from './did-message';
@@ -98,7 +98,7 @@ export class MessageServer {
             case MessageType.VPDocument:
                 message = VPMessage.fromMessageObject(json);
                 break;
-            //Default schemes
+            // Default schemes
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
                 break;
