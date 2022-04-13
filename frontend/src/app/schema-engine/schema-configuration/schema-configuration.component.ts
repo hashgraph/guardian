@@ -218,6 +218,8 @@ export class SchemaConfigurationComponent implements OnInit {
                         pattern: undefined,
                         isRef: true,
                     }
+
+                    setTimeout(() => this.schemaTypeMap[index].notCanBeRequired = !this.schemes[i].fields.some((field: any) => field.required))
                 }
             }
         }
@@ -801,6 +803,15 @@ export class SchemaConfigurationComponent implements OnInit {
             !item.controlArray.value && item.controlName.value && !this.schemaTypeMap[item.controlType.value].isRef
             && (this.schemaTypeMap[item.controlType.value].type === 'boolean' ? item.controlRequired.value : true)
         );
+      }
+
+      clearArrayAndRequiredControls(event:any, field: any): void {
+        if (this.schemaTypeMap[event.value]?.notCanBeRequired) {
+            field.controlRequired.patchValue(false);
+        }
+        if (event.value === '4') {
+            field.controlArray.patchValue(false);
+        }
       }
 
       ngOnDestroy() {
