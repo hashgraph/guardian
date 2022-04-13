@@ -9,21 +9,21 @@ import { ApiResponse } from '@api/api-response';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
-    const result = {
+    const result: any = {
         id: token.id,
         tokenId: token.tokenId,
         tokenName: token.tokenName,
         tokenSymbol: token.tokenSymbol,
         tokenType: token.tokenType,
         decimals: token.decimals,
-        policies: token.policies,
+        policies: null,
         associated: false,
         balance: null,
         hBarBalance: null,
         frozen: null,
         kyc: null
     }
-    if (info[tokenId]) {
+    if (info && info[tokenId]) {
         result.associated = true;
         result.balance = info[tokenId].balance;
         result.hBarBalance = info[tokenId].hBarBalance;
@@ -263,19 +263,21 @@ export const tokenAPI = async function (
             if (!user) {
                 throw 'User not found';
             }
-            if (!user.hederaAccountId) {
-                throw 'User is not linked to an Hedera Account';
-            }
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
                 throw 'Token not found';
             }
 
+            if (!user.hederaAccountId) {
+                res.send(new MessageResponse(getTokenInfo(null, token)));
+                return;
+            }
+
             const root = await users.getHederaAccount(owner);
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const info = await client.accountInfo(user.hederaAccountId);
-            const result = getTokenInfo(info, { tokenId });
+            const result = getTokenInfo(info, token);
 
             res.send(new MessageResponse(result));
         } catch (error) {

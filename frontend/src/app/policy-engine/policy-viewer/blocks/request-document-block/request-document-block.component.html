@@ -40,7 +40,7 @@
                 </div>
                 <div mat-dialog-actions>
                     <button mat-raised-button color="primary" type="submit"
-                        [disabled]="!data.dataForm.valid || loading">Ok</button>
+                        [disabled]="!data.dataForm.valid || loading || dialogLoading">Ok</button>
                     <button mat-button type="button" (click)="data.onCancel()">Cancel</button>
                 </div>
             </form>
