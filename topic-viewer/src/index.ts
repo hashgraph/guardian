@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 
 const PORT = process.env.PORT || 3006;
 (async () => {
