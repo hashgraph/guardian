@@ -65,8 +65,7 @@ export class SchemaHelper {
         const allOf = Object.keys(document.allOf);
         for (let i = 0; i < allOf.length; i++) {
             const condition = document.allOf[allOf[i]];
-            if (!condition.if)
-            {
+            if (!condition.if) {
                 continue;
             }
 
@@ -232,7 +231,7 @@ export class SchemaHelper {
                     'properties': props,
                     'required': req
                 }
-                document.properties = {...document.properties, ...props};
+                document.properties = { ...document.properties, ...props };
             }
             else {
                 delete condition.then;
@@ -248,7 +247,7 @@ export class SchemaHelper {
                     'properties': props,
                     'required': req
                 }
-                document.properties = {...document.properties, ...props};
+                document.properties = { ...document.properties, ...props };
             }
             else {
                 delete condition.else;
@@ -507,5 +506,20 @@ export class SchemaHelper {
         const index = previousVersion.lastIndexOf('.');
         const max = previousVersion.slice(0, index);
         return max + '.' + (map[max] + 1);
+    }
+
+    public static updateIRI(schema: ISchema): ISchema {
+        try {
+            if (schema.document) {
+                const document = schema.document;
+                schema.iri = document.$id || null;
+            } else {
+                schema.iri = null;
+            }
+            return schema;
+        } catch (error) {
+            schema.iri = null;
+            return schema;
+        }
     }
 }

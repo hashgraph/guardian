@@ -14,6 +14,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { Topic } from '@entity/topic';
 import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -157,12 +158,9 @@ export class RequestVcDocumentBlock {
             }
             if (idType == 'DID') {
                 const ref = PolicyComponentsUtils.GetBlockRef(this);
-                const topic = await getMongoRepository(Topic).findOne({
-                    owner: ref.policyOwner,
-                    type: TopicType.RootPolicyTopic
-                });
-                const didObject = DIDDocument.create(null, topic.topicId);
+                const topic = await PolicyUtils.getTopic('root', null, null, ref);
 
+                const didObject = DIDDocument.create(null, topic.topicId);
                 const did = didObject.getDid();
                 const key = didObject.getPrivateKeyString();
                 const document = didObject.getDocument();
@@ -171,8 +169,7 @@ export class RequestVcDocumentBlock {
                 message.setDocument(didObject);
 
                 const client = new MessageServer(userHederaAccount, userHederaKey);
-                client.setSubmitKey(topic.key);
-                await client.sendMessage(topic.topicId, message);
+                await client.setTopicObject(topic).sendMessage(message);
 
                 const doc = getMongoRepository(DidDocumentCollection).create({
                     did: did,

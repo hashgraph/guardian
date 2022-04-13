@@ -1,9 +1,15 @@
 <form class="context" [formGroup]="dataForm">
+    <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
+        <mat-label>* Schema Name</mat-label>
+        <input matInput type="text" placeholder="Schema Name" formControlName="name" [tabindex]='value ? -1 : 0'>
+    </mat-form-field>
 
     <div class="optional-row">
         <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
-            <mat-label>* Schema Name</mat-label>
-            <input matInput type="text" placeholder="Schema Name" formControlName="name" [tabindex]='value ? -1 : 0'>
+            <mat-label>* Policy</mat-label>
+            <mat-select formControlName="topicId" tabindex='-1' (selectionChange)="onFilter($event)">
+                <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>          
+            </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="outline" [attr.disabled]="type=='version'">

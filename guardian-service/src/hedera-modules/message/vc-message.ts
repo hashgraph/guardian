@@ -1,6 +1,6 @@
 import { VcDocument } from './../vcjs/vc-document';
 import { Message } from './message';
-import { IURL } from "./i-url";
+import { IURL, UrlType } from "./i-url";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
 
@@ -8,6 +8,7 @@ export class VCMessage extends Message {
     public vcDocument: VcDocument;
     public document: any;
     public hash: string;
+    public issuer: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.VCDocument);
@@ -17,6 +18,7 @@ export class VCMessage extends Message {
         this.vcDocument = document;
         this.document = document.getDocument();
         this.hash = document.toCredentialHash();
+        this.issuer = document.getIssuerDid();
     }
 
     public getDocument(): any {
@@ -27,8 +29,9 @@ export class VCMessage extends Message {
         return JSON.stringify({
             action: this.action,
             type: this.type,
-            cid: this.urls[0].cid,
-            url: this.urls[0].url
+            issuer: this.issuer,
+            cid: this.getDocumentUrl(UrlType.cid),
+            url: this.getDocumentUrl(UrlType.url),
         });
     }
 
@@ -64,5 +67,9 @@ export class VCMessage extends Message {
 
     public override validate(): boolean {
         return true;
+    }
+
+    public getDocumentUrl(type: UrlType): string | null {
+        return this.getUrlValue(0, type);
     }
 }

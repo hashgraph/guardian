@@ -28,7 +28,7 @@ export class CalculateContainerBlock {
         }
 
         const VC = VcDocument.fromJsonTree(document.document);
-        const json = VC.getCredentialSubject()[0].toJsonTree();
+        const json = VC.getCredentialSubject(0).toJsonTree();
 
         let scope = {};
         if (ref.options.inputFields) {

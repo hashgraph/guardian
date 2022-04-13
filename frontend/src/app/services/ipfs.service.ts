@@ -7,16 +7,16 @@ import { API_BASE_URL } from './api';
  */
 @Injectable()
 export class IPFSService {
-  private readonly url: string = `${API_BASE_URL}/ipfs`;
-  constructor(
-    private http: HttpClient
-  ) { }
+    private readonly url: string = `${API_BASE_URL}/ipfs`;
+    constructor(
+        private http: HttpClient
+    ) { }
 
-  public addFile(file: any): Observable<any> {
-    return this.http.post<string>(`${this.url}/file`, file, {
-      headers: {
-       'Content-Type': 'binary/octet-stream'
-      }
-    });
-  }
+    public addFile(file: any): Observable<any> {
+        return this.http.post<string>(`${this.url}/file`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
 }

@@ -60,3 +60,15 @@ accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORIT
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
+
+
+accountAPI.get('/root-authorities', authorizationHelper, async (req: Request, res: Response) => {
+    try {
+        const users = new Users();
+        const rootAuthorities = await users.getAllRootAuthorityAccounts();
+        res.json(rootAuthorities);
+    } catch (error) {
+        console.error(error);
+        res.json('null');
+    }
+});

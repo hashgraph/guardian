@@ -24,7 +24,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     disabled = false;
     loading: boolean = true;
     socket: any;
-
+    dialogLoading: boolean = false;
     dataForm: FormGroup;
     schema: any;
     hideFields: any;
@@ -194,19 +194,22 @@ export class RequestDocumentBlockComponent implements OnInit {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
             this.prepareDataFrom(data);
+            this.dialogLoading = true;
             this.policyEngineService.setBlockData(this.id, this.policyId, {
                 document: data,
                 ref: this.ref
             }).subscribe(() => {
+                this.dialogLoading = false;
                 this.loading = false;
+                if (this.dialogRef) {
+                    this.dialogRef.close();
+                    this.dialogRef = null;
+                }
             }, (e) => {
                 console.error(e.error);
+                this.dialogLoading = false;
                 this.loading = false;
             });
-            if (this.dialogRef) {
-                this.dialogRef.close();
-                this.dialogRef = null;
-            }
         }
     }
 

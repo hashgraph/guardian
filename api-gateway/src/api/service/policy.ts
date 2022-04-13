@@ -4,46 +4,45 @@ import { UserRole } from 'interfaces';
 import { PolicyEngine } from '@helpers/policyEngine';
 import { Users } from '@helpers/users';
 import { Logger } from 'logger-helper';
-import { Guardians } from '@helpers/guardians';
 
 export const policyAPI = Router();
-
-async function setPolicyUserRoles(policies: any[], userDid: string, guardians: Guardians) {
-    if (!policies || !userDid || !guardians)  {
-        return;
-    }
-
-    for (let i = 0; i < policies.length; i++) {
-        const policy = policies[i];
-        const role = await guardians.getUserRoles(userDid, policy.id);
-        policy.userRoles = role[0]?.userRoles?.map(role => role.role) || [];
-        if (policy.owner === userDid) {
-            policy.userRoles.push('Administrator');
-        }
-        if (!policy.userRoles.length) {
-            policy.userRoles.push('The user does not have a role');
-        }
-    }
-}
 
 policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     const users = new Users();
     const engineService = new PolicyEngine();
     try {
         const user = await users.getUser(req.user.username);
+        let pageIndex: any, pageSize: any;
+        if (req.query && req.query.pageIndex && req.query.pageSize) {
+            pageIndex = req.query.pageIndex;
+            pageSize = req.query.pageSize;
+        }
         let result: any;
         if (user.role === UserRole.ROOT_AUTHORITY) {
-            result = await engineService.getPolicies({ owner: user.did });
+            result = await engineService.getPolicies({
+                filters: {
+                    owner: user.did,
+                },
+                userDid: user.did,
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            });
         } else {
-            result = await engineService.getPolicies({ status: 'PUBLISH' });
+            const filters: any = {
+                status: 'PUBLISH',
+            }
+            if (user.parent) {
+                filters.owner = user.parent;
+            }
+            result = await engineService.getPolicies({
+                filters: filters,
+                userDid: user.did,
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            });
         }
-
-        await setPolicyUserRoles(result, user.did, new Guardians());
-
-        res.json(result.map(item => {
-            delete item.registeredUsers;
-            return item;
-        }));
+        const { policies, count } = result;
+        res.status(200).setHeader('X-Total-Count', count).json(policies);
     } catch (e) {
         new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
@@ -52,28 +51,27 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
 
 policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
-    const users = new Users();
     try {
-        const policies: any = await engineService.createPolicy(req.body, req.user);
-        const user = await users.getUser(req.user.username);
-
-        await setPolicyUserRoles(policies, user.did, new Guardians());
-
+        const policies = await engineService.createPolicy(req.body, req.user)
         res.json(policies);
     } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: e.message });
     }
 });
 
 policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
+    const users = new Users();
     const engineService = new PolicyEngine();
     try {
-        const model = (await engineService.getPolicy(req.params.policyId)) as any;
-        delete model.registeredUsers;
+        const user = await users.getUser(req.user.username);
+        const model = (await engineService.getPolicy({
+            filters: req.params.policyId,
+            userDid: user.did,
+        })) as any;
         res.send(model);
     } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: e.message });
     }
 });
@@ -81,7 +79,7 @@ policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
 policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        const model = await engineService.getPolicy(req.params.policyId) as any;
+        const model = await engineService.getPolicy({ filters: req.params.policyId }) as any;
         const policy = req.body;
 
         model.config = policy.config;
@@ -90,14 +88,12 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
         model.description = policy.description;
         model.topicDescription = policy.topicDescription;
         model.policyRoles = policy.policyRoles;
-        delete model.registeredUsers;
-
+        model.policyTopics = policy.policyTopics;
         const result = await engineService.savePolicy(model, req.user, req.params.policyId);
-
         res.json(result);
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error' });
     }
 });
@@ -105,9 +101,7 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
 policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        const result: any = await engineService.publishPolicy(req.body, req.user, req.params.policyId);
-        await setPolicyUserRoles(result.policies, req.user.did, new Guardians());
-        res.json(result);
+        res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
     } catch (e) {
         new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: e.message || e });
@@ -120,7 +114,7 @@ policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => 
         res.send(await engineService.validatePolicy(req.body, req.user));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: e.message });
     }
 });
@@ -131,7 +125,7 @@ policyAPI.get('/:policyId/blocks', async (req: AuthenticatedRequest, res: Respon
         res.send(await engineService.getPolicyBlocks(req.user, req.params.policyId));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -142,7 +136,7 @@ policyAPI.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: 
         res.send(await engineService.getBlockData(req.user, req.params.policyId, req.params.uuid));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -153,7 +147,7 @@ policyAPI.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res:
         res.send(await engineService.setBlockData(req.user, req.params.policyId, req.params.uuid, req.body));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -164,7 +158,7 @@ policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: 
         res.send(await engineService.getBlockByTagName(req.user, req.params.policyId, req.params.tagName));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -175,7 +169,7 @@ policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedReques
         res.send(await engineService.getBlockParents(req.user, req.params.policyId, req.params.uuid));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -184,13 +178,13 @@ policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: R
     const engineService = new PolicyEngine();
     try {
         const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
-        const policy: any = await engineService.getPolicy(req.params.policyId);
+        const policy: any = await engineService.getPolicy({ filters: req.params.policyId });
         res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
         res.setHeader('Content-type', 'application/zip');
         res.send(policyFile);
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: e.message });
     }
 });
@@ -201,7 +195,7 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
         res.send(await engineService.exportMessage(req.user, req.params.policyId));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -209,12 +203,11 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
 policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        const result: any = await engineService.importMessage(req.user, req.body.messageId)
-        await setPolicyUserRoles(result, req.user.did, new Guardians());
-        res.send(result);
+        const policies = await engineService.importMessage(req.user, req.body.messageId);
+        res.send(policies);
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -222,12 +215,11 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        const result: any = await engineService.importFile(req.user, req.body)
-        await setPolicyUserRoles(result, req.user.did, new Guardians());
-        res.send(result);
+        const policies = await engineService.importFile(req.user, req.body);
+        res.send(policies);
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -238,7 +230,7 @@ policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res:
         res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
@@ -249,7 +241,7 @@ policyAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Re
         res.send(await engineService.importFilePreview(req.user, req.body));
     } catch (e) {
         console.error(e);
-         new Logger().error(e.message, ['API_GATEWAY']);
+        new Logger().error(e.message, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });

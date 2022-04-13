@@ -32,6 +32,7 @@ export interface IPolicyBlock {
     blockClassName: string;
     policyId: string;
     policyOwner: string;
+    policyInstance: any;
     changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
     checkDataStateDiffer?: (user) => boolean
 

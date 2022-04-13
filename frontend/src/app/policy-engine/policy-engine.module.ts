@@ -51,6 +51,7 @@ import {
 import {
     PaginationAddonBlockComponent
 } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
+import { Dragonglass } from './helpers/dragonglass/dragonglass.component';
 
 @NgModule({
     declarations: [
@@ -93,7 +94,8 @@ import {
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
         ReportBlockComponent,
-        ReportItemConfigComponent
+        ReportItemConfigComponent,
+        Dragonglass
     ],
     imports: [
         CommonModule,
@@ -102,8 +104,7 @@ import {
         MaterialModule,
         SchemaEngineModule,
         AppRoutingModule,
-        DragDropModule,
-        SchemaEngineModule
+        DragDropModule
     ],
     exports: [
         PolicyConfigurationComponent,
@@ -141,7 +142,8 @@ import {
         ExportPolicyDialog,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
-        JsonPropertiesComponent
+        JsonPropertiesComponent,
+        Dragonglass
     ],
     providers: [
         RegisteredBlocks

@@ -15,18 +15,22 @@ import { Schema } from 'interfaces';
 export class SchemaDialog {
     @ViewChild('document') schemaControl!: SchemaConfigurationComponent;
 
-    schemes: Schema[];
     scheme: Schema;
+    schemesMap: any;
     started: boolean = false;
     type: 'new' | 'edit' | 'version' = 'new';
-    
+    topicId: any;
+    policies: any[];
+
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.schemes = data.schemes || [];
+        this.schemesMap = data.schemesMap || {};
         this.scheme = data.scheme || null;
         this.type = data.type || null;
+        this.topicId = data.topicId || null;
+        this.policies = data.policies || [];
     }
 
     ngOnInit(): void {

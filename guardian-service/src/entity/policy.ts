@@ -1,4 +1,4 @@
-import {BeforeInsert, Column, Entity, ObjectIdColumn} from 'typeorm';
+import {BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn} from 'typeorm';
 import { ModelHelper } from 'interfaces';
 
 /**
@@ -43,13 +43,16 @@ export class Policy {
     policyRoles: string[];
 
     @Column()
+    policyTopics: any[];
+
+    @Column()
     registeredUsers: Object;
 
     @Column()
     topicId: string;
     
     @Column()
-    rootTopicId: string;
+    instanceTopicId: string;
 
     @Column({
         unique: true
@@ -58,6 +61,9 @@ export class Policy {
     
     @Column()
     messageId: string;
+    
+    @CreateDateColumn()
+    createDate: Date;
 
     @BeforeInsert()
     setDefaults() {

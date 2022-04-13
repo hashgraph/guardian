@@ -7,7 +7,8 @@ import {
     SchemaHelper,
     MessageResponse,
     MessageError,
-    ModelHelper
+    ModelHelper,
+    TopicType
 } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { readJSON } from 'fs-extra';
@@ -15,11 +16,14 @@ import path from 'path';
 import { schemasToContext } from '@transmute/jsonld-schema';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
-import { MessageAction, MessageServer, MessageType, SchemaMessage } from '@hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, MessageType, SchemaMessage, UrlType } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
+import { Policy } from '@entity/policy';
+import { Topic } from '@entity/topic';
+import { TopicHelper } from '@helpers/topicHelper';
 
 export const schemaCache = {};
 
@@ -28,7 +32,7 @@ export const schemaCache = {};
  * 
  * @param schemaRepository - table with schemes
  */
-export const setDefaultSchema = async function (schemaRepository: MongoRepository<SchemaCollection>) {
+export async function setDefaultSchema() {
     const fileConfig = path.join(process.cwd(), 'system-schemes', 'system-schemes.json');
     let fileContent: any;
     try {
@@ -65,7 +69,11 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
     }
     const fn = async () => {
         try {
-            const existingSchemes = await schemaRepository.find({ where: { messageId: { $in: messages } } });
+            const existingSchemes = await getMongoRepository(SchemaCollection).find({
+                where: {
+                    messageId: { $in: messages }
+                }
+            });
             for (let i = 0; i < messages.length; i++) {
                 const messageId = messages[i] as string;
                 const existingItem = existingSchemes.find(s => s.messageId === messageId);
@@ -78,8 +86,8 @@ export const setDefaultSchema = async function (schemaRepository: MongoRepositor
                 schema.creator = null;
                 schema.readonly = true;
                 console.log(`Start loading schema: ${messageId}`);
-                const item: any = schemaRepository.create(schema);
-                await schemaRepository.save(item);
+                const item: any = getMongoRepository(SchemaCollection).create(schema);
+                await getMongoRepository(SchemaCollection).save(item);
                 console.log(`Created schema: ${item.messageId}`);
             }
         } catch (error) {
@@ -115,11 +123,11 @@ const loadSchema = async function (messageId: string, owner: string) {
             owner: owner,
             topicId: message.getTopicId(),
             messageId: messageId,
-            documentURL: message.getDocumentUrl().url,
-            contextURL: message.getContextUrl().url,
+            documentURL: message.getDocumentUrl(UrlType.url),
+            contextURL: message.getContextUrl(UrlType.url),
             iri: null
         }
-        updateIRI(schemaToImport);
+        SchemaHelper.updateIRI(schemaToImport);
         log.info(`loadSchema end: ${messageId}`, ['GUARDIAN_SERVICE']);
         schemaCache[messageId] = { ...schemaToImport };
         return schemaToImport;
@@ -127,19 +135,6 @@ const loadSchema = async function (messageId: string, owner: string) {
         log.error(error.message, ['GUARDIAN_SERVICE']);
         console.error(error.message);
         throw new Error(`Cannot load schema ${messageId}`);
-    }
-}
-
-const updateIRI = function (schema: ISchema) {
-    try {
-        if (schema.document) {
-            const document = schema.document;
-            schema.iri = document.$id || null;
-        } else {
-            schema.iri = null;
-        }
-    } catch (error) {
-        schema.iri = null;
     }
 }
 
@@ -158,7 +153,6 @@ const getDefs = function (schema: ISchema) {
 const onlyUnique = function (value: any, index: any, self: any): boolean {
     return self.indexOf(value) === index;
 }
-
 
 export async function incrementSchemaVersion(iri: string, owner: string): Promise<SchemaCollection> {
     if (!owner || !iri) {
@@ -192,61 +186,42 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
     return schema;
 }
 
-
-export async function publishSchema(id: string, version: string, owner: string): Promise<SchemaCollection> {
-    const item = await getMongoRepository(SchemaCollection).findOne(id);
-
-    if (!item) {
-        throw new Error(`Schema not found: ${id}`);
-    }
-
-    if (item.creator != owner) {
-        throw new Error('Invalid owner');
-    }
-
-    if (item.status == SchemaStatus.PUBLISHED) {
-        throw new Error('Invalid status');
-    }
-
-    const schemaTopicId = await getMongoRepository(Settings).findOne({
-        name: 'SCHEMA_TOPIC_ID'
-    })
-
-    const topicId = schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID;
-
-    SchemaHelper.updateVersion(item, version);
-
-    const itemDocument = item.document;
-    const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
-    item.context = schemasToContext([...defsArray, itemDocument]);
-
+async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCollection> {
     const users = new Users();
     const root = await users.getHederaAccount(owner);
+    const schemaObject = getMongoRepository(SchemaCollection).create(newSchema);
+
+    let topic: Topic;
+    if (newSchema.topicId) {
+        topic = await getMongoRepository(Topic).findOne({ topicId: newSchema.topicId });
+    }
+
+    if (!topic) {
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        topic = await topicHelper.create({
+            type: TopicType.SchemaTopic,
+            name: TopicType.SchemaTopic,
+            description: TopicType.SchemaTopic,
+            owner: owner,
+            policyId: null,
+            policyUUID: null
+        });
+        await topicHelper.link(topic, null);
+    }
+
+    SchemaHelper.updateIRI(schemaObject);
+    schemaObject.status = SchemaStatus.DRAFT;
+    schemaObject.topicId = topic.topicId;
+
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-    // messageServer.setSubmitKey(topic.key);
-    const message = new SchemaMessage(MessageAction.PublishSchema);
-    message.setDocument(item);
-    const result = await messageServer.sendMessage(topicId, message);
+    const message = new SchemaMessage(MessageAction.CreateSchema);
+    message.setDocument(schemaObject);
+    await messageServer.setTopicObject(topic).sendMessage(message);
 
-    const messageId = result.getId();
-    const contextUrl = result.getDocumentUrl();
-    const documentUrl = result.getContextUrl();
-
-    item.status = SchemaStatus.PUBLISHED;
-    item.documentURL = documentUrl.url;
-    item.contextURL = contextUrl.url;
-    item.messageId = messageId;
-    item.topicId = topicId;
-
-    updateIRI(item);
-
-    await getMongoRepository(SchemaCollection).update(item.id, item);
-
-    return item;
+    return await getMongoRepository(SchemaCollection).save(schemaObject);
 }
 
-
-export async function importSchemaByFiles(owner: string, files: ISchema[]) {
+export async function importSchemaByFiles(owner: string, files: ISchema[], topicId: string) {
     const uuidMap: Map<string, string> = new Map();
     for (let i = 0; i < files.length; i++) {
         const file = files[i] as ISchema;
@@ -261,17 +236,15 @@ export async function importSchemaByFiles(owner: string, files: ISchema[]) {
 
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-
         file.document = replaceValueRecursive(file.document, uuidMap);
         file.context = replaceValueRecursive(file.context, uuidMap);
-
         file.messageId = null;
         file.creator = owner;
         file.owner = owner;
+        file.topicId = topicId;
         file.status = SchemaStatus.DRAFT;
         SchemaHelper.setVersion(file, '', '');
-        const schema = getMongoRepository(SchemaCollection).create(file);
-        await getMongoRepository(SchemaCollection).save(schema);
+        await createSchema(file, owner);
     }
     const schemesMap = [];
     uuidMap.forEach((v, k) => {
@@ -285,25 +258,95 @@ export async function importSchemaByFiles(owner: string, files: ISchema[]) {
     return schemesMap;
 }
 
+export async function publishSchema(id: string, version: string, owner: string): Promise<SchemaCollection> {
+    const item = await getMongoRepository(SchemaCollection).findOne(id);
+
+    if (!item) {
+        throw new Error(`Schema not found: ${id}`);
+    }
+
+    if (item.creator != owner) {
+        throw new Error('Invalid owner');
+    }
+
+    if (!item.topicId) {
+        throw new Error('Invalid topicId');
+    }
+
+    if (item.status == SchemaStatus.PUBLISHED) {
+        throw new Error('Invalid status');
+    }
+
+    SchemaHelper.updateVersion(item, version);
+
+    const itemDocument = item.document;
+    const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
+    item.context = schemasToContext([...defsArray, itemDocument]);
+
+    const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
+
+    const users = new Users();
+    const root = await users.getHederaAccount(owner);
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+    const message = new SchemaMessage(MessageAction.PublishSchema);
+    message.setDocument(item);
+    const result = await messageServer.setTopicObject(topic).sendMessage(message);
+
+    const messageId = result.getId();
+    const contextUrl = result.getDocumentUrl(UrlType.url);
+    const documentUrl = result.getContextUrl(UrlType.url);
+
+    item.status = SchemaStatus.PUBLISHED;
+    item.documentURL = documentUrl;
+    item.contextURL = contextUrl;
+    item.messageId = messageId;
+
+    SchemaHelper.updateIRI(item);
+
+    await getMongoRepository(SchemaCollection).update(item.id, item);
+
+    return item;
+}
+
 /**
  * Connect to the message broker methods of working with schemes.
  * 
  * @param channel - channel
  * @param schemaRepository - table with schemes
  */
-export const schemaAPI = async function (
-    channel: any,
-    schemaRepository: MongoRepository<SchemaCollection>
-): Promise<void> {
+export const schemaAPI = async function (channel: any, schemaRepository): Promise<void> {
+
     /**
-     * Create or update schema
+     * Create schema
      * 
      * @param {ISchema} payload - schema
      * 
      * @returns {ISchema[]} - all schemes
      */
-    ApiResponse(channel, MessageAPI.SET_SCHEMA, async (msg, res) => {
-        if (msg.payload.id) {
+    ApiResponse(channel, MessageAPI.CREATE_SCHEMA, async (msg, res) => {
+        try {
+            const schemaObject = msg.payload as ISchema;
+            console.log('c', schemaObject)
+            SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
+            await createSchema(schemaObject, schemaObject.owner);
+            const schemes = await schemaRepository.find();
+            res.send(new MessageResponse(schemes));
+        }
+        catch (error) {
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            res.send(new MessageError(error));
+        }
+    });
+
+    /**
+     * Update schema
+     * 
+     * @param {ISchema} payload - schema
+     * 
+     * @returns {ISchema[]} - all schemes
+     */
+    ApiResponse(channel, MessageAPI.UPDATE_SCHEMA, async (msg, res) => {
+        try {
             const id = msg.payload.id as string;
             const item = await schemaRepository.findOne(id);
             if (item) {
@@ -313,37 +356,33 @@ export const schemaAPI = async function (
                 item.document = msg.payload.document;
                 item.status = SchemaStatus.DRAFT;
                 SchemaHelper.setVersion(item, null, item.version);
-                updateIRI(item);
+                SchemaHelper.updateIRI(item);
                 await schemaRepository.update(item.id, item);
             }
-        } else {
-            const schemaObject = schemaRepository.create(msg.payload as ISchema);
-            schemaObject.status = SchemaStatus.DRAFT;
-            SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
-            updateIRI(schemaObject);
-            await schemaRepository.save(schemaObject);
+            const schemes = await schemaRepository.find();
+            res.send(new MessageResponse(schemes));
         }
-        const schemes = await schemaRepository.find();
-        res.send(new MessageResponse(schemes));
+        catch (error) {
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            res.send(new MessageError(error));
+        }
     });
 
     /**
-     * Return schemes
+     * Return schema
      * 
      * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
-     * @param {string} [payload.entity] - schema entity type
      * 
      * @returns {ISchema[]} - all schemes
      */
     ApiResponse(channel, MessageAPI.GET_SCHEMA, async (msg, res) => {
         try {
-            if (msg.payload) {
-                const schema = await schemaRepository.findOne(msg.payload.id);
-                res.send(new MessageResponse(schema));
+            if (!msg.payload) {
+                res.send(new MessageError('Invalid load schema parameter'));
                 return;
             }
-            res.send(new MessageError('Invalid load schema parameter'));
+            const schema = await schemaRepository.findOne(msg.payload.id);
+            res.send(new MessageResponse(schema));
         }
         catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
@@ -355,170 +394,52 @@ export const schemaAPI = async function (
      * Return schemes
      * 
      * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
-     * @param {string} [payload.entity] - schema entity type
      * 
      * @returns {ISchema[]} - all schemes
      */
     ApiResponse(channel, MessageAPI.GET_SCHEMES, async (msg, res) => {
-        if (!msg.payload) {
-            res.send(new MessageError('Invalid load schema parameter'));
-            return;
-        }
-        const { owner, uuid } = msg.payload;
-        let schemes: SchemaCollection[];
-        if (owner) {
-            schemes = await schemaRepository.find({
+        try {
+            if (!msg.payload) {
+                res.send(new MessageError('Invalid load schema parameter'));
+                return;
+            }
+
+            const { owner, uuid, topicId, pageIndex, pageSize } = msg.payload;
+            const filter: any = {
                 where: {
-                    $or: [
-                        { status: SchemaStatus.PUBLISHED },
-                        { owner: owner }
-                    ]
+                    readonly: false
                 }
-            });
-            res.send(new MessageResponse(schemes));
-        } else if (uuid) {
-            schemes = await schemaRepository.find({ uuid: uuid });
-            res.send(new MessageResponse(schemes));
-        } else {
-            schemes = await schemaRepository.find({
-                status: SchemaStatus.PUBLISHED
-            });
-        }
-        res.send(new MessageResponse(schemes));
-    });
-
-    /**
-     * Load schema by message identifier
-     * 
-     * @param {string} [payload.messageId] Message identifier
-     * 
-     * @returns {Schema} Found or uploaded schema
-     */
-    ApiResponse(channel, MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
-        try {
-            if (!msg.payload) {
-                res.send(new MessageError('Invalid import schema parameter'));
-                return;
-            }
-            const { owner, messageIds } = msg.payload as { owner: string, messageIds: string[] };
-            if (!owner || !messageIds) {
-                res.send(new MessageError('Invalid import schema parameter'));
-                return;
             }
 
-            const files: ISchema[] = [];
-            for (let i = 0; i < messageIds.length; i++) {
-                const messageId = messageIds[i];
-                const newSchema = await loadSchema(messageId, null);
-                files.push(newSchema);
+            if (owner) {
+                filter.where.owner = owner;
             }
 
-            const schemesMap = await importSchemaByFiles(owner, files);
-            res.send(new MessageResponse(schemesMap));
+            if (topicId) {
+                filter.where.topicId = topicId;
+            }
+
+            if (uuid) {
+                filter.where.uuid = uuid;
+            }
+
+            const _pageSize = parseInt(pageSize);
+            const _pageIndex = parseInt(pageIndex);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                filter.order = { createDate: "DESC" };
+                filter.take = _pageSize;
+                filter.skip = _pageIndex * _pageSize;
+            }
+
+            const result = await schemaRepository.findAndCount(filter);
+            res.send(new MessageResponse({
+                schemes: result[0],
+                count: result[1]
+            }));
         }
         catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            res.send(new MessageError(error.message));
-        }
-    });
-
-
-    /**
-     * Load schema by files
-     * 
-     * @param {string} [payload.files] files
-     * 
-     * @returns {Schema} Found or uploaded schema
-     */
-    ApiResponse(channel, MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
-        try {
-            if (!msg.payload) {
-                res.send(new MessageError('Invalid import schema parameter'));
-                return;
-            }
-            const { owner, files } = msg.payload as { owner: string, files: ISchema[] };
-            if (!owner || !files) {
-                res.send(new MessageError('Invalid import schema parameter'));
-                return;
-            }
-
-            const schemesMap = await importSchemaByFiles(owner, files);
-            res.send(new MessageResponse(schemesMap));
-        }
-        catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            res.send(new MessageError(error.message));
-        }
-    });
-
-    /**
-     * Preview schema by message identifier
-     * 
-     * @param {string} [payload.messageId] Message identifier
-     * 
-     * @returns {Schema} Found or uploaded schema
-     */
-    ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
-        try {
-            if (!msg.payload) {
-                res.send(new MessageError('Invalid preview schema parameters'));
-                return;
-            }
-            const { messageIds } = msg.payload as { messageIds: string[] };
-            if (!messageIds) {
-                res.send(new MessageError('Invalid preview schema parameters'));
-                return;
-            }
-            const result = [];
-            for (let i = 0; i < messageIds.length; i++) {
-                const messageId = messageIds[i];
-                const schema = await loadSchema(messageId, null);
-                result.push(schema);
-            }
-
-            const messageServer = new MessageServer();
-            const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
-            const anotherSchemas: SchemaMessage[] = [];
-            for (let i = 0; i < uniqueTopics.length; i++) {
-                const topicId = uniqueTopics[i];
-                const anotherVersions = await messageServer.getMessages<SchemaMessage>(
-                    topicId, MessageType.SchemaDocument, MessageAction.PublishSchema
-                );
-                for (let j = 0; j < anotherVersions.length; j++) {
-                    anotherSchemas.push(anotherVersions[j]);
-                }
-            }
-            for (let i = 0; i < result.length; i++) {
-                const schema = result[i];
-                if (!schema.version) {
-                    continue;
-                }
-
-                const newVersions = [];
-                const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
-                for (let j = 0; j < topicMessages.length; j++) {
-                    const topicMessage = topicMessages[j];
-                    if (topicMessage.version &&
-                        ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
-                        newVersions.push({
-                            messageId: topicMessage.getId(),
-                            version: topicMessage.version
-                        });
-                    }
-                }
-                if (newVersions && newVersions.length !== 0) {
-                    schema.newVersions = newVersions.reverse();
-                }
-            }
-            res.send(new MessageResponse(result));
-        }
-        catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            res.send(new MessageError(error.message));
+            res.send(new MessageError(error));
         }
     });
 
@@ -562,12 +483,156 @@ export const schemaAPI = async function (
                 const id = msg.payload as string;
                 const item = await schemaRepository.findOne(id);
                 if (item) {
+                    if (item.topicId) {
+                        const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
+                        if (topic) {
+                            const users = new Users();
+                            const root = await users.getHederaAccount(item.owner);
+                            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                            const message = new SchemaMessage(MessageAction.DeleteSchema);
+                            message.setDocument(item);
+                            await messageServer.setTopicObject(topic).sendMessage(message);
+                        }
+                    }
                     await schemaRepository.delete(item.id);
                 }
             }
             const schemes = await schemaRepository.find();
             res.send(new MessageResponse(schemes));
         } catch (error) {
+            res.send(new MessageError(error.message));
+        }
+    });
+
+    /**
+     * Load schema by message identifier
+     * 
+     * @param {string} [payload.messageId] Message identifier
+     * 
+     * @returns {Schema} Found or uploaded schema
+     */
+    ApiResponse(channel, MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, async (msg, res) => {
+        try {
+            if (!msg.payload) {
+                res.send(new MessageError('Invalid import schema parameter'));
+                return;
+            }
+            const { owner, messageIds, topicId } = msg.payload;
+            if (!owner || !messageIds) {
+                res.send(new MessageError('Invalid import schema parameter'));
+                return;
+            }
+
+            const files: ISchema[] = [];
+            for (let i = 0; i < messageIds.length; i++) {
+                const messageId = messageIds[i];
+                const newSchema = await loadSchema(messageId, null);
+                files.push(newSchema);
+            }
+
+            const schemesMap = await importSchemaByFiles(owner, files, topicId);
+            res.send(new MessageResponse(schemesMap));
+        }
+        catch (error) {
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message));
+        }
+    });
+
+    /**
+     * Load schema by files
+     * 
+     * @param {string} [payload.files] files
+     * 
+     * @returns {Schema} Found or uploaded schema
+     */
+    ApiResponse(channel, MessageAPI.IMPORT_SCHEMES_BY_FILE, async (msg, res) => {
+        try {
+            if (!msg.payload) {
+                res.send(new MessageError('Invalid import schema parameter'));
+                return;
+            }
+            const { owner, files, topicId } = msg.payload;
+            if (!owner || !files) {
+                res.send(new MessageError('Invalid import schema parameter'));
+                return;
+            }
+
+            const schemesMap = await importSchemaByFiles(owner, files, topicId);
+            res.send(new MessageResponse(schemesMap));
+        }
+        catch (error) {
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            res.send(new MessageError(error.message));
+        }
+    });
+
+    /**
+     * Preview schema by message identifier
+     * 
+     * @param {string} [payload.messageId] Message identifier
+     * 
+     * @returns {Schema} Found or uploaded schema
+     */
+    ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA, async (msg, res) => {
+        try {
+            if (!msg.payload) {
+                res.send(new MessageError('Invalid preview schema parameters'));
+                return;
+            }
+            const { messageIds } = msg.payload as { messageIds: string[] };
+            if (!messageIds) {
+                res.send(new MessageError('Invalid preview schema parameters'));
+                return;
+            }
+            const result = [];
+            for (let i = 0; i < messageIds.length; i++) {
+                const messageId = messageIds[i];
+                const schema = await loadSchema(messageId, null);
+                result.push(schema);
+            }
+
+            const messageServer = new MessageServer();
+            const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
+            const anotherSchemas: SchemaMessage[] = [];
+            for (let i = 0; i < uniqueTopics.length; i++) {
+                const topicId = uniqueTopics[i];
+                const anotherVersions = await messageServer.getMessages<SchemaMessage>(
+                    topicId, MessageType.Schema, MessageAction.PublishSchema
+                );
+                for (let j = 0; j < anotherVersions.length; j++) {
+                    anotherSchemas.push(anotherVersions[j]);
+                }
+            }
+            for (let i = 0; i < result.length; i++) {
+                const schema = result[i];
+                if (!schema.version) {
+                    continue;
+                }
+
+                const newVersions = [];
+                const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
+                for (let j = 0; j < topicMessages.length; j++) {
+                    const topicMessage = topicMessages[j];
+                    if (topicMessage.version &&
+                        ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
+                        newVersions.push({
+                            messageId: topicMessage.getId(),
+                            version: topicMessage.version
+                        });
+                    }
+                }
+                if (newVersions && newVersions.length !== 0) {
+                    schema.newVersions = newVersions.reverse();
+                }
+            }
+            res.send(new MessageResponse(result));
+        }
+        catch (error) {
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            console.error(error);
             res.send(new MessageError(error.message));
         }
     });
@@ -621,5 +686,4 @@ export const schemaAPI = async function (
             res.send(new MessageError(error.message));
         }
     });
-
 }

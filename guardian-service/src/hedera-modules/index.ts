@@ -19,3 +19,8 @@ export { DocumentLoader } from './document-loader/document-loader';
 export { SchemaLoader, SchemaLoaderFunction } from './document-loader/schema-loader';
 export { DIDDocument, DidRootKey, DidDocumentBase } from './vcjs/did-document';
 export { PolicyMessage } from './message/policy-message';
+export { UrlType } from './message/i-url';
+export { TopicMessage } from './message/topic-message';
+export { VPMessage } from './message/vp-message';
+
+

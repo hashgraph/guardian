@@ -16,11 +16,11 @@ export class AccountService {
 
     registerListeners(): void {
         this.channel.response(AuthEvents.GET_USER_BY_TOKEN, async (msg, res) => {
-            const {token} = msg.payload;
+            const { token } = msg.payload;
 
             try {
                 const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, process.env.ACCESS_TOKEN_SECRET, {});
-                const user = await getMongoRepository(User).findOne({username: decryptedToken.username});
+                const user = await getMongoRepository(User).findOne({ username: decryptedToken.username });
                 res.send(new MessageResponse(user));
             } catch (e) {
                 res.send(new MessageError(e.message))
@@ -34,7 +34,7 @@ export class AccountService {
                 const { username, password, role } = msg.payload;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
-                const checkUserName = await userRepository.count({username}) > 0;
+                const checkUserName = await userRepository.count({ username }) > 0;
                 if (checkUserName) {
                     res.send(new MessageError('An account with the same name already exists.'));
                     return;
@@ -44,6 +44,7 @@ export class AccountService {
                     username: username,
                     password: passwordDigest,
                     role: role,
+                    parent: null,
                     did: null
                 });
                 res.send(new MessageResponse(await getMongoRepository(User).save(user)));
@@ -59,7 +60,7 @@ export class AccountService {
                 const { username, password } = msg.payload;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
-                const user = await getMongoRepository(User).findOne({username});
+                const user = await getMongoRepository(User).findOne({ username });
                 if (user && passwordDigest === user.password) {
                     const accessToken = sign({
                         username: user.username,
@@ -84,8 +85,9 @@ export class AccountService {
 
         this.channel.response(AuthEvents.GET_ALL_USER_ACCOUNTS, async (msg, res) => {
             try {
-                const userAccounts = (await getMongoRepository(User).find({role: UserRole.USER})).map((e) => ({
+                const userAccounts = (await getMongoRepository(User).find({ role: UserRole.USER })).map((e) => ({
                     username: e.username,
+                    parent: e.parent,
                     did: e.did
                 }));
                 res.send(new MessageResponse(userAccounts));
@@ -97,7 +99,7 @@ export class AccountService {
 
         this.channel.response(AuthEvents.GET_ALL_ROOT_AUTHORITY_ACCOUNTS, async (msg, res) => {
             try {
-                const userAccounts = (await getMongoRepository(User).find({role: UserRole.ROOT_AUTHORITY})).map((e) => ({
+                const userAccounts = (await getMongoRepository(User).find({ role: UserRole.ROOT_AUTHORITY })).map((e) => ({
                     username: e.username,
                     did: e.did
                 }));
@@ -112,6 +114,7 @@ export class AccountService {
         this.channel.response(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (msg, res) => {
             try {
                 const userAccounts = (await getMongoRepository(User).find()).map((e) => ({
+                    parent: e.parent,
                     did: e.did,
                     username: e.username,
                     role: e.role
@@ -124,10 +127,10 @@ export class AccountService {
         });
 
         this.channel.response(AuthEvents.GET_USER, async (msg, res) => {
-            const {username} = msg.payload;
+            const { username } = msg.payload;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).findOne({username})));
+                res.send(new MessageResponse(await getMongoRepository(User).findOne({ username })));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
                 res.send(new MessageError(e.message));
@@ -135,10 +138,10 @@ export class AccountService {
         });
 
         this.channel.response(AuthEvents.GET_USER_BY_ID, async (msg, res) => {
-            const {did} = msg.payload;
+            const { did } = msg.payload;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).findOne({did})));
+                res.send(new MessageResponse(await getMongoRepository(User).findOne({ did })));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
                 res.send(new MessageError(e.message));
@@ -146,7 +149,7 @@ export class AccountService {
         });
 
         this.channel.response(AuthEvents.GET_USERS_BY_ID, async (msg, res) => {
-            const {dids} = msg.payload;
+            const { dids } = msg.payload;
 
             try {
                 res.send(new MessageResponse(await getMongoRepository(User).find({
@@ -161,10 +164,10 @@ export class AccountService {
         });
 
         this.channel.response(AuthEvents.GET_USERS_BY_ROLE, async (msg, res) => {
-            const {role} = msg.payload;
+            const { role } = msg.payload;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).find({role})));
+                res.send(new MessageResponse(await getMongoRepository(User).find({ role })));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
                 res.send(new MessageError(e.message));
@@ -172,10 +175,10 @@ export class AccountService {
         });
 
         this.channel.response(AuthEvents.UPDATE_USER, async (msg, res) => {
-            const {username, item} = msg.payload;
+            const { username, item } = msg.payload;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).update({username}, item)));
+                res.send(new MessageResponse(await getMongoRepository(User).update({ username }, item)));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
                 res.send(new MessageError(e.message));
@@ -183,7 +186,7 @@ export class AccountService {
         });
 
         this.channel.response(AuthEvents.SAVE_USER, async (msg, res) => {
-            const {user} = msg.payload;
+            const { user } = msg.payload;
 
             try {
                 res.send(new MessageResponse(await getMongoRepository(User).save(user)));

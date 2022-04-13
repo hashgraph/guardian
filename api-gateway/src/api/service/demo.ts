@@ -16,7 +16,11 @@ demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
         
         for (let i = 0; i < demoUsers.length; i++) {
             const element = demoUsers[i];
-            element.policyRoles = await guardians.getUserRoles(element.did);
+            if(element.did) {
+                element.policyRoles = await guardians.getUserRoles(element.did);
+            } else {
+                element.policyRoles = [];
+            }
         }
 
         res.json(demoUsers);

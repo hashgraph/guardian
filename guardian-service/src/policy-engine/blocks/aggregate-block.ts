@@ -27,6 +27,21 @@ function evaluate(formula: string, scope: any) {
     commonBlock: true
 })
 export class AggregateBlock {
+    private getScope(item: VcDocument): any {
+        return item.getCredentialSubject(0).toJsonTree();
+    }
+
+    private aggregate(rule, vcs: VcDocument[]) {
+        let amount = 0;
+        for (let i = 0; i < vcs.length; i++) {
+            const element = vcs[i];
+            const scope = this.getScope(element);
+            const value = parseFloat(evaluate(rule, scope));
+            amount += value;
+        }
+        return amount;
+    }
+
     async runAction(data: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const {
@@ -35,7 +50,7 @@ export class AggregateBlock {
             threshold
         } = ref.options;
 
-        const token = await getMongoRepository(Token).findOne({tokenId});
+        const token = await getMongoRepository(Token).findOne({ tokenId });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -57,7 +72,7 @@ export class AggregateBlock {
 
         if (amount >= threshold) {
             await repository.remove(rawEntities);
-            await ref.runNext(null, {data: rawEntities});
+            await ref.runNext(null, { data: rawEntities });
         }
     }
 
@@ -80,20 +95,5 @@ export class AggregateBlock {
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
-    }
-
-    private getScope(item: VcDocument): any {
-        return item.getCredentialSubject().toJsonTree();
-    }
-
-    private aggregate(rule, vcs: VcDocument[]) {
-        let amount = 0;
-        for (let i = 0; i < vcs.length; i++) {
-            const element = vcs[i];
-            const scope = this.getScope(element);
-            const value = parseFloat(evaluate(rule, scope));
-            amount += value;
-        }
-        return amount;
     }
 }

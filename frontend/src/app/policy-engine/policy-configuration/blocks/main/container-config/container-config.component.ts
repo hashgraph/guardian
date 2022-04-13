@@ -20,6 +20,7 @@ export class ContainerConfigComponent implements OnInit {
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Input('roles') roles!: string[];
+    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {

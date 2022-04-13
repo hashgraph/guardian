@@ -1,5 +1,5 @@
 import { TopicId } from '@hashgraph/sdk';
-import { IURL } from './i-url';
+import { IURL, UrlType } from './i-url';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 
@@ -31,6 +31,10 @@ export abstract class Message {
         this.urls = url;
     }
 
+    public getUrls(): IURL[] {
+        return this.urls;
+    }
+
     public setId(id: string): void {
         this.id = id;
     }
@@ -52,6 +56,17 @@ export abstract class Message {
     }
 
     public abstract validate(): boolean;
+
+    public getUrlValue(index: number, type: UrlType): string | null {
+        if (this.urls && this.urls[index]) {
+            if (type === UrlType.cid) {
+                return this.urls[index].cid;
+            } else {
+                return this.urls[index].url;
+            }
+        }
+        return null;
+    }
 }
 
 

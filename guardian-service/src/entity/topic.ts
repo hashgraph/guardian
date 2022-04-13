@@ -11,6 +11,9 @@ export class Topic {
     topicId: string;
 
     @Column()
+    name: string;
+
+    @Column()
     description: string;
 
     @Column()
@@ -21,7 +24,10 @@ export class Topic {
 
     @Column()
     key: string;
-    
+
     @Column()
     policyId: string;
+
+    @Column()
+    policyUUID: string;
 }

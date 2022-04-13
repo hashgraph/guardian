@@ -5,6 +5,7 @@ import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
 import { Logger } from 'logger-helper';
+import { PolicyEngine } from '@helpers/policyEngine';
 
 export async function parseZipFile(zipFile: any): Promise<any[]> {
     const zip = new JSZip();
@@ -24,37 +25,76 @@ export async function generateZipFile(schemes: ISchema[]): Promise<JSZip> {
     return zip;
 }
 
+export async function createSchema(newSchema: ISchema, owner: string, topicId?: string): Promise<ISchema[]> {
+    const guardians = new Guardians();
+    const engineService = new PolicyEngine();
+
+    if (newSchema.id) {
+        const schema = await guardians.getSchemaById(newSchema.id);
+        if (!schema) {
+            throw new Error('Schema does not exist.');
+        }
+        if (schema.creator != owner) {
+            throw new Error('Invalid creator.');
+        }
+        newSchema.version = schema.version;
+    } else {
+        newSchema.version = "";
+    }
+    delete newSchema.id;
+    delete newSchema.status;
+
+    if (topicId) {
+        newSchema.topicId = topicId;
+    }
+
+    SchemaHelper.updateOwner(newSchema, owner);
+    const schemes = (await guardians.createSchema(newSchema));
+    SchemaHelper.updatePermission(schemes, owner);
+    return schemes;
+}
+
+export async function updateSchema(newSchema: ISchema, owner: string): Promise<ISchema[]> {
+    const guardians = new Guardians();
+    const schema = await guardians.getSchemaById(newSchema.id);
+    if (!schema) {
+        throw new Error('Schema does not exist.');
+    }
+    if (schema.creator != owner) {
+        throw new Error('Invalid creator.');
+    }
+    SchemaHelper.updateOwner(newSchema, owner);
+    const schemes = (await guardians.updateSchema(newSchema));
+    SchemaHelper.updatePermission(schemes, owner);
+    return schemes;
+}
+
 /**
  * Schema route
  */
 export const schemaAPI = Router();
 
+/**
+ * @deprecated 2022-08-04
+ */
 schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
-        const guardians = new Guardians();
         const newSchema = req.body;
-        if (newSchema.id) {
-            const schema = await guardians.getSchemaById(newSchema.id);
-            if (!schema) {
-                res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-                return;
-            }
-            if (schema.creator != user.did) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            }
-            newSchema.version = schema.version;
-            delete newSchema.id;
-            delete newSchema.status;
-        } else {
-            newSchema.version = "";
-            delete newSchema.id;
-            delete newSchema.status;
-        }
-        SchemaHelper.updateOwner(newSchema, user.did);
-        const schemes = (await guardians.setSchema(newSchema));
-        SchemaHelper.updatePermission(schemes, user.did);
+        const schemes = await createSchema(newSchema, user.did);
+        res.status(201).json(schemes);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.post('/:topicId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const newSchema = req.body;
+        const topicId = req.params.topicId as string;
+        const schemes = await createSchema(newSchema, user.did, topicId);
         res.status(201).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
@@ -66,9 +106,33 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
-        const schemes = await guardians.getSchemesByOwner(user.did);
+        let pageIndex: any, pageSize: any;
+        if (req.query && req.query.pageIndex && req.query.pageSize) {
+            pageIndex = req.query.pageIndex;
+            pageSize = req.query.pageSize;
+        }
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did, null, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: error.code, message: error.message });
+    }
+});
+
+schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const topicId = req.params.topicId as string;
+        const guardians = new Guardians();
+        let pageIndex: any, pageSize: any;
+        if (req.query && req.query.pageIndex && req.query.pageSize) {
+            pageIndex = req.query.pageIndex;
+            pageSize = req.query.pageSize;
+        }
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did, topicId, pageIndex, pageSize);
+        SchemaHelper.updatePermission(schemes, user.did);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: error.code, message: error.message });
@@ -78,20 +142,8 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
 schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
-        const guardians = new Guardians();
         const newSchema = req.body;
-        const schema = await guardians.getSchemaById(newSchema.id);
-        if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
-        }
-        if (schema.creator != user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
-        }
-        SchemaHelper.updateOwner(newSchema, user.did);
-        const schemes = (await guardians.setSchema(newSchema));
-        SchemaHelper.updatePermission(schemes, user.did);
+        const schemes = await updateSchema(newSchema, user.did)
         res.status(200).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
@@ -144,30 +196,36 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
 
         const item = await guardians.publishSchema(schemaId, version, user.did);
 
-        const schemes = await guardians.getSchemesByOwner(user.did);
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
 
+/**
+ * @deprecated 2022-08-04
+ */
 schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
         const messageId = req.body.messageId as string;
-        const map = await guardians.importSchemesByMessages([messageId], req.user.did);
-        const schemes = await guardians.getSchemesByOwner(user.did);
+        const map = await guardians.importSchemesByMessages([messageId], req.user.did, null);
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
 
+/**
+ * @deprecated 2022-08-04
+ */
 schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
@@ -177,10 +235,10 @@ schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async 
             throw new Error('file in body is empty');
         }
         const files = await parseZipFile(zip);
-        const map = await guardians.importSchemesByFile(files, req.user.did);
-        const schemes = await guardians.getSchemesByOwner(user.did);
+        const map = await guardians.importSchemesByFile(files, req.user.did, null);
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -214,6 +272,42 @@ schemaAPI.post('/import/file/preview', permissionHelper(UserRole.ROOT_AUTHORITY)
         const files = await parseZipFile(zip);
         const schemaToPreview = await guardians.previewSchemesByFile(files);
         res.status(200).json(schemaToPreview);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const topicId = req.params.topicId as string;
+        const guardians = new Guardians();
+        const messageId = req.body.messageId as string;
+        const map = await guardians.importSchemesByMessages([messageId], req.user.did, topicId);
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const zip = req.body;
+        const topicId = req.params.topicId as string;
+        if (!zip) {
+            throw new Error('file in body is empty');
+        }
+        const files = await parseZipFile(zip);
+        const map = await guardians.importSchemesByFile(files, req.user.did, topicId);
+        const { schemes, count } = await guardians.getSchemesByOwner(user.did);
+        SchemaHelper.updatePermission(schemes, user.did);
+        res.status(200).setHeader('X-Total-Count', count).json(schemes);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });

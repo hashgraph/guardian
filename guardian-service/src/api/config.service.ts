@@ -17,11 +17,7 @@ export const configAPI = async function (
     topicRepository: MongoRepository<Topic>,
 ): Promise<void> {
     ApiResponse(channel, MessageAPI.GET_TOPIC, async (msg, res) => {
-        const { type, owner } = msg.payload;
-        const topic = await topicRepository.findOne({
-            owner: owner,
-            type: type
-        });
+        const topic = await topicRepository.findOne(msg.payload);
         res.send(new MessageResponse(topic));
     });
 

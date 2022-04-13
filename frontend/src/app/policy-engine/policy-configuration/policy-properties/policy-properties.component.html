@@ -9,7 +9,7 @@
         </table>
         <div class="table-body" #body>
             <table class="properties">
-                <ng-container *ngIf="type == 'Main' || !type">
+                <ng-container *ngIf="type == 'Main'">
                     <tr class="propHeader">
                         <td class="propRowCol" (click)="onHide(propHidden, 'metaData')"
                             [attr.collapse]="propHidden.metaData">
@@ -79,7 +79,7 @@
                         </td>
                     </tr>
                 </ng-container>
-                <ng-container *ngIf="type == 'Role' || !type">
+                <ng-container *ngIf="type == 'Role'">
                     <!-- Roles  -->
                     <tr class="propHeader">
                         <td class="propRowCol" (click)="onHide(propHidden, 'rolesGroup')"
@@ -106,6 +106,67 @@
                             </td>
                         </tr>
                     </ng-container>
+                </ng-container>
+                <ng-container *ngIf="type == 'Topics'">
+                    <!-- Topics  -->
+                    <ng-container *ngFor="let item of topics; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol" (click)="onHide(propHidden.topicsGroup, i)"
+                                [attr.collapse]="propHidden.topicsGroup[i]">
+                                <mat-icon>expand_more</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">Topic</td>
+                            <td class="propHeaderCell">
+                                <div>{{item.name}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveTopic(i)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Name</td>
+                            <td class="propRowCell remove-cell">
+                                <input [(ngModel)]="item.name" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Description</td>
+                            <td class="propRowCell remove-cell">
+                                <input [(ngModel)]="item.description" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Type</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(ngModel)]="item.type" [disabled]="readonly">
+                                    <mat-option value="any">Any</mat-option>
+                                    <mat-option value="vc">VC</mat-option>
+                                    <mat-option value="vp">VP</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Static</td>
+                            <td class="propRowCell remove-cell">
+                                <input type="checkbox" [(ngModel)]="item.static" [readonly]="readonly">
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow" style="height: 26px;">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addTopic()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Topic</span>
+                        </div>
+                    </div>
                 </ng-container>
             </table>
         </div>

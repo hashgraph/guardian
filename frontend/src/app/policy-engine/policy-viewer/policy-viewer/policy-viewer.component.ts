@@ -31,29 +31,30 @@ export class PolicyViewerComponent implements OnInit {
     columnsRole = {
         "ROOT_AUTHORITY": [
             'name',
-            'roles',
-            'id',
-            'version',
             'description',
+            'roles',
+            'topic',
+            'version',
             'status',
+            'operation',
             'export',
             'edit',
-            'open',
-            'operation'
+            'open'
         ],
         "USER": [
             'name',
+            'description',
             'roles',
             'version',
-            'description',
             'open',
         ]
     };
     role!: any;
-    tokens!: IToken[];
-
     loading: boolean = true;
     isConfirmed: boolean = false;
+    pageIndex: number;
+    pageSize: number;
+    policyCount: any;
 
     constructor(
         private profileService: ProfileService,
@@ -66,6 +67,9 @@ export class PolicyViewerComponent implements OnInit {
     ) {
         this.policies = null;
         this.policy = null;
+        this.pageIndex = 0;
+        this.pageSize = 100;
+        this.policyCount = 0;
     }
 
     ngOnInit() {
@@ -89,6 +93,11 @@ export class PolicyViewerComponent implements OnInit {
         this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.role = profile ? profile.role : null;
+            if (this.role == 'ROOT_AUTHORITY') {
+                this.columns = this.columnsRole['ROOT_AUTHORITY'];
+            } else {
+                this.columns = this.columnsRole['USER'];
+            }
             if (this.isConfirmed) {
                 if (this.policyId) {
                     this.loadPolicyById(this.policyId);
@@ -108,14 +117,10 @@ export class PolicyViewerComponent implements OnInit {
     loadPolicyById(policyId: string) {
         forkJoin([
             this.policyEngineService.policyBlock(policyId),
-            this.policyEngineService.all()
+            this.policyEngineService.policy(policyId)
         ]).subscribe((value) => {
             this.policy = value[0];
-            if (value[1]) {
-                this.policyInfo = value[1].find(e => e.id == policyId);
-            } else {
-                this.policyInfo = null;
-            }
+            this.policyInfo = value[1];
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -125,55 +130,40 @@ export class PolicyViewerComponent implements OnInit {
     }
 
     loadAllPolicy() {
-        if (this.role == 'ROOT_AUTHORITY') {
-            this.columns = this.columnsRole['ROOT_AUTHORITY'];
-            forkJoin([
-                this.policyEngineService.all(),
-                this.tokenService.getTokens()
-            ]).subscribe((value) => {
-                const policies: any[] = value[0];
-                const tokens: IToken[] = value[1];
-                this.updatePolicy(policies);
-                this.tokens = tokens;
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
+        this.loading = true;
+        this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
+            this.policies = policiesResponse.body || [];
+            this.policyCount = policiesResponse.headers.get('X-Total-Count') || this.policies.length;
+            setTimeout(() => {
                 this.loading = false;
-            });
+            }, 500);
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    onPage(event: any) {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
         } else {
-            this.columns = this.columnsRole['USER'];
-            forkJoin([
-                this.policyEngineService.all(),
-            ]).subscribe((value) => {
-                const policies: any[] = value[0];
-                this.updatePolicy(policies);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                this.loading = false;
-            });
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
         }
+        this.loadAllPolicy();
     }
 
     newPolicy() {
         const dialogRef = this.dialog.open(NewPolicyDialog, {
             width: '500px',
-            disableClose: true,
-            data: {
-                tokens: this.tokens
-            }
+            data: {}
         });
 
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
                 this.policyEngineService.create(result).subscribe((policies: any) => {
-                    this.updatePolicy(policies);
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
+                    this.loadAllPolicy();
                 }, (e) => {
                     this.loading = false;
                 });
@@ -184,7 +174,6 @@ export class PolicyViewerComponent implements OnInit {
     setVersion(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
-            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe((version) => {
@@ -216,21 +205,10 @@ export class PolicyViewerComponent implements OnInit {
                     enableHtml: true
                 });
             }
-            this.updatePolicy(policies);
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
+            this.loadAllPolicy();
         }, (e) => {
             this.loading = false;
         });
-    }
-
-    updatePolicy(policies: any[]) {
-        this.policies = policies || [];
-        for (let i = 0; i < this.policies.length; i++) {
-            const element = this.policies[i];
-            element.topicURL = `https://testnet.dragonglass.me/hedera/topics/${element.topicId}`
-        }
     }
 
     exportPolicy(element: any) {
@@ -279,19 +257,13 @@ export class PolicyViewerComponent implements OnInit {
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService.importByMessage(data).subscribe((policies) => {
-                        this.updatePolicy(policies);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
+                        this.loadAllPolicy();
                     }, (e) => {
                         this.loading = false;
                     });
                 } else if (type == 'file') {
                     this.policyEngineService.importByFile(data).subscribe((policies) => {
-                        this.updatePolicy(policies);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
+                        this.loadAllPolicy();
                     }, (e) => {
                         this.loading = false;
                     });

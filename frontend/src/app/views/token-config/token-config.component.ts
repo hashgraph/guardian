@@ -194,4 +194,13 @@ export class TokenConfigComponent implements OnInit {
             this.loading = false;
         });
     }
+
+    getPoliciesInfo(policies: string[]): string {
+        if (!policies || !policies.length) {
+            return "";
+        }
+        return policies.length === 1
+            ? policies[0]
+            : `Used in ${policies.length} policies`;
+    }
 }

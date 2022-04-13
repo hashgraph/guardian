@@ -162,13 +162,13 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
-  getPoliciesRolesLength(userRoles: any) {
-    return userRoles.map((item: any) => item.userRoles).length;
+  getPoliciesRolesLength(policyRoles: any) {
+    return policyRoles.length;
   }
   
-  getPoliciesRolesTooltip(userRoles: any) {
-    return userRoles.map((item: any) => {
-      return `${item.policy.name} (${item.policy.version}): ${item.userRoles.map((role: any) => role.role).join(', ')}`
+  getPoliciesRolesTooltip(policyRoles: any) {
+    return policyRoles.map((item: any) => {
+      return `${item.name} (${item.version}): ${item.role}`
     }).join('\r\n');
   }
 }

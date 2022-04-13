@@ -11,6 +11,9 @@ import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-v
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from 'src/app/schema-engine/schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from 'src/app/schema-engine/export-schema-dialog/export-schema-dialog.component';
+import { forkJoin } from 'rxjs';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { HttpResponse } from '@angular/common/http';
 
 /**
  * Page for creating, editing, importing and exporting schemes.
@@ -24,28 +27,40 @@ export class SchemaConfigComponent implements OnInit {
     loading: boolean = true;
     isConfirmed: boolean = false;
     schemes: Schema[] = [];
-    publishSchemes: Schema[] = [];
+    schemesCount: any;
     schemaColumns: string[] = [
+        'policy',
         'type',
+        'topic',
         'version',
         'entity',
         'status',
-        'export',
         'operation',
+        'export',
         'edit',
         'delete',
         'document',
     ];
     selectedAll!: boolean;
+    policies: any[] | null;
+    currentTopicPolicy: any = '';
+    pageIndex: number;
+    pageSize: number;
+    schemesMap: any;
+    policyNameByTopic: any;
 
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
+        private policyEngineService: PolicyEngineService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog) {
-
+        this.policies = null;
+        this.pageIndex = 0;
+        this.pageSize = 100;
+        this.policyNameByTopic = {};
     }
 
     ngOnInit() {
@@ -57,7 +72,7 @@ export class SchemaConfigComponent implements OnInit {
         this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             if (this.isConfirmed) {
-                this.loadSchemes();
+                this.loadData();
             } else {
                 this.loading = false;
             }
@@ -67,36 +82,98 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
-    loadSchemes() {
-        this.schemaService.getSchemes().subscribe((data) => {
-            this.setSchema(data);
+    loadData() {
+        this.pageIndex = 0;
+        this.pageSize = 100;
+        forkJoin([
+            this.policyEngineService.all(),
+            this.schemaService.getSchemesByPage(undefined, this.pageIndex, this.pageSize)
+        ]).subscribe((value) => {
+            const policies: any[] = value[0];
+            const schemesResponse = value[1] as HttpResponse<ISchema[]>;
+            this.policyNameByTopic = {};
+            this.policies = [];
+            for (let i = 0; i < policies.length; i++) {
+                const policy = policies[i];
+                if(policy.topicId && !this.policyNameByTopic.hasOwnProperty(policy.topicId)) {
+                    this.policyNameByTopic[policy.topicId] = policy.name;
+                    this.policies.push(policy);
+                }
+            }
+            this.schemes = SchemaHelper.map(schemesResponse.body || []);
+            this.schemesCount = schemesResponse.headers.get('X-Total-Count') || this.schemes.length;
+            this.schemaMapping(this.schemes);
             setTimeout(() => {
                 this.loading = false;
             }, 500);
         }, (e) => {
-            console.error(e.error);
             this.loading = false;
         });
     }
 
+    loadSchemes() {
+        this.loading = true;
+        this.schemaService.getSchemesByPage(this.currentTopicPolicy, this.pageIndex, this.pageSize)
+            .subscribe((schemesResponse: HttpResponse<ISchema[]>) => {
+                this.schemes = SchemaHelper.map(schemesResponse.body || []);
+                this.schemesCount = schemesResponse.headers.get('X-Total-Count') || this.schemes.length;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+    }
+
+    onFilter() {
+        this.pageIndex = 0;
+        this.loadSchemes();
+    }
+
+    onPage(event: any) {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
+        this.loadSchemes();
+    }
+
+    schemaMapping(schemes: ISchema[]) {
+        this.schemesMap = {};
+        for (let i = 0; i < schemes.length; i++) {
+            const schema = schemes[i];
+            if (schema.topicId) {
+                if (this.schemesMap[schema.topicId]) {
+                    this.schemesMap[schema.topicId].push(schema);
+                } else {
+                    this.schemesMap[schema.topicId] = [schema];
+                }
+            }
+        }
+    }
+
     newSchemes() {
+
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
                 type: 'new',
-                schemes: this.publishSchemes
+                schemesMap: this.schemesMap,
+                topicId: this.currentTopicPolicy,
+                policies: this.policies
             }
         });
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.create(schema).subscribe((data) => {
-                    this.setSchema(data);
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
+                this.schemaService.create(schema, schema.topicId).subscribe((data) => {
+                    this.loadSchemes();
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -124,7 +201,9 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 type: 'edit',
-                schemes: this.publishSchemes,
+                schemesMap: this.schemesMap,
+                topicId: this.currentTopicPolicy,
+                policies: this.policies,
                 scheme: element
             }
         });
@@ -132,10 +211,7 @@ export class SchemaConfigComponent implements OnInit {
             if (schema) {
                 this.loading = true;
                 this.schemaService.update(schema, element.id).subscribe((data) => {
-                    this.setSchema(data);
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
+                    this.loadSchemes();
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -151,7 +227,9 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 type: 'version',
-                schemes: this.publishSchemes,
+                schemesMap: this.schemesMap,
+                topicId: this.currentTopicPolicy,
+                policies: this.policies,
                 scheme: element
             }
         });
@@ -159,10 +237,7 @@ export class SchemaConfigComponent implements OnInit {
             if (schema) {
                 this.loading = true;
                 this.schemaService.newVersion(schema, element.id).subscribe((data) => {
-                    this.setSchema(data);
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
+                    this.loadSchemes();
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -171,7 +246,7 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
-    newDocument(element: Schema) {
+    cloneDocument(element: Schema) {
         const newDocument: any = { ...element };
         delete newDocument.id;
         delete newDocument.uuid;
@@ -185,18 +260,19 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 type: 'version',
-                schemes: this.publishSchemes,
+                schemesMap: this.schemesMap,
+                topicId: this.currentTopicPolicy,
+                policies: this.policies,
                 scheme: newDocument
             }
         });
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.create(schema).subscribe((data) => {
-                    this.setSchema(data);
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
+                this.schemaService.create(schema, schema.topicId).subscribe((data) => {
+                    const schemes = SchemaHelper.map(data);
+                    this.schemaMapping(schemes);
+                    this.loadSchemes();
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -217,10 +293,9 @@ export class SchemaConfigComponent implements OnInit {
             if (version) {
                 this.loading = true;
                 this.schemaService.publish(element.id, version).subscribe((data: any) => {
-                    this.setSchema(data);
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
+                    const schemes = SchemaHelper.map(data);
+                    this.schemaMapping(schemes);
+                    this.loadSchemes();
                 }, (e) => {
                     this.loading = false;
                 });
@@ -231,10 +306,9 @@ export class SchemaConfigComponent implements OnInit {
     unpublished(element: any) {
         this.loading = true;
         this.schemaService.unpublished(element.id).subscribe((data: any) => {
-            this.setSchema(data);
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
+            const schemes = SchemaHelper.map(data);
+            this.schemaMapping(schemes);
+            this.loadSchemes();
         }, (e) => {
             this.loading = false;
         });
@@ -243,10 +317,9 @@ export class SchemaConfigComponent implements OnInit {
     deleteSchema(element: any) {
         this.loading = true;
         this.schemaService.delete(element.id).subscribe((data: any) => {
-            this.setSchema(data);
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
+            const schemes = SchemaHelper.map(data);
+            this.schemaMapping(schemes);
+            this.loadSchemes();
         }, (e) => {
             this.loading = false;
         });
@@ -271,44 +344,34 @@ export class SchemaConfigComponent implements OnInit {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
-                schemes: schemes
+                schemes: schemes,
+                topicId: this.currentTopicPolicy,
+                policies: this.policies,
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-                if (result.messageId) {
-                    this.importSchemes(result.messageId);
-                    return;
-                }
+            if (result && result.messageId) {
+                this.importSchemes(result.messageId);
+                return;
+            }
 
+            if (result && result.topicId) {
                 this.loading = true;
                 if (type == 'message') {
-                    this.schemaService.importByMessage(data).subscribe((schemes) => {
-                        this.setSchema(schemes);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
+                    this.schemaService.importByMessage(data, result.topicId).subscribe((schemes) => {
+                        this.loadSchemes();
                     }, (e) => {
                         this.loading = false;
                     });
                 } else if (type == 'file') {
-                    this.schemaService.importByFile(data).subscribe((schemes) => {
-                        this.setSchema(schemes);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
+                    this.schemaService.importByFile(data, result.topicId).subscribe((schemes) => {
+                        this.loadSchemes();
                     }, (e) => {
                         this.loading = false;
                     });
                 }
             }
         });
-    }
-
-    setSchema(data: ISchema[]) {
-        this.schemes = SchemaHelper.map(data);
-        this.schemes = this.schemes.filter(s => !s.readonly);
-        this.publishSchemes = this.schemes.filter(s => s.status == SchemaStatus.PUBLISHED);
     }
 
     export(element: any) {
