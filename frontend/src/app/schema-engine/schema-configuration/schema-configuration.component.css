@@ -113,7 +113,7 @@ form {
 .custom-field-remove {
     position: absolute;
     right: 3px;
-    top: 7px;
+    bottom: 100px;
     z-index: 1;
 }
 .custom-field-type {
@@ -254,4 +254,15 @@ form {
 
 .boolean-option {
     margin-right: 20px;
+}
+
+.custom-field-required-warn {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #efc900
+}
+
+.custom-field-required-warn mat-icon {
+    margin-right: 5px;
 }

@@ -2,7 +2,7 @@
 
 Next, we add a sequence of policy action steps for the RootAuthority. We do this by first clicking on the top policy field, and then we add a container for all the RootAuthority policy action steps by clicking on the Container button in the top navigation bar.
 
-![](https://i.imgur.com/Wm4dpIn.png)
+![](../.gitbook/assets/PW\_23.png)
 
 **Programmatically this workflow step looks like this:**
 

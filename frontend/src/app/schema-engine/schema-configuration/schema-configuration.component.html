@@ -32,6 +32,10 @@
     <div *ngIf="fields && fields.length" class="fields">
         <div class="custom-fields">
             <div *ngFor="let field of fields" class="custom-field">
+                <div class="custom-field-required-warn" 
+                    *ngIf="this.schemaTypeMap[controlType.value]?.notCanBeRequired || false">
+                    <mat-icon>warning</mat-icon> <b> Schema does not contain required fields and cannot be required </b>
+                </div>
                 <div class="custom-field-name">
                     <mat-form-field class="example-full-width" appearance="outline">
                         <mat-label>* Field name</mat-label>
@@ -41,7 +45,7 @@
                 <div class="custom-field-type">
                     <mat-form-field appearance="outline">
                         <mat-label>Field type</mat-label>
-                        <mat-select [formControl]="field.controlType" #controlType>
+                        <mat-select [formControl]="field.controlType" #controlType (selectionChange)="clearArrayAndRequiredControls($event, field)">
                             <mat-optgroup  label="Simple Types">
                                 <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
                             </mat-optgroup>
@@ -52,7 +56,7 @@
                     </mat-form-field>
                 </div>
                 <div class="custom-field-required">
-                    <mat-checkbox color="primary" [formControl]="field.controlRequired">Required Field</mat-checkbox>
+                    <mat-checkbox color="primary" [formControl]="field.controlRequired" [disabled]="this.schemaTypeMap[controlType.value]?.notCanBeRequired">Required Field</mat-checkbox>
                 </div>
                 <div class="custom-field-isArray">
                     <mat-checkbox color="primary" [formControl]="field.controlArray" [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
@@ -143,6 +147,10 @@
                         <div *ngIf="condition.thenControls">
                             <div class="custom-fields">
                                 <div *ngFor="let conditionField of condition.thenControls" class="custom-field">
+                                    <div class="custom-field-required-warn" 
+                                        *ngIf="this.schemaTypeMap[controlType.value]?.notCanBeRequired || false">
+                                        <mat-icon>warning</mat-icon> <b> Schema does not contain required fields and cannot be required </b>
+                                    </div>
                                     <div class="custom-field-name">
                                         <mat-form-field class="example-full-width" appearance="outline">
                                             <mat-label>* Field name</mat-label>
@@ -152,7 +160,7 @@
                                     <div class="custom-field-type">
                                         <mat-form-field appearance="outline">
                                             <mat-label>Field type</mat-label>
-                                            <mat-select [formControl]="conditionField.controlType" #controlType>
+                                            <mat-select [formControl]="conditionField.controlType" #controlType (selectionChange)="clearArrayAndRequiredControls($event, conditionField)">
                                                 <mat-optgroup  label="Simple Types">
                                                     <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
                                                 </mat-optgroup>
@@ -163,7 +171,7 @@
                                         </mat-form-field>
                                     </div>
                                     <div class="custom-field-required">
-                                        <mat-checkbox color="primary" [formControl]="conditionField.controlRequired">Required Field</mat-checkbox>
+                                        <mat-checkbox color="primary" [formControl]="conditionField.controlRequired" [disabled]="this.schemaTypeMap[controlType.value]?.notCanBeRequired">Required Field</mat-checkbox>
                                     </div>
                                     <div class="custom-field-isArray">
                                         <mat-checkbox color="primary" [formControl]="conditionField.controlArray" [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
@@ -186,6 +194,10 @@
                         <div *ngIf="condition.elseControls">
                             <div class="custom-fields">
                                 <div *ngFor="let conditionField of condition.elseControls" class="custom-field">
+                                    <div class="custom-field-required-warn" 
+                                        *ngIf="this.schemaTypeMap[controlType.value]?.notCanBeRequired || false">
+                                        <mat-icon>warning</mat-icon> <b> Schema does not contain required fields and cannot be required </b>
+                                    </div>
                                     <div class="custom-field-name">
                                         <mat-form-field class="example-full-width" appearance="outline">
                                             <mat-label>* Field name</mat-label>
@@ -195,7 +207,7 @@
                                     <div class="custom-field-type">
                                         <mat-form-field appearance="outline">
                                             <mat-label>Field type</mat-label>
-                                            <mat-select [formControl]="conditionField.controlType" #controlType>
+                                            <mat-select [formControl]="conditionField.controlType" #controlType (selectionChange)="clearArrayAndRequiredControls($event, conditionField)">
                                                 <mat-optgroup  label="Simple Types">
                                                     <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
                                                 </mat-optgroup>
@@ -206,7 +218,7 @@
                                         </mat-form-field>
                                     </div>
                                     <div class="custom-field-required">
-                                        <mat-checkbox color="primary" [formControl]="conditionField.controlRequired">Required Field</mat-checkbox>
+                                        <mat-checkbox color="primary" [formControl]="conditionField.controlRequired" [disabled]="this.schemaTypeMap[controlType.value]?.notCanBeRequired">Required Field</mat-checkbox>
                                     </div>
                                     <div class="custom-field-isArray">
                                         <mat-checkbox color="primary" [formControl]="conditionField.controlArray" [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>

@@ -4,39 +4,36 @@ First, note that we are in the Policies Configuration Tab of the Guardian interf
 
 Second, you click on the blue **Create Policy** button!
 
-![](<../.gitbook/assets/image (8).png>)
-
-When the pop-up appears on the screen, fill out all the fields and then click on “Ok”.
+![](../.gitbook/assets/PW\_1.png)
 
 {% hint style="info" %}
 **Note :** The "tag" field is important to be able to reference this policy in possibly other policies as a dependent policy
 {% endhint %}
 
-![](<../.gitbook/assets/image (4).png>)
+![](../.gitbook/assets/PW\_2.png)
 
 Once we have created the Draft of the policy – notice the status field showing draft – click on the “Edit” link on the right.
 
-![](<../.gitbook/assets/image (15).png>)
+![](../.gitbook/assets/PW\_3.png)
 
 The edit screen will open and you will notice two boxes on the right side of the screen. The top Policy box is static and offers the ability to add high-level “Policy properties.” You can edit the name, Policy Tag, etc. Note that you can also create custom roles that are specific to your policy.
 
-![](<../.gitbook/assets/image (2) (1) (1) (1).png>)
+![](../.gitbook/assets/PW\_4.png)
 
 The second Interface ContainerBlock is specific to the first workflow block. We will begin editing this block to build our policy!
 
 Let’s start with “Permissions”
 
-There are currently 4 permissions or roles with permissions configured that can be applied to a policy:\
+There are currently 3 permissions or roles with permissions configured that can be applied to a policy:\
 1\. Root Authority with the highest level of permissions, equivalent to an administrator of the policy,\
-2\. Installer which is the entity applying to receive the Renewable Energy Credits from iRec,\
-3\. Auditor as the entity that can view the “Trust Chain” or all of the important events that led to the creation of the Renewable Energy Credit\
-4\. Originator as the entity invoking a Policy with a set of data to be issued new CO2-tokens
+2\. User which is the entity applying to receive the Renewable Energy Credits from iRec,\
+3\. Auditor as the entity that can view the “Trust Chain” or all of the important events that led to the creation of the Renewable Energy Credit
 
-And we select Root-Authority and Installer in the drop-down as available roles in this policy workflow.
+But in the Permissions we can choose only: policy roles, any role, no role, owner.
 
 Then we select the “type” of UI we want to utilize. In our example, we choose the “Blank” template.
 
-![](<../.gitbook/assets/image (6).png>)
+![](../.gitbook/assets/PW\_5.png)
 
 **Programmatically you begin like this:**
 
@@ -70,11 +67,15 @@ Then we select the “type” of UI we want to utilize. In our example, we choos
 ```
 
 {% hint style="info" %}
-**Note:** In Guardian Version 1.0.2 there was new functionality implemented that allows for custom roles. To perform this programmatically:
+**Note:** In Guardian Version 1.0.2 there was new functionality implemented that allows for creation of choose Role Block.
 {% endhint %}
 
+![](../.gitbook/assets/PW\_33.png)
+
+**Programmatically you begin like this:**
+
 ```
-//children - list of child blocks in a container block.
+//children - list of child blocks in a Container Block.
   "children": [
     //First policy step - select a role.
     {

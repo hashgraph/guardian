@@ -72,7 +72,7 @@
             <b>Please make sure all fields in schema contain a valid value</b>
           </span>
         </div>
-        <div *ngIf="item.required" class="required-field">* Required</div>
+        <div *ngIf="item.required && item.displayRequired" class="required-field">* Required</div>
         <div class="label-field">{{item.description}}</div>
         <div *ngIf="item.control" class="form-field-array-item">
           <div class="form-field-group" [ngClass]="{'schema-form-field-group' : !item.required}">
