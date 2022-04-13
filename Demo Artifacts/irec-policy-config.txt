@@ -136,7 +136,7 @@
                     {
                       "id": "af64afb4-f0c7-4e8f-912e-5554ae606a2c",
                       "tag": "sensors_grid_source",
-                      "blockType": "documentsSourceAddonBlock",
+                      "blockType": "documentsSourceAddon",
                       "defaultActive": true,
                       "children": [],
                       "permissions": [
@@ -302,7 +302,7 @@
                     {
                       "id": "066740ce-9072-4dcb-8473-c5ec72611a84",
                       "tag": "mrv_grid_source",
-                      "blockType": "documentsSourceAddonBlock",
+                      "blockType": "documentsSourceAddon",
                       "defaultActive": true,
                       "children": [],
                       "permissions": [
@@ -430,7 +430,7 @@
                 {
                   "id": "46b47948-ae2f-44b9-b7ae-1f22a2d8262c",
                   "tag": "approve_documents_grid_source",
-                  "blockType": "documentsSourceAddonBlock",
+                  "blockType": "documentsSourceAddon",
                   "defaultActive": true,
                   "children": [],
                   "permissions": [
