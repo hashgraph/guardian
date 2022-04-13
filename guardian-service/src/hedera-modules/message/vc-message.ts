@@ -1,8 +1,9 @@
 import { VcDocument } from './../vcjs/vc-document';
 import { Message } from './message';
-import { IURL, UrlType } from "./i-url";
+import { IURL, UrlType } from "./url.interface";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
+import { MessageBody, VcMessageBody } from './message-body.interface';
 
 export class VCMessage extends Message {
     public vcDocument: VcDocument;
@@ -25,14 +26,16 @@ export class VCMessage extends Message {
         return this.document;
     }
 
-    public toMessage(): string {
-        return JSON.stringify({
-            action: this.action,
+    public override toMessageObject(): VcMessageBody {
+        return {
+            id: null,
+            status: null,
             type: this.type,
+            action: this.action,
             issuer: this.issuer,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
-        });
+        };
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
@@ -51,8 +54,11 @@ export class VCMessage extends Message {
         return this.fromMessageObject(json);
     }
 
-    public static fromMessageObject(json: any): VCMessage {
+    public static fromMessageObject(json: VcMessageBody): VCMessage {
         const message = new VCMessage(json.action);
+        message._id = json.id;
+        message._status = json.status;
+        message.issuer = json.issuer;
         const urls = [{
             cid: json.cid,
             url: json.url

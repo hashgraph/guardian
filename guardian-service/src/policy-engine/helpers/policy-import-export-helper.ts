@@ -112,6 +112,18 @@ export class PolicyImportExportHelper {
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
         const { policy, tokens, schemes } = policyToImport;
 
+        delete policy.id;
+        delete policy.messageId;
+        delete policy.version;
+        delete policy.previousVersion;
+        delete policy.registeredUsers;
+        policy.policyTag = 'Tag_' + Date.now();
+        policy.uuid = GenerateUUIDv4();
+        policy.creator = policyOwner;
+        policy.owner = policyOwner;
+        policy.status = 'DRAFT';
+
+
         const users = new Users();
         const root = await users.getHederaAccount(policyOwner);
 
@@ -125,27 +137,17 @@ export class PolicyImportExportHelper {
             policyId: null,
             policyUUID: null
         });
-        await topicHelper.link(topicRow, parent);
 
-        delete policy.id;
-        delete policy.messageId;
-        delete policy.version;
-        delete policy.previousVersion;
-        delete policy.registeredUsers;
-
-        policy.policyTag = 'Tag_' + Date.now();
-        policy.uuid = GenerateUUIDv4();
-        policy.creator = policyOwner;
-        policy.owner = policyOwner;
-        policy.status = 'DRAFT';
         policy.topicId = topicRow.topicId;
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
-        await messageServer
-            .setTopicObject(topicRow)
+        const messageStatus = await messageServer
+            .setTopicObject(parent)
             .sendMessage(message);
+
+        await topicHelper.link(topicRow, parent, messageStatus.getId());
 
         // Import Tokens
         if (tokens) {

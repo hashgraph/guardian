@@ -1,8 +1,9 @@
 import { Policy } from '@entity/policy';
 import { Message } from './message';
-import { IURL, UrlType } from "./i-url";
+import { IURL, UrlType } from "./url.interface";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
+import { MessageBody, PolicyMessageBody } from './message-body.interface';
 
 export class PolicyMessage extends Message {
     public document: ArrayBuffer;
@@ -39,10 +40,12 @@ export class PolicyMessage extends Message {
         return this.document;
     }
 
-    public toMessage(): string {
-        return JSON.stringify({
-            action: this.action,
+    public override toMessageObject(): PolicyMessageBody {
+        return {
+            id: null,
+            status: null,
             type: this.type,
+            action: this.action,
             uuid: this.uuid,
             name: this.name,
             description: this.description,
@@ -50,11 +53,11 @@ export class PolicyMessage extends Message {
             version: this.version,
             policyTag: this.policyTag,
             owner: this.owner,
-            topicId: this.topicId,
+            topicId: this.topicId.toString(),
             instanceTopicId: this.instanceTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
-        });
+        }
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
@@ -79,8 +82,14 @@ export class PolicyMessage extends Message {
         return this.fromMessageObject(json);
     }
 
-    public static fromMessageObject(json: any): PolicyMessage {
+    public static fromMessageObject(json: PolicyMessageBody): PolicyMessage {
+        if (json.type != MessageType.Policy && json.type != MessageType.InstancePolicy) {
+            throw 'Invalid message type'
+        }
+
         const message = new PolicyMessage(json.type, json.action);
+        message._id = json.id;
+        message._status = json.status;
         message.uuid = json.uuid;
         message.name = json.name;
         message.description = json.description;

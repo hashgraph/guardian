@@ -1,9 +1,10 @@
 
 import { Schema } from '@entity/schema';
 import { Message } from './message';
-import { IURL, UrlType } from "./i-url";
+import { IURL, UrlType } from "./url.interface";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
+import { MessageBody, SchemaMessageBody } from './message-body.interface';
 
 export class SchemaMessage extends Message {
     public name: string;
@@ -39,10 +40,12 @@ export class SchemaMessage extends Message {
         return this.documents[1];
     }
 
-    public toMessage(): string {
-        return JSON.stringify({
-            action: this.action,
+    public override toMessageObject(): SchemaMessageBody {
+        return {
+            id: null,
+            status: null,
             type: this.type,
+            action: this.action,
             name: this.name,
             description: this.description,
             entity: this.entity,
@@ -53,7 +56,7 @@ export class SchemaMessage extends Message {
             document_url: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
             context_url: this.getContextUrl(UrlType.url)
-        });
+        };
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
@@ -79,8 +82,10 @@ export class SchemaMessage extends Message {
         return this.fromMessageObject(json);
     }
 
-    public static fromMessageObject(json: any): SchemaMessage {
+    public static fromMessageObject(json: SchemaMessageBody): SchemaMessage {
         const message = new SchemaMessage(json.action);
+        message._id = json.id;
+        message._status = json.status;
         message.name = json.name;
         message.description = json.description;
         message.entity = json.entity;

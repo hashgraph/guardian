@@ -1,8 +1,9 @@
 import { DIDDocument } from './../vcjs/did-document';
 import { Message } from './message';
-import { IURL } from "./i-url";
+import { IURL } from "./url.interface";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
+import { DidMessageBody, MessageBody } from './message-body.interface';
 
 export class DIDMessage extends Message {
     public document: any;
@@ -23,14 +24,16 @@ export class DIDMessage extends Message {
         return this.document;
     }
 
-    public toMessage(): string {
-        return JSON.stringify({
-            action: this.action,
+    public override toMessageObject(): DidMessageBody {
+        return {
+            id: this._id,
+            status: this._status,
             type: this.type,
+            action: this.action,
             did: this.did,
             cid: this.urls[0].cid,
             url: this.urls[0].url
-        });
+        };
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
@@ -49,8 +52,10 @@ export class DIDMessage extends Message {
         return this.fromMessageObject(json);
     }
 
-    public static fromMessageObject(json: any): DIDMessage {
+    public static fromMessageObject(json: DidMessageBody): DIDMessage {
         const message = new DIDMessage(json.action);
+        message._id = json.id;
+        message._status = json.status;
         const urls = [{
             cid: json.cid,
             url: json.url

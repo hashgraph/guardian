@@ -49,6 +49,9 @@ export class VcDocument implements IVCDocument {
 
     @Column()
     schema: string;
+    
+    @Column()
+    messageId: string;
 
     @BeforeInsert()
     setDefaults() {

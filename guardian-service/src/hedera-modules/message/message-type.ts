@@ -7,5 +7,5 @@ export enum MessageType {
     InstancePolicy = 'Instance-Policy',
     Schema = 'Schema',
     Topic = 'Topic',
-    DynamicTopic = 'Dynamic-Topic',
+    // DynamicTopic = 'Dynamic-Topic',
 }

@@ -38,31 +38,33 @@ export class TopicHelper {
         return topic;
     }
 
-    public async link(topic: Topic, parent?: Topic) {
+    public async link(topic: Topic, parent: Topic, rationale: string) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey);
 
-        const message1 = new TopicMessage(MessageType.Topic, MessageAction.CreateTopic);
+        const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
             name: topic.name,
             description: topic.description,
             owner: topic.owner,
-            topicType: topic.type,
-            topicId: null,
-            parentId: parent?.topicId
+            messageType: topic.type,
+            childId: null,
+            parentId: parent?.topicId,
+            rationale: rationale
         });
         await messageServer
             .setTopicObject(topic)
             .sendMessage(message1);
 
         if (parent) {
-            const message2 = new TopicMessage(MessageType.DynamicTopic, MessageAction.CreateTopic);
+            const message2 = new TopicMessage(MessageAction.CreateTopic);
             message2.setDocument({
                 name: topic.name,
                 description: topic.description,
                 owner: topic.owner,
-                topicType: topic.type,
-                topicId: topic.topicId,
-                parentId: null
+                messageType: topic.type,
+                childId: topic.topicId,
+                parentId: null,
+                rationale: rationale
             });
             await messageServer
                 .setTopicObject(parent)

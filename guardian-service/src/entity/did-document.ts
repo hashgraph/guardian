@@ -23,6 +23,9 @@ export class DidDocument implements IDidObject {
     @Column()
     status: DidDocumentStatus;
 
+    @Column()
+    messageId: string;
+
     @BeforeInsert()
     setDefaults() {
         this.status = this.status || DidDocumentStatus.NEW;

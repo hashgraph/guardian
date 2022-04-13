@@ -128,14 +128,14 @@ export class PolicyEngineService {
             delete model.messageId;
         }
 
-        let newTopic: Topic, topic: Topic;
+        let newTopic: Topic;
         const root = await this.users.getHederaAccount(owner);
         if (model.topicId) {
-            topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
+            const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
         } else {
             const parent = await getMongoRepository(Topic).findOne({ owner: owner, type: TopicType.UserTopic });
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-            topic = await topicHelper.create({
+            const topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: model.name || TopicType.PolicyTopic,
                 description: model.topicDescription || TopicType.PolicyTopic,
@@ -143,16 +143,18 @@ export class PolicyEngineService {
                 policyId: null,
                 policyUUID: null
             });
-            await topicHelper.link(topic, parent);
+            model.topicId = topic.topicId;
+
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
+            message.setDocument(model);
+            const messageStatus = await messageServer
+                .setTopicObject(topic)
+                .sendMessage(message);
+
+            await topicHelper.link(topic, parent, messageStatus.getId());
             newTopic = topic;
         }
-
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-        const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
-        message.setDocument(model);
-        await messageServer
-            .setTopicObject(topic)
-            .sendMessage(message);
 
         const policy = await getMongoRepository(Policy).save(model);
         if (newTopic) {
@@ -213,14 +215,14 @@ export class PolicyEngineService {
             policyId: model.id.toString(),
             policyUUID: model.uuid
         });
-        await topicHelper.link(rootTopic, topic);
-
-        model.instanceTopicId = rootTopic.topicId;
 
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
         const result = await messageServer.setTopicObject(topic).sendMessage(message);
         model.messageId = result.getId();
+        model.instanceTopicId = rootTopic.topicId;
+
+        await topicHelper.link(rootTopic, topic, result.getId());
 
         const messageId = result.getId();
         const url = result.getUrl();
@@ -531,7 +533,7 @@ export class PolicyEngineService {
                     throw new Error('file in body is empty');
                 }
                 const userFull = await this.users.getUser(user.username);
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
+                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
                 res.send(new MessageResponse(policyToImport));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
@@ -546,7 +548,7 @@ export class PolicyEngineService {
                     throw new Error('file in body is empty');
                 }
                 const userFull = await this.users.getUser(user.username);
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(new Buffer(zip.data));
+                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
                 const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 res.send(new MessageResponse(policies));

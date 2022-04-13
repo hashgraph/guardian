@@ -1,14 +1,17 @@
 import { VpDocument } from '../vcjs/vp-document';
 import { Message } from './message';
-import { IURL, UrlType } from "./i-url";
+import { IURL, UrlType } from "./url.interface";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
+import { MessageBody, VpMessageBody } from './message-body.interface';
 
 export class VPMessage extends Message {
     public vpDocument: VpDocument;
     public document: any;
     public hash: string;
     public issuer: string;
+    public vsMessages: string[];
+
 
     constructor(action: MessageAction) {
         super(action, MessageType.VPDocument);
@@ -21,18 +24,25 @@ export class VPMessage extends Message {
         this.issuer = document.getIssuerDid();
     }
 
+    public setMessages(ids: string[]): void {
+        this.vsMessages = ids;
+    }
+
     public getDocument(): any {
         return this.document;
     }
 
-    public toMessage(): string {
-        return JSON.stringify({
-            action: this.action,
+    public override toMessageObject(): VpMessageBody {
+        return {
+            id: null,
+            status: null,
             type: this.type,
+            action: this.action,
             issuer: this.issuer,
+            relationships: this.vsMessages,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
-        });
+        };
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
@@ -51,8 +61,12 @@ export class VPMessage extends Message {
         return this.fromMessageObject(json);
     }
 
-    public static fromMessageObject(json: any): VPMessage {
+    public static fromMessageObject(json: VpMessageBody): VPMessage {
         const message = new VPMessage(json.action);
+        message._id = json.id;
+        message._status = json.status;
+        message.issuer = json.issuer;
+        message.vsMessages = json.relationships;
         const urls = [{
             cid: json.cid,
             url: json.url

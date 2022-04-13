@@ -22,7 +22,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 })
 export class RequestVcDocumentBlock {
     @StateField()
-    state: { [key: string]: any } = {active: true};
+    state: { [key: string]: any } = { active: true };
 
     @Inject()
     private wallet: Wallet;
@@ -140,7 +140,7 @@ export class RequestVcDocumentBlock {
             };
             await this.changeActive(user, true);
 
-            await ref.runNext(user, {data: item});
+            await ref.runNext(user, { data: item });
         } catch (error) {
             ref.error(`setData: ${error.message}`);
             await this.changeActive(user, true);
@@ -169,12 +169,15 @@ export class RequestVcDocumentBlock {
                 message.setDocument(didObject);
 
                 const client = new MessageServer(userHederaAccount, userHederaKey);
-                await client.setTopicObject(topic).sendMessage(message);
+                const messageResult = await client
+                    .setTopicObject(topic)
+                    .sendMessage(message);
 
                 const doc = getMongoRepository(DidDocumentCollection).create({
                     did: did,
                     document: document,
-                    status: DidDocumentStatus.CREATE
+                    status: DidDocumentStatus.CREATE,
+                    messageId: messageResult.getId()
                 });
 
                 await getMongoRepository(DidDocumentCollection).save(doc);
@@ -204,13 +207,13 @@ export class RequestVcDocumentBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
+            const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;
             }
             if (ref.options.presetSchema) {
-                const presetSchema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.presetSchema});
+                const presetSchema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.presetSchema });
                 if (!presetSchema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
                     return;

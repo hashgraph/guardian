@@ -28,30 +28,15 @@ export class MintBlock {
 
     private async createMintVC(root: any, token: any, data: any): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-
-        let vcSubject: any;
-        if (token.tokenType == 'non-fungible') {
-            const policySchema = await getMongoRepository(SchemaCollection).findOne({
-                entity: SchemaEntity.MINT_NFTOKEN
-            });
-            const serials = data as number[];
-            vcSubject = {
-                ...SchemaHelper.getContext(policySchema),
-                date: (new Date()).toISOString(),
-                tokenId: token.tokenId,
-                serials: serials
-            }
-        } else {
-            const policySchema = await getMongoRepository(SchemaCollection).findOne({
-                entity: SchemaEntity.MINT_TOKEN
-            });
-            const amount = data as string;
-            vcSubject = {
-                ...SchemaHelper.getContext(policySchema),
-                date: (new Date()).toISOString(),
-                tokenId: token.tokenId,
-                amount: amount.toString()
-            }
+        const policySchema = await getMongoRepository(SchemaCollection).findOne({
+            entity: SchemaEntity.MINT_TOKEN
+        });
+        const amount = data as string;
+        const vcSubject = {
+            ...SchemaHelper.getContext(policySchema),
+            date: (new Date()).toISOString(),
+            tokenId: token.tokenId,
+            amount: amount.toString()
         }
         const mintVC = await vcHelper.createVC(
             root.did,
@@ -75,6 +60,7 @@ export class MintBlock {
     private async mintProcessing(
         token: TokenCollection,
         document: VcDocument[],
+        vsMessages: string[],
         rule: string,
         root: any,
         user: IAuthUser,
@@ -82,11 +68,20 @@ export class MintBlock {
     ): Promise<any> {
         const uuid = HederaUtils.randomUUID();
         const amount = PolicyUtils.aggregate(rule, document);
-        const vcDate = await PolicyUtils.mint(token, amount, root, user, uuid);
-        const mintVC = await this.createMintVC(root, token, vcDate);
+        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+        const mintVC = await this.createMintVC(root, token, tokenAmount);
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
+
+        const topic = await PolicyUtils.getTopic('root', root, user, ref);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+
+        const vcMessage = new VCMessage(MessageAction.CreateVC);
+        vcMessage.setDocument(mintVC);
+        const vcMessageResult = await messageServer
+            .setTopicObject(topic)
+            .sendMessage(vcMessage);
         await PolicyUtils.updateVCRecord({
             hash: mintVC.toCredentialHash(),
             owner: user.did,
@@ -94,20 +89,27 @@ export class MintBlock {
             type: DataTypes.MINT,
             policyId: ref.policyId,
             tag: ref.tag,
-            schema: `#${mintVC.getSubjectType()}`
+            schema: `#${mintVC.getSubjectType()}`,
+            messageId: vcMessageResult.getId()
         } as any);
-        
-        const topic = await PolicyUtils.getTopic('root', root, user, ref);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
 
-        const vcMessage = new VCMessage(MessageAction.CreateVC);
-        vcMessage.setDocument(mintVC);
-        await messageServer.setTopicObject(topic).sendMessage(vcMessage);
-
-        await PolicyUtils.saveVP(vp, user.did, DataTypes.MINT, ref);
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
-        await messageServer.setTopicObject(topic).sendMessage(vpMessage);
+        vpMessage.setMessages(vsMessages);
+        const vpMessageResult = await messageServer
+            .setTopicObject(topic)
+            .sendMessage(vpMessage);
+        await PolicyUtils.saveVP({
+            hash: vp.toCredentialHash(),
+            document: vp.toJsonTree(),
+            owner: user.did,
+            type: DataTypes.MINT,
+            policyId: ref.policyId,
+            tag: ref.tag,
+            messageId: vpMessageResult.getId()
+        } as any);
+
+        await PolicyUtils.mint(token, tokenValue, root, user, vpMessageResult.getId());
 
         return vp;
     }
@@ -127,12 +129,16 @@ export class MintBlock {
         }
 
         const vcs: VcDocument[] = [];
+        const vsMessages: string[] = [];
         for (let i = 0; i < docs.length; i++) {
             const element = docs[i];
             if (element.signature === DocumentSignature.INVALID) {
                 throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
             }
             vcs.push(VcDocument.fromJsonTree(element.document));
+            if(element.messageId) {
+                vsMessages.push(element.messageId);
+            }
         }
 
         const curUser = await this.users.getUserById(docs[0].owner);
@@ -142,7 +148,7 @@ export class MintBlock {
 
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
-            const doc = await this.mintProcessing(token, vcs, rule, root, curUser, ref);
+            const doc = await this.mintProcessing(token, vcs, vsMessages, rule, root, curUser, ref);
             await ref.runNext(curUser, state);
             PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, curUser);
             PolicyComponentsUtils.CallParentContainerCallback(ref, curUser);

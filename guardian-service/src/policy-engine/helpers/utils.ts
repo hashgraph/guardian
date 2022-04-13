@@ -89,32 +89,14 @@ export class PolicyUtils {
     }
 
 
-    public static async saveVP(vp: VpDocument, owner: string, type: DataTypes, ref: AnyBlockType): Promise<boolean> {
-        try {
-            if (!vp) {
-                return false;
-            }
-            const doc = getMongoRepository(VpDocumentCollection).create({
-                hash: vp.toCredentialHash(),
-                document: vp.toJsonTree(),
-                owner: owner,
-                type: type as any,
-                policyId: ref.policyId,
-                tag: ref.tag
-            })
-            await getMongoRepository(VpDocumentCollection).save(doc);
-            return true;
-        } catch (error) {
-            return false;
-        }
+    public static async saveVP(row: VpDocumentCollection): Promise<VpDocumentCollection> {
+        const doc = getMongoRepository(VpDocumentCollection).create(row);
+        return await getMongoRepository(VpDocumentCollection).save(doc);
     }
 
-    public static async mint(token: Token, amount: number, root: any, user: IAuthUser, uuid: string): Promise<any> {
-        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
-
+    public static async mint(token: Token, tokenValue: number, root: any, user: IAuthUser, uuid: string): Promise<void> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
 
-        let vcDate: any;
         console.log('Mint: Start');
         const tokenId = token.tokenId;
         const supplyKey = token.supplyKey;
@@ -153,29 +135,25 @@ export class PolicyUtils {
                     console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
                 }
             }
-            vcDate = serials;
         } else {
             await client.mint(tokenId, supplyKey, tokenValue, uuid);
             await client.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
-            vcDate = tokenAmount;
         }
         console.log('Mint: End');
-        return vcDate;
     }
 
-    public static async wipe(token: Token, amount: number, root: any, user: IAuthUser, uuid: string): Promise<any> {
+    public static async wipe(token: Token, tokenValue: number, root: any, user: IAuthUser, uuid: string): Promise<void> {
         const tokenId = token.tokenId;
         const wipeKey = token.wipeKey;
         const adminId = token.adminId;
         const adminKey = token.adminKey;
-        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
         if (token.tokenType == 'non-fungible') {
             throw 'unsupported operation';
         } else {
             await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
         }
-        return tokenValue;
     }
 
     public static async getTopic(topicName: string, root: any, user: any, ref: AnyBlockType): Promise<Topic> {
@@ -213,7 +191,7 @@ export class PolicyUtils {
                     policyId: ref.policyId,
                     policyUUID: null
                 });
-                await topicHelper.link(topic, rootTopic);
+                await topicHelper.link(topic, rootTopic, null);
             }
         } else {
             topic = rootTopic;

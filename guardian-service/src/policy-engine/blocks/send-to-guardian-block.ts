@@ -133,8 +133,11 @@ export class SendToGuardianBlock {
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey);
-            await messageServer.setTopicObject(topic).sendMessage(vcMessage);
+            const vcMessageResult = await messageServer
+                .setTopicObject(topic)
+                .sendMessage(vcMessage);
             document.hederaStatus = DocumentStatus.ISSUE;
+            document.messageId = vcMessageResult.getId();
             return document;
         } catch (error) {
             throw new BlockActionError(error.message, ref.blockType, ref.uuid)

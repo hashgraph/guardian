@@ -88,7 +88,7 @@ export const profileAPI = async function (channel: any) {
                     policyId: null,
                     policyUUID: null
                 });
-                await topicHelper.link(topic, null);
+                await topicHelper.link(topic, null, null);
                 newTopic = true;
             }
 
@@ -130,8 +130,9 @@ export const profileAPI = async function (channel: any) {
 
             const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
             try {
-                await messageServer.setTopicObject(topic).sendMessage(didMessage)
+                const didMessageResult =await messageServer.setTopicObject(topic).sendMessage(didMessage)
                 didDoc.status = DidDocumentStatus.CREATE;
+                didDoc.messageId = didMessageResult.getId();
                 getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             } catch (error) {
                 new Logger().error(error.message, ['GUARDIAN_SERVICE']);
@@ -141,8 +142,9 @@ export const profileAPI = async function (channel: any) {
             }
             if (vcMessage) {
                 try {
-                    await messageServer.setTopicObject(topic).sendMessage(vcMessage);
+                    const vcMessageResult = await messageServer.setTopicObject(topic).sendMessage(vcMessage);
                     vcDoc.hederaStatus = DocumentStatus.ISSUE;
+                    vcDoc.messageId = vcMessageResult.getId();
                     getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
                 } catch (error) {
                     new Logger().error(error.message, ['GUARDIAN_SERVICE']);

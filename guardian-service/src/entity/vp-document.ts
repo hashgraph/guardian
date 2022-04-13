@@ -38,6 +38,9 @@ export class VpDocument implements IVPDocument {
     @Column()
     tag: string;
 
+    @Column()
+    messageId: string;
+
     @BeforeInsert()
     setDefaults() {
         this.status = this.status || DocumentStatus.NEW;
