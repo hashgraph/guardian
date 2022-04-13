@@ -30,10 +30,20 @@ async function getTopicMessages(topicId) {
 
 async function find(topicId, root) {
     const messages = await getTopicMessages(topicId);
+    const topicDiv = renderTopic(root, topicId);
+    for (let i = 0; i < messages.length; i++) {
+        const message = JSON.parse(messages[i].message);
+        renderMessage(topicDiv, messages[i].id, message, topicId);
+        if (message && message.type == 'Topic' && message.childId) {
+            await find(message.childId, topicDiv);
+        }
+    }
+}
 
+function renderTopic(container, topicId) {
     const topicDiv = document.createElement("div");
     topicDiv.className = "topic max";
-    root.append(topicDiv);
+    container.append(topicDiv);
 
     const topicNameDiv = document.createElement("div");
     topicNameDiv.className = "topic-name";
@@ -45,38 +55,34 @@ async function find(topicId, root) {
             topicDiv.className === "topic max" ? "topic min" : "topic max";
     })
 
-    for (let i = 0; i < messages.length; i++) {
-        const m = JSON.parse(messages[i].message);
+    return topicDiv;
+}
 
-        const topicMessageDiv = document.createElement("div");
-        topicMessageDiv.className = `topic-message type-${m.type}`;
-        topicDiv.append(topicMessageDiv);
+function renderMessage(container, id, message, topicId) {
+    const topicMessageDiv = document.createElement("div");
+    topicMessageDiv.className = `topic-message type-${message.type}`;
+    container.append(topicMessageDiv);
 
-        const messageNameDiv = document.createElement("div");
-        messageNameDiv.className = "message-name";
-        messageNameDiv.innerHTML = `message(${messages[i].id}): ${m.type}: ${m.action}`;
-        topicMessageDiv.append(messageNameDiv);
+    const messageNameDiv = document.createElement("div");
+    messageNameDiv.className = "message-name";
+    messageNameDiv.innerHTML = `message(${id}): ${message.type}: ${message.action}`;
+    topicMessageDiv.append(messageNameDiv);
 
-        const messageTopicNameDiv = document.createElement("div");
-        messageTopicNameDiv.className = "message-topic-name";
-        messageTopicNameDiv.innerHTML = `topic(${topicId})`;
-        topicMessageDiv.append(messageTopicNameDiv);
+    const messageTopicNameDiv = document.createElement("div");
+    messageTopicNameDiv.className = "message-topic-name";
+    messageTopicNameDiv.innerHTML = `topic(${topicId})`;
+    topicMessageDiv.append(messageTopicNameDiv);
 
-        const messageBodyDiv = document.createElement("div");
-        messageBodyDiv.className = "message-body";
-        messageBodyDiv.innerHTML = JSON.stringify(m, null, 4);
-        topicMessageDiv.append(messageBodyDiv);
+    const messageBodyDiv = document.createElement("div");
+    messageBodyDiv.className = "message-body";
+    messageBodyDiv.innerHTML = JSON.stringify(message, null, 4);
+    topicMessageDiv.append(messageBodyDiv);
 
-        messageNameDiv.addEventListener('click', event => {
-            event.preventDefault();
-            messageBodyDiv.className =
-                messageBodyDiv.className === "message-body" ? "message-body max" : "message-body";
-        })
-
-        if (m && m.type == 'Topic' && m.childId) {
-            await find(m.childId, topicDiv);
-        }
-    }
+    messageNameDiv.addEventListener('click', event => {
+        event.preventDefault();
+        messageBodyDiv.className =
+            messageBodyDiv.className === "message-body" ? "message-body max" : "message-body";
+    })
 }
 
 function render(value) {
