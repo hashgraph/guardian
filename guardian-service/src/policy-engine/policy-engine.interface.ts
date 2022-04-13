@@ -79,7 +79,9 @@ export interface IPolicySourceBlock extends IPolicyBlock {
 
     getFiltersAddons(): IPolicyBlock[];
 
-    getSources(user: IAuthUser): Promise<any[]>
+    getSources(user: IAuthUser, sliceData?: any): Promise<any[]>
+
+    getCommonAddons(): IPolicyBlock[];
 }
 
 export interface IPolicyAddonBlock extends IPolicyBlock {
@@ -96,6 +98,8 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
     getFilters(user: IAuthUser): { [key: string]: string };
 
     setFilters(filters: { [key: string]: string }, user: IAuthUser): void
+
+    getState(user: IAuthUser): any;
 }
 
 

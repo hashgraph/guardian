@@ -2,7 +2,7 @@ import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-b
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyAddonBlock, IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
 
 /**
  * Document source block with UI
@@ -23,9 +23,27 @@ export class InterfaceDocumentsSource {
             }
         });
 
+        const commonAddons = ref.getCommonAddons().map(addon => {
+            return {
+                id: addon.uuid,
+                uiMetaData: addon.options.uiMetaData,
+                blockType: addon.blockType
+            }
+        });
+
+        const pagination = ref.getCommonAddons().find(addon => {
+            return addon.blockType === 'paginationAddon';
+        }) as IPolicyAddonBlock;
+
+        let paginationData = null;
+        if (pagination) {
+            paginationData = await pagination.getState(user);
+        }
+
         return Object.assign({
-            data: await ref.getSources(user),
-            blocks
+            data: await ref.getSources(user, paginationData),
+            blocks,
+            commonAddons
         }, ref.options.uiMetaData);
     }
 

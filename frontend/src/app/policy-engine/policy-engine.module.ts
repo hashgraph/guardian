@@ -45,11 +45,18 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
 import { JsonPropertiesComponent } from './policy-configuration/json-properties/json-properties.component';
 import { ReportBlockComponent } from './policy-viewer/blocks/report-block/report-block.component';
 import { ReportItemConfigComponent } from './policy-configuration/blocks/report/report-item-config/report-item-config.component';
+import {
+    PaginationAddonConfigComponent
+} from './policy-configuration/blocks/documents/pagination-addon-config/pagination-addon-config.component';
+import {
+    PaginationAddonBlockComponent
+} from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 
 @NgModule({
     declarations: [
         PolicyConfigurationComponent,
         DocumentSourceComponent,
+        PaginationAddonConfigComponent,
         CommonPropertiesComponent,
         ActionConfigComponent,
         ContainerConfigComponent,
@@ -75,6 +82,7 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
         InformationBlockComponent,
         StepBlockComponent,
         RolesBlockComponent,
+        PaginationAddonBlockComponent,
         FiltersAddonBlockComponent,
         HelpIcon,
         SavePolicyDialog,
