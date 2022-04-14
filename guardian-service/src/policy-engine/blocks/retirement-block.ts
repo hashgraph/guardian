@@ -94,7 +94,7 @@ export class RetirementBlock {
 
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
-        vpMessage.setMessages(vsMessages);
+        vpMessage.setRelationships(vsMessages);
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);

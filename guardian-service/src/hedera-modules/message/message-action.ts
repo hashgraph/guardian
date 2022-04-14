@@ -8,5 +8,5 @@ export enum MessageAction {
     PublishSchema = 'publish-schema',
     DeleteSchema = 'delete-schema',
     CreateTopic = 'create-topic',
-    CreateVP = 'create-cp-document'
+    CreateVP = 'create-vp-document'
 }

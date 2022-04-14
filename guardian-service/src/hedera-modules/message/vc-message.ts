@@ -10,6 +10,7 @@ export class VCMessage extends Message {
     public document: any;
     public hash: string;
     public issuer: string;
+    public relationships: string[];
 
     constructor(action: MessageAction) {
         super(action, MessageType.VCDocument);
@@ -20,6 +21,10 @@ export class VCMessage extends Message {
         this.document = document.getDocument();
         this.hash = document.toCredentialHash();
         this.issuer = document.getIssuerDid();
+    }
+
+    public setRelationships(ids: string[]): void {
+        this.relationships = ids;
     }
 
     public getDocument(): any {
@@ -33,6 +38,7 @@ export class VCMessage extends Message {
             type: this.type,
             action: this.action,
             issuer: this.issuer,
+            relationships: this.relationships,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
         };
@@ -59,6 +65,7 @@ export class VCMessage extends Message {
         message._id = json.id;
         message._status = json.status;
         message.issuer = json.issuer;
+        message.relationships = json.relationships;
         const urls = [{
             cid: json.cid,
             url: json.url

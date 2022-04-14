@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -10,15 +11,19 @@
             position: relative;
             display: block;
         }
+
         .topic {
             margin-left: 40px;
         }
+
         .topic-message {
             margin-left: 40px;
         }
+
         .message-body {
             white-space: pre;
         }
+
         .topic-message {
             border: 1px solid #000;
             border-radius: 4px;
@@ -28,6 +33,7 @@
             max-width: 750px;
             position: relative;
         }
+
         .message-body {
             margin-top: 10px;
             padding: 6px 40px 6px 16px;
@@ -37,14 +43,17 @@
             background-color: #f6f8faad;
             border-radius: 6px;
         }
+
         .message-name {
             font-weight: bold;
         }
+
         .topic-name {
             font-weight: bold;
             margin-bottom: 10px;
             cursor: pointer;
         }
+
         .message-topic-name {
             position: absolute;
             right: 8px;
@@ -112,30 +121,47 @@
             color: #000ec7;
         }
 
-        .type-Policy .message-name{
+        .type-Policy .message-name {
             color: #000ec7;
         }
+
         #input {
             padding: 9px 50px 9px 20px;
             border-radius: 6px;
+        }
+
+        #inputType{
+            padding: 9px 50px 9px 20px;
+            border-radius: 6px;
+            margin-right: 20px;
+        }
+
+        .header {
             margin: 10px auto 18px auto;
             display: table;
         }
 
-        .topic.min > .topic-message > .message-body{
+        .topic.min>.topic-message>.message-body {
             display: none;
         }
 
-        .topic.min > .topic-message > .message-body.max{
+        .topic.min>.topic-message>.message-body.max {
             display: block;
         }
     </style>
 </head>
+
 <body>
-    <div class="">
+    <div class="header">
+        <select id="inputType" name="inputType">
+            <option value="topic">Topic</option>
+            <option value="message">Message</option>
+        </select>
         <input id="input" />
     </div>
     <div id="results" class="container">
+
     </div>
 </body>
+
 </html>

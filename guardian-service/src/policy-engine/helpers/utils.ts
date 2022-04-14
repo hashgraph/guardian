@@ -3,6 +3,7 @@ import { HederaSDKHelper, HederaUtils, VcDocument, VpDocument } from "@hedera-mo
 import * as mathjs from 'mathjs';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
+import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { getMongoRepository } from "typeorm";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { IAuthUser } from "@auth/auth.interface";
@@ -88,6 +89,23 @@ export class PolicyUtils {
         }
     }
 
+    public static async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
+        let item = await getMongoRepository(DidDocumentCollection).findOne({ did: row.did });
+        if (item) {
+            item.document = row.document;
+            item.status = row.status;
+            await getMongoRepository(DidDocumentCollection).update(item.id, item);
+            return item;
+        } else {
+            item = getMongoRepository(DidDocumentCollection).create(row as DidDocumentCollection);
+            return await getMongoRepository(DidDocumentCollection).save(item);
+        }
+    }
+
+    public static async updateVPRecord(row: VpDocumentCollection): Promise<VpDocumentCollection> {
+        const doc = getMongoRepository(VpDocumentCollection).create(row);
+        return await getMongoRepository(VpDocumentCollection).save(doc);
+    }
 
     public static async saveVP(row: VpDocumentCollection): Promise<VpDocumentCollection> {
         const doc = getMongoRepository(VpDocumentCollection).create(row);
