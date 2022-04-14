@@ -195,6 +195,7 @@ export class PolicyImportExportHelper {
                     freezeKey: freezeKey ? freezeKey.toString() : null,
                     wipeKey: wipeKey ? wipeKey.toString() : null,
                     supplyKey: supplyKey ? supplyKey.toString() : null,
+                    owner: root.did
                 });
                 await tokenRepository.save(tokenObject);
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);

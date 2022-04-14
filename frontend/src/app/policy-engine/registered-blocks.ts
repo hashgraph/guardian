@@ -25,9 +25,6 @@ import { BlockNode } from "./helpers/tree-data-source/tree-data-source";
 import { ReportBlockComponent } from "./policy-viewer/blocks/report-block/report-block.component";
 import { ReportItemConfigComponent } from "./policy-configuration/blocks/report/report-item-config/report-item-config.component";
 import {
-    PaginationAddonConfigComponent
-} from './policy-configuration/blocks/documents/pagination-addon-config/pagination-addon-config.component';
-import {
     PaginationAddonBlockComponent
 } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 
@@ -151,7 +148,6 @@ export class RegisteredBlocks {
         this.registerProperties(BlockType.ReportItem, ReportItemConfigComponent);
         this.registerProperties(BlockType.Calculate, CalculateConfigComponent);
         this.registerProperties(BlockType.CalculateMathAddon, CalculateMathConfigComponent);
-        this.registerProperties(BlockType.PaginationAddon, PaginationAddonConfigComponent);
     }
 
     public register(type: BlockType, icon: string, name: string, title: string) {
