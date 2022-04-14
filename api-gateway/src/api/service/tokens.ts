@@ -70,7 +70,9 @@ tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), asyn
         let tokens = [];
 
         if (user.role === UserRole.ROOT_AUTHORITY) {
-            tokens = await guardians.getTokens();
+            tokens = await guardians.getTokens({
+                did: user.did
+            });
         } else if (user.did) {
             tokens = await guardians.getAssociatedTokens(user.did);
         }

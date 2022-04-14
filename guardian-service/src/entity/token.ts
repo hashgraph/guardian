@@ -43,4 +43,7 @@ export class Token implements IToken {
 
     @Column()
     supplyKey: string;
+
+    @Column()
+    owner: string;
 }

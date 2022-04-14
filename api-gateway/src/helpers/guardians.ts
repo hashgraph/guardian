@@ -85,6 +85,7 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @param {Object} [params] - filters
      * @param {string} [params.tokenId] - token id
+     * @param {string} [params.did] - user did
      *
      * @returns {IToken[]} - tokens
      */
