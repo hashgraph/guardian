@@ -5,7 +5,6 @@ import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
 import {
-    IconType,
     IPolicyReport,
     IReport,
     IReportItem,
@@ -111,7 +110,7 @@ export class ReportBlock {
                 documents: documents
             }
 
-            const vp = await getMongoRepository(VpDocument).findOne({ hash, policyId: ref.policyId });
+            const vp = await getMongoRepository(VpDocument).findOne({hash, policyId: ref.policyId});
 
             if (vp) {
                 const vpDocument: IVPReport = {
@@ -151,7 +150,7 @@ export class ReportBlock {
                 variables.documentId = doc.id;
                 variables.documentSubjectId = doc.credentialSubject[0].id;
             } else {
-                const vc = await getMongoRepository(VcDocument).findOne({ hash, policyId: ref.policyId })
+                const vc = await getMongoRepository(VcDocument).findOne({hash, policyId: ref.policyId})
 
                 if (vc) {
                     const vcDocument: IVCReport = {
@@ -215,7 +214,7 @@ export class ReportBlock {
 
             await this.reportUserMap(report);
 
-            const schemes = await getMongoRepository(Schema).find({ status: SchemaStatus.PUBLISHED });
+            const schemes = await getMongoRepository(Schema).find({status: SchemaStatus.PUBLISHED});
 
             return {
                 hash: hash,

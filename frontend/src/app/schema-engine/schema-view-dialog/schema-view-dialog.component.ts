@@ -12,13 +12,18 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 export class SchemaViewDialog {
     loading = true;
     schemes!: any[];
+    topicId: any;
+    policies: any[];
 
     constructor(
         public dialogRef: MatDialogRef<SchemaViewDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any) { }
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.schemes = this.data.schemes || [];
+        this.topicId = this.data.topicId || null;
+        this.policies = this.data.policies || [];
+    }
 
     ngOnInit() {
-        this.schemes = this.data.schemes || [];
         this.loading = false;
     }
 
@@ -27,12 +32,10 @@ export class SchemaViewDialog {
     }
 
     onImport() {
-        this.dialogRef.close(true);
+        this.dialogRef.close({ topicId: this.topicId });
     }
 
     onNewVersionClick(messageId: string) {
-        this.dialogRef.close({
-            messageId
-        });
+        this.dialogRef.close({ messageId });
     }
 }

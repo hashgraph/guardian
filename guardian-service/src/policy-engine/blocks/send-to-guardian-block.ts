@@ -6,15 +6,13 @@ import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
-import { VcDocument } from '@entity/vc-document';
-import { DidDocument } from '@entity/did-document';
 import { ApprovalDocument } from '@entity/approval-document';
-import { Topic } from '@entity/topic';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -27,72 +25,32 @@ export class SendToGuardianBlock {
     @Inject()
     private users: Users;
 
-    async documentSender(state, user: IAuthUser): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        let document = state.data;
-        document.policyId = ref.policyId;
-        document.tag = ref.tag;
-        document.type = ref.options.entityType;
-
-        if (ref.options.forceNew) {
-            document = { ...document };
-            document.id = undefined;
-            state.data = document;
-        }
-        if (ref.options.options) {
-            document.option = document.option || {};
-            for (let index = 0; index < ref.options.options.length; index++) {
-                const option = ref.options.options[index];
-                document.option[option.name] = option.value;
-            }
-        }
-
-        ref.log(`Send Document: ${JSON.stringify(document)}`);
-
+    /**
+     * @deprecated 2022-08-04
+     */
+    async sendByType(document: any, ref: AnyBlockType) {
         let result: any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc = {
+                const doc: any = {
                     hash: vc.toCredentialHash(),
                     owner: document.owner,
                     assign: document.assign,
                     option: document.option,
                     schema: document.schema,
-                    hederaStatus: document.status || DocumentStatus.NEW,
+                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
                     signature: document.signature || DocumentSignature.NEW,
                     type: ref.options.entityType,
                     policyId: ref.policyId,
                     tag: ref.tag,
                     document: vc.toJsonTree()
                 };
-                let item = await getMongoRepository(VcDocument).findOne({ hash: doc.hash });
-                if (item) {
-                    item.owner = doc.owner;
-                    item.assign = doc.assign;
-                    item.option = doc.option;
-                    item.schema = doc.schema;
-                    item.hederaStatus = doc.hederaStatus;
-                    item.signature = doc.signature;
-                    item.type = doc.type;
-                    item.tag = doc.tag;
-                    item.document = doc.document;
-                } else {
-                    item = getMongoRepository(VcDocument).create(doc);
-                }
-                result = await getMongoRepository(VcDocument).save(item);
+                result = await PolicyUtils.updateVCRecord(doc);
                 break;
             }
             case 'did-documents': {
-                let item = await getMongoRepository(DidDocument).findOne({ did: document.did });
-                if (item) {
-                    item.document = document.document;
-                    item.status = document.status;
-                } else {
-                    item = getMongoRepository(DidDocument).create(document as DidDocument);
-                }
-                result = await getMongoRepository(DidDocument).save(item);
+                result = await PolicyUtils.updateDIDRecord(document);
                 break;
             }
             case 'approve': {
@@ -124,41 +82,143 @@ export class SendToGuardianBlock {
         return result;
     }
 
+    async send(document: any, ref: IPolicyBlock) {
+        const { dataSource } = ref.options;
+
+        let result: any;
+        switch (dataSource) {
+            case 'database': {
+                result = await this.sendToDatabase(document, ref);
+                break;
+            }
+            case 'hedera': {
+                result = await this.sendToHedera(document, ref);
+                break;
+            }
+            default:
+                throw new BlockActionError(`dataSource "${dataSource}" is unknown`, ref.blockType, ref.uuid)
+        }
+
+        return result;
+    }
+
+    async sendToDatabase(document: any, ref: IPolicyBlock) {
+        const { documentType } = ref.options;
+        switch (documentType) {
+            case 'vc': {
+                const vc = HVcDocument.fromJsonTree(document.document);
+                const doc: any = {
+                    policyId: ref.policyId,
+                    tag: ref.tag,
+                    type: ref.options.entityType,
+                    hash: vc.toCredentialHash(),
+                    document: vc.toJsonTree(),
+                    owner: document.owner,
+                    assign: document.assign,
+                    option: document.option,
+                    schema: document.schema,
+                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
+                    signature: document.signature || DocumentSignature.NEW,
+                    messageId: document.messageId || null,
+                    relationships: document.relationships || [],
+                };
+                return await PolicyUtils.updateVCRecord(doc);
+            }
+            case 'did': {
+                return await PolicyUtils.updateDIDRecord(document);
+            }
+            case 'vp': {
+                return await PolicyUtils.updateVPRecord(document);
+            }
+            default:
+                throw new BlockActionError(`documentType "${documentType}" is unknown`, ref.blockType, ref.uuid)
+        }
+    }
+
+    async sendToHedera(document: any, ref: IPolicyBlock) {
+        try {
+            const root = await this.users.getHederaAccount(ref.policyOwner);
+            const user = await this.users.getHederaAccount(document.owner);
+            const topic = await PolicyUtils.getTopic(ref.options.topic, root, user, ref);
+            const vc = HVcDocument.fromJsonTree(document.document);
+            const vcMessage = new VCMessage(MessageAction.CreateVC);
+            vcMessage.setDocument(vc);
+            vcMessage.setRelationships(document.relationships);
+            const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey);
+            const vcMessageResult = await messageServer
+                .setTopicObject(topic)
+                .sendMessage(vcMessage);
+            document.hederaStatus = DocumentStatus.ISSUE;
+            document.messageId = vcMessageResult.getId();
+            return document;
+        } catch (error) {
+            throw new BlockActionError(error.message, ref.blockType, ref.uuid)
+        }
+    }
+
+    async documentSender(state: any, user: IAuthUser): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+
+        let document = state.data;
+        document.policyId = ref.policyId;
+        document.tag = ref.tag;
+        document.type = ref.options.entityType;
+
+        if (ref.options.forceNew) {
+            document = { ...document };
+            document.id = undefined;
+            state.data = document;
+        }
+        if (ref.options.options) {
+            document.option = document.option || {};
+            for (let index = 0; index < ref.options.options.length; index++) {
+                const option = ref.options.options[index];
+                document.option[option.name] = option.value;
+            }
+        }
+
+        ref.log(`Send Document: ${JSON.stringify(document)}`);
+
+        if (ref.options.dataType) {
+            return await this.sendByType(document, ref);
+        } else {
+            return await this.send(document, ref);
+        }
+    }
+
     @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
-        await this.documentSender(state, user);
+        state.data = await this.documentSender(state, user);
         await ref.runNext(user, state);
         PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
         PolicyComponentsUtils.CallParentContainerCallback(ref, user);
         // ref.updateBlock(state, user, '');
     }
 
-    async sendToHedera(document: any, ref: any) {
-        const userFull = await this.users.getUserById(document.owner);
-        const userID = userFull.hederaAccountId;
-        const userDID = userFull.did;
-        const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const topic = await getMongoRepository(Topic).findOne({
-            policyId: ref.policyId,
-            type: TopicType.RootPolicyTopic
-        });
-        const vc = HVcDocument.fromJsonTree(document.document);
-        const vcMessage = new VCMessage(MessageAction.CreateVC);
-        vcMessage.setDocument(vc);
-        const messageServer = new MessageServer(userID, userKey);
-        messageServer.setSubmitKey(topic.key);
-        await messageServer.sendMessage(topic.topicId, vcMessage)
-        document.hederaStatus = DocumentStatus.ISSUE;
-        return document;
-    }
-
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+            if (ref.options.dataType) {
+                if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+                }
+            }
+
+            if (ref.options.dataSource == 'database') {
+                if (!['vc', 'did', 'vp'].find(item => item === ref.options.documentType)) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of vc, did, vp');
+                }
+            }
+            if (ref.options.dataSource == 'hedera') {
+                if (ref.options.topic && ref.options.topic !== 'root') {
+                    const policyTopics = ref.policyInstance.policyTopics || [];
+                    const config = policyTopics.find(e => e.name == ref.options.topic);
+                    if (!config) {
+                        resultsContainer.addBlockError(ref.uuid, `Topic "${ref.options.topic}" does not exist`);
+                    }
+                }
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

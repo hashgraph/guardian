@@ -13,8 +13,10 @@ import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
 import { ModelHelper, SchemaHelper, SchemaStatus, TopicType } from 'interfaces';
 import { Users } from '@helpers/users';
-import { HederaSDKHelper } from '@hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
+import { importSchemaByFiles } from '@api/schema.service';
+import { TopicHelper } from '@helpers/topicHelper';
 
 export class PolicyImportExportHelper {
     /**
@@ -109,27 +111,48 @@ export class PolicyImportExportHelper {
      */
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
         const { policy, tokens, schemes } = policyToImport;
-        const users = new Users();
-        const root = await users.getHederaAccount(policyOwner);
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-        
+
+        delete policy.id;
+        delete policy.messageId;
+        delete policy.version;
+        delete policy.previousVersion;
+        delete policy.registeredUsers;
         policy.policyTag = 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
-        delete policy.id;
-        delete policy.uuid;
-        delete policy.messageId;
-        delete policy.topicId;
-        delete policy.version;
-        delete policy.previousVersion;
-        delete policy.registeredUsers;
+
+
+        const users = new Users();
+        const root = await users.getHederaAccount(policyOwner);
+
+        const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const topicRow = await topicHelper.create({
+            type: TopicType.PolicyTopic,
+            name: policy.name || TopicType.PolicyTopic,
+            description: policy.topicDescription || TopicType.PolicyTopic,
+            owner: policyOwner,
+            policyId: null,
+            policyUUID: null
+        });
+
+        policy.topicId = topicRow.topicId;
+
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
+        message.setDocument(policy);
+        const messageStatus = await messageServer
+            .setTopicObject(parent)
+            .sendMessage(message);
+
+        await topicHelper.link(topicRow, parent, messageStatus.getId());
 
         // Import Tokens
-
         if (tokens) {
-            const tokenRepository = await getMongoRepository(Token);
+            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+            const tokenRepository = getMongoRepository(Token);
             for (const token of tokens) {
                 const treasury = await client.newAccount(2);
                 const treasuryId = treasury.id;
@@ -137,20 +160,20 @@ export class PolicyImportExportHelper {
                 const tokenName = token.tokenName;
                 const tokenSymbol = token.tokenSymbol;
                 const tokenType = token.tokenType;
+                const nft = tokenType == 'non-fungible';
+                const decimals = nft ? 0 : token.decimals;
+                const initialSupply = nft ? 0 : token.initialSupply;
                 const adminKey = token.adminKey ? treasuryKey : null;
                 const kycKey = token.kycKey ? treasuryKey : null;
                 const freezeKey = token.freezeKey ? treasuryKey : null;
                 const wipeKey = token.wipeKey ? treasuryKey : null;
                 const supplyKey = token.supplyKey ? treasuryKey : null;
-                const nft = tokenType == 'non-fungible';
-                const _decimals = nft ? 0 : token.decimals;
-                const _initialSupply = nft ? 0 : token.initialSupply;
                 const tokenId = await client.newToken(
                     tokenName,
                     tokenSymbol,
                     nft,
-                    _decimals,
-                    _initialSupply,
+                    decimals,
+                    initialSupply,
                     '',
                     treasury,
                     adminKey,
@@ -164,62 +187,48 @@ export class PolicyImportExportHelper {
                     tokenName,
                     tokenSymbol,
                     tokenType,
-                    decimals: _decimals,
-                    initialSupply: _initialSupply,
+                    decimals: decimals,
+                    initialSupply: initialSupply,
                     adminId: treasuryId ? treasuryId.toString() : null,
                     adminKey: adminKey ? adminKey.toString() : null,
                     kycKey: kycKey ? kycKey.toString() : null,
                     freezeKey: freezeKey ? freezeKey.toString() : null,
                     wipeKey: wipeKey ? wipeKey.toString() : null,
                     supplyKey: supplyKey ? supplyKey.toString() : null,
+                    owner: root.did
                 });
                 await tokenRepository.save(tokenObject);
-
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);
             }
         }
 
-        const uuidMap: Map<string, string> = new Map();
-        for (let i = 0; i < schemes.length; i++) {
-            const file = schemes[i];
-            const newUUID = ModelHelper.randomUUID();
-            const uuid = file.iri ? file.iri.substring(1) : null;
-            if (uuid) {
-                uuidMap.set(uuid, newUUID);
-            }
-            file.uuid = newUUID;
-            file.iri = '#' + newUUID;
+        // Import Schemes
+        const schemesMap = await importSchemaByFiles(policyOwner, schemes, topicRow.topicId);
+
+        // Replace id
+        await this.replaceConfig(policy, schemesMap);
+
+        // Save
+        const model = getMongoRepository(Policy).create(policy as Policy);
+        const result = await getMongoRepository(Policy).save(model);
+
+        topicRow.policyId = result.id.toString();
+        topicRow.policyUUID = result.uuid;
+        await getMongoRepository(Topic).update(topicRow.id, topicRow);
+
+        return result;
+    }
+
+    static async replaceConfig(policy: Policy, schemesMap: any) {
+        if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
+            policy.name = policy.name + '_' + Date.now();
         }
-
-        for (let i = 0; i < schemes.length; i++) {
-            const file = schemes[i];
-
-            file.document = replaceValueRecursive(file.document, uuidMap)
-            file.context = replaceValueRecursive(file.context, uuidMap)
-
-            file.messageId = null;
-            file.creator = policyOwner;
-            file.owner = policyOwner;
-            file.status = SchemaStatus.DRAFT;
-            SchemaHelper.setVersion(file, '', '');
-            const schema = getMongoRepository(Schema).create(file);
-            await getMongoRepository(Schema).save(schema);
-        }
-
-        const schemesMap = [];
-        uuidMap.forEach((v, k) => {
-            schemesMap.push({
-                oldUUID: k,
-                newUUID: v,
-                oldIRI: `#${k}`,
-                newIRI: `#${v}`
-            })
-        })
 
         for (let index = 0; index < schemesMap.length; index++) {
             const item = schemesMap[index];
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
         }
+
         // compatibility with older versions
         replaceAllEntities(policy.config, ['blockType'], 'interfaceDocumentsSource', 'interfaceDocumentsSourceBlock');
         replaceAllEntities(policy.config, ['blockType'], 'requestVcDocument', 'requestVcDocumentBlock');
@@ -230,25 +239,5 @@ export class PolicyImportExportHelper {
         replaceAllEntities(policy.config, ['blockType'], 'wipeDocument', 'retirementDocumentBlock');
 
         regenerateIds(policy.config);
-
-        if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
-            policy.name = policy.name + '_' + Date.now();
-        }
-
-        const description = policy.topicDescription || TopicType.PolicyTopic;
-        const topicId = await client.newTopic(root.hederaAccountKey, root.hederaAccountKey, description);
-        const topic = {
-            topicId: topicId,
-            description: description,
-            owner: policyOwner,
-            type: TopicType.PolicyTopic,
-            key: root.hederaAccountKey
-        };
-        const topicObject = getMongoRepository(Topic).create(topic);
-        await getMongoRepository(Topic).save(topicObject);
-        policy.topicId = topicId;
-
-        const model = getMongoRepository(Policy).create(policy as Policy);
-        return await getMongoRepository(Policy).save(model);
     }
 }

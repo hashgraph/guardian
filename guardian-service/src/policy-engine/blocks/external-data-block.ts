@@ -1,5 +1,5 @@
 import { ExternalData } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, SchemaStatus } from 'interfaces';
+import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { VcDocument } from '@hedera-modules';
@@ -44,9 +44,12 @@ export class ExternalDataBlock {
             type: ref.options.entityType,
             schema: ref.options.schema
         };
-        ref.runNext(null, { data: doc }).then(
-            function () { },
-            function (error: any) { console.error(error); }
+        ref.runNext(null, {data: doc}).then(
+            function () {
+            },
+            function (error: any) {
+                console.error(error);
+            }
         );
     }
 
@@ -59,7 +62,7 @@ export class ExternalDataBlock {
                     return;
                 }
 
-                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+                const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;

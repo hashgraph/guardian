@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, Schema, SchemaEntity } from 'interfaces';
 import { Observable } from 'rxjs';
@@ -9,74 +9,88 @@ import { API_BASE_URL } from './api';
  */
 @Injectable()
 export class SchemaService {
-  private readonly url: string = `${API_BASE_URL}/schemas`;
+    private readonly url: string = `${API_BASE_URL}/schemas`;
 
-  constructor(
-    private http: HttpClient
-  ) {
-  }
+    constructor(
+        private http: HttpClient
+    ) {
+    }
 
-  public create(schema: Schema): Observable<ISchema[]> {
-    return this.http.post<any[]>(`${this.url}`, schema);
-  }
+    public create(schema: Schema, topicId: any): Observable<ISchema[]> {
+        return this.http.post<any[]>(`${this.url}/${topicId}`, schema);
+    }
 
-  public update(schema: Schema, id?: string): Observable<ISchema[]> {
-    const data = Object.assign({}, schema, { id: id || schema.id });
-    return this.http.put<any[]>(`${this.url}`, data);
-  }
+    public update(schema: Schema, id?: string): Observable<ISchema[]> {
+        const data = Object.assign({}, schema, { id: id || schema.id });
+        return this.http.put<any[]>(`${this.url}`, data);
+    }
 
-  public newVersion(schema: Schema, id?: string): Observable<ISchema[]> {
-    const data = Object.assign({}, schema, { id: id || schema.id });
-    return this.http.post<any[]>(`${this.url}`, data);
-  }
+    public newVersion(schema: Schema, id?: string): Observable<ISchema[]> {
+        const data = Object.assign({}, schema, { id: id || schema.id });
+        return this.http.post<any[]>(`${this.url}`, data);
+    }
 
-  public getSchemes(): Observable<ISchema[]> {
-    return this.http.get<any[]>(`${this.url}`);
-  }
+    public getSchemes(topicId?: string): Observable<ISchema[]> {
+        if (topicId) {
+            return this.http.get<ISchema[]>(`${this.url}/${topicId}`);
+        }
+        return this.http.get<ISchema[]>(`${this.url}`);
+    }
 
-  public publish(id: string, version: string): Observable<ISchema[]> {
-    return this.http.put<any[]>(`${this.url}/${id}/publish`, { version });
-  }
+    public getSchemesByPage(topicId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+        let url = `${this.url}`;
+        if (topicId) {
+            url += `/${topicId}`
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+        }
+        return this.http.get<any>(url, { observe: 'response' });
+    }
 
-  public unpublished(id: string): Observable<ISchema[]> {
-    return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
-  }
+    public publish(id: string, version: string): Observable<ISchema[]> {
+        return this.http.put<any[]>(`${this.url}/${id}/publish`, { version });
+    }
 
-  public delete(id: string): Observable<ISchema[]> {
-    return this.http.delete<any[]>(`${this.url}/${id}`);
-  }
+    public unpublished(id: string): Observable<ISchema[]> {
+        return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
+    }
 
-  public exportInFile(id: string): Observable<Blob> {
-    return this.http.get(`${this.url}/${id}/export/file`, {
-      responseType: 'blob'
-    });
-  }
+    public delete(id: string): Observable<ISchema[]> {
+        return this.http.delete<any[]>(`${this.url}/${id}`);
+    }
 
-  public exportInMessage(id: string): Observable<ISchema[]> {
-    return this.http.get<any[]>(`${this.url}/${id}/export/message`);
-  }
+    public exportInFile(id: string): Observable<Blob> {
+        return this.http.get(`${this.url}/${id}/export/file`, {
+            responseType: 'blob'
+        });
+    }
 
-  public importByMessage(messageId: string): Observable<ISchema[]> {
-    return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
-  }
+    public exportInMessage(id: string): Observable<ISchema[]> {
+        return this.http.get<any[]>(`${this.url}/${id}/export/message`);
+    }
 
-  public importByFile(schemesFile: any): Observable<ISchema[]> {
-    return this.http.post<any[]>(`${this.url}/import/file`, schemesFile, {
-      headers: {
-        'Content-Type': 'binary/octet-stream'
-      }
-    });
-  }
+    public importByMessage(messageId: string, topicId: any): Observable<ISchema[]> {
+        return this.http.post<any[]>(`${this.url}/${topicId}/import/message`, { messageId });
+    }
 
-  public previewByMessage(messageId: string): Observable<ISchema> {
-    return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
-  }
+    public importByFile(schemesFile: any, topicId: any): Observable<ISchema[]> {
+        return this.http.post<any[]>(`${this.url}/${topicId}/import/file`, schemesFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
 
-  public previewByFile(schemesFile: any): Observable<ISchema[]> {
-    return this.http.post<any[]>(`${this.url}/import/file/preview`, schemesFile, {
-      headers: {
-        'Content-Type': 'binary/octet-stream'
-      }
-    });
-  }
+    public previewByMessage(messageId: string): Observable<ISchema> {
+        return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+    }
+
+    public previewByFile(schemesFile: any): Observable<ISchema[]> {
+        return this.http.post<any[]>(`${this.url}/import/file/preview`, schemesFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
 }

@@ -24,7 +24,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     disabled = false;
     loading: boolean = true;
     socket: any;
-
+    dialogLoading: boolean = false;
     dataForm: FormGroup;
     schema: any;
     hideFields: any;
@@ -100,21 +100,6 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
-    getId(data: any) {
-        try {
-            if (data) {
-                if (Array.isArray(data.document.credentialSubject)) {
-                    return data.document.credentialSubject[0].id;
-                } else {
-                    return data.document.credentialSubject.id;
-                }
-            }
-        } catch (error) {
-            return null;
-        }
-        return null;
-    }
-
     getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
@@ -152,7 +137,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             const row = data.data;
             const schema = data.schema;
             const active = data.active;
-            this.ref = this.getId(row);
+            this.ref = row;
             this.type = uiMetaData.type;
             this.schema = schema;
             this.hideFields = {};
@@ -194,19 +179,22 @@ export class RequestDocumentBlockComponent implements OnInit {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
             this.prepareDataFrom(data);
+            this.dialogLoading = true;
             this.policyEngineService.setBlockData(this.id, this.policyId, {
                 document: data,
                 ref: this.ref
             }).subscribe(() => {
+                this.dialogLoading = false;
                 this.loading = false;
+                if (this.dialogRef) {
+                    this.dialogRef.close();
+                    this.dialogRef = null;
+                }
             }, (e) => {
                 console.error(e.error);
+                this.dialogLoading = false;
                 this.loading = false;
             });
-            if (this.dialogRef) {
-                this.dialogRef.close();
-                this.dialogRef = null;
-            }
         }
     }
 

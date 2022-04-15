@@ -1,3 +1,4 @@
+import { AuthenticatedRequest } from '@auth/auth.interface';
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -9,18 +10,16 @@ import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from 'int
  */
 export const profileAPI = Router();
 
-profileAPI.get('/:username/', async (req: Request, res: Response) => {
+profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const users = new Users();
 
-        const user = await users.currentUser(req);
+        const user = await users.getUser(req.user.username);
 
         let didDocument: any = null;
         if (user.did) {
-            const didDocuments = await guardians.getDidDocuments({
-                did: user.did
-            });
+            const didDocuments = await guardians.getDidDocuments({ did: user.did });
             if (didDocuments) {
                 didDocument = didDocuments[didDocuments.length - 1];
             }
@@ -37,23 +36,31 @@ profileAPI.get('/:username/', async (req: Request, res: Response) => {
             }
         }
 
-        let topicId: any = null;
-        if (user.did) {
-            const topic = await guardians.getTopic(TopicType.UserTopic, user.did);
-            if (topic) {
-                topicId = topic.topicId;
+        let topic: any;
+        if (user.did || user.parent) {
+            const filters = [];
+            if(user.did) {
+                filters.push(user.did);
             }
+            if(user.parent) {
+                filters.push(user.parent);
+            }
+            topic = await guardians.getTopic({
+                type: TopicType.UserTopic,
+                owner: { $in: filters }
+            });
         }
 
         const result: IUser = {
-            confirmed: !!(didDocument && didDocument.status == DidDocumentStatus.CREATE),
-            failed: !!(didDocument && didDocument.status == DidDocumentStatus.FAILED),
             username: user.username,
             role: user.role,
-            hederaAccountId: user.hederaAccountId,
-            hederaAccountKey: null,
-            topicId: topicId,
             did: user.did,
+            parent: user.parent,
+            hederaAccountId: user.hederaAccountId,
+            confirmed: !!(didDocument && didDocument.status == DidDocumentStatus.CREATE),
+            failed: !!(didDocument && didDocument.status == DidDocumentStatus.FAILED),
+            hederaAccountKey: null,
+            topicId: topic?.topicId,
             didDocument: didDocument,
             vcDocument: vcDocument
         };
@@ -64,14 +71,14 @@ profileAPI.get('/:username/', async (req: Request, res: Response) => {
     }
 });
 
-profileAPI.put('/:username/', async (req: Request, res: Response) => {
+profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const users = new Users();
         const wallet = new Wallet();
         const guardians = new Guardians();
 
         const profile: IUser = req.body;
-        const user = await users.currentUser(req);
+        const user = await users.getUser(req.user.username);
 
         if (!profile.hederaAccountId) {
             res.status(403).json({ code: 403, message: 'Invalid Hedera Account Id' });
@@ -91,6 +98,7 @@ profileAPI.put('/:username/', async (req: Request, res: Response) => {
 
         await users.updateCurrentUser(req, {
             did: did,
+            parent: profile.parent,
             hederaAccountId: profile.hederaAccountId
         });
 

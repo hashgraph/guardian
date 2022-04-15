@@ -16,7 +16,8 @@ export interface IUser {
     hederaAccountKey?: string;
     walletToken?: string;
     did?: string;
+    topicId?: string;
+    parent?: string;
     didDocument?: IDidObject;
     vcDocument?: IVCDocument;
-    topicId?: string;
 }

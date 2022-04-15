@@ -12,8 +12,10 @@ import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Topic } from '@entity/topic';
 import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -73,9 +75,9 @@ export class RequestVcDocumentBlock {
         if (!this.schema) {
             throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
         }
-	
-	const sources = await ref.getSources(user);
-	
+
+        const sources = await ref.getSources(user);
+
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -110,6 +112,7 @@ export class RequestVcDocumentBlock {
 
             const document = _data.document;
             const documentRef = _data.ref;
+
             const credentialSubject = document;
             const schema = ref.options.schema;
             const idType = ref.options.idType;
@@ -120,7 +123,7 @@ export class RequestVcDocumentBlock {
                 credentialSubject.id = id;
             }
             if (documentRef) {
-                credentialSubject.ref = documentRef;
+                credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
             }
             credentialSubject.policyId = ref.policyId;
 
@@ -135,8 +138,12 @@ export class RequestVcDocumentBlock {
                 owner: user.did,
                 document: vc.toJsonTree(),
                 schema: schema,
-                type: schema
+                type: schema,
+                relationships: null
             };
+            if (documentRef && documentRef.messageId) {
+                item.relationships = [documentRef.messageId];
+            }
             await this.changeActive(user, true);
 
             await ref.runNext(user, { data: item });
@@ -157,12 +164,9 @@ export class RequestVcDocumentBlock {
             }
             if (idType == 'DID') {
                 const ref = PolicyComponentsUtils.GetBlockRef(this);
-                const topic = await getMongoRepository(Topic).findOne({
-                    owner: ref.policyOwner,
-                    type: TopicType.RootPolicyTopic
-                });
-                const didObject = DIDDocument.create(null, topic.topicId);
+                const topic = await PolicyUtils.getTopic('root', null, null, ref);
 
+                const didObject = DIDDocument.create(null, topic.topicId);
                 const did = didObject.getDid();
                 const key = didObject.getPrivateKeyString();
                 const document = didObject.getDocument();
@@ -171,13 +175,15 @@ export class RequestVcDocumentBlock {
                 message.setDocument(didObject);
 
                 const client = new MessageServer(userHederaAccount, userHederaKey);
-                client.setSubmitKey(topic.key);
-                await client.sendMessage(topic.topicId, message);
+                const messageResult = await client
+                    .setTopicObject(topic)
+                    .sendMessage(message);
 
                 const doc = getMongoRepository(DidDocumentCollection).create({
                     did: did,
                     document: document,
-                    status: DidDocumentStatus.CREATE
+                    status: DidDocumentStatus.CREATE,
+                    messageId: messageResult.getId()
                 });
 
                 await getMongoRepository(DidDocumentCollection).save(doc);

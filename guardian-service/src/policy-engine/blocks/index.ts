@@ -1,3 +1,4 @@
+export { PaginationAddon } from '@policy-engine/blocks/pagination-addon';
 export { DocumentsSourceAddon } from './documents-source-addon';
 export { FiltersAddonBlock } from './filters-addon-block';
 export { PolicyRolesBlock } from './policy-roles';

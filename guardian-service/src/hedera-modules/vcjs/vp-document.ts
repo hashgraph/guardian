@@ -1,6 +1,10 @@
 import { Hashing } from "./../hashing";
 import { IVP } from "interfaces";
 import { VcDocument } from "./vc-document";
+import { Issuer } from "./issuer";
+import { DIDDocument } from "./did-document";
+import { TimestampUtils } from "./../timestamp-utils";
+import { Timestamp } from "@hashgraph/sdk";
 
 export class VpDocument {
     public static readonly FIRST_CONTEXT_ENTRY = 'https://www.w3.org/2018/credentials/v1';
@@ -10,12 +14,16 @@ export class VpDocument {
     public static readonly ID = 'id';
     public static readonly TYPE = 'type';
     public static readonly PROOF = 'proof';
+    public static readonly ISSUER = 'issuer';
+    public static readonly ISSUANCE_DATE = 'issuanceDate';
 
     protected id: string;
     protected context: string[];
     protected type: string[];
     protected credentials: VcDocument[];
     protected proof: any;
+    protected issuer: Issuer;
+    protected issuanceDate: Timestamp;
 
     constructor() {
         this.credentials = [];
@@ -29,6 +37,27 @@ export class VpDocument {
 
     public setId(id: string): void {
         this.id = id;
+    }
+
+    public getIssuer(): Issuer {
+        return this.issuer;
+    }
+
+    public getIssuerDid(): string {
+        if (this.issuer) {
+            return this.issuer.getId();
+        }
+        return null;
+    }
+
+    public setIssuer(issuer: string | Issuer | DIDDocument): void {
+        if (typeof issuer === 'string') {
+            this.issuer = new Issuer(issuer);
+        } else if (issuer instanceof Issuer) {
+            this.issuer = issuer;
+        } else if (issuer instanceof DIDDocument) {
+            this.issuer = new Issuer(issuer.getDid());
+        }
     }
 
     public getContext(): string[] {
@@ -91,6 +120,10 @@ export class VpDocument {
             rootObject[VpDocument.ID] = this.id;
         if (this.type)
             rootObject[VpDocument.TYPE] = this.type;
+        if (this.issuer)
+            rootObject[VpDocument.ISSUER] = this.issuer.toJsonTree();
+        if (this.issuanceDate)
+            rootObject[VpDocument.ISSUANCE_DATE] = TimestampUtils.toJSON(this.issuanceDate);
 
         const context = [];
         if (this.context) {
@@ -135,6 +168,10 @@ export class VpDocument {
             result.id = json[VpDocument.ID];
         if (json[VpDocument.TYPE])
             result.type = json[VpDocument.TYPE];
+        if (json[VpDocument.ISSUER])
+            result.issuer = Issuer.fromJsonTree(json[VcDocument.ISSUER]);
+        if (json[VpDocument.ISSUANCE_DATE])
+            result.issuanceDate = TimestampUtils.fromJson(json[VcDocument.ISSUANCE_DATE]);
 
         const jsonVerifiableCredential = json[VpDocument.VERIFIABLE_CREDENTIAL];
         if (jsonVerifiableCredential) {
@@ -184,7 +221,7 @@ export class VpDocument {
         this.setProof(json[VpDocument.PROOF]);
     }
 
-    
+
     public getDocument(): IVP {
         return this.toJsonTree();
     }

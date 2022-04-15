@@ -10,7 +10,6 @@ import { getMongoRepository } from 'typeorm';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { Token as TokenCollection } from '@entity/token';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 
@@ -46,19 +45,19 @@ export class DocumentsSourceAddon {
 
             switch (filter.type) {
                 case 'equal':
-                    Object.assign(expr, { $eq: filter.value })
+                    Object.assign(expr, {$eq: filter.value})
                     break;
 
                 case 'not_equal':
-                    Object.assign(expr, { $ne: filter.value });
+                    Object.assign(expr, {$ne: filter.value});
                     break;
 
                 case 'in':
-                    Object.assign(expr, { $in: filter.value.split(',') });
+                    Object.assign(expr, {$in: filter.value.split(',')});
                     break;
 
                 case 'not_in':
-                    Object.assign(expr, { $nin: filter.value.split(',') });
+                    Object.assign(expr, {$nin: filter.value.split(',')});
                     break;
 
                 default:
@@ -69,7 +68,7 @@ export class DocumentsSourceAddon {
 
         const dynFilters = {};
         for (let [key, value] of Object.entries(ref.getFilters(user))) {
-            dynFilters[key] = { $eq: value };
+            dynFilters[key] = {$eq: value};
         }
 
         Object.assign(filters, dynFilters);
@@ -124,7 +123,7 @@ export class DocumentsSourceAddon {
                     resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                     return;
                 }
-                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+                const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;

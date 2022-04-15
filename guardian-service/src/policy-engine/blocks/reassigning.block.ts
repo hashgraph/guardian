@@ -2,7 +2,7 @@ import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vcHelper';
@@ -23,32 +23,52 @@ export class ReassigningBlock {
     private vcHelper: VcHelper;
 
     async documentReassigning(state, user: IAuthUser): Promise<any> {
-        const userHederaKey = await this.wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-        const vcDocument = state.data.document;
-        const credentialSubject = vcDocument.credentialSubject[0];
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const vc: any = await this.vcHelper.createVC(user.did, userHederaKey, credentialSubject);
+        const document = state.data;
+        const vcDocument = document.document;
+
+        let root: any;
+        if (ref.options.issuer == 'owner') {
+            root = await this.users.getHederaAccount(document.owner);
+        } else if (ref.options.issuer == 'policyOwner') {
+            root = await this.users.getHederaAccount(ref.policyOwner);
+        } else {
+            root = await this.users.getHederaAccount(user.did);
+        }
+        
+        let owner: IAuthUser;
+        if (ref.options.actor == 'owner') {
+            owner = await this.users.getUserById(document.owner);
+        } else if (ref.options.actor == 'issuer') {
+            owner = await this.users.getUserById(root.did);
+        } else {
+            owner = user;
+        }
+
+        const credentialSubject = vcDocument.credentialSubject[0];
+        const vc: any = await this.vcHelper.createVC(root.did, root.hederaAccountKey, credentialSubject);
         const item = {
             hash: vc.toCredentialHash(),
-            owner: user.did,
             document: vc.toJsonTree(),
-            schema: state.data.schema,
-            type: state.data.type,
-            option: state.data.option
+            schema: document.schema,
+            type: document.type,
+            option: document.option,
+            owner: document.owner,
+            policyId: ref.policyId,
+            tag: ref.tag,
+            messageId: null,
+            relationships: document.messageId ? [document.messageId] : null
         };
-
-        const owner = await this.users.getUserById(state.data.owner);
-        return {
-            item, owner
-        };
+        return { item, owner };
     }
 
     @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        console.log(`reassigningBlock: runAction: ${ref.tag}`);
         const { item, owner } = await this.documentReassigning(state, user);
         state.data = item;
+        ref.log(`Reassigning Document: ${JSON.stringify(item)}`);
         await ref.runNext(owner, state);
         PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
         PolicyComponentsUtils.CallParentContainerCallback(ref, user);

@@ -28,7 +28,7 @@ function evaluate(formula: string, scope: any) {
 })
 export class AggregateBlock {
     private getScope(item: VcDocument): any {
-        return item.getCredentialSubject().toJsonTree();
+        return item.getCredentialSubject(0).toJsonTree();
     }
 
     private aggregate(rule, vcs: VcDocument[]) {

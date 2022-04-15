@@ -17,9 +17,9 @@ export class PolicyHelper {
         next?: ((id: any) => void),
         error?: ((error: any) => void),
         complete?: (() => void)
-      ): Subscription {
+    ): Subscription {
         return this.subject.subscribe(next, error, complete);
-      }
+    }
 
     private parsParams(params: any) {
         try {

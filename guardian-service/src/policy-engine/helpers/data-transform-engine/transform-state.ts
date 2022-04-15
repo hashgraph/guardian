@@ -1,5 +1,5 @@
-import {BlockActionError} from "@policy-engine/errors";
-import {PolicyComponentsUtils} from "../../policy-components-utils";
+import { BlockActionError } from '@policy-engine/errors';
+import { PolicyComponentsUtils } from '../../policy-components-utils';
 
 export function TransformState(rules: any, state: any, updateSource: string, updateTarget: string): any {
     if (!rules) {

@@ -1,4 +1,4 @@
-import {IPolicyBlock, IPolicyInterfaceBlock} from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 
 export interface PolicyBlockStateData<T> {
     isActive: boolean;

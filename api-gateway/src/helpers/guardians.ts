@@ -85,6 +85,7 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @param {Object} [params] - filters
      * @param {string} [params.tokenId] - token id
+     * @param {string} [params.did] - user did
      *
      * @returns {IToken[]} - tokens
      */
@@ -201,30 +202,46 @@ export class Guardians extends ServiceRequestsBase {
 
     /**
      * Return schemes
-     *
-     * @param {string} did - owner did
-     *
+     * @param {string} did
+     * @param {string} [topicId]
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     * 
      * @returns {ISchema[]} - all schemes
      */
-    public async getSchemesByOwner(did: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.GET_SCHEMES, { owner: did });
+    public async getSchemesByOwner(
+        did: string,
+        topicId?: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<{
+        schemes: ISchema[],
+        count: number
+    }> {
+        return await this.request(MessageAPI.GET_SCHEMES, {
+            owner: did,
+            topicId: topicId,
+            pageIndex: pageIndex,
+            pageSize: pageSize
+        });
     }
 
     /**
      * Return schemes
      *
-     * @param {string} uuid
+     * @param {Object} uuid - filters
      *
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemesByUUID(uuid: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.GET_SCHEMES, { uuid: uuid });
+        const { schemes, count } = await this.request(MessageAPI.GET_SCHEMES, { uuid: uuid });
+        return schemes;
     }
 
     /**
      * Return schema by id
      *
-     * @param {string} [id] - schema id
+     * @param {string} id - schema id
      *
      * @returns {ISchema} - schema
      */
@@ -237,21 +254,25 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @param {string[]} messageIds - schema uuid
      * @param {string} owner
+     * @param {string} topicId
+     * 
      * @returns {any[]} - Schema Document
      */
-    public async importSchemesByMessages(messageIds: string[], owner: string): Promise<any[]> {
-        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, { messageIds, owner });
+    public async importSchemesByMessages(messageIds: string[], owner: string, topicId: string): Promise<any[]> {
+        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_MESSAGES, { messageIds, owner, topicId });
     }
 
     /**
      * Import schema
      *
-     * @returns {any[]} - Schema Document
      * @param {ISchema[]} files
      * @param {owner} owner
+     * @param {string} topicId
+     * 
+     * @returns {any[]} - Schema Document
      */
-    public async importSchemesByFile(files: ISchema[], owner: string): Promise<any[]> {
-        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_FILE, { files, owner });
+    public async importSchemesByFile(files: ISchema[], owner: string, topicId: string): Promise<any[]> {
+        return await this.request(MessageAPI.IMPORT_SCHEMES_BY_FILE, { files, owner, topicId });
     }
 
     /**
@@ -269,6 +290,7 @@ export class Guardians extends ServiceRequestsBase {
      * Get schema preview
      *
      * @param {ISchema[]} files
+     * 
      * @returns {ISchema[]} Schema preview
      */
     public async previewSchemesByFile(files: ISchema[]): Promise<ISchema[]> {
@@ -282,8 +304,19 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema[]} - all schemes
      */
-    public async setSchema(item: ISchema | any): Promise<ISchema[]> {
-        return await this.request(MessageAPI.SET_SCHEMA, item);
+    public async createSchema(item: ISchema | any): Promise<ISchema[]> {
+        return await this.request(MessageAPI.CREATE_SCHEMA, item);
+    }
+
+    /**
+     * Create or update schema
+     *
+     * @param {ISchema} item - schema
+     *
+     * @returns {ISchema[]} - all schemes
+     */
+    public async updateSchema(item: ISchema | any): Promise<ISchema[]> {
+        return await this.request(MessageAPI.UPDATE_SCHEMA, item);
     }
 
     /**
@@ -301,9 +334,9 @@ export class Guardians extends ServiceRequestsBase {
      * Changing the status of a schema on PUBLISHED.
      *
      * @param {string} id - schema id
-     *
      * @param {string} version - schema version
      * @param {string} owner - schema message
+     * 
      * @returns {ISchema} - message
      */
     public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
@@ -322,13 +355,13 @@ export class Guardians extends ServiceRequestsBase {
     }
 
 
-    public async getTopic(type: TopicType, owner: string): Promise<any> {
-        return await this.request(MessageAPI.GET_TOPIC, { type, owner });
+    public async getTopic(filter: any): Promise<any> {
+        return await this.request(MessageAPI.GET_TOPIC, filter);
     }
 
     /**
      * Get service status
-     *
+     * 
      * @returns {ApplicationStates} Service state
      */
     public async getStatus(): Promise<ApplicationStates> {
@@ -348,9 +381,7 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {any[]} - Policies and user roles
      */
-    public async getUserRoles(did: string, policyId?: string){
-        return await this.request(MessageAPI.GET_USER_ROLES, {
-            did, policyId
-        });
+    public async getUserRoles(did: string): Promise<string[]> {
+        return await this.request(MessageAPI.GET_USER_ROLES, { did });
     }
 }

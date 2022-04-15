@@ -6,24 +6,25 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
+import { IAuthUser } from '@auth/auth.interface';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
-    const result = {
+    const result: any = {
         id: token.id,
         tokenId: token.tokenId,
         tokenName: token.tokenName,
         tokenSymbol: token.tokenSymbol,
         tokenType: token.tokenType,
         decimals: token.decimals,
-        policies: token.policies,
+        policies: null,
         associated: false,
         balance: null,
         hBarBalance: null,
         frozen: null,
         kyc: null
     }
-    if (info[tokenId]) {
+    if (info && info[tokenId]) {
         result.associated = true;
         result.balance = info[tokenId].balance;
         result.hBarBalance = info[tokenId].hBarBalance;
@@ -129,6 +130,7 @@ export const tokenAPI = async function (
                 freezeKey: freezeKey ? freezeKey.toString() : null,
                 wipeKey: wipeKey ? wipeKey.toString() : null,
                 supplyKey: supplyKey ? supplyKey.toString() : null,
+                owner: root.did
             });
             const result = await tokenRepository.save(tokenObject);
             const tokens = await tokenRepository.find();
@@ -263,19 +265,21 @@ export const tokenAPI = async function (
             if (!user) {
                 throw 'User not found';
             }
-            if (!user.hederaAccountId) {
-                throw 'User is not linked to an Hedera Account';
-            }
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
                 throw 'Token not found';
             }
 
+            if (!user.hederaAccountId) {
+                res.send(new MessageResponse(getTokenInfo(null, token)));
+                return;
+            }
+
             const root = await users.getHederaAccount(owner);
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const info = await client.accountInfo(user.hederaAccountId);
-            const result = getTokenInfo(info, { tokenId });
+            const result = getTokenInfo(info, token);
 
             res.send(new MessageResponse(result));
         } catch (error) {
@@ -289,12 +293,15 @@ export const tokenAPI = async function (
         try {
             const wallet = new Wallet();
             const users = new Users();
-
             const { did } = msg.payload;
             const user = await users.getUserById(did);
             const userID = user.hederaAccountId;
             const userDID = user.did;
             const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+            let parent: IAuthUser = null;
+            if ((user as any)?.parent) {
+                parent = await users.getUserById((user as any).parent);
+            }
 
             if (!user) {
                 throw 'User not found';
@@ -307,7 +314,17 @@ export const tokenAPI = async function (
 
             const client = new HederaSDKHelper(userID, userKey);
             const info = await client.accountInfo(user.hederaAccountId);
-            const tokens: any = await tokenRepository.find();
+            const tokens: any = await tokenRepository.find(parent 
+                ? { 
+                    where: {
+                        $or: [
+                            { owner: { $eq: parent.did } }, 
+                            { owner: { $exists: false } }
+                        ]
+                    }
+                }
+                : {}
+            );
 
             const result: any[] = [];
             for (let i = 0; i < tokens.length; i++) {
@@ -325,7 +342,8 @@ export const tokenAPI = async function (
      * Return tokens
      * 
      * @param {Object} [payload] - filters
-     * @param {string} [payload.tokenId] - token id 
+     * @param {string} [payload.tokenId] - token id
+     * @param {string} [payload.did] - user did
      * 
      * @returns {IToken[]} - tokens
      */
@@ -346,7 +364,14 @@ export const tokenAPI = async function (
                 return;
             }
         }
-        res.send(new MessageResponse(await tokenRepository.find()));
+        res.send(new MessageResponse(await tokenRepository.find({
+            where: {
+                $or: [
+                    { owner: { $eq: msg.payload.did } }, 
+                    { owner: { $exists: false } }
+                ]
+            }
+        })));
     })
 
     /**

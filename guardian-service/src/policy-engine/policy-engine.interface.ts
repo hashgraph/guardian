@@ -32,6 +32,9 @@ export interface IPolicyBlock {
     blockClassName: string;
     policyId: string;
     policyOwner: string;
+    policyInstance: any;
+    changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
+    checkDataStateDiffer?: (user) => boolean
 
     serialize(): ISerializedBlock;
 
@@ -45,8 +48,6 @@ export interface IPolicyBlock {
 
     validate(resultsContainer: PolicyValidationResultsContainer);
 
-    changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
-
     runNext(user: IAuthUser, data: any);
 
     runTarget(user: IAuthUser, data: any, target: AnyBlockType)
@@ -55,13 +56,11 @@ export interface IPolicyBlock {
 
     isActive(user: IAuthUser): boolean;
 
-    checkDataStateDiffer?: (user) => boolean
+    log(message: string): void;
 
-    log(message: string):void;
+    error(message: string): void;
 
-    error(message: string):void;
-
-    warn(message: string):void;
+    warn(message: string): void;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {
@@ -81,7 +80,9 @@ export interface IPolicySourceBlock extends IPolicyBlock {
 
     getFiltersAddons(): IPolicyBlock[];
 
-    getSources(user: IAuthUser): Promise<any[]>
+    getSources(user: IAuthUser, sliceData?: any): Promise<any[]>
+
+    getCommonAddons(): IPolicyBlock[];
 }
 
 export interface IPolicyAddonBlock extends IPolicyBlock {
@@ -98,6 +99,8 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
     getFilters(user: IAuthUser): { [key: string]: string };
 
     setFilters(filters: { [key: string]: string }, user: IAuthUser): void
+
+    getState(user: IAuthUser): any;
 }
 
 
@@ -133,4 +136,12 @@ export interface IPolicyRequestBlock extends IPolicyBlock {
     getSources(user: IAuthUser): Promise<any[]>
 }
 
-export type AnyBlockType = IPolicyBlock | IPolicyInterfaceBlock | IPolicyContainerBlock | IPolicySourceBlock | IPolicyAddonBlock | IPolicyCalculateBlock | IPolicyCalculateAddon | IPolicyRequestBlock;
+export type AnyBlockType =
+    IPolicyBlock
+    | IPolicyInterfaceBlock
+    | IPolicyContainerBlock
+    | IPolicySourceBlock
+    | IPolicyAddonBlock
+    | IPolicyCalculateBlock
+    | IPolicyCalculateAddon
+    | IPolicyRequestBlock;

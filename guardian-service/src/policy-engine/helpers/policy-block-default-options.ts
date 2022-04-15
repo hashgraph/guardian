@@ -1,4 +1,4 @@
-import {PolicyBlockOptionsPartial} from '@policy-engine/interfaces/block-options';
+import { PolicyBlockOptionsPartial } from '@policy-engine/interfaces/block-options';
 
 /**
  * Default options for block instance

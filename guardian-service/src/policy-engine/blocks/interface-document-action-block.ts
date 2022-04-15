@@ -61,7 +61,7 @@ export class InterfaceDocumentActionBlock {
     async setData(user: IAuthUser, document: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
-        let state: any = { data: document };
+        let state: any = {data: document};
 
         if (ref.options.type == 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
@@ -84,7 +84,7 @@ export class InterfaceDocumentActionBlock {
             const userDID = userFull.did;
             const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
-            const schemaObject = await getMongoRepository(SchemaEntity).findOne({ iri: ref.options.schema });
+            const schemaObject = await getMongoRepository(SchemaEntity).findOne({iri: ref.options.schema});
             const schema = new Schema(schemaObject);
             const didDocument = DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
             return {
@@ -167,7 +167,7 @@ export class InterfaceDocumentActionBlock {
                             break;
                         }
 
-                        const schema = await getMongoRepository(SchemaEntity).findOne({ iri: ref.options.schema });
+                        const schema = await getMongoRepository(SchemaEntity).findOne({iri: ref.options.schema});
                         if (!schema) {
                             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                             break;

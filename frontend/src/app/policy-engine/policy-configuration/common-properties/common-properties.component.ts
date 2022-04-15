@@ -20,6 +20,7 @@ export class CommonPropertiesComponent implements OnInit {
     @Input('all') allBlocks!: BlockNode[];
     @Input('readonly') readonly!: boolean;
     @Input('roles') roles!: string[];
+    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
@@ -95,6 +96,7 @@ export class CommonPropertiesComponent implements OnInit {
                 componentRef.instance.readonly = this.readonly;
                 componentRef.instance.tokens = this.tokens;
                 componentRef.instance.roles = this.roles;
+                componentRef.instance.topics = this.topics;
             }
         })
     }

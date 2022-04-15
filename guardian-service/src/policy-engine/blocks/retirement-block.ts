@@ -1,37 +1,19 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
-import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper } from '@hedera-modules';
+import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
-
-function evaluate(formula: string, scope: any) {
-    return (function (formula: string, scope: any) {
-        try {
-            return this.evaluate(formula, scope);
-        } catch (error) {
-            return 'Incorrect formula';
-        }
-    }).call(mathjs, formula, scope);
-}
-
-enum DataTypes {
-    MRV = 'mrv',
-    REPORT = 'report',
-    MINT = 'mint',
-    RETIREMENT = 'retirement'
-}
+import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
+import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 
 /**
  * Retirement block
@@ -44,70 +26,8 @@ export class RetirementBlock {
     @Inject()
     private users: Users;
 
-    private tokenId: any;
-    private rule: any;
-
-    private getScope(item: VcDocument) {
-        return item.getCredentialSubject().toJsonTree();
-    }
-
-    private aggregate(rule, vcs: VcDocument[]) {
-        let amount = 0;
-        for (let i = 0; i < vcs.length; i++) {
-            const element = vcs[i];
-            const scope = this.getScope(element);
-            const value = parseFloat(evaluate(rule, scope));
-            amount += value;
-        }
-        return amount;
-    }
-
-    private tokenAmount(token, amount: number) {
-        const decimals = parseFloat(token.decimals) || 0;
-        const _decimals = Math.pow(10, decimals);
-        return Math.round(amount * _decimals);
-    }
-
-    private async saveVC(vc: VcDocument, owner: string, ref: any): Promise<boolean> {
-        try {
-            const doc = getMongoRepository(VcDocumentCollection).create({
-                hash: vc.toCredentialHash(),
-                owner: owner,
-                document: vc.toJsonTree(),
-                type: DataTypes.RETIREMENT as any,
-                policyId: ref.policyId,
-                tag: ref.tag,
-                schema: `#${vc.getCredentialSubject()[0].getType()}`
-            });
-            await getMongoRepository(VcDocumentCollection).save(doc);;
-            return true;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    private async saveVP(vp: VpDocument, sensorDid: string, type: DataTypes, ref: any): Promise<boolean> {
-        try {
-            if (!vp) {
-                return false;
-            }
-            const doc = getMongoRepository(VpDocumentCollection).create({
-                hash: vp.toCredentialHash(),
-                document: vp.toJsonTree(),
-                owner: sensorDid,
-                type: type as any,
-                policyId: ref.policyId,
-                tag: ref.tag
-            })
-            await getMongoRepository(VpDocumentCollection).save(doc);
-            return true;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    private async createWipeVC(root, token, data: number): Promise<VcDocument> {
-        const VCHelper = new VcHelper();
+    private async createWipeVC(root: any, token: any, data: any): Promise<VcDocument> {
+        const vcHelper = new VcHelper();
         const policySchema = await getMongoRepository(SchemaCollection).findOne({
             entity: SchemaEntity.WIPE_TOKEN
         });
@@ -117,7 +37,7 @@ export class RetirementBlock {
             tokenId: token.tokenId,
             amount: data.toString()
         }
-        const wipeVC = await VCHelper.createVC(
+        const wipeVC = await vcHelper.createVC(
             root.did,
             root.hederaAccountKey,
             vcSubject
@@ -125,10 +45,9 @@ export class RetirementBlock {
         return wipeVC;
     }
 
-    private async createVP(root, uuid: string, vcs: VcDocument[]) {
-        const VCHelper = new VcHelper();
-
-        const vp = await VCHelper.createVP(
+    private async createVP(root: any, uuid: string, vcs: VcDocument[]) {
+        const vcHelper = new VcHelper();
+        const vp = await vcHelper.createVP(
             root.did,
             root.hederaAccountKey,
             vcs,
@@ -137,30 +56,59 @@ export class RetirementBlock {
         return vp;
     }
 
-    private async retirementProcessing(token, document, rule, root, user, ref): Promise<any> {
-        const tokenId = token.tokenId;
-        const wipeKey = token.wipeKey;
-        const adminId = token.adminId;
-        const adminKey = token.adminKey;
-
+    private async retirementProcessing(
+        token: TokenCollection,
+        document: VcDocument[],
+        vsMessages: string[],
+        rule: string,
+        root: any,
+        user: IAuthUser,
+        ref: AnyBlockType
+    ): Promise<any> {
         const uuid = HederaUtils.randomUUID();
-        const amount = this.aggregate(rule, document);
-        const tokenValue = this.tokenAmount(token, amount);
+        const amount = PolicyUtils.aggregate(rule, document);
+        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
 
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-
-        let wipeVC: VcDocument;
-        if (token.tokenType == 'non-fungible') {
-            throw 'unsupported operation';
-        } else {
-            await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
-            wipeVC = await this.createWipeVC(root, token, tokenValue);
-        }
+        const wipeVC = await this.createWipeVC(root, token, tokenAmount);
         const vcs = [].concat(document, wipeVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-        await this.saveVC(wipeVC, user.did, ref);
-        await this.saveVP(vp, user.did, DataTypes.RETIREMENT, ref);
+        const topic = await PolicyUtils.getTopic('root', root, user, ref);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+
+        const vcMessage = new VCMessage(MessageAction.CreateVC);
+        vcMessage.setDocument(wipeVC);
+        const vcMessageResult = await messageServer
+            .setTopicObject(topic)
+            .sendMessage(vcMessage);
+        await PolicyUtils.updateVCRecord({
+            hash: wipeVC.toCredentialHash(),
+            owner: user.did,
+            document: wipeVC.toJsonTree(),
+            type: DataTypes.RETIREMENT,
+            policyId: ref.policyId,
+            tag: ref.tag,
+            schema: `#${wipeVC.getSubjectType()}`,
+            messageId: vcMessageResult.getId()
+        } as any);
+
+        const vpMessage = new VPMessage(MessageAction.CreateVP);
+        vpMessage.setDocument(vp);
+        vpMessage.setRelationships(vsMessages);
+        const vpMessageResult = await messageServer
+            .setTopicObject(topic)
+            .sendMessage(vpMessage);
+        await PolicyUtils.saveVP({
+            hash: vp.toCredentialHash(),
+            document: vp.toJsonTree(),
+            owner: user.did,
+            type: DataTypes.RETIREMENT,
+            policyId: ref.policyId,
+            tag: ref.tag,
+            messageId: vpMessageResult.getId()
+        } as any);
+
+        await PolicyUtils.wipe(token, tokenValue, root, user, vpMessageResult.getId());
 
         return vp;
     }
@@ -168,49 +116,41 @@ export class RetirementBlock {
     @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const {
-            tokenId,
-            rule
-        } = ref.options;
+        const { tokenId, rule } = ref.options;
         const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        const root = await this.users.getHederaAccount(ref.policyOwner);
-
-        let docs = [];
-        if (Array.isArray(state.data)) {
-            docs = state.data as any[];
-        } else {
-            docs = [state.data];
-        }
-
+        const docs = PolicyUtils.getArray<any>(state.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
         const vcs: VcDocument[] = [];
+        const vsMessages: string[] = [];
         for (let i = 0; i < docs.length; i++) {
             const element = docs[i];
             if (element.signature === DocumentSignature.INVALID) {
                 throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
             }
             vcs.push(VcDocument.fromJsonTree(element.document));
+            if(element.messageId) {
+                vsMessages.push(element.messageId);
+            }
         }
 
         const curUser = await this.users.getUserById(docs[0].owner);
-
         if (!curUser) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
 
         try {
-            const doc = await this.retirementProcessing(token, vcs, rule, root, curUser, ref);
-            ref.runNext(null, { data: doc }).then(
-                function () { },
-                function (error: any) { console.error(error); }
-            );
+            const root = await this.users.getHederaAccount(ref.policyOwner);
+            const doc = await this.retirementProcessing(token, vcs, vsMessages, rule, root, curUser, ref);
+            await ref.runNext(curUser, state);
+            PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, curUser);
+            PolicyComponentsUtils.CallParentContainerCallback(ref, curUser);
         } catch (e) {
             throw e;
         }

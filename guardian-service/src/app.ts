@@ -1,5 +1,5 @@
 import FastMQ from 'fastmq'
-import { createConnection, getMongoRepository } from 'typeorm';
+import { createConnection } from 'typeorm';
 import { approveAPI } from '@api/approve.service';
 import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -56,7 +56,7 @@ Promise.all([
 
     const policyGenerator = new BlockTreeGenerator();
     const policyService = new PolicyEngineService(channel);
-    policyGenerator.init();
+    await policyGenerator.init();
     policyService.registerListeners();
 
     const didDocumentRepository = db.getMongoRepository(DidDocument);
@@ -74,12 +74,12 @@ Promise.all([
     await schemaAPI(channel, schemaRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await profileAPI(channel, topicRepository);
+    await profileAPI(channel);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await demoAPI(channel, settingsRepository);
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-    await setDefaultSchema(schemaRepository);
+    await setDefaultSchema();
 
     new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');

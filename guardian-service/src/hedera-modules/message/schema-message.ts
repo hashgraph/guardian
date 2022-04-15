@@ -1,9 +1,10 @@
 
 import { Schema } from '@entity/schema';
 import { Message } from './message';
-import { IURL } from "./i-url";
+import { IURL, UrlType } from "./url.interface";
 import { MessageAction } from "./message-action";
 import { MessageType } from "./message-type";
+import { MessageBody, SchemaMessageBody } from './message-body.interface';
 
 export class SchemaMessage extends Message {
     public name: string;
@@ -16,7 +17,7 @@ export class SchemaMessage extends Message {
     public documents: any[];
 
     constructor(action: MessageAction) {
-        super(action, MessageType.SchemaDocument);
+        super(action, MessageType.Schema);
     }
 
     public setDocument(schema: Schema): void {
@@ -26,7 +27,6 @@ export class SchemaMessage extends Message {
         this.owner = schema.owner;
         this.uuid = schema.uuid;
         this.version = schema.version;
-
         const document = schema.document;
         const context = schema.context;
         this.documents = [document, context];
@@ -40,24 +40,29 @@ export class SchemaMessage extends Message {
         return this.documents[1];
     }
 
-    public toMessage(): string {
-        return JSON.stringify({
-            action: this.action,
+    public override toMessageObject(): SchemaMessageBody {
+        return {
+            id: null,
+            status: null,
             type: this.type,
+            action: this.action,
             name: this.name,
             description: this.description,
             entity: this.entity,
             owner: this.owner,
             uuid: this.uuid,
             version: this.version,
-            document_cid: this.urls[0].cid,
-            document_url: this.urls[0].url,
-            context_cid: this.urls[1].cid,
-            context_url: this.urls[1].url
-        });
+            document_cid: this.getDocumentUrl(UrlType.cid),
+            document_url: this.getDocumentUrl(UrlType.url),
+            context_cid: this.getContextUrl(UrlType.cid),
+            context_url: this.getContextUrl(UrlType.url)
+        };
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
+        if (this.action !== MessageAction.PublishSchema) {
+            return [];
+        }
         const result = new Array(this.documents.length);
         for (let i = 0; i < this.documents.length; i++) {
             const json = JSON.stringify(this.documents[i]);
@@ -77,8 +82,10 @@ export class SchemaMessage extends Message {
         return this.fromMessageObject(json);
     }
 
-    public static fromMessageObject(json: any): SchemaMessage {
+    public static fromMessageObject(json: SchemaMessageBody): SchemaMessage {
         const message = new SchemaMessage(json.action);
+        message._id = json.id;
+        message._status = json.status;
         message.name = json.name;
         message.description = json.description;
         message.entity = json.entity;
@@ -92,7 +99,7 @@ export class SchemaMessage extends Message {
         {
             cid: json.context_cid,
             url: json.context_url
-        }]
+        }];
         message.setUrls(urls);
         return message;
     }
@@ -101,12 +108,12 @@ export class SchemaMessage extends Message {
         return this.urls;
     }
 
-    public getDocumentUrl(): IURL {
-        return this.urls[0];
+    public getDocumentUrl(type: UrlType): string | null {
+        return this.getUrlValue(0, type);
     }
 
-    public getContextUrl(): IURL {
-        return this.urls[1];
+    public getContextUrl(type: UrlType): string | null {
+        return this.getUrlValue(1, type);
     }
 
     public override validate(): boolean {

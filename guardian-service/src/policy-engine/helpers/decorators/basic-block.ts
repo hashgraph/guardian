@@ -76,6 +76,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public policyId: string;
             public policyOwner: string;
+            public policyInstance: any;
 
             public readonly blockClassName = 'BasicBlock';
 
@@ -139,6 +140,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public setPolicyOwner(did: string) {
                 this.policyOwner = did;
+            }
+            public setPolicyInstance(policy: any) {
+                this.policyInstance = policy;
             }
 
             public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
