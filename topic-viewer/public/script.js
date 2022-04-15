@@ -1,5 +1,6 @@
-const HEDERA_TOPIC_API = "https://testnet.mirrornode.hedera.com/api/v1/topics/";
-const HEDERA_MESSAGE_API = "https://testnet.mirrornode.hedera.com/api/v1/topics/messages";
+const HEDERA_ROOT = "https://testnet.mirrornode.hedera.com";
+const HEDERA_TOPIC_API = `${HEDERA_ROOT}/api/v1/topics/`;
+const HEDERA_MESSAGE_API = `${HEDERA_ROOT}/api/v1/topics/messages`;
 
 function parsBuffer(buffer) {
     try {
@@ -9,9 +10,9 @@ function parsBuffer(buffer) {
     }
 }
 
-async function getTopicMessages(topicId) {
+async function getMessages(url) {
     try {
-        const result = await fetch(`${HEDERA_TOPIC_API}${topicId}/messages`);
+        const result = await fetch(url);
         if (result.status === 200) {
             const data = await result.json();
             const r = [];
@@ -32,6 +33,12 @@ async function getTopicMessages(topicId) {
                     topicId: topicId
                 });
             }
+            if(data.links && data.links.next) {
+                const next = await getMessages( `${HEDERA_ROOT}${data.links.next}`);
+                for (let i = 0; i < next.length; i++) {
+                    r.push(next[i]); 
+                }
+            }
             return r;
         } else {
             return [];
@@ -39,6 +46,10 @@ async function getTopicMessages(topicId) {
     } catch (error) {
         return [];
     }
+}
+
+async function getTopicMessages(topicId) {
+    return await getMessages(`${HEDERA_TOPIC_API}${topicId}/messages`);
 }
 
 async function getMessage(timeStamp) {
