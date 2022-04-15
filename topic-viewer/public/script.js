@@ -89,6 +89,19 @@ async function getTopicMessage(topicId, index) {
     }
 }
 
+async function getIPFS(url) {
+    try {
+        const result = await fetch(url);
+        if (result.status === 200) {
+            return await result.json();
+        } else {
+            return null;
+        }
+    } catch (error) {
+        return null;
+    }
+}
+
 async function findTopic(topicId, root) {
     const messages = await getTopicMessages(topicId);
     const topicDiv = renderTopic(root, topicId);
@@ -218,11 +231,23 @@ function renderMessage(container, id, message, topicId) {
     messageBodyDiv.innerHTML = JSON.stringify(message, null, 4);
     topicMessageDiv.append(messageBodyDiv);
 
+    const messageIPFSDiv = document.createElement("div");
+    messageIPFSDiv.className = "message-ipfs";
+
     messageNameDiv.addEventListener('click', event => {
         event.preventDefault();
         messageBodyDiv.className =
             messageBodyDiv.className === "message-body" ? "message-body max" : "message-body";
-    })
+        messageIPFSDiv.className =
+            messageIPFSDiv.className === "message-ipfs" ? "message-ipfs max" : "message-ipfs";
+    });
+
+    if (message.url) {
+        getIPFS(message.url).then((data) => {
+            messageIPFSDiv.innerHTML = JSON.stringify(data, null, 4);
+            topicMessageDiv.append(messageIPFSDiv);
+        });
+    }
 }
 
 function setValue(value) {

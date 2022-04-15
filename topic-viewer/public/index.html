@@ -20,10 +20,6 @@
             margin-left: 40px;
         }
 
-        .message-body {
-            white-space: pre;
-        }
-
         .topic-message {
             border: 1px solid #000;
             border-radius: 4px;
@@ -35,6 +31,7 @@
         }
 
         .message-body {
+            white-space: pre;
             margin-top: 10px;
             padding: 6px 40px 6px 16px;
             overflow: auto;
@@ -44,6 +41,18 @@
             border-radius: 6px;
         }
 
+        .message-ipfs {
+            white-space: pre;
+            margin-top: 10px;
+            padding: 6px 40px 6px 16px;
+            overflow: auto;
+            font-size: 80%;
+            line-height: 1.3;
+            background-color: #f6f8faad;
+            border-radius: 6px;
+            max-height: 300px;
+        }
+    
         .message-name {
             font-weight: bold;
         }
@@ -146,6 +155,13 @@
         }
 
         .topic.min>.topic-message>.message-body.max {
+            display: block;
+        }
+        .topic.min>.topic-message>.message-ipfs {
+            display: none;
+        }
+
+        .topic.min>.topic-message>.message-ipfs.max {
             display: block;
         }
     </style>

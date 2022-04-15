@@ -12,6 +12,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Topic } from '@entity/topic';
 import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -111,6 +112,7 @@ export class RequestVcDocumentBlock {
 
             const document = _data.document;
             const documentRef = _data.ref;
+
             const credentialSubject = document;
             const schema = ref.options.schema;
             const idType = ref.options.idType;
@@ -121,7 +123,7 @@ export class RequestVcDocumentBlock {
                 credentialSubject.id = id;
             }
             if (documentRef) {
-                credentialSubject.ref = documentRef;
+                credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
             }
             credentialSubject.policyId = ref.policyId;
 
@@ -136,8 +138,12 @@ export class RequestVcDocumentBlock {
                 owner: user.did,
                 document: vc.toJsonTree(),
                 schema: schema,
-                type: schema
+                type: schema,
+                relationships: null
             };
+            if (documentRef && documentRef.messageId) {
+                item.relationships = [documentRef.messageId];
+            }
             await this.changeActive(user, true);
 
             await ref.runNext(user, { data: item });

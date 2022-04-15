@@ -27,6 +27,7 @@ import { ReportItemConfigComponent } from "./policy-configuration/blocks/report/
 import {
     PaginationAddonBlockComponent
 } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
+import { ReassigningConfigComponent } from "./policy-configuration/blocks/documents/reassigning-config/reassigning-config.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -148,6 +149,7 @@ export class RegisteredBlocks {
         this.registerProperties(BlockType.ReportItem, ReportItemConfigComponent);
         this.registerProperties(BlockType.Calculate, CalculateConfigComponent);
         this.registerProperties(BlockType.CalculateMathAddon, CalculateMathConfigComponent);
+        this.registerProperties(BlockType.ReassigningBlock, ReassigningConfigComponent);
     }
 
     public register(type: BlockType, icon: string, name: string, title: string) {

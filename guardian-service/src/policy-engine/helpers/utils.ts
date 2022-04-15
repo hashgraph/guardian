@@ -217,4 +217,19 @@ export class PolicyUtils {
 
         return topic;
     }
+
+    public static getSubjectId(data: any): string {
+        try {
+            if (data) {
+                if (Array.isArray(data.document.credentialSubject)) {
+                    return data.document.credentialSubject[0].id;
+                } else {
+                    return data.document.credentialSubject.id;
+                }
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
 }

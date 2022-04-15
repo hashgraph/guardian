@@ -100,21 +100,6 @@ export class RequestDocumentBlockComponent implements OnInit {
         }
     }
 
-    getId(data: any) {
-        try {
-            if (data) {
-                if (Array.isArray(data.document.credentialSubject)) {
-                    return data.document.credentialSubject[0].id;
-                } else {
-                    return data.document.credentialSubject.id;
-                }
-            }
-        } catch (error) {
-            return null;
-        }
-        return null;
-    }
-
     getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
@@ -152,7 +137,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             const row = data.data;
             const schema = data.schema;
             const active = data.active;
-            this.ref = this.getId(row);
+            this.ref = row;
             this.type = uiMetaData.type;
             this.schema = schema;
             this.hideFields = {};
