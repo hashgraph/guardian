@@ -50,7 +50,7 @@ Again this step is not needed if you import the entire policy (see step 6 and th
 
 6\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, as noted above, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the **import** button and enter the following Hedera message ID:
 
-* `1644847114.111298000` (iRec Policy)
+* `1650282926.728623821` (iRec Policy)
 
 ![](../.gitbook/assets/DUG\_6.png)
 
