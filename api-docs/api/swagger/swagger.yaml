@@ -108,6 +108,16 @@ components:
           type: string
         document:
           type: string
+        topicId:
+          type: string
+        version:
+          type: string
+        owner:
+          type: string
+        iri:
+          type: string
+        messageId:
+          type: string
     ImportSchema:
       type: object
       required:
@@ -811,11 +821,19 @@ paths:
           schema:
             type: integer
           description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0 
         - in: query
           name: pageSize
           schema:
             type: integer
           description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
       responses:
         200:
           description: Successful operation.
@@ -853,6 +871,10 @@ paths:
             type: string
           required: true
           description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001 
       security:
       - bearerAuth: []
       summary: Create new schema.
@@ -884,16 +906,34 @@ paths:
       - bearerAuth: []
       summary: Returns all schemas by topicId.
       parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001 
         - in: query
           name: pageIndex
           schema:
             type: integer
           description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0 
         - in: query
           name: pageSize
           schema:
             type: integer
           description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
       responses:
         200:
           description: Successful operation.
@@ -1122,6 +1162,10 @@ paths:
             type: string
           required: true
           description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001 
       security:
       - bearerAuth: []
       summary: Imports new schema from a zip file.
@@ -1160,6 +1204,10 @@ paths:
             type: string
           required: true
           description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001 
       security:
       - bearerAuth: []
       summary: Imports new schema from IPFS.
@@ -1762,11 +1810,19 @@ paths:
           schema:
             type: integer
           description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0 
         - in: query
           name: pageSize
           schema:
             type: integer
           description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
       responses:
         200:
           description: Successful operation.
@@ -2226,14 +2282,7 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - $ref: '#/components/schemas/PolicyConfig'
-                    - type: object
-                      properties:
-                        userRoles:
-                          type: array
-                          items:
-                            type: string
+                  $ref: '#/components/schemas/PolicyConfig'
         401:
           description: Unauthorized.
         403:
@@ -2264,14 +2313,7 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - $ref: '#/components/schemas/PolicyConfig'
-                    - type: object
-                      properties:
-                        userRoles:
-                          type: array
-                          items:
-                            type: string
+                  $ref: '#/components/schemas/PolicyConfig'
         401:
           description: Unauthorized.
         403:
@@ -2390,24 +2432,16 @@ paths:
                     - type: object
                       properties:
                         policyRoles:
-                          type: object
-                          properties:
-                            policy: 
-                              type: object
-                              properties:
-                                id:
-                                  type: string
-                                name: 
-                                  type: string
-                                version:
-                                  type: string
-                            userRoles: 
-                              type: object
-                              properties:
-                                did:
-                                  type: string
-                                role:
-                                  type: string
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name: 
+                                type: string
+                              version:
+                                type: string
+                              role:
+                                type: string
         500:
           description: Internal server error.
           content:
