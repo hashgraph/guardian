@@ -79,23 +79,10 @@ components:
             type: object
         vcDocument:
             type: object
-        addressBook:
-          type: object
-          properties:
-            appnetName:
-              type: string
-            addressBook:
-              type: string
-            didTopic:
-              type: string
-            vcTopic:
-              type: string
-            didServerUrl:
-              type: string
-            didTopicMemo:
-              type: string
-            vcTopicMemo:
-              type: string
+        parent:
+          type: string
+        topicId:
+          type: string
     Schema:
       type: object
       required:
@@ -656,6 +643,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /accounts/root-authorities:
+    get:
+      tags:
+        - accounts
+      description: Returns all root authorities.
+      security:
+      - bearerAuth: []
+      summary: Returns all root authorities.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        401:
+          description: Unauthorized.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /profiles/{username}/balance:
     get:
       tags:
@@ -758,6 +771,7 @@ paths:
 
   /schemas:
     post:
+      deprecated: true
       tags:
         - schemas
       description: Creates new schema. Only users with the Root Authority role are allowed to make the request.
@@ -784,7 +798,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
     get:
       tags:
         - schemas
@@ -792,9 +805,25 @@ paths:
       security:
       - bearerAuth: []
       summary: Returns all schemas.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
       responses:
         200:
           description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
@@ -812,6 +841,84 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /schemas/{topicId}:
+    post:
+      tags:
+        - schemas
+      description: Creates new schema. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+      security:
+      - bearerAuth: []
+      summary: Create new schema.
+      requestBody:
+        description: Object that contains a valid schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Schema"
+      responses:
+        201:
+          description: Successful operation.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - schemas
+      description: Returns all schemas by topicId.
+      security:
+      - bearerAuth: []
+      summary: Returns all schemas by topicId.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
   /schemas/{schemaId}/publish:
     put:
       tags:
@@ -898,7 +1005,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
     delete:
       tags:
         - schemas
@@ -935,6 +1041,7 @@ paths:
 
   /schemas/import/file:
     post:
+      deprecated: true
       tags:
         - schemas
       description: Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
@@ -966,9 +1073,93 @@ paths:
 
   /schemas/import/message:
     post:
+      deprecated: true
       tags:
         - schemas
       description: Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Imports new schema from IPFS.
+      requestBody:
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/{topicId}/import/file:
+    post:
+      tags:
+        - schemas
+      description: Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+      security:
+      - bearerAuth: []
+      summary: Imports new schema from a zip file.
+      requestBody:
+        description: A zip file containing schema to be imported.
+        required: true
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/{topicId}/import/message:
+    post:
+      tags:
+        - schemas
+      description: Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
       security:
       - bearerAuth: []
       summary: Imports new schema from IPFS.
@@ -1167,7 +1358,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
     post:
       tags:
         - tokens
@@ -1566,9 +1756,25 @@ paths:
       security:
         - bearerAuth: []
       summary: Return a list of all policies.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
       responses:
         200:
           description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
@@ -1592,7 +1798,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
     post:
       tags:
         - policies
@@ -2235,6 +2440,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  
   /ipfs/file:
     post:
       tags:
@@ -2267,6 +2473,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  
   /settings:
     get:
       tags:
@@ -2319,6 +2526,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  
   /logs:
     post:
       tags:
@@ -2355,6 +2563,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  
   /logs/attributes:
     get:
       tags:
