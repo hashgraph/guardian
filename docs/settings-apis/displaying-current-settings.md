@@ -16,8 +16,6 @@ Returns current settings. For users with the Root Authority role only
 			  type: string
 			operatorKey:
 			  type: string
-			schemaTopicId:
-			  type: string
 			nftApiKey:
 			  type: string
 }

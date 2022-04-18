@@ -486,8 +486,6 @@ components:
           type: string
         operatorKey:
           type: string
-        schemaTopicId:
-          type: string
         nftApiKey:
           type: string
     LogFilters:

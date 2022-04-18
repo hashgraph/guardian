@@ -14,7 +14,6 @@ in `guardian-service/.env`:
 ```
  OPERATOR_ID="0.0.29676495"
  OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
- SCHEMA_TOPIC_ID="0.0.29614911"
 ```
 
 in `guardian-service/.env.docker`:
@@ -22,7 +21,6 @@ in `guardian-service/.env.docker`:
 ```
  OPERATOR_ID="0.0.29676495"
  OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
- SCHEMA_TOPIC_ID="0.0.29614911"
 ```
 
 Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.

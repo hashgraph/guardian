@@ -28,23 +28,6 @@ export const configAPI = async function (
     ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
         try {
             const settings = msg.payload as CommonSettings;
-            const oldSchemaTopicId = await settingsRepository.findOne({
-                name: 'SCHEMA_TOPIC_ID'
-            });
-            if (oldSchemaTopicId) {
-                await settingsRepository.update({
-                    name: 'SCHEMA_TOPIC_ID'
-                }, {
-                    value: settings.schemaTopicId
-                });
-            }
-            else {
-                await settingsRepository.save({
-                    name: 'SCHEMA_TOPIC_ID',
-                    value: settings.schemaTopicId
-                });
-            }
-
             const oldOperatorId = await settingsRepository.findOne({
                 name: 'OPERATOR_ID'
             });
@@ -98,14 +81,9 @@ export const configAPI = async function (
             const operatorKey = await settingsRepository.findOne({
                 name: 'OPERATOR_KEY'
             });
-            const schemaTopicId = await settingsRepository.findOne({
-                name: 'SCHEMA_TOPIC_ID'
-            });
-
             res.send(new MessageResponse({
                 operatorId: operatorId?.value || process.env.OPERATOR_ID,
-                operatorKey: operatorKey?.value || process.env.OPERATOR_KEY,
-                schemaTopicId: schemaTopicId?.value || process.env.SCHEMA_TOPIC_ID
+                operatorKey: operatorKey?.value || process.env.OPERATOR_KEY
             }));
         }
         catch (e) {

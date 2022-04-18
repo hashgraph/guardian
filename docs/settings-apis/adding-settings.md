@@ -15,10 +15,6 @@ ID of the operator
 Key of the operator
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="schemaTopicID" type="String" required="true" %}
-TopicID of Schema
-{% endswagger-parameter %}
-
 {% swagger-parameter in="body" name="nftApiKey" type="String" required="true" %}
 API key of NFT
 {% endswagger-parameter %}
