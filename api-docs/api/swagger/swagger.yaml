@@ -255,6 +255,19 @@ components:
           type: string
         policyTag:
           type: string
+        policyTopics:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              type:
+                type: string
+              static:
+                type: boolean
     TrustChains:
       type: object
       required:
