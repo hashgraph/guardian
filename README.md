@@ -84,14 +84,6 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm run build
    ```
 
-  **From the vc-modules folder**
-
-  Build package
-  ```
-  npm install
-  npm run build
-  ```
-
    **From the logger-helper folder**
 
    Build package
