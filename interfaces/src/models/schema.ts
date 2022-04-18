@@ -44,8 +44,6 @@ export class Schema implements ISchema {
             this.entity = schema.entity || SchemaEntity.NONE;
             this.status = schema.status || SchemaStatus.DRAFT;
             this.readonly = schema.readonly || false;
-            this.document = schema.document || null;
-            this.context = schema.context || null;
             this.version = schema.version || "";
             this.creator = schema.creator || "";
             this.owner = schema.owner || "";
@@ -54,11 +52,29 @@ export class Schema implements ISchema {
             this.documentURL = schema.documentURL || "";
             this.contextURL = schema.contextURL || "";
             this.iri = schema.iri || "";
-            if(schema.isOwner) {
+            if (schema.isOwner) {
                 this.userDID = this.owner;
             }
-            if(schema.isCreator) {
+            if (schema.isCreator) {
                 this.userDID = this.creator;
+            }
+            if(schema.document) {
+                if (typeof schema.document == 'string') {
+                    this.document = JSON.parse(schema.document);
+                } else {
+                    this.document = schema.document;
+                }
+            } else {
+                this.document = null;
+            }
+            if(schema.context) {
+                if (typeof schema.context == 'string') {
+                    this.context = JSON.parse(schema.context);
+                } else {
+                    this.context = schema.context;
+                }
+            } else {
+                this.context = null;
             }
         } else {
             this.id = undefined;

@@ -94,6 +94,8 @@ components:
       properties:
         id:
           type: string
+        iri:
+          type: string
         uuid:
           type: string
         name:
@@ -113,8 +115,6 @@ components:
         version:
           type: string
         owner:
-          type: string
-        iri:
           type: string
         messageId:
           type: string
