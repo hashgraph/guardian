@@ -7,7 +7,7 @@
 Creates a new policy. Only users with the Root Authority role are allowed to make the request
 {% endswagger-description %}
 
-{% swagger-parameter in="body" type="application/json" required="true" %}
+{% swagger-parameter in="body" type="Object" required="true" %}
 Object that contains policy configuration.
 {% endswagger-parameter %}
 
