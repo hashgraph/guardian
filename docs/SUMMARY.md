@@ -112,17 +112,21 @@
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
-* [Creation of a schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
-* [Listing of Schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
+* [Creation of a schema (To Be Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
+* [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
 * [Publishing schema based on schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
 * [Updating schema](schema-creation-using-the-guardian-apis/updating-schema.md)
 * [Deleting a schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
-* [Import schema from Zip](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
-* [Import schema from IPFS](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
+* [Import schema from Zip (To Be Deprecated)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
+* [Import schema from IPFS (To Be Deprecated)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
 * [Schema Preview from IPFS](schema-creation-using-the-guardian-apis/schema-preview-from-ipfs.md)
 * [Schema Preview from Zip](schema-creation-using-the-guardian-apis/schema-preview-from-zip.md)
 * [Export message IDs of Schema](schema-creation-using-the-guardian-apis/export-a-schema.md)
 * [Export Files from Schema](schema-creation-using-the-guardian-apis/export-a-schema-1.md)
+* [Creation of Schema related to the topic](schema-creation-using-the-guardian-apis/creation-of-schema-related-to-the-topic.md)
+* [Returns all Schemas related to the topic](schema-creation-using-the-guardian-apis/returns-all-schemas-related-to-the-topic.md)
+* [Importing Zip file containing Schema](schema-creation-using-the-guardian-apis/importing-zip-file-containing-schema.md)
+* [Importing Schema from IPFS](schema-creation-using-the-guardian-apis/importing-schema-from-ipfs.md)
 
 ## ACCOUNT APIS
 
@@ -130,6 +134,7 @@
 * [User Session](account-apis/user-session.md)
 * [User Login](account-apis/user-login.md)
 * [Registering new account](account-apis/registering-new-account.md)
+* [Returns all root-authorities](account-apis/returns-all-root-authorities.md)
 
 ## PROFILE APIS
 
