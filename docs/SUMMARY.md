@@ -50,6 +50,7 @@
 * [reassigningBlock](available-policy-workflow-blocks/reassigningblock.md)
 * [InformationBlock](available-policy-workflow-blocks/information-workflow-block.md)
 * [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/interfacedocumentssourceblock.md)
+* [paginationAddon](available-policy-workflow-blocks/paginationaddon.md)
 * [DocumentsSourceAddOn](available-policy-workflow-blocks/documentssourceaddonblock.md)
 * [filtersAddOnBlock](available-policy-workflow-blocks/filtersaddonblock.md)
 * [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
