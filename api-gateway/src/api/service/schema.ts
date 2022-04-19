@@ -138,7 +138,11 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
         }
-        const { schemes, count } = await guardians.getSchemesByOwner(user.did, null, pageIndex, pageSize);
+        let owner = user.parent;
+        if(user.role == UserRole.ROOT_AUTHORITY) {
+            owner = user.did;
+        }
+        const { schemes, count } = await guardians.getSchemesByOwner(owner, null, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
@@ -157,7 +161,11 @@ schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
         }
-        const { schemes, count } = await guardians.getSchemesByOwner(user.did, topicId, pageIndex, pageSize);
+        let owner = user.parent;
+        if(user.role == UserRole.ROOT_AUTHORITY) {
+            owner = user.did;
+        }
+        const { schemes, count } = await guardians.getSchemesByOwner(owner, topicId, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
