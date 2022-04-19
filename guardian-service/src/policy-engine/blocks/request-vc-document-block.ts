@@ -122,9 +122,14 @@ export class RequestVcDocumentBlock {
             if (id) {
                 credentialSubject.id = id;
             }
-            if (documentRef) {
+
+            if (typeof(documentRef) === 'string') {
+                credentialSubject.ref = documentRef;
+            }
+            else if (documentRef) {
                 credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
             }
+
             credentialSubject.policyId = ref.policyId;
 
             const res = await VCHelper.verifySubject(credentialSubject);
@@ -141,7 +146,8 @@ export class RequestVcDocumentBlock {
                 type: schema,
                 relationships: null
             };
-            if (documentRef && documentRef.messageId) {
+
+            if (typeof(documentRef) === 'object' && documentRef && documentRef.messageId) {
                 item.relationships = [documentRef.messageId];
             }
             await this.changeActive(user, true);
