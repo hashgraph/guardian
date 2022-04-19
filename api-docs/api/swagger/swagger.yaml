@@ -839,7 +839,7 @@ paths:
           examples:
             pageIndex:
               summary: Example of a pageIndex
-              value: 0 
+              value: 0
         - in: query
           name: pageSize
           schema:
@@ -889,7 +889,7 @@ paths:
           examples:
             topicId:
               summary: Example of a Topic ID
-              value: 0.0.00000001 
+              value: 0.0.00000001
       security:
       - bearerAuth: []
       summary: Create new schema.
@@ -930,7 +930,7 @@ paths:
           examples:
             topicId:
               summary: Example of a Topic ID
-              value: 0.0.00000001 
+              value: 0.0.00000001
         - in: query
           name: pageIndex
           schema:
@@ -939,7 +939,7 @@ paths:
           examples:
             pageIndex:
               summary: Example of a pageIndex
-              value: 0 
+              value: 0
         - in: query
           name: pageSize
           schema:
@@ -973,7 +973,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /schemas/{schemaId}/publish:
     put:
       tags:
@@ -1185,12 +1185,17 @@ paths:
           examples:
             topicId:
               summary: Example of a Topic ID
-              value: 0.0.00000001 
+              value: 0.0.00000001
       security:
       - bearerAuth: []
       summary: Imports new schema from a zip file.
       requestBody:
         description: A zip file containing schema to be imported.
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
         required: true
       responses:
         201:
@@ -1227,7 +1232,7 @@ paths:
           examples:
             topicId:
               summary: Example of a Topic ID
-              value: 0.0.00000001 
+              value: 0.0.00000001
       security:
       - bearerAuth: []
       summary: Imports new schema from IPFS.
@@ -1838,7 +1843,7 @@ paths:
           examples:
             pageIndex:
               summary: Example of a pageIndex
-              value: 0 
+              value: 0
         - in: query
           name: pageSize
           schema:
@@ -2517,7 +2522,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /ipfs/file:
     post:
       tags:
@@ -2550,7 +2555,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /settings:
     get:
       tags:
@@ -2603,7 +2608,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /logs:
     post:
       tags:
@@ -2640,7 +2645,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /logs/attributes:
     get:
       tags:
