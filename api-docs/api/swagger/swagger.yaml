@@ -943,6 +943,11 @@ paths:
       summary: Imports new schema from a zip file.
       requestBody:
         description: A zip file containing schema to be imported.
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
         required: true
       responses:
         201:
@@ -1039,7 +1044,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-                
+
   /schemas/import/file/preview:
     post:
       tags:
@@ -1051,6 +1056,11 @@ paths:
       requestBody:
         description: A zip file containing the schema to be viewed.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         200:
           description: Successful operation.
@@ -1994,7 +2004,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /policies/import/message:
     post:
       tags:
@@ -2051,6 +2061,11 @@ paths:
       requestBody:
         description: A zip file that contains the policy and associated schemas and VCs to be imported.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         201:
           description: Successful operation.
@@ -2125,6 +2140,11 @@ paths:
       requestBody:
         description: A zip file that contains the policy and associated schemas and VCs to be viewed.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         200:
           description: Successful operation.
@@ -2187,16 +2207,16 @@ paths:
                         policyRoles:
                           type: object
                           properties:
-                            policy: 
+                            policy:
                               type: object
                               properties:
                                 id:
                                   type: string
-                                name: 
+                                name:
                                   type: string
                                 version:
                                   type: string
-                            userRoles: 
+                            userRoles:
                               type: object
                               properties:
                                 did:
@@ -2383,7 +2403,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items: 
+                items:
                   type: string
         401:
           description: Unauthorized.
