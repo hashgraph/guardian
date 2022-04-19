@@ -7,15 +7,35 @@
 Returns all policies. Only users with the Root Authority and Installer role are allowed to make the request
 {% endswagger-description %}
 
+{% swagger-parameter in="query" name="pageIndex" type="Integer" required="true" %}
+The number of pages to skip before starting to collect the result set
+{% endswagger-parameter %}
+
+{% swagger-parameter in="query" name="pageSize" type="Integer" required="true" %}
+The numbers of items to return
+{% endswagger-parameter %}
+
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
-    content:
+    headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PolicyConfig'
+                  allOf:
+                    - $ref: '#/components/schemas/PolicyConfig'
+                    - type: object
+                      properties:
+                        userRoles:
+                          type: array
+                          items:
+                            type: string
 }
 ```
 {% endswagger-response %}

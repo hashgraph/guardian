@@ -32,11 +32,11 @@ export class SchemaMessage extends Message {
         this.documents = [document, context];
     }
 
-    public getDocument(): string {
+    public getDocument(): any {
         return this.documents[0];
     }
 
-    public getContext(): string {
+    public getContext(): any {
         return this.documents[1];
     }
 

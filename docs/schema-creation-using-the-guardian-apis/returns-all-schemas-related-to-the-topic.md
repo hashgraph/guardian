@@ -1,11 +1,13 @@
-# Listing of Schema
+# Returns all Schemas related to the topic
 
-### SCHEMA LISTING
-
-{% swagger method="get" path="" baseUrl="/schemas" summary="Returns all schemas" %}
+{% swagger method="get" path="" baseUrl=" /schemas/{topicId}" summary="Returns schemas related to the topic (policy)" %}
 {% swagger-description %}
-Returns all schemas
+Returns all schemas by topicId.
 {% endswagger-description %}
+
+{% swagger-parameter in="path" name="topicId" type="Integer" required="true" %}
+Topic ID
+{% endswagger-parameter %}
 
 {% swagger-parameter in="query" name="pageIndex" type="Integer" %}
 The number of pages to skip before starting to collect the result set
@@ -15,7 +17,7 @@ The number of pages to skip before starting to collect the result set
 The numbers of items to return
 {% endswagger-parameter %}
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     headers:

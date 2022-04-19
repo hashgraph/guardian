@@ -45,6 +45,11 @@ export const profileAPI = async function (channel: any) {
 
             const user = await users.getUser(username);
 
+            if (!user) {
+                res.send(new MessageResponse('Invalid Account'));
+                return;
+            }
+
             if (!user.hederaAccountId) {
                 res.send(new MessageResponse('Invalid Hedera Account Id'));
                 return;

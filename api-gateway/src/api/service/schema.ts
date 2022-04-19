@@ -69,6 +69,31 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
     return schemes;
 }
 
+function toOld(schemes: any[]): any[] {
+    if(schemes) {
+        for (let i = 0; i < schemes.length; i++) {
+            const schema = schemes[i];
+            if (schema.document) {
+                schema.document = JSON.stringify(schema.document);
+            }
+            if (schema.context) {
+                schema.context = JSON.stringify(schema.context);
+            }
+        }
+    }
+    return schemes;
+}
+
+function fromOld(schema: any): any {
+    if (schema && typeof schema.document == 'string') {
+        schema.document = JSON.parse(schema.document);
+    }
+    if (schema && typeof schema.context == 'string') {
+        schema.context = JSON.parse(schema.context);
+    }
+    return schema;
+}
+
 /**
  * Schema route
  */
@@ -81,8 +106,9 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
     try {
         const user = req.user;
         const newSchema = req.body;
+        fromOld(newSchema);
         const schemes = await createSchema(newSchema, user.did);
-        res.status(201).json(schemes);
+        res.status(201).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -93,9 +119,10 @@ schemaAPI.post('/:topicId', permissionHelper(UserRole.ROOT_AUTHORITY), async (re
     try {
         const user = req.user;
         const newSchema = req.body;
+        fromOld(newSchema);
         const topicId = req.params.topicId as string;
         const schemes = await createSchema(newSchema, user.did, topicId);
-        res.status(201).json(schemes);
+        res.status(201).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -111,9 +138,13 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
         }
-        const { schemes, count } = await guardians.getSchemesByOwner(user.did, null, pageIndex, pageSize);
+        let owner = user.parent;
+        if(user.role == UserRole.ROOT_AUTHORITY) {
+            owner = user.did;
+        }
+        const { schemes, count } = await guardians.getSchemesByOwner(owner, null, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: error.code, message: error.message });
@@ -130,9 +161,13 @@ schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
         }
-        const { schemes, count } = await guardians.getSchemesByOwner(user.did, topicId, pageIndex, pageSize);
+        let owner = user.parent;
+        if(user.role == UserRole.ROOT_AUTHORITY) {
+            owner = user.did;
+        }
+        const { schemes, count } = await guardians.getSchemesByOwner(owner, topicId, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: error.code, message: error.message });
@@ -143,8 +178,9 @@ schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
     try {
         const user = req.user;
         const newSchema = req.body;
+        fromOld(newSchema);
         const schemes = await updateSchema(newSchema, user.did)
-        res.status(200).json(schemes);
+        res.status(200).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -167,7 +203,7 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async 
         }
         const schemes = (await guardians.deleteSchema(schemaId));
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).json(schemes);
+        res.status(200).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -198,7 +234,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
 
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -216,7 +252,7 @@ schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), asy
         const map = await guardians.importSchemesByMessages([messageId], req.user.did, null);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -238,7 +274,7 @@ schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async 
         const map = await guardians.importSchemesByFile(files, req.user.did, null);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -287,7 +323,7 @@ schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.ROOT_AUTHOR
         const map = await guardians.importSchemesByMessages([messageId], req.user.did, topicId);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -307,7 +343,7 @@ schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY
         const map = await guardians.importSchemesByFile(files, req.user.did, topicId);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(schemes);
+        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });

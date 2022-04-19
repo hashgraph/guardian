@@ -17,7 +17,10 @@ export class SchemaHelper {
             if (typeof data == "string") {
                 ref = data;
             } else {
-                const document = data.document;
+                let document = data.document;
+                if (typeof document == "string") {
+                    document = JSON.parse(document) as ISchemaDocument;
+                }
                 ref = document.$id;
             }
             if (ref) {
@@ -332,7 +335,10 @@ export class SchemaHelper {
 
     public static getVersion(data: ISchema) {
         try {
-            const document = data.document;
+            let document = data.document;
+            if (typeof document == "string") {
+                document = JSON.parse(document) as ISchemaDocument;
+            }
             const { version } = SchemaHelper.parseRef(document.$id);
             const { previousVersion } = SchemaHelper.parseComment(document.$comment);
             return { version, previousVersion };
@@ -342,7 +348,10 @@ export class SchemaHelper {
     }
 
     public static setVersion(data: ISchema, version: string, previousVersion: string) {
-        const document = data.document;
+        let document = data.document;
+        if (typeof document == "string") {
+            document = JSON.parse(document) as ISchemaDocument;
+        }
         const uuid = data.uuid;
         const type = SchemaHelper.buildType(uuid, version);
         const ref = SchemaHelper.buildRef(type);
@@ -354,7 +363,10 @@ export class SchemaHelper {
     }
 
     public static updateVersion(data: ISchema, newVersion: string) {
-        const document = data.document;
+        let document = data.document;
+        if (typeof document == "string") {
+            document = JSON.parse(document) as ISchemaDocument;
+        }
 
         let { version, uuid } = SchemaHelper.parseRef(document.$id);
         let { previousVersion } = SchemaHelper.parseComment(document.$comment);
@@ -386,7 +398,11 @@ export class SchemaHelper {
     }
 
     public static updateOwner(data: ISchema, newOwner: string) {
-        const document = data.document;
+        let document = data.document;
+        if (typeof document == "string") {
+            document = JSON.parse(document) as ISchemaDocument;
+        }
+
         const { version, uuid } = SchemaHelper.parseRef(document.$id);
         const { previousVersion } = SchemaHelper.parseComment(document.$comment);
         data.version = data.version || version;
@@ -427,7 +443,10 @@ export class SchemaHelper {
             if (!schema.document) {
                 return false;
             }
-            const doc = schema.document;
+            let doc = schema.document;
+            if (typeof doc == "string") {
+                doc = JSON.parse(doc) as ISchemaDocument;
+            }
             if (!doc.$id) {
                 return false;
             }
@@ -511,7 +530,10 @@ export class SchemaHelper {
     public static updateIRI(schema: ISchema): ISchema {
         try {
             if (schema.document) {
-                const document = schema.document;
+                let  document = schema.document;
+                if (typeof document == "string") {
+                    document = JSON.parse(document) as ISchemaDocument;
+                }
                 schema.iri = document.$id || null;
             } else {
                 schema.iri = null;

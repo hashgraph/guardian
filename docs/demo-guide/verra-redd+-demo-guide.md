@@ -22,7 +22,7 @@ This folder contains sample files that are referenced in the Demo Usage Guide&#x
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the following Hedera message ID:&#x20;
 
 ```
-1648223036.051204000(Verra REDD Policy)  
+1650372697.590064000(Verra REDD+ Policy)  
 ```
 
 Once you have done that, you can move onto the next step.&#x20;

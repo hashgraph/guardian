@@ -14,7 +14,6 @@ in `guardian-service/.env`:
 ```
  OPERATOR_ID="0.0.29676495"
  OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
- SCHEMA_TOPIC_ID="0.0.29614911"
 ```
 
 in `guardian-service/.env.docker`:
@@ -22,10 +21,7 @@ in `guardian-service/.env.docker`:
 ```
  OPERATOR_ID="0.0.29676495"
  OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
- SCHEMA_TOPIC_ID="0.0.29614911"
 ```
-
-Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
 
 3\. Update the following files with your NFT.Storage API KEY. Please follow the steps from [https://nft.storage/#getting-started](https://nft.storage/#getting-started) to obtain it.
 
@@ -52,15 +48,6 @@ docker-compose up -d --build
 5\. If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
 #### From the interfaces folder
-
-Build package
-
-```
-npm install
-npm run build
-```
-
-#### From the vc-modules folder
 
 Build package
 

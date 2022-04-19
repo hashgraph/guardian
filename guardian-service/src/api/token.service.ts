@@ -298,10 +298,6 @@ export const tokenAPI = async function (
             const userID = user.hederaAccountId;
             const userDID = user.did;
             const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
-            let parent: IAuthUser = null;
-            if ((user as any)?.parent) {
-                parent = await users.getUserById((user as any).parent);
-            }
 
             if (!user) {
                 throw 'User not found';
@@ -314,11 +310,11 @@ export const tokenAPI = async function (
 
             const client = new HederaSDKHelper(userID, userKey);
             const info = await client.accountInfo(user.hederaAccountId);
-            const tokens: any = await tokenRepository.find(parent 
+            const tokens: any = await tokenRepository.find(user.parent 
                 ? { 
                     where: {
                         $or: [
-                            { owner: { $eq: parent.did } }, 
+                            { owner: { $eq: user.parent } }, 
                             { owner: { $exists: false } }
                         ]
                     }

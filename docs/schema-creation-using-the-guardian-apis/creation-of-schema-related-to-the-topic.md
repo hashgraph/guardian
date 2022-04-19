@@ -1,25 +1,19 @@
-# Adding Settings
+# Creation of Schema related to the topic
 
-## SET SETTINGS
-
-{% swagger method="post" path="" baseUrl="/settings" summary="Set settings." %}
+{% swagger method="post" path="" baseUrl="/schemas/{topicId}" summary="Creates a schema related to the topic (policy)" %}
 {% swagger-description %}
-Set settings. For users with the Root Authority role only.
+Creates new schema. Only users with the Root Authority role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="body" type="String" required="true" name="operatorID" %}
-ID of the operator
+{% swagger-parameter in="path" name="topicId" type="String" required="true" %}
+Topic ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="operatorKey" type="String" required="true" %}
-Key of the operator
+{% swagger-parameter in="body" required="true" type="Object" %}
+Object that contains a valid schema
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="nftApiKey" type="String" required="true" %}
-API key of NFT
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="201: Created" description="Successful Operation" %}
 ```javascript
 {
     // Response
@@ -46,7 +40,8 @@ API key of NFT
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {
-    application/json:
+    content:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
 }

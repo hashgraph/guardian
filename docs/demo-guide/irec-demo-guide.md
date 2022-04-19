@@ -13,9 +13,13 @@ This folder contains sample files that are referenced in the Demo Usage Guide&#x
 
 3\. You will now be prompted to configure your Issuer account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_0.png)
+![](<../.gitbook/assets/iREC\_0 (1).png>)
 
-4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS.
+4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
+
+```
+1650283305.363066755 (new iREC Policy)
+```
 
 ![](../.gitbook/assets/iREC\_1.png)
 

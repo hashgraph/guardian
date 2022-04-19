@@ -50,6 +50,7 @@
 * [reassigningBlock](available-policy-workflow-blocks/reassigningblock.md)
 * [InformationBlock](available-policy-workflow-blocks/information-workflow-block.md)
 * [InterfaceDocumentsSourceBlock](available-policy-workflow-blocks/interfacedocumentssourceblock.md)
+* [paginationAddon](available-policy-workflow-blocks/paginationaddon.md)
 * [DocumentsSourceAddOn](available-policy-workflow-blocks/documentssourceaddonblock.md)
 * [filtersAddOnBlock](available-policy-workflow-blocks/filtersaddonblock.md)
 * [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
@@ -112,17 +113,21 @@
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
-* [Creation of a schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
-* [Listing of Schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
-* [Publishing schema based on schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
-* [Updating schema](schema-creation-using-the-guardian-apis/updating-schema.md)
-* [Deleting a schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
-* [Import schema from Zip](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
-* [Import schema from IPFS](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
+* [Creation of a Schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
+* [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
+* [Publishing Schema based on Schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
+* [Updating Schema](schema-creation-using-the-guardian-apis/updating-schema.md)
+* [Deleting a Schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
+* [Import Schema from Zip (Deprecated)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
+* [Import Schema from IPFS (Deprecated)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
 * [Schema Preview from IPFS](schema-creation-using-the-guardian-apis/schema-preview-from-ipfs.md)
 * [Schema Preview from Zip](schema-creation-using-the-guardian-apis/schema-preview-from-zip.md)
 * [Export message IDs of Schema](schema-creation-using-the-guardian-apis/export-a-schema.md)
 * [Export Files from Schema](schema-creation-using-the-guardian-apis/export-a-schema-1.md)
+* [Creation of Schema related to the topic](schema-creation-using-the-guardian-apis/creation-of-schema-related-to-the-topic.md)
+* [Returns all Schemas related to the topic](schema-creation-using-the-guardian-apis/returns-all-schemas-related-to-the-topic.md)
+* [Importing Zip file containing Schema](schema-creation-using-the-guardian-apis/importing-zip-file-containing-schema.md)
+* [Importing Schema from IPFS](schema-creation-using-the-guardian-apis/importing-schema-from-ipfs.md)
 
 ## ACCOUNT APIS
 
@@ -130,6 +135,7 @@
 * [User Session](account-apis/user-session.md)
 * [User Login](account-apis/user-login.md)
 * [Registering new account](account-apis/registering-new-account.md)
+* [Returns all root-authorities](account-apis/returns-all-root-authorities.md)
 
 ## PROFILE APIS
 
