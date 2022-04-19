@@ -1,34 +1,22 @@
-# Listing of Schema
+# Creation of Schema related to the topic
 
-### SCHEMA LISTING
-
-{% swagger method="get" path="" baseUrl="/schemas" summary="Returns all schemas" %}
+{% swagger method="post" path="" baseUrl="/schemas/{topicId}" summary="Creates a schema related to the topic (policy)" %}
 {% swagger-description %}
-Returns all schemas
+Creates new schema. Only users with the Root Authority role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" %}
-The number of pages to skip before starting to collect the result set
+{% swagger-parameter in="path" name="topicId" type="String" required="true" %}
+Topic ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" type="Integer" name="pageSize" %}
-The numbers of items to return
+{% swagger-parameter in="body" required="true" type="Object" %}
+Object that contains a valid schema
 {% endswagger-parameter %}
 
 {% swagger-response status="201: Created" description="Successful Operation" %}
 ```javascript
 {
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+    // Response
 }
 ```
 {% endswagger-response %}

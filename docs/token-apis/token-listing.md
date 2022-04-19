@@ -14,7 +14,14 @@ Returns all tokens. For the Root Authority role it returns only the list of toke
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TokenInfo'
+                  allOf:
+                    - $ref: '#/components/schemas/TokenInfo'
+                    - type: object
+                      properties:
+                        policies:
+                          type: array
+                          items:
+                            type: string
 }
 ```
 {% endswagger-response %}

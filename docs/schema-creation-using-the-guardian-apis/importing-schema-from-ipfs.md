@@ -1,29 +1,22 @@
-# Listing of Schema
+# Importing Schema from IPFS
 
-### SCHEMA LISTING
-
-{% swagger method="get" path="" baseUrl="/schemas" summary="Returns all schemas" %}
+{% swagger method="post" path="" baseUrl="/schemas/{topicId}/import/message" summary="Imports schemas from a message for the selected topic (policy)" %}
 {% swagger-description %}
-Returns all schemas
+Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" %}
-The number of pages to skip before starting to collect the result set
+{% swagger-parameter in="path" name="topicID" type="String" required="true" %}
+Topic ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" type="Integer" name="pageSize" %}
-The numbers of items to return
+{% swagger-parameter in="body" type="Object" required="true" %}
+Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
 {% endswagger-parameter %}
 
 {% swagger-response status="201: Created" description="Successful Operation" %}
 ```javascript
 {
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
+    content:
             application/json:
               schema:
                 type: array
