@@ -233,6 +233,10 @@ components:
         - topicId
         - policyTag
       properties:
+        id:
+          type: string
+        uuid:
+          type: string
         name:
           type: string
         version:
@@ -835,7 +839,7 @@ paths:
           examples:
             pageIndex:
               summary: Example of a pageIndex
-              value: 0 
+              value: 0
         - in: query
           name: pageSize
           schema:
@@ -885,7 +889,7 @@ paths:
           examples:
             topicId:
               summary: Example of a Topic ID
-              value: 0.0.00000001 
+              value: 0.0.00000001
       security:
       - bearerAuth: []
       summary: Create new schema.
@@ -926,7 +930,7 @@ paths:
           examples:
             topicId:
               summary: Example of a Topic ID
-              value: 0.0.00000001 
+              value: 0.0.00000001
         - in: query
           name: pageIndex
           schema:
@@ -935,7 +939,7 @@ paths:
           examples:
             pageIndex:
               summary: Example of a pageIndex
-              value: 0 
+              value: 0
         - in: query
           name: pageSize
           schema:
@@ -969,7 +973,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /schemas/{schemaId}/publish:
     put:
       tags:
@@ -1101,6 +1105,11 @@ paths:
       summary: Imports new schema from a zip file.
       requestBody:
         description: A zip file containing schema to be imported.
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
         required: true
       responses:
         201:
@@ -1176,12 +1185,17 @@ paths:
           examples:
             topicId:
               summary: Example of a Topic ID
-              value: 0.0.00000001 
+              value: 0.0.00000001
       security:
       - bearerAuth: []
       summary: Imports new schema from a zip file.
       requestBody:
         description: A zip file containing schema to be imported.
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
         required: true
       responses:
         201:
@@ -1218,7 +1232,7 @@ paths:
           examples:
             topicId:
               summary: Example of a Topic ID
-              value: 0.0.00000001 
+              value: 0.0.00000001
       security:
       - bearerAuth: []
       summary: Imports new schema from IPFS.
@@ -1289,7 +1303,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-                
+
   /schemas/import/file/preview:
     post:
       tags:
@@ -1301,6 +1315,11 @@ paths:
       requestBody:
         description: A zip file containing the schema to be viewed.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         200:
           description: Successful operation.
@@ -1824,7 +1843,7 @@ paths:
           examples:
             pageIndex:
               summary: Example of a pageIndex
-              value: 0 
+              value: 0
         - in: query
           name: pageSize
           schema:
@@ -2266,7 +2285,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /policies/import/message:
     post:
       tags:
@@ -2316,6 +2335,11 @@ paths:
       requestBody:
         description: A zip file that contains the policy and associated schemas and VCs to be imported.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         201:
           description: Successful operation.
@@ -2383,6 +2407,11 @@ paths:
       requestBody:
         description: A zip file that contains the policy and associated schemas and VCs to be viewed.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         200:
           description: Successful operation.
@@ -2443,16 +2472,24 @@ paths:
                     - type: object
                       properties:
                         policyRoles:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              name: 
-                                type: string
-                              version:
-                                type: string
-                              role:
-                                type: string
+                          type: object
+                          properties:
+                            policy:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                name:
+                                  type: string
+                                version:
+                                  type: string
+                            userRoles:
+                              type: object
+                              properties:
+                                did:
+                                  type: string
+                                role:
+                                  type: string
         500:
           description: Internal server error.
           content:
@@ -2485,7 +2522,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /ipfs/file:
     post:
       tags:
@@ -2518,7 +2555,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /settings:
     get:
       tags:
@@ -2571,7 +2608,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /logs:
     post:
       tags:
@@ -2608,7 +2645,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /logs/attributes:
     get:
       tags:
@@ -2637,7 +2674,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items: 
+                items:
                   type: string
         401:
           description: Unauthorized.
