@@ -120,6 +120,7 @@ export class SendToGuardianBlock {
                     hederaStatus: document.hederaStatus || DocumentStatus.NEW,
                     signature: document.signature || DocumentSignature.NEW,
                     messageId: document.messageId || null,
+                    topicId: document.topicId || null,
                     relationships: document.relationships || [],
                 };
                 return await PolicyUtils.updateVCRecord(doc);
@@ -163,6 +164,7 @@ export class SendToGuardianBlock {
                 .sendMessage(vcMessage);
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
+            document.topicId = vcMessageResult.getTopicId();
             return document;
         } catch (error) {
             throw new BlockActionError(error.message, ref.blockType, ref.uuid)

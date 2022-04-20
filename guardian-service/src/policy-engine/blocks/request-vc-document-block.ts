@@ -189,7 +189,8 @@ export class RequestVcDocumentBlock {
                     did: did,
                     document: document,
                     status: DidDocumentStatus.CREATE,
-                    messageId: messageResult.getId()
+                    messageId: messageResult.getId(),
+                    topicId: messageResult.getTopicId()
                 });
 
                 await getMongoRepository(DidDocumentCollection).save(doc);

@@ -173,10 +173,16 @@ export class MessageServer {
     }
 
     public async findTopic(messageId:string): Promise<string> {
-        if(messageId) {
-            const { topicId, message } = await this.client.getTopicMessage(messageId);
-            return topicId;
+        try {
+            console.log(messageId)
+            if(messageId) {
+                const { topicId, message } = await this.client.getTopicMessage(messageId);
+                console.log(topicId)
+                return topicId;
+            }
+            return null;
+        } catch (error) {
+            return null;
         }
-        return null;
     }
 }

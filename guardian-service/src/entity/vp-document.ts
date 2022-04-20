@@ -42,6 +42,9 @@ export class VpDocument implements IVPDocument {
     messageId: string;
 
     @Column()
+    topicId: string;
+
+    @Column()
     relationships: string[];
 
     @BeforeInsert()

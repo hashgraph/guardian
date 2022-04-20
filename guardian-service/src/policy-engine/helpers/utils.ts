@@ -81,6 +81,8 @@ export class PolicyUtils {
             item.type = row.type;
             item.tag = row.tag;
             item.document = row.document;
+            item.messageId = row.messageId || item.messageId;
+            item.topicId = row.topicId || item.topicId;
             await getMongoRepository(VcDocumentCollection).update(item.id, item);
             return item;
         } else {
@@ -223,7 +225,7 @@ export class PolicyUtils {
             policyId: ref.policyId,
             topicId: topicId
         });
-        if(!topic) {
+        if (!topic) {
             topic = await getMongoRepository(Topic).findOne({
                 policyId: ref.policyId,
                 type: TopicType.InstancePolicyTopic
