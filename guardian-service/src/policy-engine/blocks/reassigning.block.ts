@@ -58,6 +58,7 @@ export class ReassigningBlock {
             policyId: ref.policyId,
             tag: ref.tag,
             messageId: null,
+            topicId: null,
             relationships: document.messageId ? [document.messageId] : null
         };
         return { item, owner };

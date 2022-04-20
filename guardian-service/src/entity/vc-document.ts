@@ -54,6 +54,9 @@ export class VcDocument implements IVCDocument {
     messageId: string;
     
     @Column()
+    topicId: string;
+    
+    @Column()
     relationships: string[];
 
     @BeforeInsert()
