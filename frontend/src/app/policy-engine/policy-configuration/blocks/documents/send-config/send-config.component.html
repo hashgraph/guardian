@@ -61,6 +61,19 @@
         </td>
     </tr>
 
+    <tr *ngIf="block.dataSource=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Topic Owner</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.topicOwner" [disabled]="readonly">
+                <mat-option value=""></mat-option>
+                <mat-option value="user">Current User</mat-option>
+                <mat-option value="owner">Document Owner</mat-option>
+                <mat-option value="issuer">Document Issuer</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Entity Type</td>

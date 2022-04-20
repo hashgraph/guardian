@@ -73,9 +73,14 @@ export class MintBlock {
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-
-        const topic = await PolicyUtils.getTopic('root', root, user, ref);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const topicId = await messageServer.findTopic(vsMessages[0]);
+        let topic: any;
+        if (topicId) {
+            topic = await PolicyUtils.getTopicById(topicId, ref);
+        } else {
+            topic = await PolicyUtils.getTopic('root', root, user, ref);
+        }
 
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
@@ -136,7 +141,7 @@ export class MintBlock {
                 throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
             }
             vcs.push(VcDocument.fromJsonTree(element.document));
-            if(element.messageId) {
+            if (element.messageId) {
                 vsMessages.push(element.messageId);
             }
         }

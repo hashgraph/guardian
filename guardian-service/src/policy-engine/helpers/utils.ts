@@ -218,6 +218,23 @@ export class PolicyUtils {
         return topic;
     }
 
+    public static async getTopicById(topicId: string, ref: AnyBlockType): Promise<Topic> {
+        let topic = await getMongoRepository(Topic).findOne({
+            policyId: ref.policyId,
+            topicId: topicId
+        });
+        if(!topic) {
+            topic = await getMongoRepository(Topic).findOne({
+                policyId: ref.policyId,
+                type: TopicType.InstancePolicyTopic
+            });
+        }
+        if (!topic) {
+            throw `Topic does not exist`;
+        }
+        return topic;
+    }
+
     public static getSubjectId(data: any): string {
         try {
             if (data) {
