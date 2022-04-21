@@ -68,12 +68,22 @@ export class ImportSchemaDialog {
 
   importFromFile() {
     this.loading = true;
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.zip';
-    input.click();
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
+
+    const pickerOpts = {
+      types: [
+        {
+          accept: {
+            'application/zip': ['.zip']
+          }
+        },
+      ],
+      excludeAcceptAllOption: true,
+      multiple: false
+    };
+
+    (window as any).showOpenFilePicker(pickerOpts)
+    .then(async ([fileHandler]: any) => {
+      const file = await fileHandler.getFile();
       const reader = new FileReader()
       reader.readAsArrayBuffer(file);
       reader.addEventListener('load', (e: any) => {
@@ -90,6 +100,7 @@ export class ImportSchemaDialog {
           this.loading = false;
         });
       });
-    }
+    })
+    .catch(() => this.dialogRef.close(null));
   }
 }

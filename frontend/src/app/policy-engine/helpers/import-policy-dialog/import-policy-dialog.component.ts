@@ -68,28 +68,39 @@ export class ImportPolicyDialog {
 
   importFromFile() {
     this.loading = true;
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.zip';
-    input.click();
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
-      const reader = new FileReader()
-      reader.readAsArrayBuffer(file);
-      reader.addEventListener('load', (e: any) => {
-        const arrayBuffer = e.target.result;
-        this.loading = true;
-        this.policyEngineService.previewByFile(arrayBuffer).subscribe((result) => {
-          this.loading = false;
-          this.dialogRef.close({
-            type: 'file',
-            data: arrayBuffer,
-            policy: result
+
+    const pickerOpts = {
+      types: [
+        {
+          accept: {
+            'application/zip': ['.zip']
+          }
+        },
+      ],
+      excludeAcceptAllOption: true,
+      multiple: false
+    };
+
+    (window as any).showOpenFilePicker(pickerOpts)
+      .then(async ([fileHandler]: any) => {
+        const file = await fileHandler.getFile();
+        const reader = new FileReader()
+        reader.readAsArrayBuffer(file);
+        reader.addEventListener('load', (e: any) => {
+          const arrayBuffer = e.target.result;
+          this.loading = true;
+          this.policyEngineService.previewByFile(arrayBuffer).subscribe((result) => {
+            this.loading = false;
+            this.dialogRef.close({
+              type: 'file',
+              data: arrayBuffer,
+              policy: result
+            });
+          }, (e) => {
+            this.loading = false;
           });
-        }, (e) => {
-          this.loading = false;
         });
-      });
-    }
+      })
+      .catch(() => this.dialogRef.close(null));
   }
 }
