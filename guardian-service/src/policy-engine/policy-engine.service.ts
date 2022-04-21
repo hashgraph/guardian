@@ -149,7 +149,7 @@ export class PolicyEngineService {
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
             const messageStatus = await messageServer
-                .setTopicObject(topic)
+                .setTopicObject(parent)
                 .sendMessage(message);
 
             await topicHelper.link(topic, parent, messageStatus.getId());
