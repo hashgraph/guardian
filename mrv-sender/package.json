@@ -10,7 +10,7 @@
     "@transmute/vc.js": "0.7.0-unstable.40",
     "axios": "^0.26.1",
     "express": "^4.17.3",
-    "jose": "4.3.8"
+    "jose": "4.7.0"
   },
   "description": "",
   "devDependencies": {
