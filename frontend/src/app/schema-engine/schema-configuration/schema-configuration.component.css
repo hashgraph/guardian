@@ -113,7 +113,7 @@ form {
 .custom-field-remove {
     position: absolute;
     right: 3px;
-    top: 7px;
+    bottom: 100px;
     z-index: 1;
 }
 .custom-field-type {
@@ -167,9 +167,9 @@ form {
 }
 
 .delimiter {
-    padding: 55px 55px;
+    padding: 35px 55px;
     width: 100%;
-    height: 110px;
+    height: 70px;
     box-sizing: border-box;
     position: relative;
 }
@@ -178,9 +178,9 @@ form {
     content: '';
     position: absolute;
     height: 2px;
-    top: 55px;
-    left: 250px;
-    right: 250px;
+    top: 35px;
+    left: 150px;
+    right: 150px;
     border-top: 1px solid #c8c8c8;
 }
 
@@ -254,4 +254,15 @@ form {
 
 .boolean-option {
     margin-right: 20px;
+}
+
+.custom-field-required-warn {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #efc900
+}
+
+.custom-field-required-warn mat-icon {
+    margin-right: 5px;
 }

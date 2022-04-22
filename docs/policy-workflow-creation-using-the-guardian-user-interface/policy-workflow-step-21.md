@@ -8,11 +8,11 @@ Note that for the approve option we are binding the action to the “update\_app
 
 Note that for the reject option we are binding the action to the “installer\_rejected” action we previously defined.
 
-![](https://i.imgur.com/qMY0via.png)
+![](../.gitbook/assets/PW\_26.png)
 
 Next, we return to the “approve\_documents\_grid” step and add the “approve\_documents\_btn” action as a binding block to Field 4 since Field 4 captures the approval or rejection of the document. Note, the choice of block for Field 4 makes sense now, because the bound action is a block itself.
 
-![](https://i.imgur.com/szoRpPF.png)
+![](../.gitbook/assets/PW\_26.1.png)
 
 **Programmatically this workflow step looks like this:**
 
@@ -20,7 +20,7 @@ Next, we return to the “approve\_documents\_grid” step and add the “approv
         // Block with the Approve/Reject buttons, embedded into the grid
         {
           "tag": "approve_documents_btn",
-          "blockType": "interfaceAction",
+          "blockType": "InterfaceActionBlock",
           "permissions": [
             "OWNER"
           ],

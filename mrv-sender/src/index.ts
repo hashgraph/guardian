@@ -1,7 +1,8 @@
 import express, { Request, Response } from 'express';
 import axios from 'axios';
-import { DefaultDocumentLoader, HederaHelper, VCHelper } from 'vc-modules';
 import { VCDocumentLoader } from './document-loader/vc-document-loader';
+import { DefaultDocumentLoader } from './document-loader/document-loader-default';
+import { VCHelper } from './vc-helper';
 
 const PORT = process.env.PORT || 3005;
 (async () => {
@@ -10,10 +11,9 @@ const PORT = process.env.PORT || 3005;
     app.use(express.static('public'));
     app.use(express.json());
 
-    //Document Loader
-    const vcHelper = new VCHelper();
     const defaultDocumentLoader = new DefaultDocumentLoader();
     const vcDocumentLoader = new VCDocumentLoader('https://localhost/schema', '');
+    const vcHelper = new VCHelper();
     vcHelper.addDocumentLoader(defaultDocumentLoader);
     vcHelper.addDocumentLoader(vcDocumentLoader);
     vcHelper.buildDocumentLoader();
@@ -32,15 +32,12 @@ const PORT = process.env.PORT || 3005;
             type,
             context,
             schema,
-            policyTag
+            policyTag,
+            didDocument
         } = config;
 
         vcDocumentLoader.setDocument(schema);
         vcDocumentLoader.setContext(context);
-
-        const hederaHelper = HederaHelper
-            .setOperator(hederaAccountId, hederaAccountKey)
-            .setAddressBook(null, null, topic);
 
         let document, vc;
         try {
@@ -64,9 +61,8 @@ const PORT = process.env.PORT || 3005;
             vcSubject.policyId = policyId;
             vcSubject.accountId = hederaAccountId;
 
-            vc = await vcHelper.createVC(did, key, vcSubject);
-            document = vc.toJsonTree();
-
+            document = await vcHelper.createVC(vcSubject, didDocument, did);
+            
             console.log("created vc");
             console.log(document);
         } catch (e) {
@@ -84,16 +80,6 @@ const PORT = process.env.PORT || 3005;
             console.error('start post');
             const resp = await axios.post(url, body);
             console.error('end post');
-        } catch (e) {
-            console.error(e);
-            res.status(500).json(e);
-            return;
-        }
-
-        try {
-            console.error('start Transaction');
-            await hederaHelper.DID.createVcTransaction(vc, hederaAccountKey);
-            console.error('end Transaction');
         } catch (e) {
             console.error(e);
             res.status(500).json(e);

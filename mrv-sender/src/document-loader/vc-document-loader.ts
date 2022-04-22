@@ -1,4 +1,5 @@
-import { DocumentLoader, IDocumentFormat } from "vc-modules";
+import { IDocumentFormat } from "./document-format";
+import { DocumentLoader } from "./document-loader";
 
 export class VCDocumentLoader extends DocumentLoader {
     private url: string;

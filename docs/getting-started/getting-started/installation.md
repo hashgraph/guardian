@@ -14,7 +14,6 @@ in `guardian-service/.env`:
 ```
  OPERATOR_ID="0.0.29676495"
  OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
- SCHEMA_TOPIC_ID="0.0.29614911"
 ```
 
 in `guardian-service/.env.docker`:
@@ -22,10 +21,7 @@ in `guardian-service/.env.docker`:
 ```
  OPERATOR_ID="0.0.29676495"
  OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
- SCHEMA_TOPIC_ID="0.0.29614911"
 ```
-
-Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
 
 3\. Update the following files with your NFT.Storage API KEY. Please follow the steps from [https://nft.storage/#getting-started](https://nft.storage/#getting-started) to obtain it.
 
@@ -60,15 +56,6 @@ npm install
 npm run build
 ```
 
-#### From the vc-modules folder
-
-Build package
-
-```
-npm install
-npm run build
-```
-
 #### **From the logger-helper folder**
 
 Build package
@@ -79,6 +66,36 @@ npm run build
 ```
 
 **From the Message broker folder (Need to run first)**
+
+To build the service:
+
+```
+npm install
+npm run build
+```
+
+To start the service:
+
+```
+npm start
+```
+
+#### From the Logger service folder
+
+To build the service:
+
+```
+npm install
+npm run build
+```
+
+To start the service:
+
+```
+npm start
+```
+
+#### From the Auth service folder
 
 To build the service:
 
@@ -123,7 +140,7 @@ To start the service (found on [http://localhost:3004](http://localhost:3004)):
 npm start
 ```
 
-**From the UI Service folder**
+**From the API Gateway Service folder**
 
 To build the service:
 
@@ -132,7 +149,7 @@ npm install
 npm run build
 ```
 
-To start the service (found on [http://localhost:3000](http://localhost:3000)):
+To start the service (found on [http://localhost:3002](https://localhost:3002)):
 
 ```
 npm start
@@ -153,11 +170,40 @@ To start the service (found on [http://localhost:3005](http://localhost:3005)):
 npm start
 ```
 
+#### From the Frontend folder
+
+To build the service:
+
+```
+npm install
+npm run build
+```
+
+To start the service (found on [http://localhost:4200](http://localhost:4200))
+
+```
+npm start
+```
+
 ([back to top](https://github.com/hashgraph/guardian/tree/develop#top))
 
 {% hint style="info" %}
 **Note**: Once you start the service, please wait for the Initialization Process to be completed.
 {% endhint %}
+
+### Troubleshoot
+
+To delete all the Docker Containers
+
+```
+docker builder prune --all
+```
+
+To run by cleaning Docker Cache
+
+```
+docker-compose build --no-cache
+```
 
 ### Unit Tests
 
@@ -165,13 +211,6 @@ To run **guardian-service** unit tests, following commands needs to be executed:
 
 ```
 cd guardian-service 
-npm run test
-```
-
-To run **vc-modules** unit tests, following commands needs to be executed:
-
-```
-cd vc-modules
 npm run test
 ```
 
@@ -185,13 +224,6 @@ To run stability tests (certain transactions will be executed 10 times each), th
 
 ```
 npm run test:stability
-```
-
-To run **ui-service** unit tests, following commands needs to be executed:
-
-```
-cd ui-service
-npm run test
 ```
 
 To run **message-broker** unit tests, following commands needs to be executed:

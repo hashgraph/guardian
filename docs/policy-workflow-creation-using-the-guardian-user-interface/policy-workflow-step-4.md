@@ -1,7 +1,5 @@
 # Policy Workflow Step 4
 
-
-
 Next, we want to add another step to our policy action. To do this we again go back to the Policy Action itself by clicking on the “init\_installer\_steps” Policy Action icon on the left.
 
 This time we need to deal with the new approval document that was sent, so we add an “information” step as a block by clicking on the “Information” icon in the top navigation bar.
@@ -18,15 +16,15 @@ For the approval UI, we then specify what Type it is from the drop-down. In our 
 
 We then finish by giving the UI a Title and Description.
 
-![](https://i.imgur.com/OfodRPF.png)
+![](../.gitbook/assets/PW\_9.png)
 
 **Programmatically this workflow step looks like this:**
 
 ```
    // Notify the user after submitting the request for approval.
     {
-      //"informationBlock" - block type which can display a notification or a progress bar.
-      "blockType": "informationBlock",
+      //"InformationBlock" - block type which can display a notification or a progress bar.
+      "blockType": "InformationBlock",
       "tag": "wait_fo_approve",
       "children": [],
       "uiMetaData": {

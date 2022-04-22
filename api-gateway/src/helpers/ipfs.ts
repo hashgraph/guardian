@@ -1,4 +1,4 @@
-import { CommonSettings, MessageAPI } from "interfaces";
+import { ApplicationStates, CommonSettings, MessageAPI } from "interfaces";
 import { Singleton } from "./decorators/singleton";
 
 /**
@@ -27,12 +27,11 @@ export class IPFS {
     /**
      * Return hash of added file
      * @param {ArrayBuffer} file file to upload on IPFS
-     * 
+     *
      * @returns {{ cid: string, url: string }} - hash
      */
     public async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {
         const res = (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
-        console.log(res);
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -87,6 +86,20 @@ export class IPFS {
         if (res.error) {
             throw new Error(res.error);
         }
+        return res.body;
+    }
+
+    /**
+     * Get service status
+     * 
+     * @returns {ApplicationStates} Service state
+     */
+    public async getStatus(): Promise<ApplicationStates> {
+        const res = (await this.channel.request(this.target, MessageAPI.GET_STATUS)).payload;
+        if (!res || res.error) {
+            return ApplicationStates.STOPPED;
+        }
+        
         return res.body;
     }
 }

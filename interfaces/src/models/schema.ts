@@ -16,8 +16,8 @@ export class Schema implements ISchema {
     public entity?: SchemaEntity;
     public status?: SchemaStatus;
     public readonly?: boolean;
-    public document?: string;
-    public context?: string;
+    public document?: ISchemaDocument;
+    public context?: any;
     public version?: string;
     public creator?: string;
     public owner?: string;
@@ -27,8 +27,6 @@ export class Schema implements ISchema {
     public contextURL?: string;
     public iri?: string;
     public type?: string;
-    public documentObject: ISchemaDocument;
-    public contextObject: any;
     public fields: SchemaField[];
     public conditions: SchemaCondition[];
     public previousVersion: string;
@@ -46,8 +44,6 @@ export class Schema implements ISchema {
             this.entity = schema.entity || SchemaEntity.NONE;
             this.status = schema.status || SchemaStatus.DRAFT;
             this.readonly = schema.readonly || false;
-            this.document = schema.document || "";
-            this.context = schema.context || "";
             this.version = schema.version || "";
             this.creator = schema.creator || "";
             this.owner = schema.owner || "";
@@ -56,11 +52,29 @@ export class Schema implements ISchema {
             this.documentURL = schema.documentURL || "";
             this.contextURL = schema.contextURL || "";
             this.iri = schema.iri || "";
-            if(schema.isOwner) {
+            if (schema.isOwner) {
                 this.userDID = this.owner;
             }
-            if(schema.isCreator) {
+            if (schema.isCreator) {
                 this.userDID = this.creator;
+            }
+            if(schema.document) {
+                if (typeof schema.document == 'string') {
+                    this.document = JSON.parse(schema.document);
+                } else {
+                    this.document = schema.document;
+                }
+            } else {
+                this.document = null;
+            }
+            if(schema.context) {
+                if (typeof schema.context == 'string') {
+                    this.context = JSON.parse(schema.context);
+                } else {
+                    this.context = schema.context;
+                }
+            } else {
+                this.context = null;
             }
         } else {
             this.id = undefined;
@@ -71,8 +85,8 @@ export class Schema implements ISchema {
             this.entity = SchemaEntity.NONE;
             this.status = SchemaStatus.DRAFT;
             this.readonly = false;
-            this.document = "";
-            this.context = "";
+            this.document = null;
+            this.context = null;
             this.version = "";
             this.creator = "";
             this.owner = "";
@@ -85,22 +99,14 @@ export class Schema implements ISchema {
         if (this.document) {
             this.parseDocument();
         }
-        if (this.context) {
-            this.parseContext();
-        }
     }
 
     private parseDocument(): void {
-        this.documentObject = JSON.parse(this.document);
         this.type = SchemaHelper.buildType(this.uuid, this.version);
-        const { previousVersion } = SchemaHelper.parseComment(this.documentObject.$comment);
+        const { previousVersion } = SchemaHelper.parseComment(this.document.$comment);
         this.previousVersion = previousVersion;
-        this.fields = SchemaHelper.parseFields(this.documentObject, this.contextURL);
-        this.conditions = SchemaHelper.parseConditions(this.documentObject, this.contextURL, this.fields);
-    }
-
-    private parseContext(): void {
-        this.contextObject = JSON.parse(this.context);
+        this.fields = SchemaHelper.parseFields(this.document, this.contextURL);
+        this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields);
     }
 
     public setUser(userDID: string): void {
@@ -164,15 +170,10 @@ export class Schema implements ISchema {
         if (!this.fields) {
             return null;
         }
-
-        const document = SchemaHelper.buildDocument(this, fields, conditions);
-
-        this.documentObject = document as any;
-        this.document = JSON.stringify(document);
+        this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 
     public updateRefs(schemes: Schema[]): void {
-        this.documentObject.$defs = SchemaHelper.findRefs(this, schemes);
-        this.document = JSON.stringify( this.documentObject);
+        this.document.$defs = SchemaHelper.findRefs(this, schemes);
     }
 }

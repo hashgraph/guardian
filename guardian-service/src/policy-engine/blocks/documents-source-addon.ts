@@ -1,20 +1,22 @@
 import { SourceAddon } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
-import {PolicyComponentsUtils} from '../policy-components-utils';
-import {IPolicyAddonBlock} from '@policy-engine/policy-engine.interface';
+import { PolicyComponentsUtils } from '../policy-components-utils';
+import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
+import { getMongoRepository } from 'typeorm';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
+import { Schema as SchemaCollection } from '@entity/schema';
+import { DidDocument as DidDocumentCollection } from '@entity/did-document';
+import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 
 @SourceAddon({
     blockType: 'documentsSourceAddon'
 })
 export class DocumentsSourceAddon {
-    @Inject()
-    private guardians: Guardians;
-
     @Inject()
     private users: Users;
 
@@ -43,19 +45,19 @@ export class DocumentsSourceAddon {
 
             switch (filter.type) {
                 case 'equal':
-                    Object.assign(expr, { $eq: filter.value })
+                    Object.assign(expr, {$eq: filter.value})
                     break;
 
                 case 'not_equal':
-                    Object.assign(expr, { $ne: filter.value });
+                    Object.assign(expr, {$ne: filter.value});
                     break;
 
                 case 'in':
-                    Object.assign(expr, { $in: filter.value.split(',') });
+                    Object.assign(expr, {$in: filter.value.split(',')});
                     break;
 
                 case 'not_in':
-                    Object.assign(expr, { $nin: filter.value.split(',') });
+                    Object.assign(expr, {$nin: filter.value.split(',')});
                     break;
 
                 default:
@@ -66,7 +68,7 @@ export class DocumentsSourceAddon {
 
         const dynFilters = {};
         for (let [key, value] of Object.entries(ref.getFilters(user))) {
-            dynFilters[key] = { $eq: value };
+            dynFilters[key] = {$eq: value};
         }
 
         Object.assign(filters, dynFilters);
@@ -75,25 +77,22 @@ export class DocumentsSourceAddon {
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getVcDocuments(filters);
+                data = await getMongoRepository(VcDocumentCollection).find(filters);
                 break;
-
             case 'did-documents':
-                data = await this.guardians.getDidDocuments(filters);
+                data = await getMongoRepository(DidDocumentCollection).find(filters);
                 break;
-
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getVpDocuments(filters);
+                data = await getMongoRepository(VpDocumentCollection).find(filters);
                 break;
-
             case 'root-authorities':
                 data = await this.users.getAllRootAuthorityAccounts() as IAuthUser[];
                 break;
 
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await this.guardians.getApproveDocuments(filters);
+                data = await getMongoRepository(ApprovalDocumentCollection).find(filters);
                 break;
 
             case 'source':
@@ -113,22 +112,25 @@ export class DocumentsSourceAddon {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        const types = ['vc-documents', 'did-documents', 'vp-documents', 'root-authorities', 'approve', 'source'];
-        if (types.indexOf(ref.options.dataType) == -1) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of ' + types.join(','));
-        }
-
-        if (ref.options.schema) {
-            if (typeof ref.options.schema !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                return;
+        try {
+            const types = ['vc-documents', 'did-documents', 'vp-documents', 'root-authorities', 'approve', 'source'];
+            if (types.indexOf(ref.options.dataType) == -1) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of ' + types.join(','));
             }
-            const schema = await this.guardians.getSchemaByIRI(ref.options.schema);
-            if (!schema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                return;
+
+            if (ref.options.schema) {
+                if (typeof ref.options.schema !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+                    return;
+                }
+                const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
+                if (!schema) {
+                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+                    return;
+                }
             }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

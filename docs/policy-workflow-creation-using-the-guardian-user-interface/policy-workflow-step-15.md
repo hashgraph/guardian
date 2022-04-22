@@ -6,7 +6,7 @@ We click back to the “create\_new\_sensors\_steps” process step and add a �
 
 We then add a tag, type - of course, a verifiable credential, and entity – our inverter sensor. And done. We have completed the steps to add an inverter sensor to a project.
 
-![](https://i.imgur.com/8jRpiQJ.png)
+![](../.gitbook/assets/PW\_20.png)
 
 **Programmatically this workflow step looks like this:**
 
@@ -14,7 +14,7 @@ We then add a tag, type - of course, a verifiable credential, and entity – our
                 // Also save it in the DB.
                 {
                   "tag": "CSD02_device_registration",
-                  "blockType": "sendToGuardian",
+                  "blockType": "sendToGuardianBlock",
                   "dataType": "vc-documents",
                   // Document in the DB is labeled as "Inverter" to enable later filtering in the grid.
                   "entityType": "Inverter",
@@ -38,7 +38,7 @@ Lastly, just create a new Container Block to group all components on the page wi
 ```
         // Create interfaceContainerBlock to group all components on the page with MRV data.
         {
-          "blockType": "interfaceContainerBlock",
+          "blockType": "InterfaceContainerBlock",
           "tag": "mrv_page",
           "defaultActive": true,
           "permissions": [

@@ -1,20 +1,18 @@
 # Policy Workflow Step 11
 
-
-
 After the sensor gird information is captured, we need to do something with it. Therefore, we add an action step from the “sensors\_page” policy action step by clicking on the Action button in the top navigation bar.
 
 As before, we set the tag, the permissions, and stop advancing the process until the download is complete via the “stop propagation” flag, and since this will be a download action, the action type is selected to be “download”.
 
 We then need to select the file schema for the download, MRV. And, then we need to set the target URL where the file is stored. And finally, we select, button title and content.
 
-![](https://i.imgur.com/65cl3bG.png)
+![](../.gitbook/assets/PW\_16.png)
 
 We now need to connect the download action to the sensor grid block we defined before.
 
 To do that, we click on the “sensors\_grid” button, and then click on “Bind Block” for Field 3 and select the “download\_config\_btn” action to bind the action to the actual definition of the button.
 
-![](https://i.imgur.com/bbhG4gP.png)
+![](../.gitbook/assets/PW\_17.2.png)
 
 **Programmatically workflow step 10 and 11 will looks like this:**
 
@@ -22,17 +20,12 @@ To do that, we click on the “sensors\_grid” button, and then click on “Bin
           // Sensor page. Contains a grid and a "create new sensor" button.
           "children": [
             {
-              //"interfaceDocumentsSource" - block type which outputs information from the DB as grid.
-              "blockType": "interfaceDocumentsSource",
+              //"InterfaceDocumentsSourceBlock" - block type which outputs information from the DB as grid.
+              "blockType": "InterfaceDocumentsSourceBlock",
               "tag": "sensors_grid",
               "defaultActive": true,
               "permissions": [
                 "INSTALLER"
-              ],
-              //"dependencies" - automatic update. The block is automatically re-rendered if any of the linked components gets updated.
-              "dependencies": [
-                // Tag of the blocks as a link.
-                "SendVCtoGuardian"
               ],
               // When true, this filter out the documents not created by the current user when rendering.
               "onlyOwnDocuments": true,
@@ -107,8 +100,8 @@ To do that, we click on the “sensors\_grid” button, and then click on “Bin
             },
             // Block to download the config file.
             {
-              //"interfaceAction" -  block to create custom actions.
-              "blockType": "interfaceAction",
+              //"InterfaceActionBlock" -  block to create custom actions.
+              "blockType": "InterfaceActionBlock",
               // The block in embedded into the grid, not rendered independently
               "defaultActive": false,
               "tag": "download_config_btn",

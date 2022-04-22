@@ -1,5 +1,5 @@
-import { ISchema, ModelHelper, SchemaEntity, SchemaStatus, SchemaCategory } from 'interfaces';
-import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
+import { ISchema, ModelHelper, SchemaEntity, SchemaStatus, SchemaCategory, ISchemaDocument } from 'interfaces';
+import { AfterLoad, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
 export class Schema implements ISchema {
@@ -28,10 +28,10 @@ export class Schema implements ISchema {
     readonly: boolean;
 
     @Column()
-    document: string;
+    document: ISchemaDocument;
 
     @Column()
-    context: string;
+    context: any;
 
     @Column()
     version: string;
@@ -44,7 +44,7 @@ export class Schema implements ISchema {
 
     @Column()
     topicId: string;
-
+    
     @Column()
     messageId: string;
 
@@ -56,6 +56,9 @@ export class Schema implements ISchema {
 
     @Column()
     iri: string;
+
+    @CreateDateColumn()
+    createDate: Date;
 
     /**
      * Virtual column.
@@ -76,8 +79,8 @@ export class Schema implements ISchema {
 
     @AfterLoad()
     defineLabel() {
-        this.category = this.readonly 
-            ? SchemaCategory.SYSTEM 
+        this.category = this.readonly
+            ? SchemaCategory.SYSTEM
             : SchemaCategory.USER;
     }
 }

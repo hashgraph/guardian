@@ -1,4 +1,4 @@
-# Policy Workflow Step 24
+# Policy Workflow Step 25
 
 Next, we click on the “mint\_events”, and then add a mint action by clicking on the “Tokens” drop-down in the top navigation bar and selecting the “Mint” action.
 
@@ -8,15 +8,15 @@ You can use the rule field to enter minting calculations that are specific to yo
 
 Then we click on the “Save” button on the left side in the top navigation bar.
 
-![](https://i.imgur.com/bhV63AG.png)
+![](../.gitbook/assets/PW\_30.png)
 
 **Programmatically this workflow step looks like this:**
 
 ```
     //Minting
     {
-      //"mintDocument" - receives the VC from the previous block and mints based on the rule[s].
-      "blockType": "mintDocument",
+      //"mintDocumentBlock" - receives the VC from the previous block and mints based on the rule[s].
+      "blockType": "mintDocumentBlock",
       "tag": "mint_token",
       //"tokenId" - ID of the token
       // User should be previously linked with token.

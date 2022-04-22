@@ -16,7 +16,7 @@ We then set the Id Type using the drop-down, and select “Owner” as the type 
 
 Next, we select the “Type” drop-down in the UI box and select “PAGE” indicating that the UI used for this request will be a full UI window. This will open up the Title and Description fields which we will fill in next.
 
-![](https://i.imgur.com/R2bbEjN.png)
+![](../.gitbook/assets/PW\_7.png)
 
 **Programmatically this workflow step looks like this:**
 
@@ -24,8 +24,8 @@ Next, we select the “Type” drop-down in the UI box and select “PAGE” ind
  "children": [
     //First step after the selection of the INSTALLER roles is to fill out the VC form.
     {
-      //"requestVcDocument" - a type of the block which creates a form from the schema, and sends the document to the server.
-      "blockType": "requestVcDocument",
+      //"requestVCDocumentBlock" - a type of the block which creates a form from the schema, and sends the document to the server.
+      "blockType": "requestVCDocumentBlock",
       "tag": "add_new_installer_request",
       "defaultActive": true,
       "permissions": [

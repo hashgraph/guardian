@@ -99,6 +99,10 @@ body {
     }
 }
 
+.guardian-tooltip {
+    font-size: 16px;
+}
+
 button.mat-raised-button,
 button.mat-button {
     /*width: 260px;*/
@@ -154,4 +158,8 @@ button.mat-button {
 
 *::-webkit-scrollbar-thumb:hover {
     background: rgba(0,0,0,0.55);
+}
+
+.mat-datepicker-content .mat-calendar {
+    height: unset !important;
 }

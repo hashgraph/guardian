@@ -36,7 +36,7 @@ import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { AppRoutingModule } from '../app-routing.module';
 import { RegisteredBlocks } from './registered-blocks';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { SavePolicyDialog } from './save-policy-dialog/save-policy-dialog.component';
+import { SavePolicyDialog } from './helpers/save-policy-dialog/save-policy-dialog.component';
 import { ImportPolicyDialog } from './helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from './helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { ExportPolicyDialog } from './helpers/export-policy-dialog/export-policy-dialog.component';
@@ -45,6 +45,11 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
 import { JsonPropertiesComponent } from './policy-configuration/json-properties/json-properties.component';
 import { ReportBlockComponent } from './policy-viewer/blocks/report-block/report-block.component';
 import { ReportItemConfigComponent } from './policy-configuration/blocks/report/report-item-config/report-item-config.component';
+import {
+    PaginationAddonBlockComponent
+} from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
+import { Dragonglass } from './helpers/dragonglass/dragonglass.component';
+import { ReassigningConfigComponent } from './policy-configuration/blocks/documents/reassigning-config/reassigning-config.component';
 
 @NgModule({
     declarations: [
@@ -75,6 +80,7 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
         InformationBlockComponent,
         StepBlockComponent,
         RolesBlockComponent,
+        PaginationAddonBlockComponent,
         FiltersAddonBlockComponent,
         HelpIcon,
         SavePolicyDialog,
@@ -85,7 +91,9 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
         ReportBlockComponent,
-        ReportItemConfigComponent
+        ReportItemConfigComponent,
+        Dragonglass,
+        ReassigningConfigComponent
     ],
     imports: [
         CommonModule,
@@ -94,8 +102,7 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
         MaterialModule,
         SchemaEngineModule,
         AppRoutingModule,
-        DragDropModule,
-        SchemaEngineModule
+        DragDropModule
     ],
     exports: [
         PolicyConfigurationComponent,
@@ -133,7 +140,9 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
         ExportPolicyDialog,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
-        JsonPropertiesComponent
+        JsonPropertiesComponent,
+        Dragonglass,
+        ReassigningConfigComponent
     ],
     providers: [
         RegisteredBlocks

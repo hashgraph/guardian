@@ -2,13 +2,6 @@ FROM node:16
 ENV PLATFORM="docker"
 #ENV NODE_ENV="production"
 
-WORKDIR /usr/vc-modules
-COPY ./vc-modules/package*.json ./
-COPY ./vc-modules/tsconfig.json ./
-RUN npm install
-ADD ./vc-modules/src ./src/.
-RUN npm run build
-
 WORKDIR /usr/interfaces
 COPY ./interfaces/package*.json ./
 COPY ./interfaces/tsconfig.json ./

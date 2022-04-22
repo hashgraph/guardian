@@ -1,12 +1,12 @@
 import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { DidMethodOperation, HcsVcOperation } from '@hashgraph/did-sdk-js';
+import { VcHelper } from '@helpers/vcHelper';
 import {
     DidDocumentStatus,
     DocumentSignature,
     DocumentStatus,
-    IDidDocument,
+    IDidObject,
     IVCDocument,
     IVPDocument,
     MessageAPI,
@@ -14,8 +14,7 @@ import {
     MessageResponse
 } from 'interfaces';
 import { MongoRepository } from 'typeorm';
-import { VCHelper } from 'vc-modules';
-import {VcHelper} from '@helpers/vcHelper';
+import { ApiResponse } from '@api/api-response';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
@@ -32,14 +31,13 @@ export const documentsAPI = async function (
     vcDocumentRepository: MongoRepository<VcDocument>,
     vpDocumentRepository: MongoRepository<VpDocument>,
 ): Promise<void> {
-    const vc = new VcHelper();
-    const getDIDOperation = function (operation: DidMethodOperation | DidDocumentStatus) {
+    const getDIDOperation = function (operation: DidDocumentStatus) {
         switch (operation) {
-            case DidMethodOperation.CREATE:
+            case DidDocumentStatus.CREATE:
                 return DidDocumentStatus.CREATE;
-            case DidMethodOperation.DELETE:
+            case DidDocumentStatus.DELETE:
                 return DidDocumentStatus.DELETE;
-            case DidMethodOperation.UPDATE:
+            case DidDocumentStatus.UPDATE:
                 return DidDocumentStatus.UPDATE;
             case DidDocumentStatus.CREATE:
                 return DidDocumentStatus.CREATE;
@@ -54,16 +52,18 @@ export const documentsAPI = async function (
         }
     }
 
-    const getVCOperation = function (operation: HcsVcOperation) {
+    const getVCOperation = function (operation: DocumentStatus) {
         switch (operation) {
-            case HcsVcOperation.ISSUE:
+            case DocumentStatus.ISSUE:
                 return DocumentStatus.ISSUE;
-            case HcsVcOperation.RESUME:
+            case DocumentStatus.RESUME:
                 return DocumentStatus.RESUME;
-            case HcsVcOperation.REVOKE:
+            case DocumentStatus.REVOKE:
                 return DocumentStatus.REVOKE;
-            case HcsVcOperation.SUSPEND:
+            case DocumentStatus.SUSPEND:
                 return DocumentStatus.SUSPEND;
+            case DocumentStatus.FAILED:
+                return DocumentStatus.FAILED;
             default:
                 return DocumentStatus.NEW;
         }
@@ -77,9 +77,9 @@ export const documentsAPI = async function (
      *
      * @returns {IDidDocument[]} - DID Documents
      */
-    channel.response(MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
         const reqObj = { where: { did: { $eq: msg.payload.did } } };
-        const didDocuments: IDidDocument[] = await didDocumentRepository.find(reqObj);
+        const didDocuments: IDidObject[] = await didDocumentRepository.find(reqObj);
         res.send(new MessageResponse(didDocuments));
     });
 
@@ -96,8 +96,8 @@ export const documentsAPI = async function (
      *
      * @returns {IVCDocument[]} - VC Documents
      */
-    channel.response(MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
-        try{
+    ApiResponse(channel, MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
+        try {
             if (msg.payload) {
                 const reqObj: any = { where: {} };
                 const { owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg.payload;
@@ -133,7 +133,7 @@ export const documentsAPI = async function (
                 res.send(new MessageResponse(vcDocuments));
             }
         }
-        catch (e){
+        catch (e) {
             res.send(new MessageError(e.message));
         }
     });
@@ -147,21 +147,21 @@ export const documentsAPI = async function (
      *
      * @returns {IDidDocument} - new DID Document
      */
-    channel.response(MessageAPI.SET_DID_DOCUMENT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_DID_DOCUMENT, async (msg, res) => {
         if (msg.payload.did && msg.payload.operation) {
             const did = msg.payload.did;
             const operation = msg.payload.operation;
-            const item = await didDocumentRepository.findOne({ where: { did: { $eq: did } } });
+            const item = await didDocumentRepository.findOne({ did: did });
             if (item) {
                 item.status = getDIDOperation(operation);
-                const result: IDidDocument = await didDocumentRepository.save(item);
+                const result: IDidObject = await didDocumentRepository.save(item);
                 res.send(new MessageResponse(result));
             } else {
                 res.send(new MessageError('Document not found'));
             }
         } else {
             const didDocumentObject = didDocumentRepository.create(msg.payload);
-            const result: IDidDocument[] = await didDocumentRepository.save(didDocumentObject);
+            const result: IDidObject[] = await didDocumentRepository.save(didDocumentObject);
             res.send(new MessageResponse(result));
         }
     });
@@ -175,12 +175,12 @@ export const documentsAPI = async function (
      *
      * @returns {IVCDocument} - new VC Document
      */
-    channel.response(MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
         let result: IVCDocument;
 
         const hash = msg.payload.hash;
         if (hash) {
-            result = await vcDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
+            result = await vcDocumentRepository.findOne({ hash: hash });
         }
 
         if (result) {
@@ -216,10 +216,11 @@ export const documentsAPI = async function (
 
         let verify: boolean;
         try {
-            const res = await vc.verifySchema(result.document);
+            const VCHelper = new VcHelper();
+            const res = await VCHelper.verifySchema(result.document);
             verify = res.ok;
             if (verify) {
-                verify = await vc.verifyVC(result.document);
+                verify = await VCHelper.verifyVC(result.document);
             }
         } catch (error) {
             verify = false;
@@ -237,7 +238,7 @@ export const documentsAPI = async function (
      *
      * @returns {IVPDocument} - new VP Document
      */
-    channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
         const vpDocumentObject = vpDocumentRepository.create(msg.payload);
         const result: any = await vpDocumentRepository.save(vpDocumentObject);
         res.send(new MessageResponse(result));
@@ -250,7 +251,7 @@ export const documentsAPI = async function (
      *
      * @returns {IVPDocument[]} - VP Documents
      */
-    channel.response(MessageAPI.GET_VP_DOCUMENTS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_VP_DOCUMENTS, async (msg, res) => {
         if (msg.payload) {
             const document: IVPDocument[] = await vpDocumentRepository.find(msg.payload);
             res.send(new MessageResponse(document));

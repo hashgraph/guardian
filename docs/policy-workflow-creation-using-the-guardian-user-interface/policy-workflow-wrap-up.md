@@ -4,11 +4,11 @@
 
 We can then look at the entire process.
 
-![](https://i.imgur.com/g67cTjr.png)
+![](../.gitbook/assets/PW\_31.png)
 
 We can also look at the code that has been created programmatically from the defined workflow by clicking on the “<>” button in the three-button chevron on the right-hand side.
 
-![](https://i.imgur.com/VyehIMy.png)
+![](../.gitbook/assets/PW\_32.png)
 
 The full coded version of the policy we just demoed is below (Reminder the coded version of this policy is for Guardian verison 1.0.2):
 
@@ -16,9 +16,9 @@ The full coded version of the policy we just demoed is below (Reminder the coded
 //Policy logic starts with block 1.
 {
   //blockType - the type of the block:
-  //  "interfaceContainerBlock" - a block which contains and organizes other blocks.
-  //  First block should always be of the "interfaceContainerBlock" type.
-  "blockType": "interfaceContainerBlock",
+  //  "InterfaceContainerBlock" - a block which contains and organizes other blocks.
+  //  First block should always be of the "InterfaceContainerBlock" type.
+  "blockType": "InterfaceContainerBlock",
   //defaultActive shows whether this block is active at this time and whether it needs to be shown.
   "defaultActive": true,
   //permissions - users with these roles are allowed to interact with the block. Can contain the following values:
@@ -41,8 +41,8 @@ The full coded version of the policy we just demoed is below (Reminder the coded
   "children": [
     //First policy step - select a role.
     {
-      //"policyRolesBlock" - block which determines a role for the user.
-      "blockType": "policyRolesBlock",
+      //"PolicyRolesBlock" - block which determines a role for the user.
+      "blockType": "PolicyRolesBlock",
       //"tag" - a unique (for the Policy) textual tag for the block which can be used in other blocks for linking.
       "tag": "choose_role",
       //Non ContainerBlock do not contain child elements. They can exist but they are ignored for rendering.
@@ -66,10 +66,10 @@ The full coded version of the policy we just demoed is below (Reminder the coded
     },
     // After the role is selected the corresponding branch in the policy will become accessible for the user.
     {
-      //"interfaceStepBlock" - similar to the interfaceContainerBlock, with the difference that it can only render a single child element.
+      //"InterfaceStepBlock" - similar to the InterfaceContainerBlock, with the difference that it can only render a single child element.
       //Rendered component is determined by the current step.
       //An event on a component automatically passes control to the next component.
-      "blockType": "interfaceStepBlock",
+      "blockType": "InterfaceStepBlock",
       "defaultActive": true,
       "tag": "init_installer_steps",
       "permissions": [
@@ -84,8 +84,8 @@ The full coded version of the policy we just demoed is below (Reminder the coded
       "children": [
         //First step after the selection of the INSTALLER roles is to fill out the VC form.
         {
-          //"requestVcDocument" - a type of the block which creates a form from the schema, and sends the document to the server.
-          "blockType": "requestVcDocument",
+          //"requestVcDocumenBlock" - a type of the block which creates a form from the schema, and sends the document to the server.
+          "blockType": "requestVcDocumentBlock",
           "tag": "add_new_installer_request",
           "defaultActive": true,
           "permissions": [
@@ -112,9 +112,9 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         },
         // Next step is to save it in the DB.
         {
-          //"sendToGuardian" - a type of the block which can save a new or updated document.
+          //"sendToGuardianBlock" - a type of the block which can save a new or updated document.
           //This block does not contain defaultActive and does not render, only relevant on the server side.
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "tag": "save_new_approve_document",
           //"dataType" - where to save the document, possible values:
           //  "approve" - approve DB table.
@@ -131,8 +131,8 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         },
         // Notify the user after submitting the request for approval.
         {
-          //"informationBlock" - block type which can display a notification or a progress bar.
-          "blockType": "informationBlock",
+          //"InformationBlock" - block type which can display a notification or a progress bar.
+          "blockType": "InformationBlock",
           "tag": "wait_fo_approve",
           "children": [],
           "uiMetaData": {
@@ -155,7 +155,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         // Update document status in the DB.
         {
           "tag": "update_approve_document_status",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "dataType": "approve",
           "entityType": "Installer",
           "uiMetaData": {}
@@ -163,7 +163,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         // Now send the document to Hedera Topic.
         {
           "tag": "send_installer_vc_to_hedera",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "dataType": "hedera",
           "entityType": "Installer",
           "uiMetaData": {}
@@ -171,15 +171,15 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         // Finally save the VC document in the vc-documents DB table.
         {
           "tag": "Submission_of_CSD01_Documentation",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "dataType": "vc-documents",
           "entityType": "Installer",
           "uiMetaData": {}
         },
         // After the document has been created; the user can access the document with grids.
-        // Create an interfaceContainerBlock to group all pages accessible after registration is completed.
+        // Create an InterfaceContainerBlock to group all pages accessible after registration is completed.
         {
-          "blockType": "interfaceContainerBlock",
+          "blockType": "InterfaceContainerBlock",
           "tag": "installer_header",
           "defaultActive": true,
           "permissions": [
@@ -190,9 +190,9 @@ The full coded version of the policy we just demoed is below (Reminder the coded
             "type": "tabs"
           },
           "children": [
-            // Create an interfaceContainerBlock to group all components on the sensor page.
+            // Create an InterfaceContainerBlock to group all components on the sensor page.
             {
-              "blockType": "interfaceContainerBlock",
+              "blockType": "InterfaceContainerBlock",
               "tag": "sensors_page",
               "defaultActive": true,
               "permissions": [
@@ -207,18 +207,14 @@ The full coded version of the policy we just demoed is below (Reminder the coded
               // Sensor page. Contains a grid and a "create new sensor" button.
               "children": [
                 {
-                  //"interfaceDocumentsSource" - block type which outputs information from the DB as grid.
-                  "blockType": "interfaceDocumentsSource",
+                  //"InterfaceDocumentsSourceBlock" - block type which outputs information from the DB as grid.
+                  "blockType": "InterfaceDocumentsSourceBlock",
                   "tag": "sensors_grid",
                   "defaultActive": true,
                   "permissions": [
                     "INSTALLER"
                   ],
-                  //"dependencies" - automatic update. The block is automatically re-rendered if any of the linked components gets updated.
-                  "dependencies": [
-                    // Tag of the blocks as a link.
-                    "SendVCtoGuardian"
-                  ],
+                  
                   // When true, this filter out the documents not created by the current user when rendering.
                   "onlyOwnDocuments": true,
                   //"dataType" - Specificy the table to request the data from. Possible values:
@@ -232,7 +228,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                   "filters": {
                     // Filter on the basis of schema ID.
                     "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802",
-                    // Filter on the basis of the "entityType" field in the "sendToGuardian" block.
+                    // Filter on the basis of the "entityType" field in the "sendToGuardianBlock" block.
                     "type": "Inverter"
                   },
                   "uiMetaData": {
@@ -292,8 +288,8 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                 },
                 // Block to download the config file.
                 {
-                  //"interfaceAction" -  block to create custom actions.
-                  "blockType": "interfaceAction",
+                  //"InterfaceActionBlock" -  block to create custom actions.
+                  "blockType": "InterfaceActionBlock",
                   // The block in embedded into the grid, not rendered independently
                   "defaultActive": false,
                   "tag": "download_config_btn",
@@ -313,14 +309,14 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                   }
                 },
                 // Button to create new sensor, displayed after the grid.
-                // Component is embedded into the interfaceStepBlock to join all steps.
+                // Component is embedded into the InterfaceStepBlock to join all steps.
                 {
                   "defaultActive": true,
                   "tag": "create_new_sensor_steps",
                   "permissions": [
                     "INSTALLER"
                   ],
-                  "blockType": "interfaceStepBlock",
+                  "blockType": "InterfaceStepBlock",
                   "uiMetaData": {
                     "type": "blank"
                   },
@@ -332,7 +328,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                       "permissions": [
                         "INSTALLER"
                       ],
-                      "blockType": "requestVcDocument",
+                      "blockType": "requestVCDocumentBlock",
                       "schema": "9d31b4ee-2280-43ee-81e7-b225ee208802",
                       // Generate new DID for the new sensor.
                       "idType": "DID",
@@ -354,7 +350,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                     // Save the created sensor VC in the corresponding Heder Topic.
                     {
                       "tag": "send_sensor_vc_to_hedera",
-                      "blockType": "sendToGuardian",
+                      "blockType": "sendToGuardianBlock",
                       "dataType": "hedera",
                       "entityType": "Inverter",
                       "uiMetaData": {}
@@ -362,7 +358,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                     // Also save it in the DB.
                     {
                       "tag": "CSD02_device_registration",
-                      "blockType": "sendToGuardian",
+                      "blockType": "sendToGuardianBlock",
                       "dataType": "vc-documents",
                       // Document in the DB is labeled as "Inverter" to enable later filtering in the grid.
                       "entityType": "Inverter",
@@ -375,9 +371,9 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                 }
               ]
             },
-            // Create interfaceContainerBlock to group all components on the page with MRV data.
+            // Create InterfaceContainerBlock to group all components on the page with MRV data.
             {
-              "blockType": "interfaceContainerBlock",
+              "blockType": "InterfaceContainerBlock",
               "tag": "mrv_page",
               "defaultActive": true,
               "permissions": [
@@ -395,9 +391,9 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                   "permissions": [
                     "INSTALLER"
                   ],
-                  "blockType": "interfaceDocumentsSource",
+                  "blockType": "InterfaceDocumentsSourceBlock",
                   "dependencies": [
-                    "SendVCtoGuardian"
+                    "SendToGuardianBlock"
                   ],
                   "onlyOwnDocuments": true,
                   "dataType": "vc-documents",
@@ -439,7 +435,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         // Block to display rejection info (i.e. the INSTALLER was not approved by RootAuthority).
         {
           "tag": "installer_rejected",
-          "blockType": "informationBlock",
+          "blockType": "InformationBlock",
           "children": [],
           "uiMetaData": {
             "type": "text",
@@ -462,7 +458,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
       "permissions": [
         "OWNER"
       ],
-      "blockType": "interfaceContainerBlock",
+      "blockType": "InterfaceContainerBlock",
       "uiMetaData": {
         "type": "tabs"
       },
@@ -474,7 +470,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
           "permissions": [
             "OWNER"
           ],
-          "blockType": "interfaceContainerBlock",
+          "blockType": "InterfaceContainerBlock",
           "uiMetaData": {
             "type": "blank",
             "title": "Approve Documents"
@@ -487,7 +483,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
               "permissions": [
                 "OWNER"
               ],
-              "blockType": "interfaceDocumentsSource",
+              "blockType": "InterfaceDocumentsSourceBlock",
               // Displays all VC documents from all Installers.
               "onlyOwnDocuments": false,
               "dataType": "approve",
@@ -544,7 +540,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
             // Block with the Approve/Reject buttons, embedded into the grid
             {
               "tag": "approve_documents_btn",
-              "blockType": "interfaceAction",
+              "blockType": "InterfaceActionBlock",
               "permissions": [
                 "OWNER"
               ],
@@ -589,7 +585,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         "OWNER",
         "INSTALLER"
       ],
-      "blockType": "interfaceContainerBlock",
+      "blockType": "InterfaceContainerBlock",
       "uiMetaData": {
         "type": "blank"
       },
@@ -608,7 +604,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         // Store the new MRV.
         {
           "tag": "CSD04_requesting_i_Rec_issuance",
-          "blockType": "sendToGuardian",
+          "blockType": "sendToGuardianBlock",
           "dataType": "vc-documents",
           "entityType": "MRV",
           "uiMetaData": {}
@@ -616,7 +612,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         //Minting
         {
           //"mintDocument" - receives the VC from the previous block and mints based on the rule[s].
-          "blockType": "mintDocument",
+          "blockType": "mintDocumentBlock",
           "tag": "mint_token",
           //"tokenId" - ID of the token
           // User should be previously linked with token.

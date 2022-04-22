@@ -17,7 +17,10 @@ export class SchemaHelper {
             if (typeof data == "string") {
                 ref = data;
             } else {
-                const document = JSON.parse(data.document);
+                let document = data.document;
+                if (typeof document == "string") {
+                    document = JSON.parse(document) as ISchemaDocument;
+                }
                 ref = document.$id;
             }
             if (ref) {
@@ -65,13 +68,12 @@ export class SchemaHelper {
         const allOf = Object.keys(document.allOf);
         for (let i = 0; i < allOf.length; i++) {
             const condition = document.allOf[allOf[i]];
-            if (!condition.if)
-            {
+            if (!condition.if) {
                 continue;
             }
 
             const ifConditionFieldName = Object.keys(condition.if.properties)[0];
-            
+
             let conditionToAdd: SchemaCondition = {
                 ifCondition: {
                     field: fields.find(field => field.name === ifConditionFieldName),
@@ -79,7 +81,7 @@ export class SchemaHelper {
                 },
                 thenFields: this.parseFields(condition.then, context, document.$defs || defs) as SchemaField[],
                 elseFields: this.parseFields(condition.else, context, document.$defs || defs) as SchemaField[]
-            }; 
+            };
 
             conditions.push(conditionToAdd);
         }
@@ -202,7 +204,7 @@ export class SchemaHelper {
 
         const properties = document.properties;
         const required = document.required;
-        
+
         this.getFieldsFromObject(fields, required, properties, schema);
 
         if (conditions.length === 0) {
@@ -232,7 +234,7 @@ export class SchemaHelper {
                     'properties': props,
                     'required': req
                 }
-                document.properties = {...document.properties, ...props};
+                document.properties = { ...document.properties, ...props };
             }
             else {
                 delete condition.then;
@@ -248,7 +250,7 @@ export class SchemaHelper {
                     'properties': props,
                     'required': req
                 }
-                document.properties = {...document.properties, ...props};
+                document.properties = { ...document.properties, ...props };
             }
             else {
                 delete condition.else;
@@ -333,7 +335,10 @@ export class SchemaHelper {
 
     public static getVersion(data: ISchema) {
         try {
-            const document = JSON.parse(data.document);
+            let document = data.document;
+            if (typeof document == "string") {
+                document = JSON.parse(document) as ISchemaDocument;
+            }
             const { version } = SchemaHelper.parseRef(document.$id);
             const { previousVersion } = SchemaHelper.parseComment(document.$comment);
             return { version, previousVersion };
@@ -343,19 +348,25 @@ export class SchemaHelper {
     }
 
     public static setVersion(data: ISchema, version: string, previousVersion: string) {
-        const document = JSON.parse(data.document);
+        let document = data.document;
+        if (typeof document == "string") {
+            document = JSON.parse(document) as ISchemaDocument;
+        }
         const uuid = data.uuid;
         const type = SchemaHelper.buildType(uuid, version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
         data.version = version;
-        data.document = JSON.stringify(document);
+        data.document = document;
         return data;
     }
 
     public static updateVersion(data: ISchema, newVersion: string) {
-        const document = JSON.parse(data.document);
+        let document = data.document;
+        if (typeof document == "string") {
+            document = JSON.parse(document) as ISchemaDocument;
+        }
 
         let { version, uuid } = SchemaHelper.parseRef(document.$id);
         let { previousVersion } = SchemaHelper.parseComment(document.$comment);
@@ -382,12 +393,16 @@ export class SchemaHelper {
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
-        data.document = JSON.stringify(document);
+        data.document = document;
         return data;
     }
 
     public static updateOwner(data: ISchema, newOwner: string) {
-        const document = JSON.parse(data.document);
+        let document = data.document;
+        if (typeof document == "string") {
+            document = JSON.parse(document) as ISchemaDocument;
+        }
+
         const { version, uuid } = SchemaHelper.parseRef(document.$id);
         const { previousVersion } = SchemaHelper.parseComment(document.$comment);
         data.version = data.version || version;
@@ -398,7 +413,7 @@ export class SchemaHelper {
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
-        data.document = JSON.stringify(document);
+        data.document = document;
         return data;
     }
 
@@ -428,7 +443,10 @@ export class SchemaHelper {
             if (!schema.document) {
                 return false;
             }
-            const doc = JSON.parse(schema.document);
+            let doc = schema.document;
+            if (typeof doc == "string") {
+                doc = JSON.parse(doc) as ISchemaDocument;
+            }
             if (!doc.$id) {
                 return false;
             }
@@ -443,7 +461,7 @@ export class SchemaHelper {
         const schemaMap = {};
         for (let i = 0; i < schemes.length; i++) {
             const element = schemes[i];
-            schemaMap[element.iri] = element.documentObject;
+            schemaMap[element.iri] = element.document;
         }
         for (let i = 0; i < target.fields.length; i++) {
             const field = target.fields[i];
@@ -507,5 +525,23 @@ export class SchemaHelper {
         const index = previousVersion.lastIndexOf('.');
         const max = previousVersion.slice(0, index);
         return max + '.' + (map[max] + 1);
+    }
+
+    public static updateIRI(schema: ISchema): ISchema {
+        try {
+            if (schema.document) {
+                let  document = schema.document;
+                if (typeof document == "string") {
+                    document = JSON.parse(document) as ISchemaDocument;
+                }
+                schema.iri = document.$id || null;
+            } else {
+                schema.iri = null;
+            }
+            return schema;
+        } catch (error) {
+            schema.iri = null;
+            return schema;
+        }
     }
 }

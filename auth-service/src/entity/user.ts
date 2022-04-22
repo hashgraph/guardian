@@ -23,6 +23,9 @@ export class User implements IUser {
     did: string;
 
     @Column()
+    parent: string;
+
+    @Column()
     walletToken: string;
 
     @Column()

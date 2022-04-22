@@ -1,10 +1,20 @@
 import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { IChainItem, MessageAPI, MessageError, MessageResponse, SchemaEntity } from 'interfaces';
+import {
+    IChainItem,
+    MessageAPI,
+    MessageError,
+    MessageResponse,
+    SchemaEntity
+} from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
-import { HcsVpDocument } from 'vc-modules';
+import {
+    VcDocument as HVcDocument,
+    VpDocument as HVpDocument
+} from '@hedera-modules';
+import { ApiResponse } from '@api/api-response';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
@@ -159,7 +169,7 @@ export const trustChainAPI = async function (
                     tag: "Policy Imported"
                 });
             }
-            
+
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
                 const rootAuthority = await vcDocumentRepository.findOne({
@@ -203,13 +213,13 @@ export const trustChainAPI = async function (
      * 
      * @returns {IChainItem[]} - trust chain
      */
-    channel.response(MessageAPI.GET_CHAIN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg, res) => {
         try {
             const hash = msg.payload;
             const chain: IChainItem[] = [];
             let root: VcDocument | VpDocument;
 
-            root = await vcDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
+            root = await vcDocumentRepository.findOne({ hash: hash });
             if (root) {
                 const policyId = root.policyId;
                 await getParents(chain, root, {}, policyId);
@@ -218,7 +228,7 @@ export const trustChainAPI = async function (
                 return;
             }
 
-            root = await vpDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
+            root = await vpDocumentRepository.findOne({ hash: hash });
             if (root) {
                 const policyId = root.policyId;
                 chain.push({
@@ -231,10 +241,10 @@ export const trustChainAPI = async function (
                     entity: 'VP',
                     tag: root.tag
                 });
-                const vpDocument = HcsVpDocument.fromJsonTree(root.document);
-                const vcpDocument = vpDocument.getVerifiableCredential()[0];
+                const vpDocument = HVpDocument.fromJsonTree(root.document);
+                const vcpDocument = vpDocument.getVerifiableCredential(0);
                 const hashVc = vcpDocument.toCredentialHash();
-                const vc = await vcDocumentRepository.findOne({ where: { hash: { $eq: hashVc } } });
+                const vc = await vcDocumentRepository.findOne({ hash: hashVc });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
                 res.send(new MessageResponse(chain));
@@ -254,10 +264,10 @@ export const trustChainAPI = async function (
                     entity: 'VP',
                     tag: root.tag
                 });
-                const vpDocument = HcsVpDocument.fromJsonTree(root.document);
-                const vcpDocument = vpDocument.getVerifiableCredential()[0];
+                const vpDocument = HVpDocument.fromJsonTree(root.document);
+                const vcpDocument = vpDocument.getVerifiableCredential(0);
                 const hashVc = vcpDocument.toCredentialHash();
-                const vc = await vcDocumentRepository.findOne({ where: { hash: { $eq: hashVc } } });
+                const vc = await vcDocumentRepository.findOne({ hash: hashVc });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
                 res.send(new MessageResponse(chain));
@@ -267,7 +277,7 @@ export const trustChainAPI = async function (
             await getPolicyInfo(chain, null);
             res.send(new MessageResponse(chain));
         } catch (error) {
-            new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
             res.send(new MessageError(error.message));
         }

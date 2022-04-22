@@ -29,3 +29,5 @@ ui-service/.vs/
 /auth-service/dist/
 /auth-service/node_modules/
 /guardian-service/config.json
+/threads-test/node_modules/
+api-docs/dist/

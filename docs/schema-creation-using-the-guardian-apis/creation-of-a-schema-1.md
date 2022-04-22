@@ -7,10 +7,23 @@
 Returns all schemas
 {% endswagger-description %}
 
+{% swagger-parameter in="query" name="pageIndex" type="Integer" %}
+The number of pages to skip before starting to collect the result set
+{% endswagger-parameter %}
+
+{% swagger-parameter in="query" type="Integer" name="pageSize" %}
+The numbers of items to return
+{% endswagger-parameter %}
+
 {% swagger-response status="201: Created" description="Successful Operation" %}
 ```javascript
 {
-    content:
+    headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
             application/json:
               schema:
                 type: array

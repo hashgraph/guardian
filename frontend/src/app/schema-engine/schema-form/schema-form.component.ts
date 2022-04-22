@@ -203,6 +203,7 @@ export class SchemaFormComponent implements OnInit {
 
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
+            item.displayRequired = item.fields.some((field: any) => field.required);
             if (field.required) {
                 item.control = new FormGroup({});
             }

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: "Guardian"
   description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
-  version: "1.2.1"
+  version: "2.0.0"
   contact:
     name: "API developer"
     url: "https://envisionblockchain.com"
@@ -79,23 +79,10 @@ components:
             type: object
         vcDocument:
             type: object
-        addressBook:
-          type: object
-          properties:
-            appnetName:
-              type: string
-            addressBook:
-              type: string
-            didTopic:
-              type: string
-            vcTopic:
-              type: string
-            didServerUrl:
-              type: string
-            didTopicMemo:
-              type: string
-            vcTopicMemo:
-              type: string
+        parent:
+          type: string
+        topicId:
+          type: string
     Schema:
       type: object
       required:
@@ -106,6 +93,8 @@ components:
         - document
       properties:
         id:
+          type: string
+        iri:
           type: string
         uuid:
           type: string
@@ -120,6 +109,14 @@ components:
         status:
           type: string
         document:
+          type: string
+        topicId:
+          type: string
+        version:
+          type: string
+        owner:
+          type: string
+        messageId:
           type: string
     ImportSchema:
       type: object
@@ -236,6 +233,10 @@ components:
         - topicId
         - policyTag
       properties:
+        id:
+          type: string
+        uuid:
+          type: string
         name:
           type: string
         version:
@@ -258,6 +259,19 @@ components:
           type: string
         policyTag:
           type: string
+        policyTopics:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              type:
+                type: string
+              static:
+                type: boolean
     TrustChains:
       type: object
       required:
@@ -489,8 +503,6 @@ components:
           type: string
         operatorKey:
           type: string
-        schemaTopicId:
-          type: string
         nftApiKey:
           type: string
     LogFilters:
@@ -656,6 +668,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /accounts/root-authorities:
+    get:
+      tags:
+        - accounts
+      description: Returns all root authorities.
+      security:
+      - bearerAuth: []
+      summary: Returns all root authorities.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        401:
+          description: Unauthorized.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /profiles/{username}/balance:
     get:
       tags:
@@ -758,6 +796,7 @@ paths:
 
   /schemas:
     post:
+      deprecated: true
       tags:
         - schemas
       description: Creates new schema. Only users with the Root Authority role are allowed to make the request.
@@ -784,7 +823,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
     get:
       tags:
         - schemas
@@ -792,9 +830,133 @@ paths:
       security:
       - bearerAuth: []
       summary: Returns all schemas.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
       responses:
         200:
           description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/{topicId}:
+    post:
+      tags:
+        - schemas
+      description: Creates new schema. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001
+      security:
+      - bearerAuth: []
+      summary: Create new schema.
+      requestBody:
+        description: Object that contains a valid schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Schema"
+      responses:
+        201:
+          description: Successful operation.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - schemas
+      description: Returns all schemas by topicId.
+      security:
+      - bearerAuth: []
+      summary: Returns all schemas by topicId.
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
@@ -898,7 +1060,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
     delete:
       tags:
         - schemas
@@ -935,6 +1096,7 @@ paths:
 
   /schemas/import/file:
     post:
+      deprecated: true
       tags:
         - schemas
       description: Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
@@ -943,6 +1105,11 @@ paths:
       summary: Imports new schema from a zip file.
       requestBody:
         description: A zip file containing schema to be imported.
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
         required: true
       responses:
         201:
@@ -966,9 +1133,106 @@ paths:
 
   /schemas/import/message:
     post:
+      deprecated: true
       tags:
         - schemas
       description: Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Imports new schema from IPFS.
+      requestBody:
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/{topicId}/import/file:
+    post:
+      tags:
+        - schemas
+      description: Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001
+      security:
+      - bearerAuth: []
+      summary: Imports new schema from a zip file.
+      requestBody:
+        description: A zip file containing schema to be imported.
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/{topicId}/import/message:
+    post:
+      tags:
+        - schemas
+      description: Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001
       security:
       - bearerAuth: []
       summary: Imports new schema from IPFS.
@@ -1039,7 +1303,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-                
+
   /schemas/import/file/preview:
     post:
       tags:
@@ -1051,6 +1315,11 @@ paths:
       requestBody:
         description: A zip file containing the schema to be viewed.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         200:
           description: Successful operation.
@@ -1149,7 +1418,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TokenInfo'
+                  allOf:
+                    - $ref: '#/components/schemas/TokenInfo'
+                    - type: object
+                      properties:
+                        policies:
+                          type: array
+                          items:
+                            type: string
         401:
           description: Unauthorized.
         403:
@@ -1160,7 +1436,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
     post:
       tags:
         - tokens
@@ -1183,7 +1458,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TokenInfo'
+                  allOf:
+                    - $ref: '#/components/schemas/TokenInfo'
+                    - type: object
+                      properties:
+                        policies:
+                          type: array
+                          items:
+                            type: string
         400:
           description: Bad Request.
           content:
@@ -1552,15 +1834,46 @@ paths:
       security:
         - bearerAuth: []
       summary: Return a list of all policies.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
       responses:
         200:
           description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PolicyConfig'
+                  allOf:
+                    - $ref: '#/components/schemas/PolicyConfig'
+                    - type: object
+                      properties:
+                        userRoles:
+                          type: array
+                          items:
+                            type: string
         401:
           description: Unauthorized.
         403:
@@ -1571,7 +1884,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
     post:
       tags:
         - policies
@@ -1585,7 +1897,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PolicyConfig"
+              $ref: '#/components/schemas/PolicyConfig'
       responses:
         200:
           description: Successful operation.
@@ -1621,7 +1933,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyConfig'
+                allOf:
+                  - $ref: '#/components/schemas/PolicyConfig'
+                  - type: object
+                    properties:
+                      userRoles:
+                        type: array
+                        items:
+                          type: string
         401:
           description: Unauthorized.
         403:
@@ -1966,7 +2285,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
+
   /policies/import/message:
     post:
       tags:
@@ -2016,6 +2335,11 @@ paths:
       requestBody:
         description: A zip file that contains the policy and associated schemas and VCs to be imported.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         201:
           description: Successful operation.
@@ -2083,6 +2407,11 @@ paths:
       requestBody:
         description: A zip file that contains the policy and associated schemas and VCs to be viewed.
         required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         200:
           description: Successful operation.
@@ -2138,7 +2467,29 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Account'
+                  allOf:
+                    - $ref: '#/components/schemas/Account'
+                    - type: object
+                      properties:
+                        policyRoles:
+                          type: object
+                          properties:
+                            policy:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                name:
+                                  type: string
+                                version:
+                                  type: string
+                            userRoles:
+                              type: object
+                              properties:
+                                did:
+                                  type: string
+                                role:
+                                  type: string
         500:
           description: Internal server error.
           content:
@@ -2171,6 +2522,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /ipfs/file:
     post:
       tags:
@@ -2203,6 +2555,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /settings:
     get:
       tags:
@@ -2255,6 +2608,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /logs:
     post:
       tags:
@@ -2291,6 +2645,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /logs/attributes:
     get:
       tags:
@@ -2302,6 +2657,13 @@ paths:
           schema:
             type: string
           description: Part of name.
+        - in: query
+          name: existingAttributes
+          schema:
+            type: array
+            items:
+              type: string
+          description: Attributes to exclude.
       security:
       - bearerAuth: []
       summary: Returns logs attributes.
@@ -2312,7 +2674,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items: 
+                items:
                   type: string
         401:
           description: Unauthorized.

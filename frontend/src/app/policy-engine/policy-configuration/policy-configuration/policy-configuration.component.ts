@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TokenService } from 'src/app/services/token.service';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyAction, SavePolicyDialog } from '../../save-policy-dialog/save-policy-dialog.component';
+import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import * as yaml from 'js-yaml';
 
@@ -39,7 +39,7 @@ export class PolicyConfigurationComponent implements OnInit {
     errorsCount: number = -1;
     errorsMap: any;
 
-    colGroup1 = true;
+    colGroup1 = false;
     colGroup2 = false;
     colGroup3 = true;
 
@@ -64,6 +64,7 @@ export class PolicyConfigurationComponent implements OnInit {
         viewportMargin: Infinity
     };
     propTab: string = 'Properties';
+    policyTab: string = 'Description';
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -94,23 +95,26 @@ export class PolicyConfigurationComponent implements OnInit {
 
         this.policyId = policyId;
         forkJoin([
-            this.schemaService.getSchemes(),
             this.tokenService.getTokens(),
             this.policyEngineService.policy(policyId)
         ]).subscribe((data: any) => {
-            const schemes = data[0] || [];
-            const tokens = data[1] || [];
-            const policy = data[2];
-            this.schemes = SchemaHelper.map(schemes) || [];
-            this.schemes.unshift({
-                type: ""
-            } as any);
-
+            const tokens = data[0] || [];
+            const policy = data[1];
             this.tokens = tokens.map((e: any) => new Token(e));
             this.setPolicy(policy);
-            setTimeout(() => {
+            if (!policy) {
+                setTimeout(() => { this.loading = false; }, 500);
+                return;
+            }
+            this.schemaService.getSchemes(policy.topicId).subscribe((data2: any) => {
+                const schemes = data2 || [];
+                this.schemes = SchemaHelper.map(schemes) || [];
+                this.schemes.unshift({ type: "" } as any);
+                setTimeout(() => { this.loading = false; }, 500);
+            }, (e) => {
                 this.loading = false;
-            }, 500);
+                console.error(e.error);
+            });
         }, (error) => {
             this.loading = false;
             console.error(error);
@@ -122,6 +126,7 @@ export class PolicyConfigurationComponent implements OnInit {
             return;
         }
         policy.policyRoles = policy.policyRoles || [];
+        policy.policyTopics = policy.policyTopics || [];
         policy.config = policy.config || {
             blockType: 'interfaceContainerBlock',
         };
@@ -237,6 +242,7 @@ export class PolicyConfigurationComponent implements OnInit {
     setVersion() {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
+            disableClose: true,
             data: {}
         });
         dialogRef.afterClosed().subscribe((version) => {
@@ -274,6 +280,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.validate({
             policyRoles: this.policy?.policyRoles,
+            policyTopics: this.policy?.policyTopics,
             config: this.root
         }).subscribe((data: any) => {
             const { policy, results } = data;
@@ -300,6 +307,7 @@ export class PolicyConfigurationComponent implements OnInit {
     saveAsPolicy() {
         const dialogRef = this.dialog.open(SavePolicyDialog, {
             width: '500px',
+            disableClose: true,
             data: {
                 policy: this.policy,
                 action: this.policy.status === 'DRAFT'
@@ -440,7 +448,3 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.objectToYaml(root);
     }
 }
-
-
-
-

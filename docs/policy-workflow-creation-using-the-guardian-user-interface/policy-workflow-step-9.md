@@ -1,20 +1,18 @@
 # Policy Workflow Step 9
 
-
-
 Next, we add another container block by clicking on the “Container” button in the top navigation bar because we want now to add the UI pages as TABS as we indicated in the previous block.
 
 This block is to set up sensors by the Installer and, therefore the page of the UI should be BLANK to be able to add data.
 
-![](https://i.imgur.com/gA9WNWl.png)
+![](../.gitbook/assets/PW\_14.png)
 
 **Programmatically this workflow step looks like this:**
 
 ```
       "children": [
-        // Create an interfaceContainerBlock to group all components on the sensor page.
+        // Create an InterfaceContainerBlock to group all components on the sensor page.
         {
-          "blockType": "interfaceContainerBlock",
+          "blockType": "InterfaceContainerBlock",
           "tag": "sensors_page",
           "defaultActive": true,
           "permissions": [
@@ -22,7 +20,7 @@ This block is to set up sensors by the Installer and, therefore the page of the 
           ],
           "uiMetaData": {
             "type": "blank",
-            // "title" - name of the tab. If the parent is interfaceContainerBlock the value from title is used for tab name.
+            // "title" - name of the tab. If the parent is InterfaceContainerBlock the value from title is used for tab name.
             // If the "title" is empty the block name is used as the tab name.
             "title": "Sensors"
           },

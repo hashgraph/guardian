@@ -1,7 +1,4 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { HcsVcDocument, VcSubject } from 'vc-modules';
-import { Guardians } from '@helpers/guardians';
-import { Inject } from '@helpers/decorators/inject';
 import * as mathjs from 'mathjs';
 import { BlockActionError } from '@policy-engine/errors';
 import { getMongoRepository } from 'typeorm';
@@ -9,6 +6,8 @@ import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
+import { VcDocument } from '@hedera-modules';
+import { Token } from '@entity/token';
 
 function evaluate(formula: string, scope: any) {
     return (function (formula: string, scope: any) {
@@ -28,17 +27,11 @@ function evaluate(formula: string, scope: any) {
     commonBlock: true
 })
 export class AggregateBlock {
-    @Inject()
-    private guardians: Guardians;
-
-    private tokenId: any;
-    private rule: any;
-
-    private getScope(item: HcsVcDocument<VcSubject>) {
-        return item.getCredentialSubject()[0].toJsonTree();
+    private getScope(item: VcDocument): any {
+        return item.getCredentialSubject(0).toJsonTree();
     }
 
-    private aggregate(rule, vcs: HcsVcDocument<VcSubject>[]) {
+    private aggregate(rule, vcs: VcDocument[]) {
         let amount = 0;
         for (let i = 0; i < vcs.length; i++) {
             const element = vcs[i];
@@ -57,13 +50,13 @@ export class AggregateBlock {
             threshold
         } = ref.options;
 
-        const token = (await this.guardians.getTokens({ tokenId }))[0];
+        const token = await getMongoRepository(Token).findOne({ tokenId });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
-        this.rule = rule;
+
         const doc = data.data;
-        const vc = HcsVcDocument.fromJsonTree(doc.document, null, VcSubject);
+        const vc = VcDocument.fromJsonTree(doc.document);
         const repository = getMongoRepository(AggregateVC)
         const newVC = repository.create({
             owner: doc.owner,
@@ -74,7 +67,7 @@ export class AggregateBlock {
         const rawEntities = await repository.find({
             owner: doc.owner
         });
-        const forAggregate = rawEntities.map(e => HcsVcDocument.fromJsonTree(e.document, null, VcSubject));
+        const forAggregate = rawEntities.map(e => VcDocument.fromJsonTree(e.document));
         const amount = this.aggregate(rule, forAggregate);
 
         if (amount >= threshold) {
@@ -85,19 +78,22 @@ export class AggregateBlock {
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        try {
+            // Test rule options
+            if (!ref.options.rule) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+            } else if (typeof ref.options.rule !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+            }
 
-        // Test rule options
-        if (!ref.options.rule) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-        } else if (typeof ref.options.rule !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
-        }
-
-        // Test threshold options
-        if (!ref.options.threshold) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
-        } else if (typeof ref.options.threshold !== 'string') {
-            resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a string');
+            // Test threshold options
+            if (!ref.options.threshold) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
+            } else if (typeof ref.options.threshold !== 'string') {
+                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a string');
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

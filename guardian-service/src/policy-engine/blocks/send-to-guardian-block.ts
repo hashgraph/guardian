@@ -1,16 +1,18 @@
-import { Guardians } from '@helpers/guardians';
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus } from 'interfaces';
-import { HcsVcDocument, HederaHelper, VcSubject } from 'vc-modules';
+import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from '@hedera-modules';
+import { getMongoRepository } from 'typeorm';
+import { ApprovalDocument } from '@entity/approval-document';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -18,15 +20,158 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 })
 export class SendToGuardianBlock {
     @Inject()
-    private guardians: Guardians;
-
-    @Inject()
     private wallet: Wallet;
 
     @Inject()
     private users: Users;
 
-    async documentSender(state, user: IAuthUser): Promise<any> {
+    /**
+     * @deprecated 2022-08-04
+     */
+    async sendByType(document: any, currentUser: IAuthUser, ref: AnyBlockType) {
+        let result: any;
+        switch (ref.options.dataType) {
+            case 'vc-documents': {
+                const vc = HVcDocument.fromJsonTree(document.document);
+                const doc: any = {
+                    hash: vc.toCredentialHash(),
+                    owner: document.owner,
+                    assign: document.assign,
+                    option: document.option,
+                    schema: document.schema,
+                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
+                    signature: document.signature || DocumentSignature.NEW,
+                    type: ref.options.entityType,
+                    policyId: ref.policyId,
+                    tag: ref.tag,
+                    document: vc.toJsonTree()
+                };
+                result = await PolicyUtils.updateVCRecord(doc);
+                break;
+            }
+            case 'did-documents': {
+                result = await PolicyUtils.updateDIDRecord(document);
+                break;
+            }
+            case 'approve': {
+                let item: ApprovalDocument;
+                if (document.id) {
+                    item = await getMongoRepository(ApprovalDocument).findOne(document.id);
+                }
+                if (item) {
+                    item.owner = document.owner;
+                    item.option = document.option;
+                    item.schema = document.schema;
+                    item.document = document.document;
+                    item.tag = document.tag;
+                    item.type = document.type;
+                } else {
+                    item = getMongoRepository(ApprovalDocument).create(document as ApprovalDocument);
+                }
+                result = await getMongoRepository(ApprovalDocument).save(item);
+                break;
+            }
+            case 'hedera': {
+                result = await this.sendToHedera(document, currentUser, ref);
+                break;
+            }
+            default:
+                throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
+        }
+
+        return result;
+    }
+
+    async send(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
+        const { dataSource } = ref.options;
+
+        let result: any;
+        switch (dataSource) {
+            case 'database': {
+                result = await this.sendToDatabase(document, currentUser, ref);
+                break;
+            }
+            case 'hedera': {
+                result = await this.sendToHedera(document, currentUser, ref);
+                break;
+            }
+            default:
+                throw new BlockActionError(`dataSource "${dataSource}" is unknown`, ref.blockType, ref.uuid)
+        }
+
+        return result;
+    }
+
+    async sendToDatabase(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
+        const { documentType } = ref.options;
+        switch (documentType) {
+            case 'vc': {
+                const vc = HVcDocument.fromJsonTree(document.document);
+                const doc: any = {
+                    policyId: ref.policyId,
+                    tag: ref.tag,
+                    type: ref.options.entityType,
+                    hash: vc.toCredentialHash(),
+                    document: vc.toJsonTree(),
+                    owner: document.owner,
+                    assign: document.assign,
+                    option: document.option,
+                    schema: document.schema,
+                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
+                    signature: document.signature || DocumentSignature.NEW,
+                    messageId: document.messageId || null,
+                    topicId: document.topicId || null,
+                    relationships: document.relationships || [],
+                };
+                return await PolicyUtils.updateVCRecord(doc);
+            }
+            case 'did': {
+                return await PolicyUtils.updateDIDRecord(document);
+            }
+            case 'vp': {
+                return await PolicyUtils.updateVPRecord(document);
+            }
+            default:
+                throw new BlockActionError(`documentType "${documentType}" is unknown`, ref.blockType, ref.uuid)
+        }
+    }
+
+    async sendToHedera(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
+        try {
+            const root = await this.users.getHederaAccount(ref.policyOwner);
+            const user = await this.users.getHederaAccount(document.owner);
+            
+            let topicOwner = user;
+            if(ref.options.topicOwner == 'user') {
+                topicOwner = await this.users.getHederaAccount(currentUser.did);
+            } else if(ref.options.topicOwner == 'issuer') {
+                topicOwner = await this.users.getHederaAccount(document.document.issuer);
+            } else {
+                topicOwner = user;
+            }
+            if (!topicOwner) {
+                throw `Topic owner not found`;
+            }
+
+            const topic = await PolicyUtils.getTopic(ref.options.topic, root, topicOwner, ref);
+            const vc = HVcDocument.fromJsonTree(document.document);
+            const vcMessage = new VCMessage(MessageAction.CreateVC);
+            vcMessage.setDocument(vc);
+            vcMessage.setRelationships(document.relationships);
+            const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey);
+            const vcMessageResult = await messageServer
+                .setTopicObject(topic)
+                .sendMessage(vcMessage);
+            document.hederaStatus = DocumentStatus.ISSUE;
+            document.messageId = vcMessageResult.getId();
+            document.topicId = vcMessageResult.getTopicId();
+            return document;
+        } catch (error) {
+            throw new BlockActionError(error.message, ref.blockType, ref.uuid)
+        }
+    }
+
+    async documentSender(state: any, user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         let document = state.data;
@@ -47,74 +192,51 @@ export class SendToGuardianBlock {
             }
         }
 
-        let result: any;
-        switch (ref.options.dataType) {
-            case 'vc-documents': {
-                const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
-                const doc = {
-                    hash: vc.toCredentialHash(),
-                    owner: document.owner,
-                    assign: document.assign,
-                    option: document.option,
-                    schema: document.schema,
-                    hederaStatus: document.status || DocumentStatus.NEW,
-                    signature: document.signature || DocumentSignature.NEW,
-                    type: ref.options.entityType,
-                    policyId: ref.policyId,
-                    tag: ref.tag,
-                    document: vc.toJsonTree()
-                };
-                result = await this.guardians.setVcDocument(doc);
-                break;
-            }
-            case 'did-documents': {
-                result = await this.guardians.setDidDocument(document);
-                break;
-            }
-            case 'approve': {
-                result = await this.guardians.setApproveDocuments(document);
-                break;
-            }
-            case 'hedera': {
-                result = await this.sendToHedera(document, ref);
-                break;
-            }
-            default:
-                throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
-        }
+        ref.log(`Send Document: ${JSON.stringify(document)}`);
 
-        return result;
+        if (ref.options.dataType) {
+            return await this.sendByType(document, user, ref);
+        } else {
+            return await this.send(document, user, ref);
+        }
     }
 
     @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        console.log(`sendToGuardianBlock: runAction: ${ref.tag}`);
-        await this.documentSender(state, user);
+        ref.log(`runAction`);
+        state.data = await this.documentSender(state, user);
         await ref.runNext(user, state);
-        ref.updateBlock(state, user, '');
-    }
-
-    async sendToHedera(document: any, ref: any) {
-        const userFull = await this.users.getUserById(document.owner);
-        const userID = userFull.hederaAccountId;
-        const userDID = userFull.did;
-        const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-        const addressBook = await this.guardians.getAddressBook(ref.policyOwner);
-        const hederaHelper = HederaHelper
-            .setOperator(userID, userKey)
-            .setAddressBook(addressBook.addressBook, addressBook.didTopic, addressBook.vcTopic);
-        const vc = HcsVcDocument.fromJsonTree<VcSubject>(document.document, null, VcSubject);
-        const result = await hederaHelper.DID.createVcTransaction(vc, userKey);
-        document.hederaStatus = result.getOperation();
-        return document;
+        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
+        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+        // ref.updateBlock(state, user, '');
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        try {
+            if (ref.options.dataType) {
+                if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+                }
+            }
 
-        if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+            if (ref.options.dataSource == 'database') {
+                if (!['vc', 'did', 'vp'].find(item => item === ref.options.documentType)) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of vc, did, vp');
+                }
+            }
+            if (ref.options.dataSource == 'hedera') {
+                if (ref.options.topic && ref.options.topic !== 'root') {
+                    const policyTopics = ref.policyInstance.policyTopics || [];
+                    const config = policyTopics.find(e => e.name == ref.options.topic);
+                    if (!config) {
+                        resultsContainer.addBlockError(ref.uuid, `Topic "${ref.options.topic}" does not exist`);
+                    }
+                }
+            }
+        } catch (error) {
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
     }
 }

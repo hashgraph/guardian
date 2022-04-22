@@ -1,15 +1,17 @@
-import {PolicyBlockDefaultOptions} from '@policy-engine/helpers/policy-block-default-options';
-import {PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap} from '@policy-engine/interfaces';
-import {PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList} from '@policy-engine/interfaces/block-options';
-import {PolicyRole} from 'interfaces';
-
-import {AnyBlockType, IPolicyBlock, ISerializedBlock,} from '../../policy-engine.interface';
-import {PolicyComponentsUtils} from '../../policy-components-utils';
-import {PolicyValidationResultsContainer} from '@policy-engine/policy-validation-results-container';
-import {IAuthUser} from '../../../auth/auth.interface';
-import {getMongoRepository} from 'typeorm';
-import {BlockState} from '@entity/block-state';
+import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
+import { PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
+import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
+import { PolicyRole } from 'interfaces';
+import { Logger } from 'logger-helper';
+import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
+import { PolicyComponentsUtils } from '../../policy-components-utils';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { IAuthUser } from '../../../auth/auth.interface';
+import { getMongoRepository } from 'typeorm';
+import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
+import { BlockActionError } from '@policy-engine/errors';
+import { Policy } from '@entity/policy';
 
 /**
  * Basic block decorator
@@ -70,9 +72,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             protected oldDataState: any = {};
             protected currentDataState: any = {};
+            protected logger: Logger;
 
             public policyId: string;
             public policyOwner: string;
+            public policyInstance: any;
 
             public readonly blockClassName = 'BasicBlock';
 
@@ -96,6 +100,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     _parent || o._parent,
                     _options
                 );
+                this.logger = new Logger();
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
@@ -135,6 +140,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public setPolicyOwner(did: string) {
                 this.policyOwner = did;
+            }
+            public setPolicyInstance(policy: any) {
+                this.policyInstance = policy;
             }
 
             public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
@@ -179,14 +187,24 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             public async updateBlock(state:any, user:IAuthUser, tag:string) {
-                if (!!this.tag) {
-                    PolicyComponentsUtils.CallDependencyCallbacks(this.tag, this.policyId, user);
-                }
-                // for (let child of this.children) {
-                //     child.updateBlock(state, user, tag);
-                // }
                 await this.saveState();
-                PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
+                if (!this.options.followUser) {
+                    const policy = await getMongoRepository(Policy).findOne(this.policyId);
+
+                    for (let [did, role] of Object.entries(policy.registeredUsers)) {
+                        if (this.permissions.includes(role)) {
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
+                        } else if (this.permissions.includes('ANY_ROLE')) {
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
+                        }
+                    }
+
+                    if (this.permissions.includes('OWNER')) {
+                        PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did: this.policyOwner} as any, tag);
+                    }
+                } else {
+                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
+                }
 
             }
 
@@ -253,16 +271,16 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         hasAccess = true;
                     }
                 }
-                if(this.permissions.includes('ANY_ROLE')) {
+                if (this.permissions.includes('ANY_ROLE')) {
                     hasAccess = true;
                 }
-                if(this.permissions.includes('OWNER')) {
+                if (this.permissions.includes('OWNER')) {
                     if (user) {
                         return user.did === this.policyOwner;
                     }
                 }
 
-                if(this.permissions.indexOf(role) > -1) {
+                if (this.permissions.indexOf(role) > -1) {
                     hasAccess = true;
                 }
                 return hasAccess;
@@ -306,6 +324,17 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
+            protected log(message: string) {
+                this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+            }
+
+            protected error(message: string) {
+                this.logger.error(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+            }
+
+            protected warn(message: string) {
+                this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+            }
         };
     };
 }

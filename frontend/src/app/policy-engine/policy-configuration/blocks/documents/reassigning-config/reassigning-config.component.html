@@ -1,0 +1,32 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Stop Propagation</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Issuer</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.issuer" [disabled]="readonly">
+                <mat-option value="">Current User</mat-option>
+                <mat-option value="owner">Document Owner</mat-option>
+                <mat-option value="policyOwner">Policy Owner</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Actor</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.actor" [disabled]="readonly">
+                <mat-option value="">Current User</mat-option>
+                <mat-option value="owner">Document Owner</mat-option>
+                <mat-option value="issuer">Document Issuer</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+</table>

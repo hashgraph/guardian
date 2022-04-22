@@ -13,10 +13,11 @@ import { IAuthUser } from '@auth/auth.interface';
 })
 export class InterfaceStepBlock {
     @StateField()
-    state: { [key: string]: any } = { index: 0 };
+    state: { [key: string]: any } = {index: 0};
 
-    async changeStep(user: IAuthUser, data:any, target:any) {
+    async changeStep(user: IAuthUser, data: any, target: any) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        ref.log(`changeStep`);
         let blockState;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -36,6 +37,8 @@ export class InterfaceStepBlock {
         }
 
         ref.updateBlock(blockState, user);
+        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
+        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
     }
 
     async getData(user: IAuthUser): Promise<any> {
@@ -50,8 +53,8 @@ export class InterfaceStepBlock {
         if (blockState.index === undefined) {
             blockState.index = 0;
         }
-        const { options } = ref;
-        return { uiMetaData: options.uiMetaData, index: blockState.index };
+        const {options} = ref;
+        return {uiMetaData: options.uiMetaData, index: blockState.index};
     }
 
     public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {

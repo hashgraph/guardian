@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
@@ -66,6 +66,13 @@ export class PolicyEngineService {
         return this.http.get<any[]>(`${this.url}/`);
     }
 
+    public page(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
+        }
+        return this.http.get<any>(`${this.url}`, { observe: 'response' });
+    }
+
     public create(policy: any): Observable<void> {
         return this.http.post<any>(`${this.url}/`, policy);
     }
@@ -79,7 +86,7 @@ export class PolicyEngineService {
     }
 
     public publish(policyId: string, policyVersion: string): Observable<any> {
-        return this.http.put<any>(`${this.url}/${policyId}/publish`, {policyVersion});
+        return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
     }
 
     public validate(policy: any): Observable<any> {
@@ -119,7 +126,7 @@ export class PolicyEngineService {
     }
 
     public importByMessage(messageId: string): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/import/message`, {messageId});
+        return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
     }
 
     public importByFile(policyFile: any): Observable<any[]> {
@@ -131,7 +138,7 @@ export class PolicyEngineService {
     }
 
     public previewByMessage(messageId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/import/message/preview`, {messageId});
+        return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
     }
 
     public previewByFile(policyFile: any): Observable<any> {

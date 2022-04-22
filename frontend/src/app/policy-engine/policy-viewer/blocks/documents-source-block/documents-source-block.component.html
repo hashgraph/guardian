@@ -37,6 +37,9 @@
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
             <tr mat-row *matRowDef="let row; columns: columns;"></tr>
         </table>
+        <div *ngIf="paginationAddon" class="pagination">
+            <render-block [block]="paginationAddon"></render-block>
+        </div>
     </div>
 
     <div *ngIf="children" class="grid-children">

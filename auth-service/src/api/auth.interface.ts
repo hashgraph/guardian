@@ -6,4 +6,5 @@ export interface IAuthUser {
     did?: string;
     hederaAccountId?: string;
     walletToken?: string;
+    parent?: string;
 }

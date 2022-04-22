@@ -16,6 +16,14 @@
                         <div class="profile-item-name"> BALANCE:</div>
                         <div class="profile-item-value"> {{balance}}</div>
                     </div>
+                    <div *ngIf="profile.topicId" class="profile-item">
+                        <div class="profile-item-name"> USER TOPIC:</div>
+                        <div class="profile-item-value"> {{profile.topicId}} </div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-item-name"> Root Authority:</div>
+                        <div class="profile-item-value"> {{profile.parent}} </div>
+                    </div>
                     <div class="profile-item">
                         <div class="profile-item-name"> DID:</div>
                         <div class="profile-item-value"> {{profile.did}} </div>
@@ -72,6 +80,12 @@
                                     </div>
                                 </td>
                             </ng-container>
+                            <ng-container matColumnDef="policies">
+                                <th mat-header-cell *matHeaderCellDef> Policies </th>
+                                <td mat-cell *matCellDef="let element" [matTooltip]="element.policies?.join(', ')">
+                                    <div class="policies-info">{{getPoliciesInfo(element.policies)}}</div>
+                                </td>
+                            </ng-container>
                             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                         </table>
@@ -83,6 +97,16 @@
     <ng-template #elseTemplate>
         <div *ngIf="isNewAccount && !isFailed" class="list">
             <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Root Authority</mat-label>
+                    <mat-select formControlName="rootAuthority">
+                        <mat-option *ngFor="let user of rootAuthorities" [value]="user.did">
+                            <span>{{user.username}}</span>
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR ID:</mat-label>
                     <input matInput placeholder="0.0.1548173" formControlName="id">
@@ -90,12 +114,12 @@
 
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR KEY:</mat-label>
-                    <input matInput
-                        placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
+                    <input matInput placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
                         formControlName="key">
                 </mat-form-field>
 
-                <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="randomKey()">Generate</button>
+                <button mat-raised-button type="button" color="primary" class="generate-btn"
+                    (click)="randomKey()">Generate</button>
                 <button mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
             </form>
         </div>
@@ -106,7 +130,8 @@
         <div *ngIf="isFailed" class="error-list">
             <p>An error occurred while creating the document.</p>
             <p>Please try again later.</p>
-            <button mat-raised-button type="button" color="primary" class="generate-btn" (click)="retry()">Retry</button>
+            <button mat-raised-button type="button" color="primary" class="generate-btn"
+                (click)="retry()">Retry</button>
         </div>
     </ng-template>
 </div>

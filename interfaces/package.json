@@ -1,6 +1,9 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "description": "",
+  "dependencies": {
+    "reflect-metadata": "^0.1.13"
+  },
   "devDependencies": {
     "@types/node": "^17.0.13",
     "mocha-junit-reporter": "^2.0.2",
@@ -20,5 +23,5 @@
     "lint": "tslint --project .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "1.2.1"
+  "version": "2.0.0"
 }

@@ -15,6 +15,9 @@ export class AdminHeaderComponent implements OnInit {
     }, {
         name: 'Logs',
         link: 'logs'
+    }, {
+        name: 'Status',
+        link: 'status'
     }];
     activeLink = null;
     constructor() {

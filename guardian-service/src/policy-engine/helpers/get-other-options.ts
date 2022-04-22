@@ -1,4 +1,4 @@
-import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces/block-options';
+import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
 
 /**
  * Return custom options object for block instance

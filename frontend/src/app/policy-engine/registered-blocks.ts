@@ -24,6 +24,10 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
 import { BlockNode } from "./helpers/tree-data-source/tree-data-source";
 import { ReportBlockComponent } from "./policy-viewer/blocks/report-block/report-block.component";
 import { ReportItemConfigComponent } from "./policy-configuration/blocks/report/report-item-config/report-item-config.component";
+import {
+    PaginationAddonBlockComponent
+} from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
+import { ReassigningConfigComponent } from "./policy-configuration/blocks/documents/reassigning-config/reassigning-config.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -43,7 +47,9 @@ export enum BlockType {
     Calculate = 'calculateContainerBlock',
     CalculateMathAddon = 'calculateMathAddon',
     Report = 'reportBlock',
-    ReportItem = 'reportItemBlock'
+    ReportItem = 'reportItemBlock',
+    ReassigningBlock = 'reassigningBlock',
+    PaginationAddon = 'paginationAddon',
 }
 
 export enum BlockGroup {
@@ -91,6 +97,8 @@ export class RegisteredBlocks {
         this.register(BlockType.CalculateMathAddon, 'calculate', 'Math Addon', `Add 'Math' Addon`);
         this.register(BlockType.Report, 'addchart', 'Report', `Add 'Report' Block`);
         this.register(BlockType.ReportItem, 'list_alt', 'Report Item', `Add 'Report Item' Block`);
+        this.register(BlockType.ReassigningBlock, 'content_copy', 'Reassigning', `Add 'Reassigning' Block`);
+        this.register(BlockType.PaginationAddon, 'filter_alt', 'Pagination', `Add 'Pagination' Addon`);
 
         this.registerGroup(BlockGroup.Main, BlockType.Container);
         this.registerGroup(BlockGroup.Main, BlockType.Step);
@@ -104,6 +112,8 @@ export class RegisteredBlocks {
         this.registerGroup(BlockGroup.Documents, BlockType.AggregateDocument);
         this.registerGroup(BlockGroup.Documents, BlockType.FiltersAddon);
         this.registerGroup(BlockGroup.Documents, BlockType.DocumentsSourceAddon);
+        this.registerGroup(BlockGroup.Documents, BlockType.ReassigningBlock);
+        this.registerGroup(BlockGroup.Documents, BlockType.PaginationAddon);
         this.registerGroup(BlockGroup.Tokens, BlockType.Mint);
         this.registerGroup(BlockGroup.Tokens, BlockType.Wipe);
         this.registerGroup(BlockGroup.Calculate, BlockType.Calculate);
@@ -119,6 +129,7 @@ export class RegisteredBlocks {
         this.registerFactory(BlockType.Information, InformationBlockComponent);
         this.registerFactory(BlockType.PolicyRoles, RolesBlockComponent);
         this.registerFactory(BlockType.FiltersAddon, FiltersAddonBlockComponent);
+        this.registerFactory(BlockType.PaginationAddon, PaginationAddonBlockComponent);
         this.registerFactory(BlockType.Report, ReportBlockComponent);
 
         this.registerProperties(BlockType.DocumentsViewer, DocumentSourceComponent);
@@ -138,6 +149,7 @@ export class RegisteredBlocks {
         this.registerProperties(BlockType.ReportItem, ReportItemConfigComponent);
         this.registerProperties(BlockType.Calculate, CalculateConfigComponent);
         this.registerProperties(BlockType.CalculateMathAddon, CalculateMathConfigComponent);
+        this.registerProperties(BlockType.ReassigningBlock, ReassigningConfigComponent);
     }
 
     public register(type: BlockType, icon: string, name: string, title: string) {

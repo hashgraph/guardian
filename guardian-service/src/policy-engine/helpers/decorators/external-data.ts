@@ -1,5 +1,5 @@
-import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces';
-import {BasicBlock} from '@policy-engine/helpers/decorators/basic-block';
+import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
+import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 
 /**
  * External data block decorator

@@ -1,6 +1,6 @@
 import {Singleton} from '@helpers/decorators/singleton';
 import {Request} from 'express';
-import { AuthEvents, UserRole } from 'interfaces';
+import { ApplicationStates, AuthEvents, MessageAPI, UserRole } from 'interfaces';
 import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
 import { IAuthUser } from '@auth/auth.interface';
 
@@ -131,5 +131,23 @@ export class Users extends ServiceRequestsBase {
 
     public async getAllUserAccountsDemo() {
         return await this.request(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO);
+    }
+
+    public async getAllRootAuthorityAccounts() {
+        return await this.request(AuthEvents.GET_ALL_ROOT_AUTHORITY_ACCOUNTS);
+    }
+
+    /**
+     * Get service status
+     * 
+     * @returns {ApplicationStates} Service state
+     */
+    public async getStatus(): Promise<ApplicationStates> {
+        try {
+            return await this.request(MessageAPI.GET_STATUS);
+        }
+        catch {
+            return ApplicationStates.STOPPED;
+        }
     }
 }

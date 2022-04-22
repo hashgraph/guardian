@@ -2,6 +2,7 @@ import FastMQ from 'fastmq';
 import { createConnection } from 'typeorm';
 import { loggerAPI } from '@api/logger.service';
 import { Log } from '@entity/log';
+import { ApplicationState, ApplicationStates } from 'interfaces';
 
 Promise.all([
     createConnection({
@@ -22,9 +23,14 @@ Promise.all([
 ]).then(async values => {
     const [db, channel] = values;
 
+    const state = new ApplicationState('LOGGER_SERVICE');
+    state.setChannel(channel);
+    state.updateState(ApplicationStates.STARTED);
     const logRepository = db.getMongoRepository(Log);
 
+    state.updateState(ApplicationStates.INITIALIZING);
     await loggerAPI(channel, logRepository);
 
+    state.updateState(ApplicationStates.READY);
     console.log('logger service started');
 })

@@ -1,10 +1,11 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+    <tr *ngIf="block.dataType" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Data Type</td>
+        <td class="propRowCell cellName">Data Type (deprecated)</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.dataType" [disabled]="readonly">
+                <mat-option value=""></mat-option>
                 <mat-option value="vc-documents">Collection (VC)</mat-option>
                 <mat-option value="did-documents">Collection (DID)</mat-option>
                 <mat-option value="approve">Collection (Approve)</mat-option>
@@ -12,6 +13,67 @@
             </mat-select>
         </td>
     </tr>
+
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Data Source</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.dataSource" [disabled]="readonly">
+                <mat-option value="database">Database</mat-option>
+                <mat-option value="hedera">Hedera Topic</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Document Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.documentType" [disabled]="readonly">
+                <mat-option value=""></mat-option>
+                <mat-option value="vc">VC Document</mat-option>
+                <mat-option value="did">DID Document</mat-option>
+                <mat-option value="vp">VP Document</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr *ngIf="block.dataSource=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Hedera Topic</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">
+                <mat-option class="link" value="new">
+                    <span class="mat-option-link">
+                        <mat-icon>add</mat-icon>
+                        <span>Create new topic</span>
+                    </span>
+                </mat-option>
+                <mat-option value="root">Policy Instance</mat-option>
+                <mat-option *ngFor="let topic of topics" 
+                    [value]="topic.name"
+                    [matTooltip]="topic.description" 
+                    matTooltipPosition="above" 
+                    matTooltipClass="guardian-tooltip">
+                    {{topic.name}}
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr *ngIf="block.dataSource=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Topic Owner</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.topicOwner" [disabled]="readonly">
+                <mat-option value=""></mat-option>
+                <mat-option value="user">Current User</mat-option>
+                <mat-option value="owner">Document Owner</mat-option>
+                <mat-option value="issuer">Document Issuer</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Entity Type</td>

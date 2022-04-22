@@ -35,6 +35,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
     addons: any;
     schemas!: Schema[];
     fieldMap!: { [x: string]: any[] };
+    commonAddons: any[];
+    paginationAddon: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -46,6 +48,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
         this.columns = [];
         this.documents = null;
         this.children = null;
+        this.commonAddons = [];
+        this.paginationAddon = null;
     }
 
     ngOnInit(): void {
@@ -121,6 +125,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.isActive = true;
             this.insert = data.insert;
             this.addons = data.blocks || [];
+            this.commonAddons = data.commonAddons;
+            this.paginationAddon = this.commonAddons.find((addon) => {
+                return addon.blockType === "paginationAddon"
+            })
         } else {
             this.fieldMap = {};
             this.fields = [];
@@ -129,6 +137,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.children = null;
             this.isActive = false;
             this.addons = [];
+            this.paginationAddon = null;
         }
     }
 

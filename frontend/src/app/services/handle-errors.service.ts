@@ -10,74 +10,83 @@ import { ToastrService } from "ngx-toastr";
  */
 @Injectable()
 export class HandleErrorsService implements HttpInterceptor {
-  constructor(
-    public router: Router,
-    private toastr: ToastrService
-  ) {
-  }
-
-  messageToText(message: any) {
-    if (typeof message === 'object') {
-      return JSON.stringify(message, null, 2);
+    constructor(
+        public router: Router,
+        private toastr: ToastrService
+    ) {
     }
-    return message;
-  }
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return next.handle(req).pipe(
-      catchError((error) => {
-        console.error(error);
-        let header = "";
-        let text = "";
-        if (typeof error.error === 'string') {
-          header = `${error.status} ${error.statusText}`;
-          if (error.message) {
-            text = `<div>${this.messageToText(error.message)}</div><div>${this.messageToText(error.error)}</div>`;
-          } else {
-            text = `${error.error}`;
-          }
-        } else if (typeof error.error === 'object') {
-          if (typeof error.error.text == 'function') {
-            error.error.text().then((e: string) => {
-              const error = JSON.parse(e)
-              const header = `${error.code} Other Error`;
-              let text;
-              if (error.message) {
-                text = `<div>${this.messageToText(error.message)}</div><div>${this.messageToText(error.error)}</div>`;
-              } else {
-                text = `${error.error}`;
-              }
-              this.toastr.error(text, header, {
-                timeOut: 30000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true
-              });
-            });
-            return throwError(error.message);
-          }
-          if (error.error.uuid) {
-            text = `<div>${this.messageToText(error.error.message)}</div><div>${error.error.uuid}</div>`;
-          } else {
-            text = `${this.messageToText(error.error.message)}`;
-          }
-          if (error.error.type) {
-            header = `${error.error.code} ${error.error.type}`;
-          } else {
-            header = `${error.error.code} Other Error`;
-          }
-        } else {
-          header = `${error.code || error.status} Other Error`
-          text = `${this.messageToText(error.message)}`;
+    messageToText(message: any) {
+        if (typeof message === 'object') {
+            return JSON.stringify(message, null, 2);
         }
-        this.toastr.error(text, header, {
-          timeOut: 30000,
-          closeButton: true,
-          positionClass: 'toast-bottom-right',
-          enableHtml: true
-        });
-        return throwError(error.message);
-      })
-    );
-  }
+        return message;
+    }
+
+    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        return next.handle(req).pipe(
+            catchError((error) => {
+                console.error(error);
+                let header = "";
+                let text = "";
+                if (typeof error.error === 'string') {
+                    header = `${error.status} ${error.statusText}`;
+                    if (error.message) {
+                        text = `<div>${this.messageToText(error.message)}</div><div>${this.messageToText(error.error)}</div>`;
+                    } else {
+                        text = `${error.error}`;
+                    }
+                } else if (typeof error.error === 'object') {
+                    if (typeof error.error.text == 'function') {
+                        error.error.text().then((e: string) => {
+                            const error = JSON.parse(e)
+                            const header = `${error.code} Other Error`;
+                            let text;
+                            if (error.message) {
+                                text = `<div>${this.messageToText(error.message)}</div><div>${this.messageToText(error.error)}</div>`;
+                            } else {
+                                text = `${error.error}`;
+                            }
+                            this.toastr.error(text, header, {
+                                timeOut: 30000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                enableHtml: true
+                            });
+                        });
+                        return throwError(error.message);
+                    }
+                    if (error.error.uuid) {
+                        text = `<div>${this.messageToText(error.error.message)}</div><div>${error.error.uuid}</div>`;
+                    } else {
+                        text = `${this.messageToText(error.error.message)}`;
+                    }
+                    if (error.error.type) {
+                        header = `${error.error.code} ${error.error.type}`;
+                    } else {
+                        header = `${error.error.code} Other Error`;
+                    }
+                } else {
+                    header = `${error.code || error.status} Other Error`
+                    text = `${this.messageToText(error.message)}`;
+                }
+                if (error.error.code === 0) {
+                    this.toastr.warning(text, 'Waiting for initialization', {
+                        timeOut: 30000,
+                        closeButton: true,
+                        positionClass: 'toast-bottom-right',
+                        enableHtml: true
+                    });
+                    return throwError(error.message);
+                }
+                this.toastr.error(text, header, {
+                    timeOut: 30000,
+                    closeButton: true,
+                    positionClass: 'toast-bottom-right',
+                    enableHtml: true
+                });
+                return throwError(error.message);
+            })
+        );
+    }
 }

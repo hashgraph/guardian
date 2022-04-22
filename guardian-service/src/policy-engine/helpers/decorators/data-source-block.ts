@@ -1,6 +1,6 @@
-import {BasicBlock} from '@policy-engine/helpers/decorators/basic-block';
-import {PolicyBlockDecoratorOptions} from '@policy-engine/interfaces/block-options';
-import {IPolicyBlock} from '@policy-engine/policy-engine.interface';
+import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
+import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
+import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 
 /**
  * Datasource block decorator
@@ -13,6 +13,13 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
         return class extends basicClass {
 
             public readonly blockClassName = 'DataSourceBlock';
+
+            async getData(...args: any[]): Promise<any> {
+                if (typeof super.getData === 'function') {
+                    return super.getData(...args);
+                }
+                return {}
+            }
 
             protected getFiltersAddons(): IPolicyBlock[] {
                 const filters: IPolicyBlock[] = [];
@@ -28,6 +35,12 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 return filters;
             }
 
+            protected getCommonAddons(): IPolicyBlock[] {
+                return this.children.filter(child => {
+                    return child.blockClassName === 'SourceAddon';
+                })
+            }
+
             protected async getSources(...args): Promise<any[]> {
                 let data = [];
                 for (let child of this.children) {
@@ -35,14 +48,13 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                         data = data.concat(await child.getFromSource(...args))
                     }
                 }
-                return data;
-            }
 
-            async getData(...args: any[]): Promise<any> {
-                if (typeof super.getData === 'function') {
-                    return super.getData(...args);
+                if (args[1]) {
+                    const start = args[1].page * args[1].itemsPerPage;
+                    const end = start + args[1].itemsPerPage;
+                    data = data.slice(start, end);
                 }
-                return {}
+                return data;
             }
         }
     }

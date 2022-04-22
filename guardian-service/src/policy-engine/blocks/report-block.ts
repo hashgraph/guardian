@@ -1,31 +1,39 @@
 import { IAuthUser } from '@auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
-import { Guardians } from '@helpers/guardians';
 import { getVCField } from '@helpers/utils';
 import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
-import { IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport, SchemaEntity } from 'interfaces';
+import {
+    IPolicyReport,
+    IReport,
+    IReportItem,
+    ITokenReport,
+    IVCReport,
+    IVPReport,
+    SchemaEntity,
+    SchemaStatus
+} from 'interfaces';
 import { BlockActionError } from '@policy-engine/errors';
-import { Users } from "@helpers/users";
+import { Users } from '@helpers/users';
+import { getMongoRepository } from 'typeorm';
+import { VpDocument } from '@entity/vp-document';
+import { VcDocument } from '@entity/vc-document';
+import { Schema } from '@entity/schema';
 
 @Report({
     blockType: 'reportBlock',
     commonBlock: false
 })
 export class ReportBlock {
+    @Inject()
+    public users: Users;
     private state: { [key: string]: any } = {
         lastValue: null
     };
 
-    @Inject()
-    public guardian: Guardians;
-
-    @Inject()
-    public users: Users;
-
     async getUserName(did: string, map: any): Promise<string> {
-        if(!did) {
+        if (!did) {
             return null;
         }
         if (map[did]) {
@@ -72,7 +80,7 @@ export class ReportBlock {
         await this.itemUserMap(report.documents, map);
     }
 
-    async getData(user: IAuthUser, uuid:string): Promise<any> {
+    async getData(user: IAuthUser, uuid: string): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const blockState = this.state[user.did] || {};
@@ -102,10 +110,7 @@ export class ReportBlock {
                 documents: documents
             }
 
-            const vp = (await this.guardian.getVpDocuments({
-                hash: { $eq: hash },
-                policyId: { $eq: ref.policyId }
-            }))[0];
+            const vp = await getMongoRepository(VpDocument).findOne({hash, policyId: ref.policyId});
 
             if (vp) {
                 const vpDocument: IVPReport = {
@@ -145,10 +150,7 @@ export class ReportBlock {
                 variables.documentId = doc.id;
                 variables.documentSubjectId = doc.credentialSubject[0].id;
             } else {
-                const vc = (await this.guardian.getVcDocuments({
-                    hash: { $eq: hash },
-                    policyId: { $eq: ref.policyId }
-                }))[0];
+                const vc = await getMongoRepository(VcDocument).findOne({hash, policyId: ref.policyId})
 
                 if (vc) {
                     const vcDocument: IVCReport = {
@@ -166,10 +168,10 @@ export class ReportBlock {
                 }
             }
 
-            const policy = (await this.guardian.getVcDocuments({
-                type: { $eq: SchemaEntity.POLICY },
+            const policy = await getMongoRepository(VcDocument).findOne({
+                type: SchemaEntity.POLICY,
                 policyId: ref.policyId
-            }))[0];
+            });
 
             if (policy) {
                 const policyDocument: IPolicyReport = {
@@ -184,10 +186,10 @@ export class ReportBlock {
                 }
                 report.policyDocument = policyDocument;
 
-                const policyCreator = (await this.guardian.getVcDocuments({
-                    type: { $eq: SchemaEntity.ROOT_AUTHORITY },
+                const policyCreator = await getMongoRepository(VcDocument).findOne({
+                    type: SchemaEntity.POLICY,
                     owner: policy.owner
-                }))[0];
+                });
 
                 if (policyCreator) {
                     const policyCreatorDocument: IReportItem = {
@@ -212,7 +214,7 @@ export class ReportBlock {
 
             await this.reportUserMap(report);
 
-            const schemes = await this.guardian.getSchemesByOwner(null);
+            const schemes = await getMongoRepository(Schema).find({status: SchemaStatus.PUBLISHED});
 
             return {
                 hash: hash,
