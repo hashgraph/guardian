@@ -60,11 +60,19 @@ export class TopicMessage extends Message {
     }
 
     public static fromMessage(message: string): TopicMessage {
+        if (!message) {
+            throw new Error('Message Object is empty');
+        }
+
         const json = JSON.parse(message);
         return this.fromMessageObject(json);
     }
 
     public static fromMessageObject(json: TopicMessageBody): TopicMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
         if (json.type != MessageType.Topic) {
             throw 'Invalid message type'
         }

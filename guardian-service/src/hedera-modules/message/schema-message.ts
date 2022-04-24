@@ -73,16 +73,26 @@ export class SchemaMessage extends Message {
     }
 
     public loadDocuments(documents: string[]): SchemaMessage {
-        this.documents = documents.map(e => JSON.parse(e));
+        if (documents && Array.isArray(documents)) {
+            this.documents = documents.map(e => JSON.parse(e));
+        }
         return this;
     }
 
     public static fromMessage(message: string): SchemaMessage {
+        if (!message) {
+            throw new Error('Message Object is empty');
+        }
+
         const json = JSON.parse(message);
         return this.fromMessageObject(json);
     }
 
     public static fromMessageObject(json: SchemaMessageBody): SchemaMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
         const message = new SchemaMessage(json.action);
         message._id = json.id;
         message._status = json.status;
