@@ -315,7 +315,7 @@ schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.ROOT_AUTHOR
         const map = await guardians.importSchemesByMessages([messageId], req.user.did, topicId);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
+        res.status(201).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -335,7 +335,7 @@ schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY
         const map = await guardians.importSchemesByFile(files, req.user.did, topicId);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
+        res.status(201).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
