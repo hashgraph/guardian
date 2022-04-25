@@ -58,7 +58,6 @@ describe('SchemaMessage', function () {
         assert.equal(schemaMessageByTestMessage.getDocumentUrl(UrlType.cid), testSchemaMessage.document_cid);
         assert.equal(schemaMessageByTestMessage.getDocumentUrl(), testSchemaMessage.document_url);
         assert.exists(schemaMessageByTestMessage.toMessageObject());
-        //assert.deepEqual(schemaMessageByTestMessage.toMessageObject(), testPolicyMessage);
 
         const schemaMessageByTestJSON = SchemaMessage.fromMessage(JSON.stringify(testSchemaMessage));
         assert.exists(schemaMessageByTestJSON);
@@ -70,6 +69,5 @@ describe('SchemaMessage', function () {
         assert.equal(schemaMessageByTestJSON.getDocumentUrl(UrlType.cid), testSchemaMessage.document_cid);
         assert.equal(schemaMessageByTestJSON.getDocumentUrl(), testSchemaMessage.document_url);
         assert.exists(schemaMessageByTestJSON.toMessageObject());
-        //assert.deepEqual(schemaMessageByTestJSON.toMessageObject(), testPolicyMessage);
     });
 });

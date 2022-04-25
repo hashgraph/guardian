@@ -49,13 +49,11 @@ describe('PolicyMessage', function () {
         assert.deepEqual(policyMessageByTestMessage.getUrl(), { cid: testPolicyMessage.cid, url: testPolicyMessage.url });
         assert.equal(policyMessageByTestMessage.getDocumentUrl(UrlType.cid), testPolicyMessage.cid);
         assert.equal(policyMessageByTestMessage.getDocumentUrl(), testPolicyMessage.url);
-        //assert.deepEqual(policyMessageByTestMessage.toMessageObject(), testPolicyMessage);
 
         const policyMessageByTestJSON = PolicyMessage.fromMessage(JSON.stringify(testPolicyMessage));
         assert.exists(policyMessageByTestJSON);
         assert.deepEqual(policyMessageByTestJSON.getUrl(), { cid: testPolicyMessage.cid, url: testPolicyMessage.url });
         assert.equal(policyMessageByTestJSON.getDocumentUrl(UrlType.cid), testPolicyMessage.cid);
         assert.equal(policyMessageByTestJSON.getDocumentUrl(), testPolicyMessage.url);
-        //assert.deepEqual(policyMessageByTestJSON.toMessageObject(), testPolicyMessage);
     });
 });

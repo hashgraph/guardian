@@ -22,13 +22,9 @@ describe('VpDocument', function () {
     it('Test VpDocument', async function () {
         assert.throws(VpDocument.fromJsonTree);
         assert.throws(VpDocument.fromJson);
-        //const testIssuer = new Issuer(testVpDocument.issuer);
         const vpDocument = VpDocument.fromJsonTree(testVpDocument);
-        //vpDocument.setIssuer(testIssuer);
         assert.equal(vpDocument.getId(), testVpDocument.id);
         assert.deepEqual(vpDocument.getContext(), testVpDocument['@context']);
-        //assert.deepEqual(vpDocument.getIssuer(), testIssuer);
-        //assert.deepEqual(vpDocument.getIssuerDid(), testIssuer.getId());
         assert.deepEqual(vpDocument.getType(), testVpDocument.type);
         assert.deepEqual(vpDocument.getProof(), testVpDocument.proof);
         assert.deepEqual(vpDocument.getVerifiableCredential(0), VcDocument.fromJsonTree(testVpDocument.verifiableCredential[0]));
@@ -37,16 +33,11 @@ describe('VpDocument', function () {
         assert.isString(vpDocument.toCredentialHash());
         assert.deepEqual(vpDocument.toJsonTree(), testVpDocument);
         assert.deepEqual(vpDocument.getDocument(), testVpDocument);
-        assert.equal(JSON.parse(vpDocument.toJson()), testVpDocument);
+        assert.deepEqual(JSON.parse(vpDocument.toJson()), testVpDocument);
 
-        //const testIssuerSecond = testVpDocumentSecond.issuer;
         testVpDocument.id = testId;
         vpDocument.setId(testId);
         assert.equal(vpDocument.getId(), testVpDocument.id);
-
-        //testVpDocument.issuer = testIssuerSecond;
-        //vpDocument.setIssuer(Issuer.fromJsonTree(testIssuerSecond));
-        //assert.deepEqual(vpDocument.getIssuer(), Issuer.fromJsonTree(testIssuer));
 
         testVpDocument['@context'].push(testContext);
         vpDocument.addContext(testContext);

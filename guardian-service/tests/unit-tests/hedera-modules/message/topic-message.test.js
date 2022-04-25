@@ -37,11 +37,9 @@ describe('TopicMessage', function () {
         const topicMessageByTestMessage = TopicMessage.fromMessageObject(testTopicMessage);
         assert.exists(topicMessageByTestMessage);
         assert.deepEqual(topicMessageByTestMessage.getUrl(), []);
-        //assert.deepEqual(policyMessageByTestMessage.toMessageObject(), testPolicyMessage);
 
         const topicMessageByTestJSON = TopicMessage.fromMessage(JSON.stringify(testTopicMessage));
         assert.exists(topicMessageByTestJSON);
         assert.deepEqual(topicMessageByTestMessage.getUrl(), []);
-        //assert.deepEqual(policyMessageByTestJSON.toMessageObject(), testPolicyMessage);
     });
 });

@@ -7,7 +7,6 @@ const { vc_document } = require('../../dump/vc_document');
 
 describe('VcSubject', function () {
     const testCS = vc_document[0].document.credentialSubject[0];
-    const testCSJson = JSON.stringify(testCS);
 
     it('Test VcSubject', async function () {
         assert.throws(VcSubject.fromJsonTree);
@@ -22,8 +21,8 @@ describe('VcSubject', function () {
         vcSubject.addContext(testContext);
         testCS['@context'].push(testContext);
         assert.deepEqual(vcSubject.toJsonTree(), testCS);
-    
-        assert.deepEqual(JSON.parse(VcSubject.fromJson(testCSJson).toJson()), testCS);
+
+        assert.deepEqual(JSON.parse(VcSubject.fromJson(JSON.stringify(testCS)).toJson()), testCS);
 
         assert.deepEqual(VcSubject.create(testCS).toJsonTree(), testCS);
     });

@@ -44,13 +44,11 @@ describe('DIDMessage', function () {
         const didMessageByTestMessage = DIDMessage.fromMessageObject(testDidMessage);
         assert.exists(didMessageByTestMessage);
         assert.deepEqual(didMessageByTestMessage.getUrl(), { cid: testDidMessage.cid, url: testDidMessage.url });
-        //assert.deepEqual(didMessageByTestMessage.toMessageObject(), testDidMessage);
         assert.exists(didMessageByTestMessage.toMessageObject());
 
         const didMessageByTestJson = DIDMessage.fromMessage(JSON.stringify(testDidMessage));
         assert.exists(didMessageByTestJson);
         assert.deepEqual(didMessageByTestJson.getUrl(), { cid: testDidMessage.cid, url: testDidMessage.url });
-        //assert.deepEqual(didMessageByTestJson.toMessageObject(), testDidMessage);
         assert.exists(didMessageByTestMessage.toMessageObject());
     });
 });

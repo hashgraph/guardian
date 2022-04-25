@@ -27,5 +27,4 @@ describe('Issuer', function () {
         assert.equal(issuer.toJSON(), rootJSON);
         assert.deepEqual(Issuer.fromJson(rootJSON), issuer);
     });
-
 });

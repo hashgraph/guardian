@@ -28,7 +28,6 @@ describe('VcDocument', function () {
 
         assert.throws(VcDocument.fromJsonTree);
         assert.throws(VcDocument.fromJson);
-
         
         const testIssuer = new Issuer(testVcDocument.issuer);
         const vcDocument = VcDocument.fromJsonTree(testVcDocument);
