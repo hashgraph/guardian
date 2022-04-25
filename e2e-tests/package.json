@@ -1,0 +1,18 @@
+{
+  "name": "guardian-e2e-test",
+  "version": "1.0.0",
+  "description": "This a place for quardian e2e automation test suite",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "qa",
+    "automation"
+  ],
+  "author": "Niko Latkin",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^9.5.2"
+  }
+}
