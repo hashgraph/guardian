@@ -167,6 +167,10 @@ export class VcDocument {
 
 
     public static fromJsonTree(json: IVC): VcDocument {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
         const result = new VcDocument();
 
         if (json[VcDocument.ID])

@@ -163,6 +163,10 @@ export class VpDocument {
     }
 
     public static fromJsonTree(json: IVP): VpDocument {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
         const result = new VpDocument();
         if (json[VpDocument.ID])
             result.id = json[VpDocument.ID];
