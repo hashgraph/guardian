@@ -9,9 +9,11 @@ This is a place for guardian automation tests
 In this file a user need to add own `authorization` key which is `access_key` which assign to a RootAuthority after registartation
 
 ## Installation
-- Instalation guardian-automation `git clone git@github.com:niklatkin/guardian-automation.git`
-- Instalation Cypress `npm install cypress --save-dev`
-- Instalation docker `docker-compose up -d --build`
+- To run e2e tests for the Guardian use branch `https://github.com/hashgraph/guardian/tree/automation-api-tests/e2e-tests`
+- Then install Cypress running `npm install cypress --save-dev`
+- Then for the first time run `npx cypress open`. Cypress dashboard which give an access to pick a test and run it from dashboard
+- To run tests from terminal use `npx cypress run` which will run all tests
+- For single test use `npx cypress run --spec path/to/file.spec.js`
 
 ## Usage
 `npx cypress open` - to open the Cypress Dashboard
