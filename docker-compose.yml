@@ -41,6 +41,8 @@ services:
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile
+    ports:
+      - "3002:3002"
     expose:
       - 3002
     depends_on:
