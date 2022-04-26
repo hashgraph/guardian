@@ -23,7 +23,7 @@ ipfsAPI.post('/file', async (req: any, res: Response) => {
             throw new Error("File is not uploaded");
         }
 
-        res.status(200).json(cid);
+        res.status(201).json(cid);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });

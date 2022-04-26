@@ -98,9 +98,9 @@
         <div *ngIf="isNewAccount && !isFailed" class="list">
             <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
 
-                <mat-form-field appearance="outline">
-                    <mat-label>Root Authority</mat-label>
-                    <mat-select formControlName="rootAuthority">
+                <mat-form-field appearance="outline" floatLabel="always">
+                    <mat-label>Root Authority:</mat-label>
+                    <mat-select formControlName="rootAuthority" placeholder="Choose Root Authority">
                         <mat-option *ngFor="let user of rootAuthorities" [value]="user.did">
                             <span>{{user.username}}</span>
                         </mat-option>

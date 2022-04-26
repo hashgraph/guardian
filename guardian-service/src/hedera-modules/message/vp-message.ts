@@ -56,11 +56,19 @@ export class VPMessage extends Message {
     }
 
     public static fromMessage(message: string): VPMessage {
+        if (!message) {
+            throw new Error('Message Object is empty');
+        }
+
         const json = JSON.parse(message);
         return this.fromMessageObject(json);
     }
 
     public static fromMessageObject(json: VpMessageBody): VPMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
         const message = new VPMessage(json.action);
         message._id = json.id;
         message._status = json.status;

@@ -64,6 +64,10 @@ export class DidRootKey {
     }
 
     public static fromJsonTree(json: any): DidRootKey {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
         const result = new DidRootKey();
         result.id = json.id;
         result.type = json.type;
@@ -73,6 +77,10 @@ export class DidRootKey {
     }
 
     public static fromJson(json: string): DidRootKey {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+        
         return DidRootKey.fromJsonTree(JSON.parse(json));
     }
 
@@ -363,6 +371,9 @@ export class DIDDocument {
             if (!did) {
                 throw new Error("DID string cannot be null");
             }
+            if (!didRootKey) {
+                throw new Error("DID Root Key is empty");
+            }
             const mainParts = did.split(DIDDocument.DID_PARAMETER_SEPARATOR);
             const didParts = mainParts[0].split(DIDDocument.DID_METHOD_SEPARATOR);
             const prefix = didParts[0];
@@ -392,12 +403,10 @@ export class DIDDocument {
 
             const result = new DIDDocument();
             result.privateKey = null;
-            if (didRootKey) {
-                if (typeof didRootKey === 'string') {
-                    result.publicKey = PublicKey.fromString(topicId);
-                } else {
-                    result.publicKey = didRootKey;
-                }
+            if (typeof didRootKey === 'string') {
+                result.publicKey = PublicKey.fromString(didRootKey);
+            } else {
+                result.publicKey = didRootKey;
             }
             if (topicId) {
                 if (typeof topicId === 'string') {
