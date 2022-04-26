@@ -134,11 +134,13 @@
                         <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Role'"></policy-properties>
                     </ng-container>
                     <ng-container *ngIf="policyTab=='Topics'">
-                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Topics'"></policy-properties>
+                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Topics'">
+                        </policy-properties>
                     </ng-container>
                 </div>
                 <div class="group-tab">
-                    <div class="group-tab-item" [attr.active]="policyTab=='Description'" (click)="policyTab='Description'">
+                    <div class="group-tab-item" [attr.active]="policyTab=='Description'"
+                        (click)="policyTab='Description'">
                         Description
                     </div>
                     <div class="group-tab-item" [attr.active]="policyTab=='Roles'" (click)="policyTab='Roles'">
@@ -166,12 +168,14 @@
                     <div class="common-properties">
                         <ng-container *ngIf="propTab=='Properties'">
                             <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.policyTopics">
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
+                                [topics]="policy.policyTopics">
                             </common-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='JSON'">
                             <json-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.policyTopics">
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
+                                [topics]="policy.policyTopics">
                             </json-properties>
                         </ng-container>
                     </div>
@@ -190,41 +194,66 @@
 </div>
 
 <mat-menu #mainMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Main" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of registeredBlocks.groups.Main">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>
 
 <mat-menu #vcMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Documents" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of registeredBlocks.groups.Documents">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>
 
 <mat-menu #tokensMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Tokens" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of registeredBlocks.groups.Tokens">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>
 
 <mat-menu #calculateMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Calculate" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of registeredBlocks.groups.Calculate">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>
 
 <mat-menu #reportMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Report" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of registeredBlocks.groups.Report">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>

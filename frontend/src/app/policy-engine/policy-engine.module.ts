@@ -145,5 +145,4 @@ import { CommonComponentsModule } from '../common-components.module';
         RegisteredBlocks
     ]
 })
-export class PolicyEngineModule {
-}
+export class PolicyEngineModule { }

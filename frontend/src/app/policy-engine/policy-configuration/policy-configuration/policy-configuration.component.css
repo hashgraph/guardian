@@ -571,3 +571,31 @@ input[readonly] {
     background: #fff;
     border-top: 1px solid #c9c9c9;
 }
+
+.block-group-header {
+    font-size: 12px;
+    color: #999;
+    height: 15px;
+    line-height: 16px;
+    overflow: hidden;
+    padding: 0px 8px;
+    position: relative;
+}
+.block-group-header span {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    padding: 0px 2px 0px 2px;
+    margin: 0px 2px 0px 2px;
+}
+.block-group-header::after {
+    display: block;
+    position: absolute;
+    content: '';
+    border-top: 1px solid #999;
+    height: 2px;
+    top: 8px;
+    left: 6px;
+    right: 6px;
+    z-index: 0;
+}

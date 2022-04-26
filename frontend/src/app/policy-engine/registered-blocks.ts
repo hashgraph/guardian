@@ -24,9 +24,7 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
 import { BlockNode } from "./helpers/tree-data-source/tree-data-source";
 import { ReportBlockComponent } from "./policy-viewer/blocks/report-block/report-block.component";
 import { ReportItemConfigComponent } from "./policy-configuration/blocks/report/report-item-config/report-item-config.component";
-import {
-    PaginationAddonBlockComponent
-} from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
+import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { ReassigningConfigComponent } from "./policy-configuration/blocks/documents/reassigning-config/reassigning-config.component";
 
 export enum BlockType {
@@ -164,6 +162,17 @@ export class BlockAbout {
     }
 }
 
+export interface IBlockSetting {
+    type: BlockType;
+    icon: string;
+    name: string;
+    title: string;
+    group: BlockGroup;
+    factory: any;
+    property: any;
+    about: IBlockAboutConfig;
+}
+
 @Injectable()
 export class RegisteredBlocks {
     public readonly blocks: BlockType[];
@@ -194,241 +203,383 @@ export class RegisteredBlocks {
         this.properties = {};
         this.about = {};
 
-        this.register(BlockType.Container, 'tab', 'Container', `Add 'Container' Block`);
-        this.register(BlockType.Step, 'vertical_split', 'Step', `Add 'Step' Block`);
-        this.register(BlockType.PolicyRoles, 'manage_accounts', 'Roles', `Add 'Choice Of Roles' Block`);
-        this.register(BlockType.Information, 'info', 'Information', `Add 'Information' Block`);
-        this.register(BlockType.Action, 'flash_on', 'Action', `Add 'Action' Block`);
-        this.register(BlockType.DocumentsViewer, 'table_view', 'Documents', `Add 'Documents Source' Block`);
-        this.register(BlockType.Request, 'dynamic_form', 'Request', `Add 'Request' Block`);
-        this.register(BlockType.SendToGuardian, 'send', 'Send', `Add 'Send' Block`);
-        this.register(BlockType.ExternalData, 'cloud', 'External Data', `Add 'External Data' Block`);
-        this.register(BlockType.AggregateDocument, 'merge_type', 'Aggregate Data', `Add 'Aggregate' Block`);
-        this.register(BlockType.FiltersAddon, 'filter_alt', 'Filters Addon', `Add 'Filters' Block`);
-        this.register(BlockType.Mint, 'paid', 'Mint', `Add 'Mint' Block`);
-        this.register(BlockType.Wipe, 'delete', 'Wipe', `Add 'Wipe' Block`);
-        this.register(BlockType.DocumentsSourceAddon, 'source', 'Source', `Add 'DocumentsSourceAddon' Block`);
-        this.register(BlockType.Calculate, 'bar_chart', 'Calculate', `Add 'Calculate' Addon`);
-        this.register(BlockType.CalculateMathAddon, 'calculate', 'Math Addon', `Add 'Math' Addon`);
-        this.register(BlockType.Report, 'addchart', 'Report', `Add 'Report' Block`);
-        this.register(BlockType.ReportItem, 'list_alt', 'Report Item', `Add 'Report Item' Block`);
-        this.register(BlockType.ReassigningBlock, 'content_copy', 'Reassigning', `Add 'Reassigning' Block`);
-        this.register(BlockType.PaginationAddon, 'filter_alt', 'Pagination', `Add 'Pagination' Addon`);
+        this.addHeaderGroup(BlockGroup.Main, 'UI Components');
+        this.addBlock({
+            type: BlockType.Container,
+            icon: 'tab',
+            name: 'Container',
+            title: `Add 'Container' Block`,
+            group: BlockGroup.Main,
+            factory: ContainerBlockComponent,
+            property: ContainerConfigComponent,
+            about: {
+                post: false,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.Any,
+                control: ControlType.UI,
+            }
+        });
+        this.addBlock({
+            type: BlockType.Step,
+            icon: 'vertical_split',
+            name: 'Step',
+            title: `Add 'Step' Block`,
+            group: BlockGroup.Main,
+            factory: StepBlockComponent,
+            property: ContainerConfigComponent,
+            about: {
+                post: false,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.Any,
+                control: ControlType.UI,
+            }
+        });
+        this.addBlock({
+            type: BlockType.PolicyRoles,
+            icon: 'manage_accounts',
+            name: 'Roles',
+            title: `Add 'Choice Of Roles' Block`,
+            group: BlockGroup.Main,
+            factory: RolesBlockComponent,
+            property: RolesConfigComponent,
+            about: {
+                post: true,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.None,
+                control: ControlType.UI,
+            }
+        });
+        this.addBlock({
+            type: BlockType.Information,
+            icon: 'info',
+            name: 'Information',
+            title: `Add 'Information' Block`,
+            group: BlockGroup.Main,
+            factory: InformationBlockComponent,
+            property: InformationConfigComponent,
+            about: {
+                post: false,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.None,
+                control: ControlType.UI,
+            }
+        });
+        this.addBlock({
+            type: BlockType.Action,
+            icon: 'flash_on',
+            name: 'Action',
+            title: `Add 'Action' Block`,
+            group: BlockGroup.Main,
+            factory: ActionBlockComponent,
+            property: ActionConfigComponent,
+            about: {
+                post: true,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.Special,
+                control: ControlType.UI,
+            }
+        });
 
-        this.registerGroup(BlockGroup.Main, BlockType.Container);
-        this.registerGroup(BlockGroup.Main, BlockType.Step);
-        this.registerGroup(BlockGroup.Main, BlockType.PolicyRoles);
-        this.registerGroup(BlockGroup.Main, BlockType.Information);
-        this.registerGroup(BlockGroup.Main, BlockType.Action);
-        this.registerGroup(BlockGroup.Documents, BlockType.DocumentsViewer);
-        this.registerGroup(BlockGroup.Documents, BlockType.Request);
-        this.registerGroup(BlockGroup.Documents, BlockType.SendToGuardian);
-        this.registerGroup(BlockGroup.Documents, BlockType.ExternalData);
-        this.registerGroup(BlockGroup.Documents, BlockType.AggregateDocument);
-        this.registerGroup(BlockGroup.Documents, BlockType.FiltersAddon);
-        this.registerGroup(BlockGroup.Documents, BlockType.DocumentsSourceAddon);
-        this.registerGroup(BlockGroup.Documents, BlockType.ReassigningBlock);
-        this.registerGroup(BlockGroup.Documents, BlockType.PaginationAddon);
-        this.registerGroup(BlockGroup.Tokens, BlockType.Mint);
-        this.registerGroup(BlockGroup.Tokens, BlockType.Wipe);
-        this.registerGroup(BlockGroup.Calculate, BlockType.Calculate);
-        this.registerGroup(BlockGroup.Calculate, BlockType.CalculateMathAddon);
-        this.registerGroup(BlockGroup.Report, BlockType.Report);
-        this.registerGroup(BlockGroup.Report, BlockType.ReportItem);
+        this.addHeaderGroup(BlockGroup.Documents, 'UI Components');
+        this.addBlock({
+            type: BlockType.DocumentsViewer,
+            icon: 'table_view',
+            name: 'Documents',
+            title: `Add 'Documents Source' Block`,
+            group: BlockGroup.Documents,
+            factory: DocumentsSourceBlockComponent,
+            property: DocumentSourceComponent,
+            about: {
+                post: false,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.Special,
+                control: ControlType.UI,
+            }
+        });
+        this.addBlock({
+            type: BlockType.Request,
+            icon: 'dynamic_form',
+            name: 'Request',
+            title: `Add 'Request' Block`,
+            group: BlockGroup.Documents,
+            factory: RequestDocumentBlockComponent,
+            property: RequestConfigComponent,
+            about: {
+                post: true,
+                get: true,
+                input: InputType.None,
+                output: InputType.Single,
+                children: ChildrenType.Special,
+                control: ControlType.UI,
+            }
+        });
+        this.addHeaderGroup(BlockGroup.Documents, 'Server Blocks');
+        this.addBlock({
+            type: BlockType.SendToGuardian,
+            icon: 'send',
+            name: 'Send',
+            title: `Add 'Send' Block`,
+            group: BlockGroup.Documents,
+            factory: null,
+            property: SendConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Single,
+                output: InputType.Single,
+                children: ChildrenType.None,
+                control: ControlType.Server,
+            }
+        });
+        this.addBlock({
+            type: BlockType.ExternalData,
+            icon: 'cloud',
+            name: 'External Data',
+            title: `Add 'External Data' Block`,
+            group: BlockGroup.Documents,
+            factory: null,
+            property: ExternalDataConfigComponent,
+            about: {
+                post: true,
+                get: false,
+                input: InputType.Single,
+                output: InputType.Single,
+                children: ChildrenType.None,
+                control: ControlType.Server,
+            }
+        });
+        this.addBlock({
+            type: BlockType.AggregateDocument,
+            icon: 'calendar_month',
+            name: 'Aggregate Data',
+            title: `Add 'Aggregate' Block`,
+            group: BlockGroup.Documents,
+            factory: null,
+            property: AggregateConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Single,
+                output: InputType.Multiple,
+                children: ChildrenType.None,
+                control: ControlType.Server,
+            }
+        });
+        this.addBlock({
+            type: BlockType.ReassigningBlock,
+            icon: 'content_copy',
+            name: 'Reassigning',
+            title: `Add 'Reassigning' Block`,
+            group: BlockGroup.Documents,
+            factory: null,
+            property: ReassigningConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Single,
+                output: InputType.Single,
+                children: ChildrenType.None,
+                control: ControlType.Server,
+            }
+        });
+        this.addHeaderGroup(BlockGroup.Documents, 'Addons');
+        this.addBlock({
+            type: BlockType.FiltersAddon,
+            icon: 'filter_alt',
+            name: 'Filters Addon',
+            title: `Add 'Filters' Addon`,
+            group: BlockGroup.Documents,
+            factory: FiltersAddonBlockComponent,
+            property: FiltersAddonConfigComponent,
+            about: {
+                post: true,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.Special,
+                control: ControlType.Special,
+            }
+        });
+        this.addBlock({
+            type: BlockType.DocumentsSourceAddon,
+            icon: 'source',
+            name: 'Source',
+            title: `Add 'DocumentsSourceAddon' Addon`,
+            group: BlockGroup.Documents,
+            factory: null,
+            property: SourceAddonConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.Special,
+                control: ControlType.Special,
+            }
+        });
+        this.addBlock({
+            type: BlockType.PaginationAddon,
+            icon: 'pages',
+            name: 'Pagination',
+            title: `Add 'Pagination' Addon`,
+            group: BlockGroup.Documents,
+            factory: PaginationAddonBlockComponent,
+            property: null,
+            about: {
+                post: true,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.None,
+                control: ControlType.Special,
+            }
+        });
 
-        this.registerFactory(BlockType.Container, ContainerBlockComponent);
-        this.registerFactory(BlockType.DocumentsViewer, DocumentsSourceBlockComponent);
-        this.registerFactory(BlockType.Request, RequestDocumentBlockComponent);
-        this.registerFactory(BlockType.Action, ActionBlockComponent);
-        this.registerFactory(BlockType.Step, StepBlockComponent);
-        this.registerFactory(BlockType.Information, InformationBlockComponent);
-        this.registerFactory(BlockType.PolicyRoles, RolesBlockComponent);
-        this.registerFactory(BlockType.FiltersAddon, FiltersAddonBlockComponent);
-        this.registerFactory(BlockType.PaginationAddon, PaginationAddonBlockComponent);
-        this.registerFactory(BlockType.Report, ReportBlockComponent);
 
-        this.registerProperties(BlockType.DocumentsViewer, DocumentSourceComponent);
-        this.registerProperties(BlockType.Action, ActionConfigComponent);
-        this.registerProperties(BlockType.Container, ContainerConfigComponent);
-        this.registerProperties(BlockType.Request, RequestConfigComponent);
-        this.registerProperties(BlockType.Step, ContainerConfigComponent);
-        this.registerProperties(BlockType.Mint, MintConfigComponent);
-        this.registerProperties(BlockType.SendToGuardian, SendConfigComponent);
-        this.registerProperties(BlockType.ExternalData, ExternalDataConfigComponent);
-        this.registerProperties(BlockType.AggregateDocument, AggregateConfigComponent);
-        this.registerProperties(BlockType.Wipe, MintConfigComponent);
-        this.registerProperties(BlockType.Information, InformationConfigComponent);
-        this.registerProperties(BlockType.PolicyRoles, RolesConfigComponent);
-        this.registerProperties(BlockType.FiltersAddon, FiltersAddonConfigComponent);
-        this.registerProperties(BlockType.DocumentsSourceAddon, SourceAddonConfigComponent);
-        this.registerProperties(BlockType.ReportItem, ReportItemConfigComponent);
-        this.registerProperties(BlockType.Calculate, CalculateConfigComponent);
-        this.registerProperties(BlockType.CalculateMathAddon, CalculateMathConfigComponent);
-        this.registerProperties(BlockType.ReassigningBlock, ReassigningConfigComponent);
+        this.addHeaderGroup(BlockGroup.Tokens, 'Server Blocks');
+        this.addBlock({
+            type: BlockType.Mint,
+            icon: 'paid',
+            name: 'Mint',
+            title: `Add 'Mint' Block`,
+            group: BlockGroup.Tokens,
+            factory: null,
+            property: MintConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Any,
+                output: InputType.Any,
+                children: ChildrenType.None,
+                control: ControlType.Server,
+            }
+        });
+        this.addBlock({
+            type: BlockType.Wipe,
+            icon: 'delete',
+            name: 'Wipe',
+            title: `Add 'Wipe' Block`,
+            group: BlockGroup.Tokens,
+            factory: null,
+            property: MintConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Any,
+                output: InputType.Any,
+                children: ChildrenType.None,
+                control: ControlType.Server,
+            }
+        });
 
-        this.registerAbout(BlockType.AggregateDocument, {
-            post: false,
-            get: false,
-            input: InputType.Single,
-            output: InputType.Multiple,
-            children: ChildrenType.None,
-            control: ControlType.Server,
+
+        this.addHeaderGroup(BlockGroup.Calculate, 'Server Blocks');
+        this.addBlock({
+            type: BlockType.Calculate,
+            icon: 'bar_chart',
+            name: 'Calculate',
+            title: `Add 'Calculate' Block`,
+            group: BlockGroup.Calculate,
+            factory: null,
+            property: CalculateConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Any,
+                output: function (block: any) {
+                    return block.inputDocuments == "separate" ?
+                        InputType.Multiple : InputType.Single;
+                },
+                children: ChildrenType.Special,
+                control: ControlType.Server,
+            }
         });
-        this.registerAbout(BlockType.Calculate, {
-            post: false,
-            get: false,
-            input: InputType.Any,
-            output: function (block: any) {
-                return block.inputDocuments == "separate" ?
-                    InputType.Multiple : InputType.Single;
-            },
-            children: ChildrenType.Special,
-            control: ControlType.Server,
+        this.addHeaderGroup(BlockGroup.Calculate, 'Addons');
+        this.addBlock({
+            type: BlockType.CalculateMathAddon,
+            icon: 'calculate',
+            name: 'Math Addon',
+            title: `Add 'Math' Addon`,
+            group: BlockGroup.Calculate,
+            factory: null,
+            property: CalculateMathConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Single,
+                output: InputType.Single,
+                children: ChildrenType.None,
+                control: ControlType.Special,
+            }
         });
-        this.registerAbout(BlockType.CalculateMathAddon, {
-            post: false,
-            get: false,
-            input: InputType.Single,
-            output: InputType.Single,
-            children: ChildrenType.None,
-            control: ControlType.Special,
+
+        this.addHeaderGroup(BlockGroup.Report, 'UI Components');
+        this.addBlock({
+            type: BlockType.Report,
+            icon: 'addchart',
+            name: 'Report',
+            title: `Add 'Report' Block`,
+            group: BlockGroup.Report,
+            factory: ReportBlockComponent,
+            property: null,
+            about: {
+                post: true,
+                get: true,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.Special,
+                control: ControlType.UI,
+            }
         });
-        this.registerAbout(BlockType.DocumentsSourceAddon, {
-            post: false,
-            get: false,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.Special,
-            control: ControlType.Special,
+        this.addHeaderGroup(BlockGroup.Report, 'Addons');
+        this.addBlock({
+            type: BlockType.ReportItem,
+            icon: 'list_alt',
+            name: 'Report Item',
+            title: `Add 'Report Item' Block`,
+            group: BlockGroup.Report,
+            factory: null,
+            property: ReportItemConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.None,
+                control: ControlType.Special,
+            }
         });
-        this.registerAbout(BlockType.ExternalData, {
-            post: true,
-            get: false,
-            input: InputType.Single,
-            output: InputType.Single,
-            children: ChildrenType.None,
-            control: ControlType.Server,
-        });
-        this.registerAbout(BlockType.FiltersAddon, {
-            post: true,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.Special,
-            control: ControlType.Special,
-        });
-        this.registerAbout(BlockType.Information, {
-            post: false,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.None,
-            control: ControlType.UI,
-        });
-        this.registerAbout(BlockType.Action, {
-            post: true,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.Special,
-            control: ControlType.UI,
-        });
-        this.registerAbout(BlockType.DocumentsViewer, {
-            post: false,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.Special,
-            control: ControlType.UI,
-        });
-        this.registerAbout(BlockType.Step, {
-            post: false,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.Any,
-            control: ControlType.UI,
-        });
-        this.registerAbout(BlockType.Mint, {
-            post: false,
-            get: false,
-            input: InputType.Any,
-            output: InputType.Any,
-            children: ChildrenType.None,
-            control: ControlType.Server,
-        });
-        this.registerAbout(BlockType.Wipe, {
-            post: false,
-            get: false,
-            input: InputType.Any,
-            output: InputType.Any,
-            children: ChildrenType.None,
-            control: ControlType.Server,
-        });
-        this.registerAbout(BlockType.PaginationAddon, {
-            post: true,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.None,
-            control: ControlType.Special,
-        });
-        this.registerAbout(BlockType.PolicyRoles, {
-            post: true,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.None,
-            control: ControlType.UI,
-        });
-        this.registerAbout(BlockType.ReassigningBlock, {
-            post: false,
-            get: false,
-            input: InputType.Single,
-            output: InputType.Single,
-            children: ChildrenType.None,
-            control: ControlType.Server,
-        });
-        this.registerAbout(BlockType.Report, {
-            post: true,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.Special,
-            control: ControlType.UI,
-        });
-        this.registerAbout(BlockType.ReportItem, {
-            post: false,
-            get: false,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.None,
-            control: ControlType.Special,
-        });
-        this.registerAbout(BlockType.Request, {
-            post: true,
-            get: true,
-            input: InputType.None,
-            output: InputType.Single,
-            children: ChildrenType.Special,
-            control: ControlType.UI,
-        });
-        this.registerAbout(BlockType.Container, {
-            post: false,
-            get: true,
-            input: InputType.None,
-            output: InputType.None,
-            children: ChildrenType.Any,
-            control: ControlType.UI,
-        });
-        this.registerAbout(BlockType.SendToGuardian, {
-            post: false,
-            get: false,
-            input: InputType.Single,
-            output: InputType.Single,
-            children: ChildrenType.None,
-            control: ControlType.Server,
-        });
+    }
+
+    public addBlock(setting: IBlockSetting) {
+        this.register(setting.type, setting.icon, setting.name, setting.title);
+        if (setting.group) {
+            this.registerGroup(setting.group, setting.type);
+        }
+
+        if (setting.factory) {
+            this.registerFactory(setting.type, setting.factory);
+        }
+
+        if (setting.property) {
+            this.registerProperties(setting.type, setting.property);
+        }
+
+        if (setting.about) {
+            this.registerAbout(setting.type, setting.about);
+        }
     }
 
     public register(type: BlockType, icon: string, name: string, title: string) {
@@ -459,6 +610,16 @@ export class RegisteredBlocks {
             icon: this.getIcon(type),
             name: this.getName(type),
             title: this.getTitle(type)
+        });
+    }
+
+    public addHeaderGroup(group: BlockGroup, header: string) {
+        if (!this.groups[group]) {
+            this.groups[group] = [];
+        }
+        this.groups[group].push({
+            type: null,
+            name: header
         });
     }
 

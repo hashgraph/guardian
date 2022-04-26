@@ -54,5 +54,4 @@ import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag
         FileDragNDropComponent
     ]
 })
-export class SchemaEngineModule {
-}
+export class SchemaEngineModule { }
