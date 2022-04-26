@@ -39,6 +39,7 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview-dialog.component';
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
+import { CommonComponentsModule } from './common-components.module';
 
 @NgModule({
     declarations: [
@@ -65,6 +66,7 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
     imports: [
         BrowserModule,
         CommonModule,
+        CommonComponentsModule,
         MaterialModule,
         AppRoutingModule,
         BrowserAnimationsModule,

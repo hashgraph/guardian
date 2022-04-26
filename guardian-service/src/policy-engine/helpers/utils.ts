@@ -19,7 +19,7 @@ export enum DataTypes {
 }
 
 export class PolicyUtils {
-    private static evaluate(formula: string, scope: any) {
+    public static evaluate(formula: string, scope: any) {
         return (function (formula: string, scope: any) {
             try {
                 return this.evaluate(formula, scope);

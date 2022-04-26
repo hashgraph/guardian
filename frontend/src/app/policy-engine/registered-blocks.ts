@@ -60,6 +60,110 @@ export enum BlockGroup {
     Report = 'Report'
 }
 
+export interface IBlockAbout {
+    post: boolean;
+    get: boolean;
+    input: InputType;
+    output: InputType;
+    children: ChildrenType;
+    control: ControlType;
+}
+
+export interface IBlockAboutConfig {
+    post: boolean | ((block: any) => boolean);
+    get: boolean | ((block: any) => boolean);
+    input: InputType | ((block: any) => InputType);
+    output: InputType | ((block: any) => InputType);
+    children: ChildrenType | ((block: any) => ChildrenType);
+    control: ControlType | ((block: any) => ControlType);
+}
+
+export enum InputType {
+    None = 'None',
+    Single = 'Single',
+    Multiple = 'Multiple',
+    Any = 'Any',
+}
+
+export enum ChildrenType {
+    None = 'None',
+    Special = 'Special',
+    Any = 'Any',
+}
+
+export enum ControlType {
+    UI = 'UI',
+    Special = 'Special',
+    Server = 'Server',
+    None = 'None',
+}
+
+export class BlockAbout {
+    private _propFunc: any = {};
+    private _propVal: any = {};
+    private _setProp(about: any, name: string) {
+        if (typeof about[name] == 'function') {
+            this._propFunc[name] = about[name];
+        } else {
+            this._propVal[name] = about[name];
+            this._propFunc[name] = (block: any) => {
+                return this._propVal[name];
+            };
+        }
+    }
+
+    constructor(about: IBlockAboutConfig) {
+        this._setProp(about, 'post');
+        this._setProp(about, 'get');
+        this._setProp(about, 'input');
+        this._setProp(about, 'output');
+        this._setProp(about, 'children');
+        this._setProp(about, 'control');
+    }
+
+    public get(block: any): IBlockAbout {
+        return {
+            post: this._propFunc.post(block),
+            get: this._propFunc.get(block),
+            input: this._propFunc.input(block),
+            output: this._propFunc.output(block),
+            children: this._propFunc.children(block),
+            control: this._propFunc.control(block),
+        }
+    }
+
+    public bind(block: any): IBlockAbout {
+        const bind = {
+            _block: block,
+            _post: this._propFunc.post,
+            _get: this._propFunc.get,
+            _input: this._propFunc.input,
+            _output: this._propFunc.output,
+            _children: this._propFunc.children,
+            _control: this._propFunc.control,
+            get post() {
+                return this._post(this._block);
+            },
+            get get() {
+                return this._get(this._block);
+            },
+            get input() {
+                return this._input(this._block);
+            },
+            get output() {
+                return this._output(this._block);
+            },
+            get children() {
+                return this._children(this._block);
+            },
+            get control() {
+                return this._control(this._block);
+            }
+        }
+        return bind
+    }
+}
+
 @Injectable()
 export class RegisteredBlocks {
     public readonly blocks: BlockType[];
@@ -69,6 +173,16 @@ export class RegisteredBlocks {
     public readonly groups: any;
     public readonly factories: any;
     public readonly properties: any;
+    public readonly about: any;
+
+    private readonly defaultA = new BlockAbout({
+        post: false,
+        get: false,
+        input: InputType.None,
+        output: InputType.None,
+        children: ChildrenType.None,
+        control: ControlType.None,
+    })
 
     constructor() {
         this.blocks = [];
@@ -78,6 +192,7 @@ export class RegisteredBlocks {
         this.groups = {};
         this.factories = {};
         this.properties = {};
+        this.about = {};
 
         this.register(BlockType.Container, 'tab', 'Container', `Add 'Container' Block`);
         this.register(BlockType.Step, 'vertical_split', 'Step', `Add 'Step' Block`);
@@ -150,6 +265,170 @@ export class RegisteredBlocks {
         this.registerProperties(BlockType.Calculate, CalculateConfigComponent);
         this.registerProperties(BlockType.CalculateMathAddon, CalculateMathConfigComponent);
         this.registerProperties(BlockType.ReassigningBlock, ReassigningConfigComponent);
+
+        this.registerAbout(BlockType.AggregateDocument, {
+            post: false,
+            get: false,
+            input: InputType.Single,
+            output: InputType.Multiple,
+            children: ChildrenType.None,
+            control: ControlType.Server,
+        });
+        this.registerAbout(BlockType.Calculate, {
+            post: false,
+            get: false,
+            input: InputType.Any,
+            output: function (block: any) {
+                return block.inputDocuments == "separate" ?
+                    InputType.Multiple : InputType.Single;
+            },
+            children: ChildrenType.Special,
+            control: ControlType.Server,
+        });
+        this.registerAbout(BlockType.CalculateMathAddon, {
+            post: false,
+            get: false,
+            input: InputType.Single,
+            output: InputType.Single,
+            children: ChildrenType.None,
+            control: ControlType.Special,
+        });
+        this.registerAbout(BlockType.DocumentsSourceAddon, {
+            post: false,
+            get: false,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.Special,
+            control: ControlType.Special,
+        });
+        this.registerAbout(BlockType.ExternalData, {
+            post: true,
+            get: false,
+            input: InputType.Single,
+            output: InputType.Single,
+            children: ChildrenType.None,
+            control: ControlType.Server,
+        });
+        this.registerAbout(BlockType.FiltersAddon, {
+            post: true,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.Special,
+            control: ControlType.Special,
+        });
+        this.registerAbout(BlockType.Information, {
+            post: false,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.None,
+            control: ControlType.UI,
+        });
+        this.registerAbout(BlockType.Action, {
+            post: true,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.Special,
+            control: ControlType.UI,
+        });
+        this.registerAbout(BlockType.DocumentsViewer, {
+            post: false,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.Special,
+            control: ControlType.UI,
+        });
+        this.registerAbout(BlockType.Step, {
+            post: false,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.Any,
+            control: ControlType.UI,
+        });
+        this.registerAbout(BlockType.Mint, {
+            post: false,
+            get: false,
+            input: InputType.Any,
+            output: InputType.Any,
+            children: ChildrenType.None,
+            control: ControlType.Server,
+        });
+        this.registerAbout(BlockType.Wipe, {
+            post: false,
+            get: false,
+            input: InputType.Any,
+            output: InputType.Any,
+            children: ChildrenType.None,
+            control: ControlType.Server,
+        });
+        this.registerAbout(BlockType.PaginationAddon, {
+            post: true,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.None,
+            control: ControlType.Special,
+        });
+        this.registerAbout(BlockType.PolicyRoles, {
+            post: true,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.None,
+            control: ControlType.UI,
+        });
+        this.registerAbout(BlockType.ReassigningBlock, {
+            post: false,
+            get: false,
+            input: InputType.Single,
+            output: InputType.Single,
+            children: ChildrenType.None,
+            control: ControlType.Server,
+        });
+        this.registerAbout(BlockType.Report, {
+            post: true,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.Special,
+            control: ControlType.UI,
+        });
+        this.registerAbout(BlockType.ReportItem, {
+            post: false,
+            get: false,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.None,
+            control: ControlType.Special,
+        });
+        this.registerAbout(BlockType.Request, {
+            post: true,
+            get: true,
+            input: InputType.None,
+            output: InputType.Single,
+            children: ChildrenType.Special,
+            control: ControlType.UI,
+        });
+        this.registerAbout(BlockType.Container, {
+            post: false,
+            get: true,
+            input: InputType.None,
+            output: InputType.None,
+            children: ChildrenType.Any,
+            control: ControlType.UI,
+        });
+        this.registerAbout(BlockType.SendToGuardian, {
+            post: false,
+            get: false,
+            input: InputType.Single,
+            output: InputType.Single,
+            children: ChildrenType.None,
+            control: ControlType.Server,
+        });
     }
 
     public register(type: BlockType, icon: string, name: string, title: string) {
@@ -197,6 +476,21 @@ export class RegisteredBlocks {
 
     public getProperties(blockType: string): any {
         return this.properties[blockType];
+    }
+
+
+    public registerAbout(type: BlockType, about: IBlockAboutConfig) {
+        this.about[type] = new BlockAbout(about);
+    }
+
+    public getAbout(blockType: string, block: any): IBlockAbout {
+        const f: BlockAbout = this.about[blockType] || this.defaultA;
+        return f.get(block);
+    }
+
+    public bindAbout(blockType: string, block: any): IBlockAbout {
+        const f: BlockAbout = this.about[blockType] || this.defaultA;
+        return f.bind(block);
     }
 
     public newBlock(type: BlockType, permissions: any, index: any): BlockNode {

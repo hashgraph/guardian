@@ -45,11 +45,9 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
 import { JsonPropertiesComponent } from './policy-configuration/json-properties/json-properties.component';
 import { ReportBlockComponent } from './policy-viewer/blocks/report-block/report-block.component';
 import { ReportItemConfigComponent } from './policy-configuration/blocks/report/report-item-config/report-item-config.component';
-import {
-    PaginationAddonBlockComponent
-} from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
-import { Dragonglass } from './helpers/dragonglass/dragonglass.component';
+import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { ReassigningConfigComponent } from './policy-configuration/blocks/documents/reassigning-config/reassigning-config.component';
+import { CommonComponentsModule } from '../common-components.module';
 
 @NgModule({
     declarations: [
@@ -92,12 +90,12 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
         JsonPropertiesComponent,
         ReportBlockComponent,
         ReportItemConfigComponent,
-        Dragonglass,
-        ReassigningConfigComponent
+        ReassigningConfigComponent,
     ],
     imports: [
         CommonModule,
         FormsModule,
+        CommonComponentsModule,
         CodemirrorModule,
         MaterialModule,
         SchemaEngineModule,
@@ -141,7 +139,6 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
         CalculateConfigComponent,
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
-        Dragonglass,
         ReassigningConfigComponent
     ],
     providers: [

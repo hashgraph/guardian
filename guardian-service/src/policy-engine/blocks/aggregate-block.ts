@@ -1,23 +1,17 @@
+import moment from 'moment';
+import { CronJob } from 'cron';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import * as mathjs from 'mathjs';
-import { BlockActionError } from '@policy-engine/errors';
 import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { VcDocument } from '@hedera-modules';
-import { Token } from '@entity/token';
-
-function evaluate(formula: string, scope: any) {
-    return (function (formula: string, scope: any) {
-        try {
-            return this.evaluate(formula, scope);
-        } catch (error) {
-            return 'Incorrect formula';
-        }
-    }).call(mathjs, formula, scope);
-}
+import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { Users } from '@helpers/users';
+import { Inject } from '@helpers/decorators/inject';
+import { DocumentSignature, DocumentStatus } from 'interfaces';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Aggregate block
@@ -27,70 +21,189 @@ function evaluate(formula: string, scope: any) {
     commonBlock: true
 })
 export class AggregateBlock {
-    private getScope(item: VcDocument): any {
-        return item.getCredentialSubject(0).toJsonTree();
+    private job: CronJob;
+
+    @Inject()
+    private users: Users;
+
+    init() {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        if (ref.options.aggregateType == 'period') {
+            this.startCron(ref);
+        } else if (ref.options.aggregateType == 'threshold') {
+
+        } else {
+
+        }
     }
 
-    private aggregate(rule, vcs: VcDocument[]) {
+    destroy() {
+        if (this.job) {
+            this.job.stop();
+        }
+    }
+
+    private startCron(ref: AnyBlockType) {
+        let sd = moment(ref.options.startDate);
+        if (sd.isValid()) {
+            sd = moment();
+        }
+
+        let mask: string = '';
+        switch (ref.options.period) {
+            case 'yearly': {
+                mask = `${sd.minute()} ${sd.hour()} ${sd.date()} ${sd.month() + 1} *`;
+                break;
+            }
+            case 'monthly': {
+                mask = `${sd.minute()} ${sd.hour()} ${sd.date()} * *`;
+                break;
+            }
+            case 'weekly': {
+                mask = `${sd.minute()} ${sd.hour()} * * ${sd.weekday()}`;
+                break;
+            }
+            case 'daily': {
+                mask = `${sd.minute()} ${sd.hour()} * * *`;
+                break;
+            }
+            case 'hourly': {
+                mask = `${sd.minute()} * * * *`;
+                break;
+            }
+        }
+        ref.log(`start cron: ${mask}`);
+
+        this.job = new CronJob(mask, () => {
+            this.tickCron(ref).then();
+        });
+        this.job.start();
+    }
+
+    private async tickCron(ref: AnyBlockType) {
+        ref.log(`tick cron`);
+
+        const repository = getMongoRepository(AggregateVC);
+        const rawEntities = await repository.find({
+            policyId: ref.policyId,
+            blockId: ref.uuid
+        });
+
+        const map = new Map<string, AggregateVC[]>();
+        for (let element of rawEntities) {
+            const owner = element.owner;
+            if (map.has(owner)) {
+                map.get(owner).push(element);
+            } else {
+                map.set(owner, [element]);
+            }
+        }
+
+        const owners = map.keys();
+        for (let owner of owners) {
+            ref.log(`aggregate next: ${owner}`);
+            const user = await this.users.getUserById(owner);
+            const documents = map.get(owner);
+            await repository.remove(documents);
+            await ref.runNext(user, { data: documents });
+        }
+    }
+
+    private aggregate(rule: string, docs: AggregateVC[]) {
         let amount = 0;
-        for (let i = 0; i < vcs.length; i++) {
-            const element = vcs[i];
-            const scope = this.getScope(element);
-            const value = parseFloat(evaluate(rule, scope));
+        for (let i = 0; i < docs.length; i++) {
+            const element = VcDocument.fromJsonTree(docs[i].document);
+            const scope = PolicyUtils.getVCScope(element);
+            const value = parseFloat(PolicyUtils.evaluate(rule, scope));
             amount += value;
         }
         return amount;
     }
 
+    private async tickAggregate(ref: AnyBlockType, owner: string) {
+        ref.log(`tick aggregate: ${owner}`);
+
+        const { rule, threshold } = ref.options;
+
+        const repository = getMongoRepository(AggregateVC);
+        const rawEntities = await repository.find({
+            owner: owner,
+            policyId: ref.policyId,
+            blockId: ref.uuid
+        });
+
+        const amount = this.aggregate(rule, rawEntities);
+
+        if (amount >= threshold) {
+            ref.log(`aggregate next: ${owner}`);
+            const user = await this.users.getUserById(owner);
+            await repository.remove(rawEntities);
+            await ref.runNext(user, { data: rawEntities });
+        }
+    }
+
     async runAction(data: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const {
-            tokenId,
-            rule,
-            threshold
-        } = ref.options;
-
-        const token = await getMongoRepository(Token).findOne({ tokenId });
-        if (!token) {
-            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
-        }
+        const { aggregateType } = ref.options;
 
         const doc = data.data;
         const vc = VcDocument.fromJsonTree(doc.document);
-        const repository = getMongoRepository(AggregateVC)
+        const repository = getMongoRepository(AggregateVC);
         const newVC = repository.create({
+            policyId: ref.policyId,
+            blockId: ref.uuid,
+            tag: doc.tag,
+            type: doc.type,
             owner: doc.owner,
+            assign: doc.assign,
+            option: doc.option,
+            schema: doc.schema,
+            hederaStatus: doc.hederaStatus || DocumentStatus.NEW,
+            signature: doc.signature || DocumentSignature.NEW,
+            messageId: doc.messageId || null,
+            topicId: doc.topicId || null,
+            relationships: doc.relationships || [],
+            hash: vc.toCredentialHash(),
             document: vc.toJsonTree()
         });
         await repository.save(newVC);
 
-        const rawEntities = await repository.find({
-            owner: doc.owner
-        });
-        const forAggregate = rawEntities.map(e => VcDocument.fromJsonTree(e.document));
-        const amount = this.aggregate(rule, forAggregate);
+        if (aggregateType == 'period') {
 
-        if (amount >= threshold) {
-            await repository.remove(rawEntities);
-            await ref.runNext(null, { data: rawEntities });
+        } else if (aggregateType == 'threshold') {
+            this.tickAggregate(ref, doc.owner).then();
+        } else {
+
         }
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            // Test rule options
-            if (!ref.options.rule) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-            } else if (typeof ref.options.rule !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
-            }
-
-            // Test threshold options
-            if (!ref.options.threshold) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
-            } else if (typeof ref.options.threshold !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a string');
+            if (ref.options.aggregateType == 'period') {
+                if (!ref.options.startDate) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "startDate" does not set');
+                } else if (typeof ref.options.startDate !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "startDate" must be a string');
+                }
+                if (!ref.options.period) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "period" does not set');
+                } else if (typeof ref.options.period !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "period" must be a string');
+                }
+            } else if (ref.options.aggregateType == 'threshold') {
+                if (!ref.options.rule) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
+                } else if (typeof ref.options.rule !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+                }
+                if (!ref.options.threshold) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
+                } else if (typeof ref.options.threshold !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a string');
+                }
+            } else {
+                resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, threshold');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

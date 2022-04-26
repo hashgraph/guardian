@@ -1,6 +1,6 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { BlockErrorActions, Schema, Token } from 'interfaces';
-import { RegisteredBlocks } from '../../registered-blocks';
+import { IBlockAbout, RegisteredBlocks } from '../../registered-blocks';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -24,10 +24,12 @@ export class CommonPropertiesComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
+        about: false,
         metaData: false,
     };
 
     block!: BlockNode;
+    about!: IBlockAbout;
     errorActions = [
         {
             label: 'No action',
@@ -87,6 +89,7 @@ export class CommonPropertiesComponent implements OnInit {
             }
             this.configContainer.clear();
             const factory: any = this.registeredBlocks.getProperties(block.blockType);
+            this.about = this.registeredBlocks.bindAbout(block.blockType, block);
             if (factory) {
                 let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
                 let componentRef: any = this.configContainer.createComponent(componentFactory);

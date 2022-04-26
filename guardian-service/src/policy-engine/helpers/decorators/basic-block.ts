@@ -313,6 +313,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             public destroy() {
+                if (typeof super.destroy === 'function') {
+                    super.destroy();
+                }
+                
                 for (let child of (this as any).children) {
                     child.destroy();
                 }

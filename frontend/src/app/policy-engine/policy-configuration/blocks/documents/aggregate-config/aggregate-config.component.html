@@ -7,25 +7,52 @@
             <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
         </td>
     </tr>
-    <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
-        </td>
-        <td class="propHeaderCell cellName">UI</td>
-        <td class="propHeaderCell"></td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+    <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Rule</td>
+        <td class="propRowCell cellName">Aggregate Type</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.rule" [readonly]="readonly">
+            <mat-select [(value)]="block.aggregateType" [disabled]="readonly">
+                <mat-option value="period">Period</mat-option>
+                <mat-option value="threshold">Threshold</mat-option>
+            </mat-select>
         </td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Threshold</td>
-        <td class="propRowCell">
-            <input [(ngModel)]="block.threshold" [readonly]="readonly">
-        </td>
-    </tr>
+    <ng-container *ngIf="block.aggregateType == 'period'">
+        <tr class="propRow">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Start Date</td>
+            <td class="propRowCell">
+                <datetime-picker [(value)]="block.startDate" [readonly]="readonly"></datetime-picker>
+            </td>
+        </tr>
+        <tr class="propRow">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Period</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="block.period" [disabled]="readonly">
+                    <mat-option value="yearly">Yearly</mat-option>
+                    <mat-option value="monthly">Monthly</mat-option>
+                    <mat-option value="weekly">Weekly</mat-option>
+                    <mat-option value="daily">Daily</mat-option>
+                    <mat-option value="hourly">Hourly</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+    </ng-container>
+    <ng-container *ngIf="block.aggregateType == 'threshold'">
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Threshold</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.threshold" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Rule</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.rule" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
 </table>

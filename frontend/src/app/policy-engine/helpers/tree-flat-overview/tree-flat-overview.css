@@ -1,13 +1,14 @@
 .block {
   background: #fff;
   border: 1px solid #000;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 4px 12px;
-  margin: 8px;
+  margin: 10px 8px;
   cursor: pointer;
   position: relative;
   height: 22px;
   user-select: none;
+  min-width: 125px;
 }
 
 .block[selected="true"] {
@@ -78,4 +79,102 @@
 }
 *[readonly="true"] .btn-delete {
   display: none;
+}
+
+.block[control="UI"] {
+    border-radius: 0px;
+}
+.block[control="Server"] {
+    border-radius: 20px;
+}
+.block[root="true"] .btn-delete {
+    display: none;
+}
+
+.output-arrow {
+    display: none;
+    position: absolute;
+    bottom: 0px;
+    left: 70px;
+    transform: translate(-10px, 17px);
+    width: 18px;
+    height: 14px;
+    color: #000000;
+    font-size: 19px;
+    overflow: hidden;
+}
+
+.output-arrow mat-icon {
+    display: block;
+    font-size: 18px;
+    width: 16px;
+    position: relative;
+    top: -4px;
+}
+
+.block[output="Single"] .output-arrow.single {
+    display: block;
+}
+.block[output="Multiple"] .output-arrow.multiple {
+    display: flex;
+    transform: translate(-18px, 17px);
+    width: 34px;
+}
+.block[output="Any"] .output-arrow.multiple {
+    display: flex;
+    transform: translate(-18px, 17px);
+    width: 34px;
+}
+
+.block[stop-propagation="true"] .output-arrow::after {
+    display: block;
+    position: absolute;
+    content: '';
+    border-top: 1px solid #f50000;
+    height: 2px;
+    width: 18px;
+    transform: rotate(29deg);
+    transform-origin: 1px 2px;
+    top: 0;
+    left: 0;
+    background: #eeeeee;
+}
+
+.block[stop-propagation="true"] .output-arrow mat-icon {
+    color: #f50000;
+}
+
+.block[stop-propagation="true"] .output-arrow.multiple::after {
+    transform-origin: -5px 2px;
+    transform: rotate(10deg);
+    width: 34px;
+}
+
+.input-arrow {
+    display: none;
+    overflow: hidden;
+    top: 0px;
+    left: 70px;
+    width: 12px;
+    height: 4px;
+    position: absolute;
+    transform: translate(-8px, -7px);
+    border-left: 1px solid;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+.block[input="Single"] .input-arrow.single {
+    display: block;
+}
+.block[input="Multiple"] .input-arrow.multiple {
+    display: flex;
+    width: 30px;
+    transform: translate(-17px, -7px);
+}
+.block[input="Any"] .input-arrow.multiple {
+    display: flex;
+    width: 30px;
+    transform: translate(-17px, -7px);
 }
