@@ -19,5 +19,4 @@ context('Accounts', () => {
             expect(response.body[0]).to.have.property('username')
           })
       })
-
 })
