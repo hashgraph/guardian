@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { MatDialog } from '@angular/material/dialog';
+import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
 
 /**
  * Settings for block of 'aggregateDocument' type.
@@ -29,7 +31,7 @@ export class AggregateConfigComponent implements OnInit {
 
     block!: BlockNode;
 
-    constructor() {
+    constructor(private dialog: MatDialog) {
     }
 
     ngOnInit(): void {
@@ -48,5 +50,23 @@ export class AggregateConfigComponent implements OnInit {
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    selectPeriod() {
+        if (this.block.period == 'custom') {
+            const dialogRef = this.dialog.open(CronConfigDialog, {
+                width: '500px',
+                disableClose: true,
+                data: {
+                    startDate: this.block.startDate
+                },
+                autoFocus: false
+            });
+            dialogRef.afterClosed().subscribe(async (result) => {
+                if (result) {
+
+                }
+            });
+        }
     }
 }

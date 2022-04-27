@@ -9,11 +9,18 @@ import { RegisteredBlocks } from '../../registered-blocks';
 
 /** Flat node with expandable and level information */
 export class FlatBlockNode {
+    public about!: any;
+    public prev!: any;
+    public next!: any;
+    public root!: any;
+    public icon!: any;
+
     constructor(
         public expandable: boolean,
         public level: number,
         public node: BlockNode
-    ) { }
+    ) {
+    }
 }
 
 /**
@@ -44,12 +51,16 @@ export class TreeFlatOverview {
     expandTimeout: any;
     expandDelay = 1000;
     validateDrop = false;
+    isCollapseAll = true;
 
     constructor(private registeredBlocks: RegisteredBlocks) {
         this.treeFlattener = new MatTreeFlattener(this.transformer, this._getLevel,
             this._isExpandable, this._getChildren);
         this.treeControl = new FlatTreeControl<FlatBlockNode>(this._getLevel, this._isExpandable);
         this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+        this.treeControl.expansionModel.changed.subscribe(e => {
+            this.isCollapseAll = !e.source.selected.length;
+        })
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -60,7 +71,11 @@ export class TreeFlatOverview {
     }
 
     transformer = (node: BlockNode, level: number) => {
-        return new FlatBlockNode(!!(node.children && node.children.length), level, node);
+        const e = new FlatBlockNode(!!(node.children && node.children.length), level, node);
+        e.root = e.node == this.root;
+        e.icon = this.registeredBlocks.getIcon(e.node.blockType);
+        e.about = this.registeredBlocks.bindAbout(e.node.blockType, e.node);
+        return e;
     }
     private _getLevel = (node: FlatBlockNode) => node.level;
     private _isExpandable = (node: FlatBlockNode) => node.expandable;
@@ -73,14 +88,14 @@ export class TreeFlatOverview {
     visibleNodes(): BlockNode[] {
         const result: any = [];
 
-        function addExpandedChildren(node: BlockNode, expanded: string[]) {
+        function addExpandedChildren(node: BlockNode, expanded: FlatBlockNode[]) {
             result.push(node);
-            if (expanded.includes(node.id)) {
+            if (expanded.find((e) => { return e.node.id == node.id })) {
                 node.children.map((child) => addExpandedChildren(child, expanded));
             }
         }
         this.dataSource.data.forEach((node) => {
-            addExpandedChildren(node, this.expansionModel.selected);
+            addExpandedChildren(node, this.treeControl.expansionModel.selected);
         });
         return result;
     }
@@ -230,6 +245,20 @@ export class TreeFlatOverview {
         this.root = data[0];
         this.currentBlock = this.root;
         this.dataSource.data = data;
+
+        for (let index = 0; index < this.treeControl.dataNodes.length; index++) {
+            const p = this.treeControl.dataNodes[index - 1];
+            const e = this.treeControl.dataNodes[index];
+            const n = this.treeControl.dataNodes[index + 1];
+            if (p && e.level == p.level) {
+                e.about.prev = p.about;
+            } else {
+                e.about.prev = null;
+            }
+            e.about.next = !!(n && e.level == n.level);
+        }
+
+        this.treeControl.expansionModel.clear();
         this.expansionModel.selected.forEach((id) => {
             const node: any = this.treeControl.dataNodes.find((n) => n.node.id === id);
             this.treeControl.expand(node);
@@ -272,5 +301,18 @@ export class TreeFlatOverview {
             return true;
         }
         return false;
+    }
+
+    expandAll() {
+        this.isCollapseAll = false;
+        this.treeControl.expandAll();
+        const values = this.treeControl.expansionModel.selected.map((e: FlatBlockNode) => e.node.id);
+        this.expansionModel.select.apply(this.expansionModel, values);
+    }
+
+    collapseAll() {
+        this.isCollapseAll = true;
+        this.treeControl.collapseAll();
+        this.expansionModel.clear();
     }
 }

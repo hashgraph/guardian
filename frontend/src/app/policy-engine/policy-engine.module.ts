@@ -48,6 +48,7 @@ import { ReportItemConfigComponent } from './policy-configuration/blocks/report/
 import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { ReassigningConfigComponent } from './policy-configuration/blocks/documents/reassigning-config/reassigning-config.component';
 import { CommonComponentsModule } from '../common-components.module';
+import { CronConfigDialog } from './helpers/cron-config-dialog/cron-config-dialog.component';
 
 @NgModule({
     declarations: [
@@ -91,6 +92,7 @@ import { CommonComponentsModule } from '../common-components.module';
         ReportBlockComponent,
         ReportItemConfigComponent,
         ReassigningConfigComponent,
+        CronConfigDialog
     ],
     imports: [
         CommonModule,
@@ -139,7 +141,8 @@ import { CommonComponentsModule } from '../common-components.module';
         CalculateConfigComponent,
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
-        ReassigningConfigComponent
+        ReassigningConfigComponent,
+        CronConfigDialog
     ],
     providers: [
         RegisteredBlocks

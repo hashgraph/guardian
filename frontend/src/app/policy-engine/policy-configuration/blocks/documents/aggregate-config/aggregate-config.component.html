@@ -29,12 +29,13 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Period</td>
             <td class="propRowCell">
-                <mat-select [(value)]="block.period" [disabled]="readonly">
+                <mat-select [(value)]="block.period" [disabled]="readonly" (closed)="selectPeriod()">
                     <mat-option value="yearly">Yearly</mat-option>
                     <mat-option value="monthly">Monthly</mat-option>
                     <mat-option value="weekly">Weekly</mat-option>
                     <mat-option value="daily">Daily</mat-option>
                     <mat-option value="hourly">Hourly</mat-option>
+                    <mat-option value="custom">Custom</mat-option>
                 </mat-select>
             </td>
         </tr>

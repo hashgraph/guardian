@@ -3,7 +3,7 @@
   border: 1px solid #000;
   border-radius: 6px;
   padding: 4px 12px;
-  margin: 10px 8px;
+  margin: 10px 8px 10px 2px;
   cursor: pointer;
   position: relative;
   height: 22px;
@@ -177,4 +177,29 @@
     display: flex;
     width: 30px;
     transform: translate(-17px, -7px);
+}
+
+.mat-tree-container {
+    position: relative;
+    padding-left: 25px;
+}
+
+.expand-menu {
+    position: absolute;
+    top: 10px;
+    left: 2px;
+    height: 30px;
+    width: 30px;
+    overflow: hidden;
+    z-index: 9;
+}
+
+.btn-expand-menu {
+    height: 20px;
+    width: 22px;
+    padding: 2px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    margin: 1px;
+    color: #000000;
 }

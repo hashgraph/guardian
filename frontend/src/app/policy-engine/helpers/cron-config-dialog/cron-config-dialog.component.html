@@ -1,0 +1,65 @@
+<h1 mat-dialog-title>Custom Period</h1>
+<div mat-dialog-content>
+
+    <div class="c1">
+        <div class="f1" style="padding: 6px 4px; margin-right: 8px;">
+            <mat-label>Start Date:</mat-label>
+            <datetime-picker [(value)]="startDate"></datetime-picker>
+        </div>
+        <div class="f1" style="padding: 15px 10px; margin-left: 8px;">
+            <mat-label>Period:</mat-label>
+            <mat-select [(value)]="period" (selectionChange)="selectPeriod()">
+                <mat-option value="month">Month</mat-option>
+                <mat-option value="week">Week</mat-option>
+            </mat-select>
+        </div>
+    </div>
+
+    <div class="delimiter"></div>
+
+    <div *ngIf="period=='week'" style="display: flex;height: 26px;">
+        <label class="toggle-control">
+            <input type="checkbox" [(ngModel)]="weekDay.Mo" (change)="onWeekChange()">
+            <span class="control">Mo</span>
+        </label>
+        <label class="toggle-control">
+            <input type="checkbox" [(ngModel)]="weekDay.Tu" (change)="onWeekChange()">
+            <span class="control">Tu</span>
+        </label>
+        <label class="toggle-control">
+            <input type="checkbox" [(ngModel)]="weekDay.We" (change)="onWeekChange()">
+            <span class="control">We</span>
+        </label>
+        <label class="toggle-control">
+            <input type="checkbox" [(ngModel)]="weekDay.Th" (change)="onWeekChange()">
+            <span class="control">Th</span>
+        </label>
+        <label class="toggle-control">
+            <input type="checkbox" [(ngModel)]="weekDay.Fr" (change)="onWeekChange()">
+            <span class="control">Fr</span>
+        </label>
+        <label class="toggle-control">
+            <input type="checkbox" [(ngModel)]="weekDay.Sa" (change)="onWeekChange()">
+            <span class="control">Sa</span>
+        </label>
+        <label class="toggle-control">
+            <input type="checkbox" [(ngModel)]="weekDay.Su" (change)="onWeekChange()">
+            <span class="control">Su</span>
+        </label>
+    </div>
+
+    <div class="delimiter"></div>
+
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
+            <input matInput type="text" placeholder="* * * * *" formControlName="mask">
+        </mat-form-field>
+
+        <div mat-dialog-actions>
+            <button mat-raised-button color="primary" type="submit" [attr.started]="started"
+                [disabled]="!dataForm.valid">Ok</button>
+            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+        </div>
+    </form>
+</div>

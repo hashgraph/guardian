@@ -65,15 +65,19 @@ export interface IBlockAbout {
     output: InputType;
     children: ChildrenType;
     control: ControlType;
+    prev?: IBlockAbout;
+    next?: boolean;
 }
 
+type ConfigFunction<T> = ((block: any, prev?: IBlockAbout, next?: boolean) => T) | T;
+
 export interface IBlockAboutConfig {
-    post: boolean | ((block: any) => boolean);
-    get: boolean | ((block: any) => boolean);
-    input: InputType | ((block: any) => InputType);
-    output: InputType | ((block: any) => InputType);
-    children: ChildrenType | ((block: any) => ChildrenType);
-    control: ControlType | ((block: any) => ControlType);
+    post: ConfigFunction<boolean>;
+    get: ConfigFunction<boolean>;
+    input: ConfigFunction<InputType>;
+    output: ConfigFunction<InputType>;
+    children: ConfigFunction<ChildrenType>;
+    control: ConfigFunction<ControlType>;
 }
 
 export enum InputType {
@@ -97,14 +101,14 @@ export enum ControlType {
 }
 
 export class BlockAbout {
-    private _propFunc: any = {};
-    private _propVal: any = {};
+    private _propFunc: { [x: string]: ConfigFunction<any> } = {};
+    private _propVal: { [x: string]: any } = {};
     private _setProp(about: any, name: string) {
         if (typeof about[name] == 'function') {
             this._propFunc[name] = about[name];
         } else {
             this._propVal[name] = about[name];
-            this._propFunc[name] = (block: any) => {
+            this._propFunc[name] = (block: any, prev?: IBlockAbout, next?: boolean) => {
                 return this._propVal[name];
             };
         }
@@ -130,9 +134,11 @@ export class BlockAbout {
         }
     }
 
-    public bind(block: any): IBlockAbout {
+    public bind(block: any, prev?: IBlockAbout, next?: boolean): IBlockAbout {
         const bind = {
             _block: block,
+            _prev: prev,
+            _next: next,
             _post: this._propFunc.post,
             _get: this._propFunc.get,
             _input: this._propFunc.input,
@@ -140,22 +146,28 @@ export class BlockAbout {
             _children: this._propFunc.children,
             _control: this._propFunc.control,
             get post() {
-                return this._post(this._block);
+                return this._post(this._block, this._prev, this._next);
             },
             get get() {
-                return this._get(this._block);
+                return this._get(this._block, this._prev, this._next);
             },
             get input() {
-                return this._input(this._block);
+                return this._input(this._block, this._prev, this._next);
             },
             get output() {
-                return this._output(this._block);
+                return this._output(this._block, this._prev, this._next);
             },
             get children() {
-                return this._children(this._block);
+                return this._children(this._block, this._prev, this._next);
             },
             get control() {
-                return this._control(this._block);
+                return this._control(this._block, this._prev, this._next);
+            },
+            set prev(value: IBlockAbout) {
+                this._prev = value;
+            },
+            set next(value: boolean) {
+                this._next = value;
             }
         }
         return bind
@@ -320,7 +332,12 @@ export class RegisteredBlocks {
                 post: true,
                 get: true,
                 input: InputType.None,
-                output: InputType.Single,
+                output: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (next === false) {
+                        return InputType.None;
+                    }
+                    return InputType.Single;
+                },
                 children: ChildrenType.Special,
                 control: ControlType.UI,
             }
@@ -337,8 +354,21 @@ export class RegisteredBlocks {
             about: {
                 post: false,
                 get: false,
-                input: InputType.Single,
-                output: InputType.Single,
+                input: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (prev && prev.output != InputType.None) {
+                        return prev.output;
+                    }
+                    return InputType.Single;
+                },
+                output: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (next === false) {
+                        return InputType.None;
+                    }
+                    if (prev && prev.output != InputType.None) {
+                        return prev.output;
+                    }
+                    return InputType.Single;
+                },
                 children: ChildrenType.None,
                 control: ControlType.Server,
             }
@@ -355,7 +385,12 @@ export class RegisteredBlocks {
                 post: true,
                 get: false,
                 input: InputType.Single,
-                output: InputType.Single,
+                output: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (next === false) {
+                        return InputType.None;
+                    }
+                    return InputType.Single;
+                },
                 children: ChildrenType.None,
                 control: ControlType.Server,
             }
@@ -372,7 +407,12 @@ export class RegisteredBlocks {
                 post: false,
                 get: false,
                 input: InputType.Single,
-                output: InputType.Multiple,
+                output: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (next === false) {
+                        return InputType.None;
+                    }
+                    return InputType.Multiple;
+                },
                 children: ChildrenType.None,
                 control: ControlType.Server,
             }
@@ -389,7 +429,12 @@ export class RegisteredBlocks {
                 post: false,
                 get: false,
                 input: InputType.Single,
-                output: InputType.Single,
+                output: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (next === false) {
+                        return InputType.None;
+                    }
+                    return InputType.Single;
+                },
                 children: ChildrenType.None,
                 control: ControlType.Server,
             }
@@ -498,7 +543,7 @@ export class RegisteredBlocks {
                 post: false,
                 get: false,
                 input: InputType.Any,
-                output: function (block: any) {
+                output: function (block: any): InputType {
                     return block.inputDocuments == "separate" ?
                         InputType.Multiple : InputType.Single;
                 },
@@ -519,7 +564,12 @@ export class RegisteredBlocks {
                 post: false,
                 get: false,
                 input: InputType.Single,
-                output: InputType.Single,
+                output: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (next === false) {
+                        return InputType.None;
+                    }
+                    return InputType.Single;
+                },
                 children: ChildrenType.None,
                 control: ControlType.Special,
             }
@@ -649,9 +699,9 @@ export class RegisteredBlocks {
         return f.get(block);
     }
 
-    public bindAbout(blockType: string, block: any): IBlockAbout {
+    public bindAbout(blockType: string, block: any, prev?: IBlockAbout, next?: boolean): IBlockAbout {
         const f: BlockAbout = this.about[blockType] || this.defaultA;
-        return f.bind(block);
+        return f.bind(block, prev, next);
     }
 
     public newBlock(type: BlockType, permissions: any, index: any): BlockNode {
