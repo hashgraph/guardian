@@ -1,13 +1,13 @@
 require('module-alias/register');
 const { expect, assert } = require('chai');
-const { schemaAPI, schemaCache } = require('./../../dist/api/schema.service');
+const { schemaAPI, schemaCache } = require('../../dist/api/schema.service');
 const {
     createChannel,
     createTable,
     checkMessage,
     checkError
 } = require('./helper');
-const { ApplicationState, ApplicationStates } = require('./../../dist/helpers/application-state');
+const { ApplicationState, ApplicationStates } = require('../../dist/helpers/application-state');
 
 describe('Schema service', function () {
     let service, channel;

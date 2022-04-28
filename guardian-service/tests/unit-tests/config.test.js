@@ -1,12 +1,12 @@
 const { expect, assert } = require('chai');
-const { configAPI } = require('./../../dist/api/config.service');
-const { 
-    createChannel, 
-    createTable, 
-    checkMessage, 
-    checkError 
+const { configAPI } = require('../../dist/api/config.service');
+const {
+    createChannel,
+    createTable,
+    checkMessage,
+    checkError
 } = require('./helper');
-const { ApplicationState, ApplicationStates } = require('./../../dist/helpers/application-state');
+const { ApplicationState, ApplicationStates } = require('../../dist/helpers/application-state');
 
 describe('Config service', function () {
     let service, channel, settingsRepository, topicRepository;
@@ -38,7 +38,7 @@ describe('Config service', function () {
     });
 
     it('Test UPDATE_SETTINGS', async function () {
-        
+
     });
 
     it('Test GET_SETTINGS', async function () {

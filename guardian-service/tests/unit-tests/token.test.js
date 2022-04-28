@@ -1,12 +1,12 @@
 const { expect, assert } = require('chai');
-const { tokenAPI } = require('./../../dist/api/token.service');
-const { 
-    createChannel, 
-    createTable, 
-    checkMessage, 
-    checkError 
+const { tokenAPI } = require('../../dist/api/token.service');
+const {
+    createChannel,
+    createTable,
+    checkMessage,
+    checkError
 } = require('./helper');
-const { ApplicationState, ApplicationStates } = require('./../../dist/helpers/application-state');
+const { ApplicationState, ApplicationStates } = require('../../dist/helpers/application-state');
 
 describe('Token service', function () {
     let service, channel;

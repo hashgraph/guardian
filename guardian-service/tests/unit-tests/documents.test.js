@@ -1,13 +1,13 @@
 require("module-alias/register");
 const { expect, assert } = require('chai');
-const { documentsAPI } = require('./../../dist/api/documents.service');
+const { documentsAPI } = require('../../dist/api/documents.service');
 const {
     createChannel,
     createTable,
     checkMessage,
     checkError
 } = require('./helper');
-const { ApplicationState, ApplicationStates } = require('./../../dist/helpers/application-state');
+const { ApplicationState, ApplicationStates } = require('../../dist/helpers/application-state');
 
 describe('Documents service', function () {
     let channel;
