@@ -137,8 +137,8 @@ describe('Schema Service API', function() {
         schemaAPIModule.__set__('topicHelper_1', topicHelperModule);
     });
 
-    it('Create', async function() {
-        schemaAPIModule.schemaAPI(channel, schemaRepository);
-        methods['CREATE_SCHEMA']();
-    });
+    // it('Create', async function() {
+    //     schemaAPIModule.schemaAPI(channel, schemaRepository);
+    //     methods['CREATE_SCHEMA']();
+    // });
 })
