@@ -10,10 +10,21 @@ form {
     padding-bottom: 25px;
 }
 
+.dialog-content {
+    position: relative;
+}
+
+.c-config  {
+    position: absolute;
+    top: 130px;
+    z-index: 1;
+    left: 24px;
+    right: 24px;
+}
 
 .c1 {
     display: grid;
-    grid-template-columns: 50% 50%;
+    grid-template-columns: 200px 100px 150px;
 }
 
 .f1 {

@@ -26,6 +26,9 @@ export class AggregateBlock {
     @Inject()
     private users: Users;
 
+    private tickCount: number;
+    private interval: number;
+
     init() {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (ref.options.aggregateType == 'period') {
@@ -50,6 +53,7 @@ export class AggregateBlock {
         }
 
         let mask: string = '';
+        this.interval = 0;
         switch (ref.options.period) {
             case 'yearly': {
                 mask = `${sd.minute()} ${sd.hour()} ${sd.date()} ${sd.month() + 1} *`;
@@ -71,12 +75,29 @@ export class AggregateBlock {
                 mask = `${sd.minute()} * * * *`;
                 break;
             }
+            case 'custom': {
+                mask = ref.options.periodMask;
+                this.interval = ref.options.periodInterval;
+                break;
+            }
         }
         ref.log(`start cron: ${mask}`);
+        if (this.interval > 1) {
+            this.tickCount = 0;
+            this.job = new CronJob(mask, () => {
+                this.tickCount++;
+                if (this.tickCount < this.interval) {
+                    return;
+                }
+                this.tickCount = 0;
+                this.tickCron(ref).then();
+            });
+        } else {
+            this.job = new CronJob(mask, () => {
+                this.tickCron(ref).then();
+            });
+        }
 
-        this.job = new CronJob(mask, () => {
-            this.tickCron(ref).then();
-        });
         this.job.start();
     }
 

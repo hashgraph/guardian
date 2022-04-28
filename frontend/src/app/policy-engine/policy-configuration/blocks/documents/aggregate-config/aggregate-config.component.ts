@@ -27,6 +27,7 @@ export class AggregateConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
+        options:false
     };
 
     block!: BlockNode;
@@ -64,9 +65,16 @@ export class AggregateConfigComponent implements OnInit {
             });
             dialogRef.afterClosed().subscribe(async (result) => {
                 if (result) {
-
+                    this.block.periodMask = result.mask;
+                    this.block.periodInterval = result.interval;
+                } else {
+                    this.block.periodMask = '';
+                    this.block.periodInterval = '';
                 }
             });
+        } else {
+            this.block.periodMask = '';
+            this.block.periodInterval = '';
         }
     }
 }
