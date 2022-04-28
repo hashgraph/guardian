@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators } from '@angular/forms';
 import * as moment from 'moment';
+import cronstrue from 'cronstrue';
 
 /**
  * Dialog for creating policy.
@@ -45,6 +46,7 @@ export class CronConfigDialog {
         December: false
     }
     sd: moment.Moment;
+    timeString!: string;
 
     constructor(
         public dialogRef: MatDialogRef<CronConfigDialog>,
@@ -53,11 +55,22 @@ export class CronConfigDialog {
         this.period = 'week';
         this.startDate = data.startDate;
         this.sd = moment(this.startDate);
+        switch (this.sd.day()) {
+            case 0: this.weekDay.Su = true; break;
+            case 1: this.weekDay.Mo = true; break;
+            case 2: this.weekDay.Tu = true; break;
+            case 3: this.weekDay.We = true; break;
+            case 4: this.weekDay.Th = true; break;
+            case 5: this.weekDay.Fr = true; break;
+            case 6: this.weekDay.Sa = true; break;
+        }
         this.onWeekChange();
     }
 
     ngOnInit() {
-        this.started = true;
+        setTimeout(() => {
+            this.started = true;
+        }, 200);
     }
 
     onNoClick(): void {
@@ -68,48 +81,6 @@ export class CronConfigDialog {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
             this.dialogRef.close(data);
-        }
-    }
-
-    selectPeriod() {
-        const data = this.dataForm.value;
-        switch (this.period) {
-            case "month": {
-                this.onMonthChange();
-                break;
-            }
-            case "week": {
-                this.onWeekChange();
-                break;
-            }
-            case "year": {
-                this.dataForm.setValue({
-                    mask: `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.sd.month() + 1} *`,
-                    interval: data.interval
-                })
-                break;
-            }
-            case "day": {
-                this.dataForm.setValue({
-                    mask: `${this.sd.minute()} ${this.sd.hour()} * * *`,
-                    interval: data.interval
-                })
-                break;
-            }
-            case "hour": {
-                this.dataForm.setValue({
-                    mask: `${this.sd.minute()} * * * *`,
-                    interval: data.interval
-                })
-                break;
-            }
-            case "minute": {
-                this.dataForm.setValue({
-                    mask: `* * * * *`,
-                    interval: data.interval
-                })
-                break;
-            }
         }
     }
 
@@ -146,19 +117,78 @@ export class CronConfigDialog {
         return l.join(',');
     }
 
-    onWeekChange() {
+    getMask() {
+        switch (this.period) {
+            case "month": {
+                return `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.getMonthMap()} *`;
+            }
+            case "week": {
+                return `${this.sd.minute()} ${this.sd.hour()} * * ${this.getWeekMap()}`;
+            }
+            case "year": {
+                return `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.sd.month() + 1} *`;
+            }
+            case "day": {
+                return `${this.sd.minute()} ${this.sd.hour()} * * *`;
+            }
+            case "hour": {
+                return `${this.sd.minute()} * * * *`;
+            }
+            case "minute": {
+                return `* * * * *`;
+            }
+            default:
+                return `* * * * *`;
+        }
+    }
+
+    getMaskByInterval() {
         const data = this.dataForm.value;
-        this.dataForm.setValue({
-            mask: `${this.sd.minute()} ${this.sd.hour()} * * ${this.getWeekMap()}`,
-            interval: data.interval
-        })
+        switch (this.period) {
+            case "month": {
+                return `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.getMonthMap()}/${data.interval} *`;
+            }
+            case "week": {
+                return `${this.sd.minute()} ${this.sd.hour()} * * ${this.getWeekMap()}`;
+            }
+            case "year": {
+                return `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.sd.month() + 1} *`;
+            }
+            case "day": {
+                return `${this.sd.minute()} ${this.sd.hour()} */${data.interval} * *`;
+            }
+            case "hour": {
+                return `${this.sd.minute()} */${data.interval} * * *`;
+            }
+            case "minute": {
+                return `*/${data.interval} * * * *`;
+            }
+            default:
+                return `* * * * *`;
+        }
+    }
+
+    selectPeriod() {
+        this.setMask(this.getMask());
+        this.setText(this.getMaskByInterval());
+    }
+
+    onWeekChange() {
+        this.setMask(this.getMask());
+        this.setText(this.getMaskByInterval());
     }
 
     onMonthChange() {
+        this.setMask(this.getMask());
+        this.setText(this.getMaskByInterval());
+    }
+
+    setMask(mask: string) {
         const data = this.dataForm.value;
-        this.dataForm.setValue({
-            mask: `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.getMonthMap()} *`,
-            interval: data.interval
-        })
+        this.dataForm.setValue({ mask: mask, interval: data.interval });
+    }
+
+    setText(mask: string) {
+        this.timeString = cronstrue.toString(mask);
     }
 }

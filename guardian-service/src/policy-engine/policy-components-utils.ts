@@ -199,6 +199,7 @@ export class PolicyComponentsUtils {
         );
         if (!skipRegistration) {
             PolicyComponentsUtils.RegisterComponent(policyId, instance);
+            instance.start();
         }
         return instance;
     }

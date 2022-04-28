@@ -18,7 +18,7 @@
                     <td class="propHeaderCell cellName">About</td>
                     <td class="propHeaderCell"></td>
                 </tr>
-                <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                <tr class="propRow" [attr.collapse]="propHidden.about">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Type</td>
                     <td class="propRowCell">
@@ -27,42 +27,42 @@
                 </tr>
 
                 <ng-container *ngIf="about">
-                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <tr class="propRow" [attr.collapse]="propHidden.about">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">GET</td>
                         <td class="propRowCell">
                             <span class="readonly-prop">{{about.get?'Yes':'No'}}</span>
                         </td>
                     </tr>
-                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <tr class="propRow" [attr.collapse]="propHidden.about">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">POST</td>
                         <td class="propRowCell">
                             <span class="readonly-prop">{{about.post?'Yes':'No'}}</span>
                         </td>
                     </tr>
-                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <tr class="propRow" [attr.collapse]="propHidden.about">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Server Input</td>
                         <td class="propRowCell">
                             <span class="readonly-prop">{{about.input}}</span>
                         </td>
                     </tr>
-                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <tr class="propRow" [attr.collapse]="propHidden.about">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Server Output</td>
                         <td class="propRowCell">
                             <span class="readonly-prop">{{about.output}}</span>
                         </td>
                     </tr>
-                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <tr class="propRow" [attr.collapse]="propHidden.about">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Control Type</td>
                         <td class="propRowCell">
                             <span class="readonly-prop">{{about.control}}</span>
                         </td>
                     </tr>
-                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                    <tr class="propRow" [attr.collapse]="propHidden.about">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Children</td>
                         <td class="propRowCell">

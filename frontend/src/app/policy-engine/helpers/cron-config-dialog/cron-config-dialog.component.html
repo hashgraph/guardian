@@ -1,5 +1,5 @@
 <h1 mat-dialog-title>Custom Period</h1>
-<div mat-dialog-content class="dialog-content">
+<div mat-dialog-content class="dialog-content" [attr.started]="started">
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
         <div class="c1">
             <div class="f1" style="padding: 6px 4px; margin-right: 8px;">
@@ -8,12 +8,11 @@
             </div>
             <div class="f1" style="padding: 15px 10px; margin-left: 28px;">
                 <mat-label>Interval:</mat-label>
-                <input matInput type="number" min="1" max="100" formControlName="interval">
+                <input matInput type="number" min="1" max="100" formControlName="interval" (change)="selectPeriod()">
             </div>
             <div class="f1" style="padding: 15px 10px; margin-left: 8px;">
                 <mat-label>Period:</mat-label>
                 <mat-select [(value)]="period" (selectionChange)="selectPeriod()">
-                    <mat-option value="year">Year</mat-option>
                     <mat-option value="month">Month</mat-option>
                     <mat-option value="week">Week</mat-option>
                     <mat-option value="day">Day</mat-option>
@@ -25,13 +24,33 @@
 
         <div class="delimiter"></div>
 
-        <div *ngIf="period=='week'" style="height: 90px;width: 100%;"></div>
-        <div *ngIf="period=='month'" style="height: 130px;width: 100%;"></div>
+        <div *ngIf="period=='week'" style="height: 80px;width: 100%;"></div>
+        <div *ngIf="period=='month'" style="height: 120px;width: 100%;"></div>
 
-        <mat-form-field class="example-full-width" appearance="outline">
+        <!-- <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
             <input matInput type="text" placeholder="* * * * *" formControlName="mask">
-        </mat-form-field>
+        </mat-form-field> -->
+
+        <div>
+            {{timeString}}
+        </div>
+
+        <div class="delimiter"></div>
+
+        <mat-accordion>
+            <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        Cron Mask (advanced)
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
+                    <input matInput type="text" placeholder="* * * * *" formControlName="mask">
+                </mat-form-field>
+            </mat-expansion-panel>
+        </mat-accordion>
 
         <div mat-dialog-actions>
             <button mat-raised-button color="primary" type="submit" [attr.started]="started"
@@ -71,7 +90,7 @@
                 <span class="control">Su</span>
             </label>
         </div>
-    
+
         <div *ngIf="period=='month'" style="display: flex;height: 26px;margin-bottom: 14px;">
             <label class="toggle-control">
                 <input type="checkbox" [(ngModel)]="month.January" (change)="onMonthChange()">
@@ -124,7 +143,7 @@
                 <span class="control">Dec</span>
             </label>
         </div>
-    
+
         <div class="delimiter"></div>
     </div>
 </div>

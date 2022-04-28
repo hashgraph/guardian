@@ -105,8 +105,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
                 }
-
-                this.init();
             }
 
             /**
@@ -322,9 +320,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-            private init() {
-                if (typeof super.init === 'function') {
-                    super.init();
+            public start() {
+                if (typeof super.start === 'function') {
+                    super.start();
                 }
             }
 

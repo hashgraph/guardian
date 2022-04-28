@@ -21,15 +21,15 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
     commonBlock: true
 })
 export class AggregateBlock {
-    private job: CronJob;
-
     @Inject()
     private users: Users;
 
     private tickCount: number;
     private interval: number;
+    private job: CronJob;
+    private endTime: number;
 
-    init() {
+    start() {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (ref.options.aggregateType == 'period') {
             this.startCron(ref);
@@ -47,62 +47,91 @@ export class AggregateBlock {
     }
 
     private startCron(ref: AnyBlockType) {
-        let sd = moment(ref.options.startDate);
-        if (sd.isValid()) {
-            sd = moment();
-        }
+        try {
+            let sd = moment(ref.options.startDate);
+            if (sd.isValid()) {
+                sd = moment();
+            }
 
-        let mask: string = '';
-        this.interval = 0;
-        switch (ref.options.period) {
-            case 'yearly': {
-                mask = `${sd.minute()} ${sd.hour()} ${sd.date()} ${sd.month() + 1} *`;
-                break;
+            let ed = moment(ref.options.endDate);
+            if (ed.isValid()) {
+                this.endTime = ed.toDate().getTime();
+            } else {
+                this.endTime = Infinity;
             }
-            case 'monthly': {
-                mask = `${sd.minute()} ${sd.hour()} ${sd.date()} * *`;
-                break;
+
+            const now = new Date();
+            if (now.getTime() > this.endTime) {
+                return;
             }
-            case 'weekly': {
-                mask = `${sd.minute()} ${sd.hour()} * * ${sd.weekday()}`;
-                break;
-            }
-            case 'daily': {
-                mask = `${sd.minute()} ${sd.hour()} * * *`;
-                break;
-            }
-            case 'hourly': {
-                mask = `${sd.minute()} * * * *`;
-                break;
-            }
-            case 'custom': {
-                mask = ref.options.periodMask;
-                this.interval = ref.options.periodInterval;
-                break;
-            }
-        }
-        ref.log(`start cron: ${mask}`);
-        if (this.interval > 1) {
-            this.tickCount = 0;
-            this.job = new CronJob(mask, () => {
-                this.tickCount++;
-                if (this.tickCount < this.interval) {
-                    return;
+
+            let mask: string = '';
+            this.interval = 0;
+            switch (ref.options.period) {
+                case 'yearly': {
+                    mask = `${sd.minute()} ${sd.hour()} ${sd.date()} ${sd.month() + 1} *`;
+                    break;
                 }
+                case 'monthly': {
+                    mask = `${sd.minute()} ${sd.hour()} ${sd.date()} * *`;
+                    break;
+                }
+                case 'weekly': {
+                    mask = `${sd.minute()} ${sd.hour()} * * ${sd.weekday()}`;
+                    break;
+                }
+                case 'daily': {
+                    mask = `${sd.minute()} ${sd.hour()} * * *`;
+                    break;
+                }
+                case 'hourly': {
+                    mask = `${sd.minute()} * * * *`;
+                    break;
+                }
+                case 'custom': {
+                    mask = ref.options.periodMask;
+                    this.interval = ref.options.periodInterval;
+                    break;
+                }
+            }
+            ref.log(`start scheduler: ${mask}, ${ref.options.startDate}, ${ref.options.endDate}, ${ref.options.periodInterval}`);
+            if (this.interval > 1) {
                 this.tickCount = 0;
-                this.tickCron(ref).then();
-            });
-        } else {
-            this.job = new CronJob(mask, () => {
-                this.tickCron(ref).then();
-            });
+                this.job = new CronJob(mask, () => {
+                    const now = new Date();
+                    if (now.getTime() > this.endTime) {
+                        ref.log(`stop scheduler`);
+                        this.job.stop();
+                        return;
+                    }
+                    this.tickCount++;
+                    if (this.tickCount < this.interval) {
+                        ref.log(`skip tick scheduler`);
+                        return;
+                    }
+                    this.tickCount = 0;
+                    this.tickCron(ref).then();
+                });
+            } else {
+                this.job = new CronJob(mask, () => {
+                    const now = new Date();
+                    if (now.getTime() > this.endTime) {
+                        ref.log(`stop scheduler`);
+                        this.job.stop();
+                        return;
+                    }
+                    this.tickCron(ref).then();
+                });
+            }
+            this.job.start();
+        } catch (error) {
+            ref.log(`start scheduler fail ${error.message}`);
+            throw `start scheduler fail ${error.message}`;
         }
-
-        this.job.start();
     }
 
     private async tickCron(ref: AnyBlockType) {
-        ref.log(`tick cron`);
+        ref.log(`tick scheduler`);
 
         const repository = getMongoRepository(AggregateVC);
         const rawEntities = await repository.find({

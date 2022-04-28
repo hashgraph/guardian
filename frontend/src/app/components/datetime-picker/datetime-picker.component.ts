@@ -23,7 +23,7 @@ export class DatetimePicker {
     public touchUi = false;
     public enableMeridian = true;
     public stepHour = 1;
-    public stepMinute = 30;
+    public stepMinute = 5;
     public stepSecond = 1;
     public defaultTime = [new Date().getHours(), 0, 0]
 
@@ -35,7 +35,7 @@ export class DatetimePicker {
     }
 
     onValue(event: any) {
-        this._currentValue = moment(event.value).toISOString();
+        this._currentValue = moment(event.value).utc().toISOString();
         if (this.value != this._currentValue) {
             this.value = this._currentValue;
             this.valueChange.emit(this._currentValue);

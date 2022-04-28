@@ -12,11 +12,18 @@ form {
 
 .dialog-content {
     position: relative;
+    height: 350px;
+    opacity: 0;
+}
+
+.dialog-content[started="true"] {
+    height: auto;
+    opacity: 1;
 }
 
 .c-config  {
     position: absolute;
-    top: 130px;
+    top: 120px;
     z-index: 1;
     left: 24px;
     right: 24px;
@@ -50,9 +57,9 @@ form {
 }
 
 .delimiter {
-    padding: 30px 30px;
+    padding: 20px 20px;
     width: 100%;
-    height: 60px;
+    height: 40px;
     box-sizing: border-box;
     position: relative;
 }
@@ -61,12 +68,11 @@ form {
     content: '';
     position: absolute;
     height: 2px;
-    top: 30px;
+    top: 20px;
     left: 0px;
     right: 0px;
     border-top: 1px solid #c8c8c8;
 }
-
 
 .toggle-control {
     display: block;
@@ -107,4 +113,30 @@ form {
     justify-content: center;
     justify-items: center;
     display: flex;
+}
+
+mat-expansion-panel {
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+}
+
+mat-expansion-panel mat-form-field {
+    width: 100%;
+}
+
+mat-expansion-panel-header {
+    font-size: 14px;
+    opacity: 0.9;
+    padding: 0 20px 0 8px;
+}
+
+mat-accordion ::ng-deep .mat-expansion-panel-body {
+    padding: 0px 10px 16px;
+}
+
+mat-accordion  {
+    margin-bottom: 10px;
+    position: relative;
+    left: -6px;
+    width: 466px;
 }
