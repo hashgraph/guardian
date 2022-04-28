@@ -1,5 +1,19 @@
 import { Component, EventEmitter, Inject, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import * as moment from 'moment';
+import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
+import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
+
+export const DATETIME_FORMATS = {
+    parse: {
+        dateInput: 'l, LT',
+    },
+    display: {
+        dateInput: 'DD-MM-YYYY HH:mm (Z)',
+        monthYearLabel: 'MM yyyy',
+        dateA11yLabel: 'LL',
+        monthYearA11yLabel: 'MMMM YYYY',
+    }
+};
 
 /**
  * Dialog for icon preview.
@@ -7,12 +21,17 @@ import * as moment from 'moment';
 @Component({
     selector: 'datetime-picker',
     templateUrl: './datetime-picker.component.html',
-    styleUrls: ['./datetime-picker.component.css']
+    styleUrls: ['./datetime-picker.component.css'],
+    providers: [
+        { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
+        { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
+    ]
 })
 export class DatetimePicker {
     @Input() placeholder!: string;
     @Input() readonly!: boolean;
     @Input() value!: string;
+    @Input() format!: any;
     @Output() valueChange = new EventEmitter<string>();
 
     private _currentValue!: string;

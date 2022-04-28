@@ -48,12 +48,12 @@ export class AggregateBlock {
 
     private startCron(ref: AnyBlockType) {
         try {
-            let sd = moment(ref.options.startDate);
+            let sd = moment(ref.options.startDate).utc();
             if (sd.isValid()) {
-                sd = moment();
+                sd = moment().utc();
             }
 
-            let ed = moment(ref.options.endDate);
+            let ed = moment(ref.options.endDate).utc();
             if (ed.isValid()) {
                 this.endTime = ed.toDate().getTime();
             } else {
@@ -111,7 +111,7 @@ export class AggregateBlock {
                     }
                     this.tickCount = 0;
                     this.tickCron(ref).then();
-                });
+                }, null, false, 'UTC');
             } else {
                 this.job = new CronJob(mask, () => {
                     const now = new Date();
@@ -121,7 +121,7 @@ export class AggregateBlock {
                         return;
                     }
                     this.tickCron(ref).then();
-                });
+                }, null, false, 'UTC');
             }
             this.job.start();
         } catch (error) {

@@ -56,7 +56,7 @@ export class AggregateConfigComponent implements OnInit {
     selectPeriod() {
         if (this.block.period == 'custom') {
             const dialogRef = this.dialog.open(CronConfigDialog, {
-                width: '500px',
+                width: '550px',
                 disableClose: true,
                 data: {
                     startDate: this.block.startDate

@@ -47,6 +47,7 @@ export class CronConfigDialog {
     }
     sd: moment.Moment;
     timeString!: string;
+    sd_local: moment.Moment;
 
     constructor(
         public dialogRef: MatDialogRef<CronConfigDialog>,
@@ -54,7 +55,8 @@ export class CronConfigDialog {
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.period = 'week';
         this.startDate = data.startDate;
-        this.sd = moment(this.startDate);
+        this.sd = moment(this.startDate).utc();
+        this.sd_local = this.sd.clone().local();
         switch (this.sd.day()) {
             case 0: this.weekDay.Su = true; break;
             case 1: this.weekDay.Mo = true; break;
@@ -146,19 +148,19 @@ export class CronConfigDialog {
         const data = this.dataForm.value;
         switch (this.period) {
             case "month": {
-                return `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.getMonthMap()}/${data.interval} *`;
+                return `${this.sd_local.minute()} ${this.sd_local.hour()} ${this.sd_local.date()} ${this.getMonthMap()}/${data.interval} *`;
             }
             case "week": {
-                return `${this.sd.minute()} ${this.sd.hour()} * * ${this.getWeekMap()}`;
+                return `${this.sd_local.minute()} ${this.sd_local.hour()} * * ${this.getWeekMap()}`;
             }
             case "year": {
-                return `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.sd.month() + 1} *`;
+                return `${this.sd_local.minute()} ${this.sd_local.hour()} ${this.sd_local.date()} ${this.sd_local.month() + 1} *`;
             }
             case "day": {
-                return `${this.sd.minute()} ${this.sd.hour()} */${data.interval} * *`;
+                return `${this.sd_local.minute()} ${this.sd_local.hour()} */${data.interval} * *`;
             }
             case "hour": {
-                return `${this.sd.minute()} */${data.interval} * * *`;
+                return `${this.sd_local.minute()} */${data.interval} * * *`;
             }
             case "minute": {
                 return `*/${data.interval} * * * *`;

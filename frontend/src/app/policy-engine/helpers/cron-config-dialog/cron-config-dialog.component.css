@@ -5,7 +5,7 @@
 form {
     display: flex;
     flex-direction: column;
-    width: 452px;
+    width: 500px;
     overflow: visible;
     padding-bottom: 25px;
 }
@@ -31,7 +31,7 @@ form {
 
 .c1 {
     display: grid;
-    grid-template-columns: 200px 100px 150px;
+    grid-template-columns: 250px 100px 150px;
 }
 
 .f1 {
@@ -138,5 +138,5 @@ mat-accordion  {
     margin-bottom: 10px;
     position: relative;
     left: -6px;
-    width: 466px;
+    width: 516px;
 }
