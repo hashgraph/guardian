@@ -6,7 +6,7 @@ const {
     checkMessage,
     checkError
 } = require('./helper');
-const { ApplicationState, ApplicationStates } = require('../../dist/helpers/application-state');
+const { ApplicationState, ApplicationStates } = require('interfaces');
 
 describe('Config service', function () {
     let service, channel, settingsRepository, topicRepository;

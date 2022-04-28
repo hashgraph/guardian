@@ -2,7 +2,7 @@ require('module-alias/register');
 
 const { expect, assert } = require('chai');
 const { approveAPI } = require('../../dist/api/approve.service');
-const { ApplicationState, ApplicationStates } = require('../../dist/helpers/application-state');
+const { ApplicationState, ApplicationStates } = require('interfaces');
 
 const {
     createChannel,
