@@ -28,7 +28,7 @@ export class SendToGuardianBlock {
     /**
      * @deprecated 2022-08-04
      */
-    async sendByType(document: any, ref: AnyBlockType) {
+    async sendByType(document: any, currentUser: IAuthUser, ref: AnyBlockType) {
         let result: any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
@@ -72,7 +72,7 @@ export class SendToGuardianBlock {
                 break;
             }
             case 'hedera': {
-                result = await this.sendToHedera(document, ref);
+                result = await this.sendToHedera(document, currentUser, ref);
                 break;
             }
             default:
@@ -82,17 +82,17 @@ export class SendToGuardianBlock {
         return result;
     }
 
-    async send(document: any, ref: IPolicyBlock) {
+    async send(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
         const { dataSource } = ref.options;
 
         let result: any;
         switch (dataSource) {
             case 'database': {
-                result = await this.sendToDatabase(document, ref);
+                result = await this.sendToDatabase(document, currentUser, ref);
                 break;
             }
             case 'hedera': {
-                result = await this.sendToHedera(document, ref);
+                result = await this.sendToHedera(document, currentUser, ref);
                 break;
             }
             default:
@@ -102,7 +102,7 @@ export class SendToGuardianBlock {
         return result;
     }
 
-    async sendToDatabase(document: any, ref: IPolicyBlock) {
+    async sendToDatabase(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
         const { documentType } = ref.options;
         switch (documentType) {
             case 'vc': {
@@ -120,6 +120,7 @@ export class SendToGuardianBlock {
                     hederaStatus: document.hederaStatus || DocumentStatus.NEW,
                     signature: document.signature || DocumentSignature.NEW,
                     messageId: document.messageId || null,
+                    topicId: document.topicId || null,
                     relationships: document.relationships || [],
                 };
                 return await PolicyUtils.updateVCRecord(doc);
@@ -135,11 +136,24 @@ export class SendToGuardianBlock {
         }
     }
 
-    async sendToHedera(document: any, ref: IPolicyBlock) {
+    async sendToHedera(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const user = await this.users.getHederaAccount(document.owner);
-            const topic = await PolicyUtils.getTopic(ref.options.topic, root, user, ref);
+            
+            let topicOwner = user;
+            if(ref.options.topicOwner == 'user') {
+                topicOwner = await this.users.getHederaAccount(currentUser.did);
+            } else if(ref.options.topicOwner == 'issuer') {
+                topicOwner = await this.users.getHederaAccount(document.document.issuer);
+            } else {
+                topicOwner = user;
+            }
+            if (!topicOwner) {
+                throw `Topic owner not found`;
+            }
+
+            const topic = await PolicyUtils.getTopic(ref.options.topic, root, topicOwner, ref);
             const vc = HVcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
@@ -150,6 +164,7 @@ export class SendToGuardianBlock {
                 .sendMessage(vcMessage);
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
+            document.topicId = vcMessageResult.getTopicId();
             return document;
         } catch (error) {
             throw new BlockActionError(error.message, ref.blockType, ref.uuid)
@@ -180,9 +195,9 @@ export class SendToGuardianBlock {
         ref.log(`Send Document: ${JSON.stringify(document)}`);
 
         if (ref.options.dataType) {
-            return await this.sendByType(document, ref);
+            return await this.sendByType(document, user, ref);
         } else {
-            return await this.send(document, ref);
+            return await this.send(document, user, ref);
         }
     }
 

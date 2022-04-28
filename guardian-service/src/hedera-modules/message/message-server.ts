@@ -171,4 +171,18 @@ export class MessageServer {
     public async loadDocument<T extends Message>(message: T): Promise<T> {
         return await this.loadIPFS<T>(message);
     }
+
+    public async findTopic(messageId:string): Promise<string> {
+        try {
+            console.log(messageId)
+            if(messageId) {
+                const { topicId, message } = await this.client.getTopicMessage(messageId);
+                console.log(topicId)
+                return topicId;
+            }
+            return null;
+        } catch (error) {
+            return null;
+        }
+    }
 }

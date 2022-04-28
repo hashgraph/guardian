@@ -61,6 +61,7 @@ export class MintBlock {
         token: TokenCollection,
         document: VcDocument[],
         vsMessages: string[],
+        topicId: string,
         rule: string,
         root: any,
         user: IAuthUser,
@@ -73,9 +74,15 @@ export class MintBlock {
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-
-        const topic = await PolicyUtils.getTopic('root', root, user, ref);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        ref.log(`Topic Id: ${topicId}`);
+        let topic: any;
+        if (topicId) {
+            topic = await PolicyUtils.getTopicById(topicId, ref);
+        } else {
+            topic = await PolicyUtils.getTopic('root', root, user, ref);
+        }
+        ref.log(`Topic Id: ${topic?.id}`);
 
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
@@ -90,7 +97,8 @@ export class MintBlock {
             policyId: ref.policyId,
             tag: ref.tag,
             schema: `#${mintVC.getSubjectType()}`,
-            messageId: vcMessageResult.getId()
+            messageId: vcMessageResult.getId(),
+            topicId: vcMessageResult.getTopicId(),
         } as any);
 
         const vpMessage = new VPMessage(MessageAction.CreateVP);
@@ -106,7 +114,8 @@ export class MintBlock {
             type: DataTypes.MINT,
             policyId: ref.policyId,
             tag: ref.tag,
-            messageId: vpMessageResult.getId()
+            messageId: vpMessageResult.getId(),
+            topicId: vpMessageResult.getTopicId(),
         } as any);
 
         await PolicyUtils.mint(token, tokenValue, root, user, vpMessageResult.getId());
@@ -130,14 +139,18 @@ export class MintBlock {
 
         const vcs: VcDocument[] = [];
         const vsMessages: string[] = [];
+        let topicId: string;
         for (let i = 0; i < docs.length; i++) {
             const element = docs[i];
             if (element.signature === DocumentSignature.INVALID) {
                 throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
             }
             vcs.push(VcDocument.fromJsonTree(element.document));
-            if(element.messageId) {
+            if (element.messageId) {
                 vsMessages.push(element.messageId);
+            }
+            if (element.topicId) {
+                topicId = element.topicId;
             }
         }
 
@@ -148,7 +161,7 @@ export class MintBlock {
 
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
-            const doc = await this.mintProcessing(token, vcs, vsMessages, rule, root, curUser, ref);
+            const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
             await ref.runNext(curUser, state);
             PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, curUser);
             PolicyComponentsUtils.CallParentContainerCallback(ref, curUser);

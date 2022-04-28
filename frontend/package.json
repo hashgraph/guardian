@@ -26,6 +26,7 @@
     "interfaces": "file:../interfaces",
     "js-yaml": "^4.1.0",
     "moment": "^2.29.1",
+    "ngx-file-drop": "^12.0.0",
     "ngx-toastr": "^14.1.0",
     "process": "^0.11.10",
     "rxjs": "~6.6.0",
@@ -59,5 +60,5 @@
     "test": "ng test",
     "watch": "ng build --watch --configuration development --output-path ../www-data"
   },
-  "version": "1.2.1"
+  "version": "2.0.0"
 }

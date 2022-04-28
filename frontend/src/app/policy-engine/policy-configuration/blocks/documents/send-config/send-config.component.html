@@ -16,7 +16,7 @@
 
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Source Type</td>
+        <td class="propRowCell cellName">Data Source</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.dataSource" [disabled]="readonly">
                 <mat-option value="database">Database</mat-option>
@@ -57,6 +57,19 @@
                     matTooltipClass="guardian-tooltip">
                     {{topic.name}}
                 </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr *ngIf="block.dataSource=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Topic Owner</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.topicOwner" [disabled]="readonly">
+                <mat-option value=""></mat-option>
+                <mat-option value="user">Current User</mat-option>
+                <mat-option value="owner">Document Owner</mat-option>
+                <mat-option value="issuer">Document Issuer</mat-option>
             </mat-select>
         </td>
     </tr>

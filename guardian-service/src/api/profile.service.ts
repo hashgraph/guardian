@@ -136,7 +136,8 @@ export const profileAPI = async function (channel: any) {
                 const didMessageResult =await messageServer.setTopicObject(topic).sendMessage(didMessage)
                 didDoc.status = DidDocumentStatus.CREATE;
                 didDoc.messageId = didMessageResult.getId();
-                await getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
+                didDoc.topicId = didMessageResult.getTopicId();
+                getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             } catch (error) {
                 new Logger().error(error.message, ['GUARDIAN_SERVICE']);
                 console.error(error);
@@ -148,7 +149,8 @@ export const profileAPI = async function (channel: any) {
                     const vcMessageResult = await messageServer.setTopicObject(topic).sendMessage(vcMessage);
                     vcDoc.hederaStatus = DocumentStatus.ISSUE;
                     vcDoc.messageId = vcMessageResult.getId();
-                    await getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+                    vcDoc.topicId = vcMessageResult.getTopicId();
+                    getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
                 } catch (error) {
                     new Logger().error(error.message, ['GUARDIAN_SERVICE']);
                     console.error(error);

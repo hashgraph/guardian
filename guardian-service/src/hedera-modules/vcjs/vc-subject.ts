@@ -99,6 +99,10 @@ export class VcSubject {
     }
 
     public static create(subject: any, schema?: string): VcSubject {
+        if (!subject) {
+            throw new Error('Subject is empty');
+        }
+
         const result = new VcSubject();
 
         result.id = subject[VcSubject.CREDENTIAL_ID];

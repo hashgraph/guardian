@@ -81,6 +81,8 @@ export class PolicyUtils {
             item.type = row.type;
             item.tag = row.tag;
             item.document = row.document;
+            item.messageId = row.messageId || item.messageId;
+            item.topicId = row.topicId || item.topicId;
             await getMongoRepository(VcDocumentCollection).update(item.id, item);
             return item;
         } else {
@@ -215,6 +217,23 @@ export class PolicyUtils {
             topic = rootTopic;
         }
 
+        return topic;
+    }
+
+    public static async getTopicById(topicId: string, ref: AnyBlockType): Promise<Topic> {
+        let topic = await getMongoRepository(Topic).findOne({
+            policyId: ref.policyId,
+            topicId: topicId
+        });
+        if (!topic) {
+            topic = await getMongoRepository(Topic).findOne({
+                policyId: ref.policyId,
+                type: TopicType.InstancePolicyTopic
+            });
+        }
+        if (!topic) {
+            throw `Topic does not exist`;
+        }
         return topic;
     }
 

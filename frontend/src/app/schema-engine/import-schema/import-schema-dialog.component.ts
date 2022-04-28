@@ -65,31 +65,23 @@ export class ImportSchemaDialog {
         this.loading = false;
       });
   }
-
-  importFromFile() {
-    this.loading = true;
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.zip';
-    input.click();
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
-      const reader = new FileReader()
-      reader.readAsArrayBuffer(file);
-      reader.addEventListener('load', (e: any) => {
-        const arrayBuffer = e.target.result;
-        this.loading = true;
-        this.schemaService.previewByFile(arrayBuffer).subscribe((result) => {
-          this.loading = false;
-          this.dialogRef.close({
-            type: 'file',
-            data: arrayBuffer,
-            schemes: result
-          });
-        }, (e) => {
-          this.loading = false;
+  
+  importFromFile(file: any) {
+    const reader = new FileReader()
+    reader.readAsArrayBuffer(file);
+    reader.addEventListener('load', (e: any) => {
+      const arrayBuffer = e.target.result;
+      this.loading = true;
+      this.schemaService.previewByFile(arrayBuffer).subscribe((result) => {
+        this.loading = false;
+        this.dialogRef.close({
+          type: 'file',
+          data: arrayBuffer,
+          schemes: result
         });
+      }, (e) => {
+        this.loading = false;
       });
-    }
+    });
   }
 }

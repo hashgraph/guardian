@@ -62,8 +62,11 @@ export abstract class Message {
         return this.id;
     }
 
-    public getTopicId(): string | TopicId {
-        return this.topicId;
+    public getTopicId(): string {
+        if(this.topicId) {
+            return this.topicId.toString();
+        }
+        return null
     }
 
     public abstract validate(): boolean;
