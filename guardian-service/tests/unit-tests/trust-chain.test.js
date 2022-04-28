@@ -1,5 +1,5 @@
 const { expect, assert } = require('chai');
-const { trustChainAPI } = require('./../../dist/api/trust-chain.service');
+const { trustChainAPI } = require('../../dist/api/trust-chain.service');
 const { did_document } = require('./dump/did_document');
 const { vc_document } = require('./dump/vc_document');
 const { vp_document } = require('./dump/vp_document');
@@ -10,7 +10,7 @@ const {
     checkMessage,
     checkError
 } = require('./helper');
-const { ApplicationState, ApplicationStates } = require('./../../dist/helpers/application-state');
+const { ApplicationState, ApplicationStates } = require('interfaces');
 
 describe('Trust Chain service', function () {
     let service, channel;
