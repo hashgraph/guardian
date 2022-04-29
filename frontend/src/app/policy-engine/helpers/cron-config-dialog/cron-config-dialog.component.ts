@@ -54,7 +54,7 @@ export class CronConfigDialog {
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.period = 'week';
-        this.startDate = data.startDate;
+        this.startDate = data.startDate || (new Date).toISOString();
         this.sd = moment(this.startDate).utc();
         this.sd_local = this.sd.clone().local();
         switch (this.sd.day()) {
@@ -191,6 +191,6 @@ export class CronConfigDialog {
     }
 
     setText(mask: string) {
-        this.timeString = cronstrue.toString(mask);
+        this.timeString = cronstrue.toString(mask, { use24HourTimeFormat: true });
     }
 }

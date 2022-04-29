@@ -33,7 +33,7 @@ export class AggregateBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (ref.options.aggregateType == 'period') {
             this.startCron(ref);
-        } else if (ref.options.aggregateType == 'threshold') {
+        } else if (ref.options.aggregateType == 'cumulative') {
 
         } else {
 
@@ -159,21 +159,39 @@ export class AggregateBlock {
         }
     }
 
-    private aggregate(rule: string, docs: AggregateVC[]) {
-        let amount = 0;
-        for (let i = 0; i < docs.length; i++) {
-            const element = VcDocument.fromJsonTree(docs[i].document);
-            const scope = PolicyUtils.getVCScope(element);
-            const value = parseFloat(PolicyUtils.evaluate(rule, scope));
-            amount += value;
+    private expressions(expressions: any[], doc: AggregateVC): any {
+        const result: any = {};
+        if (!expressions || !expressions.length) {
+            return result;
         }
-        return amount;
+        const element = VcDocument.fromJsonTree(doc.document);
+        const scope = PolicyUtils.getVCScope(element);
+        for (let i = 0; i < expressions.length; i++) {
+            const expression = expressions[i];
+            result[expression.name] = parseFloat(PolicyUtils.evaluate(expression.value, scope));
+        }
+        return result;
+    }
+
+    private aggregateScope(scopes: any[]): any {
+        const result: any = {};
+        if (!scopes || !scopes.length) {
+            return result;
+        }
+        const keys = Object.keys(scopes[0]);
+        for (let key of keys) {
+            result[key] = 0;
+        }
+        for (let scope of scopes) {
+            for (let key of keys) {
+                result[key] = result[key] + scope[key];
+            }
+        }
+        return result;
     }
 
     private async tickAggregate(ref: AnyBlockType, owner: string) {
-        ref.log(`tick aggregate: ${owner}`);
-
-        const { rule, threshold } = ref.options;
+        const { expressions, condition } = ref.options;
 
         const repository = getMongoRepository(AggregateVC);
         const rawEntities = await repository.find({
@@ -182,10 +200,17 @@ export class AggregateBlock {
             blockId: ref.uuid
         });
 
-        const amount = this.aggregate(rule, rawEntities);
+        const scopes: any[] = [];
+        for (let doc of rawEntities) {
+            const scope = this.expressions(expressions, doc);
+            scopes.push(scope);
+        }
+        const scope = this.aggregateScope(scopes);
+        const result = PolicyUtils.evaluate(condition, scope);
 
-        if (amount >= threshold) {
-            ref.log(`aggregate next: ${owner}`);
+        ref.log(`tick aggregate: ${owner}, ${result}, ${JSON.stringify(scope)}`);
+
+        if (result === true) {
             const user = await this.users.getUserById(owner);
             await repository.remove(rawEntities);
             await ref.runNext(user, { data: rawEntities });
@@ -220,7 +245,7 @@ export class AggregateBlock {
 
         if (aggregateType == 'period') {
 
-        } else if (aggregateType == 'threshold') {
+        } else if (aggregateType == 'cumulative') {
             this.tickAggregate(ref, doc.owner).then();
         } else {
 
@@ -241,19 +266,29 @@ export class AggregateBlock {
                 } else if (typeof ref.options.period !== 'string') {
                     resultsContainer.addBlockError(ref.uuid, 'Option "period" must be a string');
                 }
-            } else if (ref.options.aggregateType == 'threshold') {
-                if (!ref.options.rule) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-                } else if (typeof ref.options.rule !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+            } else if (ref.options.aggregateType == 'cumulative') {
+                let variables: any = {};
+                if (ref.options.expressions) {
+                    for (let i = 0; i < ref.options.expressions.length; i++) {
+                        const expression = ref.options.expressions[i];
+                        variables[expression.name] = true;
+                    }
                 }
-                if (!ref.options.threshold) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
-                } else if (typeof ref.options.threshold !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a string');
+                if (!ref.options.condition) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "condition" does not set');
+                } else if (typeof ref.options.condition !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "condition" must be a string');
+                } else {
+                    const vars = PolicyUtils.variables(ref.options.condition);
+                    for (let i = 0; i < vars.length; i++) {
+                        const varName = vars[i];
+                        if (!variables[varName]) {
+                            resultsContainer.addBlockError(ref.uuid, `Variable ${varName} not defined`);
+                        }
+                    }
                 }
             } else {
-                resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, threshold');
+                resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, cumulative');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

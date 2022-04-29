@@ -27,7 +27,9 @@ export class AggregateConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
-        options:false
+        options:false,
+        expressionsGroup: false,
+        expressions: {},
     };
 
     block!: BlockNode;
@@ -46,6 +48,7 @@ export class AggregateConfigComponent implements OnInit {
 
     load(block: BlockNode) {
         this.block = block;
+        this.block.expressions = this.block.expressions || [];
         this.block.uiMetaData = this.block.uiMetaData || {}
     }
 
@@ -76,5 +79,12 @@ export class AggregateConfigComponent implements OnInit {
             this.block.periodMask = '';
             this.block.periodInterval = '';
         }
+    }
+
+    addExpression() {
+        this.block.expressions.push({
+            name: '',
+            value: '',
+        })
     }
 }
