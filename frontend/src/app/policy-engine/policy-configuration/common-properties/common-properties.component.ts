@@ -24,7 +24,7 @@ export class CommonPropertiesComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
-        about: false,
+        about: true,
         metaData: false,
     };
 

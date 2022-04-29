@@ -8,7 +8,7 @@ export const DATETIME_FORMATS = {
         dateInput: 'l, LT',
     },
     display: {
-        dateInput: 'DD-MM-YYYY HH:mm (Z)',
+        dateInput: 'DD-MM-YYYY HH:mm (UTC Z)',
         monthYearLabel: 'MM yyyy',
         dateA11yLabel: 'LL',
         monthYearA11yLabel: 'MMMM YYYY',

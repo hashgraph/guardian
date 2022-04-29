@@ -3,7 +3,7 @@
 }
 
 .nav-bar {
-    padding: 0px 60px;
+    padding: 0px 120px 0px 30px;
 }
 
 .content {
@@ -27,6 +27,8 @@
     color: #fff;
     opacity: 1;
     transition: color .3s linear;
+    padding: 0 10px;
+    min-width: 140px;
 }
 
 ::ng-deep .mat-toolbar-row,

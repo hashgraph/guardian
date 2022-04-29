@@ -33,10 +33,6 @@ export class AggregateBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (ref.options.aggregateType == 'period') {
             this.startCron(ref);
-        } else if (ref.options.aggregateType == 'cumulative') {
-
-        } else {
-
         }
     }
 
@@ -217,11 +213,7 @@ export class AggregateBlock {
         }
     }
 
-    async runAction(data: any, user: IAuthUser) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const { aggregateType } = ref.options;
-
-        const doc = data.data;
+    async saveDocuments(ref: AnyBlockType, doc: any): Promise<void> {
         const vc = VcDocument.fromJsonTree(doc.document);
         const repository = getMongoRepository(AggregateVC);
         const newVC = repository.create({
@@ -242,13 +234,26 @@ export class AggregateBlock {
             document: vc.toJsonTree()
         });
         await repository.save(newVC);
+    }
 
-        if (aggregateType == 'period') {
+    async runAction(state: any, user: IAuthUser) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const { aggregateType } = ref.options;
 
-        } else if (aggregateType == 'cumulative') {
-            this.tickAggregate(ref, doc.owner).then();
+        const docs: any | any[] = state.data;
+        let owner: string = null;
+        if (Array.isArray(docs)) {
+            for (let doc of docs) {
+                owner = doc.owner;
+                await this.saveDocuments(ref, doc);
+            }
         } else {
+            owner = docs.owner;
+            await this.saveDocuments(ref, docs);
+        }
 
+        if (aggregateType == 'cumulative') {
+            this.tickAggregate(ref, owner).then();
         }
     }
 

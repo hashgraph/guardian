@@ -26,6 +26,7 @@
 .render {
     position: relative;
     flex: 1;
+    min-width: 1400px;
 }
 
 .main {

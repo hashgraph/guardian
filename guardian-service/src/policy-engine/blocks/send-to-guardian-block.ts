@@ -171,10 +171,9 @@ export class SendToGuardianBlock {
         }
     }
 
-    async documentSender(state: any, user: IAuthUser): Promise<any> {
+    async documentSender(document: any, user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        let document = state.data;
         document.policyId = ref.policyId;
         document.tag = ref.tag;
         document.type = ref.options.entityType;
@@ -182,7 +181,6 @@ export class SendToGuardianBlock {
         if (ref.options.forceNew) {
             document = { ...document };
             document.id = undefined;
-            state.data = document;
         }
         if (ref.options.options) {
             document.option = document.option || {};
@@ -195,17 +193,31 @@ export class SendToGuardianBlock {
         ref.log(`Send Document: ${JSON.stringify(document)}`);
 
         if (ref.options.dataType) {
-            return await this.sendByType(document, user, ref);
+            document = await this.sendByType(document, user, ref);
         } else {
-            return await this.send(document, user, ref);
+            document = await this.send(document, user, ref);
         }
+
+        return document;
     }
 
     @CatchErrors()
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
-        state.data = await this.documentSender(state, user);
+
+        const docs: any | any[] = state.data;
+        if (Array.isArray(docs)) {
+            const newDocs = [];
+            for (let doc of docs) {
+                const newDoc = await this.documentSender(doc, user);
+                newDocs.push(newDoc);
+            }
+            state.data = newDocs;
+        } else {
+            state.data = await this.documentSender(docs, user);
+        }
+
         await ref.runNext(user, state);
         PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
         PolicyComponentsUtils.CallParentContainerCallback(ref, user);

@@ -406,7 +406,12 @@ export class RegisteredBlocks {
             about: {
                 post: false,
                 get: false,
-                input: InputType.Single,
+                input: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (prev && prev.output != InputType.None) {
+                        return prev.output;
+                    }
+                    return InputType.Single;
+                },
                 output: function (block: any, prev?: IBlockAbout, next?: boolean) {
                     if (next === false) {
                         return InputType.None;
