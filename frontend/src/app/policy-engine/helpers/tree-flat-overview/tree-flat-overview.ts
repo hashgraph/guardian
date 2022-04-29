@@ -90,7 +90,7 @@ export class TreeFlatOverview {
 
         function addExpandedChildren(node: BlockNode, expanded: FlatBlockNode[]) {
             result.push(node);
-            if (expanded.find((e) => { return e.node.id == node.id })) {
+            if (expanded.find((e) => { return e && e.node.id == node.id })) {
                 node.children.map((child) => addExpandedChildren(child, expanded));
             }
         }
