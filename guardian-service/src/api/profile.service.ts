@@ -29,11 +29,9 @@ import { TopicHelper } from '@helpers/topicHelper';
 
 /**
  * Connect to the message broker methods of working with Address books.
- * 
+ *
  * @param channel - channel
- * @param configRepository - table with Address books
- * @param didDocumentRepository - table with DID Documents
- * @param vcDocumentRepository - table with VC Documents
+ *
  */
 export const profileAPI = async function (channel: any) {
     ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg, res) => {
@@ -144,7 +142,7 @@ export const profileAPI = async function (channel: any) {
                 new Logger().error(error.message, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 didDoc.status = DidDocumentStatus.FAILED;
-                getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
+                await getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             }
             if (vcMessage) {
                 try {
@@ -157,7 +155,7 @@ export const profileAPI = async function (channel: any) {
                     new Logger().error(error.message, ['GUARDIAN_SERVICE']);
                     console.error(error);
                     vcDoc.hederaStatus = DocumentStatus.FAILED;
-                    getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+                    await getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
                 }
             }
 
