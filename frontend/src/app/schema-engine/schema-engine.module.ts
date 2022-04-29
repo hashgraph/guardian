@@ -14,6 +14,8 @@ import { SetVersionDialog } from './set-version-dialog/set-version-dialog.compon
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
+import { NgxFileDropModule } from 'ngx-file-drop';
+import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag-n-drop.component';
 
 @NgModule({
     declarations: [
@@ -26,7 +28,8 @@ import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.
         SetVersionDialog,
         VCViewerDialog,
         SchemaViewDialog,
-        ExportSchemaDialog
+        ExportSchemaDialog,
+        FileDragNDropComponent
     ],
     imports: [
         CommonModule,
@@ -35,7 +38,8 @@ import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.
         NgxMatDatetimePickerModule,
         NgxMatNativeDateModule,
         NgxMatTimepickerModule,
-        ClipboardModule
+        ClipboardModule,
+        NgxFileDropModule
     ],
     exports: [
         SchemaDialog,
@@ -46,7 +50,8 @@ import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
-        ExportSchemaDialog
+        ExportSchemaDialog,
+        FileDragNDropComponent
     ]
 })
 export class SchemaEngineModule {

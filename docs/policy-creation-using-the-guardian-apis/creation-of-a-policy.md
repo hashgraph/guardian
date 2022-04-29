@@ -11,7 +11,7 @@ Creates a new policy. Only users with the Root Authority role are allowed to mak
 Object that contains policy configuration.
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful operation" %}
+{% swagger-response status="201: Created" description="Successful operation" %}
 
 {% endswagger-response %}
 

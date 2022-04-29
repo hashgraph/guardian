@@ -78,11 +78,19 @@ export class PolicyMessage extends Message {
     }
 
     public static fromMessage(message: string): PolicyMessage {
+        if (!message) {
+            throw new Error('Message Object is empty');
+        }
+
         const json = JSON.parse(message);
         return this.fromMessageObject(json);
     }
 
     public static fromMessageObject(json: PolicyMessageBody): PolicyMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
         if (json.type != MessageType.Policy && json.type != MessageType.InstancePolicy) {
             throw 'Invalid message type'
         }

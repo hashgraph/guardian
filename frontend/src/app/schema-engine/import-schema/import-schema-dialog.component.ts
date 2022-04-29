@@ -65,42 +65,23 @@ export class ImportSchemaDialog {
         this.loading = false;
       });
   }
-
-  importFromFile() {
-    this.loading = true;
-
-    const pickerOpts = {
-      types: [
-        {
-          accept: {
-            'application/zip': ['.zip']
-          }
-        },
-      ],
-      excludeAcceptAllOption: true,
-      multiple: false
-    };
-
-    (window as any).showOpenFilePicker(pickerOpts)
-    .then(async ([fileHandler]: any) => {
-      const file = await fileHandler.getFile();
-      const reader = new FileReader()
-      reader.readAsArrayBuffer(file);
-      reader.addEventListener('load', (e: any) => {
-        const arrayBuffer = e.target.result;
-        this.loading = true;
-        this.schemaService.previewByFile(arrayBuffer).subscribe((result) => {
-          this.loading = false;
-          this.dialogRef.close({
-            type: 'file',
-            data: arrayBuffer,
-            schemes: result
-          });
-        }, (e) => {
-          this.loading = false;
+  
+  importFromFile(file: any) {
+    const reader = new FileReader()
+    reader.readAsArrayBuffer(file);
+    reader.addEventListener('load', (e: any) => {
+      const arrayBuffer = e.target.result;
+      this.loading = true;
+      this.schemaService.previewByFile(arrayBuffer).subscribe((result) => {
+        this.loading = false;
+        this.dialogRef.close({
+          type: 'file',
+          data: arrayBuffer,
+          schemes: result
         });
+      }, (e) => {
+        this.loading = false;
       });
-    })
-    .catch(() => this.dialogRef.close(null));
+    });
   }
 }

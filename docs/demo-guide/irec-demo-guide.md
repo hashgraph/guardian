@@ -1,6 +1,6 @@
 # iREC Demo Guide
 
-This folder contains sample files that are referenced in the Demo Usage Guide&#x20;
+This folder contains a sample file that is referenced in the Demo Guide&#x20;
 
 1. New iREC Policy ([iRec Policy 2.zip)](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iRec%20Policy%202.zip)&#x20;
 
@@ -9,7 +9,7 @@ This folder contains sample files that are referenced in the Demo Usage Guide&#x
 1. Issuer (Root Authority)&#x20;
 2. Participant&#x20;
 
-2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000). Typically, the way we start the reference implementation demonstration is by logging in as the Verra. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Issuer user.&#x20;
+2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000). Typically, the way we start the reference implementation demonstration is by logging in as an Issuer. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Issuer user.&#x20;
 
 3\. You will now be prompted to configure your Issuer account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
@@ -27,7 +27,7 @@ This folder contains sample files that are referenced in the Demo Usage Guide&#x
 
 5\. Click on Issuer’s profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select Registrant.&#x20;
 
-6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click the Open button to the right of the Verra Policy, the Issuer created. This is where the custom user will be able to assign the role that was created by Issuer during the workflow creation process. In our case, we created the custom role of Registrant so the user will need to select the Registrant role from the drop down.&#x20;
+6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click the Open button to the right of the iREC Policy, the Issuer created. This is where the custom user will be able to assign the role that was created by Issuer during the workflow creation process. In our case, we created the custom role of Registrant so the user will need to select the Registrant role from the drop down.&#x20;
 
 ![](../.gitbook/assets/iREC\_3.png)
 
@@ -71,7 +71,7 @@ For now, we will be adding it manually, but in future, we will be automating the
 
 ![](../.gitbook/assets/iREC\_13.png)
 
-After submitting the data, the Registrant is waiting for approval from the iREC.
+After submitting the data, the Registrant is waiting for approval from the Issuer.
 
 ![](../.gitbook/assets/iREC\_14.png)
 

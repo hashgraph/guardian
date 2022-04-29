@@ -1,14 +1,14 @@
 require('module-alias/register');
 
 const { expect, assert } = require('chai');
-const { approveAPI } = require('./../../dist/api/approve.service');
-const { ApplicationState, ApplicationStates } = require('./../../dist/helpers/application-state');
+const { approveAPI } = require('../../dist/api/approve.service');
+const { ApplicationState, ApplicationStates } = require('interfaces');
 
-const { 
-    createChannel, 
-    createTable, 
-    checkMessage, 
-    checkError 
+const {
+    createChannel,
+    createTable,
+    checkMessage,
+    checkError
 } = require('./helper');
 
 describe('Approve service', function () {

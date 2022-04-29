@@ -1,16 +1,16 @@
 const { expect, assert } = require('chai');
-const { loaderAPI } = require('./../../dist/api/loader.service');
-const { DIDDocumentLoader } = require('./../../dist/document-loader/did-document-loader');
-const { ContextDocumentLoader } = require('./../../dist/document-loader/context-loader');
-const { VCSchemaLoader } = require('./../../dist/document-loader/vc-schema-loader');
-const { SubjectSchemaLoader } = require('./../../dist/document-loader/subject-schema-loader');
-const { ApplicationState, ApplicationStates } = require('./../../dist/helpers/application-state');
+const { loaderAPI } = require('../../dist/api/loader.service');
+const { DIDDocumentLoader } = require('../../dist/document-loader/did-document-loader');
+const { ContextDocumentLoader } = require('../../dist/document-loader/context-loader');
+const { VCSchemaLoader } = require('../../dist/document-loader/vc-schema-loader');
+const { SubjectSchemaLoader } = require('../../dist/document-loader/subject-schema-loader');
+const { ApplicationState, ApplicationStates } = require('interfaces');
 
-const { 
-    createChannel, 
-    createTable, 
-    checkMessage, 
-    checkError 
+const {
+    createChannel,
+    createTable,
+    checkMessage,
+    checkError
 } = require('./helper');
 
 describe('Loader service', function () {
