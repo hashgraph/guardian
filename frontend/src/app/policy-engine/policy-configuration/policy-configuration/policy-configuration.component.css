@@ -571,3 +571,23 @@ input[readonly] {
     background: #fff;
     border-top: 1px solid #c9c9c9;
 }
+
+.copy-blocks-mode:active {
+    background-color: #d1d1d1;
+}
+
+.copy-blocks-mode:hover {
+    background-color: #ffffff;
+}
+
+.copy-blocks-mode-active {
+    background-color: #d1d1d1;
+}
+
+.copy-blocks-mode-active:active {
+    background-color: #ffffff;
+}
+
+.copy-blocks-mode-active:hover {
+    background-color: #d1d1d1;
+}
