@@ -1,24 +1,18 @@
-.status-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+.name-column {
     font-size: xx-large;
-    width: 100%;
-    height: 60%;
 }
 
-.service-status-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
-
-.status-container > .service-status-container > .icon-status {
+.icon-status, .equal-column {
     font-size: 40px;
+}
+
+.icon-status {
     width: 40px;
     height: 40px;
+}
+
+.service-status-row, .service-status-row td {
+    padding: 0 10px;
 }
 
 .ready-status {
@@ -27,4 +21,11 @@
 
 .stopped-status {
     color: red;
+}
+
+.service-status-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60%;
 }

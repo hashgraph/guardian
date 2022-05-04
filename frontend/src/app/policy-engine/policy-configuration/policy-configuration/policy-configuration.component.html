@@ -85,6 +85,22 @@
                         <mat-icon>login</mat-icon>
                         <span>Open</span>
                     </div>
+
+                    <div *ngIf="!readonly" class="btn-new-block btn-status-edit" (click)="undoPolicy()" title="Undo">
+                        <mat-icon>undo</mat-icon>
+                        <span>Undo</span>
+                    </div>
+
+                    <div *ngIf="!readonly" class="btn-new-block btn-status-all" (click)="redoPolicy()" title="Redo">
+                        <mat-icon>redo</mat-icon>
+                        <span>Redo</span>
+                    </div>
+
+                    <div *ngIf="!readonly && currentView === 'blocks'" class="btn-new-block btn-status-all copy-blocks-mode" (click)="copyBlocksMode=!copyBlocksMode" title="Save Policy" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}">
+                        <mat-icon>content_copy</mat-icon>
+                        <span>Copy Blocks</span>
+                    </div>
+
                 </div>
 
                 <div class="view-menu">
@@ -104,7 +120,7 @@
 
                 <div class="tree-container code-container-{{currentView}}">
                     <div *ngIf="currentView !== 'blocks'" class="textarea-code">
-                        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"></ngx-codemirror>
+                        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()"></ngx-codemirror>
                     </div>
                     <div *ngIf="currentView !== 'blocks' && errors && errors.length" class="json-errors">
                         <div *ngFor="let item of errors" class="errors-property">

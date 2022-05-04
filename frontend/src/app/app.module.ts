@@ -40,6 +40,7 @@ import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { CommonComponentsModule } from './common-components.module';
+import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 
 @NgModule({
     declarations: [
@@ -61,7 +62,8 @@ import { CommonComponentsModule } from './common-components.module';
         AdminHeaderComponent,
         IconPreviewDialog,
         DetailsLogDialog,
-        ServiceStatusComponent
+        ServiceStatusComponent,
+        ConfirmationDialogComponent
     ],
     imports: [
         BrowserModule,

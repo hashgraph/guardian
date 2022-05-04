@@ -600,3 +600,23 @@ input[readonly] {
     right: 6px;
     z-index: 0;
 }
+
+.copy-blocks-mode:active {
+    background-color: #d1d1d1;
+}
+
+.copy-blocks-mode:hover {
+    background-color: #ffffff;
+}
+
+.copy-blocks-mode-active {
+    background-color: #d1d1d1;
+}
+
+.copy-blocks-mode-active:active {
+    background-color: #ffffff;
+}
+
+.copy-blocks-mode-active:hover {
+    background-color: #d1d1d1;
+}

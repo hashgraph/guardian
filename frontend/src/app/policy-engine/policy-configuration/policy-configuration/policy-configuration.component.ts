@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema, SchemaHelper, SchemaStatus, Token } from 'interfaces';
@@ -11,6 +11,8 @@ import { RegisteredBlocks } from '../../registered-blocks';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import * as yaml from 'js-yaml';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -21,6 +23,37 @@ import * as yaml from 'js-yaml';
     styleUrls: ['./policy-configuration.component.css']
 })
 export class PolicyConfigurationComponent implements OnInit {
+    @HostListener('document:copy', ['$event'])
+    copy(event: ClipboardEvent) {
+        if (this.currentBlock 
+            && this.copyBlocksMode 
+            && this.currentView === 'blocks'
+            && !this.readonly) {
+            event.preventDefault();
+            navigator.clipboard.writeText(JSON.stringify(this.currentBlock));
+        }
+    }
+    
+    @HostListener('document:paste', ['$event'])
+    paste(evt: ClipboardEvent) {
+        if (this.currentBlock 
+            && this.copyBlocksMode 
+            && this.currentView === 'blocks'
+            && !this.readonly) {
+            evt.preventDefault();
+            try {
+                const parsedBlockData = JSON.parse(evt.clipboardData?.getData('text') || "null");
+                this.onCopyBlock(parsedBlockData);
+            }
+            catch {
+                console.warn("Block data is incorrect");
+                return;
+            }
+
+            
+        }
+    }
+
     loading: boolean = true;
 
     blocks: BlockNode[] = [];
@@ -38,6 +71,7 @@ export class PolicyConfigurationComponent implements OnInit {
     errors: any[] = [];
     errorsCount: number = -1;
     errorsMap: any;
+    private _undoDepth: number = 0;
 
     colGroup1 = false;
     colGroup2 = false;
@@ -65,6 +99,8 @@ export class PolicyConfigurationComponent implements OnInit {
     };
     propTab: string = 'Properties';
     policyTab: string = 'Description';
+    private blockToCopy?: BlockNode;
+    copyBlocksMode: boolean = false;
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -106,6 +142,29 @@ export class PolicyConfigurationComponent implements OnInit {
                 setTimeout(() => { this.loading = false; }, 500);
                 return;
             }
+
+            if (!this.compareStateAndConfig(this.objectToJson(policy?.config)) && !this.readonly) {
+                const applyChanesDialog = this.dialog.open(ConfirmationDialogComponent, {
+                    data: {
+                        dialogTitle: "Apply latest changes",
+                        dialogText: "Do you want to apply latest changes?"
+                    }
+                })
+                applyChanesDialog.afterClosed().subscribe((result) => {
+                    if (result) {
+                        this.loadState();
+                    }
+                    else {
+                        this.clearState();
+                        this.saveState();
+                    }
+                })
+                
+            } else {
+                this.clearState();
+                this.saveState();
+            }
+            
             this.schemaService.getSchemes(policy.topicId).subscribe((data2: any) => {
                 const schemes = data2 || [];
                 this.schemes = SchemaHelper.map(schemes) || [];
@@ -175,6 +234,33 @@ export class PolicyConfigurationComponent implements OnInit {
         return false;
     }
 
+    prepareChildrenBlockToCopy(blocks: BlockNode[]) {
+        if (!blocks) {
+            return;
+        }
+
+        for (let i = 0; i < blocks.length; i++) {
+            const block = blocks[i];
+            block.id = this.registeredBlocks.generateUUIDv4();
+            block.tag = `Block_${this.indexBlock}`;
+            this.indexBlock++;
+            this.prepareChildrenBlockToCopy(block.children);
+        }
+    }
+
+    onCopyBlock(block?: BlockNode) {
+        if (this.currentBlock && block) {
+            block.id = this.registeredBlocks.generateUUIDv4();
+            block.tag = `Block_${this.indexBlock}`;
+            this.indexBlock++;
+            this.prepareChildrenBlockToCopy(block.children);
+            this.currentBlock.children = this.currentBlock.children || [];
+            this.currentBlock.children.push(block);
+            this.setBlocks(this.blocks[0]);
+            this.saveState();
+        }
+    }
+
     onAdd(type: any) {
         if (this.currentBlock) {
             this.currentBlock.children = this.currentBlock.children || [];
@@ -186,12 +272,14 @@ export class PolicyConfigurationComponent implements OnInit {
             this.currentBlock.children.push(newBlock);
             this.setBlocks(this.blocks[0]);
             this.indexBlock++;
+            this.saveState();
         }
     }
 
     onDelete(block: BlockNode) {
         this.removeBlock(this.blocks, block);
         this.setBlocks(this.blocks[0]);
+        this.saveState();
         return false;
     }
 
@@ -211,6 +299,114 @@ export class PolicyConfigurationComponent implements OnInit {
 
     onReorder(blocks: BlockNode[]) {
         this.setBlocks(blocks[0]);
+        this.saveState();
+    }
+
+    compareStateAndConfig(JSONconfig: string) {
+        const states = localStorage[this.policyId] && JSON.parse(localStorage[this.policyId]);
+        if (!states) {
+            return true;
+        }
+
+        const state = states[states.length - 1] && JSON.parse(states[states.length - 1]);
+        if (!state) {
+            return true;
+        }
+        if (state.view === 'json' || state.view === 'blocks') {
+            return state.value === JSONconfig;
+        }
+        if (state.view === 'yaml') {
+            return this.yamlToJson(state.value) === JSONconfig;
+        }
+
+        return true;
+    }
+
+    async loadState(states?:any, number?: number) {
+        let stateValues = states || ( localStorage[this.policyId] && JSON.parse(localStorage[this.policyId]));
+        if (!stateValues) {
+            return false;
+        }
+
+        let root: any = {};
+        if (typeof number !== 'number') {
+            root = JSON.parse(stateValues[stateValues.length - 1]);
+        } else if (number >= 0) {
+            const stateValue = stateValues[number];
+            if (!stateValue) {
+                return false;
+            } 
+
+            root = JSON.parse(stateValue);
+        }
+
+        if (!root.view) {
+            return false;
+        }
+        if (this.currentView !== root.view) {
+            this.currentView = root.view;
+            await this.onView(root.view);
+        }
+        if (root.view === 'yaml' || root.view === 'json') {
+            this.code = root.value;
+        }
+        if (root.view === 'blocks') {
+            const rootBlock = this.jsonToObject(root.value);
+            this.setBlocks(rootBlock);
+            this.indexBlock = this.allBlocks.length + 1;
+            this.errors = [];
+            this.errorsCount = -1;
+            this.errorsMap = {};
+        }
+
+        return true;
+    }
+
+    clearState() {
+        localStorage.removeItem(this.policyId);
+    }
+
+    saveState() {
+        if (this.readonly) {
+            return;
+        }
+        
+        let stateValue = localStorage[this.policyId] && JSON.parse(localStorage[this.policyId]);
+        if (stateValue && stateValue.length > 5) {
+            stateValue.shift();
+            localStorage.setItem(this.policyId, JSON.stringify(stateValue));
+        }
+        else if (!stateValue) {
+            stateValue = [];
+        }
+
+        let state = "";
+        if (this.currentView == 'blocks') {
+            state = JSON.stringify({
+                view: this.currentView,
+                value: this.objectToJson(this.root)
+            });
+        }
+        if (this.currentView == 'yaml') {
+            state = JSON.stringify({
+                view: this.currentView,
+                value: this.code
+            });
+        }
+        if (this.currentView == 'json') {
+            state = JSON.stringify({
+                view: this.currentView,
+                value: this.code
+            });
+        }
+
+        if (this._undoDepth) {
+            stateValue.slice(0, stateValue.length - this._undoDepth -1);
+            this._undoDepth = 0;
+        }
+
+        stateValue.push(state);
+        localStorage.setItem(this.policyId, JSON.stringify(stateValue));
     }
 
     hasChild(_: number, node: BlockNode) {
@@ -231,6 +427,9 @@ export class PolicyConfigurationComponent implements OnInit {
             this.policy.config = root;
             this.policyEngineService.update(this.policyId, this.policy).subscribe((policy) => {
                 this.setPolicy(policy);
+                if (this.compareStateAndConfig(this.objectToJson(root))) {
+                    this.clearState();
+                }
                 this.loading = false;
             }, (e) => {
                 console.error(e.error);
@@ -446,5 +645,27 @@ export class PolicyConfigurationComponent implements OnInit {
     jsonToYaml(json: string): string {
         const root = this.jsonToObject(json);
         return this.objectToYaml(root);
+    }
+
+    async undoPolicy() {
+        const stateValues = localStorage[this.policyId] && JSON.parse(localStorage[this.policyId]);
+        if (!stateValues) {
+            return;
+        }
+
+        if (await this.loadState(stateValues, stateValues.length - 2 - this._undoDepth)) {
+            this._undoDepth++;
+        }
+    }
+
+    async redoPolicy() {
+        const stateValues = localStorage[this.policyId] && JSON.parse(localStorage[this.policyId]);
+        if (!stateValues) {
+            return;
+        }
+
+        if (await this.loadState(stateValues, stateValues.length - this._undoDepth)) {
+            this._undoDepth--;
+        }    
     }
 }
