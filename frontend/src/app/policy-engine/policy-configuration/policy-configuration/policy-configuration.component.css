@@ -279,7 +279,6 @@
 .btn-new-block {
     display: flex;
     overflow: hidden;
-    min-width: 45px;
     height: 52px;
     flex-direction: column;
     border: 1px solid transparent;
@@ -296,6 +295,13 @@
     border-radius: 6px;
     background: rgb(252 252 252);
     border: 1px solid rgb(220 220 220);
+}
+
+.btn-group {
+    min-width: 52px;
+}
+.btn-new-block {
+    min-width: 60px;
 }
 
 .btn-group:hover,
