@@ -219,9 +219,8 @@ export class SendToGuardianBlock {
         }
 
         await ref.runNext(user, state);
-        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
-        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
-        // ref.updateBlock(state, user, '');
+        ref.callDependencyCallbacks(user);
+        ref.callParentContainerCallback(user);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

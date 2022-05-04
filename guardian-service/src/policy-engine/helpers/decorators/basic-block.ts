@@ -12,6 +12,7 @@ import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
 import { BlockActionError } from '@policy-engine/errors';
 import { Policy } from '@entity/policy';
+import { PolicyEvent } from '@policy-engine/interfaces/policy-event';
 
 /**
  * Basic block decorator
@@ -184,21 +185,21 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-            public async updateBlock(state:any, user:IAuthUser, tag:string) {
+            public async updateBlock(state: any, user: IAuthUser, tag: string) {
                 await this.saveState();
                 if (!this.options.followUser) {
                     const policy = await getMongoRepository(Policy).findOne(this.policyId);
 
                     for (let [did, role] of Object.entries(policy.registeredUsers)) {
                         if (this.permissions.includes(role)) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
                         } else if (this.permissions.includes('ANY_ROLE')) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did} as any, tag);
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
                         }
                     }
 
                     if (this.permissions.includes('OWNER')) {
-                        PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, {did: this.policyOwner} as any, tag);
+                        PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did: this.policyOwner } as any, tag);
                     }
                 } else {
                     PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
@@ -314,18 +315,42 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (typeof super.destroy === 'function') {
                     super.destroy();
                 }
-                
+
                 for (let child of (this as any).children) {
                     child.destroy();
                 }
             }
 
             public start() {
+                for (let dep of this.dependencies) {
+                    PolicyComponentsUtils.RegisterEvent(
+                        this.policyId, dep, 'DependencyEvent', (event: PolicyEvent<any>) => {
+                            this.updateBlock({}, event.user, '');
+                        }
+                    );
+                }
                 if (typeof super.start === 'function') {
                     super.start();
                 }
             }
 
+            public callDependencyCallbacks(user: IAuthUser) {
+                PolicyComponentsUtils.TriggerEvent({
+                    type: 'DependencyEvent',
+                    policyId: this.policyId,
+                    target: this.tag,
+                    targetId: this.uuid,
+                    user: user,
+                    data: null
+                });
+            }
+
+            public callParentContainerCallback(user: IAuthUser) {
+                if (this.parent?.blockClassName === 'ContainerBlock') {
+                    this.parent.updateBlock({}, user, '');
+                }
+            }
+            
             protected log(message: string) {
                 this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
             }

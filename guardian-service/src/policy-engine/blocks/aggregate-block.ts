@@ -1,5 +1,3 @@
-import moment from 'moment';
-import { CronJob } from 'cron';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregateDocuments';
@@ -12,6 +10,7 @@ import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { PolicyEvent } from '@policy-engine/interfaces/policy-event';
 
 /**
  * Aggregate block
@@ -24,110 +23,20 @@ export class AggregateBlock {
     @Inject()
     private users: Users;
 
-    private tickCount: number;
-    private interval: number;
-    private job: CronJob;
-    private endTime: number;
-
     start() {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (ref.options.aggregateType == 'period') {
-            this.startCron(ref);
+            PolicyComponentsUtils.RegisterEvent(
+                ref.policyId, ref.options.timer, 'TimerEvent', this.tickCron.bind(this)
+            );
         }
     }
 
-    destroy() {
-        if (this.job) {
-            this.job.stop();
-        }
-    }
-
-    private startCron(ref: AnyBlockType) {
-        try {
-            let sd = moment(ref.options.startDate).utc();
-            if (sd.isValid()) {
-                sd = moment().utc();
-            }
-
-            let ed = moment(ref.options.endDate).utc();
-            if (ed.isValid()) {
-                this.endTime = ed.toDate().getTime();
-            } else {
-                this.endTime = Infinity;
-            }
-
-            const now = new Date();
-            if (now.getTime() > this.endTime) {
-                return;
-            }
-
-            let mask: string = '';
-            this.interval = 0;
-            switch (ref.options.period) {
-                case 'yearly': {
-                    mask = `${sd.minute()} ${sd.hour()} ${sd.date()} ${sd.month() + 1} *`;
-                    break;
-                }
-                case 'monthly': {
-                    mask = `${sd.minute()} ${sd.hour()} ${sd.date()} * *`;
-                    break;
-                }
-                case 'weekly': {
-                    mask = `${sd.minute()} ${sd.hour()} * * ${sd.weekday()}`;
-                    break;
-                }
-                case 'daily': {
-                    mask = `${sd.minute()} ${sd.hour()} * * *`;
-                    break;
-                }
-                case 'hourly': {
-                    mask = `${sd.minute()} * * * *`;
-                    break;
-                }
-                case 'custom': {
-                    mask = ref.options.periodMask;
-                    this.interval = ref.options.periodInterval;
-                    break;
-                }
-            }
-            ref.log(`start scheduler: ${mask}, ${ref.options.startDate}, ${ref.options.endDate}, ${ref.options.periodInterval}`);
-            if (this.interval > 1) {
-                this.tickCount = 0;
-                this.job = new CronJob(mask, () => {
-                    const now = new Date();
-                    if (now.getTime() > this.endTime) {
-                        ref.log(`stop scheduler`);
-                        this.job.stop();
-                        return;
-                    }
-                    this.tickCount++;
-                    if (this.tickCount < this.interval) {
-                        ref.log(`skip tick scheduler`);
-                        return;
-                    }
-                    this.tickCount = 0;
-                    this.tickCron(ref).then();
-                }, null, false, 'UTC');
-            } else {
-                this.job = new CronJob(mask, () => {
-                    const now = new Date();
-                    if (now.getTime() > this.endTime) {
-                        ref.log(`stop scheduler`);
-                        this.job.stop();
-                        return;
-                    }
-                    this.tickCron(ref).then();
-                }, null, false, 'UTC');
-            }
-            this.job.start();
-        } catch (error) {
-            ref.log(`start scheduler fail ${error.message}`);
-            throw `start scheduler fail ${error.message}`;
-        }
-    }
-
-    private async tickCron(ref: AnyBlockType) {
+    private async tickCron(event: PolicyEvent<string[]>) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`tick scheduler`);
+
+        const users = event.data || [];
 
         const repository = getMongoRepository(AggregateVC);
         const rawEntities = await repository.find({
@@ -136,22 +45,33 @@ export class AggregateBlock {
         });
 
         const map = new Map<string, AggregateVC[]>();
+        const removeMsp:AggregateVC[] = [];
+        for (let did of users) {
+            map.set(did, []);
+        }
         for (let element of rawEntities) {
             const owner = element.owner;
             if (map.has(owner)) {
                 map.get(owner).push(element);
             } else {
-                map.set(owner, [element]);
+                removeMsp.push(element);
             }
         }
 
-        const owners = map.keys();
-        for (let owner of owners) {
-            ref.log(`aggregate next: ${owner}`);
-            const user = await this.users.getUserById(owner);
-            const documents = map.get(owner);
-            await repository.remove(documents);
-            await ref.runNext(user, { data: documents });
+        if(removeMsp.length) {
+            await repository.remove(removeMsp);
+        }
+
+        for (let did of users) {
+            ref.log(`aggregate next: ${did}`);
+            const user = await this.users.getUserById(did);
+            const documents = map.get(did);
+            if(documents.length) {
+                await repository.remove(documents);
+            }
+            if(documents.length || ref.options.emptyData) {
+                await ref.runNext(user, { data: documents });
+            }
         }
     }
 

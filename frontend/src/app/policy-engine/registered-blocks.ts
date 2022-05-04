@@ -26,6 +26,7 @@ import { ReportBlockComponent } from "./policy-viewer/blocks/report-block/report
 import { ReportItemConfigComponent } from "./policy-configuration/blocks/report/report-item-config/report-item-config.component";
 import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { ReassigningConfigComponent } from "./policy-configuration/blocks/documents/reassigning-config/reassigning-config.component";
+import { TimerConfigComponent } from "./policy-configuration/blocks/documents/timer-config/timer-config.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -48,6 +49,7 @@ export enum BlockType {
     ReportItem = 'reportItemBlock',
     ReassigningBlock = 'reassigningBlock',
     PaginationAddon = 'paginationAddon',
+    TimerBlock = 'timerBlock',
 }
 
 export enum BlockGroup {
@@ -491,6 +493,23 @@ export class RegisteredBlocks {
                 post: true,
                 get: true,
                 input: InputType.None,
+                output: InputType.None,
+                children: ChildrenType.None,
+                control: ControlType.Special,
+            }
+        });
+        this.addBlock({
+            type: BlockType.TimerBlock,
+            icon: 'schedule',
+            name: 'Timer',
+            title: `Add 'Timer' Block`,
+            group: BlockGroup.Documents,
+            factory: null,
+            property: TimerConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Single,
                 output: InputType.None,
                 children: ChildrenType.None,
                 control: ControlType.Special,

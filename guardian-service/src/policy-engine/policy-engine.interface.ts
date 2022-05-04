@@ -61,6 +61,12 @@ export interface IPolicyBlock {
     error(message: string): void;
 
     warn(message: string): void;
+
+    start();
+
+    callDependencyCallbacks(user: IAuthUser);
+
+    callParentContainerCallback(user: IAuthUser);
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {

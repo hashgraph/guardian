@@ -13,6 +13,7 @@ import { Policy } from '@entity/policy';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
+import { PolicyEvent } from './interfaces/policy-event';
 
 export class PolicyComponentsUtils {
     public static BlockUpdateFn: (uuid: string, state: any, user: IAuthUser, tag?: string) => void;
@@ -20,32 +21,61 @@ export class PolicyComponentsUtils {
     private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
     private static PolicyBlockMapObject: PolicyBlockMap = new Map();
     private static PolicyTagMapObject: Map<string, PolicyTagMap> = new Map();
-    private static BlockSubscriptions: Map<string, Map<string, Function[]>> = new Map();
+    private static BlockEventSubscriptions: Map<string, Map<string, Map<string, Function[]>>> = new Map();
 
-    /**
-     * Register dependency
-     * @param tag {string}
-     * @param fn {Function}
-     */
-    public static RegisterDependencyCallback(tag: string, policyId: string, fn: Function): void {
-        let policyTagsMap: Map<string, Function[]>;
-
-        if (!PolicyComponentsUtils.BlockSubscriptions.has(policyId)) {
-            policyTagsMap = new Map();
-            PolicyComponentsUtils.BlockSubscriptions.set(policyId, policyTagsMap);
+    public static RegisterEvent(policyId: string, tag: string, eventType: string, fn: Function): void {
+        let policyMap: Map<string, Map<string, Function[]>>;
+        if (PolicyComponentsUtils.BlockEventSubscriptions.has(policyId)) {
+            policyMap = PolicyComponentsUtils.BlockEventSubscriptions.get(policyId);
         } else {
-            policyTagsMap = PolicyComponentsUtils.BlockSubscriptions.get(policyId);
+            policyMap = new Map();
+            PolicyComponentsUtils.BlockEventSubscriptions.set(policyId, policyMap);
+        }
+
+        let tagMap: Map<string, Function[]>;
+        if (policyMap.has(tag)) {
+            tagMap = policyMap.get(tag);
+        } else {
+            tagMap = new Map();
+            policyMap.set(tag, tagMap);
         }
 
         let subscriptionsArray: Function[];
-        if (!Array.isArray(policyTagsMap.get(tag))) {
+        if (!Array.isArray(tagMap.get(eventType))) {
             subscriptionsArray = [];
-            policyTagsMap.set(tag, subscriptionsArray);
+            tagMap.set(eventType, subscriptionsArray);
         } else {
-            subscriptionsArray = policyTagsMap.get(tag);
+            subscriptionsArray = tagMap.get(tag);
         }
 
         subscriptionsArray.push(fn);
+    }
+
+    public static RemoveEventAll(policyId: string, tag: string, eventType: string): void {
+        if (PolicyComponentsUtils.BlockEventSubscriptions.has(policyId)) {
+            const policy = PolicyComponentsUtils.BlockEventSubscriptions.get(policyId);
+            if (policy.has(tag)) {
+                const block = policy.get(tag);
+                if (block.has(eventType)) {
+                    block.set(eventType, []);
+                }
+            }
+        }
+    }
+
+    public static TriggerEvent(event: PolicyEvent<any>): void {
+        if (PolicyComponentsUtils.BlockEventSubscriptions.has(event.policyId)) {
+            const policy = PolicyComponentsUtils.BlockEventSubscriptions.get(event.policyId);
+            if (policy.has(event.target)) {
+                const block = policy.get(event.target);
+                if (block.has(event.type)) {
+                    const functions = block.get(event.target);
+                    for (let fn of functions) {
+                        fn(event);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -84,37 +114,7 @@ export class PolicyComponentsUtils {
             PolicyComponentsUtils.ExternalDataBlocks.set(component.uuid, component);
         }
 
-        const componentRef = component as any;
-        for (let dep of componentRef.dependencies) {
-            PolicyComponentsUtils.RegisterDependencyCallback(dep, policyId, (user) => {
-                component.updateBlock({}, user, '');
-            })
-        }
-    }
-
-    /**
-     * Call callbacks of all dependency blocks
-     * @param tag
-     * @param policyId
-     * @param user
-     */
-    public static CallDependencyCallbacks(tag: string, policyId: string, user: any): void {
-        if (PolicyComponentsUtils.BlockSubscriptions.has(policyId) && PolicyComponentsUtils.BlockSubscriptions.get(policyId).has(tag)) {
-            for (let fn of PolicyComponentsUtils.BlockSubscriptions.get(policyId).get(tag)) {
-                fn(user);
-            }
-        }
-    }
-
-    /**
-     * Find and block container parent
-     * @param block
-     * @param user
-     */
-    public static CallParentContainerCallback(block: AnyBlockType, user: any): void {
-        if (block.parent?.blockClassName === 'ContainerBlock') {
-            block.parent.updateBlock({}, user, '');
-        }
+        component.start();
     }
 
     /**
@@ -123,7 +123,7 @@ export class PolicyComponentsUtils {
      */
     public static async ReceiveExternalData(data: any): Promise<void> {
         for (let block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
-            const policy = await getMongoRepository(Policy).findOne({policyTag: data.policyTag});
+            const policy = await getMongoRepository(Policy).findOne({ policyTag: data.policyTag });
             if (policy.id.toString() === (block as any).policyId) {
                 await (block as any).receiveData(data);
             }
@@ -182,8 +182,8 @@ export class PolicyComponentsUtils {
      * @param skipRegistration
      */
     public static ConfigureBlock(policyId: string, blockType: string,
-                                 options: Partial<PolicyBlockConstructorParams>,
-                                 skipRegistration?: boolean): any {
+        options: Partial<PolicyBlockConstructorParams>,
+        skipRegistration?: boolean): any {
         if (options.options) {
             options = Object.assign(options, options.options);
         }
@@ -199,7 +199,6 @@ export class PolicyComponentsUtils {
         );
         if (!skipRegistration) {
             PolicyComponentsUtils.RegisterComponent(policyId, instance);
-            instance.start();
         }
         return instance;
     }

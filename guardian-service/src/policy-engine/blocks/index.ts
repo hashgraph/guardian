@@ -18,3 +18,4 @@ export { CalculateMathAddon } from './calculate-math-addon';
 export { ReportBlock } from './report-block';
 export { ReportItemBlock } from './report-item-block';
 export { ReassigningBlock } from './reassigning.block';
+export { TimerBlock } from './timer-block';

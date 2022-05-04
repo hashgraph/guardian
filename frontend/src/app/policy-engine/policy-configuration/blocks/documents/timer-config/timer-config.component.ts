@@ -5,17 +5,17 @@ import { MatDialog } from '@angular/material/dialog';
 import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
 
 /**
- * Settings for block of 'aggregateDocument' type.
+ * Settings for block of 'timer' type.
  */
 @Component({
-    selector: 'aggregate-config',
-    templateUrl: './aggregate-config.component.html',
+    selector: 'timer-config',
+    templateUrl: './timer-config.component.html',
     styleUrls: [
         './../../../common-properties/common-properties.component.css',
-        './aggregate-config.component.css'
+        './timer-config.component.css'
     ]
 })
-export class AggregateConfigComponent implements OnInit {
+export class TimerConfigComponent implements OnInit {
     @Input('target') target!: BlockNode;
     @Input('all') all!: BlockNode[];
     @Input('schemes') schemes!: Schema[];
@@ -33,7 +33,6 @@ export class AggregateConfigComponent implements OnInit {
     };
 
     block!: BlockNode;
-    allTimer!: BlockNode[];
 
     constructor(private dialog: MatDialog) {
     }
@@ -48,20 +47,35 @@ export class AggregateConfigComponent implements OnInit {
     }
 
     load(block: BlockNode) {
-        this.allTimer = this.all?.filter(e=>e.blockType=='timerBlock');
         this.block = block;
-        this.block.expressions = this.block.expressions || [];
-        this.block.uiMetaData = this.block.uiMetaData || {}
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
 
-    addExpression() {
-        this.block.expressions.push({
-            name: '',
-            value: '',
-        })
+    selectPeriod() {
+        if (this.block.period == 'custom') {
+            const dialogRef = this.dialog.open(CronConfigDialog, {
+                width: '550px',
+                disableClose: true,
+                data: {
+                    startDate: this.block.startDate
+                },
+                autoFocus: false
+            });
+            dialogRef.afterClosed().subscribe(async (result) => {
+                if (result) {
+                    this.block.periodMask = result.mask;
+                    this.block.periodInterval = result.interval;
+                } else {
+                    this.block.periodMask = '';
+                    this.block.periodInterval = '';
+                }
+            });
+        } else {
+            this.block.periodMask = '';
+            this.block.periodInterval = '';
+        }
     }
 }

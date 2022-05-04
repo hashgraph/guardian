@@ -142,8 +142,8 @@ export class CalculateContainerBlock {
             state.data = await this.process(state.data, ref);
         }
         await ref.runNext(user, state);
-        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
-        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+        ref.callDependencyCallbacks(user);
+        ref.callParentContainerCallback(user);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
