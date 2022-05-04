@@ -24,12 +24,13 @@ import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dia
 })
 export class PolicyConfigurationComponent implements OnInit {
     @HostListener('document:copy', ['$event'])
-    copy() {
+    copy(event: ClipboardEvent) {
         if (this.currentBlock 
             && this.copyBlocksMode 
             && this.currentView === 'blocks'
             && !this.readonly) {
-            this.clipboard.copy(JSON.stringify(this.currentBlock));
+            event.preventDefault();
+            navigator.clipboard.writeText(JSON.stringify(this.currentBlock));
         }
     }
     
@@ -39,16 +40,17 @@ export class PolicyConfigurationComponent implements OnInit {
             && this.copyBlocksMode 
             && this.currentView === 'blocks'
             && !this.readonly) {
-            let parsedBlockData;
+            evt.preventDefault();
             try {
-                parsedBlockData = JSON.parse(evt.clipboardData?.getData('text') || "null");
+                const parsedBlockData = JSON.parse(evt.clipboardData?.getData('text') || "null");
+                this.onCopyBlock(parsedBlockData);
             }
             catch {
-                console.warn("Can't parse block data");
+                console.warn("Block data is incorrect");
                 return;
             }
 
-            this.onCopyBlock(parsedBlockData);
+            
         }
     }
 
@@ -107,8 +109,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private route: ActivatedRoute,
         private router: Router,
-        private dialog: MatDialog,
-        private clipboard: Clipboard
+        private dialog: MatDialog
     ) {
         this.newBlockType = 'interfaceContainerBlock';
     }
@@ -120,7 +121,7 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    loadPolicy(loadState:boolean = true): void {
+    loadPolicy(): void {
         const policyId = this.route.snapshot.queryParams['policyId'];
         if (!policyId) {
             this.policy = null;
@@ -142,7 +143,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 return;
             }
 
-            if (!this.compareStateAndConfig(this.objectToJson(policy?.config)) && !this.readonly && loadState) {
+            if (!this.compareStateAndConfig(this.objectToJson(policy?.config)) && !this.readonly) {
                 const applyChanesDialog = this.dialog.open(ConfirmationDialogComponent, {
                     data: {
                         dialogTitle: "Apply latest changes",
@@ -455,7 +456,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyEngineService.publish(this.policyId, version).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (isValid) {
-                this.loadPolicy(false);
+                this.loadPolicy();
             } else {
                 const blocks = errors.blocks;
                 const invalidBlocks = blocks.filter((block: any) => !block.isValid);
