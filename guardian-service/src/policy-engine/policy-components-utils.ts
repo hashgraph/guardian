@@ -45,7 +45,7 @@ export class PolicyComponentsUtils {
             subscriptionsArray = [];
             tagMap.set(eventType, subscriptionsArray);
         } else {
-            subscriptionsArray = tagMap.get(tag);
+            subscriptionsArray = tagMap.get(eventType);
         }
 
         subscriptionsArray.push(fn);
