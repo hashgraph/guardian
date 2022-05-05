@@ -17,8 +17,6 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./code-editor-dialog.component.css']
 })
 export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
-    @ViewChild('codeeditor') private codeEditor: any;
-
     codeMirrorOptions: any = {
         theme: 'default',
         mode: 'javascript',
@@ -38,6 +36,8 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
 
     expression!: string;
 
+    initDialog = false;
+
     constructor(
         public dialogRef: MatDialogRef<CodeEditorDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any
@@ -51,7 +51,7 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
 
     ngAfterContentInit() {
         setTimeout(() => {
-            this.codeEditor.codeMirror.refresh();
+            this.initDialog = true;
         }, 100);
 
     }

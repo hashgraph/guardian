@@ -8,6 +8,6 @@
             </div>
     </div>
     <div class="g-dialog-body">
-        <ngx-codemirror #codeeditor [(ngModel)]="expression" [options]="codeMirrorOptions"></ngx-codemirror>
+        <ngx-codemirror *ngIf="initDialog" [(ngModel)]="expression" [options]="codeMirrorOptions"></ngx-codemirror>
     </div>
 </div>
