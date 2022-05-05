@@ -41,52 +41,72 @@ export class CustomLogicBlock {
     execute(state: any, user: IAuthUser): Promise<any> {
         return new Promise((resolve, reject) => {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-            let document = null;
+            let documents = null;
             if (Array.isArray(state.data)) {
-                document = state.data[0];
+                documents = state.data;
             } else {
-                document = state.data;
+                documents = [state.data];
             }
+
+
 
             const done = async (result) => {
                 try {
+                    const root = await this.users.getHederaAccount(ref.policyOwner);
                     const outputSchema = await getMongoRepository(SchemaCollection).findOne({
                         iri: ref.options.outputSchema
                     });
-                    const vcSubject = {
-                        ...SchemaHelper.getContext(outputSchema),
-                        ...result
-                    }
-                    vcSubject.policyId = ref.policyId;
-
-                    const root = await this.users.getHederaAccount(ref.policyOwner);
-
+                    const context = SchemaHelper.getContext(outputSchema);
+                    const owner  = documents[0].owner;
+                    const relationships = documents.filter(d => !!d.messageId).map(d => d.messageId);
                     const VCHelper = new VcHelper();
-                    const newVC = await VCHelper.createVC(
-                        root.did,
-                        root.hederaAccountKey,
-                        vcSubject
-                    );
-                    const item = {
-                        hash: newVC.toCredentialHash(),
-                        owner: document.owner,
-                        document: newVC.toJsonTree(),
-                        schema: outputSchema.iri,
-                        type: outputSchema.iri,
-                        policyId: ref.policyId,
-                        tag: ref.tag,
-                        messageId: null,
-                        topicId: null,
-                        relationships: document.messageId ? [document.messageId] : null
-                    };
-                    resolve(item);
+
+                    const processing = async (document) => {
+
+                        const newVC = await VCHelper.createVC(
+                            root.did,
+                            root.hederaAccountKey,
+                            {
+                                ...context,
+                                ...document,
+                                policyId: ref.policyId
+                            }
+                        );
+
+
+                        return {
+                            hash: newVC.toCredentialHash(),
+                            owner: owner,
+                            document: newVC.toJsonTree(),
+                            schema: outputSchema.iri,
+                            type: outputSchema.iri,
+                            policyId: ref.policyId,
+                            tag: ref.tag,
+                            messageId: null,
+                            topicId: null,
+                            relationships: relationships.length ? relationships : null
+                        };
+                    }
+
+                    if (Array.isArray(result)) {
+                        const items = [];
+                        for (let r of result) {
+                            items.push(await processing(r))
+                        }
+                        resolve(items);
+                        return;
+                    } else {
+                        resolve(await processing(result));
+                        return;
+                    }
+
                 } catch (e) {
                     reject(e);
                 }
             }
 
-            const func = Function(`const [done, user, document, mathjs] = arguments; ${ref.options.expression}`);
-            func.apply(document, [done, user, document, mathjs]);
+            const func = Function(`const [done, user, documents, mathjs] = arguments; ${ref.options.expression}`);
+            func.apply(document, [done, user, documents, mathjs]);
         });
     }
 }
