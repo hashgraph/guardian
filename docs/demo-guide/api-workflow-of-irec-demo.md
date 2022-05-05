@@ -4,9 +4,9 @@
 
 BLOCK : choose\_role
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="User Role" %}
+{% swagger method="post" path="" baseUrl="/policies/626bf178d24497fe1b1e4139/blocks/88ea01cb-35ae-4e4d-87ce-ec93d577cd30" summary="User Role" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/88ea01cb-35ae-4e4d-87ce-ec93d577cd30
+
 {% endswagger-description %}
 
 {% swagger-parameter in="body" name="role" type="String" required="true" %}
@@ -20,50 +20,23 @@ Registrant
 }
 ```
 {% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
 {% endswagger %}
 
 ### Submitting Registrant Application Form
 
 BLOCK : create\_application
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Registrant Application form to be submitted" %}
+{% swagger method="post" path="" baseUrl="/policies/626bf178d24497fe1b1e4139/blocks/8ae8f020-42ed-4692-9d93-4d700d467bd0 " summary="Registrant Application form to be submitted" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/8ae8f020-42ed-4692-9d93-4d700d467bd0
+
 {% endswagger-description %}
 
-{% swagger-parameter in="body" name="document" %}
-&#x20;     "field0":"2022-04-01",
+{% swagger-parameter in="body" name="field0" type="Date" %}
+2022-04-01
+{% endswagger-parameter %}
 
-&#x20;     "field1":{
-
-&#x20;        "field0":"Applicant Legal Name",
+{% swagger-parameter in="body" name="field1" type="Array" %}
+"field0":"Applicant Legal Name",
 
 &#x20;        "field1":"Registered address line 1",
 
@@ -108,13 +81,9 @@ BLOCK : create\_application
 &#x20;        "@context":\[
 
 &#x20;           "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
+{% endswagger-parameter %}
 
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "field2":{
-
+{% swagger-parameter in="body" name="field2" type="array" %}
 &#x20;        "field0":"Organization Name",
 
 &#x20;        "field1":"Address line 1",
@@ -142,13 +111,9 @@ BLOCK : create\_application
 &#x20;        "@context":\[
 
 &#x20;           "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
+{% endswagger-parameter %}
 
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "field3":{
-
+{% swagger-parameter in="body" name="field3" type="array" %}
 &#x20;        "field0":"Family Name (surname)",
 
 &#x20;        "field1":"Other (Given) Names",
@@ -166,18 +131,18 @@ BLOCK : create\_application
 &#x20;        "@context":\[
 
 &#x20;           "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
+{% endswagger-parameter %}
 
-&#x20;        ]
+{% swagger-parameter in="body" name="type" %}
+762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0
+{% endswagger-parameter %}
 
-&#x20;     },
+{% swagger-parameter in="body" name="@context" %}
 
-&#x20;     "type":"762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0",
 
-&#x20;     "@context":\[
+[https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty](https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty)
 
-&#x20;        "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
 
-&#x20;     ]
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="ref" %}
@@ -191,33 +156,6 @@ null
 }
 ```
 {% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
 {% endswagger %}
 
 ### Root Authority (Get Registrant Application to Approve)
@@ -226,9 +164,9 @@ null
 
 BLOCK : registrants\_grid
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Getting Registrant Application for approval" %}
+{% swagger method="get" path="" baseUrl="/policies/626c0490d24497fe1b1e415d/blocks/2f237418-9ed5-4a1e-a2ea-c7f978554784" summary="" %}
 {% swagger-description %}
-/policies/626c0490d24497fe1b1e415d/blocks/2f237418-9ed5-4a1e-a2ea-c7f978554784
+
 {% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -410,42 +348,15 @@ BLOCK : registrants\_grid
 
 ```
 {% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
 {% endswagger %}
 
 ### Root Authority (Approve Registrant Application)
 
 BLOCK : approve\_registrant\_btn
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Approving Registrant Application" %}
+{% swagger method="post" path="" baseUrl="/policies/626bf178d24497fe1b1e4139/blocks/7f091726-126e-4bc7-8e2e-9cd7bb220ed0 " summary="Approving Registrant Application" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/7f091726-126e-4bc7-8e2e-9cd7bb220ed0
+
 {% endswagger-description %}
 
 {% swagger-parameter in="body" name="id" %}
@@ -461,6 +372,8 @@ did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:ti
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="document" %}
+&#x20;
+
 &#x20;     "id":"ebdc5776-e756-4cda-8e10-04c04adc535b",
 
 &#x20;     "type":\[
@@ -536,10 +449,10 @@ did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:ti
 &#x20;              ]
 
 &#x20;           },
+{% endswagger-parameter %}
 
-&#x20;           "field2":{
-
-&#x20;              "field0":"Organization Name",
+{% swagger-parameter in="body" name="field2" %}
+"field0":"Organization Name",
 
 &#x20;              "field1":"Address line 1",
 
@@ -568,12 +481,10 @@ did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:ti
 &#x20;                 "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
 
 &#x20;              ]
+{% endswagger-parameter %}
 
-&#x20;           },
-
-&#x20;           "field3":{
-
-&#x20;              "field0":"Family Name (surname)",
+{% swagger-parameter in="body" name="field3" %}
+"field0":"Family Name (surname)",
 
 &#x20;              "field1":"Other (Given) Names",
 
@@ -592,26 +503,30 @@ did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:ti
 &#x20;                 "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
 
 &#x20;              ]
+{% endswagger-parameter %}
 
-&#x20;           },
+{% swagger-parameter in="body" name="policyID" %}
+626bf178d24497fe1b1e4139
+{% endswagger-parameter %}
 
-&#x20;           "policyId":"626bf178d24497fe1b1e4139",
+{% swagger-parameter in="body" name="@context" %}
 
-&#x20;           "@context":\[
 
-&#x20;              "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
+[https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty](https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty)
 
-&#x20;           ],
 
-&#x20;           "id":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
+{% endswagger-parameter %}
 
-&#x20;           "type":"762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0"
+{% swagger-parameter in="body" name="id" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
 
-&#x20;        }
+{% swagger-parameter in="body" name="type" %}
+762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0
+{% endswagger-parameter %}
 
-&#x20;     ],
-
-&#x20;     "proof":{
+{% swagger-parameter in="body" name="proof" %}
+{
 
 &#x20;        "type":"Ed25519Signature2018",
 
@@ -689,53 +604,30 @@ registrants_source(need_approve)
 }
 ```
 {% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
 {% endswagger %}
 
 ### User (CREATE DEVICE)
 
 BLOCK : create\_device\_form
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Creating Device" %}
+{% swagger method="post" path="" baseUrl="/policies/626bf178d24497fe1b1e4139/blocks/3db29027-8753-4e7f-af40-ca31b72ce95c" summary="Creating Device" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/3db29027-8753-4e7f-af40-ca31b72ce95c
+
 {% endswagger-description %}
 
-{% swagger-parameter in="body" name="document" %}
-"field0":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
+{% swagger-parameter in="body" name="field0" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
 
-&#x20;     "field1":"2022-04-08",
+{% swagger-parameter in="body" name="field1" %}
+2022-04-08
+{% endswagger-parameter %}
 
-&#x20;     "field2":"Is the Registrant also the owner of the Device? (provide evidence)",
+{% swagger-parameter in="body" name="field2" %}
+Is the Registrant also the owner of the Device? (provide evidence)
+{% endswagger-parameter %}
 
-&#x20;     "field3":{
-
+{% swagger-parameter in="body" name="field3" %}
 &#x20;        "field0":"Organization Name",
 
 &#x20;        "field1":"Address line 1",
@@ -765,11 +657,9 @@ BLOCK : create\_device\_form
 &#x20;           "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
 
 &#x20;        ]
+{% endswagger-parameter %}
 
-&#x20;     },
-
-&#x20;     "field4":{
-
+{% swagger-parameter in="body" name="field4" %}
 &#x20;        "field0":"Device Name",
 
 &#x20;        "field1":"Address",
@@ -805,11 +695,9 @@ BLOCK : create\_device\_form
 &#x20;           "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
 
 &#x20;        ]
+{% endswagger-parameter %}
 
-&#x20;     },
-
-&#x20;     "field5":{
-
+{% swagger-parameter in="body" name="field5" %}
 &#x20;        "field0":"Energy Source (Input) – see Appendix 2",
 
 &#x20;        "field1":"Technology – see Appendix 2",
@@ -843,16 +731,18 @@ BLOCK : create\_device\_form
 &#x20;           "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
 
 &#x20;        ]
+{% endswagger-parameter %}
 
-&#x20;     },
+{% swagger-parameter in="body" name="type" %}
+4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0
+{% endswagger-parameter %}
 
-&#x20;     "type":"4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0",
+{% swagger-parameter in="body" name="@context" %}
 
-&#x20;     "@context":\[
 
-&#x20;        "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
+[https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i](https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i)
 
-&#x20;     ]
+
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="ref" %}
@@ -871,22 +761,26 @@ BLOCK : create\_device\_form
 &#x20;           "VerifiableCredential"
 
 &#x20;        ],
+{% endswagger-parameter %}
 
-&#x20;        "issuer":"did:hedera:testnet:A7cP5xLNaF5LPtXkDUTsP6fATh4uarAjCujnZ3qR2vcw;hedera:testnet:tid=0.0.34349531",
+{% swagger-parameter in="body" name="issuer" %}
+did:hedera:testnet:A7cP5xLNaF5LPtXkDUTsP6fATh4uarAjCujnZ3qR2vcw;hedera:testnet:tid=0.0.34349531
+{% endswagger-parameter %}
 
-&#x20;        "issuanceDate":"2022-04-29T14:34:10.327Z",
+{% swagger-parameter in="body" name="issuanceDate" %}
+2022-04-29T14:34:10.327Z
+{% endswagger-parameter %}
 
-&#x20;        "@context":\[
+{% swagger-parameter in="body" name="@context" %}
 
-&#x20;           "https://www.w3.org/2018/credentials/v1"
 
-&#x20;        ],
+[https://www.w3.org/2018/credentials/v1](https://www.w3.org/2018/credentials/v1)
 
-&#x20;        "credentialSubject":\[
 
-&#x20;           {
+{% endswagger-parameter %}
 
-&#x20;              "field0":"2022-04-01",
+{% swagger-parameter in="body" name="credentialSubject" %}
+"field0":"2022-04-01",
 
 &#x20;              "field1":{
 
@@ -937,12 +831,10 @@ BLOCK : create\_device\_form
 &#x20;                    "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
 
 &#x20;                 ]
+{% endswagger-parameter %}
 
-&#x20;              },
-
-&#x20;              "field2":{
-
-&#x20;                 "field0":"Organization Name",
+{% swagger-parameter in="body" name="field2" %}
+"field0":"Organization Name",
 
 &#x20;                 "field1":"Address line 1",
 
@@ -971,12 +863,10 @@ BLOCK : create\_device\_form
 &#x20;                    "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
 
 &#x20;                 ]
+{% endswagger-parameter %}
 
-&#x20;              },
-
-&#x20;              "field3":{
-
-&#x20;                 "field0":"Family Name (surname)",
+{% swagger-parameter in="body" name="field3" %}
+"field0":"Family Name (surname)",
 
 &#x20;                 "field1":"Other (Given) Names",
 
@@ -1005,16 +895,18 @@ BLOCK : create\_device\_form
 &#x20;                 "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
 
 &#x20;              ],
+{% endswagger-parameter %}
 
-&#x20;              "id":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
+{% swagger-parameter in="body" name="id" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
 
-&#x20;              "type":"762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0"
+{% swagger-parameter in="body" name="type" %}
+762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0
+{% endswagger-parameter %}
 
-&#x20;           }
-
-&#x20;        ],
-
-&#x20;        "proof":{
+{% swagger-parameter in="body" name="proof" %}
+&#x20;
 
 &#x20;           "type":"Ed25519Signature2018",
 
@@ -1027,77 +919,72 @@ BLOCK : create\_device\_form
 &#x20;           "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..rjry6W0iAoXzRx7Upb6hxeu0LbxjuNwDULq2p4IIQsOFwY5h4zxBCOVZIGmwIJ\_xY2a0V0-pyX1xTwTUV8aPDQ"
 
 &#x20;        }
+{% endswagger-parameter %}
 
-&#x20;     },
+{% swagger-parameter in="body" name="createDate" %}
+2022-04-29T14:34:18.048Z
+{% endswagger-parameter %}
 
-&#x20;     "createDate":"2022-04-29T14:34:18.048Z",
+{% swagger-parameter in="body" name="updateDate" %}
+2022-04-29T14:34:18.048Z
+{% endswagger-parameter %}
 
-&#x20;     "updateDate":"2022-04-29T14:34:18.048Z",
+{% swagger-parameter in="body" name="hederaStatus" %}
+ISSUE
+{% endswagger-parameter %}
 
-&#x20;     "hederaStatus":"ISSUE",
+{% swagger-parameter in="body" name="signature" %}
+0
+{% endswagger-parameter %}
 
-&#x20;     "signature":0,
+{% swagger-parameter in="body" name="type" %}
+registrant(Approved)
+{% endswagger-parameter %}
 
-&#x20;     "type":"registrant(Approved)",
+{% swagger-parameter in="body" name="policyId" %}
+626bf178d24497fe1b1e4139
+{% endswagger-parameter %}
 
-&#x20;     "policyId":"626bf178d24497fe1b1e4139",
+{% swagger-parameter in="body" name="tag" %}
+save_copy_application
+{% endswagger-parameter %}
 
-&#x20;     "tag":"save\_copy\_application",
-
-&#x20;     "option":{
+{% swagger-parameter in="body" name="option" %}
+{
 
 &#x20;        "status":"Approved"
 
 &#x20;     },
+{% endswagger-parameter %}
 
-&#x20;     "schema":"#762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0",
+{% swagger-parameter in="body" name="schema" %}
+\#762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0
+{% endswagger-parameter %}
 
-&#x20;     "messageId":"1651242856.179215415",
+{% swagger-parameter in="body" name="messageId" %}
+1651242856.179215415
+{% endswagger-parameter %}
 
-&#x20;     "topicId":"0.0.34350746",
+{% swagger-parameter in="body" name="topicId" %}
+0.0.34350746
+{% endswagger-parameter %}
 
-&#x20;     "relationships":\[
+{% swagger-parameter in="body" name="relationships" %}
+&#x20;\[
 
 &#x20;        "1651242715.948867898"
 
 &#x20;     ],
+{% endswagger-parameter %}
 
-&#x20;     "\_\_sourceTag\_\_":"current\_registrant"
-
-&#x20;  }
+{% swagger-parameter in="body" name=""__sourceTag__" %}
+current_registrant
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
 }
 ```
 {% endswagger-response %}
@@ -1109,9 +996,9 @@ BLOCK : create\_device\_form
 
 BLOCK : approve\_devices\_grid
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Submitting Device for Approval" %}
+{% swagger method="get" path="" baseUrl="/policies/626c0490d24497fe1b1e415d/blocks/2d99bfd9-38d3-4777-abda-f1ea5cecb613" summary="Submitting Device for Approval" %}
 {% swagger-description %}
-/policies/626c0490d24497fe1b1e415d/blocks/2d99bfd9-38d3-4777-abda-f1ea5cecb613
+
 {% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -1293,40 +1180,13 @@ BLOCK : approve\_devices\_grid
 
 ```
 {% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
 {% endswagger %}
 
 ### Root Authority (Approve Device)
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Device Approval" %}
+{% swagger method="post" path="" baseUrl="/policies/626bf178d24497fe1b1e4139/blocks/918a113d-a88b-4595-806e-823e4fbb8bf6" summary="" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/918a113d-a88b-4595-806e-823e4fbb8bf6
+
 {% endswagger-description %}
 
 {% swagger-parameter in="body" name="id" %}
@@ -1341,26 +1201,36 @@ did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:ti
 2qUPLPToSW3S33DAyY2wyJe5YPpWNuZKLLhTZRBowCAn
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="document" %}
-"id":"c48ffb77-58d9-4809-aaa9-ff80950142ea",
+{% swagger-parameter in="body" name="id" %}
+c48ffb77-58d9-4809-aaa9-ff80950142ea
+{% endswagger-parameter %}
 
-&#x20;     "type":\[
+{% swagger-parameter in="body" name="type" %}
+&#x20;\[
 
 &#x20;        "VerifiableCredential"
 
 &#x20;     ],
+{% endswagger-parameter %}
 
-&#x20;     "issuer":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
+{% swagger-parameter in="body" name="issuer" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
 
-&#x20;     "issuanceDate":"2022-04-29T14:37:18.619Z",
+{% swagger-parameter in="body" name="issuanceDate" %}
+2022-04-29T14:37:18.619Z
+{% endswagger-parameter %}
 
-&#x20;     "@context":\[
+{% swagger-parameter in="body" name="@context" %}
+&#x20;
 
-&#x20;        "https://www.w3.org/2018/credentials/v1"
+\[         "https://www.w3.org/2018/credentials/v1"
 
 &#x20;     ],
+{% endswagger-parameter %}
 
-&#x20;     "credentialSubject":\[
+{% swagger-parameter in="body" name="credentialSubject" %}
+":\[
 
 &#x20;        {
 
@@ -1513,6 +1383,8 @@ did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:ti
 &#x20;        "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..fH8UEbWTElaBYZ-mznxFndkZU29h45Px1BL8lwzL73PUpmDeDEc2iJINx6Kmh\_uxcMpm7lhkf9JKQxADEl5-Dg"
 
 &#x20;     }
+
+&#x20;  },
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="createDate" %}
@@ -1582,50 +1454,27 @@ approve_devices_source(need_approve)
 }
 ```
 {% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
 {% endswagger %}
 
 ### User (CREATE ISSUE)
 
 BLOCK : create\_issue\_request\_form
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Creating Issue" %}
+{% swagger method="post" path="" baseUrl="/policies/626bf178d24497fe1b1e4139/blocks/8bd8c3da-043a-4ef0-8bb4-10f60bd80832" summary="" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/8bd8c3da-043a-4ef0-8bb4-10f60bd80832
+
 {% endswagger-description %}
 
-{% swagger-parameter in="body" name="document" %}
-&#x20;     "field0":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
+{% swagger-parameter in="body" name="field0" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
 
-&#x20;     "field1":"did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724",
+{% swagger-parameter in="body" name="field1" %}
+did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724
+{% endswagger-parameter %}
 
-&#x20;     "field2":{
+{% swagger-parameter in="body" name="field2" %}
+{
 
 &#x20;        "field0":"Organization Name",
 
@@ -1658,8 +1507,10 @@ BLOCK : create\_issue\_request\_form
 &#x20;        ]
 
 &#x20;     },
+{% endswagger-parameter %}
 
-&#x20;     "field3":{
+{% swagger-parameter in="body" name="field3" %}
+":{
 
 &#x20;        "field0":"Device Name",
 
@@ -1698,74 +1549,94 @@ BLOCK : create\_issue\_request\_form
 &#x20;        ]
 
 &#x20;     },
-
-&#x20;     "field4":" labeling scheme(s)",
-
-&#x20;     "field5":"2022-04-29",
-
-&#x20;     "field6":"2022-04-29",
-
-&#x20;     "field7":1,
-
-&#x20;     "field8":"2022-04-29",
-
-&#x20;     "field9":1,
-
-&#x20;     "field10":"Type a: Settlement Metering data",
-
-&#x20;     "field11":"Type b: Non-settlement Metering data",
-
-&#x20;     "field12":"Type c: Measured Volume Transfer documentation",
-
-&#x20;     "field13":"Type d: Other",
-
-&#x20;     "field14":true,
-
-&#x20;     "field15":true,
-
-&#x20;     "field16":true,
-
-&#x20;     "field17":"Installer",
-
-&#x20;     "field18":"0.0.34235315",
-
-&#x20;     "type":"88f6b2ad-5945-4086-b15c-8181654948c8&1.0.0",
-
-&#x20;     "@context":\[
-
-&#x20;        "https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq"
-
-&#x20;     ]
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="ref" %}
-&#x20;     "id":"626bf95ed24497fe1b1e4145",
+{% swagger-parameter in="body" name="field4" %}
+labeling scheme(s)
+{% endswagger-parameter %}
 
-&#x20;     "owner":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
+{% swagger-parameter in="body" name="field5" %}
+2022-04-29
+{% endswagger-parameter %}
 
-&#x20;     "hash":"Gq2osAVHzB6LpFEDXKQkeVbpcteV7pBDdFhL93SmyPt7",
+{% swagger-parameter in="body" name="field6" %}
+2022-04-29
+{% endswagger-parameter %}
 
-&#x20;     "document":{
+{% swagger-parameter in="body" name="field7" %}
+1
+{% endswagger-parameter %}
 
-&#x20;        "id":"aebb99c3-a897-4d71-8819-2362a43944ea",
+{% swagger-parameter in="body" name="field8" %}
+2022-04-29
+{% endswagger-parameter %}
 
-&#x20;        "type":\[
+{% swagger-parameter in="body" name="field9" %}
+1
+{% endswagger-parameter %}
 
-&#x20;           "VerifiableCredential"
+{% swagger-parameter in="body" name="field10" %}
+Type a: Settlement Metering data
+{% endswagger-parameter %}
 
-&#x20;        ],
+{% swagger-parameter in="body" name="field11" %}
+Type b: Non-settlement Metering data
+{% endswagger-parameter %}
 
-&#x20;        "issuer":"did:hedera:testnet:A7cP5xLNaF5LPtXkDUTsP6fATh4uarAjCujnZ3qR2vcw;hedera:testnet:tid=0.0.34349531",
+{% swagger-parameter in="body" name="field12" %}
+Type c: Measured Volume Transfer documentation
+{% endswagger-parameter %}
 
-&#x20;        "iszw2suanceDate":"2022-04-29T14:42:27.523Z",
+{% swagger-parameter in="body" name="field13" %}
+Type d: Other
+{% endswagger-parameter %}
 
-&#x20;        "@context":\[
+{% swagger-parameter in="body" name="field14" %}
+true
+{% endswagger-parameter %}
 
-&#x20;           "https://www.w3.org/2018/credentials/v1"
+{% swagger-parameter in="body" name="field15" %}
+true
+{% endswagger-parameter %}
 
-&#x20;        ],
+{% swagger-parameter in="body" name="field16" %}
+true
+{% endswagger-parameter %}
 
-&#x20;        "credentialSubject":\[
+{% swagger-parameter in="body" name="field17" %}
+Installer
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="field18" %}
+0.0.34235315
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="type" %}
+88f6b2ad-5945-4086-b15c-8181654948c8&1.0.0
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="@context" %}
+
+
+[https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq](https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq)
+
+
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="id" %}
+626bf95ed24497fe1b1e414
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="owner" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="hash" %}
+Gq2osAVHzB6LpFEDXKQkeVbpcteV7pBDdFhL93SmyPt7
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="credentialSubject" %}
+&#x20;
 
 &#x20;           {
 
@@ -1886,26 +1757,34 @@ BLOCK : create\_issue\_request\_form
 &#x20;                 ]
 
 &#x20;              },
+{% endswagger-parameter %}
 
-&#x20;              "ref":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
+{% swagger-parameter in="body" name="ref" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
 
-&#x20;              "policyId":"626bf178d24497fe1b1e4139",
+{% swagger-parameter in="body" name="policyId" %}
+626bf178d24497fe1b1e4139
+{% endswagger-parameter %}
 
-&#x20;              "@context":\[
+{% swagger-parameter in="body" name="@context" %}
 
-&#x20;                 "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
 
-&#x20;              ],
+[https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i](https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i)
 
-&#x20;              "id":"did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724",
 
-&#x20;              "type":"4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0"
+{% endswagger-parameter %}
 
-&#x20;           }
+{% swagger-parameter in="body" name="id" %}
+did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724
+{% endswagger-parameter %}
 
-&#x20;        ],
+{% swagger-parameter in="body" name="type" %}
+4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0
+{% endswagger-parameter %}
 
-&#x20;        "proof":{
+{% swagger-parameter in="body" name="proof" %}
+{
 
 &#x20;           "type":"Ed25519Signature2018",
 
@@ -1920,75 +1799,72 @@ BLOCK : create\_issue\_request\_form
 &#x20;        }
 
 &#x20;     },
+{% endswagger-parameter %}
 
-&#x20;     "createDate":"2022-04-29T14:42:38.469Z",
+{% swagger-parameter in="body" name="createDate" %}
+2022-04-29T14:42:38.469Z
+{% endswagger-parameter %}
 
-&#x20;     "updateDate":"2022-04-29T14:42:38.469Z",
+{% swagger-parameter in="body" name="updateDate" %}
+2022-04-29T14:42:38.469Z
+{% endswagger-parameter %}
 
-&#x20;     "hederaStatus":"ISSUE",
+{% swagger-parameter in="body" name="hederaStatus" %}
+ISSUE
+{% endswagger-parameter %}
 
-&#x20;     "signature":0,
+{% swagger-parameter in="body" name="signature" %}
+0
+{% endswagger-parameter %}
 
-&#x20;     "type":"device(Approved)",
+{% swagger-parameter in="body" name="type" %}
+device(Approved)
+{% endswagger-parameter %}
 
-&#x20;     "policyId":"626bf178d24497fe1b1e4139",
+{% swagger-parameter in="body" name="policyId" %}
+626bf178d24497fe1b1e4139
+{% endswagger-parameter %}
 
-&#x20;     "tag":"save\_copy\_device",
+{% swagger-parameter in="body" name="tag" %}
+save_copy_device
+{% endswagger-parameter %}
 
-&#x20;     "option":{
+{% swagger-parameter in="body" name="option" %}
+{
 
 &#x20;        "status":"Approved"
 
 &#x20;     },
+{% endswagger-parameter %}
 
-&#x20;     "schema":"#4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0",
+{% swagger-parameter in="body" name="schema" %}
+4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0
+{% endswagger-parameter %}
 
-&#x20;     "messageId":"1651243356.729744000",
+{% swagger-parameter in="body" name="messageId" %}
+1651243356.729744000
+{% endswagger-parameter %}
 
-&#x20;     "topicId":"0.0.34350746",
+{% swagger-parameter in="body" name="topicId" %}
+0.0.34350746
+{% endswagger-parameter %}
 
-&#x20;     "relationships":\[
+{% swagger-parameter in="body" name="relationships" %}
+\[
 
 &#x20;        "1651243044.613728925"
 
 &#x20;     ],
+{% endswagger-parameter %}
 
-&#x20;     "\_\_sourceTag\_\_":"devices\_source(approved)"
-
-&#x20;  }
+{% swagger-parameter in="body" name="__sourceTag__" %}
+devices_source(approved)
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
 }
 ```
 {% endswagger-response %}
@@ -2000,9 +1876,9 @@ BLOCK : create\_issue\_request\_form
 
 BLOCK issue\_requests\_grid(evident)
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="" %}
+{% swagger method="get" path="" baseUrl="/policies/626c0490d24497fe1b1e415d/blocks/4838bdc7-f141-4c64-a5e0-a40c2b268766" summary="" %}
 {% swagger-description %}
-/policies/626c0490d24497fe1b1e415d/blocks/4838bdc7-f141-4c64-a5e0-a40c2b268766
+
 {% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -2198,42 +2074,15 @@ BLOCK issue\_requests\_grid(evident)
 
 ```
 {% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
 {% endswagger %}
 
 ### Root Authority (Approve Issue)
 
 BLOCK approve\_issue\_requests\_btn
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Approving Issue" %}
+{% swagger method="post" path="" baseUrl="/policies/626bf178d24497fe1b1e4139/blocks/4185c3b7-f200-4219-a503-17c84fea752f" summary="Approving Issue" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/4185c3b7-f200-4219-a503-17c84fea752f
+
 {% endswagger-description %}
 
 {% swagger-parameter in="body" name="id" %}
@@ -2415,100 +2264,47 @@ did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:ti
 
 &#x20;  },
 
-&#x20; &#x20;
-{% endswagger-parameter %}
+&#x20;  "createDate":"2022-04-29T14:44:49.331Z",
 
-{% swagger-parameter in="body" name="createDate" %}
-2022-04-29T14:44:49.331Z
-{% endswagger-parameter %}
+&#x20;  "updateDate":"2022-04-29T14:44:49.331Z",
 
-{% swagger-parameter in="body" name="updateDate" %}
-2022-04-29T14:44:49.331Z
-{% endswagger-parameter %}
+&#x20;  "hederaStatus":"ISSUE",
 
-{% swagger-parameter in="body" name="hederaStatus" %}
-ISSUE
-{% endswagger-parameter %}
+&#x20;  "signature":0,
 
-{% swagger-parameter in="body" name="signature" %}
-0
-{% endswagger-parameter %}
+&#x20;  "type":"issue\_request",
 
-{% swagger-parameter in="body" name="type" %}
-issue_request
-{% endswagger-parameter %}
+&#x20;  "policyId":"626bf178d24497fe1b1e4139",
 
-{% swagger-parameter in="body" name="policyId" %}
-626bf178d24497fe1b1e4139
-{% endswagger-parameter %}
+&#x20;  "tag":"create\_issue\_request",
 
-{% swagger-parameter in="body" name="tag" %}
-create_issue_request
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="option" %}
-{
+&#x20;  "option":{
 
 &#x20;     "status":"Approved"
 
 &#x20;  },
-{% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="schema" %}
-\#88f6b2ad-5945-4086-b15c-8181654948c8&1.0.0
-{% endswagger-parameter %}
+&#x20;  "schema":"#88f6b2ad-5945-4086-b15c-8181654948c8&1.0.0",
 
-{% swagger-parameter in="body" name="messageId" %}
-1651243487.331059459
-{% endswagger-parameter %}
+&#x20;  "messageId":"1651243487.331059459",
 
-{% swagger-parameter in="body" name="topicId" %}
-0.0.34350746
-{% endswagger-parameter %}
+&#x20;  "topicId":"0.0.34350746",
 
-{% swagger-parameter in="body" name="relationships" %}
-\[
+&#x20;  "relationships":\[
 
 &#x20;     "1651243356.729744000"
 
 &#x20;  ],
-{% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="__sourceTag__" %}
-issue_requests_source(need_approve)
+&#x20;  "\_\_sourceTag\_\_":"issue\_requests\_source(need\_approve)"
+
+}
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
 }
 ```
 {% endswagger-response %}
@@ -2518,45 +2314,15 @@ issue_requests_source(need_approve)
 
 BLOCK trustChainBlock
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Displaying TrustChain" %}
+{% swagger method="get" path="" baseUrl="/policies/626bf178d24497fe1b1e4139/blocks/61235b3d-b793-4363-b51d-62df371493cd" summary="Displaying TrustChain" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/61235b3d-b793-4363-b51d-62df371493cd
+
 {% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/PolicyBlockData'
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
     // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
 }
 ```
 {% endswagger-response %}

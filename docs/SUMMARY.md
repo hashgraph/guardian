@@ -170,3 +170,7 @@
 
 * [Returning Logs](logs-apis/returning-logs.md)
 * [Returning Log Attributes](logs-apis/returning-log-attributes.md)
+
+## External APIs
+
+* [Sends Data from External Source](external-apis/sends-data-from-external-source.md)
