@@ -27,6 +27,7 @@ import { ReportItemConfigComponent } from "./policy-configuration/blocks/report/
 import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { ReassigningConfigComponent } from "./policy-configuration/blocks/documents/reassigning-config/reassigning-config.component";
 import { TimerConfigComponent } from "./policy-configuration/blocks/documents/timer-config/timer-config.component";
+import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -50,6 +51,7 @@ export enum BlockType {
     ReassigningBlock = 'reassigningBlock',
     PaginationAddon = 'paginationAddon',
     TimerBlock = 'timerBlock',
+    CustomLogicBlock = 'customLogicBlock'
 }
 
 export enum BlockGroup {
@@ -575,6 +577,34 @@ export class RegisteredBlocks {
                 control: ControlType.Server,
             }
         });
+        this.addBlock({
+            type: BlockType.CustomLogicBlock,
+            icon: 'bar_chart',
+            name: 'Custom Logic',
+            title: `Add 'Custom Logic' Block`,
+            group: BlockGroup.Calculate,
+            factory: null,
+            property: CustomLogicConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: InputType.Any,
+                output: function (block: any, prev?: IBlockAbout, next?: boolean): InputType {
+                    if (next === false) {
+                        return InputType.None;
+                    }
+                    if (prev && prev.output != InputType.None) {
+                        return prev.output;
+                    }
+                    return InputType.Single;
+                },
+                children: ChildrenType.Special,
+                control: ControlType.Server,
+            }
+        });
+
+
+
         this.addHeaderGroup(BlockGroup.Calculate, 'Addons');
         this.addBlock({
             type: BlockType.CalculateMathAddon,

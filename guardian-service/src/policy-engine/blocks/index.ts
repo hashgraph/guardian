@@ -1,3 +1,4 @@
+export { CustomLogicBlock } from '@policy-engine/blocks/custom-logic-block';
 export { PaginationAddon } from '@policy-engine/blocks/pagination-addon';
 export { DocumentsSourceAddon } from './documents-source-addon';
 export { FiltersAddonBlock } from './filters-addon-block';

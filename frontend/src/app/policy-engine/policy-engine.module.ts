@@ -50,6 +50,8 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
 import { CommonComponentsModule } from '../common-components.module';
 import { CronConfigDialog } from './helpers/cron-config-dialog/cron-config-dialog.component';
 import { TimerConfigComponent } from './policy-configuration/blocks/documents/timer-config/timer-config.component';
+import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
+import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
 
 @NgModule({
     declarations: [
@@ -94,7 +96,9 @@ import { TimerConfigComponent } from './policy-configuration/blocks/documents/ti
         ReportItemConfigComponent,
         ReassigningConfigComponent,
         CronConfigDialog,
-        TimerConfigComponent
+        TimerConfigComponent,
+        CustomLogicConfigComponent,
+        CodeEditorDialogComponent
     ],
     imports: [
         CommonModule,
