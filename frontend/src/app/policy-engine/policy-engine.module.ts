@@ -50,6 +50,8 @@ import {
 } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { Dragonglass } from './helpers/dragonglass/dragonglass.component';
 import { ReassigningConfigComponent } from './policy-configuration/blocks/documents/reassigning-config/reassigning-config.component';
+import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
+import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
 
 @NgModule({
     declarations: [
@@ -93,7 +95,9 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
         ReportBlockComponent,
         ReportItemConfigComponent,
         Dragonglass,
-        ReassigningConfigComponent
+        ReassigningConfigComponent,
+        CustomLogicConfigComponent,
+        CodeEditorDialogComponent
     ],
     imports: [
         CommonModule,

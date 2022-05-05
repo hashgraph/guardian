@@ -28,6 +28,9 @@ import {
     PaginationAddonBlockComponent
 } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { ReassigningConfigComponent } from "./policy-configuration/blocks/documents/reassigning-config/reassigning-config.component";
+import {
+    CustomLogicConfigComponent
+} from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -50,6 +53,7 @@ export enum BlockType {
     ReportItem = 'reportItemBlock',
     ReassigningBlock = 'reassigningBlock',
     PaginationAddon = 'paginationAddon',
+    CustomLogicBlock = 'customLogicBlock'
 }
 
 export enum BlockGroup {
@@ -99,6 +103,7 @@ export class RegisteredBlocks {
         this.register(BlockType.ReportItem, 'list_alt', 'Report Item', `Add 'Report Item' Block`);
         this.register(BlockType.ReassigningBlock, 'content_copy', 'Reassigning', `Add 'Reassigning' Block`);
         this.register(BlockType.PaginationAddon, 'filter_alt', 'Pagination', `Add 'Pagination' Addon`);
+        this.register(BlockType.CustomLogicBlock, 'calculate', 'Custom Logic', `Add 'CustomLogic' Block`);
 
         this.registerGroup(BlockGroup.Main, BlockType.Container);
         this.registerGroup(BlockGroup.Main, BlockType.Step);
@@ -118,6 +123,7 @@ export class RegisteredBlocks {
         this.registerGroup(BlockGroup.Tokens, BlockType.Wipe);
         this.registerGroup(BlockGroup.Calculate, BlockType.Calculate);
         this.registerGroup(BlockGroup.Calculate, BlockType.CalculateMathAddon);
+        this.registerGroup(BlockGroup.Calculate, BlockType.CustomLogicBlock);
         this.registerGroup(BlockGroup.Report, BlockType.Report);
         this.registerGroup(BlockGroup.Report, BlockType.ReportItem);
 
@@ -150,6 +156,7 @@ export class RegisteredBlocks {
         this.registerProperties(BlockType.Calculate, CalculateConfigComponent);
         this.registerProperties(BlockType.CalculateMathAddon, CalculateMathConfigComponent);
         this.registerProperties(BlockType.ReassigningBlock, ReassigningConfigComponent);
+        this.registerProperties(BlockType.CustomLogicBlock, CustomLogicConfigComponent);
     }
 
     public register(type: BlockType, icon: string, name: string, title: string) {
