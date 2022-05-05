@@ -28,6 +28,7 @@ import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination
 import { ReassigningConfigComponent } from "./policy-configuration/blocks/documents/reassigning-config/reassigning-config.component";
 import { TimerConfigComponent } from "./policy-configuration/blocks/documents/timer-config/timer-config.component";
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
+import { SwitchConfigComponent } from "./policy-configuration/blocks/main/switch-config/switch-config.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -51,7 +52,8 @@ export enum BlockType {
     ReassigningBlock = 'reassigningBlock',
     PaginationAddon = 'paginationAddon',
     TimerBlock = 'timerBlock',
-    CustomLogicBlock = 'customLogicBlock'
+    CustomLogicBlock = 'customLogicBlock',
+    Switch = 'switchBlock',
 }
 
 export enum BlockGroup {
@@ -303,6 +305,29 @@ export class RegisteredBlocks {
                 output: InputType.None,
                 children: ChildrenType.Special,
                 control: ControlType.UI,
+            }
+        });
+        this.addHeaderGroup(BlockGroup.Main, 'Server Blocks');
+        this.addBlock({
+            type: BlockType.Switch,
+            icon: 'segment',
+            name: 'Switch',
+            title: `Add 'Switch' Block`,
+            group: BlockGroup.Main,
+            factory: null,
+            property: SwitchConfigComponent,
+            about: {
+                post: false,
+                get: false,
+                input: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (prev && prev.output != InputType.None) {
+                        return prev.output;
+                    }
+                    return InputType.Single;
+                },
+                output: InputType.None,
+                children: ChildrenType.None,
+                control: ControlType.Server,
             }
         });
 
@@ -588,7 +613,12 @@ export class RegisteredBlocks {
             about: {
                 post: false,
                 get: false,
-                input: InputType.Any,
+                input: function (block: any, prev?: IBlockAbout, next?: boolean) {
+                    if (prev && prev.output != InputType.None) {
+                        return prev.output;
+                    }
+                    return InputType.Single;
+                },
                 output: function (block: any, prev?: IBlockAbout, next?: boolean): InputType {
                     if (next === false) {
                         return InputType.None;

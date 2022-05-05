@@ -48,7 +48,8 @@
 
     <ng-container *ngIf="block.aggregateType == 'cumulative'">
         <tr class="propHeader">
-            <td class="propRowCol" (click)="onHide(propHidden, 'expressionsGroup')" [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
+            <td class="propRowCol" (click)="onHide(propHidden, 'expressionsGroup')"
+                [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
                 <mat-icon>
                     expand_more
                 </mat-icon>
@@ -63,22 +64,30 @@
         </tr>
         <ng-container *ngFor="let expression of block.expressions; let i=index">
             <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
-                <td class="propRowCol" (click)="onHide(propHidden.expressions, i)" [attr.collapse]="propHidden.expressions[i]">
+                <td class="propRowCol" (click)="onHide(propHidden.expressions, i)"
+                    [attr.collapse]="propHidden.expressions[i]">
                     <mat-icon>
                         expand_more
                     </mat-icon>
                 </td>
                 <td class="propRowCell cellName">Expression {{i}}</td>
-                <td class="propRowCell">{{expression.name}} = {{expression.value}}</td>
+                <td class="propRowCell">
+                    <span>{{expression.name}} = {{expression.value}}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveExpression(i)">
+                        <mat-icon>delete</mat-icon>
+                    </span>
+                </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.options || propHidden.expressionsGroup || propHidden.expressions[i]">
+            <tr class="propRow subRow"
+                [attr.collapse]="propHidden.options || propHidden.expressionsGroup || propHidden.expressions[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Variable Name</td>
                 <td class="propRowCell">
                     <input [(ngModel)]="expression.name" [readonly]="readonly">
                 </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.options || propHidden.expressionsGroup || propHidden.expressions[i]">
+            <tr class="propRow subRow"
+                [attr.collapse]="propHidden.options || propHidden.expressionsGroup || propHidden.expressions[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Variable Value</td>
                 <td class="propRowCell">

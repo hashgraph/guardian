@@ -52,6 +52,7 @@ import { CronConfigDialog } from './helpers/cron-config-dialog/cron-config-dialo
 import { TimerConfigComponent } from './policy-configuration/blocks/documents/timer-config/timer-config.component';
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
+import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 
 @NgModule({
     declarations: [
@@ -98,7 +99,8 @@ import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-edi
         CronConfigDialog,
         TimerConfigComponent,
         CustomLogicConfigComponent,
-        CodeEditorDialogComponent
+        CodeEditorDialogComponent,
+        SwitchConfigComponent
     ],
     imports: [
         CommonModule,

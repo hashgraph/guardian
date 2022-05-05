@@ -1,21 +1,19 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
-import { MatDialog } from '@angular/material/dialog';
-import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
 
 /**
- * Settings for block of 'aggregateDocument' type.
+ * Settings for block of 'switch' and 'interfaceStepBlock' types.
  */
 @Component({
-    selector: 'aggregate-config',
-    templateUrl: './aggregate-config.component.html',
+    selector: 'switch-config',
+    templateUrl: './switch-config.component.html',
     styleUrls: [
         './../../../common-properties/common-properties.component.css',
-        './aggregate-config.component.css'
+        './switch-config.component.css'
     ]
 })
-export class AggregateConfigComponent implements OnInit {
+export class SwitchConfigComponent implements OnInit {
     @Input('target') target!: BlockNode;
     @Input('all') all!: BlockNode[];
     @Input('schemes') schemes!: Schema[];
@@ -28,14 +26,13 @@ export class AggregateConfigComponent implements OnInit {
     propHidden: any = {
         main: false,
         options:false,
-        expressionsGroup: false,
-        expressions: {},
+        conditionsGroup: false,
+        conditions: {},
     };
 
     block!: BlockNode;
-    allTimer!: BlockNode[];
 
-    constructor(private dialog: MatDialog) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -48,24 +45,24 @@ export class AggregateConfigComponent implements OnInit {
     }
 
     load(block: BlockNode) {
-        this.allTimer = this.all?.filter(e=>e.blockType=='timerBlock');
         this.block = block;
-        this.block.expressions = this.block.expressions || [];
-        this.block.uiMetaData = this.block.uiMetaData || {}
+        this.block.executionFlow = this.block.executionFlow || 'firstTrue';
+        this.block.conditions = this.block.conditions || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
 
-    addExpression() {
-        this.block.expressions.push({
-            name: '',
+    addCondition() {
+        this.block.conditions.push({
+            type: 'equal',
             value: '',
+            actor: '',
         })
     }
 
-    onRemoveExpression(i: number) {
-        this.block.expressions.splice(i, 1);
+    onRemoveCondition(i: number) {
+        this.block.conditions.splice(i, 1);
     }
 }
