@@ -1,4 +1,12 @@
-import { Component, Inject } from '@angular/core';
+import {
+    AfterContentChecked, AfterContentInit,
+    AfterViewChecked,
+    AfterViewInit,
+    Component,
+    Inject,
+    OnInit,
+    ViewChild
+} from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 /**
  * Export schema dialog.
@@ -8,7 +16,9 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     templateUrl: './code-editor-dialog.component.html',
     styleUrls: ['./code-editor-dialog.component.css']
 })
-export class CodeEditorDialogComponent {
+export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
+    @ViewChild('codeeditor') private codeEditor: any;
+
     codeMirrorOptions: any = {
         theme: 'default',
         mode: 'javascript',
@@ -22,6 +32,8 @@ export class CodeEditorDialogComponent {
         autoCloseBrackets: true,
         matchBrackets: true,
         lint: true,
+        readonly: false,
+        autoFocus: true
     };
 
     expression!: string;
@@ -34,9 +46,15 @@ export class CodeEditorDialogComponent {
 
     ngOnInit() {
         this.expression = this.data.expression;
-        console.log(this);
+        this.codeMirrorOptions.readOnly = this.data.readonly;
     }
 
+    ngAfterContentInit() {
+        setTimeout(() => {
+            this.codeEditor.codeMirror.refresh();
+        }, 100);
+
+    }
 
     onSave(): void {
         this.dialogRef.close({

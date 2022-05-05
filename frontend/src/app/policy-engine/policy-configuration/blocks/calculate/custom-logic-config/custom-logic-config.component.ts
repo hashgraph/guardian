@@ -49,7 +49,8 @@ export class CustomLogicConfigComponent implements OnInit {
             width: '80%',
             panelClass: 'g-dialog',
             data: {
-                expression: this.block.expression
+                expression: this.block.expression,
+                readonly: this.readonly
             },
             autoFocus: true,
             disableClose: true
