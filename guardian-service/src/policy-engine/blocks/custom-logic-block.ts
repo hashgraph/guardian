@@ -30,8 +30,8 @@ export class CustomLogicBlock {
         try {
             state.data = await this.execute(state, user);
             await ref.runNext(user, state);
-            PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
-            PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+            ref.callDependencyCallbacks(user);
+            ref.callParentContainerCallback(user);
         } catch (e) {
             ref.error(e.message);
         }

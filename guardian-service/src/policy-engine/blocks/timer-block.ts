@@ -1,8 +1,6 @@
 import moment from 'moment';
 import { CronJob } from 'cron';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { getMongoRepository } from 'typeorm';
-import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
