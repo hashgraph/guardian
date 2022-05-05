@@ -133,6 +133,18 @@ export class SwitchBlock {
                     if (!condition.target && !resultsContainer.isTagExist(condition.target)) {
                         resultsContainer.addBlockError(ref.uuid, `Tag "${condition.target}" does not exist`);
                     }
+                    if (condition.target == ref.tag) {
+                        resultsContainer.addBlockError(ref.uuid, `A block cannot redirect to itself`);
+                    }
+
+                    if(condition.type == 'equal' || condition.type == 'not_equal') {
+                        if (!condition.value) {
+                            resultsContainer.addBlockError(ref.uuid, 'Option "condition.value" does not set');
+                        } else {
+                            const vars = PolicyUtils.variables(condition.value);
+                        }
+                    }
+
                 }
             } else {
                 resultsContainer.addBlockError(ref.uuid, 'Option "conditions" must be an array');
