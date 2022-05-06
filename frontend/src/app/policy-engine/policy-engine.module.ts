@@ -45,11 +45,14 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
 import { JsonPropertiesComponent } from './policy-configuration/json-properties/json-properties.component';
 import { ReportBlockComponent } from './policy-viewer/blocks/report-block/report-block.component';
 import { ReportItemConfigComponent } from './policy-configuration/blocks/report/report-item-config/report-item-config.component';
-import {
-    PaginationAddonBlockComponent
-} from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
-import { Dragonglass } from './helpers/dragonglass/dragonglass.component';
+import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { ReassigningConfigComponent } from './policy-configuration/blocks/documents/reassigning-config/reassigning-config.component';
+import { CommonComponentsModule } from '../common-components.module';
+import { CronConfigDialog } from './helpers/cron-config-dialog/cron-config-dialog.component';
+import { TimerConfigComponent } from './policy-configuration/blocks/documents/timer-config/timer-config.component';
+import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
+import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
+import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 
 @NgModule({
     declarations: [
@@ -92,12 +95,17 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
         JsonPropertiesComponent,
         ReportBlockComponent,
         ReportItemConfigComponent,
-        Dragonglass,
-        ReassigningConfigComponent
+        ReassigningConfigComponent,
+        CronConfigDialog,
+        TimerConfigComponent,
+        CustomLogicConfigComponent,
+        CodeEditorDialogComponent,
+        SwitchConfigComponent
     ],
     imports: [
         CommonModule,
         FormsModule,
+        CommonComponentsModule,
         CodemirrorModule,
         MaterialModule,
         SchemaEngineModule,
@@ -141,12 +149,11 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
         CalculateConfigComponent,
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
-        Dragonglass,
-        ReassigningConfigComponent
+        ReassigningConfigComponent,
+        CronConfigDialog
     ],
     providers: [
         RegisteredBlocks
     ]
 })
-export class PolicyEngineModule {
-}
+export class PolicyEngineModule { }

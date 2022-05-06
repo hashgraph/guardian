@@ -83,6 +83,11 @@ export class VcSubject {
         return json;
     }
 
+    public getFields(): any {
+        const json = Object.assign({}, this.document);
+        return json;
+    }
+
     public static fromJson(json: string): VcSubject {
         let result: VcSubject;
         try {

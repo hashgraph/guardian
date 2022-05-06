@@ -19,7 +19,13 @@ export enum DataTypes {
 }
 
 export class PolicyUtils {
-    private static evaluate(formula: string, scope: any) {
+    public static variables(formula: string): string[] {
+        return mathjs.parse(formula)
+            .filter((node: any) => node.isSymbolNode)
+            .map((node: any) => node.name);
+    }
+
+    public static evaluate(formula: string, scope: any) {
         return (function (formula: string, scope: any) {
             try {
                 return this.evaluate(formula, scope);
@@ -30,7 +36,7 @@ export class PolicyUtils {
     }
 
     public static getVCScope(item: VcDocument) {
-        return item.getCredentialSubject(0).toJsonTree();
+        return item.getCredentialSubject(0).getFields();
     }
 
     public static aggregate(rule: string, vcs: VcDocument[]): number {

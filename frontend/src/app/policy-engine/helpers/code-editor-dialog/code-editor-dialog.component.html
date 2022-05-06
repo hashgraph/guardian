@@ -1,0 +1,13 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-title">
+            Code Editor
+        </div>
+            <div mat-dialog-actions>
+                <button mat-raised-button color="primary" type="submit" (click)="onSave()">Save</button>
+            </div>
+    </div>
+    <div class="g-dialog-body">
+        <ngx-codemirror *ngIf="initDialog" [(ngModel)]="expression" [options]="codeMirrorOptions"></ngx-codemirror>
+    </div>
+</div>

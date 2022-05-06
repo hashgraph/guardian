@@ -71,8 +71,8 @@ export class ReassigningBlock {
         state.data = item;
         ref.log(`Reassigning Document: ${JSON.stringify(item)}`);
         await ref.runNext(owner, state);
-        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
-        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+        ref.callDependencyCallbacks(user);
+        ref.callParentContainerCallback(user);
         // ref.updateBlock(state, user, '');
     }
 }

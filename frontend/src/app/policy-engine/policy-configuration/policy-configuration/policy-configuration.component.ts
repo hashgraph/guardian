@@ -25,19 +25,19 @@ import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dia
 export class PolicyConfigurationComponent implements OnInit {
     @HostListener('document:copy', ['$event'])
     copy(event: ClipboardEvent) {
-        if (this.currentBlock 
-            && this.copyBlocksMode 
+        if (this.currentBlock
+            && this.copyBlocksMode
             && this.currentView === 'blocks'
             && !this.readonly) {
             event.preventDefault();
             navigator.clipboard.writeText(JSON.stringify(this.currentBlock));
         }
     }
-    
+
     @HostListener('document:paste', ['$event'])
     paste(evt: ClipboardEvent) {
-        if (this.currentBlock 
-            && this.copyBlocksMode 
+        if (this.currentBlock
+            && this.copyBlocksMode
             && this.currentView === 'blocks'
             && !this.readonly) {
             evt.preventDefault();
@@ -50,7 +50,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 return;
             }
 
-            
+
         }
     }
 
@@ -76,8 +76,6 @@ export class PolicyConfigurationComponent implements OnInit {
     colGroup1 = false;
     colGroup2 = false;
     colGroup3 = true;
-
-    indexBlock: number = 0;
 
     codeMirrorOptions: any = {
         theme: 'default',
@@ -159,12 +157,12 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.saveState();
                     }
                 })
-                
+
             } else {
                 this.clearState();
                 this.saveState();
             }
-            
+
             this.schemaService.getSchemes(policy.topicId).subscribe((data2: any) => {
                 const schemes = data2 || [];
                 this.schemes = SchemaHelper.map(schemes) || [];
@@ -194,7 +192,6 @@ export class PolicyConfigurationComponent implements OnInit {
         this.readonly = policy.status == 'PUBLISH';
         this.policy = policy;
         this.setBlocks(root);
-        this.indexBlock = this.allBlocks.length + 1;
         this.errors = [];
         this.errorsCount = -1;
         this.errorsMap = {};
@@ -242,8 +239,7 @@ export class PolicyConfigurationComponent implements OnInit {
         for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i];
             block.id = this.registeredBlocks.generateUUIDv4();
-            block.tag = `Block_${this.indexBlock}`;
-            this.indexBlock++;
+            block.tag = this.getNewTag();
             this.prepareChildrenBlockToCopy(block.children);
         }
     }
@@ -251,8 +247,7 @@ export class PolicyConfigurationComponent implements OnInit {
     onCopyBlock(block?: BlockNode) {
         if (this.currentBlock && block) {
             block.id = this.registeredBlocks.generateUUIDv4();
-            block.tag = `Block_${this.indexBlock}`;
-            this.indexBlock++;
+            block.tag = this.getNewTag();
             this.prepareChildrenBlockToCopy(block.children);
             this.currentBlock.children = this.currentBlock.children || [];
             this.currentBlock.children.push(block);
@@ -268,12 +263,27 @@ export class PolicyConfigurationComponent implements OnInit {
             if (this.currentBlock.permissions) {
                 permissions = this.currentBlock.permissions.slice();
             }
-            const newBlock = this.registeredBlocks.newBlock(type, permissions, this.indexBlock);
+            const newBlock = this.registeredBlocks.newBlock(type, permissions);
+            newBlock.tag = this.getNewTag();
             this.currentBlock.children.push(newBlock);
             this.setBlocks(this.blocks[0]);
-            this.indexBlock++;
             this.saveState();
         }
+    }
+
+    getNewTag(): string {
+        const nameMap: any = {};
+        for (let block of this.allBlocks) {
+            nameMap[block.tag] = true;
+        }
+        let name = 'Block';
+        for (let i = 1; i < 1000; i++) {
+            name = `Block_${i}`;
+            if (!nameMap[name]) {
+                return name;
+            }
+        }
+        return 'Block';
     }
 
     onDelete(block: BlockNode) {
@@ -322,8 +332,8 @@ export class PolicyConfigurationComponent implements OnInit {
         return true;
     }
 
-    async loadState(states?:any, number?: number) {
-        let stateValues = states || ( localStorage[this.policyId] && JSON.parse(localStorage[this.policyId]));
+    async loadState(states?: any, number?: number) {
+        let stateValues = states || (localStorage[this.policyId] && JSON.parse(localStorage[this.policyId]));
         if (!stateValues) {
             return false;
         }
@@ -335,7 +345,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const stateValue = stateValues[number];
             if (!stateValue) {
                 return false;
-            } 
+            }
 
             root = JSON.parse(stateValue);
         }
@@ -353,7 +363,6 @@ export class PolicyConfigurationComponent implements OnInit {
         if (root.view === 'blocks') {
             const rootBlock = this.jsonToObject(root.value);
             this.setBlocks(rootBlock);
-            this.indexBlock = this.allBlocks.length + 1;
             this.errors = [];
             this.errorsCount = -1;
             this.errorsMap = {};
@@ -370,7 +379,7 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this.readonly) {
             return;
         }
-        
+
         let stateValue = localStorage[this.policyId] && JSON.parse(localStorage[this.policyId]);
         if (stateValue && stateValue.length > 5) {
             stateValue.shift();
@@ -401,7 +410,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
 
         if (this._undoDepth) {
-            stateValue.slice(0, stateValue.length - this._undoDepth -1);
+            stateValue.slice(0, stateValue.length - this._undoDepth - 1);
             this._undoDepth = 0;
         }
 
@@ -576,7 +585,6 @@ export class PolicyConfigurationComponent implements OnInit {
                 return;
             }
             this.setBlocks(root);
-            this.indexBlock = this.allBlocks.length + 1;
         }
         if (type == 'json') {
             let code = "";
@@ -666,6 +674,6 @@ export class PolicyConfigurationComponent implements OnInit {
 
         if (await this.loadState(stateValues, stateValues.length - this._undoDepth)) {
             this._undoDepth--;
-        }    
+        }
     }
 }
