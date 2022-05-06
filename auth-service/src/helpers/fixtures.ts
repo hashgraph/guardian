@@ -14,7 +14,7 @@ export const fixtures = async function (): Promise<void> {
             role: UserRole.ROOT_AUTHORITY
         });
         let result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+        console.log(result);
 
         user = usersRepository.create({
             username: 'Installer',
@@ -23,7 +23,7 @@ export const fixtures = async function (): Promise<void> {
             role: UserRole.USER
         });
         result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+        console.log(result);
 
         user = usersRepository.create({
             username: 'Installer2',
@@ -32,7 +32,7 @@ export const fixtures = async function (): Promise<void> {
             role: UserRole.USER
         });
         result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+        console.log(result);
 
         user = usersRepository.create({
             username: 'Auditor',
@@ -41,7 +41,7 @@ export const fixtures = async function (): Promise<void> {
             role: UserRole.AUDITOR
         });
         result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+        console.log(result);
 
         user = usersRepository.create({
             username: 'Registrant',
@@ -50,7 +50,7 @@ export const fixtures = async function (): Promise<void> {
             role: UserRole.USER
         });
         result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+        console.log(result);
 
         user = usersRepository.create({
             username: 'VVB',
@@ -59,7 +59,7 @@ export const fixtures = async function (): Promise<void> {
             role: UserRole.USER
         });
         result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+        console.log(result);
 
         user = usersRepository.create({
             username: 'ProjectProponent',
@@ -68,7 +68,7 @@ export const fixtures = async function (): Promise<void> {
             role: UserRole.USER
         });
         result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+        console.log(result);
 
         user = usersRepository.create({
             username: 'Verra',
@@ -77,6 +77,6 @@ export const fixtures = async function (): Promise<void> {
             role: UserRole.ROOT_AUTHORITY
         });
         result = await usersRepository.save(user);
-        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+        console.log(result);
     }
 }

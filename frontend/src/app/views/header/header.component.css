@@ -103,8 +103,9 @@ a[hidden="true"] {
 }
 
 .debug-user button {
-    width: 48%;
-    margin: 5px 1%;
+    width: 145px;
+    padding: 0 15px;
+    margin: 5px 4px;
 }
 
 .debug-user {

@@ -33,14 +33,14 @@
             <button *ngIf="isLogin" mat-menu-item (click)="logOut()">Log out</button>
 
             <div *ngIf="!isLogin" mat-menu-item style="
-          background: white;
-          height: 270px;
-          width: 409px;
-          border-radius: 30px;
-          overflow: scroll;">
+                background: white;
+                max-height: 345px;
+                height: auto;
+                width: 470px;
+                border-radius: 30px;
+                overflow: scroll;">
                 <div class="debug-user">
-                    <button mat-raised-button (click)="authState.doLogin('RootAuthority','test')">Root
-                        Authority</button>
+                    <button mat-raised-button (click)="authState.doLogin('RootAuthority','test')">Root Authority</button>
                     <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>
                     <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
                     <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>
