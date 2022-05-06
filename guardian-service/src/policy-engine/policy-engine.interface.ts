@@ -67,6 +67,8 @@ export interface IPolicyBlock {
     callDependencyCallbacks(user: IAuthUser);
 
     callParentContainerCallback(user: IAuthUser);
+
+    saveState(): Promise<void>;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {

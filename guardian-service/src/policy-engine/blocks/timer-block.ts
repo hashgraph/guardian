@@ -152,7 +152,7 @@ export class TimerBlock {
             this.state[owner] = true;
             ref.log(`start scheduler for: ${owner}`);
         }
-
+        await ref.saveState();
         await ref.runNext(user, state);
         ref.callDependencyCallbacks(user);
         ref.callParentContainerCallback(user);

@@ -221,7 +221,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return this.parent.isChildActive(this as any, user);
             }
 
-            private async saveState(): Promise<void> {
+            public async saveState(): Promise<void> {
                 const stateFields = PolicyComponentsUtils.GetStateFields(this);
                 if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
                     const repo = getMongoRepository(BlockState);
