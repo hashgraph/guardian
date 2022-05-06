@@ -1,92 +1,101 @@
 .block {
-  background: #fff;
-  border: 1px solid #000;
-  border-radius: 6px;
-  padding: 4px 12px;
-  margin: 10px 8px 10px 2px;
-  cursor: pointer;
-  position: relative;
-  height: 22px;
-  user-select: none;
-  min-width: 125px;
+    background: #fff;
+    border: 1px solid #000;
+    border-radius: 6px;
+    padding: 4px 12px;
+    margin: 10px 8px 10px 2px;
+    cursor: pointer;
+    position: relative;
+    height: 22px;
+    user-select: none;
+    min-width: 125px;
 }
 
 .block[selected="true"] {
-  border-color: #3f51b5;
-  box-shadow: 0px 0px 3px 1px #3f51b5;
+    border-color: #3f51b5;
+    box-shadow: 0px 0px 7px 2px #3f51b5;
 }
 
 .block[error="true"] {
-  border-color: #ff0000;
-  box-shadow: 0px 0px 4px 2px #ff0000;
+    border-color: #ff0000;
+    box-shadow: 0px 0px 5px 2px #ff0000;
 }
 
 .block[selected="true"][error="true"] {
-  border-color: #ff0000;
-  box-shadow: 0px 0px 4px 2px #ff0000;
+    border-color: #3f51b5;
+    box-shadow: 0px 0px 5px 2px #ff0063;
 }
 
 .block[fixed="true"] {
-  margin-left: 32px;
-  background: #ececec;
+    margin-left: 32px;
+    background: #ececec;
 }
 
 .block mat-icon {
-  display: none;
+    display: none;
 }
 
 .block[fixed="true"] mat-icon {
-  display: block;
-  position: absolute;
-  left: -36px;
-  top: 1px;
-  color: #7d7d7d;
+    display: block;
+    position: absolute;
+    left: -36px;
+    top: 1px;
+    color: #7d7d7d;
 }
+
 .block-icon {
-  display: inline-block;
-  font-size: 16px;
-  line-height: 16px;
-  overflow: hidden;
-  height: 16px;
-  position: relative;
-  top: 3px;
+    display: inline-block;
+    font-size: 16px;
+    line-height: 16px;
+    overflow: hidden;
+    height: 16px;
+    position: relative;
+    top: 3px;
 }
+
 .block-icon mat-icon {
-  display: block;
-  font-size: 16px;
-  width: 22px;
-  height: 16px;
-  line-height: 16px;
+    display: block;
+    font-size: 16px;
+    width: 22px;
+    height: 16px;
+    line-height: 16px;
 }
+
 .cdk-drag-placeholder {
-  opacity: 0.2;
+    opacity: 0.2;
 }
+
 .mat-tree {
-  background: transparent;
+    background: transparent;
 }
+
 .btn-delete {
-  position: absolute;
-  top: 5px;
-  right: -26px;
-  width: 20px;
-  height: 20px;
-  color: #f11000;
-  font-size: 19px;
+    position: absolute;
+    top: 5px;
+    right: -26px;
+    width: 20px;
+    height: 20px;
+    color: #f11000;
+    font-size: 19px;
 }
+
 .btn-delete mat-icon {
-  display: block;
-  font-size: 20px;
+    display: block;
+    font-size: 20px;
 }
+
 *[readonly="true"] .btn-delete {
-  display: none;
+    display: none;
 }
 
 .block[control="UI"] {
     border-radius: 0px;
 }
+
 .block[control="Server"] {
     border-radius: 20px;
 }
+
 .block[root="true"] .btn-delete {
     display: none;
 }
@@ -115,11 +124,13 @@
 .block[output="Single"] .output-arrow.single {
     display: block;
 }
+
 .block[output="Multiple"] .output-arrow.multiple {
     display: flex;
     transform: translate(-18px, 17px);
     width: 34px;
 }
+
 .block[output="Any"] .output-arrow.multiple {
     display: flex;
     transform: translate(-18px, 17px);
@@ -165,14 +176,17 @@
     border-bottom-left-radius: 2px;
     border-bottom-right-radius: 2px;
 }
+
 .block[input="Single"] .input-arrow.single {
     display: block;
 }
+
 .block[input="Multiple"] .input-arrow.multiple {
     display: flex;
     width: 30px;
     transform: translate(-17px, -7px);
 }
+
 .block[input="Any"] .input-arrow.multiple {
     display: flex;
     width: 30px;

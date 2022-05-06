@@ -69,8 +69,9 @@ export class PolicyComponentsUtils {
             if (policy.has(event.target)) {
                 const block = policy.get(event.target);
                 if (block.has(event.type)) {
-                    const functions = block.get(event.target);
-                    for (let fn of functions) {
+                    const functions = block.get(event.type);
+                    for (let i = 0; i < functions.length; i++) {
+                        const fn = functions[i];
                         fn(event);
                     }
                 }
@@ -197,6 +198,7 @@ export class PolicyComponentsUtils {
             options._parent,
             GetOtherOptions(options as PolicyBlockFullArgumentList)
         );
+        instance.setPolicyId(policyId);
         if (!skipRegistration) {
             PolicyComponentsUtils.RegisterComponent(policyId, instance);
         }

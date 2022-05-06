@@ -34,9 +34,10 @@ export class AggregateBlock {
 
     private async tickCron(event: PolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        ref.log(`tick scheduler`);
 
         const users = event.data || [];
+
+        ref.log(`tick scheduler, ${users.length}`);
 
         const repository = getMongoRepository(AggregateVC);
         const rawEntities = await repository.find({
@@ -63,7 +64,6 @@ export class AggregateBlock {
         }
 
         for (let did of users) {
-            ref.log(`aggregate next: ${did}`);
             const user = await this.users.getUserById(did);
             const documents = map.get(did);
             if(documents.length) {
@@ -181,15 +181,8 @@ export class AggregateBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (ref.options.aggregateType == 'period') {
-                if (!ref.options.startDate) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "startDate" does not set');
-                } else if (typeof ref.options.startDate !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "startDate" must be a string');
-                }
-                if (!ref.options.period) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "period" does not set');
-                } else if (typeof ref.options.period !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "period" must be a string');
+                if (!ref.options.timer && !resultsContainer.isTagExist(ref.options.timer)) {
+                    resultsContainer.addBlockError(ref.uuid, `Tag "${ref.options.timer}" does not exist`);
                 }
             } else if (ref.options.aggregateType == 'cumulative') {
                 let variables: any = {};

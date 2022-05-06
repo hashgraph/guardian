@@ -246,6 +246,9 @@ export class SendToGuardianBlock {
                     }
                 }
             }
+            if (!ref.options.dataSource && !ref.options.dataType) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "dataSource" must be one of database, hedera');
+            }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }

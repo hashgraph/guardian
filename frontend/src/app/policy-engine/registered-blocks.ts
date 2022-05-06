@@ -310,7 +310,7 @@ export class RegisteredBlocks {
         this.addHeaderGroup(BlockGroup.Main, 'Server Blocks');
         this.addBlock({
             type: BlockType.Switch,
-            icon: 'segment',
+            icon: 'rule',
             name: 'Switch',
             title: `Add 'Switch' Block`,
             group: BlockGroup.Main,
@@ -537,7 +537,12 @@ export class RegisteredBlocks {
                 post: false,
                 get: false,
                 input: InputType.Single,
-                output: InputType.None,
+                output: function (block: any, prev?: IBlockAbout, next?: boolean): InputType {
+                    if (next === false) {
+                        return InputType.None;
+                    }
+                    return InputType.Single;
+                },
                 children: ChildrenType.None,
                 control: ControlType.Special,
             }
@@ -788,10 +793,10 @@ export class RegisteredBlocks {
         return f.bind(block, prev, next);
     }
 
-    public newBlock(type: BlockType, permissions: any, index: any): BlockNode {
+    public newBlock(type: BlockType, permissions: any): BlockNode {
         return {
             id: this.generateUUIDv4(),
-            tag: `Block_${index}`,
+            tag: `Block`,
             blockType: type,
             defaultActive: !!this.factories[type],
             children: [],

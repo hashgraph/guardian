@@ -30,9 +30,7 @@ export class TimerBlock {
 
     start() {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        if (ref.options.aggregateType == 'period') {
-            this.startCron(ref);
-        }
+        this.startCron(ref);
     }
 
     destroy() {
@@ -48,11 +46,12 @@ export class TimerBlock {
                 sd = moment().utc();
             }
 
-            let ed = moment(ref.options.endDate).utc();
-            if (ed.isValid()) {
-                this.endTime = ed.toDate().getTime();
-            } else {
-                this.endTime = Infinity;
+            this.endTime = Infinity;
+            if(ref.options.endDate) {
+                let ed = moment(ref.options.endDate).utc();
+                if (ed.isValid()) {
+                    this.endTime = ed.toDate().getTime();
+                }
             }
 
             const now = new Date();
@@ -95,7 +94,7 @@ export class TimerBlock {
                 this.job = new CronJob(mask, () => {
                     const now = new Date();
                     if (now.getTime() > this.endTime) {
-                        ref.log(`stop scheduler`);
+                        ref.log(`stop scheduler: ${now.getTime()}, ${this.endTime}`);
                         this.job.stop();
                         return;
                     }
@@ -111,7 +110,7 @@ export class TimerBlock {
                 this.job = new CronJob(mask, () => {
                     const now = new Date();
                     if (now.getTime() > this.endTime) {
-                        ref.log(`stop scheduler`);
+                        ref.log(`stop scheduler: ${now.getTime()}, ${this.endTime}`);
                         this.job.stop();
                         return;
                     }
@@ -153,6 +152,10 @@ export class TimerBlock {
             this.state[owner] = true;
             ref.log(`start scheduler for: ${owner}`);
         }
+
+        await ref.runNext(user, state);
+        ref.callDependencyCallbacks(user);
+        ref.callParentContainerCallback(user);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

@@ -88,6 +88,7 @@ export class BlockTreeGenerator {
             return blockInstance;
         }
 
+        new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
         const model = await BuildInstances(configObject);
         if (!skipRegistration) {
             this.models.set(policy.id.toString(), model as any);

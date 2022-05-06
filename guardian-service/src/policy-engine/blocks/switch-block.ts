@@ -21,7 +21,7 @@ export class SwitchBlock {
     private getScope(docs: any | any[]): any {
         let result: any = {};
         if (!docs) {
-            return result;
+            return null;
         }
         if (Array.isArray(docs)) {
             const scopes: any[] = [];
@@ -47,7 +47,7 @@ export class SwitchBlock {
     private aggregateScope(scopes: any[]): any {
         const result: any = {};
         if (!scopes || !scopes.length) {
-            return result;
+            return null;
         }
         const keys = Object.keys(scopes[0]);
         for (let key of keys) {
@@ -63,6 +63,9 @@ export class SwitchBlock {
 
     async runAction(state: any, user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+
+        ref.log(`switch: ${user?.did}`);
+
         const docs: any | any[] = state.data;
 
         let owner: string = null;
@@ -88,9 +91,17 @@ export class SwitchBlock {
 
             let result = false;
             if (type == 'equal') {
-                result = PolicyUtils.evaluate(value, scope);
+                if (scope) {
+                    result = PolicyUtils.evaluate(value, scope);
+                } else {
+                    result = false;
+                }
             } else if (type == 'not_equal') {
-                result = !PolicyUtils.evaluate(value, scope);
+                if (scope) {
+                    result = !PolicyUtils.evaluate(value, scope);
+                } else {
+                    result = false;
+                }
             } else if (type == 'unconditional') {
                 result = true;
             }
@@ -102,7 +113,7 @@ export class SwitchBlock {
                 curUser = await this.users.getUserById(issuer);
             }
 
-            ref.log(`check condition: ${curUser}, ${result}, ${JSON.stringify(scope)}`);
+            ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${scope}`);
 
             if (result) {
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, target) as any;
@@ -137,7 +148,7 @@ export class SwitchBlock {
                         resultsContainer.addBlockError(ref.uuid, `A block cannot redirect to itself`);
                     }
 
-                    if(condition.type == 'equal' || condition.type == 'not_equal') {
+                    if (condition.type == 'equal' || condition.type == 'not_equal') {
                         if (!condition.value) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "condition.value" does not set');
                         } else {
