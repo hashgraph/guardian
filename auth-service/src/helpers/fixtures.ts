@@ -42,5 +42,41 @@ export const fixtures = async function (): Promise<void> {
         });
         result = await usersRepository.save(user);
         console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+
+        user = usersRepository.create({
+            username: 'Registrant',
+            password: crypto.createHash('sha256').update('test').digest('hex'),
+            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            role: UserRole.USER
+        });
+        result = await usersRepository.save(user);
+        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+
+        user = usersRepository.create({
+            username: 'VVB',
+            password: crypto.createHash('sha256').update('test').digest('hex'),
+            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            role: UserRole.USER
+        });
+        result = await usersRepository.save(user);
+        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+
+        user = usersRepository.create({
+            username: 'ProjectProponent',
+            password: crypto.createHash('sha256').update('test').digest('hex'),
+            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            role: UserRole.USER
+        });
+        result = await usersRepository.save(user);
+        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
+
+        user = usersRepository.create({
+            username: 'Verra',
+            password: crypto.createHash('sha256').update('test').digest('hex'),
+            walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            role: UserRole.ROOT_AUTHORITY
+        });
+        result = await usersRepository.save(user);
+        console.log(result, crypto.createHash('sha1').update(Math.random().toString()).digest('hex'));
     }
 }

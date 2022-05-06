@@ -718,3 +718,42 @@ record in the grid (data[0])
 {% endswagger %}
 
 ![](../.gitbook/assets/API\_11.png)
+
+### 3.6 Sample MRV Sender Data
+
+{% swagger method="post" path="" baseUrl="/external" summary="Sending MRV Data" %}
+{% swagger-description %}
+Sending MRV Data
+{% endswagger-description %}
+
+{% swagger-parameter in="body" name="document" %}
+"id":"8d8e8a0a-211d-4180-8001-2e30cd7b915f", "type":[ "VerifiableCredential" ], "issuer":"did:hedera:testnet:3G7JYDvL5QsbBz5u9531UyMKWPJHdDQ5B6nRMK3zqoUm;hedera:testnet:tid=0.0.34404759", "issuanceDate":"2022-05-05T12:30:14.909Z", "@context":[ "https://www.w3.org/2018/credentials/v1" ], "credentialSubject":[ { "type":"5b4cdcee-ba73-4234-bddd-2988b050552c&1.0.0", "@context":[ "https://ipfs.io/ipfs/bafkreiaihnzlo7ahhr6wqnnyqprrl7onqdogkfzyum6poixba5ptjptowu" ], "field0":"2", "field1":"8", "field2":"1", "policyId":"6273c027d79555ef171b550d", "accountId":"0.0.34235315" } ], "proof":{ "type":"Ed25519Signature2018", "created":"2022-05-05T12:30:14Z", "verificationMethod":"did:hedera:testnet:3G7JYDvL5QsbBz5u9531UyMKWPJHdDQ5B6nRMK3zqoUm;hedera:testnet:tid=0.0.34404759#did-root-key", "proofPurpose":"assertionMethod", "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..awGmfcQzVefihEkoLT7zrqltRoEkuluVV8PALFc7ftlOckY0K7wQOwmdZMG479IZ1g4mW0todYmcLueNgTruAQ" }
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="owner" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="policyTag" %}
+Tag_1651752987100
+{% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+```javascript
+{
+    content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+}
+```
+{% endswagger-response %}
+{% endswagger %}
