@@ -36,7 +36,7 @@ export class PolicyUtils {
     }
 
     public static getVCScope(item: VcDocument) {
-        return item.getCredentialSubject(0).toJsonTree();
+        return item.getCredentialSubject(0).getFields();
     }
 
     public static aggregate(rule: string, vcs: VcDocument[]): number {

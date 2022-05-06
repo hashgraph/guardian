@@ -51,11 +51,11 @@ export class SwitchBlock {
         }
         const keys = Object.keys(scopes[0]);
         for (let key of keys) {
-            result[key] = 0;
+            result[key] = [];
         }
         for (let scope of scopes) {
             for (let key of keys) {
-                result[key] = result[key] + scope[key];
+                result[key].push(scope[key]);
             }
         }
         return result;
@@ -113,7 +113,7 @@ export class SwitchBlock {
                 curUser = await this.users.getUserById(issuer);
             }
 
-            ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${scope}`);
+            ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
 
             if (result) {
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, target) as any;

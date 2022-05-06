@@ -96,11 +96,11 @@ export class AggregateBlock {
         }
         const keys = Object.keys(scopes[0]);
         for (let key of keys) {
-            result[key] = 0;
+            result[key] = [];
         }
         for (let scope of scopes) {
             for (let key of keys) {
-                result[key] = result[key] + scope[key];
+                result[key].push(scope[key]);
             }
         }
         return result;
