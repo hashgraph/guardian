@@ -10,7 +10,6 @@
     "cors": "^2.8.5",
     "cross-blob": "^2.0.1",
     "dotenv": "^16.0.0",
-    "fastmq": "^1.3.8",
     "fs-extra": "^10.0.0",
     "interfaces": "file:../interfaces",
     "js-yaml": "^4.1.0",
@@ -20,6 +19,7 @@
     "mongodb": "^4.2.1",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.41",
+    "common":"file:../common",
     "logger-helper": "file:../logger-helper"
   },
   "description": "",
@@ -41,6 +41,7 @@
     "watch": "nodemon src/index.ts",
     "build": "tsc",
     "debug": "nodemon dist/index.js",
+    "dev:docker": "npm run build && nodemon .",
     "dev": "tsc -w",
     "lint": "tslint --project .",
     "start": "node dist/index.js",

@@ -2,8 +2,6 @@ import {
     DidDocumentStatus,
     DocumentStatus,
     MessageAPI,
-    MessageError,
-    MessageResponse,
     SchemaEntity,
     TopicType
 } from 'interfaces';
@@ -26,6 +24,7 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topicHelper';
+import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
 
 /**
  * Connect to the message broker methods of working with Address books.
@@ -33,10 +32,10 @@ import { TopicHelper } from '@helpers/topicHelper';
  * @param channel - channel
  *
  */
-export const profileAPI = async function (channel: any) {
-    ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg, res) => {
+export const profileAPI = async function (channel: MessageBrokerChannel) {
+    ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg) => {
         try {
-            const { username } = msg.payload;
+            const { username } = msg;
 
             const wallet = new Wallet();
             const users = new Users();
@@ -44,34 +43,32 @@ export const profileAPI = async function (channel: any) {
             const user = await users.getUser(username);
 
             if (!user) {
-                res.send(new MessageResponse('Invalid Account'));
-                return;
+                return new MessageResponse('Invalid Account');
             }
 
             if (!user.hederaAccountId) {
-                res.send(new MessageResponse('Invalid Hedera Account Id'));
-                return;
+                return new MessageResponse('Invalid Hedera Account Id');
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
             const client = new HederaSDKHelper(user.hederaAccountId, key);
             const balance = await client.balance(user.hederaAccountId);
-            res.send(new MessageResponse(balance));
+            return new MessageResponse(balance);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message, 500));
+            return new MessageError(error.message, 500);
         }
     })
 
-    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE, async (msg) => {
         try {
             const {
                 hederaAccountId,
                 hederaAccountKey,
                 parent,
                 vcDocument
-            } = msg.payload;
+            } = msg;
 
             let topic: any, newTopic = false;
             if (parent) {
@@ -133,7 +130,7 @@ export const profileAPI = async function (channel: any) {
 
             const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
             try {
-                const didMessageResult =await messageServer.setTopicObject(topic).sendMessage(didMessage)
+                const didMessageResult = await messageServer.setTopicObject(topic).sendMessage(didMessage)
                 didDoc.status = DidDocumentStatus.CREATE;
                 didDoc.messageId = didMessageResult.getId();
                 didDoc.topicId = didMessageResult.getTopicId();
@@ -159,11 +156,11 @@ export const profileAPI = async function (channel: any) {
                 }
             }
 
-            res.send(new MessageResponse(userDID));
+            return new MessageResponse(userDID);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message, 500));
+            return new MessageError(error.message, 500);
         }
     })
 }

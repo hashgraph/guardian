@@ -55,6 +55,7 @@
   "name": "guardian",
   "private": true,
   "scripts": {
+    "dev:docker": "ng serve --host 0.0.0.0 --disable-host-check --proxy-config ./proxy.docker.json",
     "build": "ng build",
     "ng": "ng",
     "start": "ng serve --proxy-config ./proxy.conf.json",

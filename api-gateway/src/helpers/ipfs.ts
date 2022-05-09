@@ -1,4 +1,5 @@
-import { ApplicationStates, CommonSettings, MessageAPI } from "interfaces";
+import { MessageBrokerChannel } from "common";
+import { ApplicationStates, CommonSettings, MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from "interfaces";
 import { Singleton } from "./decorators/singleton";
 
 /**
@@ -6,21 +7,21 @@ import { Singleton } from "./decorators/singleton";
  */
 @Singleton
 export class IPFS {
-    private channel: any;
+    private channel: MessageBrokerChannel;
     private readonly target: string = 'ipfs-client';
 
     /**
      * Register channel
      * @param channel
      */
-    public setChannel(channel: any): any {
+    public setChannel(channel: MessageBrokerChannel): any {
         this.channel = channel;
     }
 
     /**
      * Get channel
      */
-    public getChannel(): any {
+    public getChannel(): MessageBrokerChannel {
         return this.channel;
     }
 
@@ -30,15 +31,15 @@ export class IPFS {
      *
      * @returns {{ cid: string, url: string }} - hash
      */
-    public async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {
-        const res = (await this.channel.request(this.target, MessageAPI.IPFS_ADD_FILE, file, 'raw')).payload;
+    public async addFile(file: ArrayBuffer): Promise<IFileResponse> {
+        const res = (await this.channel.request<IAddFileMessage, IFileResponse>([this.target, MessageAPI.IPFS_ADD_FILE].join('.'), { content: Buffer.from(file).toString('base64') }));
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
         if (res.error) {
             throw new Error(`IPFS: ${res.error}`);
         }
-        return res.body;
+        return res.body
     }
 
     /**
@@ -48,7 +49,7 @@ export class IPFS {
      * @returns File
      */
     public async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = (await this.channel.request(this.target, MessageAPI.IPFS_GET_FILE, { cid, responseType }, 'json')).payload;
+        const res = await this.channel.request<IGetFileMessage, any>([this.target, MessageAPI.IPFS_GET_FILE].join('.'), { cid, responseType });
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -64,8 +65,8 @@ export class IPFS {
      * Update settings
      * @param settings Settings to update
      */
-     public async updateSettings(settings: CommonSettings): Promise<void> {
-        const res = (await this.channel.request(this.target, MessageAPI.UPDATE_SETTINGS, settings)).payload;
+    public async updateSettings(settings: CommonSettings): Promise<void> {
+        const res = await this.channel.request([this.target, MessageAPI.UPDATE_SETTINGS].join('.'), settings);
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -78,8 +79,8 @@ export class IPFS {
      * Get settings
      * @returns Settings
      */
-     public async getSettings(): Promise<any> {
-        const res = (await this.channel.request(this.target, MessageAPI.GET_SETTINGS)).payload;
+    public async getSettings(): Promise<any> {
+        const res = (await this.channel.request([this.target, MessageAPI.GET_SETTINGS].join('.'), {}));
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -95,11 +96,11 @@ export class IPFS {
      * @returns {ApplicationStates} Service state
      */
     public async getStatus(): Promise<ApplicationStates> {
-        const res = (await this.channel.request(this.target, MessageAPI.GET_STATUS)).payload;
-        if (!res || res.error) {
+        const res = await this.channel.request<any, ApplicationStates>([this.target, MessageAPI.GET_STATUS].join('.'), {});
+        if (!res) {
             return ApplicationStates.STOPPED;
         }
-        
+
         return res.body;
     }
 }

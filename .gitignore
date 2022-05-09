@@ -7,12 +7,10 @@ logger-service/node_modules/
 logger-service/dist/
 logger-helper/node_modules/
 logger-helper/dist/
-message-broker/node_modules/
 ui-service/node_modules/
 ui-service/dist/
 mrv-sender/node_modules/
 mrv-sender/dist/
-message-broker/dist/
 .vscode/
 vc/node_modules/
 vc/dist/
@@ -31,3 +29,5 @@ ui-service/.vs/
 /guardian-service/config.json
 /threads-test/node_modules/
 api-docs/dist/
+.env
+tsconfig.tsbuildinfo

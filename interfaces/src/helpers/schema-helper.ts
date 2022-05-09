@@ -1,9 +1,7 @@
-import { ModelHelper } from './model-helper';
-import { ISchemaDocument, SchemaDataTypes } from '../interface/schema-document.interface';
-import { ISchema } from '../interface/schema.interface';
+import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '..';
+import { SchemaDataTypes } from '../interface/schema-document.interface';
 import { Schema } from '../models/schema';
-import { SchemaField } from "../interface/schema-field.interface";
-import { SchemaCondition } from '..';
+import { ModelHelper } from './model-helper';
 
 export class SchemaHelper {
     public static parseRef(data: string | ISchema): {
@@ -530,7 +528,7 @@ export class SchemaHelper {
     public static updateIRI(schema: ISchema): ISchema {
         try {
             if (schema.document) {
-                let  document = schema.document;
+                let document = schema.document;
                 if (typeof document == "string") {
                     document = JSON.parse(document) as ISchemaDocument;
                 }

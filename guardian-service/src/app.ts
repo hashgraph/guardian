@@ -1,4 +1,3 @@
-import FastMQ from 'fastmq'
 import { createConnection } from 'typeorm';
 import { approveAPI } from '@api/approve.service';
 import { configAPI } from '@api/config.service';
@@ -21,10 +20,11 @@ import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
 import { Logger } from 'logger-helper';
-import { ApplicationState, ApplicationStates } from 'interfaces';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import { Policy } from '@entity/policy';
+import { MessageBrokerChannel, ApplicationState } from 'common';
+import { ApplicationStates } from 'interfaces';
 
 Promise.all([
     createConnection({
@@ -41,10 +41,10 @@ Promise.all([
             entitiesDir: 'dist/entity'
         }
     }),
-    FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
+    MessageBrokerChannel.connect("GUARDIANS_SERVICE")
 ]).then(async values => {
-    const [db, channel] = values;
-
+    const [db, cn] = values;
+    const channel = new MessageBrokerChannel(cn, "guardians");
     const state = new ApplicationState('GUARDIANS_SERVICE');
     state.setChannel(channel);
     state.updateState(ApplicationStates.STARTED);

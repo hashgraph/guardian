@@ -3,6 +3,7 @@
         "module": "commonjs",
         "target": "es6",
         "lib": [
+            "dom",
             "es5",
             "es6"
         ],
@@ -11,7 +12,8 @@
         "outDir": "dist/",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "declaration": true
     },
     "include": [
         "src/**/*"

@@ -4,7 +4,7 @@ import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
 
 @Singleton
 export class PolicyEngine extends ServiceRequestsBase {
-    public target: string = 'guardian.*'
+    public target: string = 'guardians'
 
     public async getPolicy(filters): Promise<any> {
         return await this.request(PolicyEngineEvents.GET_POLICY, filters);

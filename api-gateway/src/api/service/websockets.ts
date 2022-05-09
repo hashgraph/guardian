@@ -1,19 +1,20 @@
 import WebSocket from 'ws';
-import {IncomingMessage, Server} from 'http';
+import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
 import { Logger } from 'logger-helper';
 import { MessageAPI } from 'interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
-
+import { MessageBrokerChannel, MessageResponse } from 'common';
+import { IUpdateBlockMessage, IErrorBlockMessage } from 'interfaces';
 export class WebSocketsService {
     private wss: WebSocket.Server;
 
     constructor(
         private server: Server,
-        private channel: any
+        private channel: MessageBrokerChannel
     ) {
-        this.wss = new WebSocket.Server({server});
+        this.wss = new WebSocket.Server({ server });
         this.registerHeartbeatAnswers();
         this.registerAuthorisation();
         this.registerMessageHandler();
@@ -58,7 +59,7 @@ export class WebSocketsService {
                         const auth = new Users();
                         try {
                             const [
-                                LOGGER_SERVICE, 
+                                LOGGER_SERVICE,
                                 GUARDIANS_SERVICE,
                                 IPFS_CLIENT,
                                 AUTH_SERVICE
@@ -73,7 +74,7 @@ export class WebSocketsService {
                                 {
                                     type: MessageAPI.GET_STATUS,
                                     data: {
-                                        LOGGER_SERVICE: LOGGER_SERVICE, 
+                                        LOGGER_SERVICE: LOGGER_SERVICE,
                                         GUARDIANS_SERVICE: GUARDIANS_SERVICE,
                                         IPFS_CLIENT: IPFS_CLIENT,
                                         AUTH_SERVICE: AUTH_SERVICE
@@ -89,43 +90,45 @@ export class WebSocketsService {
             });
         });
 
-        this.channel.response(MessageAPI.UPDATE_STATUS, async (msg, res) => {
+        this.channel.response(MessageAPI.UPDATE_STATUS, async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 try {
                     client.send(JSON.stringify({
                         type: MessageAPI.UPDATE_STATUS,
-                        data: msg.payload
+                        data: msg
                     }));
                 } catch (e) {
                     console.error('WS Error', e);
                 }
             });
+            return new MessageResponse({})
         });
     }
 
     private registerMessageHandler(): void {
-        this.channel.response('update-block', async (msg, res) => {
+        this.channel.response<IUpdateBlockMessage, any>('update-block', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 try {
                     client.send(JSON.stringify({
                         type: 'update-event',
-                        data: msg.payload.uuid
+                        data: msg.uuid
                     }));
                 } catch (e) {
                     console.error('WS Error', e);
                 }
             });
+            return new MessageResponse({})
         });
 
-        this.channel.response('block-error', async (msg, res) => {
+        this.channel.response<IErrorBlockMessage, any>('block-error', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 try {
-                    if (client.user.did === msg.payload.user.did) {
+                    if (client.user.did === msg.user.did) {
                         client.send(JSON.stringify({
                             type: 'error-event',
                             data: {
-                                blockType: msg.payload.blockType,
-                                message: msg.payload.message
+                                blockType: msg.blockType,
+                                message: msg.message
                             }
                         }));
                     }
@@ -134,6 +137,7 @@ export class WebSocketsService {
                     console.error('WS Error', e);
                 }
             });
+            return new MessageResponse({})
         })
     }
 }

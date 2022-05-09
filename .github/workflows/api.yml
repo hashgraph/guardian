@@ -5,8 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 16.x ]
-        mongodb-version: [ 4.4 ]
+        node-version: [16.x]
+        mongodb-version: [4.4]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -23,7 +23,7 @@ jobs:
           npm install
           npm run build
           popd
-          pushd vc-modules
+          pushd common
           npm install
           npm run build
           popd

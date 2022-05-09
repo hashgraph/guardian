@@ -1,0 +1,192 @@
+version: '3.8'
+services:
+    mongo:
+        image: mongo
+        restart: always
+        expose:
+            - 27017
+        ports:
+            - 27017:27017
+    message-broker:
+        image: nats
+        expose:
+            - 4222
+        ports:
+            - '8222:8222'
+            - '4222:4222'
+            - '6222:6222'
+        command: '--http_port 8222'
+    dev-tools:
+        build: .
+        image: guardian-development
+        volumes:
+            - ./:/app
+            - ~/.npm/:/root/.npm
+        restart: on-failure
+        command: 'node dev.js'
+
+    api-docs:
+        image: guardian-development
+        volumes:
+            - ./:/app
+        expose:
+            - 3001
+        ports:
+            - 3001:3001
+        depends_on:
+            - dev-tools
+        command: npm run dev:docker --prefix /app/api-docs
+    logger-service:
+        image: guardian-development
+        depends_on:
+            - dev-tools
+            - message-broker
+        volumes:
+            - ./:/app
+        restart: always
+        command: npm run dev:docker --prefix /app/logger-service
+        environment:
+            - MQ_ADDRESS=message-broker
+            - DB_HOST=mongo
+
+    auth-service:
+        image: guardian-development
+        restart: always
+        depends_on:
+            - dev-tools
+            - mongo
+            - message-broker
+            - logger-service
+
+        environment:
+            - MQ_ADDRESS=message-broker
+            - DB_HOST=mongo
+        volumes:
+            - ./:/app
+        command: npm run dev:docker --prefix /app/auth-service
+
+    api-gateway:
+        image: guardian-development
+        restart: always
+        expose:
+            - 3002
+        ports:
+            - 3002:3002
+        depends_on:
+            - dev-tools
+            - mongo
+            - message-broker
+            - guardian-service
+            - auth-service
+            - logger-service
+        environment:
+            - MQ_ADDRESS=message-broker
+            - DB_HOST=mongo
+        volumes:
+            - ./:/app
+        command: npm run dev:docker --prefix /app/api-gateway
+
+    topic-viewer:
+        image: guardian-development
+        restart: always
+        expose:
+            - 3006
+        ports:
+            - 3006:3006
+        depends_on:
+            - dev-tools
+            - mongo
+            - message-broker
+            - guardian-service
+            - auth-service
+            - logger-service
+        environment:
+            - MQ_ADDRESS=message-broker
+            - DB_HOST=mongo
+        volumes:
+            - ./:/app
+        command: npm run dev:docker --prefix /app/topic-viewer
+
+    guardian-service:
+        image: guardian-development
+        restart: always
+        depends_on:
+            - mongo
+            - message-broker
+            - auth-service
+            - logger-service
+        environment:
+            - MQ_ADDRESS=message-broker
+            - DB_HOST=mongo
+            - OPERATOR_ID=${OPERATOR_ID}
+            - OPERATOR_KEY=${OPERATOR_KEY}
+            - SCHEMA_TOPIC_ID=${SCHEMA_TOPIC_ID}
+        volumes:
+            - ./:/app
+        command: npm run dev:docker --prefix /app/guardian-service
+
+    ipfs-client:
+        image: guardian-development
+        restart: always
+        ports:
+            - '5001:5001'
+            - '5002:5002'
+            - '4001:4001'
+            - '4002:4002'
+            - '8080:8080'
+            - '8081:8081'
+        depends_on:
+            - dev-tools
+            - message-broker
+            - logger-service
+        volumes:
+            - ./:/app
+        environment:
+            - MQ_ADDRESS=message-broker
+            - DB_HOST=mongo
+            - NFT_API_KEY=${NFT_API_KEY}
+        command: npm run dev:docker --prefix /app/ipfs-client
+
+    mrv-sender:
+        image: guardian-development
+        expose:
+            - 3005
+        depends_on:
+            - dev-tools
+        volumes:
+            - ./:/app
+        command: npm run dev:docker --prefix /app/mrv-sender
+    front-end:
+        image: guardian-development
+        expose:
+            - 4200
+        ports:
+            - 4200:4200
+        depends_on:
+            - dev-tools
+        volumes:
+            - ./:/app
+        environment:
+            - NG_PERSISTENT_BUILD_CACHE=1
+            - CI=local
+        command: npm run dev:docker --prefix /app/frontend
+
+    web-proxy:
+        image: nginx
+        ports:
+            - '3000:80'
+        depends_on:
+            - guardian-service
+            - auth-service
+            - api-gateway
+            - api-docs
+            - mrv-sender
+            - front-end
+        volumes:
+            - ./web-proxy/configs/local.conf:/etc/nginx/conf.d/default.conf
+volumes:
+    mongo:
+        # volume-guardian-service:
+        # volume-ui-service:
+        # volume-mrv-sender:
+        #  volume-message-broker:

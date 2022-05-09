@@ -1,5 +1,4 @@
 import { Token } from '@entity/token';
-import { IToken, MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -7,6 +6,8 @@ import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { IAuthUser } from '@auth/auth.interface';
+import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageAPI, IToken } from 'interfaces';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
@@ -50,7 +51,7 @@ function getTokenInfo(info: any, token: any) {
  * @param tokenRepository - table with tokens
  */
 export const tokenAPI = async function (
-    channel: any,
+    channel: MessageBrokerChannel,
     tokenRepository: MongoRepository<Token>
 ): Promise<void> {
     /**
@@ -60,9 +61,9 @@ export const tokenAPI = async function (
      * 
      * @returns {IToken[]} - all tokens
      */
-    ApiResponse(channel, MessageAPI.SET_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.SET_TOKEN, async (msg) => {
         try {
-            if (!msg.payload) {
+            if (!msg) {
                 throw 'Invalid Params';
             }
 
@@ -77,8 +78,8 @@ export const tokenAPI = async function (
                 tokenName,
                 tokenSymbol,
                 tokenType
-            } = msg.payload.token;
-            const owner = msg.payload.owner;
+            } = msg.token;
+            const owner = msg.owner;
 
             if (!tokenName) {
                 throw 'Invalid Token Name';
@@ -134,17 +135,17 @@ export const tokenAPI = async function (
             });
             const result = await tokenRepository.save(tokenObject);
             const tokens = await tokenRepository.find();
-            res.send(new MessageResponse(tokens));
+            return new MessageResponse(tokens);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message));
+            return new MessageError(error.message);
         }
     })
 
-    ApiResponse(channel, MessageAPI.FREEZE_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.FREEZE_TOKEN, async (msg) => {
         try {
-            const { tokenId, username, owner, freeze } = msg.payload;
+            const { tokenId, username, owner, freeze } = msg;
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
@@ -171,18 +172,18 @@ export const tokenAPI = async function (
 
             const info = await client.accountInfo(user.hederaAccountId);
             const result = getTokenInfo(info, { tokenId });
-            res.send(new MessageResponse(result));
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message, 400));
+            return new MessageError(error.message, 400);
         }
     })
 
 
-    ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg) => {
         try {
-            const { tokenId, username, owner, grant } = msg.payload;
+            const { tokenId, username, owner, grant } = msg;
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
@@ -209,17 +210,17 @@ export const tokenAPI = async function (
 
             const info = await client.accountInfo(user.hederaAccountId);
             const result = getTokenInfo(info, { tokenId });
-            res.send(new MessageResponse(result));
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message, 400));
+            return new MessageError(error.message, 400);
         }
     })
 
-    ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN, async (msg) => {
         try {
-            const { tokenId, did, associate } = msg.payload;
+            const { tokenId, did, associate } = msg;
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
@@ -248,17 +249,17 @@ export const tokenAPI = async function (
                 status = await client.dissociate(tokenId, userID, userKey);
             }
 
-            res.send(new MessageResponse(status));
+            return new MessageResponse(status);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message, 400));
+            return new MessageError(error.message, 400);
         }
     })
 
-    ApiResponse(channel, MessageAPI.GET_INFO_TOKEN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_INFO_TOKEN, async (msg) => {
         try {
-            const { tokenId, username, owner } = msg.payload;
+            const { tokenId, username, owner } = msg;
 
             const users = new Users();
             const user = await users.getUser(username);
@@ -272,8 +273,7 @@ export const tokenAPI = async function (
             }
 
             if (!user.hederaAccountId) {
-                res.send(new MessageResponse(getTokenInfo(null, token)));
-                return;
+                return new MessageResponse(getTokenInfo(null, token));
             }
 
             const root = await users.getHederaAccount(owner);
@@ -281,19 +281,19 @@ export const tokenAPI = async function (
             const info = await client.accountInfo(user.hederaAccountId);
             const result = getTokenInfo(info, token);
 
-            res.send(new MessageResponse(result));
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message, 400));
+            return new MessageError(error.message, 400);
         }
     })
 
-    ApiResponse(channel, MessageAPI.GET_ASSOCIATED_TOKENS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_ASSOCIATED_TOKENS, async (msg) => {
         try {
             const wallet = new Wallet();
             const users = new Users();
-            const { did } = msg.payload;
+            const { did } = msg;
             const user = await users.getUserById(did);
             const userID = user.hederaAccountId;
             const userDID = user.did;
@@ -304,17 +304,17 @@ export const tokenAPI = async function (
             }
 
             if (!user.hederaAccountId) {
-                res.send(new MessageResponse([]));
-                return;
+                return new MessageResponse([]);
+
             }
 
             const client = new HederaSDKHelper(userID, userKey);
             const info = await client.accountInfo(user.hederaAccountId);
-            const tokens: any = await tokenRepository.find(user.parent 
-                ? { 
+            const tokens: any = await tokenRepository.find(user.parent
+                ? {
                     where: {
                         $or: [
-                            { owner: { $eq: user.parent } }, 
+                            { owner: { $eq: user.parent } },
                             { owner: { $exists: false } }
                         ]
                     }
@@ -326,11 +326,11 @@ export const tokenAPI = async function (
             for (let i = 0; i < tokens.length; i++) {
                 result.push(getTokenInfo(info, tokens[i]));
             }
-            res.send(new MessageResponse(result));
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message, 400));
+            return new MessageError(error.message, 400);
         }
     })
 
@@ -343,31 +343,31 @@ export const tokenAPI = async function (
      * 
      * @returns {IToken[]} - tokens
      */
-    ApiResponse(channel, MessageAPI.GET_TOKENS, async (msg, res) => {
-        if (msg.payload) {
-            if (msg.payload.tokenId) {
+    ApiResponse(channel, MessageAPI.GET_TOKENS, async (msg) => {
+        if (msg) {
+            if (msg.tokenId) {
                 const reqObj: any = { where: {} };
-                reqObj.where['tokenId'] = { $eq: msg.payload.tokenId }
+                reqObj.where['tokenId'] = { $eq: msg.tokenId }
                 const tokens: IToken[] = await tokenRepository.find(reqObj);
-                res.send(new MessageResponse(tokens));
-                return;
+                return new MessageResponse(tokens);
+
             }
-            if (msg.payload.ids) {
+            if (msg.ids) {
                 const reqObj: any = { where: {} };
-                reqObj.where['tokenId'] = { $in: msg.payload.ids }
+                reqObj.where['tokenId'] = { $in: msg.ids }
                 const tokens: IToken[] = await tokenRepository.find(reqObj);
-                res.send(new MessageResponse(tokens));
-                return;
+                return new MessageResponse(tokens);
+
             }
         }
-        res.send(new MessageResponse(await tokenRepository.find({
+        return new MessageResponse(await tokenRepository.find({
             where: {
                 $or: [
-                    { owner: { $eq: msg.payload.did } }, 
+                    { owner: { $eq: msg.did } },
                     { owner: { $exists: false } }
                 ]
             }
-        })));
+        }));
     })
 
     /**
@@ -377,9 +377,9 @@ export const tokenAPI = async function (
      * 
      * @returns {IToken[]} - all tokens
      */
-    ApiResponse(channel, MessageAPI.IMPORT_TOKENS, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.IMPORT_TOKENS, async (msg) => {
         try {
-            let items: IToken[] = msg.payload;
+            let items: IToken[] = msg;
             if (!Array.isArray(items)) {
                 items = [items];
             }
@@ -392,11 +392,11 @@ export const tokenAPI = async function (
             const tokenObject = tokenRepository.create(items);
             const result = await tokenRepository.save(tokenObject);
             const tokens = await tokenRepository.find();
-            res.send(new MessageResponse(tokens));
+            return new MessageResponse(tokens);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message));
+            return new MessageError(error.message);
         }
     })
 }

@@ -16,6 +16,18 @@ export class MessageResponse<T> implements IMessageResponse<T> {
     }
 }
 
+export class BinaryMessageResponse implements IMessageResponse<string> {
+    public readonly code: number;
+    public readonly body: string;
+    public readonly error: string;
+
+    constructor(body: ArrayBuffer, code: number = 200) {
+        this.code = code;
+        this.body = Buffer.from(body).toString("base64");
+        this.error = null;
+    }
+}
+
 export class MessageError<T> implements IMessageResponse<T>, Error {
     public readonly body: T;
     public readonly error: string;
@@ -27,7 +39,7 @@ export class MessageError<T> implements IMessageResponse<T>, Error {
         this.code = code;
         this.body = null;
         this.error = error;
-        
+
         this.name = error;
         this.message = error;
     }
@@ -50,10 +62,10 @@ export function Response<T>() {
         let oldFunc = descriptor.value;
         descriptor.value = async function () {
             const response: IMessageResponse<T> = await oldFunc.apply(this, arguments);
-	    if (response.code === 0) {
+            if (response.code === 0) {
                 throw new Error('Initialization');
             }
-	    if (response.error) {
+            if (response.error) {
                 throw response.error;
             }
             return response.body;

@@ -4,8 +4,6 @@ import { VpDocument } from '@entity/vp-document';
 import {
     IChainItem,
     MessageAPI,
-    MessageError,
-    MessageResponse,
     SchemaEntity
 } from 'interfaces';
 import { Logger } from 'logger-helper';
@@ -15,6 +13,7 @@ import {
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
+import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
@@ -53,7 +52,7 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
  * @param vpDocumentRepository - table with VP Documents
  */
 export const trustChainAPI = async function (
-    channel: any,
+    channel: MessageBrokerChannel,
     didDocumentRepository: MongoRepository<DidDocument>,
     vcDocumentRepository: MongoRepository<VcDocument>,
     vpDocumentRepository: MongoRepository<VpDocument>
@@ -213,9 +212,9 @@ export const trustChainAPI = async function (
      * 
      * @returns {IChainItem[]} - trust chain
      */
-    ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg) => {
         try {
-            const hash = msg.payload;
+            const hash = msg;
             const chain: IChainItem[] = [];
             let root: VcDocument | VpDocument;
 
@@ -224,8 +223,7 @@ export const trustChainAPI = async function (
                 const policyId = root.policyId;
                 await getParents(chain, root, {}, policyId);
                 await getPolicyInfo(chain, policyId);
-                res.send(new MessageResponse(chain));
-                return;
+                return new MessageResponse(chain);
             }
 
             root = await vpDocumentRepository.findOne({ hash: hash });
@@ -247,8 +245,7 @@ export const trustChainAPI = async function (
                 const vc = await vcDocumentRepository.findOne({ hash: hashVc });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
-                res.send(new MessageResponse(chain));
-                return;
+                return new MessageResponse(chain);
             }
 
             root = await vpDocumentRepository.findOne({ where: { 'document.id': { $eq: hash } } });
@@ -270,16 +267,15 @@ export const trustChainAPI = async function (
                 const vc = await vcDocumentRepository.findOne({ hash: hashVc });
                 await getParents(chain, vc, {}, policyId);
                 await getPolicyInfo(chain, policyId);
-                res.send(new MessageResponse(chain));
-                return;
+                return new MessageResponse(chain);
             }
 
             await getPolicyInfo(chain, null);
-            res.send(new MessageResponse(chain));
+            return new MessageResponse(chain);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             console.error(error);
-            res.send(new MessageError(error.message));
+            return new MessageError(error.message);
         }
     });
 }
