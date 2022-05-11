@@ -28,7 +28,7 @@
 
 ### 1.2 In the policy config there is a root block which is the top of the structure
 
-![](<../.gitbook/assets/API\_1 (1).png>)
+![](../.gitbook/assets/API\_1.png)
 
 ### 1.3 Request the config for the root block
 
@@ -297,7 +297,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_5.png)
+![](<../.gitbook/assets/image (6) (1).png>)
 
 ## 2. Login as a Root Authority
 
@@ -473,7 +473,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 
 ![](../.gitbook/assets/API\_7.png)
 
-![](../.gitbook/assets/API\_8.png)
+![](<../.gitbook/assets/image (2) (1).png>)
 
 ## 3. Login as the User
 
@@ -699,9 +699,9 @@ capacity
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_9.png)
+![](../.gitbook/assets/Sensor.png)
 
-![](../.gitbook/assets/API\_10.png)
+![](../.gitbook/assets/image.png)
 
 ### 3.4 Refresh the Blocks
 
@@ -717,7 +717,7 @@ record in the grid (data[0])
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_11.png)
+![](<../.gitbook/assets/image (15) (1).png>)
 
 ### 3.6 Sample MRV Sender Data
 
