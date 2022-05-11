@@ -1,4 +1,3 @@
-import { AuthEvents, MessageError, MessageResponse, UserRole } from 'interfaces';
 import { IAuthUser } from '@api/auth.interface';
 import { sign, verify } from 'jsonwebtoken';
 import { getMongoRepository } from 'typeorm';
@@ -6,38 +5,55 @@ import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
 import { Logger } from 'logger-helper';
+import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import {
+    AuthEvents, UserRole,
+    IGetUserByTokenMessage,
+    IRegisterNewUserMessage,
+    IGenerateTokenMessage,
+    IGenerateTokenResponse,
+    IGetAllUserResponse,
+    IRootAuthorityUserResponse,
+    IGetDemoUserResponse,
+    IGetUserMessage,
+    IUpdateUserMessage,
+    ISaveUserMessage,
+    IGetUserByIdMessage,
+    IGetUsersByIdMessage,
+    IGetUsersByIRoleMessage,
+    IUser
+} from 'interfaces';
 
 export class AccountService {
     constructor(
-        private channel
+        private channel: MessageBrokerChannel
     ) {
         this.registerListeners();
     }
 
     registerListeners(): void {
-        this.channel.response(AuthEvents.GET_USER_BY_TOKEN, async (msg, res) => {
-            const { token } = msg.payload;
+        this.channel.response<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN, async (msg) => {
+            const { token } = msg;
 
             try {
                 const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, process.env.ACCESS_TOKEN_SECRET, {});
                 const user = await getMongoRepository(User).findOne({ username: decryptedToken.username });
-                res.send(new MessageResponse(user));
+                return new MessageResponse(user);
             } catch (e) {
-                res.send(new MessageError(e.message))
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.REGISTER_NEW_USER, async (msg, res) => {
+        this.channel.response<IRegisterNewUserMessage, User>(AuthEvents.REGISTER_NEW_USER, async (msg) => {
             try {
                 const userRepository = getMongoRepository(User);
 
-                const { username, password, role } = msg.payload;
+                const { username, password, role } = msg;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
                 const checkUserName = await userRepository.count({ username }) > 0;
                 if (checkUserName) {
-                    res.send(new MessageError('An account with the same name already exists.'));
-                    return;
+                    return new MessageError('An account with the same name already exists.');
                 }
 
                 const user = userRepository.create({
@@ -47,17 +63,17 @@ export class AccountService {
                     parent: null,
                     did: null
                 });
-                res.send(new MessageResponse(await getMongoRepository(User).save(user)));
+                return new MessageResponse(await getMongoRepository(User).save(user));
 
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message))
+                return new MessageError(e.message)
             }
         });
 
-        this.channel.response(AuthEvents.GENERATE_NEW_TOKEN, async (msg, res) => {
+        this.channel.response<IGenerateTokenMessage, IGenerateTokenResponse>(AuthEvents.GENERATE_NEW_TOKEN, async (msg) => {
             try {
-                const { username, password } = msg.payload;
+                const { username, password } = msg;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
                 const user = await getMongoRepository(User).findOne({ username });
@@ -67,51 +83,51 @@ export class AccountService {
                         did: user.did,
                         role: user.role
                     }, process.env.ACCESS_TOKEN_SECRET);
-                    res.send(new MessageResponse({
+                    return new MessageResponse({
                         username: user.username,
                         did: user.did,
                         role: user.role,
                         accessToken: accessToken
-                    }))
+                    })
                 } else {
-                    res.send(new MessageError('Bad user'));
+                    return new MessageError('Unauthorized request');
                 }
 
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message))
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.GET_ALL_USER_ACCOUNTS, async (msg, res) => {
+        this.channel.response<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS, async (_) => {
             try {
                 const userAccounts = (await getMongoRepository(User).find({ role: UserRole.USER })).map((e) => ({
                     username: e.username,
                     parent: e.parent,
                     did: e.did
                 }));
-                res.send(new MessageResponse(userAccounts));
+                return new MessageResponse(userAccounts);
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.GET_ALL_ROOT_AUTHORITY_ACCOUNTS, async (msg, res) => {
+        this.channel.response<any, IRootAuthorityUserResponse[]>(AuthEvents.GET_ALL_ROOT_AUTHORITY_ACCOUNTS, async (_) => {
             try {
                 const userAccounts = (await getMongoRepository(User).find({ role: UserRole.ROOT_AUTHORITY })).map((e) => ({
                     username: e.username,
                     did: e.did
                 }));
-                res.send(new MessageResponse(userAccounts));
+                return new MessageResponse(userAccounts);
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
 
 
-        this.channel.response(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (msg, res) => {
+        this.channel.response<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (_) => {
             try {
                 const userAccounts = (await getMongoRepository(User).find()).map((e) => ({
                     parent: e.parent,
@@ -119,80 +135,80 @@ export class AccountService {
                     username: e.username,
                     role: e.role
                 }));
-                res.send(new MessageResponse(userAccounts));
+                return new MessageResponse(userAccounts);
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.GET_USER, async (msg, res) => {
-            const { username } = msg.payload;
+        this.channel.response<IGetUserMessage, User>(AuthEvents.GET_USER, async (msg) => {
+            const { username } = msg;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).findOne({ username })));
+                return new MessageResponse(await getMongoRepository(User).findOne({ username }));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.GET_USER_BY_ID, async (msg, res) => {
-            const { did } = msg.payload;
+        this.channel.response<IGetUserByIdMessage, IUser>(AuthEvents.GET_USER_BY_ID, async (msg) => {
+            const { did } = msg;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).findOne({ did })));
+                return new MessageResponse(await getMongoRepository(User).findOne({ did }));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.GET_USERS_BY_ID, async (msg, res) => {
-            const { dids } = msg.payload;
+        this.channel.response<IGetUsersByIdMessage, IUser[]>(AuthEvents.GET_USERS_BY_ID, async (msg) => {
+            const { dids } = msg;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).find({
+                return new MessageResponse(await getMongoRepository(User).find({
                     where: {
                         did: { $in: dids }
                     }
-                })));
+                }));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.GET_USERS_BY_ROLE, async (msg, res) => {
-            const { role } = msg.payload;
+        this.channel.response<IGetUsersByIRoleMessage, IUser[]>(AuthEvents.GET_USERS_BY_ROLE, async (msg) => {
+            const { role } = msg;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).find({ role })));
+                return new MessageResponse(await getMongoRepository(User).find({ role }));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.UPDATE_USER, async (msg, res) => {
-            const { username, item } = msg.payload;
+        this.channel.response<IUpdateUserMessage, any>(AuthEvents.UPDATE_USER, async (msg) => {
+            const { username, item } = msg;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).update({ username }, item)));
+                return new MessageResponse(await getMongoRepository(User).update({ username }, item));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
 
-        this.channel.response(AuthEvents.SAVE_USER, async (msg, res) => {
-            const { user } = msg.payload;
+        this.channel.response<ISaveUserMessage, IUser>(AuthEvents.SAVE_USER, async (msg) => {
+            const { user } = msg;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(User).save(user)));
+                return new MessageResponse(await getMongoRepository(User).save(user));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message));
+                return new MessageError(e.message);
             }
         });
     }

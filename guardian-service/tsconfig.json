@@ -12,6 +12,7 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
+        "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
             "@entity/*": ["entity/*"],

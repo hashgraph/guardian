@@ -1,4 +1,4 @@
-import { ISchema, ModelHelper, SchemaEntity, SchemaStatus, SchemaCategory, ISchemaDocument } from 'interfaces';
+import { ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus, ModelHelper } from 'interfaces';
 import { AfterLoad, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
@@ -44,7 +44,7 @@ export class Schema implements ISchema {
 
     @Column()
     topicId: string;
-    
+
     @Column()
     messageId: string;
 
@@ -72,7 +72,7 @@ export class Schema implements ISchema {
         this.readonly = !!this.readonly;
         this.uuid = this.uuid || ModelHelper.randomUUID();
         this.iri = this.iri || `${this.uuid}`;
-        if(this.status == SchemaStatus.DRAFT) {
+        if (this.status == SchemaStatus.DRAFT) {
             this.messageId = null;
         }
     }

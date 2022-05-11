@@ -9,6 +9,13 @@ RUN npm install
 ADD ./interfaces/src ./src/.
 RUN npm run build
 
+WORKDIR /usr/common
+COPY ./common/package*.json ./
+COPY ./common/tsconfig.json ./
+RUN npm install
+ADD ./common/src ./src/.
+RUN npm run build
+
 WORKDIR /usr/logger-service
 COPY ./logger-service/package*.json ./
 COPY ./logger-service/tsconfig.json ./

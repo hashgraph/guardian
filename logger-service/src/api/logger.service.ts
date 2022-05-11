@@ -1,9 +1,11 @@
-import { ILog, IPageParameters, MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { Log } from '@entity/log';
+import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage } from 'interfaces';
+
 
 export const loggerAPI = async function (
-    channel: any,
+    channel: MessageBrokerChannel,
     logRepository: MongoRepository<Log>
 ): Promise<void> {
     /**
@@ -12,52 +14,51 @@ export const loggerAPI = async function (
      * @param {Message} [payload] - Log message
      * 
      */
-    channel.response(MessageAPI.WRITE_LOG, async (msg, res) => {
+    channel.response<ILog, any>(MessageAPI.WRITE_LOG, async (message) => {
         try {
-            const message = msg.payload as ILog;
             if (!message) {
                 throw new Error("Log message is empty");
             }
             await logRepository.save(message);
-            res.send(new MessageResponse(null));
+            return new MessageResponse(true);
         }
         catch (e) {
-            res.send(new MessageError(e));
+            return new MessageError(e);
         }
     })
 
     /**
-     * Get logs.
+     * Get application logs.
      * 
-     * @param {any} [payload.filters] - Response type
-     * @param {IPageParameters} [payload.pageParameters] - Page parameters
+     * @param {any} [msg.filters] - logs filter options
+     * @param {IPageParameters} [msg.pageParameters] - Page parameters
      * 
      * @return {any} - Logs
      */
-    channel.response(MessageAPI.GET_LOGS, async (msg, res) => {
+    channel.response<IGetLogsMessage, IGetLogsResponse>(MessageAPI.GET_LOGS, async (msg) => {
         try {
-            const filters = msg.payload && msg.payload.filters || {};
+            const filters = msg && msg.filters || {};
             if (filters.datetime && filters.datetime.$gte && filters.datetime.$lt) {
                 filters.datetime.$gte = new Date(filters.datetime.$gte);
                 filters.datetime.$lt = new Date(filters.datetime.$lt);
             }
-            const pageParameters = msg.payload && msg.payload.pageParameters || {};
+            const pageParameters = msg && msg.pageParameters || {};
             const allFilters = {
                 where: filters,
                 order: {
-                    datetime: msg.payload.sortDirection && msg.payload.sortDirection.toUpperCase() || "DESC"
+                    datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || "DESC"
                 },
                 ...pageParameters
             };
-            let logs = await logRepository.find(allFilters);
-            let totalCount = await logRepository.count(filters);
-            res.send(new MessageResponse({
+            let logs = await logRepository.find(allFilters as any);
+            let totalCount = await logRepository.count(filters as any);
+            return new MessageResponse({
                 logs,
                 totalCount
-            }));
+            });
         }
         catch (e) {
-            res.send(new MessageError(e.toString()));
+            return new MessageError(e.toString());
         }
     })
 
@@ -68,26 +69,26 @@ export const loggerAPI = async function (
      * 
      * @return {any} - Attributes
      */
-    channel.response(MessageAPI.GET_ATTRIBUTES, async (msg, res) => {
+    channel.response<IGetLogAttributesMessage, any>(MessageAPI.GET_ATTRIBUTES, async (msg) => {
         try {
-            const nameFilter = `.*${msg.payload.name || ""}.*`;
-            const existingAttributes = msg.payload.existingAttributes || [];
+            const nameFilter = `.*${msg.name || ""}.*`;
+            const existingAttributes = msg.existingAttributes || [];
             let attrCursor = await logRepository.aggregate([
-                { $project: { attributes : "$attributes" }},
-                { $unwind: { path: "$attributes" }},
-                { $match: { attributes: { $regex: nameFilter, $options: 'i'}}},
-                { $match: { attributes: { $not: { $in: existingAttributes }}}},
-                { $group: { _id: null, uniqueValues: { $addToSet: "$attributes" }}},
-                { $unwind: { path: "$uniqueValues" }},
+                { $project: { attributes: "$attributes" } },
+                { $unwind: { path: "$attributes" } },
+                { $match: { attributes: { $regex: nameFilter, $options: 'i' } } },
+                { $match: { attributes: { $not: { $in: existingAttributes } } } },
+                { $group: { _id: null, uniqueValues: { $addToSet: "$attributes" } } },
+                { $unwind: { path: "$uniqueValues" } },
                 { $limit: 20 },
-                { $group: { _id: null, uniqueValues: { $addToSet: "$uniqueValues" }}}
+                { $group: { _id: null, uniqueValues: { $addToSet: "$uniqueValues" } } }
             ]);
             const attrObject = await attrCursor.next();
             attrCursor.close();
-            res.send(new MessageResponse(attrObject?.uniqueValues?.sort() || []));
+            return new MessageResponse(attrObject?.uniqueValues?.sort() || []);
         }
         catch (e) {
-            res.send(new MessageError(e.toString()));
+            return new MessageError<string>(e.toString());
         }
     })
 }

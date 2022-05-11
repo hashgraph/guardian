@@ -2,7 +2,7 @@ require('module-alias/register');
 const { expect, assert } = require('chai');
 const rewire = require("rewire");
 
-const { ApplicationState } = require("interfaces");
+const { ApplicationState } = require("common");
 const state = new ApplicationState();
 state.updateState('READY');
 
@@ -12,8 +12,8 @@ class MockLogger {
     constructor() {
     }
 
-    setChannel() {}
-    getChannel() {}
+    setChannel() { }
+    getChannel() { }
 
     async info(message) {
         console.log(message)
@@ -56,22 +56,24 @@ class MockHederaSDKHelper {
 
 class MockDIDDocument {
 }
-MockDIDDocument.create = function() {
+MockDIDDocument.create = function () {
     return {
-        getDid: function() { return {} }
+        getDid: function () { return {} }
     }
 }
 
 class MockDIDMessage {
-    setDocument() {}
+    setDocument() { }
 }
 
 class MockMessageServer {
+
     setTopicObject() {
         return {
             sendMessage: function () {
                 return {
-                    getId: function() {}
+                    getId: () => 'test',
+                    getTopicId: () => '123',
                 }
             }
         }
@@ -84,7 +86,7 @@ class MockTopicHelper {
             topicId: ''
         }
     }
-    async link() {}
+    async link() { }
 }
 
 function getMongoRepositoryMock(entity) {
@@ -94,7 +96,7 @@ function getMongoRepositoryMock(entity) {
 
         switch (entity.name) {
             case 'DidDocument':
-                Object.assign(instance, {document: {}});
+                Object.assign(instance, { document: {} });
                 return instance;
 
             default:
@@ -103,19 +105,19 @@ function getMongoRepositoryMock(entity) {
     }
 
     return {
-        find: async function(filters) {
+        find: async function (filters) {
             return [responseConstructor()]
         },
-        findOne: async function(filters) {
+        findOne: async function (filters) {
             return responseConstructor()
         },
-        create: function(entity) {
+        create: function (entity) {
             return Object.assign(responseConstructor(), entity);
         },
-        save: async function(obj) {
+        save: async function (obj) {
             return instance;
         },
-        update: async function(obj) {
+        update: async function (obj) {
             return instance;
         }
     }
@@ -136,19 +138,10 @@ const methods = {
     }
 }
 
-
-
-const res = {
-    send: function(data) {
-        // console.log(data)
-        assert.equal(typeof data.body === 'object', true);
-    }
-}
-
 const channel = {
-    response: function(event, cb) {
-        methods[event] = function() {
-            cb({ payload: { document: {  } } }, res);
+    response: function (event, cb) {
+        methods[event] = async (...args) => {
+            return cb(...args)
         }
     },
     request: function (...args) {
@@ -183,14 +176,18 @@ profileAPIModule.__set__('typeorm_1', {
     getMongoRepository: getMongoRepositoryMock
 });
 
-describe('Profile Service API', function() {
-    it('Get User Balance', async function() {
+describe('Profile Service API', function () {
+    it('Get User Balance', async function () {
         await profileAPIModule.profileAPI(channel);
-        methods['GET_USER_BALANCE']();
+        const data = await methods['GET_USER_BALANCE']({ username: 'test' });
+        assert.equal(data.code, 200);
+        assert.equal(typeof data.body === 'object', true);
     })
 
-    it('Create User Profile', async function() {
+    it('Create User Profile', async function () {
         await profileAPIModule.profileAPI(channel);
-        methods['CREATE_USER_PROFILE']();
+        const data = await methods['CREATE_USER_PROFILE']({});
+        assert.equal(data.code, 200);
+        assert.equal(typeof data.body === 'object', true);
     })
 });

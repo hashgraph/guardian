@@ -77,7 +77,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    **From the interfaces folder**
 
    Build package
-   ```
+   ```sh
    npm install
    npm run build
    ```
@@ -85,23 +85,48 @@ To get a local copy up and running, follow these simple example steps. When buil
    **From the logger-helper folder**
 
    Build package
-   ```
+   ```sh
    npm install
    npm run build
    ```
 
-    **From the Message broker folder (Need to run first)**
+   **From the interfaces folder**
+
+   Build package
+   ```sh
+   npm install
+   npm run build
+   ```
+
+
+  **From the common folder**
+
+  Build package
+  ```sh
+  npm install
+  npm run build
+  ```
+
+   **From the logger-helper folder**
+
+   Build package
+   ```sh
+   npm install
+   npm run build
+   ```
+
+   **From the Message broker folder (Need to run first)** 
 
    To build the service:
 
-   ```
+   ```sh
    npm install
    npm run build
    ```
 
    To start the service:
 
-   ```
+   ```sh
    npm start
    ```
 
@@ -211,6 +236,18 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
   ### Note: Once you start the service, please wait for the Initialization Process to be completed.
   
+  ### Local development using docker
+  1. create .env file at the root level and update all variable requires for docker
+  ```sh
+      cp .env.example .env
+  ```
+  2. Start local development using docker compose
+  ```
+   docker-compose -f docker-compose-dev.yml up --build
+
+  ```
+  3. Access local development using http://localhost:3000 or http://localhost:4200
+
   ### Troubleshoot 
   
   **To delete all the Containers**
@@ -245,13 +282,6 @@ To run stability tests (certain transactions will be executed 10 times each), th
 
 ```
 npm run test:stability
-```
-
-To run **message-broker** unit tests, following commands needs to be executed:
-
-```
-cd message-broker
-npm run test
 ```
 
 ([back to top](broken-reference))

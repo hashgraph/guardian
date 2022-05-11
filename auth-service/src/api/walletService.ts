@@ -1,33 +1,30 @@
-import { AuthEvents, MessageError, MessageResponse, WalletEvents } from 'interfaces';
-import util from 'util';
-import { IAuthUser } from '@api/auth.interface';
-import { verify } from 'jsonwebtoken';
 import { getMongoRepository } from 'typeorm';
-import { User } from '@entity/user';
 import { WalletAccount } from '@entity/wallet-account';
 import { Logger } from 'logger-helper';
+import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { WalletEvents, IGetKeyMessage, ISetKeyMessage } from 'interfaces';
 
 export class WalletService {
     constructor(
-        private channel
+        private channel: MessageBrokerChannel,
     ) {
         this.registerListeners();
     }
 
     registerListeners(): void {
-        this.channel.response(WalletEvents.GET_KEY, async (msg, res) => {
-            const {token, type, key} = msg.payload;
+        this.channel.response<IGetKeyMessage, WalletAccount>(WalletEvents.GET_KEY, async (msg) => {
+            const { token, type, key } = msg;
 
             try {
-                res.send(new MessageResponse(await getMongoRepository(WalletAccount).findOne({token, type: type + '|' + key})));
+                return new MessageResponse(await getMongoRepository(WalletAccount).findOne({ token, type: type + '|' + key }));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message))
+                return new MessageError(e.message)
             }
         });
 
-        this.channel.response(WalletEvents.SET_KEY, async (msg, res) => {
-            const {token, type, key, value} = msg.payload;
+        this.channel.response<ISetKeyMessage, WalletAccount>(WalletEvents.SET_KEY, async (msg) => {
+            const { token, type, key, value } = msg;
 
             try {
                 const walletAcc = getMongoRepository(WalletAccount).create({
@@ -35,10 +32,10 @@ export class WalletService {
                     type: type + '|' + key,
                     key: value
                 });
-                res.send(new MessageResponse(await getMongoRepository(WalletAccount).save(walletAcc)));
+                return new MessageResponse(await getMongoRepository(WalletAccount).save(walletAcc));
             } catch (e) {
                 new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                res.send(new MessageError(e.message))
+                return new MessageError(e.message)
             }
         });
     }

@@ -1,5 +1,5 @@
-import {BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn} from 'typeorm';
 import { ModelHelper } from 'interfaces';
+import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
 
 /**
  * Policy collection
@@ -50,7 +50,7 @@ export class Policy {
 
     @Column()
     topicId: string;
-    
+
     @Column()
     instanceTopicId: string;
 
@@ -58,10 +58,10 @@ export class Policy {
         unique: true
     })
     policyTag: string;
-    
+
     @Column()
     messageId: string;
-    
+
     @CreateDateColumn()
     createDate: Date;
 

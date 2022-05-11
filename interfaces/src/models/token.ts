@@ -1,4 +1,4 @@
-import {IToken, ITokenInfo} from '../interface/token.interface';
+import { IToken, ITokenInfo } from "..";
 
 export class Token {
     public tokenId: string;

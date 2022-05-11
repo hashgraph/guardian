@@ -3,7 +3,7 @@ const { expect, assert } = require('chai');
 const rewire = require("rewire");
 const { ApprovalDocument } = require("../../dist/entity/approval-document");
 
-const { ApplicationState } = require("interfaces");
+const { ApplicationState, MessageResponse } = require("common");
 const state = new ApplicationState();
 state.updateState('READY');
 
@@ -13,8 +13,8 @@ class MockLogger {
     constructor() {
     }
 
-    setChannel() {}
-    getChannel() {}
+    setChannel() { }
+    getChannel() { }
 
     async info(message) {
         console.log(message)
@@ -51,16 +51,19 @@ function getMongoRepositoryMock(entity) {
     }
 
     return {
-        find: async function(filters) {
+        find: async function (filters) {
             return [responseConstructor()]
         },
-        findOne: async function(filters) {
+        findOne: async function (filters) {
             return responseConstructor()
         },
-        create: function(entity) {
+        create: function (entity) {
             return Object.assign(responseConstructor(), entity);
         },
-        save: async function(obj) {
+        save: async function (obj) {
+            return instance;
+        },
+        update: async function (obj) {
             return instance;
         }
     }
@@ -71,30 +74,28 @@ const methods = {
     }
 }
 
-const res = {
-    send: function(data) {
-        assert.equal(data.body[0] instanceof ApprovalDocument, true);
-    }
-}
-
 const channel = {
-    response: function(event, cb) {
-        methods[event] = function() {
-            cb({ payload: { document: {  } } }, res);
+    response: function (event, cb) {
+        methods[event] = async (...args) => {
+            return cb(...args)
         }
     },
     request: function (...args) {
     }
 }
 
-describe('Approve Service API', function() {
-    it('Get Approve Documents', async function() {
+describe.only('Approve Service API', function () {
+    it('Get Approve Documents', async function () {
         approveAPIModule.approveAPI(channel, getMongoRepositoryMock(ApprovalDocument));
-        methods['get-approve-documents']();
+
+        const data = await methods['get-approve-documents']({ id: 'test' });
+        assert.equal(data.body[0] instanceof ApprovalDocument, true);
+
     });
 
-    it('Update Approve Document', async function() {
+    it('Update Approve Document', async function () {
         approveAPIModule.approveAPI(channel, getMongoRepositoryMock(ApprovalDocument));
-        methods['update-approve-documents']();
+        const data = await methods['update-approve-documents']({ id: 'test' });
+        assert.equal(data.body instanceof ApprovalDocument, true);
     })
 });

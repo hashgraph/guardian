@@ -1,12 +1,10 @@
 import {
-    MessageError,
-    MessageResponse,
-    ModelHelper,
     PolicyEngineEvents,
     SchemaEntity,
-    SchemaHelper,
     SchemaStatus,
-    TopicType
+    TopicType,
+    ModelHelper,
+    SchemaHelper
 } from 'interfaces';
 import {
     findAllEntities,
@@ -40,15 +38,16 @@ import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
+import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from 'common';
 
 export class PolicyEngineService {
     @Inject()
     private users: Users;
 
-    private channel: any;
+    private channel: MessageBrokerChannel;
     private policyGenerator: BlockTreeGenerator;
 
-    constructor(channel: any) {
+    constructor(channel: MessageBrokerChannel) {
         this.channel = channel;
         this.policyGenerator = new BlockTreeGenerator();
 
@@ -76,7 +75,7 @@ export class PolicyEngineService {
         const role = policy.registeredUsers[user.did];
 
         if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, user)) {
-            await this.channel.request('api-gateway', 'update-block', {
+            await this.channel.request(['api-gateway', 'update-block'].join('.'), {
                 uuid,
                 state,
                 user
@@ -89,7 +88,7 @@ export class PolicyEngineService {
             return;
         }
 
-        await this.channel.request('api-gateway', 'block-error', {
+        await this.channel.request(['api-gateway', 'block-error'].join('.'), {
             blockType,
             message,
             user
@@ -260,13 +259,13 @@ export class PolicyEngineService {
      * @private
      */
     public registerListeners(): void {
-        this.channel.response('mrv-data', async (msg, res) => {
-            await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
-            res.send();
+        this.channel.response<any, any>('mrv-data', async (msg) => {
+            await PolicyComponentsUtils.ReceiveExternalData(msg);
+            return new MessageResponse({})
         });
 
-        this.channel.response(PolicyEngineEvents.GET_POLICY, async (msg, res) => {
-            const { filters, userDid } = msg.payload;
+        this.channel.response<any, any>(PolicyEngineEvents.GET_POLICY, async (msg) => {
+            const { filters, userDid } = msg;
             const data: any = await getMongoRepository(Policy).findOne(filters);
             if (data) {
                 if (userDid) {
@@ -283,12 +282,12 @@ export class PolicyEngineService {
                 }
                 delete data.registeredUsers;
             }
-            res.send(new MessageResponse(data));
+            return new MessageResponse(data);
         });
 
-        this.channel.response(PolicyEngineEvents.GET_POLICIES, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.GET_POLICIES, async (msg) => {
             try {
-                const { filters, pageIndex, pageSize, userDid } = msg.payload;
+                const { filters, pageIndex, pageSize, userDid } = msg;
                 const filter: any = { where: filters }
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
@@ -316,48 +315,48 @@ export class PolicyEngineService {
                     delete policy.registeredUsers;
                 });
 
-                res.send(new MessageResponse({ policies, count }));
+                return new MessageResponse({ policies, count });
             } catch (error) {
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.CREATE_POLICIES, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.CREATE_POLICIES, async (msg) => {
             try {
-                const user = msg.payload.user;
+                const user = msg.user;
                 const userFull = await this.users.getUser(user.username);
-                await this.createPolicy(msg.payload.model, userFull.did);
+                await this.createPolicy(msg.model, userFull.did);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 policies.forEach(p => {
                     delete p.registeredUsers;
                 });
-                res.send(new MessageResponse(policies));
+                return new MessageResponse(policies);
             } catch (error) {
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.SAVE_POLICIES, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
             try {
-                const result = await this.updatePolicy(msg.payload.policyId, msg.payload.model);
+                const result = await this.updatePolicy(msg.policyId, msg.model);
                 delete result.registeredUsers;
-                res.send(new MessageResponse(result));
+                return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.PUBLISH_POLICIES, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.PUBLISH_POLICIES, async (msg) => {
             try {
-                if (!msg.payload.model || !msg.payload.model.policyVersion) {
+                if (!msg.model || !msg.model.policyVersion) {
                     throw new Error('Policy version in body is empty');
                 }
 
-                const policyId = msg.payload.policyId;
-                const version = msg.payload.model.policyVersion;
-                const user = msg.payload.user;
+                const policyId = msg.policyId;
+                const version = msg.model.policyVersion;
+                const user = msg.user;
                 const userFull = await this.users.getUser(user.username);
                 const owner = userFull.did;
 
@@ -395,84 +394,84 @@ export class PolicyEngineService {
                     return item;
                 });
 
-                res.send(new MessageResponse({
+                return new MessageResponse({
                     policies: policies,
                     isValid,
                     errors
-                }));
+                });
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error.message);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.VALIDATE_POLICIES, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.VALIDATE_POLICIES, async (msg) => {
             try {
-                const policy = msg.payload.model as Policy;
+                const policy = msg.model as Policy;
                 const results = await this.policyGenerator.validate(policy);
                 delete policy.registeredUsers;
-                res.send(new MessageResponse({
+                return new MessageResponse({
                     results,
                     policy
-                }));
+                });
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.POLICY_BLOCKS, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_BLOCKS, async (msg) => {
             try {
-                const block = this.policyGenerator.getRoot(msg.payload.policyId);
-                const user = msg.payload.user;
+                const block = this.policyGenerator.getRoot(msg.policyId);
+                const user = msg.user;
                 const userFull = await this.users.getUser(user.username);
-                res.send(new MessageResponse(await block.getData(userFull, block.uuid)));
+                return new MessageResponse(await block.getData(userFull, block.uuid));
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.error(error);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.GET_BLOCK_DATA, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_DATA, async (msg) => {
             try {
-                const { user, blockId, policyId } = msg.payload;
+                const { user, blockId, policyId } = msg;
                 const userFull = await this.users.getUser(user.username);
                 const data = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(userFull, blockId, null)
-                res.send(new MessageResponse(data));
+                return new MessageResponse(data);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.SET_BLOCK_DATA, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.SET_BLOCK_DATA, async (msg) => {
             try {
-                const { user, blockId, policyId, data } = msg.payload;
+                const { user, blockId, policyId, data } = msg;
                 const userFull = await this.users.getUser(user.username);
                 const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(userFull, data)
-                res.send(new MessageResponse(result));
+                return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.BLOCK_BY_TAG, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.BLOCK_BY_TAG, async (msg) => {
             try {
-                const { user, tag, policyId } = msg.payload;
+                const { user, tag, policyId } = msg;
                 const userFull = await this.users.getUser(user.username);
                 const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
-                res.send(new MessageResponse({ id: block.uuid }));
+                return new MessageResponse({ id: block.uuid });
             } catch (error) {
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg) => {
             try {
-                const { user, blockId, policyId, data } = msg.payload;
+                const { user, blockId, policyId, data } = msg;
                 const userFull = await this.users.getUser(user.username);
                 const block = PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock;
                 let tmpBlock: IPolicyBlock = block;
@@ -481,69 +480,70 @@ export class PolicyEngineService {
                     parents.push(tmpBlock.parent.uuid);
                     tmpBlock = tmpBlock.parent;
                 }
-                res.send(new MessageResponse(parents));
+                return new MessageResponse(parents);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.POLICY_EXPORT_FILE, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_EXPORT_FILE, async (msg) => {
             try {
-                const { policyId } = msg.payload;
+                const { policyId } = msg;
                 const policy = await getMongoRepository(Policy).findOne(policyId);
                 if (!policy) {
                     throw new Error(`Cannot export policy ${policyId}`);
                 }
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
                 const file = await zip.generateAsync({ type: 'arraybuffer' });
-                res.send(file, 'raw');
+                console.log("File size: " + file.byteLength);
+                return new BinaryMessageResponse(file);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
                 console.log(error);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, async (msg) => {
             try {
-                const { policyId } = msg.payload;
+                const { policyId } = msg;
                 const policy = await getMongoRepository(Policy).findOne(policyId);
                 if (!policy) {
                     throw new Error(`Cannot export policy ${policyId}`);
                 }
-                res.send(new MessageResponse({
+                return new MessageResponse({
                     id: policy.id,
                     name: policy.name,
                     description: policy.description,
                     version: policy.version,
                     messageId: policy.messageId,
                     owner: policy.owner
-                }));
+                });
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg) => {
             try {
-                const { zip, user } = msg.payload;
+                const { zip, user } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
-                res.send(new MessageResponse(policyToImport));
+                return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg) => {
             try {
-                const { zip, user } = msg.payload;
+                const { zip, user } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
@@ -551,16 +551,16 @@ export class PolicyEngineService {
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
                 const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
-                res.send(new MessageResponse(policies));
+                return new MessageResponse(policies);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
             try {
-                const { messageId, user } = msg.payload;
+                const { messageId, user } = msg;
                 const userFull = await this.users.getUser(user.username);
                 if (!messageId) {
                     throw new Error('Policy ID in body is empty');
@@ -599,16 +599,16 @@ export class PolicyEngineService {
                     policyToImport.newVersions = newVersions.reverse();
                 }
 
-                res.send(new MessageResponse(policyToImport));
+                return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
             try {
-                const { messageId, user } = msg.payload;
+                const { messageId, user } = msg;
                 const userFull = await this.users.getUser(user.username);
                 if (!messageId) {
                     throw new Error('Policy ID in body is empty');
@@ -629,20 +629,20 @@ export class PolicyEngineService {
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
                 const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
-                res.send(new MessageResponse(policies));
+                return new MessageResponse(policies);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
 
-        this.channel.response(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg, res) => {
+        this.channel.response<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg) => {
             try {
-                await PolicyComponentsUtils.ReceiveExternalData(msg.payload);
-                res.send(new MessageResponse(true));
+                await PolicyComponentsUtils.ReceiveExternalData(msg);
+                return new MessageResponse(true);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                res.send(new MessageError(error.message));
+                return new MessageError(error.message);
             }
         });
     }

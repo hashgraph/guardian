@@ -8,6 +8,7 @@
     "experimentalDecorators": true,
     "inlineSourceMap": true,
     "lib": [
+      "dom",
       "es5",
       "es6"
     ],

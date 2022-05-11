@@ -1,35 +1,34 @@
 import { Singleton } from "../decorators/singleton";
-import { IMessageResponse, MessageError, MessageResponse } from "../models/message-response";
-import { ApplicationStates } from "../type/application-states.type";
-import { MessageAPI } from "../type/message-api.type";
+import { MessageBrokerChannel } from "../mq";
+import { ApplicationStates, MessageAPI } from "interfaces";
+import { MessageResponse, MessageError } from "../models/message-response";
 
 @Singleton
 export class ApplicationState {
-    private channel: any;
+    private channel: MessageBrokerChannel;
     private state: ApplicationStates;
-    private readonly target: string = "api-gateway";
     private serviceName: string;
 
     /**
      * Register channel
-     * @param channel
+     * @param channel: MessageBrokerChannel
      */
-    public setChannel(channel: any): any {
+    public setChannel(channel: MessageBrokerChannel): any {
         this.channel = channel;
-        this.channel.response(MessageAPI.GET_STATUS, async (msg, res) => {
+        this.channel.response(MessageAPI.GET_STATUS, async () => {
             try {
-                res.send(new MessageResponse(this.state));
+                return new MessageResponse(this.state);
             }
             catch (e) {
-                res.send(new MessageError(e));
+                return new MessageError(e);
             }
         });
     }
-    
+
     /**
      * Get channel
      */
-    public getChannel(): any {
+    public getChannel(): MessageBrokerChannel {
         return this.channel;
     }
 
@@ -46,7 +45,7 @@ export class ApplicationState {
         if (this.serviceName) {
             const res = {};
             res[this.serviceName] = state;
-            this.channel.request(this.target, MessageAPI.UPDATE_STATUS, res, 'json');
+            this.channel.request([this.channel.channelName, MessageAPI.UPDATE_STATUS].join('.'), res);
         }
     }
 }

@@ -2,7 +2,7 @@ require('module-alias/register');
 const { expect, assert } = require('chai');
 const rewire = require("rewire");
 
-const { ApplicationState } = require("interfaces");
+const { ApplicationState } = require("common");
 const { Settings } = require("../../dist/entity/settings");
 const { Topic } = require("../../dist/entity/topic");
 const state = new ApplicationState();
@@ -14,8 +14,8 @@ class MockLogger {
     constructor() {
     }
 
-    setChannel() {}
-    getChannel() {}
+    setChannel() { }
+    getChannel() { }
 
     async info(message) {
         console.log(message)
@@ -56,19 +56,19 @@ function getMongoRepositoryMock(entity) {
     }
 
     return {
-        find: async function(filters) {
+        find: async function (filters) {
             return [responseConstructor()]
         },
-        findOne: async function(filters) {
+        findOne: async function (filters) {
             return responseConstructor()
         },
-        create: function(entity) {
+        create: function (entity) {
             return Object.assign(responseConstructor(), entity);
         },
-        save: async function(obj) {
+        save: async function (obj) {
             return instance;
         },
-        update: async function(obj) {
+        update: async function (obj) {
             return instance;
         }
     }
@@ -84,34 +84,40 @@ const methods = {
 }
 
 const res = {
-    send: function(data) {
+    send: function (data) {
         assert.equal(typeof data.body === 'object', true);
     }
 }
 
 const channel = {
-    response: function(event, cb) {
-        methods[event] = function() {
-            cb({ payload: { document: {  } } }, res);
+    response: function (event, cb) {
+        methods[event] = async (...args) => {
+            return cb(...args)
         }
     },
     request: function (...args) {
     }
 }
 
-describe('Config Service API', function() {
-    it('Get Topic', async function() {
+describe('Config Service API', function () {
+    it('Get Topic', async function () {
         await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
-        methods['GET_TOPIC']()
+        const data = await methods['GET_TOPIC']();
+        assert.equal(data.code, 200);
+        assert.equal(typeof data.body === 'object', true);
     })
 
-    it('Update Settings', async function() {
+    it('Update Settings', async function () {
         await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
-        methods['UPDATE_SETTINGS']()
+        const data = await methods['UPDATE_SETTINGS']({ operatorId: 'test' })
+        assert.equal(data.code, 200);
+        assert.equal(typeof data.body === 'object', true);
     })
 
-    it('Get Settings', async function() {
+    it('Get Settings', async function () {
         await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
-        methods['GET_SETTINGS']()
+        const data = await methods['GET_SETTINGS']()
+        assert.equal(data.code, 200);
+        assert.equal(typeof data.body === 'object', true);
     })
 })

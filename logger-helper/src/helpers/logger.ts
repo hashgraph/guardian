@@ -1,23 +1,23 @@
-import { ApplicationStates, ILog, IPageParameters, LogType, MessageAPI, Singleton } from 'interfaces';
-import { IMessageResponse } from 'interfaces';
+import { ApplicationStates, ILog, IPageParameters, LogType, MessageAPI } from 'interfaces';
+import { MessageBrokerChannel, Singleton, IMessageResponse } from 'common';
 
 @Singleton
 export class Logger {
-    private channel: any;
+    private channel: MessageBrokerChannel;
     private readonly target: string = "logger-service";
 
     /**
      * Register channel
      * @param channel
      */
-    public setChannel(channel: any): any {
+    public setChannel(channel: MessageBrokerChannel): any {
         this.channel = channel;
     }
 
     /**
      * Get channel
      */
-    public getChannel(): any {
+    public getChannel(): MessageBrokerChannel {
         return this.channel;
     }
 
@@ -25,11 +25,10 @@ export class Logger {
      * Request to logger service method
      * @param entity
      * @param params
-     * @param type
      */
-    public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
+    public async request<T>(entity: string, params?: any): Promise<T> {
         try {
-            const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
+            const response: IMessageResponse<T> = await this.channel.request([this.target, entity].join('.'), params);
             if (!response) {
                 throw Error('Server is not available');
             }
@@ -42,14 +41,12 @@ export class Logger {
         }
     }
 
-
-
     private async write(type: LogType, message: string, attr?: string[]) {
         const logMessage: ILog = {
             message: message,
             type: type,
             attributes: attr
-        } 
+        }
         await this.request(MessageAPI.WRITE_LOG, logMessage);
     }
 
@@ -72,7 +69,7 @@ export class Logger {
     }
 
     public async getAttributes(name?: string, existingAttributes: string[] = []): Promise<string[]> {
-        return await this.request(MessageAPI.GET_ATTRIBUTES, { name, existingAttributes});
+        return await this.request(MessageAPI.GET_ATTRIBUTES, { name, existingAttributes });
     }
 
     /**

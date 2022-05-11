@@ -13,6 +13,7 @@
   "main": "dist/index.js",
   "name": "topic-viewer",
   "scripts": {
+    "dev:docker": "nodemon src/index.ts",
     "build": "tsc",
     "debug": "nodemon dist/index.js",
     "dev": "tsc -w",

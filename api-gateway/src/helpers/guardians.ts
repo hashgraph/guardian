@@ -22,7 +22,7 @@ type IFilter = any;
  */
 @Singleton
 export class Guardians extends ServiceRequestsBase {
-    public target: string = 'guardian.*';
+    public target: string = 'guardians';
 
     /**
      * Update settings
