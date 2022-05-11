@@ -61,7 +61,14 @@ export enum BlockGroup {
     Documents = 'Documents',
     Tokens = 'Tokens',
     Calculate = 'Calculate',
-    Report = 'Report'
+    Report = 'Report',
+    UnGrouped = 'UnGrouped'
+}
+
+export enum BlockHeaders {
+    UIComponents = 'UI Components',
+    ServerBlocks = 'Server Blocks',
+    Addons = 'Addons'
 }
 
 export interface IBlockAbout {
@@ -186,21 +193,29 @@ export interface IBlockSetting {
     name: string;
     title: string;
     group: BlockGroup;
+    header: BlockHeaders;
     factory: any;
     property: any;
     about: IBlockAboutConfig;
+    allowedChildren?: ChildrenDisplaySettings[];
+}
+
+export interface ChildrenDisplaySettings {
+    type: BlockType,
+    group?: BlockGroup,
+    header?: BlockHeaders
 }
 
 @Injectable()
 export class RegisteredBlocks {
-    public readonly blocks: BlockType[];
+    public readonly blocks: any;
     public readonly icons: any;
     public readonly names: any;
     public readonly titles: any;
-    public readonly groups: any;
     public readonly factories: any;
     public readonly properties: any;
     public readonly about: any;
+    public readonly allowedChildren: any;
 
     private readonly defaultA = new BlockAbout({
         post: false,
@@ -212,22 +227,80 @@ export class RegisteredBlocks {
     })
 
     constructor() {
-        this.blocks = [];
+        this.blocks = {};
         this.icons = {};
         this.names = {};
         this.titles = {};
-        this.groups = {};
         this.factories = {};
         this.properties = {};
         this.about = {};
+        this.allowedChildren = {};
 
-        this.addHeaderGroup(BlockGroup.Main, 'UI Components');
+        const allowedChildrenStepContainerBlocks = [
+            {
+                type: BlockType.Information
+            }, 
+            {
+                type: BlockType.PolicyRoles
+            },
+            {
+                type: BlockType.Action
+            },
+            {
+                type: BlockType.Container
+            },
+            {
+                type: BlockType.Step
+            },
+            {
+                type: BlockType.Switch
+            },
+            {
+                type: BlockType.DocumentsViewer
+            },
+            {
+                type: BlockType.Request
+            },
+            {
+                type: BlockType.SendToGuardian
+            },
+            {
+                type: BlockType.ExternalData
+            },
+            {
+                type: BlockType.AggregateDocument
+            },
+            {
+                type: BlockType.ReassigningBlock
+            },
+            {
+                type: BlockType.TimerBlock
+            },
+            {
+                type: BlockType.Mint
+            },
+            {
+                type: BlockType.Wipe
+            },
+            {
+                type: BlockType.Calculate
+            },
+            {
+                type: BlockType.CustomLogicBlock
+            },
+            {
+                type: BlockType.Report
+            }
+        ];
+
+        // Main, UI Components
         this.addBlock({
             type: BlockType.Container,
             icon: 'tab',
             name: 'Container',
             title: `Add 'Container' Block`,
             group: BlockGroup.Main,
+            header: BlockHeaders.UIComponents,
             factory: ContainerBlockComponent,
             property: ContainerConfigComponent,
             about: {
@@ -237,7 +310,8 @@ export class RegisteredBlocks {
                 output: InputType.None,
                 children: ChildrenType.Any,
                 control: ControlType.UI,
-            }
+            },
+            allowedChildren: allowedChildrenStepContainerBlocks
         });
         this.addBlock({
             type: BlockType.Step,
@@ -245,6 +319,7 @@ export class RegisteredBlocks {
             name: 'Step',
             title: `Add 'Step' Block`,
             group: BlockGroup.Main,
+            header: BlockHeaders.UIComponents,
             factory: StepBlockComponent,
             property: ContainerConfigComponent,
             about: {
@@ -254,7 +329,8 @@ export class RegisteredBlocks {
                 output: InputType.None,
                 children: ChildrenType.Any,
                 control: ControlType.UI,
-            }
+            },
+            allowedChildren: allowedChildrenStepContainerBlocks
         });
         this.addBlock({
             type: BlockType.PolicyRoles,
@@ -262,6 +338,7 @@ export class RegisteredBlocks {
             name: 'Roles',
             title: `Add 'Choice Of Roles' Block`,
             group: BlockGroup.Main,
+            header: BlockHeaders.UIComponents,
             factory: RolesBlockComponent,
             property: RolesConfigComponent,
             about: {
@@ -279,6 +356,7 @@ export class RegisteredBlocks {
             name: 'Information',
             title: `Add 'Information' Block`,
             group: BlockGroup.Main,
+            header: BlockHeaders.UIComponents,
             factory: InformationBlockComponent,
             property: InformationConfigComponent,
             about: {
@@ -296,6 +374,7 @@ export class RegisteredBlocks {
             name: 'Action',
             title: `Add 'Action' Block`,
             group: BlockGroup.Main,
+            header: BlockHeaders.UIComponents,
             factory: ActionBlockComponent,
             property: ActionConfigComponent,
             about: {
@@ -307,13 +386,15 @@ export class RegisteredBlocks {
                 control: ControlType.UI,
             }
         });
-        this.addHeaderGroup(BlockGroup.Main, 'Server Blocks');
+
+        // Main, Server Blocks
         this.addBlock({
             type: BlockType.Switch,
             icon: 'rule',
             name: 'Switch',
             title: `Add 'Switch' Block`,
             group: BlockGroup.Main,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: SwitchConfigComponent,
             about: {
@@ -331,13 +412,14 @@ export class RegisteredBlocks {
             }
         });
 
-        this.addHeaderGroup(BlockGroup.Documents, 'UI Components');
+        // Documents, UI Components
         this.addBlock({
             type: BlockType.DocumentsViewer,
             icon: 'table_view',
             name: 'Documents',
             title: `Add 'Documents Source' Block`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.UIComponents,
             factory: DocumentsSourceBlockComponent,
             property: DocumentSourceComponent,
             about: {
@@ -347,7 +429,17 @@ export class RegisteredBlocks {
                 output: InputType.None,
                 children: ChildrenType.Special,
                 control: ControlType.UI,
-            }
+            },
+            allowedChildren: [
+                {
+                    type: BlockType.DocumentsSourceAddon,
+                    group: BlockGroup.UnGrouped
+                },
+                {
+                    type: BlockType.PaginationAddon,
+                    group: BlockGroup.UnGrouped
+                }
+            ]
         });
         this.addBlock({
             type: BlockType.Request,
@@ -355,6 +447,7 @@ export class RegisteredBlocks {
             name: 'Request',
             title: `Add 'Request' Block`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.UIComponents,
             factory: RequestDocumentBlockComponent,
             property: RequestConfigComponent,
             about: {
@@ -369,15 +462,23 @@ export class RegisteredBlocks {
                 },
                 children: ChildrenType.Special,
                 control: ControlType.UI,
-            }
+            },
+            allowedChildren: [
+                {
+                    type: BlockType.DocumentsSourceAddon,
+                    group: BlockGroup.UnGrouped
+                }
+            ]
         });
-        this.addHeaderGroup(BlockGroup.Documents, 'Server Blocks');
+
+        // Documents, Server Blocks
         this.addBlock({
             type: BlockType.SendToGuardian,
             icon: 'send',
             name: 'Send',
             title: `Add 'Send' Block`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: SendConfigComponent,
             about: {
@@ -408,6 +509,7 @@ export class RegisteredBlocks {
             name: 'External Data',
             title: `Add 'External Data' Block`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: ExternalDataConfigComponent,
             about: {
@@ -430,6 +532,7 @@ export class RegisteredBlocks {
             name: 'Aggregate Data',
             title: `Add 'Aggregate' Block`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: AggregateConfigComponent,
             about: {
@@ -457,6 +560,7 @@ export class RegisteredBlocks {
             name: 'Reassigning',
             title: `Add 'Reassigning' Block`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: ReassigningConfigComponent,
             about: {
@@ -473,13 +577,15 @@ export class RegisteredBlocks {
                 control: ControlType.Server,
             }
         });
-        this.addHeaderGroup(BlockGroup.Documents, 'Addons');
+
+        // Documents, Addons
         this.addBlock({
             type: BlockType.FiltersAddon,
             icon: 'filter_alt',
             name: 'Filters Addon',
             title: `Add 'Filters' Addon`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.Addons,
             factory: FiltersAddonBlockComponent,
             property: FiltersAddonConfigComponent,
             about: {
@@ -489,7 +595,13 @@ export class RegisteredBlocks {
                 output: InputType.None,
                 children: ChildrenType.Special,
                 control: ControlType.Special,
-            }
+            },
+            allowedChildren: [
+                {
+                    type: BlockType.DocumentsSourceAddon,
+                    group: BlockGroup.UnGrouped
+                }
+            ]
         });
         this.addBlock({
             type: BlockType.DocumentsSourceAddon,
@@ -497,6 +609,7 @@ export class RegisteredBlocks {
             name: 'Source',
             title: `Add 'DocumentsSourceAddon' Addon`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.Addons,
             factory: null,
             property: SourceAddonConfigComponent,
             about: {
@@ -506,7 +619,13 @@ export class RegisteredBlocks {
                 output: InputType.None,
                 children: ChildrenType.Special,
                 control: ControlType.Special,
-            }
+            },
+            allowedChildren: [
+                {
+                    type: BlockType.FiltersAddon,
+                    group: BlockGroup.UnGrouped
+                }
+            ]
         });
         this.addBlock({
             type: BlockType.PaginationAddon,
@@ -514,6 +633,7 @@ export class RegisteredBlocks {
             name: 'Pagination',
             title: `Add 'Pagination' Addon`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.Addons,
             factory: PaginationAddonBlockComponent,
             property: null,
             about: {
@@ -531,6 +651,7 @@ export class RegisteredBlocks {
             name: 'Timer',
             title: `Add 'Timer' Block`,
             group: BlockGroup.Documents,
+            header: BlockHeaders.Addons,
             factory: null,
             property: TimerConfigComponent,
             about: {
@@ -548,14 +669,14 @@ export class RegisteredBlocks {
             }
         });
 
-
-        this.addHeaderGroup(BlockGroup.Tokens, 'Server Blocks');
+        // Tokens, Server Blocks
         this.addBlock({
             type: BlockType.Mint,
             icon: 'paid',
             name: 'Mint',
             title: `Add 'Mint' Block`,
             group: BlockGroup.Tokens,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: MintConfigComponent,
             about: {
@@ -573,6 +694,7 @@ export class RegisteredBlocks {
             name: 'Wipe',
             title: `Add 'Wipe' Block`,
             group: BlockGroup.Tokens,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: MintConfigComponent,
             about: {
@@ -585,14 +707,14 @@ export class RegisteredBlocks {
             }
         });
 
-
-        this.addHeaderGroup(BlockGroup.Calculate, 'Server Blocks');
+        // Calculate, Server Blocks
         this.addBlock({
             type: BlockType.Calculate,
             icon: 'bar_chart',
             name: 'Calculate',
             title: `Add 'Calculate' Block`,
             group: BlockGroup.Calculate,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: CalculateConfigComponent,
             about: {
@@ -605,7 +727,13 @@ export class RegisteredBlocks {
                 },
                 children: ChildrenType.Special,
                 control: ControlType.Server,
-            }
+            },
+            allowedChildren: [
+                {
+                    type: BlockType.CalculateMathAddon,
+                    group: BlockGroup.UnGrouped,
+                }
+            ]
         });
         this.addBlock({
             type: BlockType.CustomLogicBlock,
@@ -613,6 +741,7 @@ export class RegisteredBlocks {
             name: 'Custom Logic',
             title: `Add 'Custom Logic' Block`,
             group: BlockGroup.Calculate,
+            header: BlockHeaders.ServerBlocks,
             factory: null,
             property: CustomLogicConfigComponent,
             about: {
@@ -638,15 +767,14 @@ export class RegisteredBlocks {
             }
         });
 
-
-
-        this.addHeaderGroup(BlockGroup.Calculate, 'Addons');
+        // Calculate, Addons
         this.addBlock({
             type: BlockType.CalculateMathAddon,
             icon: 'calculate',
             name: 'Math Addon',
             title: `Add 'Math' Addon`,
             group: BlockGroup.Calculate,
+            header: BlockHeaders.Addons,
             factory: null,
             property: CalculateMathConfigComponent,
             about: {
@@ -664,13 +792,14 @@ export class RegisteredBlocks {
             }
         });
 
-        this.addHeaderGroup(BlockGroup.Report, 'UI Components');
+        // Report, UIComponents
         this.addBlock({
             type: BlockType.Report,
             icon: 'addchart',
             name: 'Report',
             title: `Add 'Report' Block`,
             group: BlockGroup.Report,
+            header: BlockHeaders.UIComponents,
             factory: ReportBlockComponent,
             property: null,
             about: {
@@ -680,15 +809,23 @@ export class RegisteredBlocks {
                 output: InputType.None,
                 children: ChildrenType.Special,
                 control: ControlType.UI,
-            }
+            },
+            allowedChildren: [
+                {
+                    type: BlockType.ReportItem,
+                    group: BlockGroup.UnGrouped
+                }
+            ]
         });
-        this.addHeaderGroup(BlockGroup.Report, 'Addons');
+
+        // Report, Addons
         this.addBlock({
             type: BlockType.ReportItem,
             icon: 'list_alt',
             name: 'Report Item',
             title: `Add 'Report Item' Block`,
             group: BlockGroup.Report,
+            header: BlockHeaders.Addons,
             factory: null,
             property: ReportItemConfigComponent,
             about: {
@@ -703,10 +840,15 @@ export class RegisteredBlocks {
     }
 
     public addBlock(setting: IBlockSetting) {
-        this.register(setting.type, setting.icon, setting.name, setting.title);
-        if (setting.group) {
-            this.registerGroup(setting.group, setting.type);
-        }
+        this.register(
+            setting.type, 
+            setting.icon, 
+            setting.name, 
+            setting.title,
+            setting.allowedChildren,
+            setting.group, 
+            setting.header
+        );
 
         if (setting.factory) {
             this.registerFactory(setting.type, setting.factory);
@@ -721,11 +863,22 @@ export class RegisteredBlocks {
         }
     }
 
-    public register(type: BlockType, icon: string, name: string, title: string) {
-        this.blocks.push(type);
+    public register(
+        type: BlockType, 
+        icon: string, 
+        name: string, 
+        title: string,
+        allowedChildren: ChildrenDisplaySettings[] = [],
+        group: BlockGroup = BlockGroup.UnGrouped,
+        header?: BlockHeaders
+    ) {
+        this.blocks[type] = {
+            type, group, header
+        };
         this.icons[type] = icon;
         this.names[type] = name;
         this.titles[type] = title;
+        this.allowedChildren[type] = allowedChildren;
     }
 
     public getIcon(blockType: string): string {
@@ -740,27 +893,6 @@ export class RegisteredBlocks {
         return this.titles[blockType] || '';
     }
 
-    public registerGroup(group: BlockGroup, type: BlockType) {
-        if (!this.groups[group]) {
-            this.groups[group] = [];
-        }
-        this.groups[group].push({
-            type: type,
-            icon: this.getIcon(type),
-            name: this.getName(type),
-            title: this.getTitle(type)
-        });
-    }
-
-    public addHeaderGroup(group: BlockGroup, header: string) {
-        if (!this.groups[group]) {
-            this.groups[group] = [];
-        }
-        this.groups[group].push({
-            type: null,
-            name: header
-        });
-    }
 
     public registerFactory(type: BlockType, factory: any) {
         this.factories[type] = factory;
