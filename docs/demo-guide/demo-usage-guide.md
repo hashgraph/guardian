@@ -121,7 +121,7 @@ After selecting the Installer role, we will see the form that is based on the im
 
 13\. Navigate to the **Tokens** tab and click on the blue people icon on the far right. This view shows the Root Authority all of the users who have been associated with the tokens the Root Authority created. We will now click the **Grant KYC** button.
 
-![](../.gitbook/assets/DUG\_19.png)
+![](<../.gitbook/assets/DUG\_19 (1).png>)
 
 14\. We can now log out of the Root Authority account and back in as the Installer. Navigate to the **Policies** tab and click the **Open** button on the far right. The next Policy Workflow Action required by the Installer is to register their sensors. Click the **New Sensors** button, fill out the required information in the dialog box, and select **OK**.
 
