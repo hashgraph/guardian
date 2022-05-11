@@ -89,7 +89,7 @@ export class CalculateContainerBlock {
         const vcReference = isArray ? json[0].ref : json.ref;
         // -->
 
-        const newJson = this.calculate(json, ref);
+        const newJson = await this.calculate(json, ref);
 
         // <-- new vc
         const outputSchema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.outputSchema });
