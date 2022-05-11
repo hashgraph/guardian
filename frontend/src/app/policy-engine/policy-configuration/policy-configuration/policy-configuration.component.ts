@@ -7,7 +7,7 @@ import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TokenService } from 'src/app/services/token.service';
-import { RegisteredBlocks } from '../../registered-blocks';
+import { BlockGroup, RegisteredBlocks } from '../../registered-blocks';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import * as yaml from 'js-yaml';
@@ -99,6 +99,14 @@ export class PolicyConfigurationComponent implements OnInit {
     policyTab: string = 'Description';
     private blockToCopy?: BlockNode;
     copyBlocksMode: boolean = false;
+    groupBlocks: any = {
+        Main: [],
+        Documents: [],
+        Tokens: [],
+        Calculate: [],
+        Report: [],
+        UnGroupedBlocks: []
+    }
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -146,7 +154,8 @@ export class PolicyConfigurationComponent implements OnInit {
                     data: {
                         dialogTitle: "Apply latest changes",
                         dialogText: "Do you want to apply latest changes?"
-                    }
+                    },
+                    disableClose: true
                 })
                 applyChanesDialog.afterClosed().subscribe((result) => {
                     if (result) {
@@ -201,7 +210,7 @@ export class PolicyConfigurationComponent implements OnInit {
     setBlocks(root: BlockNode) {
         this.root = root;
         this.blocks = [root];
-        this.currentBlock = root;
+        this.onSelect(this.root);
         this.allBlocks = this.all(root);
         this.allBlocks.forEach((b => {
             if (!b.id) b.id = this.registeredBlocks.generateUUIDv4();
@@ -228,6 +237,61 @@ export class PolicyConfigurationComponent implements OnInit {
 
     onSelect(block: BlockNode) {
         this.currentBlock = block;
+        const allowedChildren = this.registeredBlocks.allowedChildren[block.blockType];
+        const groupBlocks: any = {};
+        const unGroupedBlocks: any[] = [];
+        for (const key in BlockGroup) {
+            this.groupBlocks[key] = [];
+        }
+
+        for (let i = 0; i < allowedChildren.length; i++) {
+            const allowedChild = allowedChildren[i];
+            const type = allowedChild.type;
+            if (!allowedChild.group) {
+                allowedChild.group = this.registeredBlocks.blocks[allowedChild.type].group;
+            }
+            if (!allowedChild.header) {
+                allowedChild.header = this.registeredBlocks.blocks[allowedChild.type].header;
+            }
+            if (!groupBlocks[allowedChild.group]) {
+                groupBlocks[allowedChild.group] = {};
+            }
+            if (allowedChild.group === BlockGroup.UnGrouped) {
+                unGroupedBlocks.push({ 
+                    type: type,
+                    icon: this.registeredBlocks.getIcon(type),
+                    name: this.registeredBlocks.getName(type),
+                    title: this.registeredBlocks.getTitle(type)
+                });
+                continue;
+            }
+            if (!groupBlocks[allowedChild.group][allowedChild.header]) {
+                groupBlocks[allowedChild.group][allowedChild.header] = [];
+            }
+            groupBlocks[allowedChild.group][allowedChild.header].push({ 
+                type: type,
+                icon: this.registeredBlocks.getIcon(type),
+                name: this.registeredBlocks.getName(type),
+                title: this.registeredBlocks.getTitle(type)
+            });
+        }
+
+        const groupBlockKeys = Object.keys(groupBlocks);
+        for (let i = 0; i < groupBlockKeys.length; i++) {
+            const groupName = groupBlockKeys[i];
+            const groupsWithHeaders = groupBlocks[groupName];
+            const groupsWithHeadersKeys = Object.keys(groupsWithHeaders);
+            for (let j = 0; j < groupsWithHeadersKeys.length; j++) {
+                const subGroupName = groupsWithHeadersKeys[j];
+                const subGroupElements = groupsWithHeaders[groupsWithHeadersKeys[j]];
+                this.groupBlocks[groupName].push({
+                    name: subGroupName
+                });
+                this.groupBlocks[groupName] = this.groupBlocks[groupName].concat(subGroupElements);
+            }
+        }
+
+        this.groupBlocks.unGroupedBlocks = unGroupedBlocks;
         return false;
     }
 
@@ -505,7 +569,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.errorsMap[element.id] = element.errors;
             }
             this.blocks = [this.root];
-            this.currentBlock = this.root;
+            this.onSelect(this.root);
             this.loading = false;
         }, (e) => {
             this.loading = false;
