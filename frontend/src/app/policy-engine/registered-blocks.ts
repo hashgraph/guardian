@@ -384,7 +384,13 @@ export class RegisteredBlocks {
                 output: InputType.None,
                 children: ChildrenType.Special,
                 control: ControlType.UI,
-            }
+            },
+            allowedChildren: [
+                {
+                    type: BlockType.DocumentsSourceAddon,
+                    group: BlockGroup.UnGrouped
+                }
+            ]
         });
 
         // Main, Server Blocks
