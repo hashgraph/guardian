@@ -18,7 +18,7 @@ Once we have created the Draft of the policy – notice the status field showing
 
 The edit screen will open and you will notice two boxes on the right side of the screen. The top Policy box is static and offers the ability to add high-level “Policy properties.” You can edit the name, Policy Tag, etc. Note that you can also create custom roles that are specific to your policy.
 
-![](../.gitbook/assets/PW\_4.png)
+![](<../.gitbook/assets/image (18).png>)
 
 The second Interface ContainerBlock is specific to the first workflow block. We will begin editing this block to build our policy!
 
