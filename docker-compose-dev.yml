@@ -8,6 +8,7 @@ services:
         ports:
             - 27017:27017
     message-broker:
+        container_name: message-broker
         image: nats
         expose:
             - 4222
@@ -15,7 +16,18 @@ services:
             - '8222:8222'
             - '4222:4222'
             - '6222:6222'
-        command: '--http_port 8222'
+        command: '--cluster_name message-broker --cluster nats://0.0.0.0:6222 --http_port 8222 --debug'
+    message-broker-1:
+        container_name: message-broker-1
+        image: nats
+        command: '--cluster_name message-broker --cluster nats://0.0.0.0:6222 --routes=nats://message-broker:6222 --debug'
+        depends_on: [ "message-broker" ]
+    message-broker-2:
+        container_name: message-broker-2
+        image: nats
+        command: '--cluster_name message-broker --cluster nats://0.0.0.0:6222 --routes=nats://message-broker:6222 --debug'
+        depends_on: [ "message-broker" ]
+
     dev-tools:
         build: .
         image: guardian-development
@@ -166,6 +178,7 @@ services:
             - dev-tools
         volumes:
             - ./:/app
+            - guardian_frontend:/app/frontend/node_modules/.cache
         environment:
             - NG_PERSISTENT_BUILD_CACHE=1
             - CI=local
@@ -190,3 +203,4 @@ volumes:
         # volume-ui-service:
         # volume-mrv-sender:
         #  volume-message-broker:
+    guardian_frontend:

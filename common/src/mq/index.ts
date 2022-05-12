@@ -81,12 +81,16 @@ export class MessageBrokerChannel {
      * @returns 
      */
     public static async connect(connectionName: string) {
-        assert(process.env.MQ_ADDRESS, 'Missing MQ_ADDRESS environment variable');
-        return connect({
-            servers: [process.env.MQ_ADDRESS],
+        const mqServer = process.env.MQ_ADDRESS;
+        assert(mqServer, 'Missing MQ_ADDRESS environment variable');
+        console.log("Connecting to MQ: %s", mqServer);
+        const cn = await connect({
+            servers: [mqServer],
             name: connectionName,
             reconnectDelayHandler: () => 2000,
             maxReconnectAttempts: -1 // reconnect forever
         });
+        console.log('Servers: %s', cn.getServer());
+        return cn;
     };
 }
