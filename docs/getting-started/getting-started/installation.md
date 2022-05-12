@@ -237,20 +237,20 @@ npm run test
 
 #### Using Docker:
 
-| Folder        | URL                                                                        |
-| ------------- | -------------------------------------------------------------------------- |
-| WEB-NTERFACE  | [http://localhost:3000](http://localhost:3000)                             |
-| API\_GATEWAY  | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             |
-| MRV\_SENDER   | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     |
-| TOPIC\_VIEWER | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) |
-| API\_DOCS     | [http://localhost:3000/api-docs/v1/](ttp://localhost:3000/api-docs/v1/)    |
+| Folder         | URL                                                                        |
+| -------------- | -------------------------------------------------------------------------- |
+| WEB\_INTERFACE | [http://localhost:3000](http://localhost:3000)                             |
+| API\_GATEWAY   | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             |
+| MRV\_SENDER    | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     |
+| TOPIC\_VIEWER  | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) |
+| API\_DOCS      | [http://localhost:3000/api-docs/v1/](ttp://localhost:3000/api-docs/v1/)    |
 
 #### Not in Docker:
 
-| Folder        | URL                                             |
-| ------------- | ----------------------------------------------- |
-| WEB-INTERFACE | [http://localhost:4200/](http://localhost:4200) |
-| API\_GATEWAY  | [http://localhost:3002/](http://localhost:3002) |
-| MRV\_SENDER   | [http://localhost:3005/](http://localhost:3005) |
-| TOPIC\_VIEWER | [http://localhost:3006/](http://localhost:3006) |
-| API\_DOCS     | [http://localhost:3001/](http://localhost:3001) |
+| Folder         | URL                                             |
+| -------------- | ----------------------------------------------- |
+| WEB\_INTERFACE | [http://localhost:4200/](http://localhost:4200) |
+| API\_GATEWAY   | [http://localhost:3002/](http://localhost:3002) |
+| MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005) |
+| TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006) |
+| API\_DOCS      | [http://localhost:3001/](http://localhost:3001) |
