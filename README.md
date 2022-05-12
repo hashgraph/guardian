@@ -21,7 +21,7 @@ To get a local copy up and running, follow these simple example steps. When buil
 #### Prerequisites
 
 * [Docker](https://www.docker.com) (To build with one command)
-* [MongoDB](https://www.mongodb.com) and [NodeJS](https://nodejs.org) (If you would like to manually build every component)
+* [MongoDB](https://www.mongodb.com), [NodeJS](https://nodejs.org) and [Nats](https://nats.io/) (If you would like to manually build every component)
 * [Hedera Testnet Account](https://portal.hedera.com)
 * [NFT.Storage Account](https://nft.storage/#getting-started)
 
@@ -113,21 +113,6 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```sh
    npm install
    npm run build
-   ```
-
-   **From the Message broker folder (Need to run first)** 
-
-   To build the service:
-
-   ```sh
-   npm install
-   npm run build
-   ```
-
-   To start the service:
-
-   ```sh
-   npm start
    ```
 
    **From the Logger service folder**
