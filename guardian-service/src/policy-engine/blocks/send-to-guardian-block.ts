@@ -13,6 +13,7 @@ import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } fr
 import { getMongoRepository } from 'typeorm';
 import { ApprovalDocument } from '@entity/approval-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -140,11 +141,11 @@ export class SendToGuardianBlock {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const user = await this.users.getHederaAccount(document.owner);
-            
+
             let topicOwner = user;
-            if(ref.options.topicOwner == 'user') {
+            if (ref.options.topicOwner == 'user') {
                 topicOwner = await this.users.getHederaAccount(currentUser.did);
-            } else if(ref.options.topicOwner == 'issuer') {
+            } else if (ref.options.topicOwner == 'issuer') {
                 topicOwner = await this.users.getHederaAccount(document.document.issuer);
             } else {
                 topicOwner = user;
@@ -201,26 +202,29 @@ export class SendToGuardianBlock {
         return document;
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
     @CatchErrors()
-    async runAction(state: any, user: IAuthUser) {
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
-        const docs: any | any[] = state.data;
+        const docs: any | any[] = event.data.data;
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (let doc of docs) {
-                const newDoc = await this.documentSender(doc, user);
+                const newDoc = await this.documentSender(doc, event.user);
                 newDocs.push(newDoc);
             }
-            state.data = newDocs;
+            event.data.data = newDocs;
         } else {
-            state.data = await this.documentSender(docs, user);
+            event.data.data = await this.documentSender(docs, event.user);
         }
 
-        await ref.runNext(user, state);
-        ref.callDependencyCallbacks(user);
-        ref.callParentContainerCallback(user);
+        ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
+        ref.triggerEvents(PolicyEventType.DependencyEvent, event.user, null);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

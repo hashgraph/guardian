@@ -1,4 +1,4 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -10,7 +10,8 @@ import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { PolicyEvent } from '@policy-engine/interfaces/policy-event';
+import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
+import { PolicyEventType } from '@policy-engine/interfaces/policy-event-type';
 
 /**
  * Aggregate block
@@ -23,16 +24,18 @@ export class AggregateBlock {
     @Inject()
     private users: Users;
 
-    start() {
+    beforeInit(): void {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (ref.options.aggregateType == 'period') {
-            PolicyComponentsUtils.RegisterEvent(
-                ref.policyId, ref.options.timer, 'TimerEvent', this.tickCron.bind(this)
-            );
+            PolicyComponentsUtils.RegisterAction(this, PolicyEventType.TimerEvent, this.tickCron);
         }
     }
 
-    private async tickCron(event: PolicyEvent<string[]>) {
+    /**
+     * @event PolicyEventType.TimerEvent
+     * @param {IPolicyEvent} event
+     */
+    private async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const users = event.data || [];
@@ -46,7 +49,7 @@ export class AggregateBlock {
         });
 
         const map = new Map<string, AggregateVC[]>();
-        const removeMsp:AggregateVC[] = [];
+        const removeMsp: AggregateVC[] = [];
         for (let did of users) {
             map.set(did, []);
         }
@@ -59,18 +62,18 @@ export class AggregateBlock {
             }
         }
 
-        if(removeMsp.length) {
+        if (removeMsp.length) {
             await repository.remove(removeMsp);
         }
 
         for (let did of users) {
             const user = await this.users.getUserById(did);
             const documents = map.get(did);
-            if(documents.length) {
+            if (documents.length) {
                 await repository.remove(documents);
             }
-            if(documents.length || ref.options.emptyData) {
-                await ref.runNext(user, { data: documents });
+            if (documents.length || ref.options.emptyData) {
+                ref.triggerEvents(PolicyEventType.Run, user, { data: documents });
             }
         }
     }
@@ -129,7 +132,7 @@ export class AggregateBlock {
         if (result === true) {
             const user = await this.users.getUserById(owner);
             await repository.remove(rawEntities);
-            await ref.runNext(user, { data: rawEntities });
+            ref.triggerEvents(PolicyEventType.Run, user, { data: rawEntities });
         }
     }
 
@@ -156,11 +159,15 @@ export class AggregateBlock {
         await repository.save(newVC);
     }
 
-    async runAction(state: any, user: IAuthUser) {
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const { aggregateType } = ref.options;
 
-        const docs: any | any[] = state.data;
+        const docs: any | any[] = event.data.data;
         let owner: string = null;
         if (Array.isArray(docs)) {
             for (let doc of docs) {

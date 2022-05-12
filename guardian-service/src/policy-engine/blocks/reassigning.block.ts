@@ -7,6 +7,7 @@ import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
+import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
 
 @BasicBlock({
     blockType: 'reassigningBlock',
@@ -36,7 +37,7 @@ export class ReassigningBlock {
         } else {
             root = await this.users.getHederaAccount(user.did);
         }
-        
+
         let owner: IAuthUser;
         if (ref.options.actor == 'owner') {
             owner = await this.users.getUserById(document.owner);
@@ -64,15 +65,18 @@ export class ReassigningBlock {
         return { item, owner };
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
     @CatchErrors()
-    async runAction(state: any, user: IAuthUser) {
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const { item, owner } = await this.documentReassigning(state, user);
-        state.data = item;
+        const { item, owner } = await this.documentReassigning(event.data, event.user);
+        event.data.data = item;
         ref.log(`Reassigning Document: ${JSON.stringify(item)}`);
-        await ref.runNext(owner, state);
-        ref.callDependencyCallbacks(user);
-        ref.callParentContainerCallback(user);
-        // ref.updateBlock(state, user, '');
+
+        ref.triggerEvents(PolicyEventType.Run, owner, event.data);
+        ref.triggerEvents(PolicyEventType.DependencyEvent, event.user, null);
     }
 }

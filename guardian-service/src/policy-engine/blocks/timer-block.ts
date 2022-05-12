@@ -8,6 +8,8 @@ import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { StateField } from '@policy-engine/helpers/decorators';
+import { PolicyEventType } from '@policy-engine/interfaces/policy-event-type';
+import { IPolicyEvent } from '@policy-engine/interfaces';
 
 /**
  * Aggregate block
@@ -28,7 +30,12 @@ export class TimerBlock {
     private job: CronJob;
     private endTime: number;
 
-    start() {
+    public beforeInit(): void {
+        PolicyComponentsUtils.RegisterAction(this, PolicyEventType.StartTimerEvent, this.startAction);
+        PolicyComponentsUtils.RegisterAction(this, PolicyEventType.StopTimerEvent, this.stopAction);
+    }
+
+    afterInit() {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         this.startCron(ref);
     }
@@ -47,7 +54,7 @@ export class TimerBlock {
             }
 
             this.endTime = Infinity;
-            if(ref.options.endDate) {
+            if (ref.options.endDate) {
                 let ed = moment(ref.options.endDate).utc();
                 if (ed.isValid()) {
                     this.endTime = ed.toDate().getTime();
@@ -135,27 +142,52 @@ export class TimerBlock {
             }
         }
 
-        PolicyComponentsUtils.TriggerEvent({
-            type: 'TimerEvent',
-            policyId: ref.policyId,
-            target: ref.tag,
-            targetId: ref.uuid,
-            user: null,
-            data: map
-        })
+        ref.triggerEvents(PolicyEventType.TimerEvent, null, map);
     }
 
-    async runAction(state: any, user: IAuthUser) {
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner: string = state?.data?.owner;
+        const owner: string = event.data?.data?.owner;
         if (owner) {
             this.state[owner] = true;
             ref.log(`start scheduler for: ${owner}`);
         }
         await ref.saveState();
-        await ref.runNext(user, state);
-        ref.callDependencyCallbacks(user);
-        ref.callParentContainerCallback(user);
+
+        ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
+        ref.triggerEvents(PolicyEventType.DependencyEvent, event.user, null);
+    }
+
+    /**
+     * @event PolicyEventType.StartTimerEvent
+     * @param {IPolicyEvent} event
+     */
+    async startAction(event: IPolicyEvent<any>) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const owner: string = event.data?.data?.owner;
+        if (owner) {
+            this.state[owner] = true;
+            ref.log(`start scheduler for: ${owner}`);
+        }
+        await ref.saveState();
+    }
+
+    /**
+    * @event PolicyEventType.StopTimerEvent
+    * @param {IPolicyEvent} event
+    */
+    async stopAction(event: IPolicyEvent<any>) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const owner: string = event.data?.data?.owner;
+        if (owner) {
+            this.state[owner] = false;
+            ref.log(`stop scheduler for: ${owner}`);
+        }
+        await ref.saveState();
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

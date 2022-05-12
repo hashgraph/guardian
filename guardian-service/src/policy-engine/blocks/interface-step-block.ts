@@ -1,8 +1,9 @@
 import { ContainerBlock, StateField } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { AnyBlockType, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
+import { PolicyEventType } from '@policy-engine/interfaces';
 
 /**
  * Step block
@@ -13,9 +14,9 @@ import { IAuthUser } from '@auth/auth.interface';
 })
 export class InterfaceStepBlock {
     @StateField()
-    state: { [key: string]: any } = {index: 0};
+    state: { [key: string]: any } = { index: 0 };
 
-    async changeStep(user: IAuthUser, data: any, target: any) {
+    async changeStep(user: IAuthUser, data: any, target: IPolicyBlock) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`changeStep`);
         let blockState;
@@ -37,8 +38,7 @@ export class InterfaceStepBlock {
         }
 
         ref.updateBlock(blockState, user);
-        ref.callDependencyCallbacks(user);
-        ref.callParentContainerCallback(user);
+        ref.triggerEvents(PolicyEventType.DependencyEvent, user, null);
     }
 
     async getData(user: IAuthUser): Promise<any> {
@@ -53,8 +53,8 @@ export class InterfaceStepBlock {
         if (blockState.index === undefined) {
             blockState.index = 0;
         }
-        const {options} = ref;
-        return {uiMetaData: options.uiMetaData, index: blockState.index};
+        const { options } = ref;
+        return { uiMetaData: options.uiMetaData, index: blockState.index };
     }
 
     public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {

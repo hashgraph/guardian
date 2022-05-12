@@ -6,6 +6,7 @@ import { VcDocument } from '@hedera-modules';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyEvent } from '@policy-engine/interfaces';
 
 /**
  * Switch block
@@ -61,12 +62,16 @@ export class SwitchBlock {
         return result;
     }
 
-    async runAction(state: any, user: IAuthUser) {
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        ref.log(`switch: ${user?.did}`);
+        ref.log(`switch: ${event.user?.did}`);
 
-        const docs: any | any[] = state.data;
+        const docs: any | any[] = event.data.data;
 
         let owner: string = null;
         let issuer: string = null;
@@ -87,7 +92,7 @@ export class SwitchBlock {
             const type = condition.type;
             const value = condition.value;
             const actor = condition.actor;
-            const target = condition.target;
+            const triggerEvent = condition.event;
 
             let result = false;
             if (type == 'equal') {
@@ -106,7 +111,7 @@ export class SwitchBlock {
                 result = true;
             }
 
-            let curUser: IAuthUser = user;
+            let curUser: IAuthUser = event.user;
             if (actor == 'owner' && owner) {
                 curUser = await this.users.getUserById(owner);
             } else if (actor == 'issuer' && issuer) {
@@ -116,8 +121,7 @@ export class SwitchBlock {
             ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
 
             if (result) {
-                const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, target) as any;
-                ref.runTarget(curUser, state, block).then();
+                ref.triggerEvent(triggerEvent, curUser, event.data);
                 if (executionFlow == 'firstTrue') {
                     return;
                 }

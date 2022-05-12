@@ -10,6 +10,7 @@ import { SchemaHelper } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
+import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
 
 @BasicBlock({
     blockType: 'customLogicBlock',
@@ -19,23 +20,25 @@ export class CustomLogicBlock {
     @Inject()
     private users: Users;
 
-    public start() {
+    public afterInit() {
         console.log('Custom logic block');
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
     @CatchErrors()
-    public async runAction(state: any, user: IAuthUser) {
+    public async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         try {
-            state.data = await this.execute(state, user);
-            await ref.runNext(user, state);
-            ref.callDependencyCallbacks(user);
-            ref.callParentContainerCallback(user);
+            event.data.data = await this.execute(event.data, event.user);
+            ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
+            ref.triggerEvents(PolicyEventType.DependencyEvent, event.user, null);
         } catch (e) {
             ref.error(e.message);
         }
-
     }
 
     execute(state: any, user: IAuthUser): Promise<any> {
@@ -47,8 +50,6 @@ export class CustomLogicBlock {
             } else {
                 documents = [state.data];
             }
-
-
 
             const done = async (result) => {
                 try {

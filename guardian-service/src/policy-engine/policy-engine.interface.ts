@@ -1,6 +1,8 @@
 import { PolicyRole } from 'interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { PolicyEventType } from './interfaces/policy-event-type';
+import { IPolicyEvent } from './interfaces';
 
 export interface IPolicyRoles {
     [policyId: string]: string;
@@ -33,24 +35,20 @@ export interface IPolicyBlock {
     policyId: string;
     policyOwner: string;
     policyInstance: any;
-    changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
-    checkDataStateDiffer?: (user) => boolean
+
+    checkDataStateDiffer?: (user: IAuthUser) => boolean
 
     serialize(): ISerializedBlock;
 
     updateBlock(state: any, user: IAuthUser, tag?: string): any;
 
-    hasPermission(role: PolicyRole | null, user: IAuthUser | null);
+    hasPermission(role: PolicyRole | null, user: IAuthUser | null): any;
 
     registerChild(child: IPolicyBlock): void;
 
-    destroy();
+    destroy(): void;
 
-    validate(resultsContainer: PolicyValidationResultsContainer);
-
-    runNext(user: IAuthUser, data: any);
-
-    runTarget(user: IAuthUser, data: any, target: AnyBlockType)
+    validate(resultsContainer: PolicyValidationResultsContainer): void;
 
     isChildActive(child: AnyBlockType, user: IAuthUser): boolean;
 
@@ -62,13 +60,21 @@ export interface IPolicyBlock {
 
     warn(message: string): void;
 
-    start();
+    triggerEvents(eventType: PolicyEventType, user?: IAuthUser, data?: any): void;
 
-    callDependencyCallbacks(user: IAuthUser);
-
-    callParentContainerCallback(user: IAuthUser);
+    triggerEvent(event: any, user?: IAuthUser, data?: any): void;
 
     saveState(): Promise<void>;
+
+    beforeInit(): void;
+
+    afterInit(): void;
+
+    addSourceLink(link: any): void;
+
+    addTargetLink(link: any): void;
+
+    runAction(event: IPolicyEvent<any>): Promise<any>;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {
@@ -81,6 +87,8 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
 
 export interface IPolicyContainerBlock extends IPolicyBlock {
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+
+    changeStep(user: IAuthUser, data: any, target: IPolicyBlock): Promise<void>;
 }
 
 export interface IPolicySourceBlock extends IPolicyBlock {

@@ -68,28 +68,9 @@ export class BlockTreeGenerator {
             policyId = PolicyComponentsUtils.GenerateNewUUID();
         }
 
-        const configObject = policy.config as ISerializedBlock;
-
-        async function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): Promise<IPolicyBlock> {
-            const {blockType, children, ...params}: ISerializedBlockExtend = block;
-            if (parent) {
-                params._parent = parent;
-            }
-            const blockInstance = PolicyComponentsUtils.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
-            blockInstance.setPolicyId(policyId.toString())
-            blockInstance.setPolicyOwner(policy.owner);
-            blockInstance.setPolicyInstance(policy);
-            if (children && children.length) {
-                for (let child of children) {
-                    await BuildInstances(child, blockInstance);
-                }
-            }
-            await blockInstance.restoreState();
-            return blockInstance;
-        }
-
         new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
-        const model = await BuildInstances(configObject);
+        const model = await PolicyComponentsUtils.BuildPolicy(policy, policyId, skipRegistration);
+
         if (!skipRegistration) {
             this.models.set(policy.id.toString(), model as any);
         }

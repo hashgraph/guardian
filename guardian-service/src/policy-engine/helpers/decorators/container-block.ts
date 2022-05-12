@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
-import { IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 
 /**
  * Container block decorator
@@ -18,13 +18,10 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public readonly blockClassName = 'ContainerBlock';
 
-            async changeStep(user, data, target) {
+            async changeStep(user: IAuthUser, data: any, target: IPolicyBlock) {
                 let result: any;
                 if (typeof super.changeStep === 'function') {
                     result = super.changeStep(user, data, target);
-                }
-                if (target) {
-                    await target.runAction(data, user)
                 }
                 return result;
             }

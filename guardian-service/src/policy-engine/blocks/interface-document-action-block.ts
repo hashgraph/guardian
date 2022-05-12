@@ -71,7 +71,7 @@ export class InterfaceDocumentActionBlock {
                     : document.owner;
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, option.bindBlock) as any;
                 const owner = await this.users.getUserById(ownerDid);
-                await ref.runTarget(owner, state, block);
+                ref.triggerEvent(block, owner, state);
             }
             return;
         }
@@ -114,7 +114,7 @@ export class InterfaceDocumentActionBlock {
             if (ref.options.bindBlock) {
                 const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
                 const owner = await this.users.getUserById(document.owner);
-                await ref.runTarget(owner, state, block);
+                ref.triggerEvent(block, owner, state);
                 return;
             }
         }

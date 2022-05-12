@@ -7,6 +7,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { PolicyEventType } from '@policy-engine/interfaces';
 
 /**
  * External data block
@@ -44,13 +45,7 @@ export class ExternalDataBlock {
             type: ref.options.entityType,
             schema: ref.options.schema
         };
-        ref.runNext(null, {data: doc}).then(
-            function () {
-            },
-            function (error: any) {
-                console.error(error);
-            }
-        );
+        ref.triggerEvents(PolicyEventType.Run, null, { data: doc });
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
@@ -62,7 +57,7 @@ export class ExternalDataBlock {
                     return;
                 }
 
-                const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
+                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;

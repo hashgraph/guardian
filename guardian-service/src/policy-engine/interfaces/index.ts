@@ -17,3 +17,13 @@ export {
     BlockError,
     BlockErrorDTO
 } from './block-error';
+
+export {
+    PolicyEventType
+} from './policy-event-type';
+
+export {
+    IPolicyEvent,
+    PolicyLink,
+    EventCallback
+} from './policy-event';

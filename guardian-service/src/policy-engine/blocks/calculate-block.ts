@@ -13,6 +13,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
+import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
 
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
@@ -123,27 +124,31 @@ export class CalculateContainerBlock {
         return item;
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
     @CatchErrors()
-    public async runAction(state: any, user: IAuthUser) {
+    public async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         if (ref.options.inputDocuments == 'separate') {
-            if (Array.isArray(state.data)) {
+            if (Array.isArray(event.data.data)) {
                 const result = [];
-                for (let doc of state.data) {
+                for (let doc of event.data.data) {
                     const newVC = await this.process(doc, ref);
                     result.push(newVC)
                 }
-                state.data = result;
+                event.data.data = result;
             } else {
-                state.data = await this.process(state.data, ref);
+                event.data.data = await this.process(event.data.data, ref);
             }
         } else {
-            state.data = await this.process(state.data, ref);
+            event.data.data = await this.process(event.data.data, ref);
         }
-        await ref.runNext(user, state);
-        ref.callDependencyCallbacks(user);
-        ref.callParentContainerCallback(user);
+
+        ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
+        ref.triggerEvents(PolicyEventType.DependencyEvent, event.user, null);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

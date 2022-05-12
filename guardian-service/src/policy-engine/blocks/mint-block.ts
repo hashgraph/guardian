@@ -14,6 +14,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
 
 /**
  * Mint block
@@ -123,8 +124,12 @@ export class MintBlock {
         return vp;
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
     @CatchErrors()
-    async runAction(state: any, user: IAuthUser) {
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const { tokenId, rule } = ref.options;
         const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
@@ -132,7 +137,7 @@ export class MintBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        const docs = PolicyUtils.getArray<any>(state.data);
+        const docs = PolicyUtils.getArray<any>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
@@ -162,9 +167,8 @@ export class MintBlock {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
-            await ref.runNext(curUser, state);
-            ref.callDependencyCallbacks(curUser);
-            ref.callParentContainerCallback(curUser);
+            ref.triggerEvents(PolicyEventType.Run, curUser, event.data);
+            ref.triggerEvents(PolicyEventType.DependencyEvent, curUser, null);
         } catch (e) {
             throw e;
         }

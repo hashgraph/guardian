@@ -16,6 +16,7 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Topic } from '@entity/topic';
 import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { PolicyEventType } from '@policy-engine/interfaces';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -43,9 +44,9 @@ export class RequestVcDocumentBlock {
             blockState = this.state[user.did];
         }
         blockState.active = active;
+
         ref.updateBlock(blockState, user);
-        ref.callDependencyCallbacks(user);
-        ref.callParentContainerCallback(user);
+        ref.triggerEvents(PolicyEventType.DependencyEvent, user, null);
     }
 
     getActive(user: IAuthUser) {
@@ -152,7 +153,7 @@ export class RequestVcDocumentBlock {
             }
             await this.changeActive(user, true);
 
-            await ref.runNext(user, { data: item });
+            ref.triggerEvents(PolicyEventType.Run, user, { data: item });
         } catch (error) {
             ref.error(`setData: ${error.message}`);
             await this.changeActive(user, true);
