@@ -24,7 +24,7 @@ jobs:
           context: .
           file: ./logger-service/Dockerfile
           push: true
-          tags: logger-service:latest
+          tags: hedera-registry/logger-service:latest
           registry: gcr.io
 
       - name: auth-service
