@@ -20,6 +20,13 @@ jobs:
         with:
           workload_identity_provider: 'projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions'
           service_account: 'guardian-publisher@hedera-registry.iam.gserviceaccount.com'
+          token_format: 'access_token'
+
+      - uses: 'docker/login-action@v1'
+        with:
+          registry: 'gcr.io' # or REGION-docker.pkg.dev
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
 
       - name: logger-service
         uses: docker/build-push-action@v2
