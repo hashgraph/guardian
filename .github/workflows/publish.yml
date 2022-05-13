@@ -27,8 +27,7 @@ jobs:
           context: .
           file: ./logger-service/Dockerfile
           push: true
-          tags: guardian/logger-service:latest
-          registry: gcr.io
+          tags: gcr.io/hedera-registry/logger-service:latest
 
       - name: auth-service
         uses: docker/build-push-action@v2
