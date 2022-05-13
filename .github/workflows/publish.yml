@@ -18,6 +18,9 @@ jobs:
           workload_identity_provider: 'projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions'
           service_account: 'guardian-publisher@hedera-registry.iam.gserviceaccount.com'
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: logger-service
         uses: docker/build-push-action@v2
         with:
@@ -25,6 +28,7 @@ jobs:
           file: ./logger-service/Dockerfile
           push: true
           tags: logger-service:latest
+          registry: gcr.io
 
       - name: auth-service
         uses: docker/build-push-action@v2
