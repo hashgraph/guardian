@@ -18,16 +18,13 @@ jobs:
           workload_identity_provider: 'projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions'
           service_account: 'guardian-publisher@hedera-registry.iam.gserviceaccount.com'
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
       - name: logger-service
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./logger-service/Dockerfile
           push: true
-          tags: hedera-registry/logger-service:latest
+          tags: logger-service:latest
 
       - name: auth-service
         uses: docker/build-push-action@v2
@@ -35,7 +32,7 @@ jobs:
           context: .
           file: ./auth-service/Dockerfile
           push: true
-          tags: hedera-registry/auth-service:latest
+          tags: auth-service:latest
 
       - name: api-gateway
         uses: docker/build-push-action@v2
@@ -43,7 +40,7 @@ jobs:
           context: .
           file: ./api-gateway/Dockerfile
           push: true
-          tags: hedera-registry/api-gateway:latest
+          tags: api-gateway:latest
 
       - name: guardian-service
         uses: docker/build-push-action@v2
@@ -51,7 +48,7 @@ jobs:
           context: .
           file: ./guardian-service/Dockerfile
           push: true
-          tags: hedera-registry/guardian-service:latest
+          tags: guardian-service:latest
 
       - name: ipfs-client
         uses: docker/build-push-action@v2
@@ -59,7 +56,7 @@ jobs:
           context: .
           file: ./ipfs-client/Dockerfile
           push: true
-          tags: hedera-registry/ipfs-client:latest
+          tags: ipfs-client:latest
 
       - name: topic-viewer
         uses: docker/build-push-action@v2
@@ -67,7 +64,7 @@ jobs:
           context: .
           file: ./topic-viewer/Dockerfile
           push: true
-          tags: hedera-registry/topic-viewer:latest
+          tags: topic-viewer:latest
 
       - name: api-docs
         uses: docker/build-push-action@v2
@@ -75,4 +72,4 @@ jobs:
           context: .
           file: ./api-docs/Dockerfile
           push: true
-          tags: hedera-registry/api-docs:latest
+          tags: api-docs:latest
