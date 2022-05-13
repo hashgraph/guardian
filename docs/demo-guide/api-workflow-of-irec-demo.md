@@ -5598,7 +5598,31 @@ rootDID
 
 #### Grant KYC
 
-{% swagger method="get" path="" baseUrl="" summary="" %}
+{% swagger method="put" path="{userUsername}/grantKYC" baseUrl="/tokens/{tokenId}/" summary="Granting KYC" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    "tokenId": "0.0.34804363",
+    "policies": null,
+    "associated": true,
+    "balance": "0",
+    "hBarBalance": "29.49376516 ℏ",
+    "frozen": false,
+    "kyc": true
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+### Blocks
+
+#### Choose Role uuid
+
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/choose_role" summary="Choosing Role" %}
 {% swagger-description %}
 
 {% endswagger-description %}
