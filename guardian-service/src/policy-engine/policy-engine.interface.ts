@@ -35,6 +35,7 @@ export interface IPolicyBlock {
     policyId: string;
     policyOwner: string;
     policyInstance: any;
+    actions: any[];
 
     checkDataStateDiffer?: (user: IAuthUser) => boolean
 

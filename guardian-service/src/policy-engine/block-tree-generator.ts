@@ -33,7 +33,7 @@ export class BlockTreeGenerator {
     }
 
     public async init(): Promise<void> {
-        const policies = await getMongoRepository(Policy).find({status: 'PUBLISH'});
+        const policies = await getMongoRepository(Policy).find({ status: 'PUBLISH' });
         for (let policy of policies) {
             try {
                 await this.generate(policy.id.toString());
@@ -70,15 +70,18 @@ export class BlockTreeGenerator {
 
         new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
 
-        const instancesArray: IPolicyBlock[] = [];
-        const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
-
-        if (!skipRegistration) {
-            await PolicyComponentsUtils.RegisterBlockTree(instancesArray)
-            this.models.set(policy.id.toString(), model as any);
+        try {
+            const instancesArray: IPolicyBlock[] = [];
+            const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
+            if (!skipRegistration) {
+                await PolicyComponentsUtils.RegisterBlockTree(instancesArray)
+                this.models.set(policy.id.toString(), model as any);
+            }
+            return model as IPolicyInterfaceBlock;
+        } catch (error) {
+            new Logger().error(`Error build policy ${error}`, ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
+            return null;
         }
-
-        return model as IPolicyInterfaceBlock;
     }
 
     /**

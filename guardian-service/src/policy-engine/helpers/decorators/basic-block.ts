@@ -83,6 +83,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public sourceLinks: PolicyLink<any>[];
             public targetLinks: PolicyLink<any>[];
 
+            public actions: any[];
+
             public readonly blockClassName = 'BasicBlock';
 
             constructor(
@@ -114,11 +116,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.sourceLinks = [];
                 this.targetLinks = [];
 
-                if (!Array.isArray(this.prototype.actions)) {
-                    this.prototype.actions = [];
+                if (!Array.isArray(this.actions)) {
+                    this.actions = [];
                 }
-                this.prototype.actions.push([PolicyEventType.Run, this.runAction]);
-                this.prototype.actions.push([PolicyEventType.Refresh, this.refreshAction]);
+                this.actions.push([PolicyEventType.Run, this.runAction]);
+                this.actions.push([PolicyEventType.Refresh, this.refreshAction]);
+                
             }
 
             public async beforeInit(): Promise<void> {
@@ -134,7 +137,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     super.afterInit();
                 }
             }
-
 
             public addSourceLink(link: PolicyLink<any>): void {
                 this.sourceLinks.push(link)
