@@ -1,13 +1,11 @@
 import moment from 'moment';
 import { CronJob } from 'cron';
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IAuthUser } from '@auth/auth.interface';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { StateField } from '@policy-engine/helpers/decorators';
 import { PolicyEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 
@@ -31,8 +29,6 @@ export class TimerBlock {
     private endTime: number;
 
     public beforeInit(): void {
-        PolicyComponentsUtils.RegisterAction(this, PolicyEventType.StartTimerEvent, this.startAction);
-        PolicyComponentsUtils.RegisterAction(this, PolicyEventType.StopTimerEvent, this.stopAction);
     }
 
     afterInit() {
@@ -166,6 +162,9 @@ export class TimerBlock {
      * @event PolicyEventType.StartTimerEvent
      * @param {IPolicyEvent} event
      */
+    @ActionCallback({
+        type: PolicyEventType.StartTimerEvent
+    })
     async startAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const owner: string = event.data?.data?.owner;
@@ -177,9 +176,12 @@ export class TimerBlock {
     }
 
     /**
-    * @event PolicyEventType.StopTimerEvent
-    * @param {IPolicyEvent} event
-    */
+     * @event PolicyEventType.StopTimerEvent
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        type: PolicyEventType.StopTimerEvent
+    })
     async stopAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const owner: string = event.data?.data?.owner;

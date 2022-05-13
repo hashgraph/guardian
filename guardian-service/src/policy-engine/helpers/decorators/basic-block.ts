@@ -113,32 +113,22 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 this.sourceLinks = [];
                 this.targetLinks = [];
+
+                if (!Array.isArray(this.prototype.actions)) {
+                    this.prototype.actions = [];
+                }
+                this.prototype.actions.push([PolicyEventType.Run, this.runAction]);
+                this.prototype.actions.push([PolicyEventType.DependencyEvent, this.refreshAction]);
             }
 
-
-            public beforeInit(): void {
-                PolicyComponentsUtils.RegisterAction(this, PolicyEventType.Run, this.runAction);
-                PolicyComponentsUtils.RegisterAction(this, PolicyEventType.DependencyEvent, this.refreshAction);
-
+            public async beforeInit(): Promise<void> {
                 if (typeof super.beforeInit === 'function') {
                     super.beforeInit();
                 }
             }
 
-            public afterInit(): void {
-                if (this.options.events) {
-                    for (let event of this.options.events) {
-                        PolicyComponentsUtils.RegisterLink(event.type, this as any, event.target);
-                    }
-                }
-
-                for (let dep of this.dependencies) {
-                    const source = PolicyComponentsUtils.GetBlockByTag(this.policyId, dep);
-                    PolicyComponentsUtils.RegisterLink(PolicyEventType.DependencyEvent, source, this.tag);
-                }
-                if (this.parent?.blockClassName === 'ContainerBlock') {
-                    PolicyComponentsUtils.RegisterLink(PolicyEventType.DependencyEvent, this as any, this.parent.tag);
-                }
+            public async afterInit(): Promise<void> {
+                await this.restoreState();
 
                 if (typeof super.afterInit === 'function') {
                     super.afterInit();

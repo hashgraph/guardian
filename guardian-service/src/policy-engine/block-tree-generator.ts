@@ -69,9 +69,12 @@ export class BlockTreeGenerator {
         }
 
         new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
-        const model = await PolicyComponentsUtils.BuildPolicy(policy, policyId, skipRegistration);
+
+        const instancesArray: IPolicyBlock[] = [];
+        const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
 
         if (!skipRegistration) {
+            await PolicyComponentsUtils.RegisterBlockTree(instancesArray)
             this.models.set(policy.id.toString(), model as any);
         }
 

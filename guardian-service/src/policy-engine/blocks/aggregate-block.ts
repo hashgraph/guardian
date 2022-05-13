@@ -24,20 +24,18 @@ export class AggregateBlock {
     @Inject()
     private users: Users;
 
-    beforeInit(): void {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        if (ref.options.aggregateType == 'period') {
-            PolicyComponentsUtils.RegisterAction(this, PolicyEventType.TimerEvent, this.tickCron);
-        }
-    }
-
     /**
      * @event PolicyEventType.TimerEvent
      * @param {IPolicyEvent} event
      */
+    @ActionCallback({
+        type: PolicyEventType.TimerEvent
+    })
     private async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
+        if (ref.options.aggregateType !== 'period') {
+            return;
+        }
         const users = event.data || [];
 
         ref.log(`tick scheduler, ${users.length}`);

@@ -113,14 +113,13 @@ export class PolicyComponentsUtils {
     }
 
 
-    public static async BuildInstances(
+    public static BuildInstance(
         policy: Policy,
         policyId: string,
         block: ISerializedBlock,
         parent: IPolicyBlock,
-        skipRegistration: boolean,
         allInstances: IPolicyBlock[]
-    ): Promise<IPolicyBlock> {
+    ): IPolicyBlock {
         const { blockType, children, ...params }: ISerializedBlockExtend = block;
 
         if (parent) {
@@ -147,40 +146,62 @@ export class PolicyComponentsUtils {
 
         allInstances.push(blockInstance);
 
-        if (!skipRegistration) {
-            PolicyComponentsUtils.RegisterComponent(policyId, blockInstance);
-            blockInstance.beforeInit();
-        }
-
         if (children && children.length) {
             for (let child of children) {
-                await PolicyComponentsUtils.BuildInstances(
-                    policy, policyId, child, blockInstance, skipRegistration, allInstances
+                PolicyComponentsUtils.BuildInstance(
+                    policy, policyId, child, blockInstance, allInstances
                 );
             }
         }
 
-        await blockInstance.restoreState();
-
         return blockInstance;
     }
 
-    public static async BuildPolicy(
+    public static BuildBlockTree(
         policy: Policy,
         policyId: string,
-        skipRegistration?: boolean
-    ): Promise<IPolicyInterfaceBlock> {
+        allInstances: IPolicyBlock[]
+
+    ): IPolicyInterfaceBlock {
         const configObject = policy.config as ISerializedBlock;
-        const allInstances:IPolicyBlock[] = [];
-        const model = await PolicyComponentsUtils.BuildInstances(
-            policy, policyId, configObject, null, skipRegistration, allInstances
+        const model = PolicyComponentsUtils.BuildInstance(
+            policy, policyId, configObject, null, allInstances
         );
-        if (!skipRegistration) {
-            for (let instances of allInstances) {
-                instances.afterInit();
-            }
-        }
+
         return model as any;
+    }
+
+    public static async RegisterBlockTree(
+        allInstances: IPolicyBlock[],
+    ) {
+            for (let instance of allInstances) {
+                PolicyComponentsUtils.RegisterComponent(instance.policyId, instance);
+
+                for (let event of (instance as any).prototype.actions) {
+                    PolicyComponentsUtils.RegisterAction(instance, event[0], event[1]);
+                }
+
+                await instance.beforeInit();
+            }
+
+            for (let instance of allInstances) {
+                await instance.afterInit();
+
+                if (instance.options.events) {
+                    for (let event of instance.options.events) {
+                        PolicyComponentsUtils.RegisterLink(event.type, instance, event.target);
+                    }
+                }
+
+                for (let dep of (instance as any).dependencies) {
+                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, dep);
+                    PolicyComponentsUtils.RegisterLink(PolicyEventType.DependencyEvent, source, instance.tag);
+                }
+                if (instance.parent?.blockClassName === 'ContainerBlock') {
+                    PolicyComponentsUtils.RegisterLink(PolicyEventType.DependencyEvent, instance, instance.parent.tag);
+                }
+
+            }
     }
 
     /**

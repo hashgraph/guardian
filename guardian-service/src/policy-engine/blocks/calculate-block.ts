@@ -128,6 +128,7 @@ export class CalculateContainerBlock {
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
+
     @CatchErrors()
     public async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
