@@ -46,7 +46,7 @@ export class RequestVcDocumentBlock {
         blockState.active = active;
 
         ref.updateBlock(blockState, user);
-        ref.triggerEvents(PolicyEventType.DependencyEvent, user, null);
+        ref.triggerEvents(PolicyEventType.Refresh, user, null);
     }
 
     getActive(user: IAuthUser) {

@@ -118,7 +118,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     this.prototype.actions = [];
                 }
                 this.prototype.actions.push([PolicyEventType.Run, this.runAction]);
-                this.prototype.actions.push([PolicyEventType.DependencyEvent, this.refreshAction]);
+                this.prototype.actions.push([PolicyEventType.Refresh, this.refreshAction]);
             }
 
             public async beforeInit(): Promise<void> {

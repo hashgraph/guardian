@@ -38,7 +38,7 @@ export class InterfaceStepBlock {
         }
 
         ref.updateBlock(blockState, user);
-        ref.triggerEvents(PolicyEventType.DependencyEvent, user, null);
+        ref.triggerEvents(PolicyEventType.Refresh, user, null);
     }
 
     async getData(user: IAuthUser): Promise<any> {

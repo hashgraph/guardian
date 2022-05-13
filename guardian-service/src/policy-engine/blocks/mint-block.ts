@@ -168,7 +168,7 @@ export class MintBlock {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
             ref.triggerEvents(PolicyEventType.Run, curUser, event.data);
-            ref.triggerEvents(PolicyEventType.DependencyEvent, curUser, null);
+            ref.triggerEvents(PolicyEventType.Refresh, curUser, null);
         } catch (e) {
             throw e;
         }

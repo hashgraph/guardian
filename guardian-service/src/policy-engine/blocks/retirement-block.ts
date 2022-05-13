@@ -168,7 +168,7 @@ export class RetirementBlock {
             const doc = await this.retirementProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
 
             ref.triggerEvents(PolicyEventType.Run, curUser, event.data);
-            ref.triggerEvents(PolicyEventType.DependencyEvent, curUser, null);
+            ref.triggerEvents(PolicyEventType.Refresh, curUser, null);
         } catch (e) {
             throw e;
         }

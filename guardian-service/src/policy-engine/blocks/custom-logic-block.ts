@@ -35,7 +35,7 @@ export class CustomLogicBlock {
         try {
             event.data.data = await this.execute(event.data, event.user);
             ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
-            ref.triggerEvents(PolicyEventType.DependencyEvent, event.user, null);
+            ref.triggerEvents(PolicyEventType.Refresh, event.user, null);
         } catch (e) {
             ref.error(e.message);
         }

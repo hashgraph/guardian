@@ -149,7 +149,7 @@ export class CalculateContainerBlock {
         }
 
         ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
-        ref.triggerEvents(PolicyEventType.DependencyEvent, event.user, null);
+        ref.triggerEvents(PolicyEventType.Refresh, event.user, null);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

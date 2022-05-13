@@ -66,9 +66,9 @@ export interface IPolicyBlock {
 
     saveState(): Promise<void>;
 
-    beforeInit(): void;
+    beforeInit(): Promise<void>;
 
-    afterInit(): void;
+    afterInit(): Promise<void>;
 
     addSourceLink(link: any): void;
 

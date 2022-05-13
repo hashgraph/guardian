@@ -174,34 +174,34 @@ export class PolicyComponentsUtils {
     public static async RegisterBlockTree(
         allInstances: IPolicyBlock[],
     ) {
-            for (let instance of allInstances) {
-                PolicyComponentsUtils.RegisterComponent(instance.policyId, instance);
+        for (let instance of allInstances) {
+            PolicyComponentsUtils.RegisterComponent(instance.policyId, instance);
 
-                for (let event of (instance as any).prototype.actions) {
-                    PolicyComponentsUtils.RegisterAction(instance, event[0], event[1]);
-                }
-
-                await instance.beforeInit();
+            for (let event of (instance as any).prototype.actions) {
+                PolicyComponentsUtils.RegisterAction(instance, event[0], event[1]);
             }
 
-            for (let instance of allInstances) {
-                await instance.afterInit();
+            await instance.beforeInit();
+        }
 
-                if (instance.options.events) {
-                    for (let event of instance.options.events) {
-                        PolicyComponentsUtils.RegisterLink(event.type, instance, event.target);
-                    }
-                }
+        for (let instance of allInstances) {
+            await instance.afterInit();
 
-                for (let dep of (instance as any).dependencies) {
-                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, dep);
-                    PolicyComponentsUtils.RegisterLink(PolicyEventType.DependencyEvent, source, instance.tag);
+            if (instance.options.events) {
+                for (let event of instance.options.events) {
+                    PolicyComponentsUtils.RegisterLink(event.type, instance, event.target);
                 }
-                if (instance.parent?.blockClassName === 'ContainerBlock') {
-                    PolicyComponentsUtils.RegisterLink(PolicyEventType.DependencyEvent, instance, instance.parent.tag);
-                }
-
             }
+
+            for (let dep of (instance as any).dependencies) {
+                const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, dep);
+                PolicyComponentsUtils.RegisterLink(PolicyEventType.Refresh, source, instance.tag);
+            }
+            if (instance.parent?.blockClassName === 'ContainerBlock') {
+                PolicyComponentsUtils.RegisterLink(PolicyEventType.Refresh, instance, instance.parent.tag);
+            }
+
+        }
     }
 
     /**
