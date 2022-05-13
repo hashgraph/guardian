@@ -93,7 +93,7 @@ export const tokenAPI = async function (
             const root = await users.getHederaAccount(owner);
 
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-            const treasury = await client.newAccount(2);
+            const treasury = await client.newAccount();
             const treasuryId = treasury.id;
             const treasuryKey = treasury.key;
             const adminKey = enableAdmin ? treasuryKey : null;

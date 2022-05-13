@@ -22,8 +22,8 @@ export const demoAPI = async function (
             const OPERATOR_ID = operatorId?.value || process.env.OPERATOR_ID;
             const OPERATOR_KEY = operatorKey?.value || process.env.OPERATOR_KEY;
             const client = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY);
-            const treasury = await client.newAccount(30);
-            return new MessageResponse({
+            const treasury = await client.newAccount();
+            res.send(new MessageResponse({
                 id: treasury.id.toString(),
                 key: treasury.key.toString()
             });
