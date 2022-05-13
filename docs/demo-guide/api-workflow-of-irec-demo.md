@@ -5552,7 +5552,53 @@ rootDID
 
 #### Get Tokens
 
-{% swagger method="get" path="" baseUrl="/tokens" summary="" %}
+{% swagger method="get" path="" baseUrl="/tokens" summary="Getting Tokens Details" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    
+        "id": "627e97ea0f12a18fef5f1d58",
+        "tokenId": "0.0.34804363",
+        "tokenName": "iRec Token",
+        "tokenSymbol": "iRec",
+        "tokenType": "non-fungible",
+        "decimals": 0,
+        "policies": [
+            "iRec_2_1650456840748_1652463611568 (1.0.0)"
+        ],
+        "associated": false,
+        "balance": null,
+        "hBarBalance": null,
+        "frozen": null,
+        "kyc": null
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+#### Associate
+
+{% swagger method="put" path="" baseUrl="/tokens/{token_Id}/associate" summary="Associating the Token" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+#### Grant KYC
+
+{% swagger method="get" path="" baseUrl="" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
