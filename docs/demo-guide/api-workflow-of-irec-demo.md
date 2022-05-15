@@ -5628,6 +5628,14 @@ rootDID
 {% endswagger-description %}
 {% endswagger %}
 
+#### Choose Role
+
+{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{chooseRoleBlockUUID}}" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+{% endswagger %}
+
 ### Setting up the User Role
 
 BLOCK : choose\_role
