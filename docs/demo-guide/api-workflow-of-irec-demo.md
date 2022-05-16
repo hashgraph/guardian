@@ -8012,6 +8012,1379 @@ rootDID
 {% endswagger-response %}
 {% endswagger %}
 
+#### Get Registrant Schema
+
+{% swagger method="get" path="" baseUrl="policies/{{policyId}}/blocks/{{create_application_uuid}}" summary="Displaying Registrant Schema uuid" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    "id": "c6a4db28-6a4f-4137-9b42-530783443147",
+    "blockType": "requestVcDocumentBlock",
+    "schema": {
+        "userDID": null,
+        "id": "6282755193e1d09322c4ed10",
+        "uuid": "732d99d8-b254-4aa7-8bb4-e78f15212892",
+        "hash": "",
+        "name": "I-REC Registrant & Participant App",
+        "description": "I-REC Registrant & Participant App",
+        "entity": "VC",
+        "status": "PUBLISHED",
+        "readonly": false,
+        "version": "1.0.0",
+        "creator": "did:hedera:testnet:G8S2SYNkuZq8R2MBRuBUagRSb4oucbZipJk8XADwe1T7;hedera:testnet:tid=0.0.34824275",
+        "owner": "did:hedera:testnet:G8S2SYNkuZq8R2MBRuBUagRSb4oucbZipJk8XADwe1T7;hedera:testnet:tid=0.0.34824275",
+        "topicId": "0.0.34824582",
+        "messageId": "1652716919.907860000",
+        "documentURL": "https://ipfs.io/ipfs/bafkreibaheup25wqaa6thx3b3m5t36w3jfh4t5np73k7dzlfm5c4crnaoa",
+        "contextURL": "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i",
+        "iri": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
+        "document": {
+            "$id": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
+            "$comment": "{\"term\": \"732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0\", \"@id\": \"https://ipfs.io/ipfs/bafkreiejsgxjj4ntamvgattviac5vtf5rtpvnvmojk444lyawutwsfnvwi#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0\"}",
+            "title": "I-REC Registrant & Participant App",
+            "description": "I-REC Registrant & Participant App",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "field0": {
+                    "title": "Date",
+                    "description": "Date",
+                    "readOnly": false,
+                    "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                    "type": "string",
+                    "format": "date"
+                },
+                "field1": {
+                    "title": "Applicant Details",
+                    "description": "Applicant Details",
+                    "readOnly": false,
+                    "$comment": "{\"term\": \"field1\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#6d009939-3c53-44fd-8a0c-c9d98472ff09\"}",
+                    "$ref": "#6d009939-3c53-44fd-8a0c-c9d98472ff09"
+                },
+                "field2": {
+                    "title": "Primary Contact Details",
+                    "description": "Primary Contact Details",
+                    "readOnly": false,
+                    "$comment": "{\"term\": \"field2\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#e0d61835-0491-4df8-9d48-21e961a7916f\"}",
+                    "$ref": "#e0d61835-0491-4df8-9d48-21e961a7916f"
+                },
+                "field3": {
+                    "title": "Lead User Details\t",
+                    "description": "Lead User Details\t",
+                    "readOnly": false,
+                    "$comment": "{\"term\": \"field3\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#66b7a5fe-2c17-422d-9744-b4b55c2174b9\"}",
+                    "$ref": "#66b7a5fe-2c17-422d-9744-b4b55c2174b9"
+                },
+                "policyId": {
+                    "title": "policyId",
+                    "description": "policyId",
+                    "readOnly": true,
+                    "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+                    "type": "string"
+                },
+                "ref": {
+                    "title": "ref",
+                    "description": "ref",
+                    "readOnly": true,
+                    "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "@context",
+                "type",
+                "field1",
+                "field2",
+                "field3",
+                "policyId"
+            ],
+            "additionalProperties": false,
+            "$defs": {
+                "#6d009939-3c53-44fd-8a0c-c9d98472ff09": {
+                    "$id": "#6d009939-3c53-44fd-8a0c-c9d98472ff09",
+                    "$comment": "{\"term\": \"6d009939-3c53-44fd-8a0c-c9d98472ff09\", \"@id\": \"https://ipfs.io/ipfs/bafkreihe55hxacf32sxuybe3s3otblhfs3y5qlk3lccjvksh7kncwf6ura#6d009939-3c53-44fd-8a0c-c9d98472ff09\"}",
+                    "title": "Applicant Details",
+                    "description": " Applicant Details",
+                    "type": "object",
+                    "properties": {
+                        "@context": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "readOnly": true
+                        },
+                        "type": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "readOnly": true
+                        },
+                        "id": {
+                            "type": "string",
+                            "readOnly": true
+                        },
+                        "field0": {
+                            "title": "Applicant Legal Name",
+                            "description": "Applicant Legal Name",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field1": {
+                            "title": "Registered address line 1",
+                            "description": "Registered address line 1",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field2": {
+                            "title": "Registered address line 2",
+                            "description": "Registered address line 2",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field3": {
+                            "title": "Registered address line 3",
+                            "description": "Registered address line 3",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field4": {
+                            "title": "Postal (ZIP) code",
+                            "description": "Postal (ZIP) code",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field5": {
+                            "title": "Country",
+                            "description": "Country",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field6": {
+                            "title": "Legal Status",
+                            "description": "Legal Status",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field7": {
+                            "title": "Country of company registration/private residence",
+                            "description": "Country of company registration/private residence",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field8": {
+                            "title": "Corporate registration number/passport number",
+                            "description": "Corporate registration number/passport number",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field9": {
+                            "title": "VAT number",
+                            "description": "VAT number",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field10": {
+                            "title": "Website URL",
+                            "description": "Website URL",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field11": {
+                            "title": "Main business (e.g. food retailer)",
+                            "description": "Main business (e.g. food retailer)",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field12": {
+                            "title": "Year of registration",
+                            "description": "Year of registration",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "integer"
+                        },
+                        "field13": {
+                            "title": "Approximate number of employees",
+                            "description": "Approximate number of employees",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "integer"
+                        },
+                        "field14": {
+                            "title": "Name of the Chief Executive Officer/General Manager",
+                            "description": "Name of the Chief Executive Officer/General Manager",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field14\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field15": {
+                            "title": "Chief Executive Officer/General Manager passport number",
+                            "description": "Chief Executive Officer/General Manager passport number",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field15\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field16": {
+                            "title": "Please state in which countries the organization is active",
+                            "description": "Please state in which countries the organization is active",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field16\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field17": {
+                            "title": "Please list the main (>10%) shareholders ",
+                            "description": "Please list the main (>10%) shareholders ",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field17\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field18": {
+                            "title": "Balance sheet total for last financial year (in USD)",
+                            "description": "Balance sheet total for last financial year (in USD)",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field18\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "number"
+                        },
+                        "field19": {
+                            "title": "Email address for Accounts Department",
+                            "description": "Email address for Accounts Department",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field19\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string",
+                            "format": "email"
+                        }
+                    },
+                    "required": [
+                        "@context",
+                        "type"
+                    ],
+                    "additionalProperties": false
+                },
+                "#e0d61835-0491-4df8-9d48-21e961a7916f": {
+                    "$id": "#e0d61835-0491-4df8-9d48-21e961a7916f",
+                    "$comment": "{\"term\": \"e0d61835-0491-4df8-9d48-21e961a7916f\", \"@id\": \"https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#e0d61835-0491-4df8-9d48-21e961a7916f\"}",
+                    "title": "Contact Details",
+                    "description": "Contact Details",
+                    "type": "object",
+                    "properties": {
+                        "@context": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "readOnly": true
+                        },
+                        "type": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "readOnly": true
+                        },
+                        "id": {
+                            "type": "string",
+                            "readOnly": true
+                        },
+                        "field0": {
+                            "title": "Organization Name",
+                            "description": "Organization Name",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field1": {
+                            "title": "Address line 1",
+                            "description": "Address line 1",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field2": {
+                            "title": "Address line 2",
+                            "description": "Address line 2",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field3": {
+                            "title": "Address line 3",
+                            "description": "Address line 3",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field4": {
+                            "title": "Postal code",
+                            "description": "Postal code",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field5": {
+                            "title": "Country",
+                            "description": "Country",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field6": {
+                            "title": "Contact person",
+                            "description": "Contact person",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field7": {
+                            "title": "e-mail",
+                            "description": "e-mail",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string",
+                            "format": "email"
+                        },
+                        "field8": {
+                            "title": "Telephone",
+                            "description": "Telephone",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field9": {
+                            "title": "Fax",
+                            "description": "Fax",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field10": {
+                            "title": "Existing I-REC Registry organization(s) to become subsidiary",
+                            "description": "Existing I-REC Registry organization(s) to become subsidiary",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "@context",
+                        "type"
+                    ],
+                    "additionalProperties": false
+                },
+                "#66b7a5fe-2c17-422d-9744-b4b55c2174b9": {
+                    "$id": "#66b7a5fe-2c17-422d-9744-b4b55c2174b9",
+                    "$comment": "{\"term\": \"66b7a5fe-2c17-422d-9744-b4b55c2174b9\", \"@id\": \"https://ipfs.io/ipfs/bafkreicwhwmdbu4r3zv3cfifbb47dd7y5bf7l6qzycf66ll6pskk2r7gyq#66b7a5fe-2c17-422d-9744-b4b55c2174b9\"}",
+                    "title": "Lead User Details",
+                    "description": "Lead User Details",
+                    "type": "object",
+                    "properties": {
+                        "@context": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "readOnly": true
+                        },
+                        "type": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "readOnly": true
+                        },
+                        "id": {
+                            "type": "string",
+                            "readOnly": true
+                        },
+                        "field0": {
+                            "title": "Family Name (surname)",
+                            "description": "Family Name (surname)",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field1": {
+                            "title": "Other (Given) Names",
+                            "description": "Other (Given) Names",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field2": {
+                            "title": "Title",
+                            "description": "Title",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field3": {
+                            "title": "e-mail",
+                            "description": "e-mail",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string",
+                            "format": "email"
+                        },
+                        "field4": {
+                            "title": "Telephone",
+                            "description": "Telephone",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        },
+                        "field5": {
+                            "title": "Fax",
+                            "description": "Fax",
+                            "readOnly": false,
+                            "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "@context",
+                        "type"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "context": {
+            "@context": {
+                "@version": 1.1,
+                "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                "id": "@id",
+                "type": "@type",
+                "6d009939-3c53-44fd-8a0c-c9d98472ff09": {
+                    "@id": "https://ipfs.io/ipfs/bafkreihe55hxacf32sxuybe3s3otblhfs3y5qlk3lccjvksh7kncwf6ura#6d009939-3c53-44fd-8a0c-c9d98472ff09",
+                    "@context": {
+                        "field0": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field1": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field2": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field3": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field4": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field5": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field6": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field7": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field8": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field9": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field10": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field11": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field12": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field13": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field14": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field15": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field16": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field17": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field18": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field19": {
+                            "@id": "https://www.schema.org/text"
+                        }
+                    }
+                },
+                "e0d61835-0491-4df8-9d48-21e961a7916f": {
+                    "@id": "https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#e0d61835-0491-4df8-9d48-21e961a7916f",
+                    "@context": {
+                        "field0": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field1": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field2": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field3": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field4": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field5": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field6": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field7": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field8": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field9": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field10": {
+                            "@id": "https://www.schema.org/text"
+                        }
+                    }
+                },
+                "66b7a5fe-2c17-422d-9744-b4b55c2174b9": {
+                    "@id": "https://ipfs.io/ipfs/bafkreicwhwmdbu4r3zv3cfifbb47dd7y5bf7l6qzycf66ll6pskk2r7gyq#66b7a5fe-2c17-422d-9744-b4b55c2174b9",
+                    "@context": {
+                        "field0": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field1": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field2": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field3": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field4": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field5": {
+                            "@id": "https://www.schema.org/text"
+                        }
+                    }
+                },
+                "732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0": {
+                    "@id": "https://ipfs.io/ipfs/bafkreiejsgxjj4ntamvgattviac5vtf5rtpvnvmojk444lyawutwsfnvwi#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
+                    "@context": {
+                        "field0": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "policyId": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "ref": {
+                            "@id": "https://www.schema.org/text"
+                        },
+                        "field1": {
+                            "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#6d009939-3c53-44fd-8a0c-c9d98472ff09"
+                        },
+                        "field2": {
+                            "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#e0d61835-0491-4df8-9d48-21e961a7916f"
+                        },
+                        "field3": {
+                            "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#66b7a5fe-2c17-422d-9744-b4b55c2174b9"
+                        }
+                    }
+                }
+            }
+        },
+        "type": "732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
+        "fields": [
+            {
+                "name": "field0",
+                "title": "Date",
+                "description": "Date",
+                "type": "string",
+                "format": "date",
+                "pattern": null,
+                "required": false,
+                "isRef": false,
+                "isArray": false,
+                "readOnly": false,
+                "fields": null,
+                "context": null,
+                "conditions": null
+            },
+            {
+                "name": "field1",
+                "title": "Applicant Details",
+                "description": "Applicant Details",
+                "type": "#6d009939-3c53-44fd-8a0c-c9d98472ff09",
+                "format": null,
+                "pattern": null,
+                "required": true,
+                "isRef": true,
+                "isArray": false,
+                "readOnly": false,
+                "fields": [
+                    {
+                        "name": "field0",
+                        "title": "Applicant Legal Name",
+                        "description": "Applicant Legal Name",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field1",
+                        "title": "Registered address line 1",
+                        "description": "Registered address line 1",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field2",
+                        "title": "Registered address line 2",
+                        "description": "Registered address line 2",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field3",
+                        "title": "Registered address line 3",
+                        "description": "Registered address line 3",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field4",
+                        "title": "Postal (ZIP) code",
+                        "description": "Postal (ZIP) code",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field5",
+                        "title": "Country",
+                        "description": "Country",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field6",
+                        "title": "Legal Status",
+                        "description": "Legal Status",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field7",
+                        "title": "Country of company registration/private residence",
+                        "description": "Country of company registration/private residence",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field8",
+                        "title": "Corporate registration number/passport number",
+                        "description": "Corporate registration number/passport number",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field9",
+                        "title": "VAT number",
+                        "description": "VAT number",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field10",
+                        "title": "Website URL",
+                        "description": "Website URL",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field11",
+                        "title": "Main business (e.g. food retailer)",
+                        "description": "Main business (e.g. food retailer)",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field12",
+                        "title": "Year of registration",
+                        "description": "Year of registration",
+                        "type": "integer",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field13",
+                        "title": "Approximate number of employees",
+                        "description": "Approximate number of employees",
+                        "type": "integer",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field14",
+                        "title": "Name of the Chief Executive Officer/General Manager",
+                        "description": "Name of the Chief Executive Officer/General Manager",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field15",
+                        "title": "Chief Executive Officer/General Manager passport number",
+                        "description": "Chief Executive Officer/General Manager passport number",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field16",
+                        "title": "Please state in which countries the organization is active",
+                        "description": "Please state in which countries the organization is active",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field17",
+                        "title": "Please list the main (>10%) shareholders ",
+                        "description": "Please list the main (>10%) shareholders ",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field18",
+                        "title": "Balance sheet total for last financial year (in USD)",
+                        "description": "Balance sheet total for last financial year (in USD)",
+                        "type": "number",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field19",
+                        "title": "Email address for Accounts Department",
+                        "description": "Email address for Accounts Department",
+                        "type": "string",
+                        "format": "email",
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    }
+                ],
+                "context": {
+                    "type": "6d009939-3c53-44fd-8a0c-c9d98472ff09",
+                    "context": [
+                        "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i"
+                    ]
+                },
+                "conditions": []
+            },
+            {
+                "name": "field2",
+                "title": "Primary Contact Details",
+                "description": "Primary Contact Details",
+                "type": "#e0d61835-0491-4df8-9d48-21e961a7916f",
+                "format": null,
+                "pattern": null,
+                "required": true,
+                "isRef": true,
+                "isArray": false,
+                "readOnly": false,
+                "fields": [
+                    {
+                        "name": "field0",
+                        "title": "Organization Name",
+                        "description": "Organization Name",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field1",
+                        "title": "Address line 1",
+                        "description": "Address line 1",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field2",
+                        "title": "Address line 2",
+                        "description": "Address line 2",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field3",
+                        "title": "Address line 3",
+                        "description": "Address line 3",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field4",
+                        "title": "Postal code",
+                        "description": "Postal code",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field5",
+                        "title": "Country",
+                        "description": "Country",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field6",
+                        "title": "Contact person",
+                        "description": "Contact person",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field7",
+                        "title": "e-mail",
+                        "description": "e-mail",
+                        "type": "string",
+                        "format": "email",
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field8",
+                        "title": "Telephone",
+                        "description": "Telephone",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field9",
+                        "title": "Fax",
+                        "description": "Fax",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field10",
+                        "title": "Existing I-REC Registry organization(s) to become subsidiary",
+                        "description": "Existing I-REC Registry organization(s) to become subsidiary",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    }
+                ],
+                "context": {
+                    "type": "e0d61835-0491-4df8-9d48-21e961a7916f",
+                    "context": [
+                        "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i"
+                    ]
+                },
+                "conditions": []
+            },
+            {
+                "name": "field3",
+                "title": "Lead User Details\t",
+                "description": "Lead User Details\t",
+                "type": "#66b7a5fe-2c17-422d-9744-b4b55c2174b9",
+                "format": null,
+                "pattern": null,
+                "required": true,
+                "isRef": true,
+                "isArray": false,
+                "readOnly": false,
+                "fields": [
+                    {
+                        "name": "field0",
+                        "title": "Family Name (surname)",
+                        "description": "Family Name (surname)",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field1",
+                        "title": "Other (Given) Names",
+                        "description": "Other (Given) Names",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field2",
+                        "title": "Title",
+                        "description": "Title",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field3",
+                        "title": "e-mail",
+                        "description": "e-mail",
+                        "type": "string",
+                        "format": "email",
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field4",
+                        "title": "Telephone",
+                        "description": "Telephone",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    },
+                    {
+                        "name": "field5",
+                        "title": "Fax",
+                        "description": "Fax",
+                        "type": "string",
+                        "format": null,
+                        "pattern": null,
+                        "required": false,
+                        "isRef": false,
+                        "isArray": false,
+                        "readOnly": false,
+                        "fields": null,
+                        "context": null,
+                        "conditions": null
+                    }
+                ],
+                "context": {
+                    "type": "66b7a5fe-2c17-422d-9744-b4b55c2174b9",
+                    "context": [
+                        "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i"
+                    ]
+                },
+                "conditions": []
+            }
+        ],
+        "conditions": []
+    },
+    "presetFields": [],
+    "uiMetaData": {
+        "type": "page",
+        "title": "Registrant Application"
+    },
+    "hideFields": [],
+    "active": true,
+    "data": null
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+#### Create Registrant
+
+{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{create_application_uuid}}" summary="Creating Registrant" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="body" name="document" %}
+{ "type": "{{registrant_schema_type}}", "@context": [ "{{registrant_schema_context}}" ], "field0": "2022-05-11", "field1": { "type": "{{registrant_schema_field1_type}}", "@context": [ "{{registrant_schema_field1_context}}" ], "field0": "Applicant Legal Name", "field1": "Registered address line 1", "field2": "Registered address line 2", "field3": "Registered address line 3", "field4": "Postal (ZIP) code", "field5": "Country", "field6": "Legal Status", "field7": "Country of company registration/private residence", "field8": "Corporate registration number/passport number", "field9": "VAT number", "field10": "Website URL", "field11": "Main business (e.g. food retailer)", "field12": 1, "field13": 1, "field14": "Name of the Chief Executive Officer/General Manager", "field15": "Chief Executive Officer/General Manager passport number", "field16": "Please state in which countries the organization is active", "field17": "Please list the main (>10%) shareholders", "field18": 1, "field19": "email@email.com" }, "field2": { "type": "{{registrant_schema_field2_type}}", "@context": [ "{{registrant_schema_field2_context}}" ], "field0": "Organization Name", "field1": "Address line 1", "field2": "Address line 2", "field3": "Address line 3", "field4": "Postal code", "field5": "Country", "field6": "Contact person", "field7": "email@email.com", "field8": "123456789", "field9": "Fax", "field10": "Existing I-REC Registry organization(s) to become subsidiary" }, "field3": { "type": "{{registrant_schema_field3_type}}", "@context": [ "{{registrant_schema_field3_context}}" ], "field0": "Family Name (surname)", "field1": "Other (Given) Names", "field2": "Title", "field3": "email@email.com", "field4": "123456789", "field5": "Fax" }
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="ref" %}
+null
+{% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+#### Get Approved Registrant&#x20;
+
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/approve_registrant_btn" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="" %}
+```javascript
+{
+    "id": "c2eef66b-ec9f-42c5-99b2-430625c49e88"
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
 ### Setting up the User Role
 
 BLOCK : choose\_role
