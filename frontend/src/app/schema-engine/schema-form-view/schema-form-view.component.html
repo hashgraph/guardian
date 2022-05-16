@@ -61,8 +61,8 @@
                     class="boolean-form-field"
                   >
                     <mat-radio-group [value]="item.value" [disabled]="true">
-                      <mat-radio-button color="primary" value="true">True</mat-radio-button>
-                      <mat-radio-button color="primary" value="false">False</mat-radio-button>
+                      <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
+                      <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
                       <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
                     </mat-radio-group>
                   </div>
@@ -149,8 +149,8 @@
                         class="boolean-form-field"
                       >
                         <mat-radio-group [value]="listItem" [disabled]="true">
-                          <mat-radio-button color="primary" value="true">True</mat-radio-button>
-                          <mat-radio-button color="primary" value="false">False</mat-radio-button>
+                          <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
+                          <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
                           <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
                         </mat-radio-group>
                       </div>

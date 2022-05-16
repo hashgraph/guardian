@@ -154,7 +154,7 @@ export class PolicyImportExportHelper {
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const tokenRepository = getMongoRepository(Token);
             for (const token of tokens) {
-                const treasury = await client.newAccount(2);
+                const treasury = await client.newAccount();
                 const treasuryId = treasury.id;
                 const treasuryKey = treasury.key;
                 const tokenName = token.tokenName;

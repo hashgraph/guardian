@@ -1,4 +1,4 @@
-# Built With
+# Frameworks/Libraries
 
 The Guardian solution is built with the following major frameworks/libraries.
 
@@ -7,7 +7,7 @@ The Guardian solution is built with the following major frameworks/libraries.
 * [NodeJS](https://nodejs.org)
 * [MongoDB](https://www.mongodb.com)
 * [Express](https://expressjs.com)
-* [FastMQ](https://www.npmjs.com/package/fastmq)
+* [Nats](https://nats.io)
 * [TypeORM](https://typeorm.io)
 * [Hedera-DID-JS-SDK](https://github.com/hashgraph/did-sdk-js)
 * [W3C VC-JS-HTTP](https://w3c.github.io/vc-data-model/)

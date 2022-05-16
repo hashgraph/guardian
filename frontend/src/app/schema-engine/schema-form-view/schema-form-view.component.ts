@@ -70,13 +70,11 @@ export class SchemaFormViewComponent implements OnInit {
         isInvalidType: false
       }
       if (!field.isArray && !field.isRef) {
-        let value = "";
-
-        if (this.values) {
-          value = this.values[item.name];
-        }
-
-        item.value = value || "";
+        item.value = !this.values 
+          || this.values[item.name] === null 
+          || this.values[item.name] === undefined
+            ? ""
+            : this.values[item.name];
       }
       if (!field.isArray && field.isRef) {
         item.fields = field.fields;
@@ -84,7 +82,10 @@ export class SchemaFormViewComponent implements OnInit {
 
       if (field.isArray && !field.isRef) {
         let value = [];
-        if (this.values && this.values[item.name]) {
+        if (this.values 
+          && this.values[item.name] !== null
+          && this.values[item.name] !== undefined
+        ) {
           const fieldValue = this.values[item.name];
           if (Array.isArray(fieldValue)) {
             value = fieldValue;
