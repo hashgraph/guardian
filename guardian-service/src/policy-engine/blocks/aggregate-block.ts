@@ -11,7 +11,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
-import { PolicyEventType } from '@policy-engine/interfaces/policy-event-type';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 
 /**
  * Aggregate block
@@ -29,7 +29,8 @@ export class AggregateBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        type: PolicyEventType.TimerEvent
+        type: PolicyInputEventType.TimerEvent,
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     private async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -71,7 +72,8 @@ export class AggregateBlock {
                 await repository.remove(documents);
             }
             if (documents.length || ref.options.emptyData) {
-                ref.triggerEvents(PolicyEventType.Run, user, { data: documents });
+                ref.triggerEvents(PolicyOutputEventType.RunEvent, user, { data: documents });
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
             }
         }
     }
@@ -107,6 +109,9 @@ export class AggregateBlock {
         return result;
     }
 
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     private async tickAggregate(ref: AnyBlockType, owner: string) {
         const { expressions, condition } = ref.options;
 
@@ -130,7 +135,8 @@ export class AggregateBlock {
         if (result === true) {
             const user = await this.users.getUserById(owner);
             await repository.remove(rawEntities);
-            ref.triggerEvents(PolicyEventType.Run, user, { data: rawEntities });
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, { data: rawEntities });
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
         }
     }
 

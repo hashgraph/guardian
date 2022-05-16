@@ -17,6 +17,7 @@ import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessa
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles } from '@api/schema.service';
 import { TopicHelper } from '@helpers/topicHelper';
+import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 
 export class PolicyImportExportHelper {
     /**
@@ -230,14 +231,7 @@ export class PolicyImportExportHelper {
         }
 
         // compatibility with older versions
-        replaceAllEntities(policy.config, ['blockType'], 'interfaceDocumentsSource', 'interfaceDocumentsSourceBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'requestVcDocument', 'requestVcDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'sendToGuardian', 'sendToGuardianBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'interfaceAction', 'interfaceActionBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'mintDocument', 'mintDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'aggregateDocument', 'aggregateDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'wipeDocument', 'retirementDocumentBlock');
-
+        policy = PolicyConverterUtils.PolicyConverter(policy);
         regenerateIds(policy.config);
     }
 }

@@ -1,11 +1,13 @@
 import { IAuthUser } from "@auth/auth.interface";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
-import { PolicyEventType } from "./policy-event-type";
+import { PolicyInputEventType, PolicyOutputEventType } from "./policy-event-type";
 
 export type EventCallback<T> = (event: IPolicyEvent<T>) => void;
 
 export interface IPolicyEvent<T> {
-    type: PolicyEventType; // Event Type;
+    type: PolicyInputEventType; // Event Type;
+    inputType: PolicyInputEventType;
+    outputType: PolicyOutputEventType;
     policyId: string; // Policy Id;
     source: string; // Block Tag;
     sourceId: string; // Block Id;
@@ -16,14 +18,24 @@ export interface IPolicyEvent<T> {
 }
 
 export class PolicyLink<T> {
-    public readonly type: PolicyEventType;
+    public readonly type: PolicyInputEventType;
+    public readonly inputType: PolicyInputEventType;
+    public readonly outputType: PolicyOutputEventType;
     public readonly policyId: string;
     public readonly source: AnyBlockType;
     public readonly target: AnyBlockType;
     private readonly callback?: EventCallback<T>;
 
-    constructor(type: PolicyEventType, source: AnyBlockType, target: AnyBlockType, fn: EventCallback<T>) {
-        this.type = type;
+    constructor(
+        inputType: PolicyInputEventType, 
+        outputType: PolicyOutputEventType, 
+        source: AnyBlockType, 
+        target: AnyBlockType, 
+        fn: EventCallback<T>
+    ) {
+        this.type = inputType;
+        this.inputType = inputType;
+        this.outputType = outputType;
         this.policyId = source.policyId;
         this.source = source;
         this.target = target;
@@ -33,6 +45,8 @@ export class PolicyLink<T> {
     public run(user?: IAuthUser, data?: T): void {
         this.callback.call(this.target, {
             type: this.type,
+            inputType: this.inputType,
+            outputType: this.outputType,
             policyId: this.policyId,
             source: this.source.tag,
             sourceId: this.source.uuid,

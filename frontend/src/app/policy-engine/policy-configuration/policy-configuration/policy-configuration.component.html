@@ -61,7 +61,8 @@
 
                     <div class="delimiter"></div>
 
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="mainMenu"  *ngIf="groupBlocks.Main.length">
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="mainMenu"
+                        *ngIf="groupBlocks.Main.length">
                         <mat-icon>home</mat-icon>
                         <span>Main</span>
                         <div class="expand-group">
@@ -69,7 +70,8 @@
                         </div>
                     </div>
 
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="vcMenu"  *ngIf="groupBlocks.Documents.length">
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="vcMenu"
+                        *ngIf="groupBlocks.Documents.length">
                         <mat-icon>description</mat-icon>
                         <span>Verifiable Credential</span>
                         <div class="expand-group">
@@ -77,7 +79,8 @@
                         </div>
                     </div>
 
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="tokensMenu" *ngIf="groupBlocks.Tokens.length">
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="tokensMenu"
+                        *ngIf="groupBlocks.Tokens.length">
                         <mat-icon>paid</mat-icon>
                         <span>Tokens</span>
                         <div class="expand-group">
@@ -85,7 +88,8 @@
                         </div>
                     </div>
 
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="calculateMenu" *ngIf="groupBlocks.Calculate.length">
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="calculateMenu"
+                        *ngIf="groupBlocks.Calculate.length">
                         <mat-icon>calculate</mat-icon>
                         <span>Calculate</span>
                         <div class="expand-group">
@@ -93,7 +97,8 @@
                         </div>
                     </div>
 
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="reportMenu" *ngIf="groupBlocks.Report.length">
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="reportMenu"
+                        *ngIf="groupBlocks.Report.length">
                         <mat-icon>addchart</mat-icon>
                         <span>Report</span>
                         <div class="expand-group">
@@ -102,8 +107,7 @@
                     </div>
 
                     <ng-container *ngFor="let item of groupBlocks.unGroupedBlocks">
-                        <div class="btn-new-block btn-status-edit" (click)="onAdd(item.type)"
-                            [title]="item.title">
+                        <div class="btn-new-block btn-status-edit" (click)="onAdd(item.type)" [title]="item.title">
                             <mat-icon>{{item.icon}}</mat-icon>
                             <span>{{item.name}}</span>
                         </div>
@@ -193,7 +197,7 @@
                         <ng-container *ngIf="propTab=='Properties'">
                             <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
                                 [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
-                                [topics]="policy.policyTopics">
+                                [topics]="policy.policyTopics" type="Common">
                             </common-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='JSON'">
@@ -201,6 +205,12 @@
                                 [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
                                 [topics]="policy.policyTopics">
                             </json-properties>
+                        </ng-container>
+                        <ng-container *ngIf="propTab=='Events'">
+                            <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
+                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
+                                [topics]="policy.policyTopics" type="Events">
+                            </common-properties>
                         </ng-container>
                     </div>
                 </div>
@@ -210,6 +220,9 @@
                     </div>
                     <div class="group-tab-item" [attr.active]="propTab=='JSON'" (click)="propTab='JSON'">
                         JSON
+                    </div>
+                    <div class="group-tab-item" [attr.active]="propTab=='Events'" (click)="propTab='Events'">
+                        Events
                     </div>
                 </div>
             </div>

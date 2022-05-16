@@ -4,7 +4,6 @@ export interface IBlock<U> {
     blockType: string;
     defaultActive: boolean;
     permissions: string[];
-    dependencies: string[];
     stateMutation: Object;
     onlyOwnDocuments: boolean;
     uiMetaData: U;

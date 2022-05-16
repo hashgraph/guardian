@@ -1,8 +1,8 @@
 import { PolicyRole } from 'interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyEventType } from './interfaces/policy-event-type';
-import { IPolicyEvent } from './interfaces';
+import { PolicyInputEventType, PolicyOutputEventType } from './interfaces/policy-event-type';
+import { EventConfig, IPolicyEvent } from './interfaces';
 
 export interface IPolicyRoles {
     [policyId: string]: string;
@@ -13,7 +13,6 @@ export interface ISerializedBlock {
     defaultActive: boolean;
     tag?: string;
     permissions: string[];
-    dependencies?: string[];
     uuid?: string;
     children?: ISerializedBlock[];
 }
@@ -35,7 +34,10 @@ export interface IPolicyBlock {
     policyId: string;
     policyOwner: string;
     policyInstance: any;
-    actions: any[];
+    
+    readonly actions: any[];
+    readonly outputActions: any[];
+    readonly events: EventConfig[];
 
     checkDataStateDiffer?: (user: IAuthUser) => boolean
 
@@ -61,7 +63,7 @@ export interface IPolicyBlock {
 
     warn(message: string): void;
 
-    triggerEvents(eventType: PolicyEventType, user?: IAuthUser, data?: any): void;
+    triggerEvents(eventType: PolicyOutputEventType, user?: IAuthUser, data?: any): void;
 
     triggerEvent(event: any, user?: IAuthUser, data?: any): void;
 

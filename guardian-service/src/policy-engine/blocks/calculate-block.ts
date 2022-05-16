@@ -1,5 +1,5 @@
 import { DocumentSignature, Schema, SchemaHelper } from 'interfaces';
-import { CalculateBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, CalculateBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
@@ -13,7 +13,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
-import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
 
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
@@ -128,7 +128,9 @@ export class CalculateContainerBlock {
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
-
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
     public async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
@@ -148,8 +150,8 @@ export class CalculateContainerBlock {
             event.data.data = await this.process(event.data.data, ref);
         }
 
-        ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
-        ref.triggerEvents(PolicyEventType.Refresh, event.user, null);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, null);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

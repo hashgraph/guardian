@@ -11,7 +11,6 @@ export function GetOtherOptions<T extends PolicyBlockDecoratorOptions>(options: 
         tag,
         defaultActive,
         permissions,
-        dependencies,
         blockMap,
         tagMap,
         _uuid,

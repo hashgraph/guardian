@@ -1,4 +1,4 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { BlockActionError } from '@policy-engine/errors';
@@ -14,7 +14,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
 
 /**
  * Mint block
@@ -128,6 +128,9 @@ export class MintBlock {
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -167,8 +170,8 @@ export class MintBlock {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
-            ref.triggerEvents(PolicyEventType.Run, curUser, event.data);
-            ref.triggerEvents(PolicyEventType.Refresh, curUser, null);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, null);
         } catch (e) {
             throw e;
         }

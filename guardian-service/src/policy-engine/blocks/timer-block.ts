@@ -6,7 +6,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { PolicyEventType } from '@policy-engine/interfaces/policy-event-type';
+import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 
 /**
@@ -127,6 +127,9 @@ export class TimerBlock {
         }
     }
 
+    @ActionCallback({
+        output: PolicyOutputEventType.TimerEvent
+    })
     private async tickCron(ref: AnyBlockType) {
         ref.log(`tick scheduler`);
 
@@ -138,13 +141,16 @@ export class TimerBlock {
             }
         }
 
-        ref.triggerEvents(PolicyEventType.TimerEvent, null, map);
+        ref.triggerEvents(PolicyOutputEventType.TimerEvent, null, map);
     }
 
     /**
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const owner: string = event.data?.data?.owner;
@@ -154,8 +160,8 @@ export class TimerBlock {
         }
         await ref.saveState();
 
-        ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
-        ref.triggerEvents(PolicyEventType.Refresh, event.user, null);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, null);
     }
 
     /**
@@ -163,7 +169,7 @@ export class TimerBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        type: PolicyEventType.StartTimerEvent
+        type: PolicyInputEventType.StartTimerEvent
     })
     async startAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -180,7 +186,7 @@ export class TimerBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        type: PolicyEventType.StopTimerEvent
+        type: PolicyInputEventType.StopTimerEvent
     })
     async stopAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);

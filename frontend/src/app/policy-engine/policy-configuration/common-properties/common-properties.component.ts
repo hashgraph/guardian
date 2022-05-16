@@ -21,11 +21,14 @@ export class CommonPropertiesComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Input('roles') roles!: string[];
     @Input('topics') topics!: any[];
+    @Input('type') type!: string;
+
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
         about: true,
         metaData: false,
+        eventsGroup: {}
     };
 
     block!: BlockNode;
@@ -48,6 +51,7 @@ export class CommonPropertiesComponent implements OnInit {
             value: BlockErrorActions.GOTO_TAG
         }
     ];
+    events: any[] = [];
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -72,16 +76,36 @@ export class CommonPropertiesComponent implements OnInit {
         item[prop] = !item[prop];
     }
 
+
+
+    addEvent() {
+        this.events.push({
+            __output: true,
+            source: "",
+            target: "",
+            output: "",
+            input: "",
+            disabled: false
+        });
+    }
+
+    onRemoveEvent(i: number) {
+        this.events.splice(i, 1);
+    }
+
     load(block: BlockNode) {
-        if (!this.configContainer) {
-            return;
+        if (this.block != block && this.type == 'Events') {
+            this.block = block;
         }
-        if (this.block != block) {
+        if (this.block != block && this.type != 'Events') {
             this.loadComponent(block);
         }
     }
 
     loadComponent(block: BlockNode) {
+        if (!this.configContainer) {
+            return;
+        }
         setTimeout(() => {
             this.block = block;
             if (!this.block.onErrorAction) {

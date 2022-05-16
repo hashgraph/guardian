@@ -1,9 +1,9 @@
-import { ContainerBlock, StateField } from '@policy-engine/helpers/decorators';
+import { ActionCallback, ContainerBlock, StateField } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
-import { PolicyEventType } from '@policy-engine/interfaces';
+import { PolicyOutputEventType } from '@policy-engine/interfaces';
 
 /**
  * Step block
@@ -16,6 +16,9 @@ export class InterfaceStepBlock {
     @StateField()
     state: { [key: string]: any } = { index: 0 };
 
+    @ActionCallback({
+        output: PolicyOutputEventType.RefreshEvent
+    })
     async changeStep(user: IAuthUser, data: any, target: IPolicyBlock) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`changeStep`);
@@ -38,7 +41,7 @@ export class InterfaceStepBlock {
         }
 
         ref.updateBlock(blockState, user);
-        ref.triggerEvents(PolicyEventType.Refresh, user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
     async getData(user: IAuthUser): Promise<any> {

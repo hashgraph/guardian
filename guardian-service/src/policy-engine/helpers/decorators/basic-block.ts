@@ -1,5 +1,5 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
-import { PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
+import { EventConfig, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
 import { PolicyRole } from 'interfaces';
 import { Logger } from 'logger-helper';
@@ -13,7 +13,7 @@ import deepEqual from 'deep-equal';
 import { BlockActionError } from '@policy-engine/errors';
 import { Policy } from '@entity/policy';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
-import { PolicyEventType } from '@policy-engine/interfaces/policy-event-type';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 
 /**
  * Basic block decorator
@@ -28,7 +28,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 public readonly tag: string | null,
                 public defaultActive: boolean,
                 protected readonly permissions: PolicyRole[],
-                protected readonly dependencies: PolicyBlockDependencies,
                 private readonly _uuid: string,
                 private readonly _parent: IPolicyBlock,
                 private readonly _options: any
@@ -64,8 +63,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             PolicyBlockDefaultOptions(),
             {
                 defaultActive: false,
-                permissions: [],
-                dependencies: []
+                permissions: []
             }
         ) as PolicyBlockFullArgumentList;
 
@@ -92,7 +90,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 defaultActive: boolean,
                 tag: string,
                 permissions: PolicyRole[],
-                dependencies: PolicyBlockDependencies,
                 _parent: IPolicyBlock,
                 _options: any
             ) {
@@ -102,7 +99,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     tag || o.tag,
                     defaultActive || o.defaultActive,
                     permissions || o.permissions,
-                    dependencies || o.dependencies,
                     _uuid,
                     _parent || o._parent,
                     _options
@@ -119,9 +115,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!Array.isArray(this.actions)) {
                     this.actions = [];
                 }
-                this.actions.push([PolicyEventType.Run, this.runAction]);
-                this.actions.push([PolicyEventType.Refresh, this.refreshAction]);
-                
+                this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
+                this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
+            }
+
+            public get events(): EventConfig[] {
+                return this.options.events || [];
             }
 
             public async beforeInit(): Promise<void> {
@@ -146,9 +145,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.targetLinks.push(link)
             }
 
-            public triggerEvents(eventType: PolicyEventType, user?: IAuthUser, data?: any): void {
+            public triggerEvents(output: PolicyOutputEventType, user?: IAuthUser, data?: any): void {
                 for (let link of this.sourceLinks) {
-                    if (link.type == eventType) {
+                    if (link.outputType == output) {
                         link.run(user, data);
                     }
                 }
@@ -347,9 +346,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 if (this.tag) {
                     obj.tag = this.tag;
-                }
-                if (this.dependencies && (this.dependencies.length > 0)) {
-                    obj.dependencies = this.dependencies;
                 }
                 if ((this as any).children && ((this as any).children.length > 0)) {
                     obj.children = [];

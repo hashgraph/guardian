@@ -1,4 +1,4 @@
-import { PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap } from './';
+import { PolicyBlockMap, PolicyTagMap } from './';
 import { IPolicyBlock, } from '@policy-engine/policy-engine.interface';
 
 import { UserRole } from 'interfaces';
@@ -13,7 +13,6 @@ export interface PolicyBlockConstructorParams {
     tag?: string;
     permissions: UserRole[];
     _parent: IPolicyBlock;
-    dependencies: PolicyBlockDependencies;
     options?: any;
     id?: string;
 }

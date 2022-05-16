@@ -1,5 +1,5 @@
 export {
-    PolicyBlockDependencies, PolicyBlockMap,
+    PolicyBlockMap,
     PolicyBlockState,
     PolicyBlockStateCommon,
     PolicyBlockStateData, PolicyTagMap
@@ -19,7 +19,8 @@ export {
 } from './block-error';
 
 export {
-    PolicyEventType
+    PolicyInputEventType,
+    PolicyOutputEventType
 } from './policy-event-type';
 
 export {
@@ -27,3 +28,7 @@ export {
     PolicyLink,
     EventCallback
 } from './policy-event';
+
+export {
+    EventConfig
+} from './event-config';

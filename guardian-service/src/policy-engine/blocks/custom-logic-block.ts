@@ -1,4 +1,4 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
@@ -10,7 +10,7 @@ import { SchemaHelper } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
-import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
 
 @BasicBlock({
     blockType: 'customLogicBlock',
@@ -28,14 +28,17 @@ export class CustomLogicBlock {
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
     public async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         try {
             event.data.data = await this.execute(event.data, event.user);
-            ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
-            ref.triggerEvents(PolicyEventType.Refresh, event.user, null);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, null);
         } catch (e) {
             ref.error(e.message);
         }
@@ -58,7 +61,7 @@ export class CustomLogicBlock {
                         iri: ref.options.outputSchema
                     });
                     const context = SchemaHelper.getContext(outputSchema);
-                    const owner  = documents[0].owner;
+                    const owner = documents[0].owner;
                     const relationships = documents.filter(d => !!d.messageId).map(d => d.messageId);
                     const VCHelper = new VcHelper();
 

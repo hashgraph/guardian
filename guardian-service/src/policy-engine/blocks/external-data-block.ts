@@ -1,4 +1,4 @@
-import { ExternalData } from '@policy-engine/helpers/decorators';
+import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
@@ -7,7 +7,7 @@ import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { PolicyEventType } from '@policy-engine/interfaces';
+import { PolicyOutputEventType } from '@policy-engine/interfaces';
 
 /**
  * External data block
@@ -17,6 +17,10 @@ import { PolicyEventType } from '@policy-engine/interfaces';
     commonBlock: false,
 })
 export class ExternalDataBlock {
+    
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
     async receiveData(data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -45,7 +49,8 @@ export class ExternalDataBlock {
             type: ref.options.entityType,
             schema: ref.options.schema
         };
-        ref.triggerEvents(PolicyEventType.Run, null, { data: doc });
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, null, { data: doc });
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

@@ -6,7 +6,7 @@ import { DidDocumentStatus, TopicType, Schema } from 'interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { StateField } from '@policy-engine/helpers/decorators';
+import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
 import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
@@ -16,7 +16,7 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Topic } from '@entity/topic';
 import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { PolicyEventType } from '@policy-engine/interfaces';
+import { PolicyOutputEventType } from '@policy-engine/interfaces';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -34,6 +34,9 @@ export class RequestVcDocumentBlock {
     constructor() {
     }
 
+    @ActionCallback({
+        output: PolicyOutputEventType.RefreshEvent
+    })
     async changeActive(user: IAuthUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
@@ -46,7 +49,7 @@ export class RequestVcDocumentBlock {
         blockState.active = active;
 
         ref.updateBlock(blockState, user);
-        ref.triggerEvents(PolicyEventType.Refresh, user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
     getActive(user: IAuthUser) {
@@ -92,6 +95,9 @@ export class RequestVcDocumentBlock {
         };
     }
 
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     async setData(user: IAuthUser, _data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`setData`);
@@ -153,7 +159,8 @@ export class RequestVcDocumentBlock {
             }
             await this.changeActive(user, true);
 
-            ref.triggerEvents(PolicyEventType.Run, user, { data: item });
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, { data: item });
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
         } catch (error) {
             ref.error(`setData: ${error.message}`);
             await this.changeActive(user, true);

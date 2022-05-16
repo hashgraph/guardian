@@ -1,5 +1,5 @@
 import { BlockActionError } from '@policy-engine/errors';
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
@@ -13,7 +13,7 @@ import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } fr
 import { getMongoRepository } from 'typeorm';
 import { ApprovalDocument } from '@entity/approval-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent, PolicyEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
@@ -206,6 +206,9 @@ export class SendToGuardianBlock {
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
@@ -223,8 +226,8 @@ export class SendToGuardianBlock {
             event.data.data = await this.documentSender(docs, event.user);
         }
 
-        ref.triggerEvents(PolicyEventType.Run, event.user, event.data);
-        ref.triggerEvents(PolicyEventType.Refresh, event.user, null);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, null);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
