@@ -5626,14 +5626,2390 @@ rootDID
 {% swagger-description %}
 
 {% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    "id": "4bee425d-dfba-451a-b47d-ac945aeddc3e"
+}
+```
+{% endswagger-response %}
 {% endswagger %}
 
 #### Choose Role
 
-{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{chooseRoleBlockUUID}}" summary="" %}
+{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{chooseRoleBlockUUID}}" summary="Choosing role as Registrant" %}
 {% swagger-description %}
 
 {% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    "id": "6282755493e1d09322c4ed13",
+    "uuid": "759df7c0-b4e9-4adf-9c63-62939c62d1f4",
+    "name": "iRec_2_1650456840748_1652716884953",
+    "version": "2.0.2",
+    "description": "iRec Description",
+    "topicDescription": "iRec Description",
+    "config": {
+        "blockType": "interfaceContainerBlock",
+        "permissions": [
+            "ANY_ROLE"
+        ],
+        "id": "a94e8570-0d0e-4214-9b2b-5695bc46fbb2",
+        "onErrorAction": "no-action",
+        "uiMetaData": {
+            "type": "blank"
+        },
+        "children": [
+            {
+                "id": "4bee425d-dfba-451a-b47d-ac945aeddc3e",
+                "tag": "choose_role",
+                "blockType": "policyRolesBlock",
+                "defaultActive": true,
+                "children": [],
+                "permissions": [
+                    "NO_ROLE"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                    "title": "Registration",
+                    "description": "Choose a role"
+                },
+                "roles": [
+                    "Registrant"
+                ]
+            },
+            {
+                "id": "1e4cfa36-fe35-4e31-ae5b-1d979c65f031",
+                "tag": "registrants_workflow",
+                "blockType": "interfaceContainerBlock",
+                "defaultActive": true,
+                "children": [
+                    {
+                        "id": "4148dd76-cdab-471e-8e88-a7a912e819c1",
+                        "tag": "registrants_workflow_steps",
+                        "blockType": "interfaceStepBlock",
+                        "defaultActive": true,
+                        "children": [
+                            {
+                                "id": "c6a4db28-6a4f-4137-9b42-530783443147",
+                                "tag": "create_application",
+                                "blockType": "requestVcDocumentBlock",
+                                "defaultActive": true,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "type": "page",
+                                    "title": "Registrant Application"
+                                },
+                                "presetFields": [],
+                                "schema": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
+                                "idType": "OWNER"
+                            },
+                            {
+                                "id": "4370496c-560f-48f7-b435-15e5e9fc8a77",
+                                "tag": "save_application(hedera)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [],
+                                "dataType": "",
+                                "entityType": "registrant",
+                                "topic": "Project",
+                                "dataSource": "hedera",
+                                "documentType": "vc",
+                                "topicOwner": "user"
+                            },
+                            {
+                                "id": "fd4ef1cf-26ce-432e-b425-50d4329e5f5e",
+                                "tag": "create_application(db)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [
+                                    {
+                                        "name": "status",
+                                        "value": "Waiting for approval"
+                                    }
+                                ],
+                                "dataType": "",
+                                "entityType": "registrant",
+                                "dataSource": "database",
+                                "documentType": "vc"
+                            },
+                            {
+                                "id": "09d2472b-cd30-4339-9a01-57c5c17029d1",
+                                "tag": "wait_for_approve",
+                                "blockType": "informationBlock",
+                                "defaultActive": true,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "description": "The page will refresh automatically once the application is approved.",
+                                    "type": "text",
+                                    "title": "Submitted for Approval"
+                                },
+                                "stopPropagation": true
+                            },
+                            {
+                                "id": "313042d7-95c0-4ed2-b5ea-bf77fec29ad2",
+                                "tag": "save_application_status(approve)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [
+                                    {
+                                        "name": "status",
+                                        "value": "Approved"
+                                    }
+                                ],
+                                "dataType": "",
+                                "entityType": "registrant",
+                                "dataSource": "database",
+                                "documentType": "vc"
+                            },
+                            {
+                                "id": "916e7f10-2c65-43b2-86a7-494c78963e87",
+                                "tag": "sign_by_issuer",
+                                "blockType": "reassigningBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "issuer": "policyOwner",
+                                "actor": "owner"
+                            },
+                            {
+                                "id": "0a31efea-bfb9-47de-a908-d9201ca8e579",
+                                "tag": "save_copy_application(hedera)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [],
+                                "dataSource": "hedera",
+                                "documentType": "vc",
+                                "topic": "Project",
+                                "entityType": "registrant(Approved)",
+                                "topicOwner": "owner"
+                            },
+                            {
+                                "id": "d907660e-9834-42a1-a077-e8e38332b6e4",
+                                "tag": "save_copy_application",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [
+                                    {
+                                        "name": "status",
+                                        "value": "Approved"
+                                    }
+                                ],
+                                "dataType": "",
+                                "entityType": "registrant(Approved)",
+                                "forceNew": true,
+                                "dataSource": "database",
+                                "documentType": "vc"
+                            },
+                            {
+                                "id": "fd215b72-33a0-47fd-84fa-d846f3d34040",
+                                "tag": "registrants_page",
+                                "blockType": "interfaceContainerBlock",
+                                "defaultActive": true,
+                                "children": [
+                                    {
+                                        "id": "be83cf5b-c6ca-4065-8eca-1a8aee328a4c",
+                                        "tag": "devices_page",
+                                        "blockType": "interfaceContainerBlock",
+                                        "defaultActive": true,
+                                        "children": [
+                                            {
+                                                "id": "81dcdea7-8a28-49df-8a55-78540e2d501c",
+                                                "tag": "devices_grid",
+                                                "blockType": "interfaceDocumentsSourceBlock",
+                                                "defaultActive": true,
+                                                "children": [
+                                                    {
+                                                        "id": "3fa477e2-e637-4b70-b762-cf52903f26ef",
+                                                        "tag": "devices_source",
+                                                        "blockType": "documentsSourceAddon",
+                                                        "defaultActive": false,
+                                                        "children": [],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "filters": [
+                                                            {
+                                                                "value": "Approved",
+                                                                "field": "option.status",
+                                                                "type": "not_equal"
+                                                            },
+                                                            {
+                                                                "value": "device",
+                                                                "field": "type",
+                                                                "type": "equal"
+                                                            }
+                                                        ],
+                                                        "schema": "#0bb392cd-17ee-43e7-b4fd-85fd392dae24&1.0.0",
+                                                        "dataType": "vc-documents",
+                                                        "onlyOwnDocuments": true
+                                                    },
+                                                    {
+                                                        "id": "d731215b-187d-42d4-8e62-0267d5b0f07a",
+                                                        "tag": "devices_source(approved)",
+                                                        "blockType": "documentsSourceAddon",
+                                                        "defaultActive": false,
+                                                        "children": [],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "filters": [
+                                                            {
+                                                                "value": "Approved",
+                                                                "field": "option.status",
+                                                                "type": "equal"
+                                                            },
+                                                            {
+                                                                "value": "device(Approved)",
+                                                                "field": "type",
+                                                                "type": "equal"
+                                                            }
+                                                        ],
+                                                        "dataType": "vc-documents",
+                                                        "schema": "#0bb392cd-17ee-43e7-b4fd-85fd392dae24&1.0.0",
+                                                        "onlyOwnDocuments": true
+                                                    }
+                                                ],
+                                                "permissions": [
+                                                    "Registrant"
+                                                ],
+                                                "onErrorAction": "no-action",
+                                                "uiMetaData": {
+                                                    "fields": [
+                                                        {
+                                                            "title": "Device Name",
+                                                            "name": "document.credentialSubject.0.field4.field0",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Address",
+                                                            "name": "document.credentialSubject.0.field4.field1",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Longitude",
+                                                            "name": "document.credentialSubject.0.field4.field4",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Latitude",
+                                                            "name": "document.credentialSubject.0.field4.field5",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Capacity (kW)",
+                                                            "name": "document.credentialSubject.0.field4.field7",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Issue Request",
+                                                            "name": "option.status",
+                                                            "type": "text",
+                                                            "bindGroup": "devices_source",
+                                                            "width": "150px"
+                                                        },
+                                                        {
+                                                            "title": "Issue Request",
+                                                            "name": "",
+                                                            "type": "block",
+                                                            "action": "",
+                                                            "url": "",
+                                                            "dialogContent": "",
+                                                            "dialogClass": "",
+                                                            "dialogType": "",
+                                                            "bindBlock": "create_issue_request_form",
+                                                            "width": "150px",
+                                                            "bindGroup": "devices_source(approved)"
+                                                        },
+                                                        {
+                                                            "name": "document",
+                                                            "title": "Document",
+                                                            "tooltip": "",
+                                                            "type": "button",
+                                                            "action": "dialog",
+                                                            "content": "View Document",
+                                                            "uiClass": "link",
+                                                            "dialogContent": "VC",
+                                                            "dialogClass": "",
+                                                            "dialogType": "json"
+                                                        }
+                                                    ]
+                                                },
+                                                "dependencies": [
+                                                    "create_device",
+                                                    "create_issue_request",
+                                                    "save_device_status(approved)",
+                                                    "save_device_status(reject)"
+                                                ]
+                                            },
+                                            {
+                                                "id": "e2c354d5-9532-4b97-97a4-7c9262e84215",
+                                                "tag": "new_device",
+                                                "blockType": "interfaceStepBlock",
+                                                "defaultActive": true,
+                                                "children": [
+                                                    {
+                                                        "id": "bb8ddf01-e056-4632-8aa1-7c1c8aa5a1ee",
+                                                        "tag": "create_device_form",
+                                                        "blockType": "requestVcDocumentBlock",
+                                                        "defaultActive": true,
+                                                        "children": [
+                                                            {
+                                                                "id": "3b55a17c-1df8-4684-978b-7f09bc18467f",
+                                                                "tag": "current_registrant",
+                                                                "blockType": "documentsSourceAddon",
+                                                                "defaultActive": false,
+                                                                "children": [],
+                                                                "permissions": [
+                                                                    "Registrant"
+                                                                ],
+                                                                "onErrorAction": "no-action",
+                                                                "filters": [
+                                                                    {
+                                                                        "value": "registrant(Approved)",
+                                                                        "field": "type",
+                                                                        "type": "equal"
+                                                                    }
+                                                                ],
+                                                                "onlyOwnDocuments": true,
+                                                                "schema": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
+                                                                "dataType": "vc-documents"
+                                                            }
+                                                        ],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "uiMetaData": {
+                                                            "type": "dialog",
+                                                            "content": "Create New Device",
+                                                            "dialogContent": "Device Registration"
+                                                        },
+                                                        "presetFields": [
+                                                            {
+                                                                "name": "field0",
+                                                                "title": "Registrant Id",
+                                                                "value": "id",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field1",
+                                                                "title": "Date",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field2",
+                                                                "title": "Is the Registrant also the owner of the Device? (provide evidence) ",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field3",
+                                                                "title": "Registrant Details",
+                                                                "value": "field2",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field4",
+                                                                "title": "Production Device Details",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field5",
+                                                                "title": "Energy Sources",
+                                                                "readonly": false
+                                                            }
+                                                        ],
+                                                        "idType": "DID",
+                                                        "schema": "#0bb392cd-17ee-43e7-b4fd-85fd392dae24&1.0.0",
+                                                        "preset": true,
+                                                        "presetSchema": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0"
+                                                    },
+                                                    {
+                                                        "id": "711119c3-340f-40ef-aadf-0c6425f5d29a",
+                                                        "tag": "save_device(hedera)",
+                                                        "blockType": "sendToGuardianBlock",
+                                                        "defaultActive": false,
+                                                        "children": [],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "uiMetaData": {},
+                                                        "options": [],
+                                                        "dataType": "",
+                                                        "topic": "Project",
+                                                        "entityType": "device",
+                                                        "dataSource": "hedera",
+                                                        "documentType": "vc"
+                                                    },
+                                                    {
+                                                        "id": "28400c06-b6fd-4ef9-aa1f-ed33eda0b11d",
+                                                        "tag": "create_device",
+                                                        "blockType": "sendToGuardianBlock",
+                                                        "defaultActive": false,
+                                                        "children": [],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "uiMetaData": {},
+                                                        "options": [
+                                                            {
+                                                                "name": "status",
+                                                                "value": "Waiting for approval"
+                                                            }
+                                                        ],
+                                                        "entityType": "device",
+                                                        "dataType": "",
+                                                        "dataSource": "database",
+                                                        "documentType": "vc"
+                                                    }
+                                                ],
+                                                "permissions": [
+                                                    "Registrant"
+                                                ],
+                                                "onErrorAction": "no-action",
+                                                "uiMetaData": {
+                                                    "type": "blank"
+                                                },
+                                                "cyclic": true
+                                            },
+                                            {
+                                                "id": "3f40645d-ce7a-41c0-8983-f654adf88ba9",
+                                                "tag": "new_issue_request",
+                                                "blockType": "interfaceStepBlock",
+                                                "defaultActive": false,
+                                                "children": [
+                                                    {
+                                                        "id": "81a1c852-b8d6-442d-bbf1-e2547e76935f",
+                                                        "tag": "create_issue_request_form",
+                                                        "blockType": "requestVcDocumentBlock",
+                                                        "defaultActive": true,
+                                                        "children": [],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "uiMetaData": {
+                                                            "type": "dialog",
+                                                            "content": "Create Issue Request",
+                                                            "dialogContent": "New Issue Request",
+                                                            "buttonClass": "link"
+                                                        },
+                                                        "presetFields": [
+                                                            {
+                                                                "name": "field0",
+                                                                "title": "Registrant Id",
+                                                                "value": "field0",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field1",
+                                                                "title": "Production Device/Production Group Id",
+                                                                "value": "id",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field2",
+                                                                "title": "Registrant Details",
+                                                                "value": "field3",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field3",
+                                                                "title": "Production Device/Production Group",
+                                                                "value": "field4",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field4",
+                                                                "title": "Labelling scheme(s)",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field5",
+                                                                "title": "Last registration date",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field6",
+                                                                "title": "Production Period Start Date",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field7",
+                                                                "title": "Total kWh Produced in this period",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field8",
+                                                                "title": "Production Period End Date",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field9",
+                                                                "title": "Percentage of eligible total applied for",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field10",
+                                                                "title": "Type a: Settlement Metering data",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field11",
+                                                                "title": "Type b: Non-settlement Metering data",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field12",
+                                                                "title": "Type c: Measured Volume Transfer documentation",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field13",
+                                                                "title": "Type d: Other",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field14",
+                                                                "title": "Is the production of this electricity counted towards a national, sub-national or regulatory target?",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field15",
+                                                                "title": "Is any of this production subject to a public consumption obligation?",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field16",
+                                                                "title": "Do you retain the right to obtain emissions reduction certificates or carbon offsets for the energy nominated in this Issue Request?",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field17",
+                                                                "title": "I-REC Participant name",
+                                                                "value": "username",
+                                                                "readonly": false
+                                                            },
+                                                            {
+                                                                "name": "field18",
+                                                                "title": "Account number",
+                                                                "value": "hederaAccountId",
+                                                                "readonly": false
+                                                            }
+                                                        ],
+                                                        "idType": "UUID",
+                                                        "schema": "#17d892a5-4d98-43e1-aa78-e42ffc9ec64d&1.0.0",
+                                                        "preset": true,
+                                                        "presetSchema": "#0bb392cd-17ee-43e7-b4fd-85fd392dae24&1.0.0"
+                                                    },
+                                                    {
+                                                        "id": "0081c692-5a1d-4f40-8247-8ab995b3e775",
+                                                        "tag": "save_issue(hedera)",
+                                                        "blockType": "sendToGuardianBlock",
+                                                        "defaultActive": false,
+                                                        "children": [],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "uiMetaData": {},
+                                                        "options": [],
+                                                        "dataType": "",
+                                                        "topic": "Project",
+                                                        "entityType": "issue_request",
+                                                        "dataSource": "hedera",
+                                                        "documentType": "vc"
+                                                    },
+                                                    {
+                                                        "id": "0ee66008-3bfc-4c48-ad30-9c28063e06ab",
+                                                        "tag": "create_issue_request",
+                                                        "blockType": "sendToGuardianBlock",
+                                                        "defaultActive": false,
+                                                        "children": [],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "uiMetaData": {},
+                                                        "options": [
+                                                            {
+                                                                "name": "status",
+                                                                "value": "Waiting for approval"
+                                                            }
+                                                        ],
+                                                        "dataType": "",
+                                                        "entityType": "issue_request",
+                                                        "dataSource": "database",
+                                                        "documentType": "vc"
+                                                    }
+                                                ],
+                                                "permissions": [
+                                                    "Registrant"
+                                                ],
+                                                "onErrorAction": "no-action",
+                                                "uiMetaData": {
+                                                    "type": "blank"
+                                                },
+                                                "cyclic": true
+                                            }
+                                        ],
+                                        "permissions": [
+                                            "Registrant"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "uiMetaData": {
+                                            "type": "blank",
+                                            "title": "Devices"
+                                        }
+                                    },
+                                    {
+                                        "id": "5cf0c0cd-1ab3-4383-82d3-dde2d853a902",
+                                        "tag": "issue_requests_page",
+                                        "blockType": "interfaceContainerBlock",
+                                        "defaultActive": true,
+                                        "children": [
+                                            {
+                                                "id": "849d0cff-a21e-45ef-ab42-b90934b76c69",
+                                                "tag": "issue_requests_grid",
+                                                "blockType": "interfaceDocumentsSourceBlock",
+                                                "defaultActive": true,
+                                                "children": [
+                                                    {
+                                                        "id": "625894be-8460-435e-bc41-eddd24ef0c5a",
+                                                        "tag": "issue_requests_source",
+                                                        "blockType": "documentsSourceAddon",
+                                                        "defaultActive": false,
+                                                        "children": [
+                                                            {
+                                                                "id": "60229204-bbc3-497d-8190-080d48036e3e",
+                                                                "tag": "issue_by_device",
+                                                                "blockType": "filtersAddon",
+                                                                "defaultActive": true,
+                                                                "children": [
+                                                                    {
+                                                                        "id": "0fbf0df1-4bd7-4663-8db0-58e61feca937",
+                                                                        "tag": "devices_source_from_filters",
+                                                                        "blockType": "documentsSourceAddon",
+                                                                        "defaultActive": false,
+                                                                        "children": [],
+                                                                        "permissions": [
+                                                                            "Registrant"
+                                                                        ],
+                                                                        "onErrorAction": "no-action",
+                                                                        "filters": [
+                                                                            {
+                                                                                "value": "Approved",
+                                                                                "field": "option.status",
+                                                                                "type": "equal"
+                                                                            },
+                                                                            {
+                                                                                "value": "device",
+                                                                                "field": "type",
+                                                                                "type": "equal"
+                                                                            }
+                                                                        ],
+                                                                        "dataType": "vc-documents",
+                                                                        "schema": "#0bb392cd-17ee-43e7-b4fd-85fd392dae24&1.0.0",
+                                                                        "onlyOwnDocuments": true
+                                                                    }
+                                                                ],
+                                                                "permissions": [
+                                                                    "Registrant"
+                                                                ],
+                                                                "onErrorAction": "no-action",
+                                                                "uiMetaData": {
+                                                                    "options": [],
+                                                                    "content": "Device"
+                                                                },
+                                                                "type": "dropdown",
+                                                                "field": "document.credentialSubject.0.ref",
+                                                                "optionName": "document.credentialSubject.0.field3.field0",
+                                                                "optionValue": "document.credentialSubject.0.id"
+                                                            }
+                                                        ],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "filters": [
+                                                            {
+                                                                "value": "issue_request",
+                                                                "field": "type",
+                                                                "type": "equal"
+                                                            }
+                                                        ],
+                                                        "dataType": "vc-documents",
+                                                        "schema": "#17d892a5-4d98-43e1-aa78-e42ffc9ec64d&1.0.0",
+                                                        "onlyOwnDocuments": true
+                                                    }
+                                                ],
+                                                "permissions": [
+                                                    "Registrant"
+                                                ],
+                                                "onErrorAction": "no-action",
+                                                "uiMetaData": {
+                                                    "fields": [
+                                                        {
+                                                            "title": "Production Period Start Date",
+                                                            "name": "document.credentialSubject.0.field6",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Production Period End Date",
+                                                            "name": "document.credentialSubject.0.field8",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Total kWh Produced in this period",
+                                                            "name": "document.credentialSubject.0.field7",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Date",
+                                                            "name": "document.issuanceDate",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "name": "option.status",
+                                                            "title": "Status",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "name": "document",
+                                                            "title": "Document",
+                                                            "tooltip": "",
+                                                            "type": "button",
+                                                            "action": "dialog",
+                                                            "content": "View Document",
+                                                            "uiClass": "link",
+                                                            "dialogContent": "VC",
+                                                            "dialogClass": "",
+                                                            "dialogType": "json"
+                                                        }
+                                                    ]
+                                                },
+                                                "dependencies": [
+                                                    "create_issue_request",
+                                                    "save_issue_status(minted)",
+                                                    "save_issue_status(minting)",
+                                                    "save_issue_status(reject)"
+                                                ]
+                                            }
+                                        ],
+                                        "permissions": [
+                                            "Registrant"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "uiMetaData": {
+                                            "type": "blank",
+                                            "title": "Issue Requests"
+                                        }
+                                    },
+                                    {
+                                        "id": "d77bce9e-38b2-447d-9070-ede109353d1d",
+                                        "tag": "token_history_page",
+                                        "blockType": "interfaceContainerBlock",
+                                        "defaultActive": true,
+                                        "children": [
+                                            {
+                                                "id": "49c1fd87-8374-4ceb-b441-84b8c581d243",
+                                                "tag": "token_history_grid",
+                                                "blockType": "interfaceDocumentsSourceBlock",
+                                                "defaultActive": true,
+                                                "children": [
+                                                    {
+                                                        "id": "06337d1a-b428-4e15-949c-16c039ea4c54",
+                                                        "tag": "token_history_source",
+                                                        "blockType": "documentsSourceAddon",
+                                                        "defaultActive": false,
+                                                        "children": [
+                                                            {
+                                                                "id": "d24e11d3-2b7b-4c99-9a56-79e8c4a93e2c",
+                                                                "tag": "token_history_source_filter",
+                                                                "blockType": "filtersAddon",
+                                                                "defaultActive": true,
+                                                                "children": [
+                                                                    {
+                                                                        "id": "0a773064-3b43-4b3f-b2f1-59cad2dd8467",
+                                                                        "tag": "devices_source_from_filters2",
+                                                                        "blockType": "documentsSourceAddon",
+                                                                        "defaultActive": false,
+                                                                        "children": [],
+                                                                        "permissions": [
+                                                                            "Registrant"
+                                                                        ],
+                                                                        "onErrorAction": "no-action",
+                                                                        "filters": [
+                                                                            {
+                                                                                "value": "Approved",
+                                                                                "field": "option.status",
+                                                                                "type": "equal"
+                                                                            },
+                                                                            {
+                                                                                "value": "device",
+                                                                                "field": "type",
+                                                                                "type": "equal"
+                                                                            }
+                                                                        ],
+                                                                        "dataType": "vc-documents",
+                                                                        "schema": "#0bb392cd-17ee-43e7-b4fd-85fd392dae24&1.0.0",
+                                                                        "onlyOwnDocuments": true
+                                                                    }
+                                                                ],
+                                                                "permissions": [
+                                                                    "Registrant"
+                                                                ],
+                                                                "onErrorAction": "no-action",
+                                                                "uiMetaData": {
+                                                                    "options": [],
+                                                                    "content": "Device"
+                                                                },
+                                                                "type": "dropdown",
+                                                                "optionName": "document.credentialSubject.0.field3.field0",
+                                                                "optionValue": "document.credentialSubject.0.id",
+                                                                "field": "document.verifiableCredential.0.credentialSubject.0.field1"
+                                                            }
+                                                        ],
+                                                        "permissions": [
+                                                            "Registrant"
+                                                        ],
+                                                        "onErrorAction": "no-action",
+                                                        "filters": [],
+                                                        "dataType": "vp-documents",
+                                                        "onlyOwnDocuments": false
+                                                    }
+                                                ],
+                                                "permissions": [
+                                                    "Registrant"
+                                                ],
+                                                "onErrorAction": "no-action",
+                                                "uiMetaData": {
+                                                    "fields": [
+                                                        {
+                                                            "title": "Date",
+                                                            "name": "document.verifiableCredential.1.credentialSubject.0.date",
+                                                            "tooltip": "",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Token Id",
+                                                            "name": "document.verifiableCredential.1.credentialSubject.0.tokenId",
+                                                            "tooltip": "",
+                                                            "type": "text"
+                                                        },
+                                                        {
+                                                            "title": "Serials",
+                                                            "name": "document.verifiableCredential.1.credentialSubject.0.serials",
+                                                            "tooltip": "",
+                                                            "type": "text"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ],
+                                        "permissions": [
+                                            "Registrant"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "uiMetaData": {
+                                            "type": "blank",
+                                            "title": "Token History"
+                                        }
+                                    }
+                                ],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "type": "tabs"
+                                }
+                            },
+                            {
+                                "id": "b50e5c11-54ab-4212-8eb7-a2ee54fe4df9",
+                                "tag": "save_application_status(reject)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [
+                                    {
+                                        "name": "status",
+                                        "value": "Rejected"
+                                    }
+                                ],
+                                "dataType": "",
+                                "entityType": "registrant",
+                                "dataSource": "database",
+                                "documentType": "vc"
+                            },
+                            {
+                                "id": "54de67e7-ca43-4e8f-b2a6-2d52170bae0d",
+                                "tag": "application_rejected",
+                                "blockType": "informationBlock",
+                                "defaultActive": true,
+                                "children": [],
+                                "permissions": [
+                                    "Registrant"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "title": "Rejected",
+                                    "description": "Your application was rejected",
+                                    "type": "text"
+                                },
+                                "stopPropagation": true
+                            }
+                        ],
+                        "permissions": [
+                            "Registrant"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                            "type": "blank"
+                        }
+                    }
+                ],
+                "permissions": [
+                    "Registrant"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                    "type": "blank"
+                }
+            },
+            {
+                "id": "35a2c9a9-8f7c-4d61-a8d3-0d7b815883eb",
+                "tag": "evident_workflow",
+                "blockType": "interfaceContainerBlock",
+                "defaultActive": true,
+                "children": [
+                    {
+                        "id": "12288e3d-68a6-4e6c-bc34-683620041ce1",
+                        "tag": "approve_application_page",
+                        "blockType": "interfaceContainerBlock",
+                        "defaultActive": true,
+                        "children": [
+                            {
+                                "id": "f46af5f5-e0f2-4ede-bcd2-8e1a55bd1fca",
+                                "tag": "registrants_grid",
+                                "blockType": "interfaceDocumentsSourceBlock",
+                                "defaultActive": true,
+                                "children": [
+                                    {
+                                        "id": "bb1b84e4-3524-4849-a646-cca3623b0d75",
+                                        "tag": "registrants_source(need_approve)",
+                                        "blockType": "documentsSourceAddon",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "value": "Waiting for approval",
+                                                "field": "option.status",
+                                                "type": "equal"
+                                            },
+                                            {
+                                                "value": "registrant",
+                                                "field": "type",
+                                                "type": "equal"
+                                            }
+                                        ],
+                                        "dataType": "vc-documents",
+                                        "schema": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0"
+                                    },
+                                    {
+                                        "id": "1adf6b92-a184-43f4-99ab-3113fee26fa1",
+                                        "tag": "registrants_source(approved)",
+                                        "blockType": "documentsSourceAddon",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "value": "Waiting for approval",
+                                                "field": "option.status",
+                                                "type": "not_equal"
+                                            },
+                                            {
+                                                "value": "registrant",
+                                                "field": "type",
+                                                "type": "equal"
+                                            }
+                                        ],
+                                        "dataType": "vc-documents",
+                                        "schema": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0"
+                                    }
+                                ],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "fields": [
+                                        {
+                                            "title": "Legal Name",
+                                            "name": "document.credentialSubject.0.field1.field0",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Organization Name",
+                                            "name": "document.credentialSubject.0.field2.field0",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Operation",
+                                            "name": "option.status",
+                                            "type": "text",
+                                            "width": "250px",
+                                            "bindGroup": "registrants_source(approved)",
+                                            "action": "",
+                                            "url": "",
+                                            "dialogContent": "",
+                                            "dialogClass": "",
+                                            "dialogType": "",
+                                            "bindBlock": ""
+                                        },
+                                        {
+                                            "title": "Operation",
+                                            "name": "option.status",
+                                            "tooltip": "",
+                                            "type": "block",
+                                            "action": "",
+                                            "url": "",
+                                            "dialogContent": "",
+                                            "dialogClass": "",
+                                            "dialogType": "",
+                                            "bindBlock": "approve_registrant_btn",
+                                            "width": "250px",
+                                            "bindGroup": "registrants_source(need_approve)"
+                                        },
+                                        {
+                                            "name": "document",
+                                            "title": "Document",
+                                            "tooltip": "",
+                                            "type": "button",
+                                            "action": "dialog",
+                                            "content": "View Document",
+                                            "uiClass": "link",
+                                            "dialogContent": "VC",
+                                            "dialogClass": "",
+                                            "dialogType": "json"
+                                        }
+                                    ]
+                                },
+                                "dependencies": [
+                                    "save_application_status(approve)",
+                                    "save_application_status(reject)"
+                                ]
+                            },
+                            {
+                                "id": "c2eef66b-ec9f-42c5-99b2-430625c49e88",
+                                "tag": "approve_registrant_btn",
+                                "blockType": "interfaceActionBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "options": [
+                                        {
+                                            "title": "",
+                                            "name": "Approve",
+                                            "tooltip": "",
+                                            "type": "text",
+                                            "value": "Approved",
+                                            "uiClass": "btn-approve",
+                                            "bindBlock": "save_application_status(approve)"
+                                        },
+                                        {
+                                            "title": "",
+                                            "name": "Reject",
+                                            "tooltip": "",
+                                            "type": "text",
+                                            "value": "Rejected",
+                                            "uiClass": "btn-reject",
+                                            "bindBlock": "save_application_status(reject)"
+                                        }
+                                    ]
+                                },
+                                "type": "selector",
+                                "field": "option.status"
+                            }
+                        ],
+                        "permissions": [
+                            "OWNER"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                            "type": "blank",
+                            "title": "Applications"
+                        }
+                    },
+                    {
+                        "id": "96e1f20a-6e3e-46a7-9dcf-49f8cf4f7b59",
+                        "tag": "approve_device_page",
+                        "blockType": "interfaceContainerBlock",
+                        "defaultActive": true,
+                        "children": [
+                            {
+                                "id": "5d570f5b-a533-4481-8602-bb8355b50b46",
+                                "tag": "approve_devices_grid",
+                                "blockType": "interfaceDocumentsSourceBlock",
+                                "defaultActive": true,
+                                "children": [
+                                    {
+                                        "id": "fa2732a1-1e98-4852-91b7-43ec49c1c10c",
+                                        "tag": "approve_devices_source(need_approve)",
+                                        "blockType": "documentsSourceAddon",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "value": "Waiting for approval",
+                                                "field": "option.status",
+                                                "type": "equal"
+                                            },
+                                            {
+                                                "value": "device",
+                                                "field": "type",
+                                                "type": "equal"
+                                            }
+                                        ],
+                                        "dataType": "vc-documents",
+                                        "schema": "#0bb392cd-17ee-43e7-b4fd-85fd392dae24&1.0.0"
+                                    },
+                                    {
+                                        "id": "4a8cf9d1-6df8-45eb-9e7d-99c6455283c8",
+                                        "tag": "approve_devices_source(approved)",
+                                        "blockType": "documentsSourceAddon",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "value": "Waiting for approval",
+                                                "field": "option.status",
+                                                "type": "not_equal"
+                                            },
+                                            {
+                                                "value": "device",
+                                                "field": "type",
+                                                "type": "equal"
+                                            }
+                                        ],
+                                        "dataType": "vc-documents",
+                                        "schema": "#0bb392cd-17ee-43e7-b4fd-85fd392dae24&1.0.0"
+                                    }
+                                ],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "fields": [
+                                        {
+                                            "title": "Organization Name",
+                                            "name": "document.credentialSubject.0.field3.field0",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Device Name",
+                                            "name": "document.credentialSubject.0.field4.field0",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Address",
+                                            "name": "document.credentialSubject.0.field4.field1",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Longitude",
+                                            "name": "document.credentialSubject.0.field4.field4",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Latitude",
+                                            "name": "document.credentialSubject.0.field4.field5",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Capacity (kW)",
+                                            "name": "document.credentialSubject.0.field4.field7",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "option.status",
+                                            "title": "Operation",
+                                            "type": "text",
+                                            "width": "250px",
+                                            "bindGroup": "approve_devices_source(approved)",
+                                            "action": "",
+                                            "url": "",
+                                            "dialogContent": "",
+                                            "dialogClass": "",
+                                            "dialogType": "",
+                                            "bindBlock": ""
+                                        },
+                                        {
+                                            "title": "Operation",
+                                            "name": "option.status",
+                                            "tooltip": "",
+                                            "type": "block",
+                                            "action": "",
+                                            "url": "",
+                                            "dialogContent": "",
+                                            "dialogClass": "",
+                                            "dialogType": "",
+                                            "bindBlock": "approve_device_btn",
+                                            "width": "250px",
+                                            "bindGroup": "approve_devices_source(need_approve)"
+                                        },
+                                        {
+                                            "name": "document",
+                                            "title": "Document",
+                                            "tooltip": "",
+                                            "type": "button",
+                                            "action": "dialog",
+                                            "content": "View Document",
+                                            "uiClass": "link",
+                                            "dialogContent": "VC",
+                                            "dialogClass": "",
+                                            "dialogType": "json"
+                                        }
+                                    ]
+                                },
+                                "dependencies": [
+                                    "create_device",
+                                    "save_device_status(approved)",
+                                    "save_device_status(reject)"
+                                ]
+                            },
+                            {
+                                "id": "12b8bd1d-8429-4917-90f4-cdfcced32d46",
+                                "tag": "approve_device_btn",
+                                "blockType": "interfaceActionBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "options": [
+                                        {
+                                            "title": "",
+                                            "name": "Approve",
+                                            "tooltip": "",
+                                            "type": "text",
+                                            "value": "Approved",
+                                            "uiClass": "btn-approve",
+                                            "bindBlock": "save_device_status(approved)"
+                                        },
+                                        {
+                                            "title": "",
+                                            "name": "Reject",
+                                            "tooltip": "",
+                                            "type": "text",
+                                            "value": "Rejected",
+                                            "uiClass": "btn-reject",
+                                            "bindBlock": "save_device_status(reject)"
+                                        }
+                                    ]
+                                },
+                                "type": "selector",
+                                "field": "option.status"
+                            },
+                            {
+                                "id": "ba063b00-e9b4-400c-b509-804d572397e2",
+                                "tag": "save_device_status(approved)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [
+                                    {
+                                        "name": "status",
+                                        "value": "Approved"
+                                    }
+                                ],
+                                "stopPropagation": false,
+                                "dataType": "",
+                                "entityType": "device",
+                                "dataSource": "database",
+                                "documentType": "vc"
+                            },
+                            {
+                                "id": "369549d1-9d85-4b15-90b5-6ed153ffdd91",
+                                "tag": "sign_device_by_issuer",
+                                "blockType": "reassigningBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "actor": "",
+                                "issuer": "policyOwner"
+                            },
+                            {
+                                "id": "a4e3cd8b-92d2-4c22-bfbb-92bd496d0d75",
+                                "tag": "save_copy_device(hedera)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [],
+                                "dataSource": "hedera",
+                                "documentType": "vc",
+                                "topic": "Project",
+                                "entityType": "device(Approved)",
+                                "topicOwner": "owner"
+                            },
+                            {
+                                "id": "a36c2d1c-9572-4cb8-8b63-8994cc0697bd",
+                                "tag": "save_copy_device",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [
+                                    {
+                                        "name": "status",
+                                        "value": "Approved"
+                                    }
+                                ],
+                                "entityType": "device(Approved)",
+                                "dataType": "",
+                                "stopPropagation": true,
+                                "forceNew": true,
+                                "dataSource": "database",
+                                "documentType": "vc"
+                            },
+                            {
+                                "id": "4e506ada-30ea-4976-b8b4-f6347b4e8464",
+                                "tag": "save_device_status(reject)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [
+                                    {
+                                        "name": "status",
+                                        "value": "Rejected"
+                                    }
+                                ],
+                                "stopPropagation": true,
+                                "dataType": "",
+                                "entityType": "device",
+                                "dataSource": "database",
+                                "documentType": "vc"
+                            }
+                        ],
+                        "permissions": [
+                            "OWNER"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                            "type": "blank",
+                            "title": "Devices"
+                        }
+                    },
+                    {
+                        "id": "250e8b46-463d-4382-bff3-0d28e353ef62",
+                        "tag": "approve_issue_requests_page",
+                        "blockType": "interfaceContainerBlock",
+                        "defaultActive": true,
+                        "children": [
+                            {
+                                "id": "965abb1d-f2c4-4839-9bbe-97b166e6a563",
+                                "tag": "issue_requests_grid(evident)",
+                                "blockType": "interfaceDocumentsSourceBlock",
+                                "defaultActive": true,
+                                "children": [
+                                    {
+                                        "id": "42bed28d-a657-479c-aac0-72fd3a15ccf0",
+                                        "tag": "issue_requests_source(need_approve)",
+                                        "blockType": "documentsSourceAddon",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "value": "Waiting for approval",
+                                                "field": "option.status",
+                                                "type": "equal"
+                                            },
+                                            {
+                                                "value": "issue_request",
+                                                "field": "type",
+                                                "type": "equal"
+                                            }
+                                        ],
+                                        "dataType": "vc-documents",
+                                        "schema": "#17d892a5-4d98-43e1-aa78-e42ffc9ec64d&1.0.0"
+                                    },
+                                    {
+                                        "id": "1e98a1a2-8885-4148-a55d-1e0139787f83",
+                                        "tag": "issue_requests_source(approved)",
+                                        "blockType": "documentsSourceAddon",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "value": "Waiting for approval",
+                                                "field": "option.status",
+                                                "type": "not_equal"
+                                            },
+                                            {
+                                                "value": "issue_request",
+                                                "field": "type",
+                                                "type": "equal"
+                                            }
+                                        ],
+                                        "dataType": "vc-documents",
+                                        "schema": "#17d892a5-4d98-43e1-aa78-e42ffc9ec64d&1.0.0"
+                                    }
+                                ],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "fields": [
+                                        {
+                                            "title": "Organization Name",
+                                            "name": "document.credentialSubject.0.field2.field0",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Production Period Start Date",
+                                            "name": "document.credentialSubject.0.field6",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Production Period End Date",
+                                            "name": "document.credentialSubject.0.field8",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Total kWh Produced in this period",
+                                            "name": "document.credentialSubject.0.field7",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Date",
+                                            "name": "document.issuanceDate",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "option.status",
+                                            "title": "Operation",
+                                            "type": "text",
+                                            "width": "250px",
+                                            "bindGroup": "issue_requests_source(approved)",
+                                            "action": "",
+                                            "url": "",
+                                            "dialogContent": "",
+                                            "dialogClass": "",
+                                            "dialogType": "",
+                                            "bindBlock": ""
+                                        },
+                                        {
+                                            "title": "Operation",
+                                            "name": "option.status",
+                                            "tooltip": "",
+                                            "type": "block",
+                                            "action": "",
+                                            "url": "",
+                                            "dialogContent": "",
+                                            "dialogClass": "",
+                                            "dialogType": "",
+                                            "bindBlock": "approve_issue_requests_btn",
+                                            "width": "250px",
+                                            "bindGroup": "issue_requests_source(need_approve)"
+                                        },
+                                        {
+                                            "name": "document",
+                                            "title": "Document",
+                                            "tooltip": "",
+                                            "type": "button",
+                                            "action": "dialog",
+                                            "content": "View Document",
+                                            "uiClass": "link",
+                                            "dialogContent": "VC",
+                                            "dialogClass": "",
+                                            "dialogType": "json"
+                                        }
+                                    ]
+                                },
+                                "dependencies": [
+                                    "create_issue_request",
+                                    "save_issue_status(minted)",
+                                    "save_issue_status(minting)",
+                                    "save_issue_status(reject)"
+                                ]
+                            },
+                            {
+                                "id": "5216642b-1df2-4bc2-93a8-2c019885d53b",
+                                "tag": "approve_issue_requests_btn",
+                                "blockType": "interfaceActionBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "options": [
+                                        {
+                                            "title": "",
+                                            "name": "Approve",
+                                            "tooltip": "",
+                                            "type": "text",
+                                            "value": "Approved",
+                                            "uiClass": "btn-approve",
+                                            "bindBlock": "save_issue_status(approved)"
+                                        },
+                                        {
+                                            "title": "",
+                                            "name": "Reject",
+                                            "tooltip": "",
+                                            "type": "text",
+                                            "value": "Rejected",
+                                            "uiClass": "btn-reject",
+                                            "bindBlock": "save_issue_status(reject)"
+                                        }
+                                    ]
+                                },
+                                "type": "selector",
+                                "field": "option.status"
+                            },
+                            {
+                                "id": "e78af134-673c-4ab1-91b4-a7d3f859a1e1",
+                                "tag": "mint_events",
+                                "blockType": "interfaceContainerBlock",
+                                "defaultActive": false,
+                                "children": [
+                                    {
+                                        "id": "07d04683-db3e-43df-899c-e7a9e2527af6",
+                                        "tag": "save_issue_status(approved)",
+                                        "blockType": "sendToGuardianBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "uiMetaData": {},
+                                        "options": [
+                                            {
+                                                "name": "status",
+                                                "value": "Approved"
+                                            }
+                                        ],
+                                        "entityType": "issue_request",
+                                        "dataType": "",
+                                        "dataSource": "database",
+                                        "documentType": "vc"
+                                    },
+                                    {
+                                        "id": "8f1b240f-e03f-434a-b84d-b385c59d0857",
+                                        "tag": "sign_issue_by_issuer",
+                                        "blockType": "calculateContainerBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "inputFields": [
+                                            {
+                                                "name": "field0",
+                                                "title": "Registrant Id",
+                                                "value": "field0"
+                                            },
+                                            {
+                                                "name": "field1",
+                                                "title": "Production Device/Production Group Id",
+                                                "value": "field1"
+                                            },
+                                            {
+                                                "name": "field2",
+                                                "title": "Registrant Details",
+                                                "value": "field2"
+                                            },
+                                            {
+                                                "name": "field3",
+                                                "title": "Production Device/Production Group",
+                                                "value": "field3"
+                                            },
+                                            {
+                                                "name": "field4",
+                                                "title": "Labelling scheme(s)",
+                                                "value": "field4"
+                                            },
+                                            {
+                                                "name": "field5",
+                                                "title": "Last registration date",
+                                                "value": "field5"
+                                            },
+                                            {
+                                                "name": "field6",
+                                                "title": "Production Period Start Date",
+                                                "value": "field6"
+                                            },
+                                            {
+                                                "name": "field7",
+                                                "title": "Total kWh Produced in this period",
+                                                "value": "field7"
+                                            },
+                                            {
+                                                "name": "field8",
+                                                "title": "Production Period End Date",
+                                                "value": "field8"
+                                            },
+                                            {
+                                                "name": "field9",
+                                                "title": "Percentage of eligible total applied for",
+                                                "value": "field9"
+                                            },
+                                            {
+                                                "name": "field10",
+                                                "title": "Type a: Settlement Metering data",
+                                                "value": "field10"
+                                            },
+                                            {
+                                                "name": "field11",
+                                                "title": "Type b: Non-settlement Metering data",
+                                                "value": "field11"
+                                            },
+                                            {
+                                                "name": "field12",
+                                                "title": "Type c: Measured Volume Transfer documentation",
+                                                "value": "field12"
+                                            },
+                                            {
+                                                "name": "field13",
+                                                "title": "Type d: Other",
+                                                "value": "field13"
+                                            },
+                                            {
+                                                "name": "field14",
+                                                "title": "Is the production of this electricity counted towards a national, sub-national or regulatory target?",
+                                                "value": "field14"
+                                            },
+                                            {
+                                                "name": "field15",
+                                                "title": "Is any of this production subject to a public consumption obligation?",
+                                                "value": "field15"
+                                            },
+                                            {
+                                                "name": "field16",
+                                                "title": "Do you retain the right to obtain emissions reduction certificates or carbon offsets for the energy nominated in this Issue Request?",
+                                                "value": "field16"
+                                            },
+                                            {
+                                                "name": "field17",
+                                                "title": "I-REC Participant name",
+                                                "value": "field17"
+                                            },
+                                            {
+                                                "name": "field18",
+                                                "title": "Account number",
+                                                "value": "field18"
+                                            }
+                                        ],
+                                        "outputFields": [
+                                            {
+                                                "name": "field0",
+                                                "title": "Registrant Id",
+                                                "value": "field0"
+                                            },
+                                            {
+                                                "name": "field1",
+                                                "title": "Production Device/Production Group Id",
+                                                "value": "field1"
+                                            },
+                                            {
+                                                "name": "field2",
+                                                "title": "Registrant Details",
+                                                "value": "field2"
+                                            },
+                                            {
+                                                "name": "field3",
+                                                "title": "Production Device/Production Group",
+                                                "value": "field3"
+                                            },
+                                            {
+                                                "name": "field4",
+                                                "title": "Labelling scheme(s)",
+                                                "value": "field4"
+                                            },
+                                            {
+                                                "name": "field5",
+                                                "title": "Last registration date",
+                                                "value": "field5"
+                                            },
+                                            {
+                                                "name": "field6",
+                                                "title": "Production Period Start Date",
+                                                "value": "field6"
+                                            },
+                                            {
+                                                "name": "field7",
+                                                "title": "Total kWh Produced in this period",
+                                                "value": "field7"
+                                            },
+                                            {
+                                                "name": "field8",
+                                                "title": "Production Period End Date",
+                                                "value": "field8"
+                                            },
+                                            {
+                                                "name": "field9",
+                                                "title": "Percentage of eligible total applied for",
+                                                "value": "field9"
+                                            },
+                                            {
+                                                "name": "field10",
+                                                "title": "Type a: Settlement Metering data",
+                                                "value": "field10"
+                                            },
+                                            {
+                                                "name": "field11",
+                                                "title": "Type b: Non-settlement Metering data",
+                                                "value": "field11"
+                                            },
+                                            {
+                                                "name": "field12",
+                                                "title": "Type c: Measured Volume Transfer documentation",
+                                                "value": "field12"
+                                            },
+                                            {
+                                                "name": "field13",
+                                                "title": "Type d: Other",
+                                                "value": "field13"
+                                            },
+                                            {
+                                                "name": "field14",
+                                                "title": "Is the production of this electricity counted towards a national, sub-national or regulatory target?",
+                                                "value": "field14"
+                                            },
+                                            {
+                                                "name": "field15",
+                                                "title": "Is any of this production subject to a public consumption obligation?",
+                                                "value": "field15"
+                                            },
+                                            {
+                                                "name": "field16",
+                                                "title": "Do you retain the right to obtain emissions reduction certificates or carbon offsets for the energy nominated in this Issue Request?",
+                                                "value": "field16"
+                                            },
+                                            {
+                                                "name": "field17",
+                                                "title": "I-REC Participant name",
+                                                "value": "field17"
+                                            },
+                                            {
+                                                "name": "field18",
+                                                "title": "Account number",
+                                                "value": "field18"
+                                            }
+                                        ],
+                                        "inputSchema": "#17d892a5-4d98-43e1-aa78-e42ffc9ec64d&1.0.0",
+                                        "outputSchema": "#17d892a5-4d98-43e1-aa78-e42ffc9ec64d&1.0.0"
+                                    },
+                                    {
+                                        "id": "ca5480c9-09eb-439c-9a10-c0c8f94ebb48",
+                                        "tag": "save_copy_issue(hedera)",
+                                        "blockType": "sendToGuardianBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "uiMetaData": {},
+                                        "options": [],
+                                        "dataSource": "hedera",
+                                        "documentType": "vc",
+                                        "topic": "Project",
+                                        "topicOwner": "owner"
+                                    },
+                                    {
+                                        "id": "ea14d0fc-3a5d-44c6-b10b-924cc9747f6e",
+                                        "tag": "save_copy_issue",
+                                        "blockType": "sendToGuardianBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "uiMetaData": {},
+                                        "options": [
+                                            {
+                                                "name": "status",
+                                                "value": "Minting"
+                                            }
+                                        ],
+                                        "entityType": "issue_request(Approved)",
+                                        "dataType": "",
+                                        "forceNew": true,
+                                        "dataSource": "database",
+                                        "documentType": "vc"
+                                    },
+                                    {
+                                        "id": "37c31f88-2a51-4260-944f-12429d0094bb",
+                                        "tag": "mint_token",
+                                        "blockType": "mintDocumentBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "uiMetaData": {},
+                                        "tokenId": "0.0.34824585",
+                                        "rule": "field7"
+                                    },
+                                    {
+                                        "id": "acccb5c8-30bf-422f-addb-6fa3e63e30a6",
+                                        "tag": "save_issue_status(minted)",
+                                        "blockType": "sendToGuardianBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "uiMetaData": {},
+                                        "options": [
+                                            {
+                                                "name": "status",
+                                                "value": "Minted"
+                                            }
+                                        ],
+                                        "entityType": "issue_request(Approved)",
+                                        "dataType": "",
+                                        "dataSource": "database",
+                                        "documentType": "vc"
+                                    }
+                                ],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "type": "blank"
+                                }
+                            },
+                            {
+                                "id": "1b1fd6e3-ee03-40d0-b2f7-98fe8b5443e0",
+                                "tag": "save_issue_status(reject)",
+                                "blockType": "sendToGuardianBlock",
+                                "defaultActive": false,
+                                "children": [],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {},
+                                "options": [
+                                    {
+                                        "name": "status",
+                                        "value": "Rejected"
+                                    }
+                                ],
+                                "entityType": "issue_request",
+                                "dataType": "",
+                                "stopPropagation": true,
+                                "dataSource": "database",
+                                "documentType": "vc"
+                            }
+                        ],
+                        "permissions": [
+                            "OWNER"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                            "type": "blank",
+                            "title": "Issue Requests"
+                        }
+                    },
+                    {
+                        "id": "eb1825cc-e364-4af3-9fb7-a346050e271c",
+                        "tag": "VP",
+                        "blockType": "interfaceContainerBlock",
+                        "defaultActive": true,
+                        "children": [
+                            {
+                                "id": "d6701c82-6426-4556-b0f4-d0e574611d87",
+                                "tag": "vp_grid",
+                                "blockType": "interfaceDocumentsSourceBlock",
+                                "defaultActive": true,
+                                "children": [
+                                    {
+                                        "id": "dc7e3e56-1fee-4d05-8592-d8578c7cdc29",
+                                        "tag": "vp_source",
+                                        "blockType": "documentsSourceAddon",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [],
+                                        "dataType": "vp-documents"
+                                    }
+                                ],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                    "fields": [
+                                        {
+                                            "title": "HASH",
+                                            "name": "hash",
+                                            "tooltip": "",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Date",
+                                            "name": "document.verifiableCredential.1.credentialSubject.0.date",
+                                            "tooltip": "",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Token Id",
+                                            "name": "document.verifiableCredential.1.credentialSubject.0.tokenId",
+                                            "tooltip": "",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "Serials",
+                                            "name": "document.verifiableCredential.1.credentialSubject.0.serials",
+                                            "tooltip": "",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "title": "TrustChain",
+                                            "name": "hash",
+                                            "tooltip": "",
+                                            "type": "button",
+                                            "action": "link",
+                                            "url": "",
+                                            "dialogContent": "",
+                                            "dialogClass": "",
+                                            "dialogType": "",
+                                            "bindBlock": "trustChainBlock",
+                                            "content": "View TrustChain",
+                                            "width": "150px"
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "permissions": [
+                            "OWNER"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                            "type": "blank",
+                            "title": "Token History"
+                        }
+                    },
+                    {
+                        "id": "415dcbaf-8f1c-4be1-97ae-2aa7ab94add5",
+                        "tag": "trust_chain",
+                        "blockType": "interfaceContainerBlock",
+                        "defaultActive": true,
+                        "children": [
+                            {
+                                "id": "fefdd1de-fece-498d-a558-ee0be5c6e2d8",
+                                "tag": "trustChainBlock",
+                                "blockType": "reportBlock",
+                                "defaultActive": true,
+                                "children": [
+                                    {
+                                        "id": "a5f59886-79ff-47ec-9556-d3f58fe5155c",
+                                        "tag": "MintTokenItem",
+                                        "blockType": "reportItemBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "type": "equal",
+                                                "typeValue": "variable",
+                                                "field": "document.id",
+                                                "value": "actionId"
+                                            }
+                                        ],
+                                        "variables": [],
+                                        "visible": true,
+                                        "iconType": "COMMON",
+                                        "title": "Token",
+                                        "description": "Token[s] minted."
+                                    },
+                                    {
+                                        "id": "802f59dc-5d98-41e4-8eeb-18ee4e674c1d",
+                                        "tag": "issue_report(approved)",
+                                        "blockType": "reportItemBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "typeValue": "value",
+                                                "field": "type",
+                                                "type": "equal",
+                                                "value": "issue_request(Approved)"
+                                            },
+                                            {
+                                                "type": "equal",
+                                                "typeValue": "variable",
+                                                "field": "document.id",
+                                                "value": "documentId"
+                                            }
+                                        ],
+                                        "variables": [
+                                            {
+                                                "value": "document.credentialSubject.0.id",
+                                                "name": "issueId"
+                                            },
+                                            {
+                                                "name": "registrantId",
+                                                "value": "document.credentialSubject.0.field0"
+                                            },
+                                            {
+                                                "name": "deviceId",
+                                                "value": "document.credentialSubject.0.field1"
+                                            }
+                                        ],
+                                        "visible": true,
+                                        "iconType": "COMMON",
+                                        "title": "Issue Request Review",
+                                        "description": "Issue Request processed."
+                                    },
+                                    {
+                                        "id": "f1083902-3216-4ad1-81ac-c35b0bf5b567",
+                                        "tag": "issue_report(submit)",
+                                        "blockType": "reportItemBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "typeValue": "value",
+                                                "field": "type",
+                                                "type": "equal",
+                                                "value": "issue_request"
+                                            },
+                                            {
+                                                "type": "equal",
+                                                "typeValue": "variable",
+                                                "field": "document.credentialSubject.0.id",
+                                                "value": "issueId"
+                                            }
+                                        ],
+                                        "variables": [],
+                                        "visible": true,
+                                        "iconType": "COMMON",
+                                        "description": "Registrant submitted Issue Request to Issuer.",
+                                        "title": "Issue Request"
+                                    },
+                                    {
+                                        "id": "2b2aef32-1322-4ee5-8ce3-c2a0fc000622",
+                                        "tag": "device_report(approved)",
+                                        "blockType": "reportItemBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "typeValue": "value",
+                                                "type": "equal",
+                                                "field": "type",
+                                                "value": "device(Approved)"
+                                            },
+                                            {
+                                                "field": "document.credentialSubject.0.id",
+                                                "value": "deviceId",
+                                                "type": "equal",
+                                                "typeValue": "variable"
+                                            }
+                                        ],
+                                        "variables": [],
+                                        "visible": true,
+                                        "iconType": "COMMON",
+                                        "description": "Device registration request processed.",
+                                        "title": "Device Review"
+                                    },
+                                    {
+                                        "id": "6cd69397-8c98-476b-9b80-484c5eebeb0a",
+                                        "tag": "device_report(submit)",
+                                        "blockType": "reportItemBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "value": "device",
+                                                "field": "type",
+                                                "type": "equal",
+                                                "typeValue": "value"
+                                            },
+                                            {
+                                                "field": "document.credentialSubject.0.id",
+                                                "value": "deviceId",
+                                                "type": "equal",
+                                                "typeValue": "variable"
+                                            }
+                                        ],
+                                        "variables": [],
+                                        "visible": true,
+                                        "iconType": "COMMON",
+                                        "title": "Device Registration",
+                                        "description": "Production Facility/Device registration request submitted to Issuer."
+                                    },
+                                    {
+                                        "id": "2aeabc7a-5f87-44b2-8f3c-0efa0301f0a0",
+                                        "tag": "registrant_report(approved)",
+                                        "blockType": "reportItemBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "type": "equal",
+                                                "typeValue": "value",
+                                                "field": "type",
+                                                "value": "registrant(Approved)"
+                                            },
+                                            {
+                                                "field": "document.credentialSubject.0.id",
+                                                "value": "registrantId",
+                                                "type": "equal",
+                                                "typeValue": "variable"
+                                            }
+                                        ],
+                                        "variables": [],
+                                        "visible": true,
+                                        "iconType": "COMMON",
+                                        "description": "Application/KYC processed.",
+                                        "title": "Application Review"
+                                    },
+                                    {
+                                        "id": "a93f46ea-cce0-4218-963a-3d5b634abe2a",
+                                        "tag": "registrant_report(submit)",
+                                        "blockType": "reportItemBlock",
+                                        "defaultActive": false,
+                                        "children": [],
+                                        "permissions": [
+                                            "OWNER"
+                                        ],
+                                        "onErrorAction": "no-action",
+                                        "filters": [
+                                            {
+                                                "value": "registrant",
+                                                "field": "type",
+                                                "type": "equal",
+                                                "typeValue": "value"
+                                            },
+                                            {
+                                                "field": "document.credentialSubject.0.id",
+                                                "value": "registrantId",
+                                                "type": "equal",
+                                                "typeValue": "variable"
+                                            }
+                                        ],
+                                        "variables": [],
+                                        "visible": true,
+                                        "iconType": "COMMON",
+                                        "description": "Application submitted to Issuer.",
+                                        "title": "Registrant Application"
+                                    }
+                                ],
+                                "permissions": [
+                                    "OWNER"
+                                ],
+                                "onErrorAction": "no-action"
+                            }
+                        ],
+                        "permissions": [
+                            "OWNER"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                            "type": "blank",
+                            "title": "TrustChain"
+                        }
+                    }
+                ],
+                "permissions": [
+                    "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                    "type": "tabs"
+                }
+            }
+        ]
+    },
+    "status": "PUBLISH",
+    "creator": "did:hedera:testnet:G8S2SYNkuZq8R2MBRuBUagRSb4oucbZipJk8XADwe1T7;hedera:testnet:tid=0.0.34824275",
+    "owner": "did:hedera:testnet:G8S2SYNkuZq8R2MBRuBUagRSb4oucbZipJk8XADwe1T7;hedera:testnet:tid=0.0.34824275",
+    "policyRoles": [
+        "Registrant"
+    ],
+    "policyTopics": [
+        {
+            "name": "Project",
+            "description": "Project",
+            "type": "any",
+            "static": false
+        }
+    ],
+    "registeredUsers": {
+        "did:hedera:testnet:2naXnVQ86KZySwwWfMzh6Y9Tfj6mCHj5hY8sjLQvxP3B;hedera:testnet:tid=0.0.34824275": "Registrant"
+    },
+    "topicId": "0.0.34824582",
+    "instanceTopicId": "0.0.34824602",
+    "policyTag": "Tag_1652716862083",
+    "messageId": "1652716935.214194999",
+    "createDate": "2022-05-16T16:01:24.955Z"
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+#### Create Application uuid
+
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/create_application" summary="Displaying Application uuid" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    "id": "c6a4db28-6a4f-4137-9b42-530783443147"
+}
+```
+{% endswagger-response %}
 {% endswagger %}
 
 ### Setting up the User Role
