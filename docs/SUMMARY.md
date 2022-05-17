@@ -60,8 +60,10 @@
 * [retirementDocumentBlock](available-policy-workflow-blocks/retirementdocumentblock.md)
 * [wipeDocumentBlock](available-policy-workflow-blocks/token-wipe-workflow-block.md)
 * [calculateContainerBlock & calculateMathAddOnBlock](available-policy-workflow-blocks/calculatecontainerblock-and-calculatemathaddonblock.md)
-* [aggregateDocumentBlock](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
 * [reportBlock & reportItemBlock](available-policy-workflow-blocks/reportblock-and-reportitemblock.md)
+* [switchBlock](available-policy-workflow-blocks/switchblock.md)
+* [aggregateDocumentBlock](available-policy-workflow-blocks/aggregatedocumentblock.md)
+* [TimerBlock](available-policy-workflow-blocks/timerblock.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 

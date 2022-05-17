@@ -247,10 +247,10 @@ npm run test
 
 #### Not in Docker:
 
-| Folder         | URL                                             |
-| -------------- | ----------------------------------------------- |
-| WEB\_INTERFACE | [http://localhost:4200/](http://localhost:4200) |
-| API\_GATEWAY   | [http://localhost:3002/](http://localhost:3002) |
-| MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005) |
-| TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006) |
-| API\_DOCS      | [http://localhost:3001/](http://localhost:3001) |
+| Folder         | URL                                              |
+| -------------- | ------------------------------------------------ |
+| WEB\_INTERFACE | [http://localhost:4200/](http://localhost:4200/) |
+| API\_GATEWAY   | [http://localhost:3002/](http://localhost:3002/) |
+| MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
+| TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
+| API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
