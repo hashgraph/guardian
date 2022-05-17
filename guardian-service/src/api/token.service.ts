@@ -135,8 +135,15 @@ export const tokenAPI = async function (
                 supplyKey: supplyKey ? supplyKey.toString() : null,
                 owner: root.did
             });
-            const result = await tokenRepository.save(tokenObject);
-            const tokens = await tokenRepository.find();
+            await tokenRepository.save(tokenObject);
+            const tokens = await tokenRepository.find({
+                where: {
+                    $or: [
+                        { owner: { $eq: root.did } },
+                        { owner: { $exists: false } }
+                    ]
+                }
+            });
             return new MessageResponse(tokens);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
