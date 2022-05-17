@@ -97,7 +97,7 @@ export class PolicyConfigurationComponent implements OnInit {
     };
     propTab: string = 'Properties';
     policyTab: string = 'Description';
-    private blockToCopy?: BlockNode;
+    blockToCopy?: BlockNode;
     copyBlocksMode: boolean = false;
     groupBlocks: any = {
         Main: [],
@@ -106,7 +106,8 @@ export class PolicyConfigurationComponent implements OnInit {
         Calculate: [],
         Report: [],
         UnGroupedBlocks: []
-    }
+    };
+    allEvents: any[] = [];
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -211,9 +212,34 @@ export class PolicyConfigurationComponent implements OnInit {
         this.root = root;
         this.blocks = [root];
         this.onSelect(this.root);
+
+        const tagMap: any = {};
+        this.allEvents = [];
         this.allBlocks = this.all(root);
         this.allBlocks.forEach((b => {
-            if (!b.id) b.id = this.registeredBlocks.generateUUIDv4();
+            if (!b.id) {
+                b.id = this.registeredBlocks.generateUUIDv4();
+            };
+            if (!b.events) {
+                b.events = [];
+            }
+            b.events.forEach(((e: any) => {
+                this.allEvents.push({ ...e });
+            }));
+            tagMap[b.tag] = b;
+        }));
+
+
+        this.allEvents.forEach(((e: any) => {
+            if (!e.id) {
+                e.id = this.registeredBlocks.generateUUIDv4();
+            };
+            if (e.source) {
+                e.source = tagMap[e.source];
+            }
+            if (e.target) {
+                e.target = tagMap[e.target];
+            }
         }));
     }
 
@@ -257,7 +283,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 groupBlocks[allowedChild.group] = {};
             }
             if (allowedChild.group === BlockGroup.UnGrouped) {
-                unGroupedBlocks.push({ 
+                unGroupedBlocks.push({
                     type: type,
                     icon: this.registeredBlocks.getIcon(type),
                     name: this.registeredBlocks.getName(type),
@@ -268,7 +294,7 @@ export class PolicyConfigurationComponent implements OnInit {
             if (!groupBlocks[allowedChild.group][allowedChild.header]) {
                 groupBlocks[allowedChild.group][allowedChild.header] = [];
             }
-            groupBlocks[allowedChild.group][allowedChild.header].push({ 
+            groupBlocks[allowedChild.group][allowedChild.header].push({
                 type: type,
                 icon: this.registeredBlocks.getIcon(type),
                 name: this.registeredBlocks.getName(type),
@@ -625,7 +651,32 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
+    updateEvents() {
+        this.allBlocks.forEach((b) => {
+            const events = b.events || [];
+            b.events = [];
+            for (let event of events) {
+                const e = this.allEvents.find((e: any) => e.id == event.id);
+                if (e) {
+                    const event = {
+                        id: e.id,
+                        source: e.source ? e.source.tag : "",
+                        target: e.target ? e.target.tag : "",
+                        output: e.output || "",
+                        input: e.input || "",
+                        disabled: !!e.disabled,
+                    };
+                    if (event.source == b.tag || event.target == b.tag) {
+                        b.events.push(event)
+                    }
+                }
+            }
+        });
+    }
+
     async onView(type: string) {
+        this.updateEvents();
+
         if (type == this.currentView) {
             return;
         }
@@ -634,6 +685,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.errorsCount = -1;
         this.errorsMap = {};
         this.loading = true;
+
         if (type == 'blocks') {
             let root = null;
             try {

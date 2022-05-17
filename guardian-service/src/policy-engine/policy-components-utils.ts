@@ -81,12 +81,16 @@ export class PolicyComponentsUtils {
         target: IPolicyBlock,
         input: PolicyInputEventType
     ): void {
+        if (!source || !target) {
+            console.error(`link: ${source?.uuid}(${output}) -> ${target?.uuid}(${input})`);
+            return;
+        }
         const link = PolicyComponentsUtils.CreateLink(source, output, target, input);
         if (link) {
             link.source.addSourceLink(link);
             link.target.addTargetLink(link);
         } else {
-            console.error(`link: ${source?.uuid}(${output}) -> ${target?.uuid}(${input})`)
+            console.error(`link: ${source?.uuid}(${output}) -> ${target?.uuid}(${input})`);
         }
     }
 
@@ -200,8 +204,17 @@ export class PolicyComponentsUtils {
             await instance.afterInit();
             for (let event of instance.events) {
                 if (!event.disabled) {
-                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
-                    PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input);
+                    if (event.source == instance.tag) {
+                        const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
+                        PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input);
+                    } else if (event.target == instance.tag) {
+                        const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                        PolicyComponentsUtils.RegisterLink(source, event.output, instance, event.input);
+                    } else {
+                        const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
+                        const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                        PolicyComponentsUtils.RegisterLink(source, event.output, target, event.input);
+                    }
                 }
             }
             // for (let dep of (instance as any).dependencies) {

@@ -22,6 +22,7 @@ export class CommonPropertiesComponent implements OnInit {
     @Input('roles') roles!: string[];
     @Input('topics') topics!: any[];
     @Input('type') type!: string;
+    @Input('events') allEvents!: any[];
 
     @Output() onInit = new EventEmitter();
 
@@ -76,30 +77,65 @@ export class CommonPropertiesComponent implements OnInit {
         item[prop] = !item[prop];
     }
 
+    isOutputEvent(event: any) {
+        return !!event.source && event.source.tag == this.block.tag;
+    }
 
+    isInputEvent(event: any) {
+        return !!event.target &&
+            event.target.tag == this.block.tag &&
+            !this.isOutputEvent(event);
+    }
+
+    chanceType(event: any, item: any) {
+        if (event.value != this.isInputEvent(item)) {
+            const s = item.source;
+            item.source = item.target;
+            item.target = s;
+            item.output = "";
+            item.input = "";
+        }
+    }
+
+    isInvalid(item: any) {
+        return (!item.target || !item.source || !item.output || !item.input);
+    }
 
     addEvent() {
-        this.events.push({
-            __output: true,
-            source: "",
-            target: "",
+        const event = {
+            id: this.registeredBlocks.generateUUIDv4(),
+            source: this.block,
+            target: null,
             output: "",
             input: "",
             disabled: false
+        }
+        this.allEvents.push(event);
+        this.block.events.push({
+            id: event.id,
         });
     }
 
-    onRemoveEvent(i: number) {
-        this.events.splice(i, 1);
+    onRemoveEvent(event: any) {
+        const i1 = this.allEvents.indexOf(event);
+        this.allEvents.splice(i1, 1);
+        const i2 = this.block.events.findIndex((e: any) => e.id == event.id);
+        this.block.events.splice(i2, 1);
     }
 
     load(block: BlockNode) {
         if (this.block != block && this.type == 'Events') {
             this.block = block;
+            this.loadEvents(block);
         }
         if (this.block != block && this.type != 'Events') {
+            this.loadEvents(block);
             this.loadComponent(block);
         }
+    }
+
+    loadEvents(block: BlockNode) {
+        block.events = block.events || [];
     }
 
     loadComponent(block: BlockNode) {

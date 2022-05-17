@@ -21,6 +21,8 @@ export class JsonPropertiesComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Input('roles') roles!: string[];
     @Input('topics') topics!: any[];
+    @Input('events') allEvents!: any[];
+
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
@@ -77,6 +79,23 @@ export class JsonPropertiesComponent implements OnInit {
         if (this.block) {
             const block = { ...this.block } as any;
             delete block.children;
+            delete block.events;
+
+            // const events = block.events;
+            // block.events = [];
+            // for (let event of events) {
+            //     const e = this.allEvents.find((e: any) => e.id == event.id);
+            //     if (e) {
+            //         block.events.push({
+            //             id: e.id,
+            //             source: e.source ? e.source.tag : null,
+            //             target: e.target ? e.target.tag : null,
+            //             output: e.output,
+            //             input: e.input,
+            //             disabled: e.disabled,
+            //         })
+            //     }
+            // }
             this.code = JSON.stringify(block, null, 2);
         } else {
             this.code = '';
@@ -84,20 +103,15 @@ export class JsonPropertiesComponent implements OnInit {
     }
 
     onClose() {
-        this.errors = [];
-        if (this.block) {
-            const block = { ...this.block } as any;
-            delete block.children;
-            this.code = JSON.stringify(block, null, 2);
-        } else {
-            this.code = '';
-        }
+        this.load(this.block);
     }
 
     onSave() {
         try {
             const block = JSON.parse(this.code);
             delete block.children;
+            delete block.events;
+
             const keys = Object.keys(block);
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];

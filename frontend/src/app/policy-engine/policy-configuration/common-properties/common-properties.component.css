@@ -394,6 +394,7 @@ input[readonly][type="checkbox"] {
     line-height: 18px !important;
     overflow: hidden !important;
 }
+
 .prop-icon-text {
     display: inline-block !important;
     height: 16px !important;
@@ -401,6 +402,7 @@ input[readonly][type="checkbox"] {
     line-height: 16px !important;
     overflow: hidden !important;
 }
+
 .prop-icon mat-icon {
     position: relative !important;
     font-size: 20px !important;
@@ -409,4 +411,12 @@ input[readonly][type="checkbox"] {
 div[disabled="true"] {
     filter: grayscale(1);
     opacity: 0.7;
+}
+
+.prop-icon-event {
+    color: #bd9012;
+    width: 20px !important;
+}
+.prop-icon-event[invalid="true"] {
+    color: #f00;
 }

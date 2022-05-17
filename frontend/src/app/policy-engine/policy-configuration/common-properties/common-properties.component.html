@@ -159,126 +159,139 @@
         </table>
         <div class="table-body">
             <table *ngIf="block" class="properties">
-                <ng-container *ngFor="let item of events; let i=index">
-                    <tr class="propHeader">
-                        <td class="propRowCol" (click)="onHide(propHidden.eventsGroup, i)"
+                <ng-container *ngFor="let item of allEvents; let i=index">
+                    <ng-container *ngIf="isOutputEvent(item) || isInputEvent(item)">
+                        <tr class="propHeader">
+                            <td class="propRowCol" (click)="onHide(propHidden.eventsGroup, i)"
+                                [attr.collapse]="propHidden.eventsGroup[i]">
+                                <mat-icon>expand_more</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">
+                                <div style="height: 20px;" [attr.disabled]="item.disabled">
+                                    <span class="prop-icon prop-icon-event" [attr.invalid]="isInvalid(item)">
+                                        <mat-icon>flash_on</mat-icon>
+                                    </span>
+                                    <span *ngIf="isInputEvent(item)" class="prop-icon" style="color: #35a307;">
+                                        <mat-icon>arrow_downward</mat-icon>
+                                    </span>
+                                    <span *ngIf="isOutputEvent(item)" class="prop-icon" style="color: #c53227;">
+                                        <mat-icon>arrow_upward</mat-icon>
+                                    </span>
+                                    <span *ngIf="isInputEvent(item)" class="prop-icon-text">Input Event</span>
+                                    <span *ngIf="isOutputEvent(item)" class="prop-icon-text">Output Event</span>
+                                </div>
+                            </td>
+                            <td class="propHeaderCell">
+                                <!-- 
+                                <div *ngIf="isOutputEvent(item)" style="height: 20px;" [attr.disabled]="item.disabled">
+                                    <span class="prop-icon-text">
+                                    </span>
+                                    <span class="prop-icon" style="width: 20px !IMPORTANT; color: #c53227;">
+                                        <mat-icon style="top: -1px;">arrow_forward</mat-icon>
+                                    </span>
+                                    <span class="prop-icon-text">
+                                        {{item.target?.tag}}
+                                    </span>
+                                </div>
+                                <div *ngIf="isInputEvent(item)" style="height: 20px;" [attr.disabled]="item.disabled">
+                                    <span class="prop-icon" style="width: 20px !IMPORTANT; color: #35a307;">
+                                        <mat-icon style="top: -1px;">arrow_back</mat-icon>
+                                    </span>
+                                    <span class="prop-icon-text">
+                                        {{item.source?.tag}}
+                                    </span>
+                                </div> 
+                                -->
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveEvent(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Event Type</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [value]="isInputEvent(item)" (selectionChange)="chanceType($event, item)"
+                                    [disabled]="readonly">
+                                    <mat-option [value]="true">Input Event</mat-option>
+                                    <mat-option [value]="false">Output Event</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+
+                        <tr *ngIf="isOutputEvent(item)" class="propRow subRow"
                             [attr.collapse]="propHidden.eventsGroup[i]">
-                            <mat-icon>expand_more</mat-icon>
-                        </td>
-                        <td class="propHeaderCell cellName">
-                            <div style="height: 20px;" [attr.disabled]="item.disabled">
-                                <span class="prop-icon" style="color: #bd9012; width: 20px !IMPORTANT;">
-                                    <mat-icon>flash_on</mat-icon>
-                                </span>
-                                <span *ngIf="!item.__output" class="prop-icon" style="color: #35a307;">
-                                    <mat-icon>arrow_downward</mat-icon>
-                                </span>
-                                <span *ngIf="item.__output" class="prop-icon" style="color: #c53227;">
-                                    <mat-icon>arrow_upward</mat-icon>
-                                </span>
-                                <span *ngIf="!item.__output" class="prop-icon-text">Input Event</span>
-                                <span *ngIf="item.__output" class="prop-icon-text">Output Event</span>
-                            </div>
-                        </td>
-                        <td class="propHeaderCell">
-                            <div *ngIf="item.__output" style="height: 20px;" [attr.disabled]="item.disabled">
-                                <span class="prop-icon-text">
-                                    ({{item.output}})
-                                </span>
-                                <span class="prop-icon" style="width: 20px !IMPORTANT; color: #c53227;">
-                                    <mat-icon style="top: -1px;">arrow_forward</mat-icon>
-                                </span>
-                                <span class="prop-icon-text">
-                                    {{item.target}} ({{item.input}})
-                                </span>
-                            </div>
-                            <div *ngIf="!item.__output" style="height: 20px;" [attr.disabled]="item.disabled">
-                                <span class="prop-icon-text">
-                                    ({{item.input}})
-                                </span>
-                                <span class="prop-icon" style="width: 20px !IMPORTANT; color: #35a307;">
-                                    <mat-icon style="top: -1px;">arrow_back</mat-icon>
-                                </span>
-                                <span class="prop-icon-text">
-                                    {{item.source}}({{item.output}})
-                                </span>
-                            </div>
-                            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveEvent(i)">
-                                <mat-icon>delete</mat-icon>
-                            </span>
-                        </td>
-                    </tr>
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Source</td>
+                            <td class="propRowCell remove-cell">
+                                <span class="readonly-prop">Current Block</span>
+                            </td>
+                        </tr>
+                        <tr *ngIf="isInputEvent(item)" class="propRow subRow"
+                            [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Source</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(value)]="item.source" [disabled]="readonly">
+                                    <mat-option *ngFor="let item of allBlocks" [value]="item">{{item.tag}}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
 
-                    <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Event Type</td>
-                        <td class="propRowCell remove-cell">
-                            <mat-select [(value)]="item.__output" [disabled]="readonly">
-                                <mat-option [value]="false">Input Event</mat-option>
-                                <mat-option [value]="true">Output Event</mat-option>
-                            </mat-select>
-                        </td>
-                    </tr>
+                        <tr *ngIf="isOutputEvent(item)" class="propRow subRow"
+                            [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Target</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(value)]="item.target" [disabled]="readonly">
+                                    <mat-option *ngFor="let item of allBlocks" [value]="item">{{item.tag}}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr *ngIf="isInputEvent(item)" class="propRow subRow"
+                            [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Target</td>
+                            <td class="propRowCell remove-cell">
+                                <span class="readonly-prop">Current Block</span>
+                            </td>
+                        </tr>
 
-                    <tr *ngIf="item.__output" class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Source</td>
-                        <td class="propRowCell remove-cell">
-                            <span class="readonly-prop">Current Block</span>
-                        </td>
-                    </tr>
-                    <tr *ngIf="!item.__output" class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Source</td>
-                        <td class="propRowCell remove-cell">
-                            <mat-select [(value)]="item.source" [disabled]="readonly">
-                                <mat-option *ngFor="let item of allBlocks" [value]="item.tag">{{item.tag}}</mat-option>
-                            </mat-select>
-                        </td>
-                    </tr>
-
-                    <tr *ngIf="item.__output" class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Target</td>
-                        <td class="propRowCell remove-cell">
-                            <mat-select [(value)]="item.target" [disabled]="readonly">
-                                <mat-option *ngFor="let item of allBlocks" [value]="item.tag">{{item.tag}}</mat-option>
-                            </mat-select>
-                        </td>
-                    </tr>
-                    <tr *ngIf="!item.__output" class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Target</td>
-                        <td class="propRowCell remove-cell">
-                            <span class="readonly-prop">Current Block</span>
-                        </td>
-                    </tr>
-
-                    <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Output Event</td>
-                        <td class="propRowCell remove-cell">
-                            <mat-select [(value)]="item.output" [disabled]="readonly">
-                                <mat-option value="RunEvent">Run Event</mat-option>
-                            </mat-select>
-                        </td>
-                    </tr>
-                    <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Input Event</td>
-                        <td class="propRowCell remove-cell">
-                            <mat-select [(value)]="item.input" [disabled]="readonly">
-                                <mat-option value="RunEvent">Run Event</mat-option>
-                            </mat-select>
-                        </td>
-                    </tr>
-                    <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Disabled</td>
-                        <td class="propRowCell remove-cell">
-                            <input type="checkbox" [(ngModel)]="item.disabled" [readonly]="readonly">
-                        </td>
-                    </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Output Event</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(value)]="item.output" [disabled]="readonly">
+                                    <mat-option value="TimerEvent">Timer Event</mat-option>
+                                    <mat-option value="RefreshEvent">Refresh Event</mat-option>
+                                    <mat-option value="RunEvent">Run Event</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Input Event</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(value)]="item.input" [disabled]="readonly">
+                                    <mat-option value="TimerEvent">Timer Event</mat-option>
+                                    <mat-option value="StartTimerEvent">Start Timer Event </mat-option>
+                                    <mat-option value="StopTimerEvent">Stop Timer Event </mat-option>
+                                    <mat-option value="RefreshEvent">Refresh Event </mat-option>
+                                    <mat-option value="RunEvent">Run Event </mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Disabled</td>
+                            <td class="propRowCell remove-cell">
+                                <input type="checkbox" [(ngModel)]="item.disabled" [readonly]="readonly">
+                            </td>
+                        </tr>
+                    </ng-container>
                 </ng-container>
                 <tr class="propRow" style="height: 26px;">
                     <td class="propRowCol"></td>

@@ -197,19 +197,19 @@
                         <ng-container *ngIf="propTab=='Properties'">
                             <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
                                 [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
-                                [topics]="policy.policyTopics" type="Common">
+                                [topics]="policy.policyTopics" [events]="allEvents" type="Common">
                             </common-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='JSON'">
                             <json-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
                                 [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
-                                [topics]="policy.policyTopics">
+                                [topics]="policy.policyTopics" [events]="allEvents">
                             </json-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='Events'">
                             <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
                                 [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
-                                [topics]="policy.policyTopics" type="Events">
+                                [topics]="policy.policyTopics" [events]="allEvents" type="Events">
                             </common-properties>
                         </ng-container>
                     </div>
