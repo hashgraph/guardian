@@ -9371,7 +9371,23 @@ null
 
 #### Get Approved Registrant&#x20;
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/approve_registrant_btn" summary="" %}
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/approve_registrant_btn" summary="Displaying Approved Registrant uuid" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    "id": "c2eef66b-ec9f-42c5-99b2-430625c49e88"
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+#### Get Grid Documents
+
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{registrants_grid_uuid}}" summary="Displaying Grid Documents" %}
 {% swagger-description %}
 
 {% endswagger-description %}
@@ -9379,7 +9395,190 @@ null
 {% swagger-response status="200: OK" description="" %}
 ```javascript
 {
-    "id": "c2eef66b-ec9f-42c5-99b2-430625c49e88"
+    "data": [
+        {
+            "id": "628291ed93e1d09322c4ed1a",
+            "owner": "did:hedera:testnet:2naXnVQ86KZySwwWfMzh6Y9Tfj6mCHj5hY8sjLQvxP3B;hedera:testnet:tid=0.0.34824275",
+            "hash": "Ew2Wz27nWJnN1fUTPZz1mthDkxejKuQdTbgVxKfacXRx",
+            "document": {
+                "id": "53b10c87-5ab5-445a-959c-51dc78e12270",
+                "type": [
+                    "VerifiableCredential"
+                ],
+                "issuer": "did:hedera:testnet:2naXnVQ86KZySwwWfMzh6Y9Tfj6mCHj5hY8sjLQvxP3B;hedera:testnet:tid=0.0.34824275",
+                "issuanceDate": "2022-05-16T18:03:17.381Z",
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1"
+                ],
+                "credentialSubject": [
+                    {
+                        "field0": "2022-05-11",
+                        "field1": {
+                            "type": "6d009939-3c53-44fd-8a0c-c9d98472ff09",
+                            "@context": [
+                                "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i"
+                            ],
+                            "field0": "Applicant Legal Name",
+                            "field1": "Registered address line 1",
+                            "field2": "Registered address line 2",
+                            "field3": "Registered address line 3",
+                            "field4": "Postal (ZIP) code",
+                            "field5": "Country",
+                            "field6": "Legal Status",
+                            "field7": "Country of company registration/private residence",
+                            "field8": "Corporate registration number/passport number",
+                            "field9": "VAT number",
+                            "field10": "Website URL",
+                            "field11": "Main business (e.g. food retailer)",
+                            "field12": 1,
+                            "field13": 1,
+                            "field14": "Name of the Chief Executive Officer/General Manager",
+                            "field15": "Chief Executive Officer/General Manager passport number",
+                            "field16": "Please state in which countries the organization is active",
+                            "field17": "Please list the main (>10%) shareholders",
+                            "field18": 1,
+                            "field19": "email@email.com"
+                        },
+                        "field2": {
+                            "type": "e0d61835-0491-4df8-9d48-21e961a7916f",
+                            "@context": [
+                                "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i"
+                            ],
+                            "field0": "Organization Name",
+                            "field1": "Address line 1",
+                            "field2": "Address line 2",
+                            "field3": "Address line 3",
+                            "field4": "Postal code",
+                            "field5": "Country",
+                            "field6": "Contact person",
+                            "field7": "email@email.com",
+                            "field8": "123456789",
+                            "field9": "Fax",
+                            "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                        },
+                        "field3": {
+                            "type": "66b7a5fe-2c17-422d-9744-b4b55c2174b9",
+                            "@context": [
+                                "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i"
+                            ],
+                            "field0": "Family Name (surname)",
+                            "field1": "Other (Given) Names",
+                            "field2": "Title",
+                            "field3": "email@email.com",
+                            "field4": "123456789",
+                            "field5": "Fax"
+                        },
+                        "policyId": "6282755493e1d09322c4ed13",
+                        "@context": [
+                            "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i"
+                        ],
+                        "id": "did:hedera:testnet:2naXnVQ86KZySwwWfMzh6Y9Tfj6mCHj5hY8sjLQvxP3B;hedera:testnet:tid=0.0.34824275",
+                        "type": "732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0"
+                    }
+                ],
+                "proof": {
+                    "type": "Ed25519Signature2018",
+                    "created": "2022-05-16T18:03:17Z",
+                    "verificationMethod": "did:hedera:testnet:2naXnVQ86KZySwwWfMzh6Y9Tfj6mCHj5hY8sjLQvxP3B;hedera:testnet:tid=0.0.34824275#did-root-key",
+                    "proofPurpose": "assertionMethod",
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..2JLSx0OPaqvGUkbnIt0vVtJMO9H8h5K-Jvkl6pobJ3rGXauflV2_TV3jlDccC7z1K_euLMz2iOJfrAQld5y3DQ"
+                }
+            },
+            "createDate": "2022-05-16T18:03:25.894Z",
+            "updateDate": "2022-05-16T18:03:25.894Z",
+            "hederaStatus": "ISSUE",
+            "signature": 0,
+            "type": "registrant",
+            "policyId": "6282755493e1d09322c4ed13",
+            "tag": "create_application(db)",
+            "option": {
+                "status": "Waiting for approval"
+            },
+            "schema": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
+            "messageId": "1652724204.003778404",
+            "topicId": "0.0.34825558",
+            "relationships": [],
+            "__sourceTag__": "registrants_source(need_approve)"
+        }
+    ],
+    "blocks": [],
+    "commonAddons": [
+        {
+            "id": "bb1b84e4-3524-4849-a646-cca3623b0d75",
+            "blockType": "documentsSourceAddon"
+        },
+        {
+            "id": "1adf6b92-a184-43f4-99ab-3113fee26fa1",
+            "blockType": "documentsSourceAddon"
+        }
+    ],
+    "fields": [
+        {
+            "title": "Legal Name",
+            "name": "document.credentialSubject.0.field1.field0",
+            "type": "text"
+        },
+        {
+            "title": "Organization Name",
+            "name": "document.credentialSubject.0.field2.field0",
+            "type": "text"
+        },
+        {
+            "title": "Operation",
+            "name": "option.status",
+            "type": "text",
+            "width": "250px",
+            "bindGroup": "registrants_source(approved)",
+            "action": "",
+            "url": "",
+            "dialogContent": "",
+            "dialogClass": "",
+            "dialogType": "",
+            "bindBlock": ""
+        },
+        {
+            "title": "Operation",
+            "name": "option.status",
+            "tooltip": "",
+            "type": "block",
+            "action": "",
+            "url": "",
+            "dialogContent": "",
+            "dialogClass": "",
+            "dialogType": "",
+            "bindBlock": "approve_registrant_btn",
+            "width": "250px",
+            "bindGroup": "registrants_source(need_approve)"
+        },
+        {
+            "name": "document",
+            "title": "Document",
+            "tooltip": "",
+            "type": "button",
+            "action": "dialog",
+            "content": "View Document",
+            "uiClass": "link",
+            "dialogContent": "VC",
+            "dialogClass": "",
+            "dialogType": "json"
+        }
+    ]
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+#### Approve Registrant
+
+{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{approve_registrant_btn_uuid}}" summary="Approving Registrant" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    // Response
 }
 ```
 {% endswagger-response %}
