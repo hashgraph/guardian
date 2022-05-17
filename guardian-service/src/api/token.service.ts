@@ -8,6 +8,7 @@ import { ApiResponse } from '@api/api-response';
 import { IAuthUser } from '@auth/auth.interface';
 import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
 import { MessageAPI, IToken } from 'interfaces';
+import { PrivateKey } from '@hashgraph/sdk';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
@@ -93,14 +94,12 @@ export const tokenAPI = async function (
             const root = await users.getHederaAccount(owner);
 
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-            const treasury = await client.newAccount();
-            const treasuryId = treasury.id;
-            const treasuryKey = treasury.key;
-            const adminKey = enableAdmin ? treasuryKey : null;
-            const kycKey = enableKYC ? treasuryKey : null;
-            const freezeKey = enableFreeze ? treasuryKey : null;
-            const wipeKey = enableWipe ? treasuryKey : null;
-            const supplyKey = changeSupply ? treasuryKey : null;
+            const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
+            const adminKey = enableAdmin ? rootHederaAccountKey : null;
+            const kycKey = enableKYC ? rootHederaAccountKey : null;
+            const freezeKey = enableFreeze ? rootHederaAccountKey : null;
+            const wipeKey = enableWipe ? rootHederaAccountKey : null;
+            const supplyKey = changeSupply ? rootHederaAccountKey : null;
             const nft = tokenType == 'non-fungible';
             const _decimals = nft ? 0 : decimals;
             const _initialSupply = nft ? 0 : initialSupply;
@@ -111,7 +110,10 @@ export const tokenAPI = async function (
                 _decimals,
                 _initialSupply,
                 '',
-                treasury,
+                {
+                    id: root.hederaAccountId,
+                    key: rootHederaAccountKey
+                },
                 adminKey,
                 kycKey,
                 freezeKey,
@@ -125,7 +127,7 @@ export const tokenAPI = async function (
                 tokenType,
                 decimals: _decimals,
                 initialSupply: _initialSupply,
-                adminId: treasuryId ? treasuryId.toString() : null,
+                adminId: root.hederaAccountId,
                 adminKey: adminKey ? adminKey.toString() : null,
                 kycKey: kycKey ? kycKey.toString() : null,
                 freezeKey: freezeKey ? freezeKey.toString() : null,
@@ -133,8 +135,15 @@ export const tokenAPI = async function (
                 supplyKey: supplyKey ? supplyKey.toString() : null,
                 owner: root.did
             });
-            const result = await tokenRepository.save(tokenObject);
-            const tokens = await tokenRepository.find();
+            await tokenRepository.save(tokenObject);
+            const tokens = await tokenRepository.find({
+                where: {
+                    $or: [
+                        { owner: { $eq: root.did } },
+                        { owner: { $exists: false } }
+                    ]
+                }
+            });
             return new MessageResponse(tokens);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
