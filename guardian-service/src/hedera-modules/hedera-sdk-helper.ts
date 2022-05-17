@@ -31,6 +31,7 @@ import axios from "axios";
 import { Environment } from './environment';
 
 export const MAX_FEE = 10;
+export const INITIAL_BALANCE = 30;
 
 /**
  * Contains methods to simplify work with hashgraph sdk
@@ -73,7 +74,7 @@ export class HederaSDKHelper {
         initialSupply: number,
         tokenMemo: string,
         treasury: {
-            id: AccountId;
+            id: AccountId | string;
             key: PrivateKey;
         },
         adminKey: PrivateKey,
@@ -89,7 +90,7 @@ export class HederaSDKHelper {
             .setTreasuryAccountId(treasury.id)
             .setDecimals(decimals)
             .setInitialSupply(initialSupply)
-            .setMaxTransactionFee(new Hbar(MAX_FEE))
+            .setMaxTransactionFee(new Hbar(process.env.MAX_TRANSACTION_FEE || MAX_FEE))
             .setTokenMemo(tokenMemo);
 
         if (adminKey) {
@@ -495,12 +496,12 @@ export class HederaSDKHelper {
      * @returns {any} - Account Id and Account Private Key
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async newAccount(initialBalance: number): Promise<{ id: AccountId; key: PrivateKey; }> {
+    public async newAccount(): Promise<{ id: AccountId; key: PrivateKey; }> {
         const client = this.client;
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
-            .setInitialBalance(new Hbar(initialBalance));
+            .setInitialBalance(new Hbar(process.env.INITIAL_BALANCE || INITIAL_BALANCE));
         const txResponse = await transaction.execute(client);
         const receipt = await txResponse.getReceipt(client);
         const newAccountId = receipt.accountId;
@@ -526,7 +527,7 @@ export class HederaSDKHelper {
         const client = this.client;
 
         let transaction: any = new TopicCreateTransaction()
-            .setMaxTransactionFee(new Hbar(MAX_FEE));
+            .setMaxTransactionFee(new Hbar(process.env.MAX_TRANSACTION_FEE || MAX_FEE));
 
         if (topicMemo) {
             transaction = transaction.setTopicMemo(topicMemo);

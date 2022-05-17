@@ -17,6 +17,7 @@ import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessa
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles } from '@api/schema.service';
 import { TopicHelper } from '@helpers/topicHelper';
+import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 
 export class PolicyImportExportHelper {
@@ -62,6 +63,13 @@ export class PolicyImportExportHelper {
         const zip = new JSZip();
         zip.folder('tokens')
         for (let token of tokens) {
+            delete token.adminId;
+            delete token.owner;
+            token.adminKey = token.adminKey ? "..." : null;
+            token.kycKey = token.kycKey ? "..." : null;
+            token.wipeKey = token.wipeKey ? "..." : null;
+            token.supplyKey = token.supplyKey ? "..." : null;
+            token.freezeKey = token.freezeKey ? "..." : null;
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
         }
         zip.folder('schemes')
@@ -153,22 +161,20 @@ export class PolicyImportExportHelper {
         // Import Tokens
         if (tokens) {
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+            const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = getMongoRepository(Token);
             for (const token of tokens) {
-                const treasury = await client.newAccount(2);
-                const treasuryId = treasury.id;
-                const treasuryKey = treasury.key;
                 const tokenName = token.tokenName;
                 const tokenSymbol = token.tokenSymbol;
                 const tokenType = token.tokenType;
                 const nft = tokenType == 'non-fungible';
                 const decimals = nft ? 0 : token.decimals;
                 const initialSupply = nft ? 0 : token.initialSupply;
-                const adminKey = token.adminKey ? treasuryKey : null;
-                const kycKey = token.kycKey ? treasuryKey : null;
-                const freezeKey = token.freezeKey ? treasuryKey : null;
-                const wipeKey = token.wipeKey ? treasuryKey : null;
-                const supplyKey = token.supplyKey ? treasuryKey : null;
+                const adminKey = token.adminKey ? rootHederaAccountKey : null;
+                const kycKey = token.kycKey ? rootHederaAccountKey : null;
+                const freezeKey = token.freezeKey ? rootHederaAccountKey : null;
+                const wipeKey = token.wipeKey ? rootHederaAccountKey : null;
+                const supplyKey = token.supplyKey ? rootHederaAccountKey : null;
                 const tokenId = await client.newToken(
                     tokenName,
                     tokenSymbol,
@@ -176,7 +182,10 @@ export class PolicyImportExportHelper {
                     decimals,
                     initialSupply,
                     '',
-                    treasury,
+                    {
+                        id: root.hederaAccountId,
+                        key: rootHederaAccountKey
+                    },
                     adminKey,
                     kycKey,
                     freezeKey,
@@ -190,7 +199,7 @@ export class PolicyImportExportHelper {
                     tokenType,
                     decimals: decimals,
                     initialSupply: initialSupply,
-                    adminId: treasuryId ? treasuryId.toString() : null,
+                    adminId: root.hederaAccountId,
                     adminKey: adminKey ? adminKey.toString() : null,
                     kycKey: kycKey ? kycKey.toString() : null,
                     freezeKey: freezeKey ? freezeKey.toString() : null,
