@@ -14,12 +14,12 @@ services:
       - 3001
 
   message-broker:
-    build:
-      context: .
-      dockerfile: ./message-broker/Dockerfile
+    image: nats
     expose:
-      - 7500
-      - 3003
+      - 4222
+    ports:
+      - '8222:8222'
+    command: '--http_port 8222'
 
   logger-service:
     build:
@@ -103,7 +103,7 @@ services:
       - mrv-sender
 volumes:
   mongo:
-  # volume-guardian-service:
-  # volume-ui-service:
-  # volume-mrv-sender:
-#  volume-message-broker:
+    # volume-guardian-service:
+    # volume-ui-service:
+    # volume-mrv-sender:
+    #  volume-message-broker:

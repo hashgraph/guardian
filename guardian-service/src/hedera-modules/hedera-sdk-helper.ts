@@ -74,7 +74,7 @@ export class HederaSDKHelper {
         initialSupply: number,
         tokenMemo: string,
         treasury: {
-            id: AccountId;
+            id: AccountId | string;
             key: PrivateKey;
         },
         adminKey: PrivateKey,

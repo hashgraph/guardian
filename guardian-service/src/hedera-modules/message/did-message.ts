@@ -43,16 +43,26 @@ export class DIDMessage extends Message {
     }
 
     public loadDocuments(documents: string[]): DIDMessage {
-        this.document = JSON.parse(documents[0]);
+        if (documents && Array.isArray(documents)) {
+            this.document = JSON.parse(documents[0]);
+        }
         return this;
     }
 
     public static fromMessage(message: string): DIDMessage {
+        if (!message) {
+            throw new Error('JSON Object is empty');
+        }
+
         const json = JSON.parse(message);
         return this.fromMessageObject(json);
     }
 
     public static fromMessageObject(json: DidMessageBody): DIDMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
         const message = new DIDMessage(json.action);
         message._id = json.id;
         message._status = json.status;

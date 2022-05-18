@@ -1,7 +1,8 @@
 import { ApprovalDocument } from '@entity/approval-document';
-import { IApprovalDocument, MessageAPI, MessageResponse } from 'interfaces';
 import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
+import { MessageBrokerChannel, MessageResponse } from 'common';
+import { MessageAPI, IApprovalDocument } from 'interfaces';
 
 /**
  * Connecting to the message broker methods of working with Approve documents.
@@ -10,7 +11,7 @@ import { ApiResponse } from '@api/api-response';
  * @param approvalDocumentRepository - table with approve documents
  */
 export const approveAPI = async function (
-    channel: any,
+    channel: MessageBrokerChannel,
     approvalDocumentRepository: MongoRepository<ApprovalDocument>
 ): Promise<void> {
     /**
@@ -24,13 +25,13 @@ export const approveAPI = async function (
      *
      * @returns {IApprovalDocument[]} - approve documents
      */
-    ApiResponse(channel, MessageAPI.GET_APPROVE_DOCUMENTS, async (msg, res) => {
-        if (msg.payload.id) {
-            const document = await approvalDocumentRepository.findOne(msg.payload.id);
-            res.send(new MessageResponse([document]));
+    ApiResponse(channel, MessageAPI.GET_APPROVE_DOCUMENTS, async (msg) => {
+        if (msg.id) {
+            const document = await approvalDocumentRepository.findOne(msg.id);
+            return new MessageResponse([document]);
         } else {
             const reqObj: any = { where: {} };
-            const { owner, approver, id, hash, policyId, schema, issuer, ...otherArgs } = msg.payload;
+            const { owner, approver, id, hash, policyId, schema, issuer, ...otherArgs } = msg;
             if (owner) {
                 reqObj.where['owner'] = { $eq: owner }
             }
@@ -57,7 +58,7 @@ export const approveAPI = async function (
             }
             Object.assign(reqObj.where, otherArgs);
             const documents: IApprovalDocument[] = await approvalDocumentRepository.find(reqObj);
-            res.send(new MessageResponse(documents));
+            return new MessageResponse(documents);
         }
     });
 
@@ -68,19 +69,19 @@ export const approveAPI = async function (
      *
      * @returns {IApprovalDocument[]} - new approve documents
      */
-    ApiResponse(channel, MessageAPI.SET_APPROVE_DOCUMENTS, async (msg, res) => {
-        const id = msg.payload.id;
+    ApiResponse(channel, MessageAPI.SET_APPROVE_DOCUMENTS, async (msg) => {
+        const id = msg.id;
         let result;
         if (id) {
-            const documentObject = msg.payload;
+            const documentObject = msg;
             const id = documentObject.id;
             delete documentObject.id;
             result = await approvalDocumentRepository.update(id, documentObject);
         } else {
-            const documentObject = approvalDocumentRepository.create(msg.payload);
+            const documentObject = approvalDocumentRepository.create(msg);
             result = await approvalDocumentRepository.save(documentObject)
         }
-        res.send(new MessageResponse(result));
+        return new MessageResponse(result);
     })
 
     /**
@@ -90,11 +91,11 @@ export const approveAPI = async function (
      *
      * @returns {IApprovalDocument} - new approve document
      */
-    ApiResponse(channel, MessageAPI.UPDATE_APPROVE_DOCUMENTS, async (msg, res) => {
-        const documentObject = msg.payload;
+    ApiResponse(channel, MessageAPI.UPDATE_APPROVE_DOCUMENTS, async (msg) => {
+        const documentObject = msg;
         const id = documentObject.id;
         delete documentObject.id;
         const result = await approvalDocumentRepository.update(id, documentObject);
-        res.send(new MessageResponse(result));
+        return new MessageResponse(result);
     })
 }

@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { ISchema, SchemaHelper, UserRole } from 'interfaces';
+import { ISchema, UserRole, SchemaHelper } from 'interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
@@ -70,7 +70,7 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
 }
 
 function toOld(schemes: any[]): any[] {
-    if(schemes) {
+    if (schemes) {
         for (let i = 0; i < schemes.length; i++) {
             const schema = schemes[i];
             if (schema.document) {
@@ -139,7 +139,7 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             pageSize = req.query.pageSize;
         }
         let owner = user.parent;
-        if(user.role == UserRole.ROOT_AUTHORITY) {
+        if (user.role == UserRole.ROOT_AUTHORITY) {
             owner = user.did;
         }
         const { schemes, count } = await guardians.getSchemesByOwner(owner, null, pageIndex, pageSize);
@@ -162,7 +162,7 @@ schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
             pageSize = req.query.pageSize;
         }
         let owner = user.parent;
-        if(user.role == UserRole.ROOT_AUTHORITY) {
+        if (user.role == UserRole.ROOT_AUTHORITY) {
             owner = user.did;
         }
         const { schemes, count } = await guardians.getSchemesByOwner(owner, topicId, pageIndex, pageSize);
@@ -323,7 +323,7 @@ schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.ROOT_AUTHOR
         const map = await guardians.importSchemesByMessages([messageId], req.user.did, topicId);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
+        res.status(201).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -343,7 +343,7 @@ schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY
         const map = await guardians.importSchemesByFile(files, req.user.did, topicId);
         const { schemes, count } = await guardians.getSchemesByOwner(user.did);
         SchemaHelper.updatePermission(schemes, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
+        res.status(201).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });

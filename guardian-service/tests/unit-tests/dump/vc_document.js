@@ -769,4 +769,45 @@ module.exports.vc_document = [{
     'updateDate': {
         '$date': '2021-10-18T20:39:38.341Z'
     }
+}, {
+    "_id": {
+        "$oid": "625ea9435714cda4463d8af2"
+    },
+    "owner": "did:hedera:testnet:EeFHzwywzQuMWtn8LNEdLE1RnZD2t4DsPnDjuasdrQjs;hedera:testnet:tid=0.0.34235318",
+    "hash": "9s7b1eW2gkZEd64SAidCci3UmXQgfZt2w6ajiKdPdHa9",
+    "document": {
+        "id": "81e6593a-a9b5-4017-b081-5b714554aa0b",
+        "type": ["VerifiableCredential"],
+        "issuer": "did:hedera:testnet:L8wzF8StAHSQ2yza6RPpCKWFUSXg5CyXZCb4QZtGtWq;hedera:testnet:tid=0.0.34235373",
+        "issuanceDate": "2022-04-19T12:21:18.189Z",
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "credentialSubject": [{
+            "date": "2022-04-19T12:21:18.185Z",
+            "tokenId": "0.0.34235376",
+            "amount": "1",
+            "@context": ["https://ipfs.io/ipfs/bafkreiaamzhmh3l5pn5nneib5yifb3gjwlotf6fr6vb65j7tfi4tefxcza"],
+            "type": "MintToken&1.0.0"
+        }],
+        "proof": {
+            "type": "Ed25519Signature2018",
+            "created": "2022-04-19T12:21:18Z",
+            "verificationMethod": "did:hedera:testnet:L8wzF8StAHSQ2yza6RPpCKWFUSXg5CyXZCb4QZtGtWq;hedera:testnet:tid=0.0.34235373#did-root-key",
+            "proofPurpose": "assertionMethod",
+            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..FiEHhQu_ILgimHiuBMzB5t2-Az-g9ogHCgogBtYcQF4IG5J3ZTKlYMU9RMyH8IyQF6UG3DnJ3t6Ba05gFfJoCw"
+        }
+    },
+    "type": "mint",
+    "policyId": "625ea4eb5714cda4463d8ae1",
+    "tag": "mintToken",
+    "schema": "#MintToken&1.0.0",
+    "messageId": "1650370882.370492000",
+    "hederaStatus": "NEW",
+    "signature": 0,
+    "option": {},
+    "createDate": {
+        "$date": "2022-04-19T12:21:23.809Z"
+    },
+    "updateDate": {
+        "$date": "2022-04-19T12:21:23.809Z"
+    }
 }];

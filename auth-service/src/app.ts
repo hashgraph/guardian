@@ -1,12 +1,10 @@
-import FastMQ from 'fastmq';
-import {createConnection} from 'typeorm';
+import { createConnection } from 'typeorm';
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/accountService';
 import { WalletService } from '@api/walletService';
 import { Logger } from 'logger-helper';
-import { ApplicationState, ApplicationStates } from 'interfaces';
-
-const PORT = process.env.PORT || 3002;
+import { ApplicationState, MessageBrokerChannel } from 'common';
+import { ApplicationStates } from 'interfaces';
 
 Promise.all([
     createConnection({
@@ -23,9 +21,10 @@ Promise.all([
             entitiesDir: 'dist/entity'
         }
     }),
-    FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
-]).then(async ([db, channel]) => {
+    MessageBrokerChannel.connect('LOGGER_SERVICE'),
+]).then(async ([_, cn]) => {
     const state = new ApplicationState('AUTH_SERVICE');
+    const channel = new MessageBrokerChannel(cn, 'auth-service');
     state.setChannel(channel);
     state.updateState(ApplicationStates.INITIALIZING);
     await fixtures();

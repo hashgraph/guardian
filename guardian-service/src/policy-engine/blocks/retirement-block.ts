@@ -162,8 +162,8 @@ export class RetirementBlock {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const doc = await this.retirementProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
             await ref.runNext(curUser, state);
-            PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, curUser);
-            PolicyComponentsUtils.CallParentContainerCallback(ref, curUser);
+            ref.callDependencyCallbacks(curUser);
+            ref.callParentContainerCallback(curUser);
         } catch (e) {
             throw e;
         }

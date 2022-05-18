@@ -1,0 +1,149 @@
+<h1 mat-dialog-title>Custom Period</h1>
+<div mat-dialog-content class="dialog-content" [attr.started]="started">
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+        <div class="c1">
+            <div class="f1" style="padding: 6px 4px; margin-right: 8px;">
+                <mat-label>Start Date:</mat-label>
+                <datetime-picker [(value)]="startDate" [readonly]="true"></datetime-picker>
+            </div>
+            <div class="f1" style="padding: 15px 10px; margin-left: 28px;">
+                <mat-label>Interval:</mat-label>
+                <input matInput type="number" min="1" max="100" formControlName="interval" (change)="selectPeriod()">
+            </div>
+            <div class="f1" style="padding: 15px 10px; margin-left: 8px;">
+                <mat-label>Period:</mat-label>
+                <mat-select [(value)]="period" (selectionChange)="selectPeriod()">
+                    <mat-option value="month">Month</mat-option>
+                    <mat-option value="week">Week</mat-option>
+                    <mat-option value="day">Day</mat-option>
+                    <mat-option value="hour">Hour</mat-option>
+                    <mat-option value="minute">Minute</mat-option>
+                </mat-select>
+            </div>
+        </div>
+
+        <div class="delimiter"></div>
+
+        <div *ngIf="period=='week'" style="height: 80px;width: 100%;"></div>
+        <div *ngIf="period=='month'" style="height: 120px;width: 100%;"></div>
+
+        <!-- <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
+            <input matInput type="text" placeholder="* * * * *" formControlName="mask">
+        </mat-form-field> -->
+
+        <div>
+            {{timeString}}
+        </div>
+
+        <div class="delimiter"></div>
+
+        <mat-accordion>
+            <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        Cron Mask (advanced)
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
+                    <input matInput type="text" placeholder="* * * * *" formControlName="mask">
+                </mat-form-field>
+            </mat-expansion-panel>
+        </mat-accordion>
+
+        <div mat-dialog-actions>
+            <button mat-raised-button color="primary" type="submit" [attr.started]="started"
+                [disabled]="!dataForm.valid">Ok</button>
+            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+        </div>
+    </form>
+
+    <div class="c-config" *ngIf="period=='week' || period=='month'">
+        <div *ngIf="period=='week'" style="display: flex;height: 26px;">
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Mo" (change)="onWeekChange()">
+                <span class="control">Mo</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Tu" (change)="onWeekChange()">
+                <span class="control">Tu</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.We" (change)="onWeekChange()">
+                <span class="control">We</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Th" (change)="onWeekChange()">
+                <span class="control">Th</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Fr" (change)="onWeekChange()">
+                <span class="control">Fr</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Sa" (change)="onWeekChange()">
+                <span class="control">Sa</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Su" (change)="onWeekChange()">
+                <span class="control">Su</span>
+            </label>
+        </div>
+
+        <div *ngIf="period=='month'" style="display: flex;height: 26px;margin-bottom: 14px;">
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.January" (change)="onMonthChange()">
+                <span class="control">Jan</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.February" (change)="onMonthChange()">
+                <span class="control">Feb</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.March" (change)="onMonthChange()">
+                <span class="control">Mar</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.April" (change)="onMonthChange()">
+                <span class="control">Apr</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.May" (change)="onMonthChange()">
+                <span class="control">May</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.June" (change)="onMonthChange()">
+                <span class="control">Jun</span>
+            </label>
+        </div>
+        <div *ngIf="period=='month'" style="display: flex;height: 26px;">
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.July" (change)="onMonthChange()">
+                <span class="control">Jul</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.August" (change)="onMonthChange()">
+                <span class="control">Aug</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.September" (change)="onMonthChange()">
+                <span class="control">Sep</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.October" (change)="onMonthChange()">
+                <span class="control">Oct</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.November" (change)="onMonthChange()">
+                <span class="control">Nov</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.December" (change)="onMonthChange()">
+                <span class="control">Dec</span>
+            </label>
+        </div>
+
+        <div class="delimiter"></div>
+    </div>
+</div>

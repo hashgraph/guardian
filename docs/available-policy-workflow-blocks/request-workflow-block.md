@@ -4,14 +4,14 @@
 
 | Block Property   | Definition                                                                                                                                                   | Example Input                                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| Type             | A type of the block which creates a form from the schema, and sends the document to the server.                                                              | **requestVCDocument**Block (Can't be changed).                                                                               |
-| Tag              | Unique name for the logic block.                                                                                                                             | add\_new\_installer\_request.                                                                                                |
-| Permissions      | Which entity has rights to interact at this part of the workflow.                                                                                            | Root Authority.                                                                                                              |
-| Default Active   | Shows whether this block is active at this time and whether it needs to be shown.                                                                            | Checked or unchecked.                                                                                                        |
-| Dependencies     | Establish workflow dependancies that need to be completed prior.                                                                                             | Select the appropriate block from the dropdown.                                                                              |
-| Schema           | Pre-configured schemas for the document relevant for policy action requests. Technically, it's the uuid of the schema, which will be used to build the form. | IRec-Application-Details (to be selected from the drop down of available schemas in your Guardian instance).                 |
+| type             | A type of the block which creates a form from the schema, and sends the document to the server.                                                              | **requestVCDocument**Block (Can't be changed).                                                                               |
+| tag              | Unique name for the logic block.                                                                                                                             | add\_new\_installer\_request.                                                                                                |
+| permissions      | Which entity has rights to interact at this part of the workflow.                                                                                            | Root Authority.                                                                                                              |
+| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.                                                                            | Checked or unchecked.                                                                                                        |
+| dependencies     | Establish workflow dependancies that need to be completed prior.                                                                                             | Select the appropriate block from the dropdown.                                                                              |
+| schema           | Pre-configured schemas for the document relevant for policy action requests. Technically, it's the uuid of the schema, which will be used to build the form. | IRec-Application-Details (to be selected from the drop down of available schemas in your Guardian instance).                 |
 | ID Type          | Select the type of ID that is populated in the ID field of the Verifiable Credential document.                                                               | Current Options are: DID (creates a new DID), UUID (creates a new UUID), and Owner (which uses the DID of the current user). |
-| Stop Propagation | End processing here, don't pass control to the next block.                                                                                                   | Checked or Unchecked.                                                                                                        |
+| stop propagation | End processing here, don't pass control to the next block.                                                                                                   | Checked or Unchecked.                                                                                                        |
 
 ### UI Properties
 
@@ -63,4 +63,3 @@ VC Document
 ID of linked VC
 {% endswagger-parameter %}
 {% endswagger %}
-

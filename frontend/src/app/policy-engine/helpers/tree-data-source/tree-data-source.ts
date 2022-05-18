@@ -2,6 +2,7 @@ import { NestedTreeControl } from "@angular/cdk/tree";
 import { MatTreeNestedDataSource, MatTree } from "@angular/material/tree";
 
 export interface BlockNode {
+    id: string;
     tag: string;
     blockType: string;
     children: BlockNode[];
@@ -20,6 +21,7 @@ export class TreeDataSource extends MatTreeNestedDataSource<BlockNode> {
 
     private _root(): BlockNode {
         return {
+            id: "",
             tag: "Root",
             blockType: "Root",
             children: this.data

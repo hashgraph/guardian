@@ -20,27 +20,26 @@
     "@transmute/jsonld-schema": "0.7.0-unstable.40",
     "@transmute/security-context": "0.7.0-unstable.40",
     "@transmute/vc.js": "0.7.0-unstable.40",
-    "bs58": "^4.0.1",
-    "js-base64": "^3.6.1",
     "ajv": "^8.10.0",
     "ajv-formats": "^2.1.1",
     "axios": "^0.25.0",
-    "jose": "4.3.8",
+    "bs58": "^4.0.1",
+    "common": "file:../common",
     "cors": "^2.8.5",
+    "cron": "^2.0.0",
     "deep-equal": "^2.0.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
-    "fastmq": "^1.3.8",
     "fs-extra": "^10.0.0",
     "interfaces": "file:../interfaces",
     "jszip": "^3.7.1",
+    "logger-helper": "file:../logger-helper",
     "mathjs": "^10.1.0",
     "module-alias": "^2.2.2",
+    "moment": "^2.29.1",
     "mongodb": "^4.2.1",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.41",
-    "moment": "^2.29.1",
-    "logger-helper": "file:../logger-helper"
+    "typeorm": "^0.2.41"
   },
   "description": "",
   "devDependencies": {
@@ -63,12 +62,13 @@
   "scripts": {
     "build": "tsc",
     "debug": "nodemon dist/index.js",
+    "dev:docker": "nodemon .",
     "dev": "tsc -w",
     "lint": "tslint --project .",
     "start": "node dist/index.js",
-    "test": "mocha tests/unit-tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
+    "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
     "test:network": "mocha tests/network-tests/**/*.test.js",
     "test:stability": "mocha tests/stability.test.js"
   },
-  "version": "2.0.0"
+  "version": "2.1.0"
 }

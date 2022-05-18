@@ -1,6 +1,6 @@
 # Verra Redd+ Demo Guide
 
-This folder contains sample files that are referenced in the Demo Usage Guide&#x20;
+This folder contains a sample file that is referenced in the Demo Usage Guide&#x20;
 
 1. Sample of Verra REDD Policy (Verra REDD.zip)&#x20;
 2. Sample Schema design template for Verra REDD Policy (REDD APD Schema Design Template.xlsx)&#x20;
@@ -11,7 +11,7 @@ This folder contains sample files that are referenced in the Demo Usage Guide&#x
 * **Project Proponent**
 * **VVB**
 
-2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000). Typically, the way we start the reference implementation demonstration is by logging in as the Verra. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Verra user.&#x20;
+2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/). Typically, the way we start the reference implementation demonstration is by logging in as Verra. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Verra user.&#x20;
 
 ![](../.gitbook/assets/Verra\_1.png)
 
@@ -29,7 +29,7 @@ Once you have done that, you can move onto the next step.&#x20;
 
 5\. Click on Verra's profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select VVB.&#x20;
 
-6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click the Open button to the right of the Verra Policy, the Verra created.&#x20;
+6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click Open button to the right of the Verra Policy, the Verra created.&#x20;
 
 ![](../.gitbook/assets/Verra\_3.png)
 

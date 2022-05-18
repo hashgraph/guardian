@@ -1,0 +1,142 @@
+.mat-button-base:not([started]) {
+    background-color: rgba(0, 0, 0, .12);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    overflow: visible;
+    padding-bottom: 25px;
+}
+
+.dialog-content {
+    position: relative;
+    height: 350px;
+    opacity: 0;
+}
+
+.dialog-content[started="true"] {
+    height: auto;
+    opacity: 1;
+}
+
+.c-config  {
+    position: absolute;
+    top: 120px;
+    z-index: 1;
+    left: 24px;
+    right: 24px;
+}
+
+.c1 {
+    display: grid;
+    grid-template-columns: 250px 100px 150px;
+}
+
+.f1 {
+    height: 50px;
+    border: 1px solid #dfdfdf;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    position: relative;
+    margin-top: 10px;
+    box-sizing: border-box;
+}
+
+
+.f1 mat-label {
+    position: absolute;
+    background: #fff;
+    font-size: 11px;
+    color: rgb(0 0 0 / 60%);
+    line-height: 11px;
+    top: -4px;
+    left: 4px;
+    padding: 0 5px;
+}
+
+.delimiter {
+    padding: 20px 20px;
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.delimiter::after {
+    content: '';
+    position: absolute;
+    height: 2px;
+    top: 20px;
+    left: 0px;
+    right: 0px;
+    border-top: 1px solid #c8c8c8;
+}
+
+.toggle-control {
+    display: block;
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    user-select: none;
+}
+
+.toggle-control input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.toggle-control input:checked~.control {
+    background-color: var(--button-primary-color);;
+}
+
+.toggle-control .control {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    color: #fff;
+    font-size: 12px;
+    border-radius: 50%;
+    background-color: darkgray;
+    transition: background-color .15s ease-in;
+    box-sizing: border-box;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    justify-items: center;
+    display: flex;
+}
+
+mat-expansion-panel {
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+}
+
+mat-expansion-panel mat-form-field {
+    width: 100%;
+}
+
+mat-expansion-panel-header {
+    font-size: 14px;
+    opacity: 0.9;
+    padding: 0 20px 0 8px;
+}
+
+mat-accordion ::ng-deep .mat-expansion-panel-body {
+    padding: 0px 10px 16px;
+}
+
+mat-accordion  {
+    margin-bottom: 10px;
+    position: relative;
+    left: -6px;
+    width: 516px;
+}

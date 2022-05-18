@@ -2,7 +2,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { DidDocumentStatus, Schema, TopicType } from 'interfaces';
+import { DidDocumentStatus, TopicType, Schema } from 'interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -44,8 +44,8 @@ export class RequestVcDocumentBlock {
         }
         blockState.active = active;
         ref.updateBlock(blockState, user);
-        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
-        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+        ref.callDependencyCallbacks(user);
+        ref.callParentContainerCallback(user);
     }
 
     getActive(user: IAuthUser) {
@@ -123,7 +123,7 @@ export class RequestVcDocumentBlock {
                 credentialSubject.id = id;
             }
 
-            if (typeof(documentRef) === 'string') {
+            if (typeof (documentRef) === 'string') {
                 credentialSubject.ref = documentRef;
             }
             else if (documentRef) {
@@ -147,7 +147,7 @@ export class RequestVcDocumentBlock {
                 relationships: null
             };
 
-            if (typeof(documentRef) === 'object' && documentRef && documentRef.messageId) {
+            if (typeof (documentRef) === 'object' && documentRef && documentRef.messageId) {
                 item.relationships = [documentRef.messageId];
             }
             await this.changeActive(user, true);

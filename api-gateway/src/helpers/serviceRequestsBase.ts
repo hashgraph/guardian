@@ -1,4 +1,4 @@
-import { IMessageResponse } from 'interfaces';
+import { MessageBrokerChannel, BinaryMessageResponse } from "common";
 
 export class ServiceError extends Error {
     public code: number;
@@ -6,20 +6,20 @@ export class ServiceError extends Error {
 
 export abstract class ServiceRequestsBase {
     abstract readonly target: string;
-    protected channel: any;
+    protected channel: MessageBrokerChannel;
 
     /**
      * Register channel
      * @param channel
      */
-    public setChannel(channel: any): any {
+    public setChannel(channel: MessageBrokerChannel): any {
         this.channel = channel;
     }
 
     /**
      * Get channel
      */
-    public getChannel(): any {
+    public getChannel(): MessageBrokerChannel {
         return this.channel;
     }
 
@@ -29,11 +29,11 @@ export abstract class ServiceRequestsBase {
      * @param params
      * @param type
      */
-    public async request<T>(entity: string, params?: any, type?: string): Promise<T> {
+    public async request<T>(entity: string, params?: any): Promise<T> {
         try {
-            const response: IMessageResponse<T> = (await this.channel.request(this.target, entity, params, type)).payload;
+            const response = await this.channel.request<any, T>([this.target, entity].join('.'), params);
             if (!response) {
-                throw {error: 'Server is not available'};
+                throw { error: 'Server is not available' };
             }
             if (response.code !== 200) {
                 throw response;
@@ -45,15 +45,20 @@ export abstract class ServiceRequestsBase {
             throw err
         }
     }
-
-    public async rawRequest(entity: string, params?: any, type?: string): Promise<any> {
+    /**
+     * Making the request that expect to recieved BinaryMessageResponse
+     * @param entity 
+     * @param params 
+     * @returns 
+     */
+    public async rawRequest(entity: string, params?: any): Promise<Buffer> {
         try {
-            const response = (await this.channel.request(this.target, entity, params, type)).payload;
+            // Binary data will return as base64 string inbody
+            const response = (await this.channel.request<any, string>([this.target, entity].join('.'), params,));
             if (!response) {
                 throw { error: 'Server is not available' };
             }
-
-            return response;
+            return Buffer.from(response.body, 'base64');
         } catch (e) {
             const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
             err.code = e.code;

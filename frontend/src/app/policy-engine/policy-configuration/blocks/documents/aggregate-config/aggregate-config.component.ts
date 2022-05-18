@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { MatDialog } from '@angular/material/dialog';
+import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
 
 /**
  * Settings for block of 'aggregateDocument' type.
@@ -25,11 +27,15 @@ export class AggregateConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
+        options:false,
+        expressionsGroup: false,
+        expressions: {},
     };
 
     block!: BlockNode;
+    allTimer!: BlockNode[];
 
-    constructor() {
+    constructor(private dialog: MatDialog) {
     }
 
     ngOnInit(): void {
@@ -42,11 +48,24 @@ export class AggregateConfigComponent implements OnInit {
     }
 
     load(block: BlockNode) {
+        this.allTimer = this.all?.filter(e=>e.blockType=='timerBlock');
         this.block = block;
+        this.block.expressions = this.block.expressions || [];
         this.block.uiMetaData = this.block.uiMetaData || {}
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    addExpression() {
+        this.block.expressions.push({
+            name: '',
+            value: '',
+        })
+    }
+
+    onRemoveExpression(i: number) {
+        this.block.expressions.splice(i, 1);
     }
 }

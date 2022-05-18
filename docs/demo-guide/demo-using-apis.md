@@ -28,7 +28,7 @@
 
 ### 1.2 In the policy config there is a root block which is the top of the structure
 
-![](<../.gitbook/assets/API\_1 (1).png>)
+![](../.gitbook/assets/API\_1.png)
 
 ### 1.3 Request the config for the root block
 
@@ -297,7 +297,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_5.png)
+![](<../.gitbook/assets/image (6) (1).png>)
 
 ## 2. Login as a Root Authority
 
@@ -473,7 +473,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 
 ![](../.gitbook/assets/API\_7.png)
 
-![](../.gitbook/assets/API\_8.png)
+![](<../.gitbook/assets/image (2) (1).png>)
 
 ## 3. Login as the User
 
@@ -699,9 +699,9 @@ capacity
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_9.png)
+![](../.gitbook/assets/Sensor.png)
 
-![](../.gitbook/assets/API\_10.png)
+![](../.gitbook/assets/image.png)
 
 ### 3.4 Refresh the Blocks
 
@@ -717,4 +717,43 @@ record in the grid (data[0])
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_11.png)
+![](<../.gitbook/assets/image (15) (1).png>)
+
+### 3.6 Sample MRV Sender Data
+
+{% swagger method="post" path="" baseUrl="/external" summary="Sending MRV Data" %}
+{% swagger-description %}
+Sending MRV Data
+{% endswagger-description %}
+
+{% swagger-parameter in="body" name="document" %}
+"id":"8d8e8a0a-211d-4180-8001-2e30cd7b915f", "type":[ "VerifiableCredential" ], "issuer":"did:hedera:testnet:3G7JYDvL5QsbBz5u9531UyMKWPJHdDQ5B6nRMK3zqoUm;hedera:testnet:tid=0.0.34404759", "issuanceDate":"2022-05-05T12:30:14.909Z", "@context":[ "https://www.w3.org/2018/credentials/v1" ], "credentialSubject":[ { "type":"5b4cdcee-ba73-4234-bddd-2988b050552c&1.0.0", "@context":[ "https://ipfs.io/ipfs/bafkreiaihnzlo7ahhr6wqnnyqprrl7onqdogkfzyum6poixba5ptjptowu" ], "field0":"2", "field1":"8", "field2":"1", "policyId":"6273c027d79555ef171b550d", "accountId":"0.0.34235315" } ], "proof":{ "type":"Ed25519Signature2018", "created":"2022-05-05T12:30:14Z", "verificationMethod":"did:hedera:testnet:3G7JYDvL5QsbBz5u9531UyMKWPJHdDQ5B6nRMK3zqoUm;hedera:testnet:tid=0.0.34404759#did-root-key", "proofPurpose":"assertionMethod", "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..awGmfcQzVefihEkoLT7zrqltRoEkuluVV8PALFc7ftlOckY0K7wQOwmdZMG479IZ1g4mW0todYmcLueNgTruAQ" }
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="owner" %}
+did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="policyTag" %}
+Tag_1651752987100
+{% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    // Response
+}
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+```javascript
+{
+    content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+}
+```
+{% endswagger-response %}
+{% endswagger %}

@@ -1,16 +1,17 @@
-import { MessageAPI, MessageError, MessageResponse } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { getMongoRepository, MongoRepository } from 'typeorm';
 import { Settings } from '@entity/settings';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { Policy } from '@entity/policy';
+import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageAPI } from 'interfaces';
 
 export const demoAPI = async function (
-    channel: any,
+    channel: MessageBrokerChannel,
     settingsRepository: MongoRepository<Settings>
 ): Promise<void> {
-    ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY, async (msg) => {
         try {
             const operatorId = await settingsRepository.findOne({
                 name: 'OPERATOR_ID'
@@ -22,23 +23,23 @@ export const demoAPI = async function (
             const OPERATOR_KEY = operatorKey?.value || process.env.OPERATOR_KEY;
             const client = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY);
             const treasury = await client.newAccount();
-            res.send(new MessageResponse({
+            return new MessageResponse({
                 id: treasury.id.toString(),
                 key: treasury.key.toString()
-            }));
+            });
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            res.send(new MessageError(error));
+            return new MessageError(error);
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_USER_ROLES, async (msg, res) => {
+    ApiResponse(channel, MessageAPI.GET_USER_ROLES, async (msg) => {
         try {
-            const did = msg.payload.did;
+            const did = msg.did;
             const policies = await getMongoRepository(Policy).find();
             const result = [];
             policies.forEach(p => {
-                if(p.registeredUsers[did]) {
+                if (p.registeredUsers[did]) {
                     result.push({
                         name: p.name,
                         version: p.version,
@@ -47,10 +48,10 @@ export const demoAPI = async function (
                 }
 
             });
-            res.send(new MessageResponse(result));
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            res.send(new MessageError(error));
+            return new MessageError(error);
         }
     })
 }

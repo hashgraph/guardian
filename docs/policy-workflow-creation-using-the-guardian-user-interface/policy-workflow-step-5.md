@@ -6,7 +6,7 @@ Again we need a Send step since we need to send the approval we obtained from th
 
 We now proceed as with the previous “Send” step “save\_new\_approve\_document” to configure the policy action step.
 
-![](../.gitbook/assets/PW\_10.png)
+![](<../.gitbook/assets/PW\_10 (1).png>)
 
 **Programmatically this workflow step looks like this:**
 

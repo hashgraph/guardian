@@ -1,12 +1,14 @@
-import { ApplicationState, ApplicationStates, MessageInitialization } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, ApplicationState, MessageInitialization } from "common";
+import { ApplicationStates } from "interfaces";
 
-export function ApiResponse(channel: any, event: any, cb: (msg, res) => Promise<void>): void {
+export function ApiResponse<T>(channel: MessageBrokerChannel, event: any, handleFunc: (msg) => Promise<MessageResponse<T>>): void {
     const state = new ApplicationState();
-    channel.response(event, async (msg, res) => {
+    channel.response(event, async (msg) => {
         if (state.getState() !== ApplicationStates.READY) {
-            res.send(new MessageInitialization());
-            return;
+            console.warn(`${state.getState()} state, waiting for ${ApplicationStates.READY} state, event ${event}`);
+            return new MessageInitialization()
         }
-        await cb(msg, res);
+
+        return await handleFunc(msg);
     })
 }

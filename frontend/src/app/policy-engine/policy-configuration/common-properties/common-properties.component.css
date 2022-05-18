@@ -100,7 +100,19 @@
     color: black;
     position: relative;
     font-weight: 500;
+    position: relative;
 }
+.properties .propHeader::after,
+.table-body .propHeader::after {
+    position: absolute;
+    content: '';
+    height: 2px;
+    border-bottom: 1px solid #b1b1b1;
+    left: 22px;
+    right: 0;
+    bottom: -1px;
+}
+
 .propBottom {
     background: #fff;
     color: black;

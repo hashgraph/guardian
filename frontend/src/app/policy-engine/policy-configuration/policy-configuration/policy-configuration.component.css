@@ -26,6 +26,7 @@
 .render {
     position: relative;
     flex: 1;
+    min-width: 1400px;
 }
 
 .main {
@@ -278,7 +279,6 @@
 .btn-new-block {
     display: flex;
     overflow: hidden;
-    min-width: 45px;
     height: 52px;
     flex-direction: column;
     border: 1px solid transparent;
@@ -295,6 +295,13 @@
     border-radius: 6px;
     background: rgb(252 252 252);
     border: 1px solid rgb(220 220 220);
+}
+
+.btn-group {
+    min-width: 52px;
+}
+.btn-new-block {
+    min-width: 60px;
 }
 
 .btn-group:hover,
@@ -570,4 +577,52 @@ input[readonly] {
     padding: 10px;
     background: #fff;
     border-top: 1px solid #c9c9c9;
+}
+
+.block-group-header {
+    font-size: 12px;
+    color: #999;
+    height: 15px;
+    line-height: 16px;
+    overflow: hidden;
+    padding: 0px 8px;
+    position: relative;
+}
+.block-group-header span {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    padding: 0px 2px 0px 2px;
+    margin: 0px 2px 0px 2px;
+}
+.block-group-header::after {
+    display: block;
+    position: absolute;
+    content: '';
+    border-top: 1px solid #999;
+    height: 2px;
+    top: 8px;
+    left: 6px;
+    right: 6px;
+    z-index: 0;
+}
+
+.copy-blocks-mode:active {
+    background-color: #d1d1d1;
+}
+
+.copy-blocks-mode:hover {
+    background-color: #ffffff;
+}
+
+.copy-blocks-mode-active {
+    background-color: #d1d1d1;
+}
+
+.copy-blocks-mode-active:active {
+    background-color: #ffffff;
+}
+
+.copy-blocks-mode-active:hover {
+    background-color: #d1d1d1;
 }

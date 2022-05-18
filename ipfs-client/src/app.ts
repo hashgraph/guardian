@@ -1,8 +1,8 @@
-import FastMQ from 'fastmq';
-import { ApplicationState, ApplicationStates } from 'interfaces';
+import { ApplicationStates } from 'interfaces';
 import { Logger } from 'logger-helper';
 import { NFTStorage } from 'nft.storage';
 import { createConnection } from 'typeorm';
+import { MessageBrokerChannel, ApplicationState } from 'common';
 import { fileAPI } from './api/file.service';
 import { Settings } from './entity/settings';
 
@@ -23,10 +23,12 @@ Promise.all([
             entitiesDir: 'dist/entity'
         }
     }),
-    FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS),
+    MessageBrokerChannel.connect("IPFS_CLIENT")
 ]).then(async values => {
-    const [db, channel] = values;
+    const [db, cn] = values;
     const state = new ApplicationState('IPFS_CLIENT');
+    const channel = new MessageBrokerChannel(cn, 'ipfs-client');
+
     state.setChannel(channel);
     state.updateState(ApplicationStates.STARTED);
     const settingsRepository = db.getMongoRepository(Settings);

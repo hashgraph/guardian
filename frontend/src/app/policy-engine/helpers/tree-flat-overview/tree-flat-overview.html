@@ -1,33 +1,67 @@
-<mat-tree [dataSource]="dataSource" [treeControl]="treeControl" cdkDropList (cdkDropListDropped)="drop($event)">
-  <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding cdkDrag [cdkDragData]="node"
-    (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart()"
-    (cdkDragReleased)="dragEnd()">
-    <button mat-icon-button disabled></button>
-    <div class="block" (click)="onSelect($event, node)" [attr.selected]="isSelect(node)" [attr.error]="isError(node)">
-      <div class="block-icon">
-        <mat-icon>{{getIcon(node)}}</mat-icon>
-      </div>
-      {{getName(node)}}
-      <div *ngIf="node.node != root" class="btn-delete" (click)="onDelete($event, node)">
-        <mat-icon>delete</mat-icon>
-      </div>
+<div class="mat-tree-container">
+    <div class="expand-menu">
+        <div *ngIf="isCollapseAll" class="btn-expand-menu" (click)="expandAll()" title="Expand All">
+            <mat-icon>unfold_more</mat-icon>
+        </div>
+        <div *ngIf="!isCollapseAll" class="btn-expand-menu" (click)="collapseAll()" title="Collapse All">
+            <mat-icon>unfold_less</mat-icon>
+        </div>
     </div>
-  </mat-tree-node>
-  <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding cdkDrag [cdkDragData]="node"
-    (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart()"
-    (cdkDragReleased)="dragEnd()">
-    <button mat-icon-button matTreeNodeToggle (click)="expansionModel.toggle(node.node.id)">
-      <mat-icon class="mat-icon-rtl-mirror">{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-      </mat-icon>
-    </button>
-    <div class="block" (click)="onSelect($event, node)" [attr.selected]="isSelect(node)" [attr.error]="isError(node)">
-      <div class="block-icon">
-        <mat-icon>{{getIcon(node)}}</mat-icon>
-      </div>
-      {{getName(node)}}
-      <div *ngIf="node.node != root" class="btn-delete" (click)="onDelete($event, node)">
-        <mat-icon>delete</mat-icon>
-      </div>
+    
+    <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" cdkDropList (cdkDropListDropped)="drop($event)">
+        <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding cdkDrag [cdkDragData]="node"
+            (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart()"
+            (cdkDragReleased)="dragEnd()">
+            <button mat-icon-button disabled></button>
+            <ng-container [ngTemplateOutlet]="blockTemplate" [ngTemplateOutletContext]="{node: node}">
+            </ng-container>
+        </mat-tree-node>
+        <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding cdkDrag [cdkDragData]="node"
+            (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart()"
+            (cdkDragReleased)="dragEnd()">
+            <button mat-icon-button matTreeNodeToggle (click)="expansionModel.toggle(node.node.id)">
+                <mat-icon class="mat-icon-rtl-mirror">{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+                </mat-icon>
+            </button>
+            <ng-container [ngTemplateOutlet]="blockTemplate" [ngTemplateOutletContext]="{node: node}">
+            </ng-container>
+        </mat-tree-node>
+    </mat-tree>
+</div>
+
+<ng-template #blockTemplate let-node='node'>
+    <div class="block" 
+        (click)="onSelect($event, node)" 
+        [attr.selected]="isSelect(node)" 
+        [attr.error]="isError(node)"
+        [attr.control]="node.about.control"
+        [attr.root]="node.root"
+        [attr.output]="node.about.output"
+        [attr.input]="node.about.input"
+        [attr.stop-propagation]="node.node.stopPropagation"
+    >
+        <div class="block-icon">
+            <mat-icon>{{node.icon}}</mat-icon>
+        </div>
+
+        {{node.node.tag}}
+
+        <div class="btn-delete" (click)="onDelete($event, node)">
+            <mat-icon>delete</mat-icon>
+        </div>
+        <div class="output-arrow single">
+            <mat-icon>arrow_downward</mat-icon>
+        </div>
+        <div class="output-arrow multiple">
+            <mat-icon>arrow_downward</mat-icon>
+            <mat-icon>arrow_downward</mat-icon>
+        </div>
+        <div class="input-arrow single">
+
+        </div>
+        <div class="input-arrow multiple">
+
+        </div>
+
     </div>
-  </mat-tree-node>
-</mat-tree>
+</ng-template>
