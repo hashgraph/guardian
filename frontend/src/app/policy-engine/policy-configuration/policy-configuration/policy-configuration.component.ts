@@ -126,132 +126,6 @@ export class PolicyConfigurationComponent implements OnInit {
         this.route.queryParams.subscribe(queryParams => {
             this.loadPolicy();
         });
-
-        (window as any)._render = () => {
-            const events = this.allEvents;
-            debugger;
-
-            const all = document.querySelectorAll(`*[block-instance]`);
-            let maxRight = 0;
-            for (let i = 0; i < all.length; i++) {
-                const element = all[i];
-                const box = element.getBoundingClientRect();
-                maxRight = Math.max(maxRight, box.right);
-            }
-            maxRight = maxRight + 50;
-            const mapRight: any = {};
-
-            const canvas = document.createElement('canvas');
-            canvas.style.position = 'absolute';
-            canvas.style.top = '0px';
-            canvas.style.left = '0px';
-            document.body.appendChild(canvas);
-            const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // function drawArrow(
-            //     ctx: CanvasRenderingContext2D,
-            //     points: number[],
-            //     arrowWidth: number,
-            //     color: string
-            // ) {
-            //     var headlen = 7;
-            //     ctx.save();
-            //     ctx.strokeStyle = color;
-            //     ctx.beginPath();
-            //     for (let i = 0; i < points.length; i++) {
-            //         const fx = points[i];
-            //         const fy = points[i + 1];
-            //         const tx = points[i + 2];
-            //         const ty = points[i + 3];
-
-            //     }
-
-
-
-            //     var angle = Math.atan2(toy - fromy, tox - fromx);
-
-
-
-
-            //     ctx.moveTo(fromx, fromy);
-            //     ctx.lineTo(tox, toy);
-            //     ctx.lineWidth = arrowWidth;
-            //     ctx.stroke();
-            //     ctx.beginPath();
-            //     ctx.moveTo(tox, toy);
-            //     ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 7),
-            //         toy - headlen * Math.sin(angle - Math.PI / 7));
-            //     ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 7),
-            //         toy - headlen * Math.sin(angle + Math.PI / 7));
-            //     ctx.lineTo(tox, toy);
-            //     ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 7),
-            //         toy - headlen * Math.sin(angle - Math.PI / 7));
-            //     ctx.stroke();
-            //     ctx.restore();
-            // }
-
-            for (const event of events) {
-                const divStart = document.querySelector(`*[block-instance="${event.source?.tag}"]`);
-                const divStop = document.querySelector(`*[block-instance="${event.target?.tag}"]`);
-                if (divStart && divStop) {
-                    const boxStart = divStart.getBoundingClientRect();
-                    const boxStop = divStop.getBoundingClientRect();
-                    const left = Math.min(boxStart.right, boxStop.right);
-                    const top = Math.min(boxStart.top, boxStop.top);
-                    const bottom = Math.max(boxStart.top, boxStop.top);
-                    const right = Math.max(boxStart.right, boxStop.right);
-                    const isTop = boxStart.top > boxStop.top;
-
-                    let topPosition = top + 16;
-                    let width = right - left + 50;
-                    let height = bottom - top;
-                    let offset = 8;
-                    if (isTop) {
-                        topPosition = topPosition - offset;
-                        height = height + 2 * offset;
-                    } else {
-                        topPosition = topPosition + offset;
-                        height = height - 2 * offset;
-                    }
-
-                    let r = left + width;
-                    if (r < maxRight) {
-                        r = maxRight;
-                    }
-                    while (mapRight[r]) {
-                        r = r + 5;
-                    }
-                    mapRight[r] = true;
-                    width = r - left;
-
-                    const w = 1;
-                    const start = (isTop ? boxStop.right : boxStart.right) - left;
-                    const end = (isTop ? boxStart.right : boxStop.right) - left;
-                    const polygon: string = `polygon(
-                        ${start}px 0px, 
-                        ${width}px 0px, 
-                        ${width}px ${height}px, 
-                        ${end}px ${height}px, 
-                        ${end}px ${height - w}px, 
-                        ${width - w}px ${height - w}px, 
-                        ${width - w}px ${w}px, 
-                        ${start}px ${w}px 
-                    )`;
-                    const div = document.createElement('div');
-                    div.style.position = 'absolute';
-                    div.style.top = `${topPosition}px`;
-                    div.style.left = `${left + 30}px`;
-                    div.style.height = `${height}px`;
-                    div.style.width = `${width}px`;
-                    div.style.zIndex = '999';
-                    // div.style.shapeOutside = polygon;
-                    div.style.clipPath = polygon;
-                    div.style.background = '#000';
-                    document.body.appendChild(div);
-                }
-            }
-        }
     }
 
     loadPolicy(): void {
@@ -921,6 +795,136 @@ export class PolicyConfigurationComponent implements OnInit {
 
         if (await this.loadState(stateValues, stateValues.length - this._undoDepth)) {
             this._undoDepth--;
+        }
+    }
+
+    onTreeChange(event: any) {
+        const events = this.allEvents;
+        const currentBlock = this.currentBlock;
+
+        setTimeout(() => {
+            let canvas = document.querySelector(`#tree-canvas`) as HTMLCanvasElement;
+            const tree = document.querySelector('tree-flat-overview');
+            if (!canvas) {
+                canvas = document.createElement('canvas');
+                if (tree) {
+                    tree.appendChild(canvas);
+                }
+            }
+            if (tree) {
+                canvas.setAttribute('id', 'tree-canvas');
+                canvas.style.position = 'absolute';
+                canvas.style.top = '0px';
+                canvas.style.left = '0px';
+                canvas.style.pointerEvents = 'none';
+                const box = tree.getBoundingClientRect();
+                canvas.style.width = `${box.width}px`;
+                canvas.style.height = `${box.height}px`;
+                canvas.width = box.width;
+                canvas.height = box.height;
+            }
+            const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            let lines = [];
+            for (const event of events) {
+                const line = drawEvent(event, canvas, currentBlock)
+                if (line) {
+                    lines.push(line);
+                }
+            }
+
+            const all = document.querySelectorAll(`*[block-instance]`);
+            let maxRight = 0;
+            for (let i = 0; i < all.length; i++) {
+                const element = all[i];
+                const box = element.getBoundingClientRect();
+                maxRight = Math.max(maxRight, box.right);
+            }
+            maxRight = Math.round(maxRight + 20);
+            const mapRight: any = {};
+            lines = lines.sort((a, b) => a.height > b.height ? 1 : -1);
+            for (const line of lines) {
+                line.w = maxRight;
+                while (mapRight[line.w] && line.height > 55) {
+                    line.w = line.w + 5;
+                }
+                mapRight[line.w] = true;
+            }
+            lines = lines.sort((a, b) => {
+                if (a.selected) {
+                    return 1;
+                }
+                if (b.selected) {
+                    return -1;
+                }
+                return 0;
+            });
+            for (const line of lines) {
+                drawArrow(context, [
+                    line.startX, line.startY,
+                    line.w, line.startY,
+                    line.w, line.endY,
+                    line.endX, line.endY
+                ], line.selected ? 3 : 2, line.color);
+            }
+        }, 100);
+
+        function drawArrow(
+            ctx: CanvasRenderingContext2D,
+            points: number[],
+            arrowWidth: number,
+            color: string
+        ) {
+            const headlen = 3 + arrowWidth;
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = arrowWidth;
+            ctx.beginPath();
+
+            let fx: number = 0, fy: number = 0, tx: number = 0, ty: number = 0;
+            for (let i = 0; i < points.length - 3; i += 2) {
+                fx = points[i];
+                fy = points[i + 1];
+                tx = points[i + 2];
+                ty = points[i + 3];
+                ctx.moveTo(fx, fy);
+                ctx.lineTo(tx, ty);
+            }
+            const angle = Math.atan2(ty - fy, tx - fx);
+            const k = Math.PI / 7;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(tx, ty);
+            ctx.lineTo(tx - headlen * Math.cos(angle - k), ty - headlen * Math.sin(angle - k));
+            ctx.lineTo(tx - headlen * Math.cos(angle + k), ty - headlen * Math.sin(angle + k));
+            ctx.lineTo(tx, ty);
+            ctx.lineTo(tx - headlen * Math.cos(angle - k), ty - headlen * Math.sin(angle - k));
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawEvent(event: any, canvas: any, currentBlock: any): any {
+            const divStart = document.querySelector(`*[block-instance="${event.source?.tag}"]`);
+            const divStop = document.querySelector(`*[block-instance="${event.target?.tag}"]`);
+            if (divStart && divStop && canvas) {
+                const selectS = currentBlock?.tag == event.source?.tag;
+                const selectE = currentBlock?.tag == event.target?.tag;
+                const boxCanvas = canvas.getBoundingClientRect();
+                const boxStart = divStart.getBoundingClientRect();
+                const boxStop = divStop.getBoundingClientRect();
+                const offset = 6;
+                return {
+                    startX: boxStart.right - boxCanvas.left + 25,
+                    endX: boxStop.right - boxCanvas.left + 25,
+                    startY: boxStart.top - boxCanvas.top + 16 + offset,
+                    endY: boxStop.top - boxCanvas.top + 16 - offset,
+                    height: Math.abs(boxStart.top - boxStop.top),
+                    color: selectS ? 'red' : selectE ? 'green' : '#666',
+                    selected: selectS || selectE,
+                    w: 0
+                }
+            }
         }
     }
 }

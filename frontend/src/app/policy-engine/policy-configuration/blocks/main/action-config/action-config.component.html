@@ -90,6 +90,11 @@
                 </td>
                 <td class="propRowCell">
                     <mat-select [(value)]="option.bindBlock" [disabled]="readonly">
+                        <mat-select-trigger>
+                            <span class="custom">
+                                {{option?.bindBlock?.tag}}
+                            </span>
+                        </mat-select-trigger>
                         <mat-option *ngFor="let item of all" [value]="item.tag">
                             <div class="block-name">
                                 <div class="block-icon">
@@ -210,6 +215,11 @@
             </td>
             <td class="propRowCell">
                 <mat-select [(value)]="block.bindBlock" [disabled]="readonly">
+                    <mat-select-trigger>
+                        <span class="custom">
+                            {{block?.bindBlock?.tag}}
+                        </span>
+                    </mat-select-trigger>
                     <mat-option *ngFor="let item of all" [value]="item.tag">
                         <div class="block-name">
                             <div class="block-icon">

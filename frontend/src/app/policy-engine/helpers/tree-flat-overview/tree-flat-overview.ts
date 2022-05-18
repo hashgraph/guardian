@@ -38,6 +38,7 @@ export class TreeFlatOverview {
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter();
     @Output('reorder') reorder = new EventEmitter();
+    @Output('change') change = new EventEmitter();
 
     currentBlock!: BlockNode;
     root!: BlockNode;
@@ -60,6 +61,7 @@ export class TreeFlatOverview {
         this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
         this.treeControl.expansionModel.changed.subscribe(e => {
             this.isCollapseAll = !e.source.selected.length;
+            this.change.emit();
         })
     }
 
@@ -162,6 +164,7 @@ export class TreeFlatOverview {
         // rebuild tree with mutated data
         // this.rebuildTreeForData(changedData);
         this.reorder.emit(changedData);
+        this.change.emit();
     }
 
     setErrors(errors: any) {
@@ -282,6 +285,7 @@ export class TreeFlatOverview {
         event.stopPropagation();
         this.currentBlock = node.node;
         this.select.emit(this.currentBlock);
+        this.change.emit();
         return false;
     }
 
@@ -289,6 +293,7 @@ export class TreeFlatOverview {
         event.preventDefault();
         event.stopPropagation();
         this.delete.emit(block.node);
+        this.change.emit();
         return false;
     }
 

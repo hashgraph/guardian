@@ -95,6 +95,11 @@
             </td>
             <td class="propRowCell">
                 <mat-select [(value)]="condition.target" [disabled]="readonly">
+                    <mat-select-trigger>
+                        <span class="custom">
+                            {{condition?.target?.tag}}
+                        </span>
+                    </mat-select-trigger>
                     <mat-option *ngFor="let item of all" [value]="item.tag">
                         <div class="block-name">
                             <div class="block-icon">

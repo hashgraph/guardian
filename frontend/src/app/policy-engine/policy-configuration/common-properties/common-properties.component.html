@@ -214,6 +214,11 @@
                             <td class="propRowCell cellName">Source</td>
                             <td class="propRowCell remove-cell">
                                 <mat-select [(value)]="item.source" [disabled]="readonly">
+                                    <mat-select-trigger>
+                                        <span class="custom">
+                                            {{item.source?.tag}}
+                                        </span>
+                                    </mat-select-trigger>
                                     <mat-option *ngFor="let item of allBlocks" [value]="item">
                                         <div class="block-name">
                                             <div class="block-icon">
@@ -232,6 +237,11 @@
                             <td class="propRowCell cellName">Target</td>
                             <td class="propRowCell remove-cell">
                                 <mat-select [(value)]="item.target" [disabled]="readonly">
+                                    <mat-select-trigger>
+                                        <span class="custom">
+                                            {{item.target?.tag}}
+                                        </span>
+                                    </mat-select-trigger>
                                     <mat-option *ngFor="let item of allBlocks" [value]="item">
                                         <div class="block-name">
                                             <div class="block-icon">

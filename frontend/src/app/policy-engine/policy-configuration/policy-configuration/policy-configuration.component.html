@@ -140,7 +140,7 @@
                         </div>
                     </div>
                     <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" [errors]="errorsMap"
-                        (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)">
+                        (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)" (change)="onTreeChange($event)">
                     </tree-flat-overview>
                 </div>
             </div>
