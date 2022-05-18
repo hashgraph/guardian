@@ -106,7 +106,7 @@ export class CustomLogicBlock {
             }
 
             const func = Function(`const [done, user, documents, mathjs] = arguments; ${ref.options.expression}`);
-            func.apply(document, [done, user, documents, mathjs]);
+            func.apply(documents, [done, user, documents, mathjs]);
         });
     }
 }

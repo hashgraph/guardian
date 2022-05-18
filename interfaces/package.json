@@ -18,6 +18,7 @@
   "module": "dist/index.js",
   "name": "interfaces",
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "tslint --project .",

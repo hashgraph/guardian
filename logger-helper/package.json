@@ -2,8 +2,8 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "description": "",
   "dependencies": {
-    "interfaces": "file:../interfaces",
-    "common": "file:../common"
+    "common": "^2.0.0",
+    "interfaces": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.13",
@@ -19,6 +19,7 @@
   "module": "dist/index.js",
   "name": "logger-helper",
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "tslint --project .",

@@ -1,4 +1,5 @@
 {
+  "packageManager": "yarn@3.2.1",
   "_moduleAliases": {
     "@api": "dist/api",
     "@entity": "dist/entity",
@@ -6,15 +7,15 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "common": "file:../common",
     "dotenv": "^16.0.0",
     "interfaces": "file:../interfaces",
     "jsonwebtoken": "^8.5.1",
+    "logger-helper": "file:../logger-helper",
     "module-alias": "^2.2.2",
     "mongodb": "^4.2.1",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.41",
-    "logger-helper": "file:../logger-helper",
-    "common":"file:../common"
+    "typeorm": "^0.2.41"
   },
   "description": "",
   "devDependencies": {
