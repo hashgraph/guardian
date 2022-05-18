@@ -22,8 +22,8 @@
 * [Demo Usage Guide](demo-guide/demo-usage-guide.md)
 * [Demo Using APIs](demo-guide/demo-using-apis.md)
 * [Verra Redd+ Demo Guide](demo-guide/verra-redd+-demo-guide.md)
-* [iREC Demo Guide](demo-guide/irec-demo-guide.md)
-* [API Workflow of iREC 2 Demo](demo-guide/api-workflow-of-irec-demo.md)
+* [iREC Demo UI Guide](demo-guide/irec-demo-guide.md)
+* [iREC 2 API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
 
 ## Versioning and Deprecation Policy
 
@@ -60,8 +60,10 @@
 * [retirementDocumentBlock](available-policy-workflow-blocks/retirementdocumentblock.md)
 * [wipeDocumentBlock](available-policy-workflow-blocks/token-wipe-workflow-block.md)
 * [calculateContainerBlock & calculateMathAddOnBlock](available-policy-workflow-blocks/calculatecontainerblock-and-calculatemathaddonblock.md)
-* [aggregateDocumentBlock](available-policy-workflow-blocks/aggregate-data-workflow-block.md)
 * [reportBlock & reportItemBlock](available-policy-workflow-blocks/reportblock-and-reportitemblock.md)
+* [switchBlock](available-policy-workflow-blocks/switchblock.md)
+* [aggregateDocumentBlock](available-policy-workflow-blocks/aggregatedocumentblock.md)
+* [TimerBlock](available-policy-workflow-blocks/timerblock.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 

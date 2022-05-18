@@ -11,7 +11,7 @@ This folder contains a sample file that is referenced in the Demo Usage Guide&#x
 * **Project Proponent**
 * **VVB**
 
-2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000). Typically, the way we start the reference implementation demonstration is by logging in as Verra. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Verra user.&#x20;
+2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/). Typically, the way we start the reference implementation demonstration is by logging in as Verra. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Verra user.&#x20;
 
 ![](../.gitbook/assets/Verra\_1.png)
 
