@@ -42,7 +42,7 @@
     "@types/file-saver": "^2.0.5",
     "@types/jasmine": "~3.6.0",
     "@types/js-yaml": "^4.0.5",
-    "@types/node": "^12.11.1",
+    "@types/node": "^17.0.34",
     "jasmine-core": "~3.9.0",
     "karma": "~6.3.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -62,5 +62,5 @@
     "test": "ng test",
     "watch": "ng build --watch --configuration development --output-path ../www-data"
   },
-  "version": "2.0.0"
+  "version": "2.1.0"
 }
