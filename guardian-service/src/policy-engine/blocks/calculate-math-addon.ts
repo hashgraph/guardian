@@ -2,10 +2,21 @@ import { CalculateAddon } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @CalculateAddon({
     blockType: 'calculateMathAddon',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Math Addon',
+        title: `Add 'Math' Addon`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Special,
+        input: null,
+        output: null,
+    }
 })
 export class CalculateMathAddon {
 

@@ -126,6 +126,132 @@ export class PolicyConfigurationComponent implements OnInit {
         this.route.queryParams.subscribe(queryParams => {
             this.loadPolicy();
         });
+
+        (window as any)._render = () => {
+            const events = this.allEvents;
+            debugger;
+
+            const all = document.querySelectorAll(`*[block-instance]`);
+            let maxRight = 0;
+            for (let i = 0; i < all.length; i++) {
+                const element = all[i];
+                const box = element.getBoundingClientRect();
+                maxRight = Math.max(maxRight, box.right);
+            }
+            maxRight = maxRight + 50;
+            const mapRight: any = {};
+
+            const canvas = document.createElement('canvas');
+            canvas.style.position = 'absolute';
+            canvas.style.top = '0px';
+            canvas.style.left = '0px';
+            document.body.appendChild(canvas);
+            const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // function drawArrow(
+            //     ctx: CanvasRenderingContext2D,
+            //     points: number[],
+            //     arrowWidth: number,
+            //     color: string
+            // ) {
+            //     var headlen = 7;
+            //     ctx.save();
+            //     ctx.strokeStyle = color;
+            //     ctx.beginPath();
+            //     for (let i = 0; i < points.length; i++) {
+            //         const fx = points[i];
+            //         const fy = points[i + 1];
+            //         const tx = points[i + 2];
+            //         const ty = points[i + 3];
+
+            //     }
+
+
+
+            //     var angle = Math.atan2(toy - fromy, tox - fromx);
+
+
+
+
+            //     ctx.moveTo(fromx, fromy);
+            //     ctx.lineTo(tox, toy);
+            //     ctx.lineWidth = arrowWidth;
+            //     ctx.stroke();
+            //     ctx.beginPath();
+            //     ctx.moveTo(tox, toy);
+            //     ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 7),
+            //         toy - headlen * Math.sin(angle - Math.PI / 7));
+            //     ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 7),
+            //         toy - headlen * Math.sin(angle + Math.PI / 7));
+            //     ctx.lineTo(tox, toy);
+            //     ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 7),
+            //         toy - headlen * Math.sin(angle - Math.PI / 7));
+            //     ctx.stroke();
+            //     ctx.restore();
+            // }
+
+            for (const event of events) {
+                const divStart = document.querySelector(`*[block-instance="${event.source?.tag}"]`);
+                const divStop = document.querySelector(`*[block-instance="${event.target?.tag}"]`);
+                if (divStart && divStop) {
+                    const boxStart = divStart.getBoundingClientRect();
+                    const boxStop = divStop.getBoundingClientRect();
+                    const left = Math.min(boxStart.right, boxStop.right);
+                    const top = Math.min(boxStart.top, boxStop.top);
+                    const bottom = Math.max(boxStart.top, boxStop.top);
+                    const right = Math.max(boxStart.right, boxStop.right);
+                    const isTop = boxStart.top > boxStop.top;
+
+                    let topPosition = top + 16;
+                    let width = right - left + 50;
+                    let height = bottom - top;
+                    let offset = 8;
+                    if (isTop) {
+                        topPosition = topPosition - offset;
+                        height = height + 2 * offset;
+                    } else {
+                        topPosition = topPosition + offset;
+                        height = height - 2 * offset;
+                    }
+
+                    let r = left + width;
+                    if (r < maxRight) {
+                        r = maxRight;
+                    }
+                    while (mapRight[r]) {
+                        r = r + 5;
+                    }
+                    mapRight[r] = true;
+                    width = r - left;
+
+                    const w = 1;
+                    const start = (isTop ? boxStop.right : boxStart.right) - left;
+                    const end = (isTop ? boxStart.right : boxStop.right) - left;
+                    const polygon: string = `polygon(
+                        ${start}px 0px, 
+                        ${width}px 0px, 
+                        ${width}px ${height}px, 
+                        ${end}px ${height}px, 
+                        ${end}px ${height - w}px, 
+                        ${width - w}px ${height - w}px, 
+                        ${width - w}px ${w}px, 
+                        ${start}px ${w}px 
+                    )`;
+                    const div = document.createElement('div');
+                    div.style.position = 'absolute';
+                    div.style.top = `${topPosition}px`;
+                    div.style.left = `${left + 30}px`;
+                    div.style.height = `${height}px`;
+                    div.style.width = `${width}px`;
+                    div.style.zIndex = '999';
+                    // div.style.shapeOutside = polygon;
+                    div.style.clipPath = polygon;
+                    div.style.background = '#000';
+                    document.body.appendChild(div);
+                }
+            }
+        }
     }
 
     loadPolicy(): void {
@@ -139,10 +265,15 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyId = policyId;
         forkJoin([
             this.tokenService.getTokens(),
+            this.policyEngineService.blockAbout(),
             this.policyEngineService.policy(policyId)
         ]).subscribe((data: any) => {
             const tokens = data[0] || [];
-            const policy = data[1];
+            const blockAbout = data[1] || {};
+            const policy = data[2];
+
+            this.registeredBlocks.registerConfig(blockAbout);
+
             this.tokens = tokens.map((e: any) => new Token(e));
             this.setPolicy(policy);
             if (!policy) {
@@ -263,7 +394,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     onSelect(block: BlockNode) {
         this.currentBlock = block;
-        const allowedChildren = this.registeredBlocks.allowedChildren[block.blockType];
+        const allowedChildren = this.registeredBlocks.getAllowedChildren(block.blockType);
         const groupBlocks: any = {};
         const unGroupedBlocks: any[] = [];
         for (const key in BlockGroup) {
@@ -274,10 +405,10 @@ export class PolicyConfigurationComponent implements OnInit {
             const allowedChild = allowedChildren[i];
             const type = allowedChild.type;
             if (!allowedChild.group) {
-                allowedChild.group = this.registeredBlocks.blocks[allowedChild.type].group;
+                allowedChild.group = this.registeredBlocks.getGroup(allowedChild.type);
             }
             if (!allowedChild.header) {
-                allowedChild.header = this.registeredBlocks.blocks[allowedChild.type].header;
+                allowedChild.header = this.registeredBlocks.getHeader(allowedChild.type);
             }
             if (!groupBlocks[allowedChild.group]) {
                 groupBlocks[allowedChild.group] = {};

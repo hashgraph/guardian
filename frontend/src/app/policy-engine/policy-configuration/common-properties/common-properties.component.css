@@ -420,3 +420,14 @@ div[disabled="true"] {
 .prop-icon-event[invalid="true"] {
     color: #f00;
 }
+
+.block-name {
+    padding-left: 32px;
+    position: relative;
+}
+
+.block-icon {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}

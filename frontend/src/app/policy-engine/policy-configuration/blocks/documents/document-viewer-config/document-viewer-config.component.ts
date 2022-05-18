@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
+import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -31,7 +32,7 @@ export class DocumentSourceComponent implements OnInit {
 
     block!: BlockNode;
 
-    constructor() {
+    constructor(public registeredBlocks: RegisteredBlocks) {
     }
 
     ngOnInit(): void {
@@ -85,5 +86,9 @@ export class DocumentSourceComponent implements OnInit {
         field.dialogClass = "";
         field.dialogType = "";
         field.bindBlock = "";
+    }
+
+    getIcon(block: any) {
+        return this.registeredBlocks.getIcon(block.blockType);
     }
 }

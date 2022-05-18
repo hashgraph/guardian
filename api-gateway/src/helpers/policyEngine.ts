@@ -78,4 +78,7 @@ export class PolicyEngine extends ServiceRequestsBase {
         return await this.request(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, data);
     }
 
+    public async blockAbout() {
+        return await this.request(PolicyEngineEvents.BLOCK_ABOUT, null);
+    }
 }

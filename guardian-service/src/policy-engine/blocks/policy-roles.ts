@@ -3,10 +3,25 @@ import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { PolicyComponentsUtils } from '../policy-components-utils';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { PolicyInputEventType } from '@policy-engine/interfaces';
 
 @EventBlock({
     blockType: 'policyRolesBlock',
     commonBlock: false,
+    about: {
+        label: 'Roles',
+        title: `Add 'Choice Of Roles' Block`,
+        post: true,
+        get: true,
+        children: ChildrenType.None,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+        ],
+        output: null,
+    }
 })
 export class PolicyRolesBlock {
     async getData(user: IAuthUser): Promise<any> {

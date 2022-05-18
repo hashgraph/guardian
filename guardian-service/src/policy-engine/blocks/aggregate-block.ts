@@ -3,7 +3,6 @@ import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IAuthUser } from '@auth/auth.interface';
 import { VcDocument } from '@hedera-modules';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { Users } from '@helpers/users';
@@ -12,13 +11,30 @@ import { DocumentSignature, DocumentStatus } from 'interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Aggregate block
  */
 @BasicBlock({
     blockType: 'aggregateDocumentBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Aggregate Data',
+        title: `Add 'Aggregate' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.TimerEvent,
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class AggregateBlock {
     @Inject()
@@ -164,7 +180,7 @@ export class AggregateBlock {
     }
 
     /**
-     * @event PolicyEventType.Run
+     * @event PolicyInputEventType.RunEvent
      * @param {IPolicyEvent} event
      */
     async runAction(event: IPolicyEvent<any>) {

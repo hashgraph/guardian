@@ -12,9 +12,20 @@ import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @SourceAddon({
-    blockType: 'documentsSourceAddon'
+    blockType: 'documentsSourceAddon',
+    about: {
+        label: 'Source',
+        title: `Add 'DocumentsSourceAddon' Addon`,
+        post: false,
+        get: false,
+        children: ChildrenType.Special,
+        control: ControlType.Special,
+        input: null,
+        output: null,
+    }
 })
 export class DocumentsSourceAddon {
     @Inject()

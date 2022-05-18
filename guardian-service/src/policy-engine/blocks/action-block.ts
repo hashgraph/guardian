@@ -13,6 +13,8 @@ import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { PolicyInputEventType } from '@policy-engine/interfaces';
 
 /**
  * Document action clock with UI
@@ -20,6 +22,19 @@ import { PrivateKey } from '@hashgraph/sdk';
 @EventBlock({
     blockType: 'interfaceActionBlock',
     commonBlock: false,
+    about: {
+        label: 'Action',
+        title: `Add 'Action' Block`,
+        post: true,
+        get: true,
+        children: ChildrenType.Special,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+        ],
+        output: null,
+    }
 })
 export class InterfaceDocumentActionBlock {
     @Inject()

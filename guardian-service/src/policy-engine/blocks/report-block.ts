@@ -20,10 +20,25 @@ import { getMongoRepository } from 'typeorm';
 import { VpDocument } from '@entity/vp-document';
 import { VcDocument } from '@entity/vc-document';
 import { Schema } from '@entity/schema';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { PolicyInputEventType } from '@policy-engine/interfaces';
 
 @Report({
     blockType: 'reportBlock',
-    commonBlock: false
+    commonBlock: false,
+    about: {
+        label: 'Report',
+        title: `Add 'Report' Block`,
+        post: true,
+        get: true,
+        children: ChildrenType.Special,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+        ],
+        output: null,
+    }
 })
 export class ReportBlock {
     @Inject()

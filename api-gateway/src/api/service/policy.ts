@@ -246,3 +246,15 @@ policyAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Re
         res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
     }
 });
+
+policyAPI.get('/blocks/about', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.blockAbout());
+    } catch (e) {
+        console.error(e);
+        new Logger().error(e.message, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + e.message });
+    }
+});
+

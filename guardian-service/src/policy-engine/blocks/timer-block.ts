@@ -8,13 +8,32 @@ import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Aggregate block
  */
 @BasicBlock({
     blockType: 'timerBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Timer',
+        title: `Add 'Timer' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Special,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.StartTimerEvent,
+            PolicyInputEventType.StopTimerEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.TimerEvent
+        ]
+    }
 })
 export class TimerBlock {
     @StateField()

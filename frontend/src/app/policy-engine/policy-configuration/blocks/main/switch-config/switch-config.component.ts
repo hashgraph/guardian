@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
+import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -25,14 +26,14 @@ export class SwitchConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
-        options:false,
+        options: false,
         conditionsGroup: false,
         conditions: {},
     };
 
     block!: BlockNode;
 
-    constructor() {
+    constructor(public registeredBlocks: RegisteredBlocks) {
     }
 
     ngOnInit(): void {
@@ -64,5 +65,9 @@ export class SwitchConfigComponent implements OnInit {
 
     onRemoveCondition(i: number) {
         this.block.conditions.splice(i, 1);
+    }
+
+    getIcon(block: any) {
+        return this.registeredBlocks.getIcon(block.blockType);
     }
 }

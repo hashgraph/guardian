@@ -2,10 +2,12 @@ import { PolicyBlockMap, PolicyTagMap } from './';
 import { IPolicyBlock, } from '@policy-engine/policy-engine.interface';
 
 import { UserRole } from 'interfaces';
+import { BlockAbout } from './block-about';
 
 export interface PolicyBlockDecoratorOptions {
     blockType: string;
     commonBlock?: boolean;
+    about?: BlockAbout;
 }
 
 export interface PolicyBlockConstructorParams {

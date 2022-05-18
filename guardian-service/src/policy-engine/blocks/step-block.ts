@@ -3,14 +3,30 @@ import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
-import { PolicyOutputEventType } from '@policy-engine/interfaces';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Step block
  */
 @ContainerBlock({
     blockType: 'interfaceStepBlock',
-    commonBlock: false
+    commonBlock: false,
+    about: {
+        label: 'Step',
+        title: `Add 'Step' Block`,
+        post: false,
+        get: true,
+        children: ChildrenType.Any,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+        ],
+        output: [
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class InterfaceStepBlock {
     @StateField()

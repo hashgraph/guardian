@@ -18,6 +18,7 @@ import { Policy } from '@entity/policy';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
+import { GetBlockAbout } from '@policy-engine/blocks';
 
 export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallback<any>>>
 
@@ -298,5 +299,9 @@ export class PolicyComponentsUtils {
      */
     public static GetBlockUniqueOptionsObject(obj: any): { [key: string]: any } {
         return obj.options;
+    }
+
+    public static GetBlockAbout(): any {
+        return GetBlockAbout();
     }
 }

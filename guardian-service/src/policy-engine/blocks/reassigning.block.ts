@@ -7,11 +7,27 @@ import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
-import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @BasicBlock({
     blockType: 'reassigningBlock',
-    commonBlock: false
+    commonBlock: false,
+    about: {
+        label: 'Reassigning',
+        title: `Add 'Reassigning' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class ReassigningBlock {
     @Inject()

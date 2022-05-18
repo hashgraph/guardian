@@ -6,14 +6,30 @@ import { VcDocument } from '@hedera-modules';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Switch block
  */
 @BasicBlock({
     blockType: 'switchBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Switch',
+        title: `Add 'Switch' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class SwitchBlock {
     @Inject()

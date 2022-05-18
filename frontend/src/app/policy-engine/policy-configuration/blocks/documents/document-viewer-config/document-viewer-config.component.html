@@ -68,7 +68,14 @@
             </td>
             <td class="propRowCell">
                 <mat-select [(value)]="field.bindGroup" [disabled]="readonly">
-                    <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                    <mat-option *ngFor="let item of all" [value]="item.tag">
+                        <div class="block-name">
+                            <div class="block-icon">
+                                <mat-icon>{{getIcon(item)}}</mat-icon>
+                            </div>
+                            {{item.tag}}
+                        </div>
+                    </mat-option>
                 </mat-select>
             </td>
         </tr>
@@ -134,7 +141,14 @@
                     </td>
                     <td class="propRowCell">
                         <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                            <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                            <mat-option *ngFor="let item of all" [value]="item.tag">
+                                <div class="block-name">
+                                    <div class="block-icon">
+                                        <mat-icon>{{getIcon(item)}}</mat-icon>
+                                    </div>
+                                    {{item.tag}}
+                                </div>
+                            </mat-option>
                         </mat-select>
                     </td>
                 </tr>
@@ -171,7 +185,14 @@
                     </td>
                     <td class="propRowCell">
                         <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                            <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                            <mat-option *ngFor="let item of all" [value]="item.tag">
+                                <div class="block-name">
+                                    <div class="block-icon">
+                                        <mat-icon>{{getIcon(item)}}</mat-icon>
+                                    </div>
+                                    {{item.tag}}
+                                </div>
+                            </mat-option>
                         </mat-select>
                     </td>
                 </tr>
@@ -188,7 +209,14 @@
                 </td>
                 <td class="propRowCell">
                     <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                        <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
+                        <mat-option *ngFor="let item of all" [value]="item.tag">
+                            <div class="block-name">
+                                <div class="block-icon">
+                                    <mat-icon>{{getIcon(item)}}</mat-icon>
+                                </div>
+                                {{item.tag}}
+                            </div>
+                        </mat-option>
                     </mat-select>
                 </td>
             </tr>

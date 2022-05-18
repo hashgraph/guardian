@@ -12,15 +12,30 @@ import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Topic } from '@entity/topic';
 import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { PolicyOutputEventType } from '@policy-engine/interfaces';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
     commonBlock: false,
+    about: {
+        label: 'Request',
+        title: `Add 'Request' Block`,
+        post: true,
+        get: true,
+        children: ChildrenType.Special,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class RequestVcDocumentBlock {
     @StateField()

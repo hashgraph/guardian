@@ -645,5 +645,15 @@ export class PolicyEngineService {
                 return new MessageError(error.message);
             }
         });
+
+
+        this.channel.response<any, any>(PolicyEngineEvents.BLOCK_ABOUT, async (msg) => {
+            try {
+                const about = PolicyComponentsUtils.GetBlockAbout();
+                return new MessageResponse(about);
+            } catch (error) {
+                return new MessageError(error.message);
+            }
+        });
     }
 }

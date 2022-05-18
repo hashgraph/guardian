@@ -13,11 +13,27 @@ import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } fr
 import { getMongoRepository } from 'typeorm';
 import { ApprovalDocument } from '@entity/approval-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Send',
+        title: `Add 'Send' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class SendToGuardianBlock {
     @Inject()

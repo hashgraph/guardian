@@ -8,6 +8,7 @@ import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * External data block
@@ -15,6 +16,19 @@ import { PolicyOutputEventType } from '@policy-engine/interfaces';
 @ExternalData({
     blockType: 'externalDataBlock',
     commonBlock: false,
+    about: {
+        label: 'External Data',
+        title: `Add 'External Data' Block`,
+        post: true,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: null,
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class ExternalDataBlock {
     

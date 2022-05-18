@@ -182,26 +182,6 @@
                                 </div>
                             </td>
                             <td class="propHeaderCell">
-                                <!-- 
-                                <div *ngIf="isOutputEvent(item)" style="height: 20px;" [attr.disabled]="item.disabled">
-                                    <span class="prop-icon-text">
-                                    </span>
-                                    <span class="prop-icon" style="width: 20px !IMPORTANT; color: #c53227;">
-                                        <mat-icon style="top: -1px;">arrow_forward</mat-icon>
-                                    </span>
-                                    <span class="prop-icon-text">
-                                        {{item.target?.tag}}
-                                    </span>
-                                </div>
-                                <div *ngIf="isInputEvent(item)" style="height: 20px;" [attr.disabled]="item.disabled">
-                                    <span class="prop-icon" style="width: 20px !IMPORTANT; color: #35a307;">
-                                        <mat-icon style="top: -1px;">arrow_back</mat-icon>
-                                    </span>
-                                    <span class="prop-icon-text">
-                                        {{item.source?.tag}}
-                                    </span>
-                                </div> 
-                                -->
                                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveEvent(item)">
                                     <mat-icon>delete</mat-icon>
                                 </span>
@@ -234,7 +214,13 @@
                             <td class="propRowCell cellName">Source</td>
                             <td class="propRowCell remove-cell">
                                 <mat-select [(value)]="item.source" [disabled]="readonly">
-                                    <mat-option *ngFor="let item of allBlocks" [value]="item">{{item.tag}}
+                                    <mat-option *ngFor="let item of allBlocks" [value]="item">
+                                        <div class="block-name">
+                                            <div class="block-icon">
+                                                <mat-icon>{{getIcon(item)}}</mat-icon>
+                                            </div>
+                                            {{item.tag}}
+                                        </div>
                                     </mat-option>
                                 </mat-select>
                             </td>
@@ -246,7 +232,13 @@
                             <td class="propRowCell cellName">Target</td>
                             <td class="propRowCell remove-cell">
                                 <mat-select [(value)]="item.target" [disabled]="readonly">
-                                    <mat-option *ngFor="let item of allBlocks" [value]="item">{{item.tag}}
+                                    <mat-option *ngFor="let item of allBlocks" [value]="item">
+                                        <div class="block-name">
+                                            <div class="block-icon">
+                                                <mat-icon>{{getIcon(item)}}</mat-icon>
+                                            </div>
+                                            {{item.tag}}
+                                        </div>
                                     </mat-option>
                                 </mat-select>
                             </td>
@@ -265,9 +257,10 @@
                             <td class="propRowCell cellName">Output Event</td>
                             <td class="propRowCell remove-cell">
                                 <mat-select [(value)]="item.output" [disabled]="readonly">
-                                    <mat-option value="TimerEvent">Timer Event</mat-option>
-                                    <mat-option value="RefreshEvent">Refresh Event</mat-option>
-                                    <mat-option value="RunEvent">Run Event</mat-option>
+                                    <mat-option value=""></mat-option>
+                                    <mat-option *ngFor="let e of getOutputEvents(item)" [value]="e">
+                                        {{e}}
+                                    </mat-option>
                                 </mat-select>
                             </td>
                         </tr>
@@ -276,11 +269,10 @@
                             <td class="propRowCell cellName">Input Event</td>
                             <td class="propRowCell remove-cell">
                                 <mat-select [(value)]="item.input" [disabled]="readonly">
-                                    <mat-option value="TimerEvent">Timer Event</mat-option>
-                                    <mat-option value="StartTimerEvent">Start Timer Event </mat-option>
-                                    <mat-option value="StopTimerEvent">Stop Timer Event </mat-option>
-                                    <mat-option value="RefreshEvent">Refresh Event </mat-option>
-                                    <mat-option value="RunEvent">Run Event </mat-option>
+                                    <mat-option value=""></mat-option>
+                                    <mat-option *ngFor="let e of getInputEvents(item)" [value]="e">
+                                        {{e}}
+                                    </mat-option>
                                 </mat-select>
                             </td>
                         </tr>

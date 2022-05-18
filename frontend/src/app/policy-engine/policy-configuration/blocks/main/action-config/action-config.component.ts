@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token, UserType } from 'interfaces';
+import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -33,7 +34,7 @@ export class ActionConfigComponent implements OnInit {
 
     block!: BlockNode;
 
-    constructor() {
+    constructor(public registeredBlocks: RegisteredBlocks) {
     }
 
     ngOnInit(): void {
@@ -66,7 +67,7 @@ export class ActionConfigComponent implements OnInit {
     }
 
     addFilters() {
-        if(!this.block.filters) {
+        if (!this.block.filters) {
             this.block.filters = [];
         }
         this.block.filters.push({
@@ -75,5 +76,9 @@ export class ActionConfigComponent implements OnInit {
             tooltip: '',
             type: 'text',
         })
+    }
+
+    getIcon(block: any) {
+        return this.registeredBlocks.getIcon(block.blockType);
     }
 }

@@ -53,6 +53,8 @@ export class CommonPropertiesComponent implements OnInit {
         }
     ];
     events: any[] = [];
+    inputEvents: any[] = [];
+    outputEvents: any[] = [];
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -136,6 +138,37 @@ export class CommonPropertiesComponent implements OnInit {
 
     loadEvents(block: BlockNode) {
         block.events = block.events || [];
+        const about = this.registeredBlocks.getAbout(block.blockType, block);
+        this.inputEvents = about.input;
+        this.outputEvents = about.output;
+    }
+
+    getIcon(block:any) {
+        return this.registeredBlocks.getIcon(block.blockType);
+    }
+
+    getOutputEvents(event:any) {
+        try {
+            if(event.source && event.source.blockType) {
+                const about = this.registeredBlocks.getAbout(event.source.blockType, event.source);
+                return about.output || [];
+            }
+            return []; 
+        } catch (error) {
+            return [];  
+        }
+    }
+
+    getInputEvents(event:any) {
+        try {
+            if(event.target && event.target.blockType) {
+                const about = this.registeredBlocks.getAbout(event.target.blockType, event.target);
+                return about.input || [];
+            }
+            return []; 
+        } catch (error) {
+            return [];  
+        }
     }
 
     loadComponent(block: BlockNode) {

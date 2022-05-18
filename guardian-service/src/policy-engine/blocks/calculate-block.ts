@@ -13,11 +13,27 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
-import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Calculate',
+        title: `Add 'Calculate' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.Special,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class CalculateContainerBlock {
     @Inject()

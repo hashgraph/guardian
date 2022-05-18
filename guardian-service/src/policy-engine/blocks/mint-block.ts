@@ -14,14 +14,30 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Mint block
  */
 @BasicBlock({
     blockType: 'mintDocumentBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Mint',
+        title: `Add 'Mint' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class MintBlock {
     @Inject()

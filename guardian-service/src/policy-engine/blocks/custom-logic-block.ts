@@ -10,11 +10,27 @@ import { SchemaHelper } from 'interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
-import { IPolicyEvent, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @BasicBlock({
     blockType: 'customLogicBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Custom Logic',
+        title: `Add 'Custom Logic' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.Special,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ]
+    }
 })
 export class CustomLogicBlock {
     @Inject()

@@ -69,6 +69,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
         return class extends basicClass {
             static blockType = o.blockType;
+            static about = o.about;
 
             protected oldDataState: any = {};
             protected currentDataState: any = {};
