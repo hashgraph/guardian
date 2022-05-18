@@ -1,4 +1,4 @@
-# API Workflow of iREC 2 Demo
+# iREC 2 API Demo Guide
 
 ## Root Authority
 
@@ -9575,6 +9575,10 @@ null
 
 {% endswagger-description %}
 
+{% swagger-parameter in="body" name="reg" %}
+
+{% endswagger-parameter %}
+
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
@@ -9583,6 +9587,24 @@ null
 ```
 {% endswagger-response %}
 {% endswagger %}
+
+#### Getting uuid of device created
+
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/create_device_form" summary="Getting uuid of created device" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="" %}
+```javascript
+{
+    "id": "bb8ddf01-e056-4632-8aa1-7c1c8aa5a1ee"
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+####
 
 ### Setting up the User Role
 
