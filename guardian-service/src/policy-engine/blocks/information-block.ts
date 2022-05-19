@@ -19,6 +19,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
             PolicyInputEventType.RefreshEvent,
         ],
         output: null,
+        defaultEvent: false
     }
 })
 export class InformationBlock {

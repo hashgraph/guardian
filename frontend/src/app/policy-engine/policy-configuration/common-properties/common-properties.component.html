@@ -111,6 +111,15 @@
                         <input type="checkbox" [(ngModel)]="block.defaultActive" [readonly]="readonly">
                     </td>
                 </tr>
+
+                <tr class="propRow">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Stop Propagation</td>
+                    <td class="propRowCell">
+                        <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
+                    </td>
+                </tr>
+
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">On errors</td>
@@ -159,6 +168,81 @@
         </table>
         <div class="table-body">
             <table *ngIf="block" class="properties">
+
+
+                <ng-container *ngIf="defaultEvent">
+                    <tr class="propHeader">
+                        <td class="propRowCol" (click)="onHide(propHidden, 'defaultEvent')"
+                            [attr.collapse]="propHidden.defaultEvent">
+                            <mat-icon>expand_more</mat-icon>
+                        </td>
+                        <td class="propHeaderCell cellName">
+                            <div style="height: 20px;" [attr.disabled]="block.stopPropagation">
+                                <span class="prop-icon prop-icon-event">
+                                    <mat-icon>flash_on</mat-icon>
+                                </span>
+                                <span class="prop-icon" style="color: #c53227;">
+                                    <mat-icon>arrow_upward</mat-icon>
+                                </span>
+                                <span class="prop-icon-text">Default Event</span>
+                            </div>
+                        </td>
+                        <td class="propHeaderCell"></td>
+                    </tr>
+                    <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Event Type</td>
+                        <td class="propRowCell remove-cell">
+                            <span class="readonly-prop">Output Event</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Source</td>
+                        <td class="propRowCell remove-cell">
+                            <span class="readonly-prop">Current Block</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">
+                            <!-- <span class="prop-icon-output-event">
+                            <mat-icon>logout</mat-icon>
+                        </span> -->
+                            Output Event
+                        </td>
+                        <td class="propRowCell remove-cell">
+                            <span class="readonly-prop">RunEvent</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Target</td>
+                        <td class="propRowCell remove-cell">
+                            <span class="readonly-prop">Next Block</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">
+                            <!-- <span class="prop-icon-input-event">
+                            <mat-icon>login</mat-icon>
+                        </span> -->
+                            Input Event
+                        </td>
+                        <td class="propRowCell remove-cell">
+                            <span class="readonly-prop">RunEvent</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Disabled</td>
+                        <td class="propRowCell remove-cell">
+                            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
+                        </td>
+                    </tr>
+                </ng-container>
+
                 <ng-container *ngFor="let item of allEvents; let i=index">
                     <ng-container *ngIf="isOutputEvent(item) || isInputEvent(item)">
                         <tr class="propHeader">
@@ -230,6 +314,18 @@
                                 </mat-select>
                             </td>
                         </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Output Event</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(value)]="item.output" [disabled]="readonly">
+                                    <mat-option value=""></mat-option>
+                                    <mat-option *ngFor="let e of getOutputEvents(item)" [value]="e">
+                                        {{e}}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
 
                         <tr *ngIf="isOutputEvent(item)" class="propRow subRow"
                             [attr.collapse]="propHidden.eventsGroup[i]">
@@ -259,19 +355,6 @@
                             <td class="propRowCell cellName">Target</td>
                             <td class="propRowCell remove-cell">
                                 <span class="readonly-prop">Current Block</span>
-                            </td>
-                        </tr>
-
-                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
-                            <td class="propRowCol"></td>
-                            <td class="propRowCell cellName">Output Event</td>
-                            <td class="propRowCell remove-cell">
-                                <mat-select [(value)]="item.output" [disabled]="readonly">
-                                    <mat-option value=""></mat-option>
-                                    <mat-option *ngFor="let e of getOutputEvents(item)" [value]="e">
-                                        {{e}}
-                                    </mat-option>
-                                </mat-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">

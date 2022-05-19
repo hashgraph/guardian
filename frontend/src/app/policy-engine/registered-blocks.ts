@@ -78,21 +78,32 @@ export interface IBlockAbout {
     output: any;
     children: ChildrenType;
     control: ControlType;
+    defaultEvent: boolean;
     prev?: IBlockAbout;
     next?: boolean;
 }
 
-type ConfigFunction<T> = ((block: any, prev?: IBlockAbout, next?: boolean) => T) | T;
+type ConfigFunction<T> = ((value: any, block: any, prev?: IBlockAbout, next?: boolean) => T) | T;
 
 export interface IBlockAboutConfig {
-    post: ConfigFunction<boolean>;
-    get: ConfigFunction<boolean>;
-    input: ConfigFunction<any>;
-    output: ConfigFunction<any>;
-    children: ConfigFunction<ChildrenType>;
-    control: ConfigFunction<ControlType>;
+    post: boolean;
+    get: boolean;
+    input: any;
+    output: any;
+    children: ChildrenType;
+    control: ControlType;
+    defaultEvent: boolean;
 }
 
+export interface IBlockDynamicAboutConfig {
+    post?: ConfigFunction<boolean>;
+    get?: ConfigFunction<boolean>;
+    input?: ConfigFunction<any>;
+    output?: ConfigFunction<any>;
+    children?: ConfigFunction<ChildrenType>;
+    control?: ConfigFunction<ControlType>;
+    defaultEvent?: ConfigFunction<boolean>;
+}
 
 export enum ChildrenType {
     None = 'None',
@@ -108,36 +119,38 @@ export enum ControlType {
 }
 
 export class BlockAbout {
-    private _propFunc: { [x: string]: ConfigFunction<any> } = {};
+    private _propFunc: { [x: string]: Function } = {};
     private _propVal: { [x: string]: any } = {};
-    private _setProp(about: any, name: string) {
-        if (typeof about[name] == 'function') {
-            this._propFunc[name] = about[name];
+    private _setProp(about: any, dynamic: any, name: string) {
+        this._propVal[name] = about[name];
+        if (dynamic && dynamic[name]) {
+            this._propFunc[name] = dynamic[name];
         } else {
-            this._propVal[name] = about[name];
-            this._propFunc[name] = (block: any, prev?: IBlockAbout, next?: boolean) => {
+            this._propFunc[name] = (value: any, block: any, prev?: IBlockAbout, next?: boolean) => {
                 return this._propVal[name];
             };
         }
     }
 
-    constructor(about: IBlockAboutConfig) {
-        this._setProp(about, 'post');
-        this._setProp(about, 'get');
-        this._setProp(about, 'input');
-        this._setProp(about, 'output');
-        this._setProp(about, 'children');
-        this._setProp(about, 'control');
+    constructor(about: IBlockAboutConfig, dynamic?: IBlockDynamicAboutConfig) {
+        this._setProp(about, dynamic, 'post');
+        this._setProp(about, dynamic, 'get');
+        this._setProp(about, dynamic, 'input');
+        this._setProp(about, dynamic, 'output');
+        this._setProp(about, dynamic, 'children');
+        this._setProp(about, dynamic, 'control');
+        this._setProp(about, dynamic, 'defaultEvent');
     }
 
     public get(block: any): IBlockAbout {
         return {
-            post: this._propFunc.post(block),
-            get: this._propFunc.get(block),
-            input: this._propFunc.input(block),
-            output: this._propFunc.output(block),
-            children: this._propFunc.children(block),
-            control: this._propFunc.control(block),
+            post: this._propFunc.post(this._propVal.post, block),
+            get: this._propFunc.get(this._propVal.get, block),
+            input: this._propFunc.input(this._propVal.input, block),
+            output: this._propFunc.output(this._propVal.output, block),
+            children: this._propFunc.children(this._propVal.children, block),
+            control: this._propFunc.control(this._propVal.control, block),
+            defaultEvent: this._propFunc.defaultEvent(this._propVal.defaultEvent, block),
         }
     }
 
@@ -146,29 +159,28 @@ export class BlockAbout {
             _block: block,
             _prev: prev,
             _next: next,
-            _post: this._propFunc.post,
-            _get: this._propFunc.get,
-            _input: this._propFunc.input,
-            _output: this._propFunc.output,
-            _children: this._propFunc.children,
-            _control: this._propFunc.control,
+            _func: this._propFunc,
+            _val: this._propVal,
             get post() {
-                return this._post(this._block, this._prev, this._next);
+                return this._func.post(this._val.post, this._block, this._prev, this._next);
             },
             get get() {
-                return this._get(this._block, this._prev, this._next);
+                return this._func.get(this._val.get, this._block, this._prev, this._next);
             },
             get input() {
-                return this._input(this._block, this._prev, this._next);
+                return this._func.input(this._val.input, this._block, this._prev, this._next);
             },
             get output() {
-                return this._output(this._block, this._prev, this._next);
+                return this._func.output(this._val.output, this._block, this._prev, this._next);
             },
             get children() {
-                return this._children(this._block, this._prev, this._next);
+                return this._func.children(this._val.children, this._block, this._prev, this._next);
             },
             get control() {
-                return this._control(this._block, this._prev, this._next);
+                return this._func.control(this._val.control, this._block, this._prev, this._next);
+            },
+            get defaultEvent() {
+                return this._func.defaultEvent(this._val.defaultEvent, this._block, this._prev, this._next);
             },
             set prev(value: IBlockAbout) {
                 this._prev = value;
@@ -189,6 +201,7 @@ export interface IBlockSetting {
     factory: any;
     property: any;
     allowedChildren?: ChildrenDisplaySettings[];
+    about?: IBlockDynamicAboutConfig
 }
 
 export interface ChildrenDisplaySettings {
@@ -208,6 +221,7 @@ export class RegisteredBlocks {
     private properties: any;
     private about: any;
     private allowedChildren: any;
+    private dynamicAbout: any;
 
     private readonly defaultA = new BlockAbout({
         post: false,
@@ -216,6 +230,7 @@ export class RegisteredBlocks {
         output: null,
         children: ChildrenType.None,
         control: ControlType.None,
+        defaultEvent: false
     })
 
     constructor() {
@@ -228,6 +243,7 @@ export class RegisteredBlocks {
         this.properties = {};
         this.about = {};
         this.allowedChildren = {};
+        this.dynamicAbout = {};
 
         const allowedChildrenStepContainerBlocks = [
             { type: BlockType.Information },
@@ -249,7 +265,7 @@ export class RegisteredBlocks {
             { type: BlockType.CustomLogicBlock },
             { type: BlockType.Report }
         ];
-        
+
         // Main, UI Components
         this.registerBlock({
             type: BlockType.Container,
@@ -292,12 +308,10 @@ export class RegisteredBlocks {
             header: BlockHeaders.UIComponents,
             factory: ActionBlockComponent,
             property: ActionConfigComponent,
-            allowedChildren: [
-                {
-                    type: BlockType.DocumentsSourceAddon,
-                    group: BlockGroup.UnGrouped
-                }
-            ]
+            allowedChildren: [{
+                type: BlockType.DocumentsSourceAddon,
+                group: BlockGroup.UnGrouped
+            }]
         });
 
         // Main, Server Blocks
@@ -307,7 +321,18 @@ export class RegisteredBlocks {
             group: BlockGroup.Main,
             header: BlockHeaders.ServerBlocks,
             factory: null,
-            property: SwitchConfigComponent
+            property: SwitchConfigComponent,
+            about: {
+                output: (value: any, block: any, prev?: IBlockAbout, next?: boolean) => {
+                    const result = value.slice();
+                    if(block.conditions) {
+                        for (const c of block.conditions) {
+                            result.push(c.tag);
+                        }
+                    }
+                    return result;
+                }
+            }
         });
 
         // Documents, UI Components
@@ -498,6 +523,7 @@ export class RegisteredBlocks {
         this.allowedChildren[type] = setting.allowedChildren;
         this.factories[type] = setting.factory;
         this.properties[type] = setting.property;
+        this.dynamicAbout[type] = setting.about;
     }
 
     public registerConfig(config: any) {
@@ -514,7 +540,8 @@ export class RegisteredBlocks {
                 output: setting.output,
                 children: setting.children,
                 control: setting.control,
-            });
+                defaultEvent: setting.defaultEvent
+            }, this.dynamicAbout[type]);
         }
     }
 

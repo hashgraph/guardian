@@ -58,6 +58,7 @@ export class ActionConfigComponent implements OnInit {
 
     addOptions() {
         this.block.uiMetaData.options.push({
+            tag: `Option_${this.block.uiMetaData.options.length}`,
             title: '',
             name: '',
             tooltip: '',

@@ -26,9 +26,9 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
             PolicyInputEventType.RunEvent
         ],
         output: [
-            PolicyOutputEventType.RunEvent,
             PolicyOutputEventType.RefreshEvent
-        ]
+        ],
+        defaultEvent: false
     }
 })
 export class SwitchBlock {
@@ -105,10 +105,10 @@ export class SwitchBlock {
         const { conditions, executionFlow } = ref.options;
         for (let i = 0; i < conditions.length; i++) {
             const condition = conditions[i];
-            const type = condition.type;
-            const value = condition.value;
-            const actor = condition.actor;
-            const triggerEvent = condition.event;
+            const type = condition.type as string;
+            const value = condition.value as string;
+            const actor = condition.actor as string;
+            const tag = condition.tag as PolicyOutputEventType;
 
             let result = false;
             if (type == 'equal') {
@@ -137,7 +137,8 @@ export class SwitchBlock {
             ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
 
             if (result) {
-                ref.triggerEvent(triggerEvent, curUser, event.data);
+                ref.triggerEvents(tag, curUser, event.data);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, null);
                 if (executionFlow == 'firstTrue') {
                     return;
                 }
@@ -156,18 +157,12 @@ export class SwitchBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "conditions" does not set');
             }
 
+            const tagMap = {};
             if (Array.isArray(ref.options.conditions)) {
                 for (let condition of ref.options.conditions) {
                     if (!['equal', 'not_equal', 'unconditional'].find(item => item === condition.type)) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "condition.type" must be one of equal, not_equal, unconditional');
                     }
-                    if (!condition.target && !resultsContainer.isTagExist(condition.target)) {
-                        resultsContainer.addBlockError(ref.uuid, `Tag "${condition.target}" does not exist`);
-                    }
-                    if (condition.target == ref.tag) {
-                        resultsContainer.addBlockError(ref.uuid, `A block cannot redirect to itself`);
-                    }
-
                     if (condition.type == 'equal' || condition.type == 'not_equal') {
                         if (!condition.value) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "condition.value" does not set');
@@ -176,6 +171,15 @@ export class SwitchBlock {
                         }
                     }
 
+                    if (!condition.tag) {
+                        resultsContainer.addBlockError(ref.uuid, `Option "tag" does not set`);
+                    }
+
+                    if (tagMap[condition.tag]) {
+                        resultsContainer.addBlockError(ref.uuid, `Condition Tag ${condition.tag} already exist`);
+                    }
+
+                    tagMap[condition.tag] = true;
                 }
             } else {
                 resultsContainer.addBlockError(ref.uuid, 'Option "conditions" must be an array');

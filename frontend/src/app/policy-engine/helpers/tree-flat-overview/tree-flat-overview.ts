@@ -1,5 +1,5 @@
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { Component, EventEmitter, Injectable, Input, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Injectable, Input, Output, SimpleChanges } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 import { BehaviorSubject, Observable, of as observableOf } from 'rxjs';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -54,7 +54,13 @@ export class TreeFlatOverview {
     validateDrop = false;
     isCollapseAll = true;
 
-    constructor(private registeredBlocks: RegisteredBlocks) {
+    public readonly context: ElementRef;
+
+    constructor(
+        private element: ElementRef,
+        private registeredBlocks: RegisteredBlocks
+    ) {
+        this.context = element;
         this.treeFlattener = new MatTreeFlattener(this.transformer, this._getLevel,
             this._isExpandable, this._getChildren);
         this.treeControl = new FlatTreeControl<FlatBlockNode>(this._getLevel, this._isExpandable);
@@ -248,19 +254,6 @@ export class TreeFlatOverview {
         this.root = data[0];
         this.currentBlock = this.root;
         this.dataSource.data = data;
-
-        for (let index = 0; index < this.treeControl.dataNodes.length; index++) {
-            const p = this.treeControl.dataNodes[index - 1];
-            const e = this.treeControl.dataNodes[index];
-            const n = this.treeControl.dataNodes[index + 1];
-            if (p && e.level == p.level) {
-                e.about.prev = p.about;
-            } else {
-                e.about.prev = null;
-            }
-            e.about.next = !!(n && e.level == n.level);
-        }
-
         this.treeControl.expansionModel.clear();
         this.expansionModel.selected.forEach((id) => {
             const node: any = this.treeControl.dataNodes.find((n) => n.node.id === id);

@@ -203,6 +203,9 @@ export class PolicyComponentsUtils {
 
         for (let instance of allInstances) {
             await instance.afterInit();
+            if (!instance.options.stopPropagation) {
+                PolicyComponentsUtils.RegisterLink(instance, PolicyOutputEventType.RunEvent, instance.next, PolicyInputEventType.RunEvent);
+            }
             for (let event of instance.events) {
                 if (!event.disabled) {
                     if (event.source == instance.tag) {
@@ -218,10 +221,6 @@ export class PolicyComponentsUtils {
                     }
                 }
             }
-            // for (let dep of (instance as any).dependencies) {
-            //     const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, dep);
-            //     PolicyComponentsUtils.RegisterLink(source, PolicyOutputEventType.RefreshEvent, instance, PolicyInputEventType.RefreshEvent);
-            // }
             if (instance.parent?.blockClassName === 'ContainerBlock') {
                 PolicyComponentsUtils.RegisterLink(instance, PolicyOutputEventType.RefreshEvent, instance.parent, PolicyInputEventType.RefreshEvent);
             }

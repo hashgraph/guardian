@@ -14,7 +14,7 @@ import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-
 import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 
 /**
  * Document action clock with UI
@@ -34,6 +34,7 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
             PolicyInputEventType.RefreshEvent,
         ],
         output: null,
+        defaultEvent: false
     }
 })
 export class InterfaceDocumentActionBlock {
@@ -84,11 +85,20 @@ export class InterfaceDocumentActionBlock {
                 const ownerDid = option.user === UserType.CURRENT
                     ? user.did
                     : document.owner;
-                const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, option.bindBlock) as any;
                 const owner = await this.users.getUserById(ownerDid);
-                ref.triggerEvent(block, owner, state);
+                ref.triggerEvents(option.tag, owner, state);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, null);
             }
             return;
+        }
+
+        if (ref.options.type == 'dropdown') {
+            if (ref.options.bindBlock) {
+                const owner = await this.users.getUserById(document.owner);
+                ref.triggerEvents(PolicyOutputEventType.DropdownEvent, owner, state);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, null);
+                return;
+            }
         }
 
         if (ref.options.type == 'download') {
@@ -124,15 +134,6 @@ export class InterfaceDocumentActionBlock {
                 }
             }
         }
-
-        if (ref.options.type == 'dropdown') {
-            if (ref.options.bindBlock) {
-                const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, ref.options.bindBlock) as any;
-                const owner = await this.users.getUserById(document.owner);
-                ref.triggerEvent(block, owner, state);
-                return;
-            }
-        }
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
@@ -153,10 +154,17 @@ export class InterfaceDocumentActionBlock {
                                 resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.options" does not set');
                             }
                             if (Array.isArray(ref.options.uiMetaData.options)) {
-                                for (let tag of ref.options.uiMetaData.options.map(i => i.bindBlock)) {
-                                    if (tag && !resultsContainer.isTagExist(tag)) {
-                                        resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
+                                const tagMap = {};
+                                for (let option of ref.options.uiMetaData.options) {
+                                    if (!option.tag) {
+                                        resultsContainer.addBlockError(ref.uuid, `Option "tag" does not set`);
                                     }
+
+                                    if (tagMap[option.tag]) {
+                                        resultsContainer.addBlockError(ref.uuid, `Option Tag ${option.tag} already exist`);
+                                    }
+
+                                    tagMap[option.tag] = true;
                                 }
                             } else {
                                 resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.options" must be an array');

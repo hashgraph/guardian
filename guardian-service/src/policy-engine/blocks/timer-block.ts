@@ -32,7 +32,8 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
             PolicyOutputEventType.RunEvent,
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.TimerEvent
-        ]
+        ],
+        defaultEvent: true
     }
 })
 export class TimerBlock {

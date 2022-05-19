@@ -39,6 +39,7 @@ import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
 import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from 'common';
+import { PolicyConverterUtils } from './policy-converter-utils';
 
 export class PolicyEngineService {
     @Inject()
@@ -155,6 +156,7 @@ export class PolicyEngineService {
             newTopic = topic;
         }
 
+        model.codeVersion = PolicyConverterUtils.VERSION;
         const policy = await getMongoRepository(Policy).save(model);
         if (newTopic) {
             newTopic.policyId = policy.id.toString();

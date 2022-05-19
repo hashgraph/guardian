@@ -62,6 +62,9 @@ export class Policy {
     @Column()
     messageId: string;
 
+    @Column()
+    codeVersion: string;
+
     @CreateDateColumn()
     createDate: Date;
 
@@ -70,5 +73,6 @@ export class Policy {
         this.status = this.status || 'DRAFT';
         this.registeredUsers = {};
         this.uuid = this.uuid || ModelHelper.randomUUID();
+        this.codeVersion = this.codeVersion || '1.0.0';
     }
 }

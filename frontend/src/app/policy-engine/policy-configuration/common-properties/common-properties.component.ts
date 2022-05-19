@@ -55,7 +55,8 @@ export class CommonPropertiesComponent implements OnInit {
     events: any[] = [];
     inputEvents: any[] = [];
     outputEvents: any[] = [];
-
+    defaultEvent: boolean = false;
+    
     constructor(
         public registeredBlocks: RegisteredBlocks,
         private componentFactoryResolver: ComponentFactoryResolver
@@ -100,7 +101,13 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     isInvalid(item: any) {
-        return (!item.target || !item.source || !item.output || !item.input);
+        return (
+            !item.target ||
+            !item.source ||
+            !item.output ||
+            !item.input ||
+            (item.target == item.source)
+        );
     }
 
     addEvent() {
@@ -141,33 +148,34 @@ export class CommonPropertiesComponent implements OnInit {
         const about = this.registeredBlocks.getAbout(block.blockType, block);
         this.inputEvents = about.input;
         this.outputEvents = about.output;
+        this.defaultEvent = about.defaultEvent;
     }
 
-    getIcon(block:any) {
+    getIcon(block: any) {
         return this.registeredBlocks.getIcon(block.blockType);
     }
 
-    getOutputEvents(event:any) {
+    getOutputEvents(event: any) {
         try {
-            if(event.source && event.source.blockType) {
+            if (event.source && event.source.blockType) {
                 const about = this.registeredBlocks.getAbout(event.source.blockType, event.source);
                 return about.output || [];
             }
-            return []; 
+            return [];
         } catch (error) {
-            return [];  
+            return [];
         }
     }
 
-    getInputEvents(event:any) {
+    getInputEvents(event: any) {
         try {
-            if(event.target && event.target.blockType) {
+            if (event.target && event.target.blockType) {
                 const about = this.registeredBlocks.getAbout(event.target.blockType, event.target);
                 return about.input || [];
             }
-            return []; 
+            return [];
         } catch (error) {
-            return [];  
+            return [];
         }
     }
 

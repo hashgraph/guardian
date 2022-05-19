@@ -22,4 +22,5 @@ export interface BlockAbout {
     output?: PolicyOutputEventType[],
     children: ChildrenType,
     control: ControlType,
+    defaultEvent: boolean
 }

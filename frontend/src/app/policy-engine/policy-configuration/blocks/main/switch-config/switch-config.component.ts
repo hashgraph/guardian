@@ -57,6 +57,7 @@ export class SwitchConfigComponent implements OnInit {
 
     addCondition() {
         this.block.conditions.push({
+            tag: `Condition_${this.block.conditions.length}`,
             type: 'equal',
             value: '',
             actor: '',

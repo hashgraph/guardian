@@ -38,6 +38,7 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
             PolicyInputEventType.RefreshEvent,
         ],
         output: null,
+        defaultEvent: false
     }
 })
 export class ReportBlock {

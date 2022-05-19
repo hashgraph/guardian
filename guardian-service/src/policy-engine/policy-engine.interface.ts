@@ -34,10 +34,16 @@ export interface IPolicyBlock {
     policyId: string;
     policyOwner: string;
     policyInstance: any;
-    
+
     readonly actions: any[];
     readonly outputActions: any[];
     readonly events: EventConfig[];
+
+    readonly next: IPolicyBlock;
+
+    getChild(uuid: string): IPolicyBlock;
+
+    getChildIndex(uuid: string): number;
 
     checkDataStateDiffer?: (user: IAuthUser) => boolean
 

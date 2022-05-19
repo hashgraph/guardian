@@ -10,4 +10,5 @@ export enum PolicyOutputEventType {
     TimerEvent = 'TimerEvent',
     RunEvent = 'RunEvent',
     RefreshEvent = 'RefreshEvent',
+    DropdownEvent = 'DropdownEvent',
 }

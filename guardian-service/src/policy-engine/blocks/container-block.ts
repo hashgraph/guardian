@@ -21,7 +21,8 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.RefreshEvent,
         ],
-        output: null
+        output: null,
+        defaultEvent: false
     }
 })
 export class InterfaceContainerBlock {

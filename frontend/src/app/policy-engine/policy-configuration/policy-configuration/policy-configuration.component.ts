@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema, SchemaHelper, SchemaStatus, Token } from 'interfaces';
@@ -13,6 +13,7 @@ import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-v
 import * as yaml from 'js-yaml';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { EventsOverview } from '../../helpers/events-overview/events-overview';
 
 /**
  * The page for editing the policy and blocks.
@@ -531,9 +532,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.policy.config = root;
             this.policyEngineService.update(this.policyId, this.policy).subscribe((policy) => {
                 this.setPolicy(policy);
-                if (this.compareStateAndConfig(this.objectToJson(root))) {
-                    this.clearState();
-                }
+                this.clearState();
                 this.loading = false;
             }, (e) => {
                 console.error(e.error);
@@ -799,132 +798,5 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     onTreeChange(event: any) {
-        const events = this.allEvents;
-        const currentBlock = this.currentBlock;
-
-        setTimeout(() => {
-            let canvas = document.querySelector(`#tree-canvas`) as HTMLCanvasElement;
-            const tree = document.querySelector('tree-flat-overview');
-            if (!canvas) {
-                canvas = document.createElement('canvas');
-                if (tree) {
-                    tree.appendChild(canvas);
-                }
-            }
-            if (tree) {
-                canvas.setAttribute('id', 'tree-canvas');
-                canvas.style.position = 'absolute';
-                canvas.style.top = '0px';
-                canvas.style.left = '0px';
-                canvas.style.pointerEvents = 'none';
-                const box = tree.getBoundingClientRect();
-                canvas.style.width = `${box.width}px`;
-                canvas.style.height = `${box.height}px`;
-                canvas.width = box.width;
-                canvas.height = box.height;
-            }
-            const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-            context.clearRect(0, 0, canvas.width, canvas.height);
-
-            let lines = [];
-            for (const event of events) {
-                const line = drawEvent(event, canvas, currentBlock)
-                if (line) {
-                    lines.push(line);
-                }
-            }
-
-            const all = document.querySelectorAll(`*[block-instance]`);
-            let maxRight = 0;
-            for (let i = 0; i < all.length; i++) {
-                const element = all[i];
-                const box = element.getBoundingClientRect();
-                maxRight = Math.max(maxRight, box.right);
-            }
-            maxRight = Math.round(maxRight + 20);
-            const mapRight: any = {};
-            lines = lines.sort((a, b) => a.height > b.height ? 1 : -1);
-            for (const line of lines) {
-                line.w = maxRight;
-                while (mapRight[line.w] && line.height > 55) {
-                    line.w = line.w + 5;
-                }
-                mapRight[line.w] = true;
-            }
-            lines = lines.sort((a, b) => {
-                if (a.selected) {
-                    return 1;
-                }
-                if (b.selected) {
-                    return -1;
-                }
-                return 0;
-            });
-            for (const line of lines) {
-                drawArrow(context, [
-                    line.startX, line.startY,
-                    line.w, line.startY,
-                    line.w, line.endY,
-                    line.endX, line.endY
-                ], line.selected ? 3 : 2, line.color);
-            }
-        }, 100);
-
-        function drawArrow(
-            ctx: CanvasRenderingContext2D,
-            points: number[],
-            arrowWidth: number,
-            color: string
-        ) {
-            const headlen = 3 + arrowWidth;
-            ctx.save();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = arrowWidth;
-            ctx.beginPath();
-
-            let fx: number = 0, fy: number = 0, tx: number = 0, ty: number = 0;
-            for (let i = 0; i < points.length - 3; i += 2) {
-                fx = points[i];
-                fy = points[i + 1];
-                tx = points[i + 2];
-                ty = points[i + 3];
-                ctx.moveTo(fx, fy);
-                ctx.lineTo(tx, ty);
-            }
-            const angle = Math.atan2(ty - fy, tx - fx);
-            const k = Math.PI / 7;
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(tx, ty);
-            ctx.lineTo(tx - headlen * Math.cos(angle - k), ty - headlen * Math.sin(angle - k));
-            ctx.lineTo(tx - headlen * Math.cos(angle + k), ty - headlen * Math.sin(angle + k));
-            ctx.lineTo(tx, ty);
-            ctx.lineTo(tx - headlen * Math.cos(angle - k), ty - headlen * Math.sin(angle - k));
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        function drawEvent(event: any, canvas: any, currentBlock: any): any {
-            const divStart = document.querySelector(`*[block-instance="${event.source?.tag}"]`);
-            const divStop = document.querySelector(`*[block-instance="${event.target?.tag}"]`);
-            if (divStart && divStop && canvas) {
-                const selectS = currentBlock?.tag == event.source?.tag;
-                const selectE = currentBlock?.tag == event.target?.tag;
-                const boxCanvas = canvas.getBoundingClientRect();
-                const boxStart = divStart.getBoundingClientRect();
-                const boxStop = divStop.getBoundingClientRect();
-                const offset = 6;
-                return {
-                    startX: boxStart.right - boxCanvas.left + 25,
-                    endX: boxStop.right - boxCanvas.left + 25,
-                    startY: boxStart.top - boxCanvas.top + 16 + offset,
-                    endY: boxStop.top - boxCanvas.top + 16 - offset,
-                    height: Math.abs(boxStart.top - boxStop.top),
-                    color: selectS ? 'red' : selectE ? 'green' : '#666',
-                    selected: selectS || selectE,
-                    w: 0
-                }
-            }
-        }
     }
 }

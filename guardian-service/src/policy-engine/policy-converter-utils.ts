@@ -2,6 +2,8 @@ import { Policy } from "@entity/policy";
 import { EventConfig, PolicyInputEventType, PolicyOutputEventType } from "./interfaces";
 
 export class PolicyConverterUtils {
+    public static readonly VERSION = '1.1.0';
+
     public static PolicyConverter(policy: Policy): Policy {
         policy.config = PolicyConverterUtils.BlockConverter(policy.config);
         return policy;
@@ -68,30 +70,6 @@ export class PolicyConverterUtils {
     ): any {
         if (!block.events) {
             block.events = [];
-            if (
-                block.blockType == 'requestVcDocumentBlock' ||
-                block.blockType == 'sendToGuardianBlock' ||
-                block.blockType == 'externalDataBlock' ||
-                block.blockType == 'aggregateDocumentBlock' ||
-                block.blockType == 'reassigningBlock' ||
-                block.blockType == 'timerBlock' ||
-                block.blockType == 'mintDocumentBlock' ||
-                block.blockType == 'retirementDocumentBlock' ||
-                block.blockType == 'calculateContainerBlock' ||
-                block.blockType == 'customLogicBlock'
-            ) {
-                if (next && !block.stopPropagation) {
-                    const run: EventConfig = {
-                        output: PolicyOutputEventType.RunEvent,
-                        input: PolicyInputEventType.RunEvent,
-                        source: block.tag,
-                        target: next.tag,
-                        disabled: !!block.stopPropagation,
-                        actor: null
-                    }
-                    block.events.push(run);
-                }
-            }
             if (block.dependencies && block.dependencies.length) {
                 for (let dep of block.dependencies) {
                     const refresh: EventConfig = {

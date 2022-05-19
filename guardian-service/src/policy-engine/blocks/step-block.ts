@@ -25,7 +25,8 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
         ],
         output: [
             PolicyOutputEventType.RefreshEvent
-        ]
+        ],
+        defaultEvent: false
     }
 })
 export class InterfaceStepBlock {

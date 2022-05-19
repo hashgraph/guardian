@@ -23,7 +23,8 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.RefreshEvent,
         ],
-        output: null
+        output: null,
+        defaultEvent: false
     }
 })
 export class InterfaceDocumentsSource {

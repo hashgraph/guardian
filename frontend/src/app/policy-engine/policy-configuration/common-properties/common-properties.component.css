@@ -431,3 +431,31 @@ div[disabled="true"] {
     left: 0px;
     top: 0px;
 }
+
+.prop-icon-output-event {
+    display: inline-block !important;
+    height: 18px !important;
+    width: auto !important;
+    line-height: 18px !important;
+    overflow: hidden !important;
+    top: 4px;
+    left: 3px;
+    position: relative;
+}
+
+.prop-icon-input-event {
+    display: inline-block !important;
+    height: 18px !important;
+    width: auto !important;
+    line-height: 18px !important;
+    overflow: hidden !important;
+    top: 3px;
+    left: 1px;
+    position: relative;
+}
+.prop-icon-output-event mat-icon,
+.prop-icon-input-event mat-icon {
+    position: relative !important;
+    font-size: 18px !important;
+    top: 0px;
+}

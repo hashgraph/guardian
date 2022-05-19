@@ -139,9 +139,15 @@
                             <span></span>{{item}}
                         </div>
                     </div>
-                    <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" [errors]="errorsMap"
-                        (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)" (change)="onTreeChange($event)">
-                    </tree-flat-overview>
+                    <div *ngIf="currentView == 'blocks'">
+                        <events-overview #eventOverview [blocks]="blocks" [selected]="currentBlock"
+                            [context]="treeOverview" [all-blocks]="allBlocks" [all-events]="allEvents">
+                        </events-overview>
+                        <tree-flat-overview #treeOverview [blocks]="blocks" [errors]="errorsMap"
+                            (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"
+                            (change)="onTreeChange($event)">
+                        </tree-flat-overview>
+                    </div>
                 </div>
             </div>
         </div>

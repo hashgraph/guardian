@@ -36,7 +36,8 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
         output: [
             PolicyOutputEventType.RunEvent,
             PolicyOutputEventType.RefreshEvent
-        ]
+        ],
+        defaultEvent: true
     }
 })
 export class RetirementBlock {

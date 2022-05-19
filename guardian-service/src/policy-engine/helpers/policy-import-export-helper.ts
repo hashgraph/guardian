@@ -241,6 +241,7 @@ export class PolicyImportExportHelper {
 
         // compatibility with older versions
         policy = PolicyConverterUtils.PolicyConverter(policy);
+        policy.codeVersion = PolicyConverterUtils.VERSION;
         regenerateIds(policy.config);
     }
 }

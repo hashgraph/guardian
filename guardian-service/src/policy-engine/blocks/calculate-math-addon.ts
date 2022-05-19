@@ -16,6 +16,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
         control: ControlType.Special,
         input: null,
         output: null,
+        defaultEvent: false
     }
 })
 export class CalculateMathAddon {
