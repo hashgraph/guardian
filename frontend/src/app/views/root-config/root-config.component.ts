@@ -34,10 +34,10 @@ export class RootConfigComponent implements OnInit {
     progressInterval: any;
 
     vcForm: FormGroup;
-    schema: any;
     hideVC: any;
     formValid: boolean = false;
     schemas!: Schema[];
+    // schema: any;
 
     constructor(
         private auth: AuthService,
@@ -93,8 +93,6 @@ export class RootConfigComponent implements OnInit {
             const balance = value[1];
             
             this.schemas = SchemaHelper.map(value[2]);
-            this.schema = this.schemas
-                .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
 
             this.isConfirmed = !!(profile.confirmed);
             this.isFailed = !!(profile.failed);

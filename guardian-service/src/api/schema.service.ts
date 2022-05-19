@@ -428,8 +428,12 @@ export const schemaAPI = async function (channel: MessageBrokerChannel, schemaRe
             }
 
             const [schemes, count] = await schemaRepository.findAndCount(filter);
+
+            const chunk = schemes.slice(0, 50);
+            console.log('------ GET_SCHEMES', chunk.length)
+
             return new MessageResponse({
-                schemes,
+                schemes: chunk,
                 count
             });
         } catch (error) {
