@@ -115,6 +115,14 @@
                 </div>
 
                 <div class="view-menu">
+                    <div class="btn-view-menu event-visible" style="color: #bd9012;" (click)="showEvent()"
+                        [attr.active]="currentView == 'blocks'">
+                        <mat-icon *ngIf="!eventVisible" title="Show Events">flash_on</mat-icon>
+                        <mat-icon *ngIf="eventVisible" title="Hide Events">flash_off</mat-icon>
+                    </div>
+
+                    <div class="btn-view-menu-sep "></div>
+
                     <div class="btn-view-menu" (click)="onView('blocks')" title="Blocks"
                         [attr.active]="currentView == 'blocks'">
                         <mat-icon>view_agenda</mat-icon>
@@ -141,7 +149,8 @@
                     </div>
                     <div *ngIf="currentView == 'blocks'">
                         <events-overview #eventOverview [blocks]="blocks" [selected]="currentBlock"
-                            [context]="treeOverview" [all-blocks]="allBlocks" [all-events]="allEvents">
+                            [context]="treeOverview" [all-blocks]="allBlocks" [all-events]="allEvents"
+                            [active]="eventVisible">
                         </events-overview>
                         <tree-flat-overview #treeOverview [blocks]="blocks" [errors]="errorsMap"
                             (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"

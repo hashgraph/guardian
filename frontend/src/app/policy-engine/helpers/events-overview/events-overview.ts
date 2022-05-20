@@ -11,7 +11,7 @@ export class EventsOverview {
     @Input('blocks') blocks!: any[];
     @Input('all-blocks') allBlocks!: any[];
     @Input('all-events') allEvents!: any[];
-
+    @Input('active') active!: boolean;
     @Input('selected') selected!: any;
     @Input('context') context!: any;
 
@@ -29,7 +29,16 @@ export class EventsOverview {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.setContext(this.context)
+        if(changes.context) {
+            this.setContext(this.context);
+        }
+        if(changes.active) {
+            if(this.active) {
+                this.render()
+            } else {
+                this.refreshCanvas();
+            }
+        }
     }
 
     ngAfterViewInit(): void {
@@ -50,6 +59,10 @@ export class EventsOverview {
     }
 
     public render(): void {
+        if(!this.active) {
+            return;
+        }
+
         const boxCanvas = this.refreshCanvas();
 
         const map = this.getBlockSize(this.blocks, boxCanvas);

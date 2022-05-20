@@ -109,6 +109,7 @@ export class PolicyConfigurationComponent implements OnInit {
         UnGroupedBlocks: []
     };
     allEvents: any[] = [];
+    eventVisible: boolean = true;
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -798,5 +799,9 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     onTreeChange(event: any) {
+    }
+
+    showEvent() {
+        this.eventVisible = !this.eventVisible;
     }
 }
