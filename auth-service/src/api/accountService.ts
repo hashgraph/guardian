@@ -90,7 +90,7 @@ export class AccountService {
                         accessToken: accessToken
                     })
                 } else {
-                    return new MessageError('Unauthorized request');
+                    return new MessageError('Unauthorized request', 401);
                 }
 
             } catch (e) {

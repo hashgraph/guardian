@@ -42,12 +42,11 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     const users = new Users();
     try {
         const { username, password } = req.body;
-        const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
         res.status(200).json(await users.generateNewToken(username, password));
     } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Server error' });
+        new Logger().error(e.message, ['API_GATEWAY']);
+        res.status(e.code).send({ code: e.code, message: e.message });
     }
 });
 
