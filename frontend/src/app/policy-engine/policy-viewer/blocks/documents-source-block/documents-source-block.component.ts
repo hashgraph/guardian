@@ -81,7 +81,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         } else {
             forkJoin([
                 this.policyEngineService.getBlockData(this.id, this.policyId),
-                this.schemaService.getSchemes()
+                this.schemaService.getSchemes(this.policyId)
             ]).subscribe((value) => {
                 const data: any = value[0];
                 const schemes = value[1];
