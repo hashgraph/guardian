@@ -2,9 +2,10 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "description": "Common package share cross all services",
   "dependencies": {
+    "interfaces": "file:../interfaces",
     "nats": "^2.6.1",
     "reflect-metadata": "^0.1.13",
-    "interfaces": "file:../interfaces"
+    "zlib": "^1.0.5"
   },
   "devDependencies": {
     "@types/node": "^17.0.13",

@@ -13,9 +13,9 @@ export class ApplicationState {
      * Register channel
      * @param channel: MessageBrokerChannel
      */
-    public setChannel(channel: MessageBrokerChannel): any {
+    public async setChannel(channel: MessageBrokerChannel): Promise<any> {
         this.channel = channel;
-        this.channel.response(MessageAPI.GET_STATUS, async () => {
+        await this.channel.response(MessageAPI.GET_STATUS, async () => {
             try {
                 return new MessageResponse(this.state);
             }
@@ -40,12 +40,12 @@ export class ApplicationState {
         return this.state;
     }
 
-    public updateState(state: ApplicationStates): void {
+    public async updateState(state: ApplicationStates): Promise<void> {
         this.state = state;
         if (this.serviceName) {
             const res = {};
             res[this.serviceName] = state;
-            this.channel.request([this.channel.channelName, MessageAPI.UPDATE_STATUS].join('.'), res);
+            await this.channel.request([this.channel.channelName, MessageAPI.UPDATE_STATUS].join('.'), res);
         }
     }
 }

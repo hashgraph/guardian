@@ -1,6 +1,7 @@
 import assert from 'assert';
 import { JSONCodec, Subscription, NatsConnection, StringCodec, connect } from 'nats';
 import { IMessageResponse, MessageError } from '../models/message-response';
+import * as zlib from 'zlib';
 
 const MQ_TIMEOUT = +process.env.MQ_TIMEOUT || 300000;
 
@@ -22,22 +23,24 @@ export class MessageBrokerChannel {
         const target = this.getTarget(eventType);
         console.log('MQ subscribed: %s', target);
         const sub = this.channel.subscribe(target);
-        const sc = JSONCodec<{ payload: TData }>();
-        const responseSc = JSONCodec<IMessageResponse<TResponse>>();
-        (async (sub: Subscription) => {
+        const fn = async (sub: Subscription) => {
             for await (const m of sub) {
-                console.log('MQ response start:  %s', m.subject);
-                const data = sc.decode(m.data);
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
-                    responseMessage = await handleFunc(data.payload || data as any);
+                    responseMessage = await handleFunc(JSON.parse(StringCodec().decode(m.data)));
                 } catch (err) {
                     responseMessage = new MessageError(err.message, err.code);
                 }
-                m.respond(responseSc.encode(responseMessage));
-                console.log('MQ response end: ', m.subject);
+                const archResponse = zlib.deflateSync(JSON.stringify(responseMessage)).toString('binary');
+                m.respond(StringCodec().encode(archResponse));
+                console.log(JSON.stringify(responseMessage).length, archResponse.length);
             }
-        })(sub);
+        };
+        try {
+            await fn(sub);
+        } catch (err) {
+            console.error(err.message);
+        }
     }
     /**
      * sending the request to the MQ and waiting for response
@@ -48,16 +51,27 @@ export class MessageBrokerChannel {
      */
     public async request<T, TResponse>(eventType: string, payload: T, timeout?: number): Promise<IMessageResponse<TResponse>> {
         try {
-            const target = eventType;
-            console.log('MQ request: %s', target);
+            let stringPayload: string;
+            switch (typeof payload) {
+                case 'string':
+                    stringPayload = payload;
+                    break;
 
-            const sc = payload && typeof payload === 'string' ? StringCodec() : JSONCodec<T>();
-            const msg = await this.channel.request(eventType, sc.encode((payload as any) || {}), {
+                case 'object':
+                    stringPayload = JSON.stringify(payload);
+                    break;
+
+                default:
+                    stringPayload = '{}';
+            }
+
+            const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), {
                 timeout: timeout || MQ_TIMEOUT,
             });
 
-            const responseSc = JSONCodec<IMessageResponse<TResponse>>();
-            return responseSc.decode(msg.data);
+            const unpackedString = zlib.inflateSync(new Buffer(StringCodec().decode(msg.data), 'binary')).toString();
+            return JSON.parse(unpackedString);
+
         } catch (e) {
             // Nats no subscribe error
             if (e.code === '503') {
@@ -77,8 +91,8 @@ export class MessageBrokerChannel {
     }
     /**
      * Create the Nats MQ connection
-     * @param connectionName 
-     * @returns 
+     * @param connectionName
+     * @returns
      */
     public static async connect(connectionName: string) {
         assert(process.env.MQ_ADDRESS, 'Missing MQ_ADDRESS environment variable');
