@@ -327,7 +327,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemes
      */
     public async deleteSchema(id: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.DELETE_SCHEMA, id);
+        return await this.request(MessageAPI.DELETE_SCHEMA, { id });
     }
 
     /**

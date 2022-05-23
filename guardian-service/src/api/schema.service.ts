@@ -474,9 +474,8 @@ export const schemaAPI = async function (channel: MessageBrokerChannel, schemaRe
      */
     ApiResponse(channel, MessageAPI.DELETE_SCHEMA, async (msg) => {
         try {
-            if (msg) {
-                const id = msg as string;
-                const item = await schemaRepository.findOne(id);
+            if (msg && msg.id) {
+                const item = await schemaRepository.findOne(msg.id);
                 if (item) {
                     if (item.topicId) {
                         const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
