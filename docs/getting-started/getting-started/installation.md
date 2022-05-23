@@ -254,3 +254,6 @@ npm run test
 | MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
 | TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
 | API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
+
+#### Nats server configuration
+Nats server has limit 1MB for payload by default, If you run production which requires bigger payload please refer to (https://docs.nats.io/running-a-nats-service/configuration)[https://docs.nats.io/running-a-nats-service/configuration] to  change max_payload property. You can also enable other features that suiteable for your production environment.

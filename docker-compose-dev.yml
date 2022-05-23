@@ -10,22 +10,28 @@ services:
     message-broker:
         container_name: message-broker
         image: nats
+        volumes:
+            - ./config/:/etc/nats
         expose:
             - 4222
         ports:
             - '8222:8222'
             - '4222:4222'
             - '6222:6222'
-        command: '--cluster_name message-broker --cluster nats://0.0.0.0:6222 --http_port 8222 --debug'
+        command: '-c /etc/nats/nats.conf --cluster_name message-broker --cluster nats://0.0.0.0:6222 --http_port 8222 --debug'
     message-broker-1:
         container_name: message-broker-1
         image: nats
-        command: '--cluster_name message-broker --cluster nats://0.0.0.0:6222 --routes=nats://message-broker:6222 --debug'
+        volumes:
+            - ./config/:/etc/nats
+        command: '-c /etc/nats/nats.conf --cluster_name message-broker --cluster nats://0.0.0.0:6222 --routes=nats://message-broker:6222 --debug'
         depends_on: [ "message-broker" ]
     message-broker-2:
         container_name: message-broker-2
         image: nats
-        command: '--cluster_name message-broker --cluster nats://0.0.0.0:6222 --routes=nats://message-broker:6222 --debug'
+        volumes:
+            - ./config/:/etc/nats
+        command: '-c /etc/nats/nats.conf --cluster_name message-broker --cluster nats://0.0.0.0:6222 --routes=nats://message-broker:6222 --debug'
         depends_on: [ "message-broker" ]
 
     dev-tools:
