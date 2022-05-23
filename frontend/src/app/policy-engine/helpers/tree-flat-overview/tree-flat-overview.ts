@@ -126,7 +126,7 @@ export class TreeFlatOverview {
         const visibleNodes = this.visibleNodes();
 
         // deep clone the data source so we can mutate it
-        const changedData: BlockNode[] = JSON.parse(JSON.stringify(this.dataSource.data));
+        const changedData: BlockNode[] = this.dataSource.data;
 
         // recursive find function to find siblings of node
         function findNodeSiblings(arr: Array<BlockNode>, block: BlockNode, compare: any): Array<BlockNode> {

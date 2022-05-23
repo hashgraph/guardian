@@ -5,7 +5,7 @@
         <td class="propRowCell cellName">Available Roles</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.roles" [disabled]="readonly" multiple>
-                <mat-option *ngFor="let item of roles" [value]="item">{{item}}</mat-option>
+                <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}</mat-option>
             </mat-select>
         </td>
     </tr>

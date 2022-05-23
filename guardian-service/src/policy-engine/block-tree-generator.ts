@@ -69,8 +69,6 @@ export class BlockTreeGenerator {
             policyId = PolicyComponentsUtils.GenerateNewUUID();
         }
 
-        policy = PolicyConverterUtils.PolicyConverter(policy);
-
         new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
 
         try {

@@ -45,6 +45,8 @@ export interface IPolicyBlock {
 
     getChildIndex(uuid: string): number;
 
+    getNextChild(uuid: string): IPolicyBlock;
+
     checkDataStateDiffer?: (user: IAuthUser) => boolean
 
     serialize(): ISerializedBlock;
@@ -98,6 +100,14 @@ export interface IPolicyContainerBlock extends IPolicyBlock {
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
 
     changeStep(user: IAuthUser, data: any, target: IPolicyBlock): Promise<void>;
+
+    isLast(target: IPolicyBlock): boolean;
+
+    isCyclic(): boolean;
+
+    getLast(): IPolicyBlock;
+
+    getFirst(): IPolicyBlock;
 }
 
 export interface IPolicySourceBlock extends IPolicyBlock {

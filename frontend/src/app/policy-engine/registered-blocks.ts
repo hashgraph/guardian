@@ -29,6 +29,7 @@ import { ReassigningConfigComponent } from "./policy-configuration/blocks/docume
 import { TimerConfigComponent } from "./policy-configuration/blocks/documents/timer-config/timer-config.component";
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 import { SwitchConfigComponent } from "./policy-configuration/blocks/main/switch-config/switch-config.component";
+import { PolicyBlockModel } from "./policy-model";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -83,7 +84,7 @@ export interface IBlockAbout {
     next?: boolean;
 }
 
-type ConfigFunction<T> = ((value: any, block: any, prev?: IBlockAbout, next?: boolean) => T) | T;
+type ConfigFunction<T> = ((value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => T) | T;
 
 export interface IBlockAboutConfig {
     post: boolean;
@@ -142,7 +143,7 @@ export class BlockAbout {
         this._setProp(about, dynamic, 'defaultEvent');
     }
 
-    public get(block: any): IBlockAbout {
+    public get(block: PolicyBlockModel): IBlockAbout {
         return {
             post: this._propFunc.post(this._propVal.post, block),
             get: this._propFunc.get(this._propVal.get, block),
@@ -154,7 +155,7 @@ export class BlockAbout {
         }
     }
 
-    public bind(block: any, prev?: IBlockAbout, next?: boolean): IBlockAbout {
+    public bind(block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean): IBlockAbout {
         const bind = {
             _block: block,
             _prev: prev,
@@ -311,7 +312,26 @@ export class RegisteredBlocks {
             allowedChildren: [{
                 type: BlockType.DocumentsSourceAddon,
                 group: BlockGroup.UnGrouped
-            }]
+            }],
+            about: {
+                output: (value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => {
+                    const result = value ? value.slice() : [];
+                    if (block.properties.type == 'selector') {
+                        if (block.properties.uiMetaData?.options) {
+                            for (const c of block.properties.uiMetaData.options) {
+                                if (c.tag) {
+                                    result.push(c.tag);
+                                }
+
+                            }
+                        }
+                    }
+                    if (block.properties.type == 'dropdown') {
+                        result.push("DropdownEvent");
+                    }
+                    return result;
+                }
+            }
         });
 
         // Main, Server Blocks
@@ -323,11 +343,13 @@ export class RegisteredBlocks {
             factory: null,
             property: SwitchConfigComponent,
             about: {
-                output: (value: any, block: any, prev?: IBlockAbout, next?: boolean) => {
-                    const result = value.slice();
-                    if(block.conditions) {
-                        for (const c of block.conditions) {
-                            result.push(c.tag);
+                output: (value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => {
+                    const result = value ? value.slice() : [];
+                    if (block.properties.conditions) {
+                        for (const c of block.properties.conditions) {
+                            if (c.tag) {
+                                result.push(c.tag);
+                            }
                         }
                     }
                     return result;
@@ -597,14 +619,14 @@ export class RegisteredBlocks {
         return f.bind(block, prev, next);
     }
 
-    public newBlock(type: BlockType, permissions: any): BlockNode {
+    public newBlock(type: BlockType): BlockNode {
         return {
             id: this.generateUUIDv4(),
-            tag: `Block`,
+            tag: '',
             blockType: type,
             defaultActive: !!this.factories[type],
             children: [],
-            permissions: permissions
+            permissions: []
         };
     }
 

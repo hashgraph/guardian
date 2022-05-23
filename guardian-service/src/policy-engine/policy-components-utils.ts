@@ -12,7 +12,7 @@ import {
 import { PolicyRole } from 'interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { GenerateUUIDv4 } from './helpers/uuidv4';
-import { AnyBlockType, IPolicyBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
@@ -30,6 +30,10 @@ export class PolicyComponentsUtils {
     private static BlockByUUIDMap: PolicyBlockMap = new Map();
     private static BlockUUIDByTagMap: Map<string, PolicyTagMap> = new Map();
     private static PolicyAction: Map<string, PolicyActionMap> = new Map();
+
+    private static logEvents(text: string) {
+        // console.error(text);
+    }
 
     public static RegisterAction(target: any, eventType: PolicyInputEventType, fn: EventCallback<any>): void {
         const policyId = target.policyId;
@@ -83,15 +87,16 @@ export class PolicyComponentsUtils {
         input: PolicyInputEventType
     ): void {
         if (!source || !target) {
-            console.error(`link: ${source?.uuid}(${output}) -> ${target?.uuid}(${input})`);
+            PolicyComponentsUtils.logEvents(`link error: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`);
             return;
         }
         const link = PolicyComponentsUtils.CreateLink(source, output, target, input);
         if (link) {
             link.source.addSourceLink(link);
             link.target.addTargetLink(link);
+            PolicyComponentsUtils.logEvents(`link registered: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`);
         } else {
-            console.error(`link: ${source?.uuid}(${output}) -> ${target?.uuid}(${input})`);
+            PolicyComponentsUtils.logEvents(`link error: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`);
         }
     }
 
@@ -131,7 +136,6 @@ export class PolicyComponentsUtils {
             PolicyComponentsUtils.ExternalDataBlocks.set(component.uuid, component);
         }
     }
-
 
     public static BuildInstance(
         policy: Policy,
@@ -203,26 +207,38 @@ export class PolicyComponentsUtils {
 
         for (let instance of allInstances) {
             await instance.afterInit();
-            if (!instance.options.stopPropagation) {
-                PolicyComponentsUtils.RegisterLink(instance, PolicyOutputEventType.RunEvent, instance.next, PolicyInputEventType.RunEvent);
-            }
-            for (let event of instance.events) {
-                if (!event.disabled) {
-                    if (event.source == instance.tag) {
-                        const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
-                        PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input);
-                    } else if (event.target == instance.tag) {
-                        const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
-                        PolicyComponentsUtils.RegisterLink(source, event.output, instance, event.input);
-                    } else {
-                        const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
-                        const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
-                        PolicyComponentsUtils.RegisterLink(source, event.output, target, event.input);
-                    }
+            await PolicyComponentsUtils.RegisterDefaultEvent(instance);
+            await PolicyComponentsUtils.RegisterCustomEvent(instance);
+        }
+    }
+
+    private static async RegisterDefaultEvent(instance: IPolicyBlock) {
+        if (!instance.options.stopPropagation) {
+            PolicyComponentsUtils.RegisterLink(instance, PolicyOutputEventType.RunEvent, instance.next, PolicyInputEventType.RunEvent);
+        }
+        if (instance.parent?.blockClassName === 'ContainerBlock') {
+            const parent = instance.parent as IPolicyContainerBlock;
+            PolicyComponentsUtils.RegisterLink(instance, PolicyOutputEventType.RefreshEvent, parent, PolicyInputEventType.RefreshEvent);
+        }
+        if (instance.parent?.blockType === 'interfaceStepBlock') { 
+            PolicyComponentsUtils.RegisterLink(instance, PolicyOutputEventType.RunEvent, instance.parent, PolicyInputEventType.ReleaseEvent);
+        }
+    }
+
+    private static async RegisterCustomEvent(instance: IPolicyBlock) {
+        for (let event of instance.events) {
+            if (!event.disabled) {
+                if (event.source == instance.tag) {
+                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
+                    PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input);
+                } else if (event.target == instance.tag) {
+                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                    PolicyComponentsUtils.RegisterLink(source, event.output, instance, event.input);
+                } else {
+                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
+                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                    PolicyComponentsUtils.RegisterLink(source, event.output, target, event.input);
                 }
-            }
-            if (instance.parent?.blockClassName === 'ContainerBlock') {
-                PolicyComponentsUtils.RegisterLink(instance, PolicyOutputEventType.RefreshEvent, instance.parent, PolicyInputEventType.RefreshEvent);
             }
         }
     }

@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from 'interfaces';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -14,13 +15,11 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     ]
 })
 export class FiltersAddonConfigComponent implements OnInit {
-    @Input('target') target!: BlockNode;
-    @Input('all') all!: BlockNode[];
+    @Input('policy') policy!: PolicyModel;
+    @Input('block') currentBlock!: PolicyBlockModel;
     @Input('schemes') schemes!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
@@ -34,22 +33,22 @@ export class FiltersAddonConfigComponent implements OnInit {
         unelectedGroup: false
     };
 
-    block!: BlockNode;
+    block!: any;
 
     constructor() {
     }
 
     ngOnInit(): void {
         this.onInit.emit(this);
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
-    load(block: BlockNode) {
-        this.block = block;
+    load(block: PolicyBlockModel) {
+        this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.options = this.block.uiMetaData.options || [];
         this.block.type = 'dropdown';

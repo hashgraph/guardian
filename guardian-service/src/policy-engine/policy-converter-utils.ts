@@ -5,7 +5,12 @@ export class PolicyConverterUtils {
     public static readonly VERSION = '1.1.0';
 
     public static PolicyConverter(policy: Policy): Policy {
+        if (policy.codeVersion === PolicyConverterUtils.VERSION) {
+            return policy;
+        }
+
         policy.config = PolicyConverterUtils.BlockConverter(policy.config);
+        policy.codeVersion = PolicyConverterUtils.VERSION;
         return policy;
     }
 
@@ -16,8 +21,10 @@ export class PolicyConverterUtils {
         next?: any,
         prev?: any
     ): any {
+
         block = PolicyConverterUtils.v1_0_0(block, parent, index, next, prev);
         block = PolicyConverterUtils.v1_1_0(block, parent, index, next, prev);
+
         if (block.children && block.children.length) {
             for (let i = 0; i < block.children.length; i++) {
                 block.children[i] = PolicyConverterUtils.BlockConverter(
@@ -85,6 +92,71 @@ export class PolicyConverterUtils {
             }
             // if(block.followUser) {
             // }
+        }
+        if (block.blockType == 'interfaceActionBlock') {
+            if (block.type == 'selector' &&
+                block.uiMetaData &&
+                block.uiMetaData.options
+            ) {
+                const options: any[] = block.uiMetaData.options;
+                for (let i = 0; i < options.length; i++) {
+                    if (!options[i].tag) {
+                        options[i].tag = `Option_${i}`;
+                    }
+                    const run: EventConfig = {
+                        output: options[i].tag,
+                        input: PolicyInputEventType.RunEvent,
+                        source: block.tag,
+                        target: options[i].bindBlock,
+                        disabled: false,
+                        actor: null
+                    }
+                    block.events.push(run);
+                }
+            }
+            if (block.type == 'dropdown') {
+                const run: EventConfig = {
+                    output: PolicyOutputEventType.DropdownEvent,
+                    input: PolicyInputEventType.RunEvent,
+                    source: block.tag,
+                    target: block.bindBlock,
+                    disabled: false,
+                    actor: null
+                }
+                block.events.push(run);
+            }
+        }
+        if (block.blockType == 'switchBlock') {
+            if (block.conditions) {
+                const conditions: any[] = block.conditions;
+                for (let i = 0; i < conditions.length; i++) {
+                    if (!conditions[i].tag) {
+                        conditions[i].tag = `Condition_${i}`;
+                    }
+                    const run: EventConfig = {
+                        output: conditions[i].tag,
+                        input: PolicyInputEventType.RunEvent,
+                        source: block.tag,
+                        target: conditions[i].bindBlock,
+                        disabled: false,
+                        actor: null
+                    }
+                    block.events.push(run);
+                }
+            }
+        }
+        if (block.blockType == 'aggregateDocumentBlock') {
+            if (block.timer) {
+                const timer: EventConfig = {
+                    output: PolicyOutputEventType.TimerEvent,
+                    input: PolicyInputEventType.RunEvent,
+                    source: block.timer,
+                    target: block.tag,
+                    disabled: false,
+                    actor: null
+                }
+                block.events.push(timer);
+            }
         }
         return block;
     }

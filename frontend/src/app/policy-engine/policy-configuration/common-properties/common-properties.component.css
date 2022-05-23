@@ -459,3 +459,10 @@ div[disabled="true"] {
     font-size: 18px !important;
     top: 0px;
 }
+
+.custom {
+    height: 14px;
+    line-height: 14px;
+    display: inline-block;
+    min-width: 1px;
+}

@@ -3,7 +3,8 @@ export enum PolicyInputEventType {
     StartTimerEvent = 'StartTimerEvent',
     StopTimerEvent = 'StopTimerEvent',
     RefreshEvent = 'RefreshEvent',
-    RunEvent = 'RunEvent'
+    RunEvent = 'RunEvent',
+    ReleaseEvent = 'ReleaseEvent'
 }
 
 export enum PolicyOutputEventType {

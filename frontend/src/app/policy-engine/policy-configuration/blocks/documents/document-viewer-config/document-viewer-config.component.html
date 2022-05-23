@@ -73,7 +73,7 @@
                             {{field?.bindGroup?.tag}}
                         </span>
                     </mat-select-trigger>
-                    <mat-option *ngFor="let item of all" [value]="item.tag">
+                    <mat-option *ngFor="let item of policy.allBlocks" [value]="item.tag">
                         <div class="block-name">
                             <div class="block-icon">
                                 <mat-icon>{{getIcon(item)}}</mat-icon>
@@ -151,7 +151,7 @@
                                     {{field?.bindBlock?.tag}}
                                 </span>
                             </mat-select-trigger>
-                            <mat-option *ngFor="let item of all" [value]="item.tag">
+                            <mat-option *ngFor="let item of policy.allBlocks" [value]="item.tag">
                                 <div class="block-name">
                                     <div class="block-icon">
                                         <mat-icon>{{getIcon(item)}}</mat-icon>
@@ -200,7 +200,7 @@
                                     {{field?.bindBlock?.tag}}
                                 </span>
                             </mat-select-trigger>
-                            <mat-option *ngFor="let item of all" [value]="item.tag">
+                            <mat-option *ngFor="let item of policy.allBlocks" [value]="item.tag">
                                 <div class="block-name">
                                     <div class="block-icon">
                                         <mat-icon>{{getIcon(item)}}</mat-icon>
@@ -229,7 +229,7 @@
                                 {{field?.bindBlock?.tag}}
                             </span>
                         </mat-select-trigger>
-                        <mat-option *ngFor="let item of all" [value]="item.tag">
+                        <mat-option *ngFor="let item of policy.allBlocks" [value]="item.tag">
                             <div class="block-name">
                                 <div class="block-icon">
                                     <mat-icon>{{getIcon(item)}}</mat-icon>

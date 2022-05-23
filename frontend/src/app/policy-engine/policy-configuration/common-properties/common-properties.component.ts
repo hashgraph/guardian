@@ -2,6 +2,7 @@ import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Outpu
 import { BlockErrorActions, Schema, Token } from 'interfaces';
 import { IBlockAbout, RegisteredBlocks } from '../../registered-blocks';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
+import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../policy-model';
 
 /**
  * Settings for all blocks.
@@ -14,15 +15,13 @@ import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 export class CommonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
-    @Input('block') currentBlock!: BlockNode;
+    @Input('policy') policy!: PolicyModel;
+    @Input('block') currentBlock!: PolicyBlockModel;
+
     @Input('schemes') schemes!: Schema[];
     @Input('tokens') tokens!: Token[];
-    @Input('all') allBlocks!: BlockNode[];
     @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
     @Input('type') type!: string;
-    @Input('events') allEvents!: any[];
 
     @Output() onInit = new EventEmitter();
 
@@ -32,7 +31,7 @@ export class CommonPropertiesComponent implements OnInit {
         eventsGroup: {}
     };
 
-    block!: BlockNode;
+    block!: PolicyBlockModel;
     about!: IBlockAbout;
     errorActions = [
         {
@@ -52,11 +51,11 @@ export class CommonPropertiesComponent implements OnInit {
             value: BlockErrorActions.GOTO_TAG
         }
     ];
-    events: any[] = [];
+    events: PolicyEventModel[] = [];
     inputEvents: any[] = [];
     outputEvents: any[] = [];
     defaultEvent: boolean = false;
-    
+
     constructor(
         public registeredBlocks: RegisteredBlocks,
         private componentFactoryResolver: ComponentFactoryResolver
@@ -80,17 +79,15 @@ export class CommonPropertiesComponent implements OnInit {
         item[prop] = !item[prop];
     }
 
-    isOutputEvent(event: any) {
-        return !!event.source && event.source.tag == this.block.tag;
+    isOutputEvent(event: PolicyEventModel) {
+        return event.isSource(this.block);
     }
 
-    isInputEvent(event: any) {
-        return !!event.target &&
-            event.target.tag == this.block.tag &&
-            !this.isOutputEvent(event);
+    isInputEvent(event: PolicyEventModel) {
+        return event.isTarget(this.block) && !this.isOutputEvent(event);
     }
 
-    chanceType(event: any, item: any) {
+    chanceType(event: any, item: PolicyEventModel) {
         if (event.value != this.isInputEvent(item)) {
             const s = item.source;
             item.source = item.target;
@@ -98,9 +95,10 @@ export class CommonPropertiesComponent implements OnInit {
             item.output = "";
             item.input = "";
         }
+        this.onSave();
     }
 
-    isInvalid(item: any) {
+    isInvalid(item: PolicyEventModel) {
         return (
             !item.target ||
             !item.source ||
@@ -119,20 +117,14 @@ export class CommonPropertiesComponent implements OnInit {
             input: "",
             disabled: false
         }
-        this.allEvents.push(event);
-        this.block.events.push({
-            id: event.id,
-        });
+        this.block.createEvent(event);
     }
 
-    onRemoveEvent(event: any) {
-        const i1 = this.allEvents.indexOf(event);
-        this.allEvents.splice(i1, 1);
-        const i2 = this.block.events.findIndex((e: any) => e.id == event.id);
-        this.block.events.splice(i2, 1);
+    onRemoveEvent(event: PolicyEventModel) {
+        this.policy.removeEvent(event);
     }
 
-    load(block: BlockNode) {
+    load(block: PolicyBlockModel) {
         if (this.block != block && this.type == 'Events') {
             this.block = block;
             this.loadEvents(block);
@@ -143,19 +135,19 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    loadEvents(block: BlockNode) {
-        block.events = block.events || [];
+    loadEvents(block: PolicyBlockModel) {
+        this.events = block.events;
         const about = this.registeredBlocks.getAbout(block.blockType, block);
         this.inputEvents = about.input;
         this.outputEvents = about.output;
         this.defaultEvent = about.defaultEvent;
     }
 
-    getIcon(block: any) {
+    getIcon(block: PolicyBlockModel) {
         return this.registeredBlocks.getIcon(block.blockType);
     }
 
-    getOutputEvents(event: any) {
+    getOutputEvents(event: PolicyEventModel) {
         try {
             if (event.source && event.source.blockType) {
                 const about = this.registeredBlocks.getAbout(event.source.blockType, event.source);
@@ -167,7 +159,7 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    getInputEvents(event: any) {
+    getInputEvents(event: PolicyEventModel) {
         try {
             if (event.target && event.target.blockType) {
                 const about = this.registeredBlocks.getAbout(event.target.blockType, event.target);
@@ -179,14 +171,14 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
-    loadComponent(block: BlockNode) {
+    loadComponent(block: PolicyBlockModel) {
         if (!this.configContainer) {
             return;
         }
         setTimeout(() => {
             this.block = block;
-            if (!this.block.onErrorAction) {
-                this.block.onErrorAction = BlockErrorActions.NO_ACTION;
+            if (!this.block.properties.onErrorAction) {
+                this.block.properties.onErrorAction = BlockErrorActions.NO_ACTION;
             }
             this.configContainer.clear();
             const factory: any = this.registeredBlocks.getProperties(block.blockType);
@@ -194,14 +186,18 @@ export class CommonPropertiesComponent implements OnInit {
             if (factory) {
                 let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
                 let componentRef: any = this.configContainer.createComponent(componentFactory);
-                componentRef.instance.target = this.currentBlock;
+                componentRef.instance.policy = this.policy;
+                componentRef.instance.currentBlock = this.currentBlock;
                 componentRef.instance.schemes = this.schemes;
-                componentRef.instance.all = this.allBlocks;
-                componentRef.instance.readonly = this.readonly;
                 componentRef.instance.tokens = this.tokens;
-                componentRef.instance.roles = this.roles;
-                componentRef.instance.topics = this.topics;
+                componentRef.instance.readonly = this.readonly;
             }
         })
+    }
+
+    onSave() {
+        if(this.block) {
+            this.block.emitUpdate();
+        }
     }
 }

@@ -33,7 +33,6 @@ export class MessageBrokerChannel {
                 }
                 const archResponse = zlib.deflateSync(JSON.stringify(responseMessage)).toString('binary');
                 m.respond(StringCodec().encode(archResponse));
-                console.log(JSON.stringify(responseMessage).length, archResponse.length);
             }
         };
         try {

@@ -2,10 +2,10 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    <div class="not-exist" *ngIf="!policy">
+    <div class="not-exist" *ngIf="!policyModel.valid">
         Policy doesn't exist
     </div>
-    <div class="render" *ngIf="policy" [attr.readonly]="readonly">
+    <div class="render" *ngIf="policyModel.valid" [attr.readonly]="readonly">
         <div class="main">
             <div class="main-body">
                 <div class="top-toolbar">
@@ -115,10 +115,12 @@
                 </div>
 
                 <div class="view-menu">
-                    <div class="btn-view-menu event-visible" style="color: #bd9012;" (click)="showEvent()"
+                    <div class="btn-view-menu event-visible" style="color: #bd9012" [matMenuTriggerFor]="eventMenu"
                         [attr.active]="currentView == 'blocks'">
-                        <mat-icon *ngIf="!eventVisible" title="Show Events">flash_on</mat-icon>
-                        <mat-icon *ngIf="eventVisible" title="Hide Events">flash_off</mat-icon>
+                        <mat-icon *ngIf="eventVisible =='All'" title="Show All Events">flash_on</mat-icon>
+                        <div *ngIf="eventVisible =='Action'" style="width:20px;height:9px;border-bottom:2px solid #bd9012;margin: 0px 2px 11px 1px"></div>
+                        <div *ngIf="eventVisible =='Refresh'" style="width:20px;height:9px;border-bottom:2px dashed #bd9012;margin: 0px 2px 11px 1px"></div>
+                        <mat-icon *ngIf="eventVisible =='None'" title="Hide Events">flash_off</mat-icon>
                     </div>
 
                     <div class="btn-view-menu-sep "></div>
@@ -148,11 +150,10 @@
                         </div>
                     </div>
                     <div *ngIf="currentView == 'blocks'">
-                        <events-overview #eventOverview [blocks]="blocks" [selected]="currentBlock"
-                            [context]="treeOverview" [all-blocks]="allBlocks" [all-events]="allEvents"
-                            [active]="eventVisible">
+                        <events-overview #eventOverview [policy]="policyModel" [selected]="currentBlock"
+                            [context]="treeOverview" [active]="eventVisible" (init)="onInitViewer($event)">
                         </events-overview>
-                        <tree-flat-overview #treeOverview [blocks]="blocks" [errors]="errorsMap"
+                        <tree-flat-overview #treeOverview [blocks]="policyModel.dataSource" [errors]="errorsMap"
                             (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"
                             (change)="onTreeChange($event)">
                         </tree-flat-overview>
@@ -171,13 +172,15 @@
                 </div>
                 <div class="group-body" style="margin-bottom: 24px;">
                     <ng-container *ngIf="policyTab=='Description'">
-                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Main'"></policy-properties>
+                        <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Main'">
+                        </policy-properties>
                     </ng-container>
                     <ng-container *ngIf="policyTab=='Roles'">
-                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Role'"></policy-properties>
+                        <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Role'">
+                        </policy-properties>
                     </ng-container>
                     <ng-container *ngIf="policyTab=='Topics'">
-                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Topics'">
+                        <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Topics'">
                         </policy-properties>
                     </ng-container>
                 </div>
@@ -210,21 +213,16 @@
                     </div>
                     <div class="common-properties">
                         <ng-container *ngIf="propTab=='Properties'">
-                            <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
-                                [topics]="policy.policyTopics" [events]="allEvents" type="Common">
+                            <common-properties [policy]="policyModel" [block]="currentBlock" [schemes]="schemes"
+                                [readonly]="readonly" [tokens]="tokens" type="Common">
                             </common-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='JSON'">
-                            <json-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
-                                [topics]="policy.policyTopics" [events]="allEvents">
-                            </json-properties>
+                            <json-properties [block]="currentBlock" [readonly]="readonly"></json-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='Events'">
-                            <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles"
-                                [topics]="policy.policyTopics" [events]="allEvents" type="Events">
+                            <common-properties [policy]="policyModel" [block]="currentBlock" [schemes]="schemes"
+                                [readonly]="readonly" [tokens]="tokens" type="Events">
                             </common-properties>
                         </ng-container>
                     </div>
@@ -308,4 +306,26 @@
             <span>{{item.name}}</span>
         </div>
     </ng-container>
+</mat-menu>
+
+<mat-menu #eventMenu="matMenu">
+    <div class="btn-new-block-menu btn-status-edit" (click)="onShowEvent('All')" title="Show All Events">
+        <mat-icon style="color: #bd9012">flash_on</mat-icon>
+        <span>Show All Events</span>
+    </div>
+
+    <div class="btn-new-block-menu btn-status-edit" (click)="onShowEvent('Action')" title="Show Action Events">
+        <div style="width:20px;height:11px;border-bottom:2px solid #bd9012;margin: 0px 2px 11px 2px"></div>
+        <span>Show Action Events</span>
+    </div>
+
+    <div class="btn-new-block-menu btn-status-edit" (click)="onShowEvent('Refresh')" title="Show Refresh Events">
+        <div style="width:20px;height:11px;border-bottom:2px dashed #bd9012;margin: 0px 2px 11px 2px"></div>
+        <span>Show Refresh Events</span>
+    </div>
+
+    <div class="btn-new-block-menu btn-status-edit" (click)="onShowEvent('None')" title="Hide All Events">
+        <mat-icon style="color: #bd9012">flash_off</mat-icon>
+        <span>Hide All Events</span>
+    </div>
 </mat-menu>

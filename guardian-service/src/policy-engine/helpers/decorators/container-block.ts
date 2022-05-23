@@ -63,6 +63,29 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const changed = (this as any).updateDataState(user, result);
                 return result;
             }
+
+            isLast(target: IPolicyBlock): boolean {
+                const ref = PolicyComponentsUtils.GetBlockRef(this);
+                const index = ref.children.findIndex(c => c.uuid == target.uuid);
+                return index == (ref.children.length - 1);
+            }
+
+            isCyclic(): boolean {
+                if (typeof super.isCyclic === 'function') {
+                    return super.isCyclic();
+                }
+                return false;
+            }
+
+            getLast(): IPolicyBlock {
+                const ref = PolicyComponentsUtils.GetBlockRef(this);
+                return ref.children[0];
+            }
+
+            getFirst(): IPolicyBlock {
+                const ref = PolicyComponentsUtils.GetBlockRef(this);
+                return ref.children[ref.children.length - 1];
+            }
         }
     }
 }

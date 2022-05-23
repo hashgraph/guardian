@@ -93,12 +93,10 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type == 'dropdown') {
-            if (ref.options.bindBlock) {
-                const owner = await this.users.getUserById(document.owner);
-                ref.triggerEvents(PolicyOutputEventType.DropdownEvent, owner, state);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, null);
-                return;
-            }
+            const owner = await this.users.getUserById(document.owner);
+            ref.triggerEvents(PolicyOutputEventType.DropdownEvent, owner, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, null);
+            return;
         }
 
         if (ref.options.type == 'download') {

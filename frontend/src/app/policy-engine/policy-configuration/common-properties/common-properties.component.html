@@ -87,20 +87,19 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Tag</td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="block.tag" [readonly]="readonly">
+                        <input [(ngModel)]="block.tag" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Permissions</td>
                     <td class="propRowCell">
-                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly">
+                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly" (selectionChange)="onSave()">
                             <mat-option value="OWNER">Owner</mat-option>
                             <mat-option value="NO_ROLE">No Role</mat-option>
                             <mat-option value="ANY_ROLE">Any Role</mat-option>
-                            <ng-container *ngIf="roles">
-                                <mat-option *ngFor="let item of roles" [value]="item">{{item}}</mat-option>
-                            </ng-container>
+                            <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}
+                            </mat-option>
                         </mat-select>
                     </td>
                 </tr>
@@ -108,7 +107,7 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Default Active</td>
                     <td class="propRowCell">
-                        <input type="checkbox" [(ngModel)]="block.defaultActive" [readonly]="readonly">
+                        <input type="checkbox" [(ngModel)]="block.properties.defaultActive" [readonly]="readonly" (change)="onSave()">
                     </td>
                 </tr>
 
@@ -116,7 +115,7 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Stop Propagation</td>
                     <td class="propRowCell">
-                        <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
+                        <input type="checkbox" [(ngModel)]="block.properties.stopPropagation" [readonly]="readonly" (change)="onSave()">
                     </td>
                 </tr>
 
@@ -124,31 +123,34 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">On errors</td>
                     <td class="propRowCell">
-                        <mat-select [(value)]="block.onErrorAction" [disabled]="readonly">
+                        <mat-select [(value)]="block.properties.onErrorAction" [disabled]="readonly" (selectionChange)="onSave()">
                             <mat-option *ngFor="let item of errorActions" [value]="item.value">{{item.label}}
                             </mat-option>
                         </mat-select>
                     </td>
                 </tr>
-                <tr *ngIf="block.onErrorAction === 'retry'" class="propRow" [attr.collapse]="propHidden.metaData">
+                <tr *ngIf="block.properties.onErrorAction === 'retry'" class="propRow"
+                    [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Timeout</td>
                     <td class="propRowCell">
-                        <input type="text" [(ngModel)]="block.errorTimeout" [readonly]="readonly">
+                        <input type="text" [(ngModel)]="block.properties.errorTimeout" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
-                <tr *ngIf="block.onErrorAction === 'goto-step'" class="propRow" [attr.collapse]="propHidden.metaData">
+                <tr *ngIf="block.properties.onErrorAction === 'goto-step'" class="propRow"
+                    [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Fallback step</td>
                     <td class="propRowCell">
-                        <input type="text" [(ngModel)]="block.errorFallbackStep" [readonly]="readonly">
+                        <input type="text" [(ngModel)]="block.properties.errorFallbackStep" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
-                <tr *ngIf="block.onErrorAction === 'goto-tag'" class="propRow" [attr.collapse]="propHidden.metaData">
+                <tr *ngIf="block.properties.onErrorAction === 'goto-tag'" class="propRow"
+                    [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Fallback tag</td>
                     <td class="propRowCell">
-                        <input type="text" [(ngModel)]="block.errorFallbackTag" [readonly]="readonly">
+                        <input type="text" [(ngModel)]="block.properties.errorFallbackTag" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
             </table>
@@ -177,7 +179,7 @@
                             <mat-icon>expand_more</mat-icon>
                         </td>
                         <td class="propHeaderCell cellName">
-                            <div style="height: 20px;" [attr.disabled]="block.stopPropagation">
+                            <div style="height: 20px;" [attr.disabled]="block.properties.stopPropagation">
                                 <span class="prop-icon prop-icon-event">
                                     <mat-icon>flash_on</mat-icon>
                                 </span>
@@ -206,9 +208,6 @@
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">
-                            <!-- <span class="prop-icon-output-event">
-                            <mat-icon>logout</mat-icon>
-                        </span> -->
                             Output Event
                         </td>
                         <td class="propRowCell remove-cell">
@@ -225,9 +224,6 @@
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">
-                            <!-- <span class="prop-icon-input-event">
-                            <mat-icon>login</mat-icon>
-                        </span> -->
                             Input Event
                         </td>
                         <td class="propRowCell remove-cell">
@@ -238,12 +234,12 @@
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Disabled</td>
                         <td class="propRowCell remove-cell">
-                            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
+                            <input type="checkbox" [(ngModel)]="block.properties.stopPropagation" [readonly]="readonly" (change)="onSave()">
                         </td>
                     </tr>
                 </ng-container>
 
-                <ng-container *ngFor="let item of allEvents; let i=index">
+                <ng-container *ngFor="let item of policy.allEvents; let i=index">
                     <ng-container *ngIf="isOutputEvent(item) || isInputEvent(item)">
                         <tr class="propHeader">
                             <td class="propRowCol" (click)="onHide(propHidden.eventsGroup, i)"
@@ -297,13 +293,13 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Source</td>
                             <td class="propRowCell remove-cell">
-                                <mat-select [(value)]="item.source" [disabled]="readonly">
+                                <mat-select [(value)]="item.source" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-select-trigger>
                                         <span class="custom">
-                                            {{item.source?.tag}}
+                                            {{item.sourceTag}}
                                         </span>
                                     </mat-select-trigger>
-                                    <mat-option *ngFor="let item of allBlocks" [value]="item">
+                                    <mat-option *ngFor="let item of policy.allBlocks" [value]="item">
                                         <div class="block-name">
                                             <div class="block-icon">
                                                 <mat-icon>{{getIcon(item)}}</mat-icon>
@@ -318,7 +314,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Output Event</td>
                             <td class="propRowCell remove-cell">
-                                <mat-select [(value)]="item.output" [disabled]="readonly">
+                                <mat-select [(value)]="item.output" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-option value=""></mat-option>
                                     <mat-option *ngFor="let e of getOutputEvents(item)" [value]="e">
                                         {{e}}
@@ -332,13 +328,13 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Target</td>
                             <td class="propRowCell remove-cell">
-                                <mat-select [(value)]="item.target" [disabled]="readonly">
+                                <mat-select [(value)]="item.target" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-select-trigger>
                                         <span class="custom">
-                                            {{item.target?.tag}}
+                                            {{item.targetTag}}
                                         </span>
                                     </mat-select-trigger>
-                                    <mat-option *ngFor="let item of allBlocks" [value]="item">
+                                    <mat-option *ngFor="let item of policy.allBlocks" [value]="item">
                                         <div class="block-name">
                                             <div class="block-icon">
                                                 <mat-icon>{{getIcon(item)}}</mat-icon>
@@ -361,7 +357,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Input Event</td>
                             <td class="propRowCell remove-cell">
-                                <mat-select [(value)]="item.input" [disabled]="readonly">
+                                <mat-select [(value)]="item.input" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-option value=""></mat-option>
                                     <mat-option *ngFor="let e of getInputEvents(item)" [value]="e">
                                         {{e}}
@@ -373,7 +369,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Disabled</td>
                             <td class="propRowCell remove-cell">
-                                <input type="checkbox" [(ngModel)]="item.disabled" [readonly]="readonly">
+                                <input type="checkbox" [(ngModel)]="item.disabled" [readonly]="readonly" (change)="onSave()">
                             </td>
                         </tr>
                     </ng-container>

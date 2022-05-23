@@ -122,8 +122,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             public get next(): IPolicyBlock {
                 if (this.parent) {
-                    const index = this.parent.getChildIndex(this.uuid);
-                    return this.parent.children[index + 1];
+                    return this.parent.getNextChild(this.uuid);
                 }
                 return undefined;
             }
@@ -168,6 +167,16 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return -1;
             }
 
+            public getNextChild(uuid: string): IPolicyBlock {
+                if (typeof super.getNextChild === 'function') {
+                    return super.getNextChild(uuid);
+                }
+                const index = this.getChildIndex(uuid);
+                if (index !== -1) {
+                    return this.children[index + 1];
+                }
+            }
+
             public addSourceLink(link: PolicyLink<any>): void {
                 this.sourceLinks.push(link)
             }
@@ -207,6 +216,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param {IPolicyEvent} event
              */
             public async refreshAction(event: IPolicyEvent<any>): Promise<any> {
+                if (typeof super.refreshAction === 'function') {
+                    return await super.refreshAction(event);
+                }
                 this.updateBlock(event.data, event.user, '');
             }
 

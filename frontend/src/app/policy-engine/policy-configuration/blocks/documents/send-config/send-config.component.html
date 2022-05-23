@@ -50,11 +50,8 @@
                     </span>
                 </mat-option>
                 <mat-option value="root">Policy Instance</mat-option>
-                <mat-option *ngFor="let topic of topics" 
-                    [value]="topic.name"
-                    [matTooltip]="topic.description" 
-                    matTooltipPosition="above" 
-                    matTooltipClass="guardian-tooltip">
+                <mat-option *ngFor="let topic of policy.policyTopics" [value]="topic.name"
+                    [matTooltip]="topic.description" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
                     {{topic.name}}
                 </mat-option>
             </mat-select>

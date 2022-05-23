@@ -3,7 +3,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@auth/auth.interface';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
@@ -39,7 +39,7 @@ export class InterfaceStepBlock {
     async changeStep(user: IAuthUser, data: any, target: IPolicyBlock) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`changeStep`);
-        let blockState;
+        let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
             this.state[user.did] = blockState;
@@ -48,22 +48,53 @@ export class InterfaceStepBlock {
         }
 
         if (target) {
-            blockState.index = ref.children.indexOf(target);
+            const index = ref.children.findIndex(c => c.uuid == target.uuid);
+            blockState.index = index;
             if (blockState.index === -1) {
                 throw new BlockActionError('Bad child block', ref.blockType, ref.uuid);
             }
         } else {
-            blockState.index = ref.options.cyclic ? 0 : ref.children.length - 1;
-            blockState.data = {};
+            throw new BlockActionError('Bad child block', ref.blockType, ref.uuid);
         }
 
         ref.updateBlock(blockState, user);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
+    /**
+     * @event PolicyEventType.ReleaseEvent
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        type: PolicyInputEventType.ReleaseEvent
+    })
+    async releaseChild(event: IPolicyEvent<any>) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const index = ref.children.findIndex(c => c.uuid === event.sourceId);
+        if (
+            index != -1 && 
+            index === (ref.children.length - 1) && 
+            ref.options.cyclic
+        ) {
+            const user = event.user;
+            if(user) {
+                let blockState: any;
+                if (!this.state.hasOwnProperty(user.did)) {
+                    blockState = {};
+                    this.state[user.did] = blockState;
+                } else {
+                    blockState = this.state[user.did];
+                }
+                blockState.index = 0;
+                ref.updateBlock(blockState, user);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+            }
+        }
+    }
+
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        let blockState;
+        let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
             this.state[user.did] = blockState;
@@ -90,6 +121,23 @@ export class InterfaceStepBlock {
             index = state.index;
         }
         return index === childIndex;
-
     }
+
+    public isCyclic(): boolean {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        return !!ref.options.cyclic;
+    }
+
+
+    // public getNextChild(uuid: string): IPolicyBlock {
+    //     const ref = PolicyComponentsUtils.GetBlockRef(this);
+    //     const index = ref.getChildIndex(uuid);
+    //     if (index !== -1) {
+    //         let next = ref.children[index + 1];
+    //         if (!next && ref.options.cyclic) {
+    //             next = ref.children[0];
+    //         }
+    //         return next;
+    //     }
+    // }
 }
