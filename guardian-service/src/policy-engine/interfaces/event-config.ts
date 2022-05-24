@@ -1,4 +1,4 @@
-import { PolicyInputEventType, PolicyOutputEventType } from "./policy-event-type";
+import { EventActor, PolicyInputEventType, PolicyOutputEventType } from "./policy-event-type";
 
 export interface EventConfig {
     output: PolicyOutputEventType
@@ -6,5 +6,5 @@ export interface EventConfig {
     target: string;
     source: string;
     disabled: boolean;
-    actor: string;
+    actor: EventActor;
 }

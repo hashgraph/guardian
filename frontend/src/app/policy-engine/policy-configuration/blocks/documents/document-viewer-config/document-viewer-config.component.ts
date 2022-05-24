@@ -30,6 +30,7 @@ export class DocumentSourceComponent implements OnInit {
     };
 
     block!: any;
+    allBlocks!: any[];
 
     constructor(public registeredBlocks: RegisteredBlocks) {
     }
@@ -69,6 +70,17 @@ export class DocumentSourceComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
+        if (this.policy?.allBlocks) {
+            this.allBlocks = this.policy.allBlocks.map(item => {
+                return {
+                    name: item.tag,
+                    icon: this.getIcon(item),
+                    value: item.tag
+                }
+            });
+        } else {
+            this.allBlocks = [];
+        }
         this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.fields = this.block.uiMetaData.fields || [];

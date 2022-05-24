@@ -232,6 +232,15 @@
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">
+                            Event Actor
+                        </td>
+                        <td class="propRowCell remove-cell">
+                            <span class="readonly-prop">Event Initiator</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
+                        <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Disabled</td>
                         <td class="propRowCell remove-cell">
                             <input type="checkbox" [(ngModel)]="block.properties.stopPropagation" [readonly]="readonly" (change)="onSave()">
@@ -365,6 +374,20 @@
                                 </mat-select>
                             </td>
                         </tr>
+
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Event Actor</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [value]="item.actor" (selectionChange)="onSave()"
+                                    [disabled]="readonly">
+                                    <mat-option value="">Event Initiator</mat-option>
+                                    <mat-option value="owner">Document Owner</mat-option>
+                                    <mat-option value="issuer">Document Issuer</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Disabled</td>

@@ -13,3 +13,9 @@ export enum PolicyOutputEventType {
     RefreshEvent = 'RefreshEvent',
     DropdownEvent = 'DropdownEvent',
 }
+
+export enum EventActor {
+    Owner = 'owner',
+    Issuer = 'issuer',
+    EventInitiator = '',
+}

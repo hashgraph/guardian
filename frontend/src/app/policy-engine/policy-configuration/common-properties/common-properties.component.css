@@ -327,6 +327,7 @@ input[readonly][type="checkbox"] {
 
 .readonly-prop {
     padding-left: 2px;
+    color: rgba(0,0,0,.45);
 }
 
 .remove-prop {

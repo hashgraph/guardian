@@ -37,6 +37,10 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.url}`);
     }
 
+    public getSchemesByPolicy(policyId: string): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}`);
+    }
+    
     public getSchemesByPage(topicId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
         let url = `${this.url}`;
         if (topicId) {

@@ -1,7 +1,5 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
-
-
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
             <mat-icon>expand_more</mat-icon>
@@ -60,32 +58,6 @@
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName">
-                <mat-icon class="icon-link">
-                    add_link
-                </mat-icon>
-                Bind Group
-            </td>
-            <td class="propRowCell">
-                <mat-select [(value)]="field.bindGroup" [disabled]="readonly">
-                    <mat-select-trigger>
-                        <span class="custom">
-                            {{field?.bindGroup?.tag}}
-                        </span>
-                    </mat-select-trigger>
-                    <mat-option *ngFor="let item of policy.allBlocks" [value]="item.tag">
-                        <div class="block-name">
-                            <div class="block-icon">
-                                <mat-icon>{{getIcon(item)}}</mat-icon>
-                            </div>
-                            {{item.tag}}
-                        </div>
-                    </mat-option>
-                </mat-select>
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-            <td class="propRowCol"></td>
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
                 <input [(ngModel)]="field.title" [readonly]="readonly">
@@ -117,6 +89,27 @@
             <td class="propRowCell cellName">width</td>
             <td class="propRowCell">
                 <input [(ngModel)]="field.width" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                <mat-icon class="icon-link">add_link</mat-icon> Bind Group
+            </td>
+            <td class="propRowCell">
+                <mat-select [(value)]="field.bindGroup" [disabled]="readonly">
+                    <mat-select-trigger>
+                        <span class="custom">{{field?.bindGroup?.tag}}</span>
+                    </mat-select-trigger>
+                    <mat-option *ngFor="let item of allBlocks" [value]="item.value">
+                        <div class="block-name">
+                            <div class="block-icon">
+                                <mat-icon>{{item.icon}}</mat-icon>
+                            </div>
+                            {{item.name}}
+                        </div>
+                    </mat-option>
+                </mat-select>
             </td>
         </tr>
         <ng-container *ngIf="field.type=='button'">
@@ -151,12 +144,12 @@
                                     {{field?.bindBlock?.tag}}
                                 </span>
                             </mat-select-trigger>
-                            <mat-option *ngFor="let item of policy.allBlocks" [value]="item.tag">
+                            <mat-option *ngFor="let item of allBlocks" [value]="item.value">
                                 <div class="block-name">
                                     <div class="block-icon">
-                                        <mat-icon>{{getIcon(item)}}</mat-icon>
+                                        <mat-icon>{{item.icon}}</mat-icon>
                                     </div>
-                                    {{item.tag}}
+                                    {{item.name}}
                                 </div>
                             </mat-option>
                         </mat-select>
@@ -200,12 +193,12 @@
                                     {{field?.bindBlock?.tag}}
                                 </span>
                             </mat-select-trigger>
-                            <mat-option *ngFor="let item of policy.allBlocks" [value]="item.tag">
+                            <mat-option *ngFor="let item of allBlocks" [value]="item.value">
                                 <div class="block-name">
                                     <div class="block-icon">
-                                        <mat-icon>{{getIcon(item)}}</mat-icon>
+                                        <mat-icon>{{item.icon}}</mat-icon>
                                     </div>
-                                    {{item.tag}}
+                                    {{item.name}}
                                 </div>
                             </mat-option>
                         </mat-select>
@@ -225,16 +218,14 @@
                 <td class="propRowCell">
                     <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
                         <mat-select-trigger>
-                            <span class="custom">
-                                {{field?.bindBlock?.tag}}
-                            </span>
+                            <span class="custom">{{field?.bindBlock?.tag}}</span>
                         </mat-select-trigger>
-                        <mat-option *ngFor="let item of policy.allBlocks" [value]="item.tag">
+                        <mat-option *ngFor="let item of allBlocks" [value]="item.value">
                             <div class="block-name">
                                 <div class="block-icon">
-                                    <mat-icon>{{getIcon(item)}}</mat-icon>
+                                    <mat-icon>{{item.icon}}</mat-icon>
                                 </div>
-                                {{item.tag}}
+                                {{item.name}}
                             </div>
                         </mat-option>
                     </mat-select>

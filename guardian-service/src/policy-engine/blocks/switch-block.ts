@@ -138,7 +138,7 @@ export class SwitchBlock {
 
             if (result) {
                 ref.triggerEvents(tag, curUser, event.data);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, null);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
                 if (executionFlow == 'firstTrue') {
                     return;
                 }

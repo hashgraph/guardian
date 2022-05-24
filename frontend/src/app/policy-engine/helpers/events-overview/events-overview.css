@@ -27,6 +27,7 @@
     color: #35a307;
 }
 
-.tooltip::ng-deep .s2 {
+.tooltip::ng-deep .s2,
+.tooltip::ng-deep .s4 {
     margin-bottom: 5px;
 }

@@ -1,6 +1,6 @@
 import { IAuthUser } from "@auth/auth.interface";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
-import { PolicyInputEventType, PolicyOutputEventType } from "./policy-event-type";
+import { EventActor, PolicyInputEventType, PolicyOutputEventType } from "./policy-event-type";
 
 export type EventCallback<T> = (event: IPolicyEvent<T>) => void;
 
@@ -24,13 +24,16 @@ export class PolicyLink<T> {
     public readonly policyId: string;
     public readonly source: AnyBlockType;
     public readonly target: AnyBlockType;
+    public readonly actor: EventActor;
+
     private readonly callback?: EventCallback<T>;
 
     constructor(
-        inputType: PolicyInputEventType, 
-        outputType: PolicyOutputEventType, 
-        source: AnyBlockType, 
-        target: AnyBlockType, 
+        inputType: PolicyInputEventType,
+        outputType: PolicyOutputEventType,
+        source: AnyBlockType,
+        target: AnyBlockType,
+        actor: EventActor,
         fn: EventCallback<T>
     ) {
         this.type = inputType;
@@ -39,10 +42,16 @@ export class PolicyLink<T> {
         this.policyId = source.policyId;
         this.source = source;
         this.target = target;
+        this.actor = actor;
         this.callback = fn;
     }
 
     public run(user?: IAuthUser, data?: T): void {
+        if (this.actor == EventActor.Owner) {
+            user = this.createUser(this.getOwner(data));
+        } else if (this.actor == EventActor.Issuer) {
+            user = this.createUser(this.getIssuer(data));
+        }
         this.callback.call(this.target, {
             type: this.type,
             inputType: this.inputType,
@@ -55,5 +64,32 @@ export class PolicyLink<T> {
             user: user,
             data: data
         })
+    }
+
+    private getOwner(data: any): string {
+        console.log('getOwner', data)
+        if (data) {
+            return data.owner;
+        }
+        return null;
+    }
+
+    private getIssuer(data: any): string {
+        console.log('getIssuer', data)
+        if (data) {
+            if (data.document) {
+                return data.document.issuer;
+            }
+            return data.owner;
+        }
+        return null;
+    }
+
+    private createUser(did: string): IAuthUser {
+        console.log('createUser', did)
+        if (did) {
+            return { did } as IAuthUser;
+        }
+        return null;
     }
 }

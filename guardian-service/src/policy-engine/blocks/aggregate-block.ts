@@ -89,8 +89,9 @@ export class AggregateBlock {
                 await repository.remove(documents);
             }
             if (documents.length || ref.options.emptyData) {
-                ref.triggerEvents(PolicyOutputEventType.RunEvent, user, { data: documents });
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+                const state = { data: documents };
+                ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             }
         }
     }
@@ -152,8 +153,9 @@ export class AggregateBlock {
         if (result === true) {
             const user = await this.users.getUserById(owner);
             await repository.remove(rawEntities);
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, { data: rawEntities });
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+            const state = { data: rawEntities };
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
         }
     }
 

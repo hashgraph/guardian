@@ -64,8 +64,9 @@ export class ExternalDataBlock {
             type: ref.options.entityType,
             schema: ref.options.schema
         };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, null, { data: doc });
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null);
+        const state = { data: doc };
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, null, state);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, state);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

@@ -25,10 +25,15 @@ export class EventsOverview {
 
     blockMap: any;
     lastImages: any;
+    actorMap: any;
 
     constructor(
         private element: ElementRef,
         private registeredBlocks: RegisteredBlocks) {
+        this.actorMap = {};
+        this.actorMap[''] = 'Event Initiator';
+        this.actorMap['owner'] = 'Document Owner';
+        this.actorMap['issuer'] = 'Document Issuer';
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -66,17 +71,11 @@ export class EventsOverview {
         if (this.active === 'None' || !this._canvas || !this._context) {
             return;
         }
-
         const boxCanvas = this.refreshCanvas();
-
-        const map = this.getBlockSize(this.policy.dataSource, boxCanvas);
-
+        const map = this.getBlockSize(this.policy.allBlocks, boxCanvas);
         const lines = this.getLines(map, this.policy.allBlocks, this.policy.allEvents);
-
         const renderLine = this.sortLine(lines);
-
         this.renderData(renderLine);
-
         this.renderLine();
     }
 
@@ -84,15 +83,12 @@ export class EventsOverview {
         if (!this._canvas || !this._context) {
             return;
         }
-
         for (let index = 0; index < renderLine.length; index++) {
             const line = renderLine[index];
             line.index = index + 1;
             this.drawData(line);
         }
-
         const data = this._context.getImageData(0, 0, this._canvas.width, this._canvas.height).data;
-
         this.lastImages = {
             context: this._context,
             lines: renderLine,
@@ -136,43 +132,30 @@ export class EventsOverview {
         return { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
     }
 
-    private getBlock(blocks: PolicyBlockModel[], blockMap: any) {
-        for (let i = 0; i < blocks.length; i++) {
-            const block = blocks[i];
-            const item = {
+    private getBlockSize(blocks: PolicyBlockModel[], boxCanvas: any) {
+        const blockMap: any = {};
+        for (const block of blocks) {
+            const item: any = {
                 tag: block.tag,
                 events: block.events,
                 next: block.next?.tag,
                 prev: block.prev?.tag,
             }
-            blockMap[item.tag] = item;
-            if (block.children) {
-                this.getBlock(block.children, blockMap);
-            }
-        }
-        return blockMap;
-    }
-
-    private getBlockSize(blocks: any[], boxCanvas: any) {
-        const blockMap = this.getBlock(blocks, {});
-
-        const tags = Object.keys(blockMap);
-        for (const tag of tags) {
-            const div = document.querySelector(`*[block-instance="${tag}"]`);
+            const div = document.querySelector(`*[block-instance="${block.tag}"]`);
             if (div) {
-                blockMap[tag].div = div;
                 const box = div.getBoundingClientRect();
-                blockMap[tag].leftOffset = boxCanvas.left;
-                blockMap[tag].topOffset = boxCanvas.top;
-                blockMap[tag].left = box.left || 0;
-                blockMap[tag].right = box.right || 0;
-                blockMap[tag].top = box.top || 0;
-                blockMap[tag].bottom = box.bottom || 0;
-                blockMap[tag].width = box.width || 0;
-                blockMap[tag].height = box.height || 0;
+                item.div = div;
+                item.leftOffset = boxCanvas.left;
+                item.topOffset = boxCanvas.top;
+                item.left = box.left || 0;
+                item.right = box.right || 0;
+                item.top = box.top || 0;
+                item.bottom = box.bottom || 0;
+                item.width = box.width || 0;
+                item.height = box.height || 0;
             }
+            blockMap[item.tag] = item;
         }
-
         return blockMap;
     }
 
@@ -194,6 +177,7 @@ export class EventsOverview {
                 if (!item.properties.stopPropagation && about.defaultEvent && this.checkType(item)) {
                     const line = this.createLine(blockMap, item.tag, block.next);
                     if (line) {
+                        line.actor = '';
                         line.input = 'RunEvent';
                         line.output = 'RunEvent';
                         line.dash = false;
@@ -209,6 +193,7 @@ export class EventsOverview {
                 if (!item.disabled && this.checkType(item)) {
                     const line = this.createLine(blockMap, item.sourceTag, item.targetTag);
                     if (line) {
+                        line.actor = item.actor;
                         line.input = item.input;
                         line.output = item.output;
                         line.dash = item.input == 'RefreshEvent';
@@ -244,7 +229,6 @@ export class EventsOverview {
         if (!start || !start.div || !end || !end.div) {
             return null;
         }
-
         const minWidth = 150;
         return {
             start_top_x: Math.round(start.left + (minWidth / 2) - start.leftOffset),
@@ -253,14 +237,12 @@ export class EventsOverview {
             start_bottom_y: Math.round(start.top + start.height - start.topOffset + 2),
             start_right_x: Math.round(start.right - start.leftOffset + 32),
             start_right_y: Math.round(start.top - start.topOffset + 16 + 6),
-
             end_top_x: Math.round(end.left + (minWidth / 2) - start.leftOffset),
             end_top_y: Math.round(end.top - start.topOffset - 6),
             end_bottom_x: Math.round(end.left + (minWidth / 2) - start.leftOffset),
             end_bottom_y: Math.round(end.top + end.height - start.topOffset + 2),
             end_right_x: Math.round(end.right - start.leftOffset + 32),
             end_right_y: Math.round(end.top - start.topOffset + 16 - 6),
-
             startTag: startTag,
             endTag: endTag,
             offset: 4,
@@ -438,11 +420,11 @@ export class EventsOverview {
             const idx = (event.offsetY * this.lastImages.width + event.offsetX) * 4;
             const a = this.lastImages.data[idx + 3];
             let index = 0;
-            if(a == 255) {
+            if (a == 255) {
                 const r = this.lastImages.data[idx];
                 const g = this.lastImages.data[idx + 1];
                 const b = this.lastImages.data[idx + 2];
-                index = this.fromColor(r,g,b);
+                index = this.fromColor(r, g, b);
             }
             if (this.lastImages.index != index) {
                 this.lastImages.index = index;
@@ -453,6 +435,7 @@ export class EventsOverview {
                         <div class="s2"><span>Output (Event)</span>: ${line.output}</div> 
                         <div class="s3"><span>Target (Block Tag)</span>: ${line.endTag}</div>
                         <div class="s4"><span>Input (Event)</span>: ${line.input}</div>
+                        <div class="s5"><span>Event Actor</span>: ${this.actorMap[line.actor]}</div>
                     `
                 } else {
                     this._tooltip.innerHTML = '';

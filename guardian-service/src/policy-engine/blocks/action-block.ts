@@ -87,7 +87,7 @@ export class InterfaceDocumentActionBlock {
                     : document.owner;
                 const owner = await this.users.getUserById(ownerDid);
                 ref.triggerEvents(option.tag, owner, state);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, null);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
             }
             return;
         }
@@ -95,7 +95,7 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type == 'dropdown') {
             const owner = await this.users.getUserById(document.owner);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, owner, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, null);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
             return;
         }
 

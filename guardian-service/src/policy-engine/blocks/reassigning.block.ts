@@ -97,6 +97,6 @@ export class ReassigningBlock {
         ref.log(`Reassigning Document: ${JSON.stringify(item)}`);
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, owner, event.data);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, event.data);
     }
 }
