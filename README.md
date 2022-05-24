@@ -25,7 +25,7 @@ To get a local copy up and running, follow these simple example steps. When buil
 * [Hedera Testnet Account](https://portal.hedera.com)
 * [NFT.Storage Account](https://nft.storage/#getting-started)
 
-#### Installation
+#### Docker Installation
 
 1. Clone the repo
 
@@ -71,18 +71,13 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    docker-compose up -d --build
    ```
+The guardian demo interface will now be accessible at https://localhost:3000
+
+#### Manual Installation
    
-5. If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
-   **From the interfaces folder**
-
-   Build package
-   ```sh
-   npm install
-   npm run build
-   ```
-
-   **From the logger-helper folder**
+1. **From the interfaces folder**
 
    Build package
    ```sh
@@ -90,7 +85,15 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm run build
    ```
 
-   **From the interfaces folder**
+2. **From the logger-helper folder**
+
+   Build package
+   ```sh
+   npm install
+   npm run build
+   ```
+
+3. **From the interfaces folder**
 
    Build package
    ```sh
@@ -99,15 +102,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
 
 
-  **From the common folder**
-
-  Build package
-  ```sh
-  npm install
-  npm run build
-  ```
-
-   **From the logger-helper folder**
+4. **From the common folder**
 
    Build package
    ```sh
@@ -115,7 +110,15 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm run build
    ```
 
-   **From the Logger service folder**
+5. **From the logger-helper folder**
+
+   Build package
+   ```sh
+   npm install
+   npm run build
+   ```
+
+6. **From the Logger service folder**
 
    To build the service:
 
@@ -130,7 +133,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the Auth service folder**
+7. **From the Auth service folder**
 
    To build the service:
 
@@ -145,7 +148,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the IPFS Client folder**
+8. **From the IPFS Client folder**
 
    To build the service:
 
@@ -159,8 +162,8 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    npm start
    ```
- 
-   **From the Guardian Service folder**
+
+9. **From the Guardian Service folder**
 
    To build the service:
 
@@ -175,62 +178,65 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the API Gateway Service folder**
+10. **From the API Gateway Service folder**
 
-   To build the service:
+    To build the service:
 
-   ```
-   npm install
-   npm run build
-   ```
+    ```
+    npm install
+    npm run build
+    ```
 
-   To start the service (found on http://localhost:3002):
+    To start the service (found on http://localhost:3002):
 
-   ```
-   npm start
-   ```
+    ```
+    npm start
+    ```
 
-   **From the MRV Sender Service folder**
+11. **From the MRV Sender Service folder**
 
-   To build the service:
+    To build the service:
 
-   ```
-   npm install
-   npm run build
-   ```
+    ```
+    npm install
+    npm run build
+    ```
 
-   To start the service (found on http://localhost:3005):
+    To start the service (found on http://localhost:3005):
 
-   ```
-   npm start
-   ```
+    ```
+    npm start
+    ```
 
-   **From the Frontend folder**
+12. **From the Frontend folder**
 
-   To build the service:
+    To build the service:
 
-   ```
-   npm install
-   npm run build
-   ```
+    ```
+    npm install
+    npm run build
+    ```
 
-   To start the service (found on http://localhost:4200):
+    To start the service (found on http://localhost:4200):
 
-   ```
-   npm start
-   ```
+    ```
+    npm start
+    ```
   ### Note: Once you start the service, please wait for the Initialization Process to be completed.
   
   ### Local development using docker
   1. create .env file at the root level and update all variable requires for docker
-  ```sh
-      cp .env.example .env
-  ```
-  2. Start local development using docker compose
-  ```
-   docker-compose -f docker-compose-dev.yml up --build
 
-  ```
+        ```
+        cp .env.example .env
+        ```
+    
+  2. Start local development using docker compose
+
+        ```
+        docker-compose -f docker-compose-dev.yml up --build
+        ```
+    
   3. Access local development using http://localhost:3000 or http://localhost:4200
 
   ### Troubleshoot 
