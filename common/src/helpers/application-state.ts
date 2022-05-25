@@ -45,7 +45,7 @@ export class ApplicationState {
         if (this.serviceName) {
             const res = {};
             res[this.serviceName] = state;
-            this.channel.request([this.channel.channelName, MessageAPI.UPDATE_STATUS].join('.'), res);
+            this.channel.request(['api-gateway', MessageAPI.UPDATE_STATUS].join('.'), res);
         }
     }
 }
