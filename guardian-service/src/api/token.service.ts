@@ -1,5 +1,5 @@
 import { Token } from '@entity/token';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { MongoRepository } from 'typeorm';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
