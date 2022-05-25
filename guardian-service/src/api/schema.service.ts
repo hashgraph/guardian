@@ -1,4 +1,4 @@
-import { Schema as SchemaCollection } from '@entity/schema';
+import { Schema, Schema as SchemaCollection } from '@entity/schema';
 import {
     ISchema,
     MessageAPI,
@@ -190,7 +190,7 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
 async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCollection> {
     const users = new Users();
     const root = await users.getHederaAccount(owner);
-    const schemaObject = getMongoRepository(SchemaCollection).create(newSchema) as ISchema;
+    const schemaObject = getMongoRepository(SchemaCollection).create(newSchema) as Schema;
 
     let topic: Topic;
     if (newSchema.topicId) {
