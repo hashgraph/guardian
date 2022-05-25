@@ -48,7 +48,6 @@ export class AggregateConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.block = block.properties;
-        this.allTimer = this.policy?.allBlocks.filter(e => e.blockType == 'timerBlock');
         this.block.expressions = this.block.expressions || [];
         this.block.uiMetaData = this.block.uiMetaData || {}
     }
