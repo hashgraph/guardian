@@ -13,8 +13,5 @@ export interface PolicyBlockStateCommon<T> {
 }
 
 export type PolicyBlockState<T> = PolicyBlockStateCommon<PolicyBlockStateData<T>>;
-
-export type PolicyBlockDependencies = string[];
-
 export type PolicyBlockMap = Map<string, IPolicyBlock | IPolicyInterfaceBlock>;
 export type PolicyTagMap = Map<string, string>;

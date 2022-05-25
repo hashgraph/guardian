@@ -4,7 +4,7 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import { MongoRepository } from 'typeorm';
 import { Settings } from '../entity/settings';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import {
     MessageAPI,
     CommonSettings,
@@ -12,8 +12,8 @@ import {
     IIpfsSettingsResponse,
     IAddFileMessage,
     IFileResponse
-} from 'interfaces';
-import { MessageBrokerChannel, MessageError, MessageResponse } from 'common';
+} from '@guardian/interfaces';
+import { MessageBrokerChannel, MessageError, MessageResponse } from '@guardian/common';
 
 
 export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';

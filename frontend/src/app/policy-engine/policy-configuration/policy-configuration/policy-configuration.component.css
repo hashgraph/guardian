@@ -476,12 +476,12 @@ input[readonly] {
 .view-menu {
     position: absolute;
     top: 90px;
-    right: 8px;
+    right: 12px;
     background: #fff;
     border: 1px solid;
     display: flex;
     height: 28px;
-    width: 90px;
+    width: 121px;
     overflow: hidden;
     z-index: 9;
 }
@@ -494,6 +494,15 @@ input[readonly] {
     cursor: pointer;
     margin: 1px;
     color: #3f51b5;
+}
+
+.btn-view-menu-sep {
+    height: 20px;
+    width: 2px;
+    background: #3f51b5;
+    box-sizing: border-box;
+    padding-left: 1px;
+    margin-top: 4px;
 }
 
 .btn-view-menu:hover {

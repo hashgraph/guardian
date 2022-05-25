@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { IVC, IVCDocument } from 'interfaces';
+import { IVC, IVCDocument } from '@guardian/interfaces';
 
 export const SchemaFields = [
     'schema',

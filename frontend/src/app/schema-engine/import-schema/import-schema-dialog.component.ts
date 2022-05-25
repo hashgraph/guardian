@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ImportType, Schema, SchemaHelper } from 'interfaces';
+import { ImportType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 /**
@@ -65,7 +65,7 @@ export class ImportSchemaDialog {
         this.loading = false;
       });
   }
-  
+
   importFromFile(file: any) {
     const reader = new FileReader()
     reader.readAsArrayBuffer(file);

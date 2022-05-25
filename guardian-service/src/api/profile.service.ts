@@ -4,9 +4,9 @@ import {
     MessageAPI,
     SchemaEntity,
     TopicType
-} from 'interfaces';
+} from '@guardian/interfaces';
 import { MongoRepository } from 'typeorm';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
@@ -24,7 +24,7 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
 
 /**
  * Connect to the message broker methods of working with Address books.

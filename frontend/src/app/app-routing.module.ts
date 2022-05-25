@@ -1,6 +1,6 @@
 import { Injectable, NgModule } from '@angular/core';
 import { CanActivate, Router, RouterModule, Routes } from '@angular/router';
-import { ISession, IUser, UserRole } from 'interfaces';
+import { ISession, IUser, UserRole } from '@guardian/interfaces';
 import { of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { PolicyConfigurationComponent } from './policy-engine/policy-configuration/policy-configuration/policy-configuration.component';

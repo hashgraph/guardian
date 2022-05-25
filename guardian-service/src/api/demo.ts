@@ -1,11 +1,11 @@
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { getMongoRepository, MongoRepository } from 'typeorm';
 import { Settings } from '@entity/settings';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { Policy } from '@entity/policy';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { MessageAPI } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageAPI } from '@guardian/interfaces';
 
 export const demoAPI = async function (
     channel: MessageBrokerChannel,

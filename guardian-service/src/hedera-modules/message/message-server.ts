@@ -9,7 +9,7 @@ import { HederaSDKHelper } from '../hedera-sdk-helper';
 import { MessageType } from './message-type';
 import { VCMessage } from './vc-message';
 import { DIDMessage } from './did-message';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { PolicyMessage } from './policy-message';
 import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';

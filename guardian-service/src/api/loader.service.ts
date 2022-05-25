@@ -1,15 +1,15 @@
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { DidRootKey } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { MessageAPI } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageAPI } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
- * 
+ *
  * @param channel - channel
  * @param didDocumentLoader - DID Documents Loader
  * @param schemaDocumentLoader - Schema Documents Loader
@@ -21,10 +21,10 @@ export const loaderAPI = async function (
 ): Promise<void> {
     /**
      * Return DID Document
-     * 
+     *
      * @param {Object} payload - filters
      * @param {string} payload.did - DID
-     * 
+     *
      * @returns {any} - DID Document
      */
     ApiResponse(channel, MessageAPI.LOAD_DID_DOCUMENT, async (msg) => {
@@ -46,7 +46,7 @@ export const loaderAPI = async function (
     /**
      * Load schema document
      * @param {string} [payload.url] Document URL
-     * 
+     *
      * @returns Schema document
      */
     ApiResponse(channel, MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg) => {
@@ -76,7 +76,7 @@ export const loaderAPI = async function (
     /**
      * Get schema context
      * @param {string} [payload.url] Context URL
-     * 
+     *
      * @returns Schema context
      */
     ApiResponse(channel, MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg) => {

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { ISession } from 'interfaces';
+import { ISession } from '@guardian/interfaces';
 import { API_BASE_URL } from './api';
 
 /**

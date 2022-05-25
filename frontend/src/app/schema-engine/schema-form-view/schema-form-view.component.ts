@@ -2,7 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
-import { Schema, SchemaField } from 'interfaces';
+import { Schema, SchemaField } from '@guardian/interfaces';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 
 /**
@@ -27,7 +27,7 @@ export class SchemaFormViewComponent implements OnInit {
 
   fields: any[] | undefined = [];
   pageSize: number = 20;
-  
+
   constructor() { }
 
 
@@ -70,8 +70,8 @@ export class SchemaFormViewComponent implements OnInit {
         isInvalidType: false
       }
       if (!field.isArray && !field.isRef) {
-        item.value = !this.values 
-          || this.values[item.name] === null 
+        item.value = !this.values
+          || this.values[item.name] === null
           || this.values[item.name] === undefined
             ? ""
             : this.values[item.name];
@@ -82,7 +82,7 @@ export class SchemaFormViewComponent implements OnInit {
 
       if (field.isArray && !field.isRef) {
         let value = [];
-        if (this.values 
+        if (this.values
           && this.values[item.name] !== null
           && this.values[item.name] !== undefined
         ) {
@@ -98,7 +98,7 @@ export class SchemaFormViewComponent implements OnInit {
 
         item.list = value;
       }
-      
+
       if (field.isArray && field.isRef) {
         item.fields = field.fields;
         let value = [];

@@ -1,4 +1,4 @@
-import { MessageBrokerChannel } from "common";
+import { MessageBrokerChannel } from "@guardian/common";
 
 export abstract class ServiceRequestsBase {
     protected channel: MessageBrokerChannel;

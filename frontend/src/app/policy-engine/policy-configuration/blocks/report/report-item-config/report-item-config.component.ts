@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Schema, Token } from 'interfaces';
+import { Schema, Token } from '@guardian/interfaces';
 import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
 import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
@@ -18,13 +19,11 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     ]
 })
 export class ReportItemConfigComponent implements OnInit {
-    @Input('target') target!: BlockNode;
-    @Input('all') all!: BlockNode[];
+    @Input('policy') policy!: PolicyModel;
+    @Input('block') currentBlock!: PolicyBlockModel;
     @Input('schemes') schemes!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
     fileLoading = false;
@@ -37,7 +36,7 @@ export class ReportItemConfigComponent implements OnInit {
         variables: {}
     };
 
-    block!: BlockNode;
+    block!: any;
 
     constructor(
         private ipfs: IPFSService,
@@ -46,19 +45,19 @@ export class ReportItemConfigComponent implements OnInit {
 
     ngOnInit(): void {
         this.onInit.emit(this);
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
-    load(block: BlockNode) {
-        this.block = block;
+    load(block: PolicyBlockModel) {
+        this.block = block.properties;
         this.block.filters = this.block.filters || [];
         this.block.variables = this.block.variables || [];
-        this.block.visible = block.visible !== false;
-        this.block.iconType = block.iconType;
+        this.block.visible = this.block.visible !== false;
+        this.block.iconType = this.block.iconType;
     }
 
     onHide(item: any, prop: any) {

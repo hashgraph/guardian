@@ -1,8 +1,8 @@
 import { ApprovalDocument } from '@entity/approval-document';
 import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse } from 'common';
-import { MessageAPI, IApprovalDocument } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
+import { MessageAPI, IApprovalDocument } from '@guardian/interfaces';
 
 /**
  * Connecting to the message broker methods of working with Approve documents.

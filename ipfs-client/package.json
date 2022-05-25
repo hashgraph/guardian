@@ -4,6 +4,9 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "@guardian/common": "^2.0.0",
+    "@guardian/interfaces": "^2.0.0",
+    "@guardian/logger-helper": "^2.0.0",
     "@web-std/fetch": "3.0.0",
     "axios": "^0.26.1",
     "axios-retry": "^3.2.4",
@@ -11,16 +14,13 @@
     "cross-blob": "^2.0.1",
     "dotenv": "^16.0.0",
     "fs-extra": "^10.0.0",
-    "interfaces": "file:../interfaces",
     "js-yaml": "^4.1.0",
     "mathjs": "^10.1.0",
     "module-alias": "^2.2.2",
-    "nft.storage": "^5.2.0",
     "mongodb": "^4.2.1",
+    "nft.storage": "^5.2.0",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.41",
-    "common":"file:../common",
-    "logger-helper": "file:../logger-helper"
+    "typeorm": "^0.2.41"
   },
   "description": "",
   "devDependencies": {

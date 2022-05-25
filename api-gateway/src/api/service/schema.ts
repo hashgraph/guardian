@@ -1,10 +1,10 @@
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { ISchema, UserRole, SchemaHelper } from 'interfaces';
+import { ISchema, UserRole, SchemaHelper } from '@guardian/interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { PolicyEngine } from '@helpers/policyEngine';
 
 export async function parseZipFile(zipFile: any): Promise<any[]> {
@@ -142,7 +142,18 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         if (user.role == UserRole.ROOT_AUTHORITY) {
             owner = user.did;
         }
-        const { schemes, count } = await guardians.getSchemesByOwner(owner, null, pageIndex, pageSize);
+        let topicId = null;
+        const policyId = req.query?.policyId;
+        if(policyId) {
+            const engineService = new PolicyEngine();
+            const model = (await engineService.getPolicy({
+                filters: policyId,
+                userDid: user.did,
+            })) as any;
+            topicId = model?.topicId;
+            console.log(topicId)
+        }
+        const { schemes, count } = await guardians.getSchemesByOwner(owner, topicId, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemes, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
     } catch (error) {

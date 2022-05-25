@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ImportType } from 'interfaces';
+import { ImportType } from '@guardian/interfaces';
 
 /**
  * Dialog for creating policy.

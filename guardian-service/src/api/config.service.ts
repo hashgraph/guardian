@@ -1,14 +1,14 @@
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { MessageAPI, CommonSettings } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 
 /**
  * Connecting to the message broker methods of working with root address book.
- * 
+ *
  * @param channel - channel
  * @param approvalDocumentRepository - table with approve documents
  */
@@ -24,7 +24,7 @@ export const configAPI = async function (
 
     /**
      * Update settings
-     * 
+     *
      */
     ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (msg) => {
         try {
@@ -72,7 +72,7 @@ export const configAPI = async function (
 
     /**
      * Get settings
-     * 
+     *
      */
     ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg) => {
         try {

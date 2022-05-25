@@ -36,9 +36,7 @@
         [attr.error]="isError(node)"
         [attr.control]="node.about.control"
         [attr.root]="node.root"
-        [attr.output]="node.about.output"
-        [attr.input]="node.about.input"
-        [attr.stop-propagation]="node.node.stopPropagation"
+        [attr.block-instance]="node.node.tag"
     >
         <div class="block-icon">
             <mat-icon>{{node.icon}}</mat-icon>
@@ -49,19 +47,5 @@
         <div class="btn-delete" (click)="onDelete($event, node)">
             <mat-icon>delete</mat-icon>
         </div>
-        <div class="output-arrow single">
-            <mat-icon>arrow_downward</mat-icon>
-        </div>
-        <div class="output-arrow multiple">
-            <mat-icon>arrow_downward</mat-icon>
-            <mat-icon>arrow_downward</mat-icon>
-        </div>
-        <div class="input-arrow single">
-
-        </div>
-        <div class="input-arrow multiple">
-
-        </div>
-
     </div>
 </ng-template>

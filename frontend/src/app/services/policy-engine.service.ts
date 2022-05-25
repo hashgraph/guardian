@@ -149,6 +149,10 @@ export class PolicyEngineService {
         });
     }
 
+    public blockAbout(): Observable<any> {
+        return this.http.get<any>(`${this.url}/blocks/about`);
+    }
+    
     private getBaseUrl() {
         let url = location.origin;
         if (/^https/.test(url)) {

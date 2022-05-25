@@ -53,6 +53,7 @@ import { TimerConfigComponent } from './policy-configuration/blocks/documents/ti
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
+import { EventsOverview } from './helpers/events-overview/events-overview';
 
 @NgModule({
     declarations: [
@@ -100,7 +101,8 @@ import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch
         TimerConfigComponent,
         CustomLogicConfigComponent,
         CodeEditorDialogComponent,
-        SwitchConfigComponent
+        SwitchConfigComponent,
+        EventsOverview
     ],
     imports: [
         CommonModule,
@@ -150,7 +152,8 @@ import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
         ReassigningConfigComponent,
-        CronConfigDialog
+        CronConfigDialog,
+        EventsOverview
     ],
     providers: [
         RegisteredBlocks

@@ -6,7 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { saveAs } from 'file-saver';
-import { ILog } from 'interfaces';
+import { ILog } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { merge, Observable, of } from 'rxjs';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
@@ -85,7 +85,7 @@ export class LogsViewComponent implements OnInit {
                 if (data === null) {
                     return [];
                 }
-                
+
                 this.totalCount = data.totalCount;
                 return data.logs;
             })

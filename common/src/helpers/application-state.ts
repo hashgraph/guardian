@@ -1,6 +1,6 @@
 import { Singleton } from "../decorators/singleton";
 import { MessageBrokerChannel } from "../mq";
-import { ApplicationStates, MessageAPI } from "interfaces";
+import { ApplicationStates, MessageAPI } from "@guardian/interfaces";
 import { MessageResponse, MessageError } from "../models/message-response";
 
 @Singleton
@@ -13,9 +13,9 @@ export class ApplicationState {
      * Register channel
      * @param channel: MessageBrokerChannel
      */
-    public setChannel(channel: MessageBrokerChannel): any {
+    public async setChannel(channel: MessageBrokerChannel): Promise<any> {
         this.channel = channel;
-        this.channel.response(MessageAPI.GET_STATUS, async () => {
+        await this.channel.response(MessageAPI.GET_STATUS, async () => {
             try {
                 return new MessageResponse(this.state);
             }
@@ -40,7 +40,7 @@ export class ApplicationState {
         return this.state;
     }
 
-    public updateState(state: ApplicationStates): void {
+    public async updateState(state: ApplicationStates): Promise<void> {
         this.state = state;
         if (this.serviceName) {
             const res = {};

@@ -11,13 +11,14 @@ import { getMongoRepository } from 'typeorm';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
-import { TopicType } from 'interfaces';
+import { TopicType } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles } from '@api/schema.service';
 import { TopicHelper } from '@helpers/topicHelper';
 import { PrivateKey } from '@hashgraph/sdk';
+import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 
 export class PolicyImportExportHelper {
     /**
@@ -239,14 +240,8 @@ export class PolicyImportExportHelper {
         }
 
         // compatibility with older versions
-        replaceAllEntities(policy.config, ['blockType'], 'interfaceDocumentsSource', 'interfaceDocumentsSourceBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'requestVcDocument', 'requestVcDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'sendToGuardian', 'sendToGuardianBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'interfaceAction', 'interfaceActionBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'mintDocument', 'mintDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'aggregateDocument', 'aggregateDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'wipeDocument', 'retirementDocumentBlock');
-
+        policy = PolicyConverterUtils.PolicyConverter(policy);
+        policy.codeVersion = PolicyConverterUtils.VERSION;
         regenerateIds(policy.config);
     }
 }

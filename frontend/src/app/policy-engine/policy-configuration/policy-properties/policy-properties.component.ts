@@ -1,4 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { PolicyModel, PolicyRoleModel, PolicyTopicModel } from '../../policy-model';
 
 /**
  * Settings for policy.
@@ -12,7 +13,7 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChang
     ]
 })
 export class PolicyPropertiesComponent implements OnInit {
-    @Input('policy') policy!: any;
+    @Input('policy') policy!: PolicyModel;
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
 
@@ -25,8 +26,8 @@ export class PolicyPropertiesComponent implements OnInit {
         rolesGroup: false,
         topicsGroup: {}
     };
-    roles: any[] = [];
-    topics: any[] = [];
+    roles: PolicyRoleModel[] = [];
+    topics: PolicyTopicModel[] = [];
 
     constructor() {
     }
@@ -36,14 +37,7 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.roles = [];
-        if (this.policy.policyRoles) {
-            for (let i = 0; i < this.policy.policyRoles.length; i++) {
-                this.roles.push({
-                    name: this.policy.policyRoles[i]
-                })
-            }
-        }
+        this.roles = this.policy.policyRoles;
         this.topics = this.policy.policyTopics;
     }
 
@@ -52,15 +46,7 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     addRoles() {
-        if (!this.policy.policyRoles) {
-            this.policy.policyRoles = [];
-        }
-        this.roles.push({
-            name: ""
-        });
-        for (let i = 0; i < this.roles.length; i++) {
-            this.policy.policyRoles[i] = this.roles[i].name;
-        }
+        this.policy.createRole("");
         setTimeout(() => {
             if (this.body) {
                 this.body.nativeElement.scrollTop = 10000;
@@ -68,20 +54,16 @@ export class PolicyPropertiesComponent implements OnInit {
         });
     }
 
-    onEditRole(i: number) {
-        if (!this.policy.policyRoles) {
-            this.policy.policyRoles = [];
-        }
-        this.policy.policyRoles[i] = this.roles[i].name;
+    onEditRole(role: PolicyRoleModel) {
+        role.emitUpdate();
     }
 
-    onRemoveRole(i: number) {
-        this.policy.policyRoles.splice(i, 1);
-        this.roles.splice(i, 1);
+    onRemoveRole(role: PolicyRoleModel) {
+        this.policy.removeRole(role)
     }
 
     addTopic() {
-        this.topics.push({
+        this.policy.createTopic({
             name: "",
             description: "",
             type: "any",
@@ -89,7 +71,7 @@ export class PolicyPropertiesComponent implements OnInit {
         });
     }
 
-    onRemoveTopic(i: number) {
-        this.topics.splice(i, 1);
+    onRemoveTopic(topic: PolicyTopicModel) {
+        this.policy.removeTopic(topic)
     }
 }

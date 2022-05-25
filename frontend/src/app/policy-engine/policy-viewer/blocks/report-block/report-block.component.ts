@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IPolicyReport, IReport, IReportItem, ITokenReport, IVC, IVCReport, IVPReport, Schema, SchemaHelper } from 'interfaces';
+import { IPolicyReport, IReport, IReportItem, ITokenReport, IVC, IVCReport, IVPReport, Schema, SchemaHelper } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from 'src/app/services/auth.service';

@@ -2,7 +2,7 @@ import { Component, Inject, ViewChild } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder } from '@angular/forms';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
-import { Schema } from 'interfaces';
+import { Schema } from '@guardian/interfaces';
 
 /**
  * Dialog for creating and editing schemes.

@@ -1,5 +1,5 @@
 export {
-    PolicyBlockDependencies, PolicyBlockMap,
+    PolicyBlockMap,
     PolicyBlockState,
     PolicyBlockStateCommon,
     PolicyBlockStateData, PolicyTagMap
@@ -17,3 +17,18 @@ export {
     BlockError,
     BlockErrorDTO
 } from './block-error';
+
+export {
+    PolicyInputEventType,
+    PolicyOutputEventType
+} from './policy-event-type';
+
+export {
+    IPolicyEvent,
+    PolicyLink,
+    EventCallback
+} from './policy-event';
+
+export {
+    EventConfig
+} from './event-config';

@@ -1,10 +1,23 @@
+const moduleAlias = require('module-alias');
+
+moduleAlias.addAliases({
+  "@api": process.cwd() + '/dist' + "/api",
+  "@entity": process.cwd() + '/dist' + "/entity",
+  "@subscribers": process.cwd() + '/dist' + "dist/subscribers",
+  "@helpers": process.cwd() + '/dist' + "/helpers",
+  "@auth": process.cwd() + '/dist' + "/auth",
+  "@policy-engine": process.cwd() + '/dist' + "/policy-engine",
+  "@hedera-modules": process.cwd() + '/dist' + "/hedera-modules/index",
+  "@document-loader": process.cwd() + '/dist' + "/document-loader"
+});
+
 const { expect, assert } = require('chai');
 const { loaderAPI } = require('../../dist/api/loader.service');
 const { DIDDocumentLoader } = require('../../dist/document-loader/did-document-loader');
 const { ContextDocumentLoader } = require('../../dist/document-loader/context-loader');
 const { VCSchemaLoader } = require('../../dist/document-loader/vc-schema-loader');
 const { SubjectSchemaLoader } = require('../../dist/document-loader/subject-schema-loader');
-const { ApplicationState, ApplicationStates } = require('interfaces');
+const { ApplicationState, ApplicationStates } = require('@guardian/interfaces');
 
 const {
     createChannel,

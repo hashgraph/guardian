@@ -1,5 +1,5 @@
-import { ExternalData } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus } from 'interfaces';
+import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
+import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { VcDocument } from '@hedera-modules';
@@ -7,6 +7,8 @@ import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * External data block
@@ -14,8 +16,26 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 @ExternalData({
     blockType: 'externalDataBlock',
     commonBlock: false,
+    about: {
+        label: 'External Data',
+        title: `Add 'External Data' Block`,
+        post: true,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: null,
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true
+    }
 })
 export class ExternalDataBlock {
+    
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
     async receiveData(data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -44,13 +64,9 @@ export class ExternalDataBlock {
             type: ref.options.entityType,
             schema: ref.options.schema
         };
-        ref.runNext(null, {data: doc}).then(
-            function () {
-            },
-            function (error: any) {
-                console.error(error);
-            }
-        );
+        const state = { data: doc };
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, null, state);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, state);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
@@ -62,7 +78,7 @@ export class ExternalDataBlock {
                     return;
                 }
 
-                const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
+                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;

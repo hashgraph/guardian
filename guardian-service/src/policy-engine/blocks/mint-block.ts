@@ -1,8 +1,8 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
@@ -14,13 +14,31 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Mint block
  */
 @BasicBlock({
     blockType: 'mintDocumentBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Mint',
+        title: `Add 'Mint' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true
+    }
 })
 export class MintBlock {
     @Inject()
@@ -123,8 +141,15 @@ export class MintBlock {
         return vp;
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
-    async runAction(state: any, user: IAuthUser) {
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const { tokenId, rule } = ref.options;
         const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
@@ -132,7 +157,7 @@ export class MintBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        const docs = PolicyUtils.getArray<any>(state.data);
+        const docs = PolicyUtils.getArray<any>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
@@ -162,9 +187,8 @@ export class MintBlock {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
-            await ref.runNext(curUser, state);
-            ref.callDependencyCallbacks(curUser);
-            ref.callParentContainerCallback(curUser);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
         } catch (e) {
             throw e;
         }

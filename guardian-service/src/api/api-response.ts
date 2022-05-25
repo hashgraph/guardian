@@ -1,5 +1,5 @@
-import { MessageBrokerChannel, MessageResponse, ApplicationState, MessageInitialization } from "common";
-import { ApplicationStates } from "interfaces";
+import { MessageBrokerChannel, MessageResponse, ApplicationState, MessageInitialization } from "@guardian/common";
+import { ApplicationStates } from "@guardian/interfaces";
 
 export function ApiResponse<T>(channel: MessageBrokerChannel, event: any, handleFunc: (msg) => Promise<MessageResponse<T>>): void {
     const state = new ApplicationState();

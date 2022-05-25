@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { PolicyEngineEvents } from 'interfaces';
+import { PolicyEngineEvents } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
 
 @Singleton
@@ -78,4 +78,7 @@ export class PolicyEngine extends ServiceRequestsBase {
         return await this.request(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, data);
     }
 
+    public async blockAbout() {
+        return await this.request(PolicyEngineEvents.BLOCK_ABOUT, null);
+    }
 }

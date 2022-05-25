@@ -5,7 +5,7 @@ import {
     TopicType,
     ModelHelper,
     SchemaHelper
-} from 'interfaces';
+} from '@guardian/interfaces';
 import {
     findAllEntities,
     replaceAllEntities,
@@ -29,7 +29,7 @@ import { PolicyImportExportHelper } from './helpers/policy-import-export-helper'
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { Policy } from '@entity/policy';
 import { getConnection, getMongoRepository } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
@@ -38,7 +38,8 @@ import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from 'common';
+import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from '@guardian/common';
+import { PolicyConverterUtils } from './policy-converter-utils';
 
 export class PolicyEngineService {
     @Inject()
@@ -155,6 +156,7 @@ export class PolicyEngineService {
             newTopic = topic;
         }
 
+        model.codeVersion = PolicyConverterUtils.VERSION;
         const policy = await getMongoRepository(Policy).save(model);
         if (newTopic) {
             newTopic.policyId = policy.id.toString();
@@ -642,6 +644,16 @@ export class PolicyEngineService {
                 return new MessageResponse(true);
             } catch (error) {
                 new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                return new MessageError(error.message);
+            }
+        });
+
+
+        this.channel.response<any, any>(PolicyEngineEvents.BLOCK_ABOUT, async (msg) => {
+            try {
+                const about = PolicyComponentsUtils.GetBlockAbout();
+                return new MessageResponse(about);
+            } catch (error) {
                 return new MessageError(error.message);
             }
         });

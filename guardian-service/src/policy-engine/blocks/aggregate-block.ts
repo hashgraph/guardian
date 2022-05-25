@@ -1,40 +1,59 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregateDocuments';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IAuthUser } from '@auth/auth.interface';
 import { VcDocument } from '@hedera-modules';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { DocumentSignature, DocumentStatus } from 'interfaces';
+import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { PolicyEvent } from '@policy-engine/interfaces/policy-event';
+import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Aggregate block
  */
 @BasicBlock({
     blockType: 'aggregateDocumentBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Aggregate Data',
+        title: `Add 'Aggregate' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.TimerEvent,
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true
+    }
 })
 export class AggregateBlock {
     @Inject()
     private users: Users;
 
-    start() {
+    /**
+     * @event PolicyEventType.TimerEvent
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        type: PolicyInputEventType.TimerEvent,
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
+    private async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        if (ref.options.aggregateType == 'period') {
-            PolicyComponentsUtils.RegisterEvent(
-                ref.policyId, ref.options.timer, 'TimerEvent', this.tickCron.bind(this)
-            );
+        if (ref.options.aggregateType !== 'period') {
+            return;
         }
-    }
-
-    private async tickCron(event: PolicyEvent<string[]>) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-
         const users = event.data || [];
 
         ref.log(`tick scheduler, ${users.length}`);
@@ -46,7 +65,7 @@ export class AggregateBlock {
         });
 
         const map = new Map<string, AggregateVC[]>();
-        const removeMsp:AggregateVC[] = [];
+        const removeMsp: AggregateVC[] = [];
         for (let did of users) {
             map.set(did, []);
         }
@@ -59,18 +78,20 @@ export class AggregateBlock {
             }
         }
 
-        if(removeMsp.length) {
+        if (removeMsp.length) {
             await repository.remove(removeMsp);
         }
 
         for (let did of users) {
             const user = await this.users.getUserById(did);
             const documents = map.get(did);
-            if(documents.length) {
+            if (documents.length) {
                 await repository.remove(documents);
             }
-            if(documents.length || ref.options.emptyData) {
-                await ref.runNext(user, { data: documents });
+            if (documents.length || ref.options.emptyData) {
+                const state = { data: documents };
+                ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             }
         }
     }
@@ -106,6 +127,9 @@ export class AggregateBlock {
         return result;
     }
 
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     private async tickAggregate(ref: AnyBlockType, owner: string) {
         const { expressions, condition } = ref.options;
 
@@ -129,7 +153,9 @@ export class AggregateBlock {
         if (result === true) {
             const user = await this.users.getUserById(owner);
             await repository.remove(rawEntities);
-            await ref.runNext(user, { data: rawEntities });
+            const state = { data: rawEntities };
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
         }
     }
 
@@ -156,11 +182,15 @@ export class AggregateBlock {
         await repository.save(newVC);
     }
 
-    async runAction(state: any, user: IAuthUser) {
+    /**
+     * @event PolicyInputEventType.RunEvent
+     * @param {IPolicyEvent} event
+     */
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const { aggregateType } = ref.options;
 
-        const docs: any | any[] = state.data;
+        const docs: any | any[] = event.data.data;
         let owner: string = null;
         if (Array.isArray(docs)) {
             for (let doc of docs) {

@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus } from 'interfaces';
+import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import {Column, Entity, ObjectIdColumn} from 'typeorm';
 
 /**
@@ -47,13 +47,13 @@ export class AggregateVC {
 
     @Column()
     schema: string;
-    
+
     @Column()
     messageId: string;
-    
+
     @Column()
     topicId: string;
-    
+
     @Column()
     relationships: string[];
 }

@@ -1,6 +1,6 @@
 import { Topic } from '@entity/topic';
 import { HederaSDKHelper, MessageAction, MessageServer, MessageType, TopicMessage } from '@hedera-modules';
-import { TopicType } from 'interfaces';
+import { TopicType } from '@guardian/interfaces';
 import { getMongoRepository } from 'typeorm';
 
 export class TopicHelper {

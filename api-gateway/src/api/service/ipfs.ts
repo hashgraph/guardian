@@ -1,6 +1,6 @@
 import { Response, Router } from 'express';
 import { IPFS } from '@helpers/ipfs';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 
 /**
  * IPFS route

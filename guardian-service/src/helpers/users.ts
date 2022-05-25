@@ -1,6 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { Request } from 'express';
-import { AuthEvents, UserRole } from 'interfaces';
+import { AuthEvents, UserRole } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
 import { IAuthUser } from '@auth/auth.interface';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -164,6 +164,3 @@ export class Users extends ServiceRequestsBase {
         }
     }
 }
-
-
-

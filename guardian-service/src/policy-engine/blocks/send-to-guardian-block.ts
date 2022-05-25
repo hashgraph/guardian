@@ -1,6 +1,6 @@
 import { BlockActionError } from '@policy-engine/errors';
-import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { DocumentSignature, DocumentStatus, TopicType } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -13,10 +13,28 @@ import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } fr
 import { getMongoRepository } from 'typeorm';
 import { ApprovalDocument } from '@entity/approval-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Send',
+        title: `Add 'Send' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true
+    }
 })
 export class SendToGuardianBlock {
     @Inject()
@@ -140,11 +158,11 @@ export class SendToGuardianBlock {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const user = await this.users.getHederaAccount(document.owner);
-            
+
             let topicOwner = user;
-            if(ref.options.topicOwner == 'user') {
+            if (ref.options.topicOwner == 'user') {
                 topicOwner = await this.users.getHederaAccount(currentUser.did);
-            } else if(ref.options.topicOwner == 'issuer') {
+            } else if (ref.options.topicOwner == 'issuer') {
                 topicOwner = await this.users.getHederaAccount(document.document.issuer);
             } else {
                 topicOwner = user;
@@ -201,26 +219,32 @@ export class SendToGuardianBlock {
         return document;
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
-    async runAction(state: any, user: IAuthUser) {
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
-        const docs: any | any[] = state.data;
+        const docs: any | any[] = event.data.data;
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (let doc of docs) {
-                const newDoc = await this.documentSender(doc, user);
+                const newDoc = await this.documentSender(doc, event.user);
                 newDocs.push(newDoc);
             }
-            state.data = newDocs;
+            event.data.data = newDocs;
         } else {
-            state.data = await this.documentSender(docs, user);
+            event.data.data = await this.documentSender(docs, event.user);
         }
 
-        await ref.runNext(user, state);
-        ref.callDependencyCallbacks(user);
-        ref.callParentContainerCallback(user);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

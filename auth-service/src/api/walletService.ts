@@ -1,8 +1,8 @@
 import { getMongoRepository } from 'typeorm';
 import { WalletAccount } from '@entity/wallet-account';
-import { Logger } from 'logger-helper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { WalletEvents, IGetKeyMessage, ISetKeyMessage } from 'interfaces';
+import { Logger } from '@guardian/logger-helper';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { WalletEvents, IGetKeyMessage, ISetKeyMessage } from '@guardian/interfaces';
 
 export class WalletService {
     constructor(

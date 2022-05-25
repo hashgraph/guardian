@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 
 /**
  * Route for demo api
@@ -13,7 +13,7 @@ demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
     const guardians = new Guardians();
     try {
         const demoUsers: any = await users.getAllUserAccountsDemo();
-        
+
         for (let i = 0; i < demoUsers.length; i++) {
             const element = demoUsers[i];
             if(element.did) {

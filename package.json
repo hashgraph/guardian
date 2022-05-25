@@ -1,0 +1,17 @@
+{
+  "name": "guardian",
+  "private": true,
+  "packageManager": "yarn@3.2.1",
+  "workspaces": [
+    "interfaces",
+    "common",
+    "logger-helper",
+    "api-docs",
+    "api-gateway",
+    "auth-service",
+    "guardian-service",
+    "ipfs-client",
+    "logger-service"
+  ],
+  "version": "2.1.0"
+}

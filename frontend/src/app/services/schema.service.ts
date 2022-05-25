@@ -1,6 +1,6 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISchema, Schema, SchemaEntity } from 'interfaces';
+import { ISchema, Schema, SchemaEntity } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 
@@ -37,6 +37,10 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.url}`);
     }
 
+    public getSchemesByPolicy(policyId: string): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}`);
+    }
+    
     public getSchemesByPage(topicId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
         let url = `${this.url}`;
         if (topicId) {

@@ -10,10 +10,10 @@ import {
     IVCDocument,
     IVPDocument,
     MessageAPI,
-} from 'interfaces';
+} from '@guardian/interfaces';
 import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents

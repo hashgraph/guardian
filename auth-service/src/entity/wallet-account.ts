@@ -1,5 +1,5 @@
 import {Column, Entity, ObjectIdColumn} from 'typeorm';
-import {IWalletAccount} from 'interfaces';
+import {IWalletAccount} from '@guardian/interfaces';
 
 /**
  * Wallet collection

@@ -1,6 +1,6 @@
-import { BlockErrorActions } from 'interfaces';
+import { BlockErrorActions } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 
 export function CatchErrors() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

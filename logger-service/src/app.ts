@@ -1,8 +1,8 @@
 import { createConnection } from 'typeorm';
 import { loggerAPI } from '@api/logger.service';
 import { Log } from '@entity/log';
-import { ApplicationState, MessageBrokerChannel } from 'common';
-import { ApplicationStates } from 'interfaces'
+import { ApplicationState, MessageBrokerChannel } from '@guardian/common';
+import { ApplicationStates } from '@guardian/interfaces'
 
 
 Promise.all([

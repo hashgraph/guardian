@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, } from '@angular/core';
-import { Schema } from 'interfaces';
+import { Schema } from '@guardian/interfaces';
 
 /**
  * View document

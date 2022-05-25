@@ -3,13 +3,29 @@ import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyAddonBlock, IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { PolicyInputEventType } from '@policy-engine/interfaces';
 
 /**
  * Document source block with UI
  */
 @DataSourceBlock({
     blockType: 'interfaceDocumentsSourceBlock',
-    commonBlock: false
+    commonBlock: false,
+    about: {
+        label: 'Documents',
+        title: `Add 'Documents Source' Block`,
+        post: false,
+        get: true,
+        children: ChildrenType.Special,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+        ],
+        output: null,
+        defaultEvent: false
+    }
 })
 export class InterfaceDocumentsSource {
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {

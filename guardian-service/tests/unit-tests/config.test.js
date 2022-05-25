@@ -1,3 +1,16 @@
+const moduleAlias = require('module-alias');
+
+moduleAlias.addAliases({
+  "@api": process.cwd() + '/dist' + "/api",
+  "@entity": process.cwd() + '/dist' + "/entity",
+  "@subscribers": process.cwd() + '/dist' + "dist/subscribers",
+  "@helpers": process.cwd() + '/dist' + "/helpers",
+  "@auth": process.cwd() + '/dist' + "/auth",
+  "@policy-engine": process.cwd() + '/dist' + "/policy-engine",
+  "@hedera-modules": process.cwd() + '/dist' + "/hedera-modules/index",
+  "@document-loader": process.cwd() + '/dist' + "/document-loader"
+});
+
 const { expect, assert } = require('chai');
 const { configAPI } = require('../../dist/api/config.service');
 const {
@@ -6,7 +19,7 @@ const {
     checkMessage,
     checkError
 } = require('./helper');
-const { ApplicationState, ApplicationStates } = require('interfaces');
+const { ApplicationState, ApplicationStates } = require('@guardian/interfaces');
 
 describe('Config service', function () {
     let service, channel, settingsRepository, topicRepository;

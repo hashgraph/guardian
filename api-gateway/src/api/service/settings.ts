@@ -2,8 +2,8 @@ import { permissionHelper } from '@auth/authorizationHelper';
 import { Guardians } from '@helpers/guardians';
 import { IPFS } from '@helpers/ipfs';
 import { Request, Response, Router } from 'express';
-import { CommonSettings, UserRole } from 'interfaces';
-import { Logger } from 'logger-helper';
+import { CommonSettings, UserRole } from '@guardian/interfaces';
+import { Logger } from '@guardian/logger-helper';
 
 /**
  * Settings route
