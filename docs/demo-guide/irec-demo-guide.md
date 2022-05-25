@@ -1,4 +1,4 @@
-# iREC Demo Guide
+# iREC Demo UI Guide
 
 This folder contains a sample file that is referenced in the Demo Guide&#x20;
 
@@ -24,6 +24,8 @@ This folder contains a sample file that is referenced in the Demo Guide&#x20;
 ![](../.gitbook/assets/iREC\_1.png)
 
 ![](<../.gitbook/assets/iREC\_2.2 (1).png>)
+
+Once Policy is imported successfully, click on "Publish" button to publish the policy.
 
 5\. Click on Issuer’s profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select Registrant.&#x20;
 

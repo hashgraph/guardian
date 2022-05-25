@@ -25,7 +25,7 @@ This folder contains a sample file that is referenced in the Demo Usage Guide&#x
 1650372697.590064000(Verra REDD+ Policy)  
 ```
 
-Once you have done that, you can move onto the next step.&#x20;
+Once Policy is imported successfully, click on "Publish" button to publish the policy.
 
 5\. Click on Verra's profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select VVB.&#x20;
 
