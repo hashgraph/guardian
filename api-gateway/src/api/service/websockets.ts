@@ -75,7 +75,7 @@ export class WebSocketsService {
                                     type: MessageAPI.GET_STATUS,
                                     data: {
                                         LOGGER_SERVICE: LOGGER_SERVICE,
-                                        GUARDIANS_SERVICE: GUARDIANS_SERVICE,
+                                        GUARDIAN_SERVICE: GUARDIANS_SERVICE,
                                         IPFS_CLIENT: IPFS_CLIENT,
                                         AUTH_SERVICE: AUTH_SERVICE
                                     }
