@@ -45,7 +45,7 @@ Promise.all([
 ]).then(async values => {
     const [db, cn] = values;
     const channel = new MessageBrokerChannel(cn, "guardians");
-    const state = new ApplicationState('GUARDIANS_SERVICE');
+    const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
     state.updateState(ApplicationStates.STARTED);
 

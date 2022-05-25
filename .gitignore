@@ -32,3 +32,4 @@ api-docs/dist/
 .env
 tsconfig.tsbuildinfo
 .yarn
+node_modules

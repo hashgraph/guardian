@@ -160,10 +160,10 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
         throw new Error(`Invalid increment schema version parameter`);
     }
 
-    const schema = await getMongoRepository(SchemaCollection).findOne({ iri: iri });
+    const schema = await getMongoRepository(SchemaCollection).findOne({ iri, owner });
 
     if (!schema) {
-        throw new Error(`Schema not found: ${iri}`);
+        throw new Error(`Schema not found: ${iri} for owner ${owner}`);
     }
 
     if (schema.status == SchemaStatus.PUBLISHED) {
@@ -190,7 +190,7 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
 async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCollection> {
     const users = new Users();
     const root = await users.getHederaAccount(owner);
-    const schemaObject = getMongoRepository(SchemaCollection).create(newSchema);
+    const schemaObject = getMongoRepository(SchemaCollection).create(newSchema) as ISchema;
 
     let topic: Topic;
     if (newSchema.topicId) {
@@ -213,6 +213,30 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
     SchemaHelper.updateIRI(schemaObject);
     schemaObject.status = SchemaStatus.DRAFT;
     schemaObject.topicId = topic.topicId;
+    schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
+
+    const errorsCount = await getMongoRepository(SchemaCollection).count({
+        where: {
+            iri: {
+                $eq: schemaObject.iri
+            },
+            $or: [
+                {
+                    topicId: {
+                        $ne: schemaObject.topicId
+                    }
+                },
+                {
+                    uuid: {
+                        $ne: schemaObject.uuid
+                    }
+                }
+            ]
+        }
+    });
+    if (errorsCount > 0) {
+        throw new Error('Schema identifier already exist');
+    }
 
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
     const message = new SchemaMessage(MessageAction.CreateSchema);
