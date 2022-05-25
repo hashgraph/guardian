@@ -4,8 +4,8 @@ import { getMongoRepository } from 'typeorm';
 import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
-import { Logger } from 'logger-helper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { Logger } from '@guardian/logger-helper';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
 import {
     AuthEvents, UserRole,
     IGetUserByTokenMessage,
@@ -22,7 +22,7 @@ import {
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
     IUser
-} from 'interfaces';
+} from '@guardian/interfaces';
 
 export class AccountService {
     constructor(
@@ -90,7 +90,7 @@ export class AccountService {
                         accessToken: accessToken
                     })
                 } else {
-                    return new MessageError('Unauthorized request');
+                    return new MessageError('Unauthorized request', 401);
                 }
 
             } catch (e) {

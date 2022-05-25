@@ -1,9 +1,9 @@
 import { Response, Router } from 'express';
 import { AuthenticatedRequest } from '@auth/auth.interface';
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policyEngine';
 import { Users } from '@helpers/users';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 
 export const policyAPI = Router();
 

@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
-import { ILog, LogType } from 'interfaces';
+import { ILog, LogType } from '@guardian/interfaces';
 
 @Entity()
 export class Log implements ILog {

@@ -2,7 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { Schema, SchemaCondition, SchemaField } from 'interfaces';
+import { Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';

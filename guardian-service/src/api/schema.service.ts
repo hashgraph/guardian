@@ -7,19 +7,19 @@ import {
     TopicType,
     SchemaHelper,
     ModelHelper,
-} from 'interfaces';
+} from '@guardian/interfaces';
 import { getMongoRepository } from 'typeorm';
 import { readJSON } from 'fs-extra';
 import path from 'path';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { MessageAction, MessageServer, MessageType, SchemaMessage, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
 
 export const schemaCache = {};
 
@@ -475,9 +475,8 @@ export const schemaAPI = async function (channel: MessageBrokerChannel, schemaRe
      */
     ApiResponse(channel, MessageAPI.DELETE_SCHEMA, async (msg) => {
         try {
-            if (msg) {
-                const id = msg as string;
-                const item = await schemaRepository.findOne(id);
+            if (msg && msg.id) {
+                const item = await schemaRepository.findOne(msg.id);
                 if (item) {
                     if (item.topicId) {
                         const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });

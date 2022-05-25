@@ -4,7 +4,7 @@ import { findOptions, getVCIssuer } from '@helpers/utils';
 import { ReportItem } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
-import { IReportItem } from 'interfaces';
+import { IReportItem } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument } from '@entity/vc-document';

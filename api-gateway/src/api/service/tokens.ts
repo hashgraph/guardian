@@ -3,8 +3,8 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Request, Response, Router } from 'express';
-import { ITokenInfo, UserRole } from 'interfaces';
-import { Logger } from 'logger-helper';
+import { ITokenInfo, UserRole } from '@guardian/interfaces';
+import { Logger } from '@guardian/logger-helper';
 import { PolicyEngine } from '@helpers/policyEngine';
 import { findAllEntities } from '@helpers/utils';
 
@@ -26,7 +26,7 @@ async function setTokensPolicies(tokens: any[], user: IAuthUser) {
         result = await engineService.getPolicies({ filters: { status: 'PUBLISH' } });
     }
     const { policies, count } = result;
-    
+
     for (let i = 0; i < tokens.length; i++) {
         const tokenPolicies = [];
         const token = tokens[i];

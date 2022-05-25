@@ -1,4 +1,4 @@
-import { DocumentSignature, Schema, SchemaHelper } from 'interfaces';
+import { DocumentSignature, Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';

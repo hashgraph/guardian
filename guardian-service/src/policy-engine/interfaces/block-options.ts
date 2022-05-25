@@ -1,7 +1,7 @@
 import { PolicyBlockMap, PolicyTagMap } from './';
 import { IPolicyBlock, } from '@policy-engine/policy-engine.interface';
 
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { BlockAbout } from './block-about';
 
 export interface PolicyBlockDecoratorOptions {

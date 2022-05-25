@@ -5,7 +5,7 @@ import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
 import { TokenDialog } from '../../components/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Token } from 'interfaces';
+import { Token } from '@guardian/interfaces';
 
 /**
  * Page for creating tokens.
@@ -75,7 +75,7 @@ export class TokenConfigComponent implements OnInit {
             });
         } else {
             this.tokenService.getTokens().subscribe((data: any) => {
-                this.tokens = data.map((e: any) => { 
+                this.tokens = data.map((e: any) => {
                     return {
                         ...new Token(e),
                         policies: e.policies
@@ -114,7 +114,7 @@ export class TokenConfigComponent implements OnInit {
             if (result) {
                 this.loading = true;
                 this.tokenService.create(result).subscribe((data) => {
-                    this.tokens = data.map((e: any) => { 
+                    this.tokens = data.map((e: any) => {
                         return {
                             ...new Token(e),
                             policies: e.policies

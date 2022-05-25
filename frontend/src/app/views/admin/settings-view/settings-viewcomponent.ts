@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { CommonSettings } from 'interfaces';
+import { CommonSettings } from '@guardian/interfaces';
 import { SettingsService } from 'src/app/services/settings.service';
 
 @Component({
@@ -35,9 +35,9 @@ export class SettingsViewComponent implements OnInit {
       if (this.dataForm.valid) {
         this.isLoading = true;
         this.settingsService.updateSettings(this.dataForm.value)
-          .subscribe(() => { 
+          .subscribe(() => {
             this.isLoading = false;
-          }, () => { 
+          }, () => {
             this.isLoading = false;
             this.ngOnInit();
           });

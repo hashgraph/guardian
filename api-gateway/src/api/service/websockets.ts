@@ -1,12 +1,12 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { Logger } from 'logger-helper';
-import { MessageAPI } from 'interfaces';
+import { Logger } from '@guardian/logger-helper';
+import { MessageAPI } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
-import { MessageBrokerChannel, MessageResponse } from 'common';
-import { IUpdateBlockMessage, IErrorBlockMessage } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
+import { IUpdateBlockMessage, IErrorBlockMessage } from '@guardian/interfaces';
 export class WebSocketsService {
     private wss: WebSocket.Server;
 

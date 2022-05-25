@@ -6,7 +6,7 @@ import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { VcHelper } from '@helpers/vcHelper';
-import { SchemaHelper } from 'interfaces';
+import { SchemaHelper } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
@@ -127,7 +127,7 @@ export class CustomLogicBlock {
             }
 
             const func = Function(`const [done, user, documents, mathjs] = arguments; ${ref.options.expression}`);
-            func.apply(document, [done, user, documents, mathjs]);
+            func.apply(documents, [done, user, documents, mathjs]);
         });
     }
 }

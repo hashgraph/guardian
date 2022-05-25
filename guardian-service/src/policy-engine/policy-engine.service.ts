@@ -5,7 +5,7 @@ import {
     TopicType,
     ModelHelper,
     SchemaHelper
-} from 'interfaces';
+} from '@guardian/interfaces';
 import {
     findAllEntities,
     replaceAllEntities,
@@ -29,7 +29,7 @@ import { PolicyImportExportHelper } from './helpers/policy-import-export-helper'
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { Policy } from '@entity/policy';
 import { getConnection, getMongoRepository } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
@@ -38,7 +38,7 @@ import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from 'common';
+import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from '@guardian/common';
 import { PolicyConverterUtils } from './policy-converter-utils';
 
 export class PolicyEngineService {

@@ -2,7 +2,7 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, SchemaEntity, SchemaHelper } from 'interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';

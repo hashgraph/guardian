@@ -5,7 +5,7 @@ import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, SchemaHelper } from 'interfaces';
+import { Schema, SchemaHelper } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**

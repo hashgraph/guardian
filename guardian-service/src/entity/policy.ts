@@ -1,4 +1,4 @@
-import { ModelHelper } from 'interfaces';
+import { ModelHelper } from '@guardian/interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
 
 /**

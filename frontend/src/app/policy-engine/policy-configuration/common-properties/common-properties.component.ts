@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { BlockErrorActions, Schema, Token } from 'interfaces';
+import { BlockErrorActions, Schema, Token } from '@guardian/interfaces';
 import { IBlockAbout, RegisteredBlocks } from '../../registered-blocks';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../policy-model';

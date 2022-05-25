@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus, IVPDocument, SchemaEntity } from 'interfaces';
+import { DocumentSignature, DocumentStatus, IVPDocument, SchemaEntity } from '@guardian/interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()

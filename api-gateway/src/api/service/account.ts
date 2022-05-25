@@ -2,9 +2,9 @@ import crypto from 'crypto';
 import { Request, Response, Router } from 'express';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 
 /**
  * User account route
@@ -42,12 +42,11 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     const users = new Users();
     try {
         const { username, password } = req.body;
-        const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
         res.status(200).json(await users.generateNewToken(username, password));
     } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Server error' });
+        new Logger().error(e.message, ['API_GATEWAY']);
+        res.status(e.code).send({ code: e.code, message: e.message });
     }
 });
 

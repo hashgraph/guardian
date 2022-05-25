@@ -7,7 +7,7 @@ import { VcDocument } from '@hedera-modules';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { DocumentSignature, DocumentStatus } from 'interfaces';
+import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';

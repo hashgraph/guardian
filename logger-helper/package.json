@@ -2,8 +2,8 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "description": "",
   "dependencies": {
-    "interfaces": "file:../interfaces",
-    "common": "file:../common"
+    "@guardian/common": "^2.0.0",
+    "@guardian/interfaces": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.13",
@@ -17,8 +17,9 @@
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "name": "logger-helper",
+  "name": "@guardian/logger-helper",
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "tslint --project .",

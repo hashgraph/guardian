@@ -12,7 +12,7 @@ import {
     IVPDocument,
     MessageAPI,
     TopicType
-} from 'interfaces';
+} from '@guardian/interfaces';
 import { ServiceRequestsBase } from './serviceRequestsBase';
 
 type IFilter = any;
@@ -206,7 +206,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param {string} [topicId]
      * @param {string} [pageIndex]
      * @param {string} [pageSize]
-     * 
+     *
      * @returns {ISchema[]} - all schemes
      */
     public async getSchemesByOwner(
@@ -255,7 +255,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param {string[]} messageIds - schema uuid
      * @param {string} owner
      * @param {string} topicId
-     * 
+     *
      * @returns {any[]} - Schema Document
      */
     public async importSchemesByMessages(messageIds: string[], owner: string, topicId: string): Promise<any[]> {
@@ -268,7 +268,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param {ISchema[]} files
      * @param {owner} owner
      * @param {string} topicId
-     * 
+     *
      * @returns {any[]} - Schema Document
      */
     public async importSchemesByFile(files: ISchema[], owner: string, topicId: string): Promise<any[]> {
@@ -290,7 +290,7 @@ export class Guardians extends ServiceRequestsBase {
      * Get schema preview
      *
      * @param {ISchema[]} files
-     * 
+     *
      * @returns {ISchema[]} Schema preview
      */
     public async previewSchemesByFile(files: ISchema[]): Promise<ISchema[]> {
@@ -327,7 +327,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemes
      */
     public async deleteSchema(id: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.DELETE_SCHEMA, id);
+        return await this.request(MessageAPI.DELETE_SCHEMA, { id });
     }
 
     /**
@@ -336,7 +336,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param {string} id - schema id
      * @param {string} version - schema version
      * @param {string} owner - schema message
-     * 
+     *
      * @returns {ISchema} - message
      */
     public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
@@ -361,7 +361,7 @@ export class Guardians extends ServiceRequestsBase {
 
     /**
      * Get service status
-     * 
+     *
      * @returns {ApplicationStates} Service state
      */
     public async getStatus(): Promise<ApplicationStates> {

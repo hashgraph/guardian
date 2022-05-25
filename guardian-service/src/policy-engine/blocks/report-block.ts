@@ -13,7 +13,7 @@ import {
     IVPReport,
     SchemaEntity,
     SchemaStatus
-} from 'interfaces';
+} from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Users } from '@helpers/users';
 import { getMongoRepository } from 'typeorm';

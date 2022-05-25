@@ -16,8 +16,9 @@
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "name": "interfaces",
+  "name": "@guardian/interfaces",
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "tslint --project .",

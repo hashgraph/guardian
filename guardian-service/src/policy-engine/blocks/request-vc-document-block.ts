@@ -2,7 +2,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { DidDocumentStatus, TopicType, Schema } from 'interfaces';
+import { DidDocumentStatus, TopicType, Schema } from '@guardian/interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';

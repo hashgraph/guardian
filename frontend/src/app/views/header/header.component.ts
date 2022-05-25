@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { IUser, UserRole } from 'interfaces';
+import { IUser, UserRole } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
@@ -165,7 +165,7 @@ export class HeaderComponent implements OnInit {
   getPoliciesRolesLength(policyRoles: any) {
     return policyRoles.length;
   }
-  
+
   getPoliciesRolesTooltip(policyRoles: any) {
     return policyRoles.map((item: any) => {
       return `${item.name} (${item.version}): ${item.role}`

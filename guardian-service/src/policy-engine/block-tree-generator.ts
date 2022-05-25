@@ -13,7 +13,7 @@ import {
     PolicyValidationResultsContainer
 } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 
 @Singleton

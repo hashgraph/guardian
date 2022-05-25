@@ -1,6 +1,6 @@
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
+import { DocumentSignature, DocumentStatus, TopicType } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';

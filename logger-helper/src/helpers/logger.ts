@@ -1,5 +1,5 @@
-import { ApplicationStates, ILog, IPageParameters, LogType, MessageAPI } from 'interfaces';
-import { MessageBrokerChannel, Singleton, IMessageResponse } from 'common';
+import { ApplicationStates, ILog, IPageParameters, LogType, MessageAPI } from '@guardian/interfaces';
+import { MessageBrokerChannel, Singleton, IMessageResponse } from '@guardian/common';
 
 @Singleton
 export class Logger {
@@ -74,7 +74,7 @@ export class Logger {
 
     /**
      * Get service status
-     * 
+     *
      * @returns {ApplicationStates} Service state
      */
     public async getStatus(): Promise<ApplicationStates> {

@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { IChainItem, IVCDocument, IVPDocument } from "interfaces";
+import { IChainItem, IVCDocument, IVPDocument } from "@guardian/interfaces";
 import { API_BASE_URL } from "./api";
 
 /**

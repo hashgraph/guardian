@@ -3,7 +3,7 @@ import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Request, Response, Router } from 'express';
-import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from 'interfaces';
+import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from '@guardian/interfaces';
 
 /**
  * User profile route

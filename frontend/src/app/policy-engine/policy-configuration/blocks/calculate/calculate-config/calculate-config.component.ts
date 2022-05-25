@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, SchemaField, Token } from 'interfaces';
+import { Schema, SchemaField, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
