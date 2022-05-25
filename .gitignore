@@ -31,3 +31,4 @@ ui-service/.vs/
 api-docs/dist/
 .env
 tsconfig.tsbuildinfo
+.yarn
