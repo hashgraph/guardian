@@ -12,5 +12,6 @@
     "guardian-service",
     "ipfs-client",
     "logger-service"
-  ]
+  ],
+  "version": "2.1.0"
 }
