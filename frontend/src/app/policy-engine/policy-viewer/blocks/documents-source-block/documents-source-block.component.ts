@@ -6,7 +6,7 @@ import { DialogBlock } from '../../dialog-block/dialog-block.component';
 import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, SchemaHelper } from 'interfaces';
+import { Schema, SchemaHelper } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**

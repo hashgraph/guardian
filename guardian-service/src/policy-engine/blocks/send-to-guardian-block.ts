@@ -1,6 +1,6 @@
 import { BlockActionError } from '@policy-engine/errors';
 import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
+import { DocumentSignature, DocumentStatus, TopicType } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -140,7 +140,7 @@ export class SendToGuardianBlock {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const user = await this.users.getHederaAccount(document.owner);
-            
+
             let topicOwner = user;
             if(ref.options.topicOwner == 'user') {
                 topicOwner = await this.users.getHederaAccount(currentUser.did);

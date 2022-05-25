@@ -1,4 +1,4 @@
-import { PolicyRole } from 'interfaces';
+import { PolicyRole } from '@guardian/interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 

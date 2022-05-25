@@ -1,4 +1,4 @@
-import { ICredentialSubject } from "interfaces";
+import { ICredentialSubject } from "@guardian/interfaces";
 
 export class VcSubject {
     public static readonly CREDENTIAL_ID: string = 'id';
@@ -79,7 +79,7 @@ export class VcSubject {
         if (this.type) {
             json[VcSubject.CREDENTIAL_TYPE] = this.type;
         }
-        
+
         return json;
     }
 

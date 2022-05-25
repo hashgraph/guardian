@@ -7,19 +7,19 @@ import {
     TopicType,
     SchemaHelper,
     ModelHelper,
-} from 'interfaces';
+} from '@guardian/interfaces';
 import { getMongoRepository } from 'typeorm';
 import { readJSON } from 'fs-extra';
 import path from 'path';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { MessageAction, MessageServer, MessageType, SchemaMessage, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
 
 export const schemaCache = {};
 

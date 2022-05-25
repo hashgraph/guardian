@@ -5,7 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { IUser, Schema, SchemaEntity, SchemaHelper } from 'interfaces';
+import { IUser, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
@@ -91,7 +91,7 @@ export class RootConfigComponent implements OnInit {
 
             const profile = value[0];
             const balance = value[1];
-            
+
             this.schemas = SchemaHelper.map(value[2]);
             this.schema = this.schemas
                 .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];

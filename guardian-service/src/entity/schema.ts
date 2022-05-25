@@ -1,4 +1,4 @@
-import { ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus, ModelHelper } from 'interfaces';
+import { ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus, ModelHelper } from '@guardian/interfaces';
 import { AfterLoad, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()

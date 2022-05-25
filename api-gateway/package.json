@@ -8,12 +8,12 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "common": "file:../common",
+    "@guardian/common": "^2.0.0",
+    "@guardian/interfaces": "^2.0.0",
+    "@guardian/logger-helper": "^2.0.0",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
-    "interfaces": "file:../interfaces",
     "jszip": "^3.7.1",
-    "logger-helper": "file:../logger-helper",
     "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13",
     "ws": "^8.2.1"

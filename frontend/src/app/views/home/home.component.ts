@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { AuthService } from 'src/app/services/auth.service';
 
 /**

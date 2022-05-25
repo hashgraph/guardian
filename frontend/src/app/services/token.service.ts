@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { IToken, ITokenInfo, IUser } from 'interfaces';
+import { IToken, ITokenInfo, IUser } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 

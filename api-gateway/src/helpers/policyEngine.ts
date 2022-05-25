@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { PolicyEngineEvents } from 'interfaces';
+import { PolicyEngineEvents } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
 
 @Singleton

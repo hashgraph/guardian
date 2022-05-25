@@ -2,9 +2,9 @@ import crypto from 'crypto';
 import { Request, Response, Router } from 'express';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 
 /**
  * User account route

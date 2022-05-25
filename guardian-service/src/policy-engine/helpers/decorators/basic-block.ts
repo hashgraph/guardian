@@ -1,12 +1,12 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
 import { PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
-import { PolicyRole } from 'interfaces';
-import { Logger } from 'logger-helper';
+import { PolicyRole } from '@guardian/interfaces';
+import { Logger } from '@guardian/logger-helper';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IAuthUser } from '../../../auth/auth.interface';
+import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
@@ -350,7 +350,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     this.parent.updateBlock({}, user, '');
                 }
             }
-            
+
             protected log(message: string) {
                 this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
             }

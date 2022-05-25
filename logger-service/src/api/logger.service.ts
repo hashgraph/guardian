@@ -1,7 +1,7 @@
 import { MongoRepository } from 'typeorm';
 import { Log } from '@entity/log';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage } from '@guardian/interfaces';
 
 
 export const loggerAPI = async function (
@@ -10,9 +10,9 @@ export const loggerAPI = async function (
 ): Promise<void> {
     /**
      * Add log message
-     * 
+     *
      * @param {Message} [payload] - Log message
-     * 
+     *
      */
     channel.response<ILog, any>(MessageAPI.WRITE_LOG, async (message) => {
         try {
@@ -29,10 +29,10 @@ export const loggerAPI = async function (
 
     /**
      * Get application logs.
-     * 
+     *
      * @param {any} [msg.filters] - logs filter options
      * @param {IPageParameters} [msg.pageParameters] - Page parameters
-     * 
+     *
      * @return {any} - Logs
      */
     channel.response<IGetLogsMessage, IGetLogsResponse>(MessageAPI.GET_LOGS, async (msg) => {
@@ -64,9 +64,9 @@ export const loggerAPI = async function (
 
     /**
      * Get attributes.
-     * 
+     *
      * @param {any} [payload.name] - Name to filter
-     * 
+     *
      * @return {any} - Attributes
      */
     channel.response<IGetLogAttributesMessage, any>(MessageAPI.GET_ATTRIBUTES, async (msg) => {

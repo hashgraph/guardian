@@ -1,6 +1,6 @@
 import { Singleton } from "../decorators/singleton";
 import { MessageBrokerChannel } from "../mq";
-import { ApplicationStates, MessageAPI } from "interfaces";
+import { ApplicationStates, MessageAPI } from "@guardian/interfaces";
 import { MessageResponse, MessageError } from "../models/message-response";
 
 @Singleton

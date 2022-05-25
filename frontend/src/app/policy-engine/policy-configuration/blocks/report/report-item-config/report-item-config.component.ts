@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Schema, Token } from 'interfaces';
+import { Schema, Token } from '@guardian/interfaces';
 import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
 import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';

@@ -2,9 +2,9 @@ import { createConnection } from 'typeorm';
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/accountService';
 import { WalletService } from '@api/walletService';
-import { Logger } from 'logger-helper';
-import { ApplicationState, MessageBrokerChannel } from 'common';
-import { ApplicationStates } from 'interfaces';
+import { Logger } from '@guardian/logger-helper';
+import { ApplicationState, MessageBrokerChannel } from '@guardian/common';
+import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([
     createConnection({

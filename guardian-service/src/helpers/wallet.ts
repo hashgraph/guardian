@@ -1,6 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
-import { WalletEvents, IGetKeyResponse } from 'interfaces';
+import { WalletEvents, IGetKeyResponse } from '@guardian/interfaces';
 
 export enum KeyType {
     ID = 'ID',

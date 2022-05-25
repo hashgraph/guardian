@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import {User} from '@entity/user';
 import {getMongoRepository} from 'typeorm';
-import {UserRole} from "interfaces";
+import {UserRole} from "@guardian/interfaces";
 
 export const fixtures = async function (): Promise<void> {
     const usersRepository = getMongoRepository(User);

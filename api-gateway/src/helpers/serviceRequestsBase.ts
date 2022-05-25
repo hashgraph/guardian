@@ -1,4 +1,4 @@
-import { MessageBrokerChannel, BinaryMessageResponse } from "common";
+import { MessageBrokerChannel, BinaryMessageResponse } from "@guardian/common";
 
 export class ServiceError extends Error {
     public code: number;
@@ -47,9 +47,9 @@ export abstract class ServiceRequestsBase {
     }
     /**
      * Making the request that expect to recieved BinaryMessageResponse
-     * @param entity 
-     * @param params 
-     * @returns 
+     * @param entity
+     * @param params
+     * @returns
      */
     public async rawRequest(entity: string, params?: any): Promise<Buffer> {
         try {

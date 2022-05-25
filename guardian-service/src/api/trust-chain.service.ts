@@ -5,15 +5,15 @@ import {
     IChainItem,
     MessageAPI,
     SchemaEntity
-} from 'interfaces';
-import { Logger } from 'logger-helper';
+} from '@guardian/interfaces';
+import { Logger } from '@guardian/logger-helper';
 import { MongoRepository } from 'typeorm';
 import {
     VcDocument as HVcDocument,
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
@@ -45,7 +45,7 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
 
 /**
  * Connecting to the message broker methods of working with trust chain.
- * 
+ *
  * @param channel - channel
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
@@ -59,7 +59,7 @@ export const trustChainAPI = async function (
 ): Promise<void> {
     /**
      * Search parent by VC or VP Document
-     * 
+     *
      * @param {IChainItem[]} chain - current trust chain
      * @param {VcDocument | VpDocument} vc - Document
      * @param {Object} map - ids map
@@ -121,7 +121,7 @@ export const trustChainAPI = async function (
 
     /**
      * Return Policy Info by Policy Id
-     * 
+     *
      * @param {IChainItem[]} chain - current trust chain
      * @param {string} policyId - policy Id
      */
@@ -207,9 +207,9 @@ export const trustChainAPI = async function (
 
     /**
      * Return trust chain
-     * 
+     *
      * @param {string} payload - hash or uuid
-     * 
+     *
      * @returns {IChainItem[]} - trust chain
      */
     ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg) => {

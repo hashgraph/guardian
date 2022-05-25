@@ -1,7 +1,7 @@
 import { PrivateKey, PublicKey, TopicId } from "@hashgraph/sdk";
 import { Environment } from "./../environment";
 import { Hashing } from "./../hashing";
-import { IVerificationMethod, IDidDocument } from "interfaces";
+import { IVerificationMethod, IDidDocument } from "@guardian/interfaces";
 
 export class DidRootKey {
     public static DID_ROOT_KEY_NAME = '#did-root-key';
@@ -80,7 +80,7 @@ export class DidRootKey {
         if (!json) {
             throw new Error('JSON Object is empty');
         }
-        
+
         return DidRootKey.fromJsonTree(JSON.parse(json));
     }
 

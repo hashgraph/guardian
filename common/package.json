@@ -2,7 +2,7 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "description": "Common package share cross all services",
   "dependencies": {
-    "interfaces": "^2.0.0",
+    "@guardian/interfaces": "^2.0.0",
     "nats": "^2.6.1",
     "reflect-metadata": "^0.1.13"
   },
@@ -18,7 +18,7 @@
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "name": "common",
+  "name": "@guardian/common",
   "scripts": {
     "prepare": "npm run build",
     "build": "tsc",

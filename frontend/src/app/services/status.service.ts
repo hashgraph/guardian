@@ -3,7 +3,7 @@ import { Observable, of, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
-import { ApplicationStates, MessageAPI } from 'interfaces';
+import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
 
 /**
  * Status service.

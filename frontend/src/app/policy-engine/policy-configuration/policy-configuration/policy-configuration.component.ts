@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, SchemaHelper, SchemaStatus, Token } from 'interfaces';
+import { Schema, SchemaHelper, SchemaStatus, Token } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -257,7 +257,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 groupBlocks[allowedChild.group] = {};
             }
             if (allowedChild.group === BlockGroup.UnGrouped) {
-                unGroupedBlocks.push({ 
+                unGroupedBlocks.push({
                     type: type,
                     icon: this.registeredBlocks.getIcon(type),
                     name: this.registeredBlocks.getName(type),
@@ -268,7 +268,7 @@ export class PolicyConfigurationComponent implements OnInit {
             if (!groupBlocks[allowedChild.group][allowedChild.header]) {
                 groupBlocks[allowedChild.group][allowedChild.header] = [];
             }
-            groupBlocks[allowedChild.group][allowedChild.header].push({ 
+            groupBlocks[allowedChild.group][allowedChild.header].push({
                 type: type,
                 icon: this.registeredBlocks.getIcon(type),
                 name: this.registeredBlocks.getName(type),

@@ -1,6 +1,6 @@
 import { Component, Inject, Input } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Schema } from 'interfaces';
+import { Schema } from '@guardian/interfaces';
 
 /**
  * Dialog for display json

@@ -1,17 +1,13 @@
 {
   "packageManager": "yarn@3.2.1",
-  "_moduleAliases": {
-    "@api": "dist/api",
-    "@entity": "dist/entity"
-  },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "@guardian/common": "^2.0.0",
+    "@guardian/interfaces": "^2.0.0",
     "@web-std/fetch": "3.0.0",
-    "common": "file:../common",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "fs-extra": "^10.0.0",
-    "interfaces": "file:../interfaces",
     "module-alias": "^2.2.2",
     "mongodb": "^4.2.1",
     "reflect-metadata": "^0.1.13",

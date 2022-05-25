@@ -1,9 +1,9 @@
-import { Hashing } from "./../hashing";
-import { IVP } from "interfaces";
+import { Hashing } from '../hashing';
+import { IVP } from "@guardian/interfaces";
 import { VcDocument } from "./vc-document";
 import { Issuer } from "./issuer";
 import { DIDDocument } from "./did-document";
-import { TimestampUtils } from "./../timestamp-utils";
+import { TimestampUtils } from '../timestamp-utils';
 import { Timestamp } from "@hashgraph/sdk";
 
 export class VpDocument {

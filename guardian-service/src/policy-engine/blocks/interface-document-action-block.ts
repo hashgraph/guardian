@@ -7,7 +7,7 @@ import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { UserType, Schema } from 'interfaces';
+import { UserType, Schema } from '@guardian/interfaces';
 import { Schema as SchemaEntity } from '@entity/schema'
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';

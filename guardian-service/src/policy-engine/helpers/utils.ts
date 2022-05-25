@@ -7,7 +7,7 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { getMongoRepository } from "typeorm";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { IAuthUser } from "@auth/auth.interface";
-import { DocumentSignature, DocumentStatus, TopicType } from "interfaces";
+import { DocumentSignature, DocumentStatus, TopicType } from "@guardian/interfaces";
 import { Topic } from "@entity/topic";
 import { TopicHelper } from "@helpers/topicHelper";
 

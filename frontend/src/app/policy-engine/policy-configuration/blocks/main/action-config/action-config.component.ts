@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, Token, UserType } from 'interfaces';
+import { Schema, Token, UserType } from '@guardian/interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**

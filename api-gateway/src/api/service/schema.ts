@@ -1,10 +1,10 @@
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { ISchema, UserRole, SchemaHelper } from 'interfaces';
+import { ISchema, UserRole, SchemaHelper } from '@guardian/interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/logger-helper';
 import { PolicyEngine } from '@helpers/policyEngine';
 
 export async function parseZipFile(zipFile: any): Promise<any[]> {

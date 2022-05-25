@@ -4,7 +4,7 @@ import {
     PolicyBlockMap,
     PolicyTagMap
 } from '@policy-engine/interfaces';
-import { PolicyRole } from 'interfaces';
+import { PolicyRole } from '@guardian/interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { GenerateUUIDv4 } from './helpers/uuidv4';
 import { AnyBlockType, IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
