@@ -42,12 +42,14 @@
                         <span>Open</span>
                     </div>
 
-                    <div *ngIf="!readonly" class="btn-new-block btn-status-edit" (click)="undoPolicy()" title="Undo">
+                    <div *ngIf="!readonly" [attr.storage-active]="policyStorage.isUndo"
+                        class="btn-new-block btn-status-edit" (click)="undoPolicy()" title="Undo">
                         <mat-icon>undo</mat-icon>
                         <span>Undo</span>
                     </div>
 
-                    <div *ngIf="!readonly" class="btn-new-block btn-status-all" (click)="redoPolicy()" title="Redo">
+                    <div *ngIf="!readonly" [attr.storage-active]="policyStorage.isRedo"
+                        class="btn-new-block btn-status-edit" (click)="redoPolicy()" title="Redo">
                         <mat-icon>redo</mat-icon>
                         <span>Redo</span>
                     </div>
@@ -118,8 +120,12 @@
                     <div class="btn-view-menu event-visible" style="color: #bd9012" [matMenuTriggerFor]="eventMenu"
                         [attr.active]="currentView == 'blocks'">
                         <mat-icon *ngIf="eventVisible =='All'" title="Show All Events">flash_on</mat-icon>
-                        <div *ngIf="eventVisible =='Action'" style="width:20px;height:9px;border-bottom:2px solid #bd9012;margin: 0px 2px 11px 1px"></div>
-                        <div *ngIf="eventVisible =='Refresh'" style="width:20px;height:9px;border-bottom:2px dashed #bd9012;margin: 0px 2px 11px 1px"></div>
+                        <div *ngIf="eventVisible =='Action'"
+                            style="width:20px;height:9px;border-bottom:2px solid #bd9012;margin: 0px 2px 11px 1px">
+                        </div>
+                        <div *ngIf="eventVisible =='Refresh'"
+                            style="width:20px;height:9px;border-bottom:2px dashed #bd9012;margin: 0px 2px 11px 1px">
+                        </div>
                         <mat-icon *ngIf="eventVisible =='None'" title="Hide Events">flash_off</mat-icon>
                     </div>
 
@@ -154,8 +160,9 @@
                             [context]="treeOverview" [active]="eventVisible" (init)="onInitViewer($event)">
                         </events-overview>
                         <tree-flat-overview #treeOverview [blocks]="policyModel.dataSource" [errors]="errorsMap"
-                            (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"
-                            (change)="onTreeChange($event)">
+                            (delete)="onDelete($event)" (select)="onSelect($event)"
+                            (reorder)="onReorder($event)" (change)="onTreeChange($event)"
+                            (init)="onInitTree($event)">
                         </tree-flat-overview>
                     </div>
                 </div>
