@@ -13409,6 +13409,232 @@ null
 
 ### TrustChain
 
+#### Getting Grid UUID
+
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/vp_grid" summary="Getting Grid UUID" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    "id": "a5bd02f3-2427-47d8-bb1a-2b0eca38be06"
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
+#### Getting Grid Documents
+
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{vpGridBlock_uuid}}" summary="Getting Grid Documents" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+    "data": [
+        {
+            "id": "628fae64b51d44b0198a30e7",
+            "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+            "hash": "GChWHiV7Ef1e6Gec9dLjcVHVkn2SCxceBQbSndwMmL91",
+            "document": {
+                "id": "90c00f1d-aae7-4a60-a0f3-907da02f30a1",
+                "type": [
+                    "VerifiablePresentation"
+                ],
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1"
+                ],
+                "verifiableCredential": [
+                    {
+                        "id": "dca9415a-505e-4050-b524-b2bea0eba1f6",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:44:08.941Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "field0": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "field1": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                "field2": {
+                                    "type": "7a022a66-7912-46e8-b634-a636a08bbb19",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                    ],
+                                    "field0": "Organization Name",
+                                    "field1": "Address line 1",
+                                    "field2": "Address line 2",
+                                    "field3": "Address line 3",
+                                    "field4": "Postal code",
+                                    "field5": "Country",
+                                    "field6": "Contact person",
+                                    "field7": "email@email.com",
+                                    "field8": "123456789",
+                                    "field9": "Fax",
+                                    "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                                },
+                                "field3": {
+                                    "type": "45abb4cb-7503-4ac4-9d31-44c468d64741",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                    ],
+                                    "field0": "Device Name",
+                                    "field1": "Address",
+                                    "field2": "Postal code",
+                                    "field3": "Country",
+                                    "field4": "Longitude",
+                                    "field5": "Latitude",
+                                    "field6": "TSO’s ID for measurement point",
+                                    "field7": 1,
+                                    "field8": 1,
+                                    "field9": "2022-05-11",
+                                    "field10": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                    "field11": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                    "field12": "Expected form of volume evidence",
+                                    "field13": "If other please specify"
+                                },
+                                "field4": "labeling scheme(s)",
+                                "field5": "2022-05-01",
+                                "field6": "2022-05-01",
+                                "field7": 1,
+                                "field8": "2022-05-31",
+                                "field9": 1,
+                                "field10": "Type a: Settlement Metering data",
+                                "field11": "Type b: Non-settlement Metering data",
+                                "field12": "Type c: Measured Volume Transfer documentation",
+                                "field13": "Type d: Other",
+                                "field14": true,
+                                "field15": true,
+                                "field16": true,
+                                "field17": "ikapqhvd",
+                                "field18": "0.0.34920818",
+                                "policyId": "628fad58b51d44b0198a30d5",
+                                "ref": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                ],
+                                "id": "a91c0d59-94cd-47fd-8e20-6dec9217c404",
+                                "type": "43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:44:08Z",
+                            "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..nekiIoY2eGxrMWsEK272nKGeQihC84N_3Ne1EqS0RZ87CfBp-LSwBvxrArvgBYEVWqeVMiURjWq4d43eM-sCCg"
+                        }
+                    },
+                    {
+                        "id": "973b16cb-ed03-48c8-ab22-6ed70d127797",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:44:12.783Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "date": "2022-05-26T16:44:12.779Z",
+                                "tokenId": "0.0.34920820",
+                                "amount": "1",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreiaamzhmh3l5pn5nneib5yifb3gjwlotf6fr6vb65j7tfi4tefxcza"
+                                ],
+                                "type": "MintToken&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:44:12Z",
+                            "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..3fM9mKooHcW7GMgMmkgoXATFcRnzmpdL6y9DqZ3EtNyLvbfWVRwUiFq_nGz7R2p3AqyP7OxogiHNjIsJGRJzDA"
+                        }
+                    }
+                ],
+                "proof": {
+                    "type": "Ed25519Signature2018",
+                    "created": "2022-05-26T16:44:12Z",
+                    "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                    "proofPurpose": "authentication",
+                    "challenge": "123",
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..K_uamuxowiPFUMD2x1NQj1akhJhCSBthrLgx71Q9v2OouIfJrhFdDF6EltDMUl64B8mjPXL-bS9kNwUcpW-HAA"
+                }
+            },
+            "createDate": "2022-05-26T16:44:20.864Z",
+            "updateDate": "2022-05-26T16:44:20.864Z",
+            "status": "NEW",
+            "signature": 0,
+            "type": "mint",
+            "policyId": "628fad58b51d44b0198a30d5",
+            "tag": "mint_token",
+            "messageId": "1653583459.200350695",
+            "topicId": "0.0.34920825",
+            "__sourceTag__": "vp_source"
+        }
+    ],
+    "blocks": [],
+    "commonAddons": [
+        {
+            "id": "1241639b-ddd4-491b-8c0a-8db9f781d3eb",
+            "blockType": "documentsSourceAddon"
+        }
+    ],
+    "fields": [
+        {
+            "title": "HASH",
+            "name": "hash",
+            "tooltip": "",
+            "type": "text"
+        },
+        {
+            "title": "Date",
+            "name": "document.verifiableCredential.1.credentialSubject.0.date",
+            "tooltip": "",
+            "type": "text"
+        },
+        {
+            "title": "Token Id",
+            "name": "document.verifiableCredential.1.credentialSubject.0.tokenId",
+            "tooltip": "",
+            "type": "text"
+        },
+        {
+            "title": "Serials",
+            "name": "document.verifiableCredential.1.credentialSubject.0.serials",
+            "tooltip": "",
+            "type": "text"
+        },
+        {
+            "title": "TrustChain",
+            "name": "hash",
+            "tooltip": "",
+            "type": "button",
+            "action": "link",
+            "url": "",
+            "dialogContent": "",
+            "dialogClass": "",
+            "dialogType": "",
+            "bindBlock": "trustChainBlock",
+            "content": "View TrustChain",
+            "width": "150px"
+        }
+    ]
+}
+```
+{% endswagger-response %}
+{% endswagger %}
+
 #### Getting TrustChain Block UUID
 
 {% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/trustChainBlock" summary="Getting TrustChain Block UUID" %}
@@ -13425,2563 +13651,5770 @@ null
 {% endswagger-response %}
 {% endswagger %}
 
-### Setting up the User Role
+#### Setting Hash Filter
 
-BLOCK : choose\_role
-
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="User Role" %}
+{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{trustChainBlock_uuid}}" summary="Setting Hash Filter" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/88ea01cb-35ae-4e4d-87ce-ec93d577cd30
-{% endswagger-description %}
 
-{% swagger-parameter in="body" name="role" type="String" required="true" %}
-Registrant
-{% endswagger-parameter %}
+{% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
 }
 ```
 {% endswagger-response %}
 {% endswagger %}
 
-### Submitting Registrant Application Form
+#### Getting TrustChain Block Data
 
-BLOCK : create\_application
-
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Registrant Application form to be submitted" %}
+{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{trustChainBlock_uuid}}" summary="Getting TrustChain Block Data" %}
 {% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/8ae8f020-42ed-4692-9d93-4d700d467bd0
-{% endswagger-description %}
 
-{% swagger-parameter in="body" name="document" %}
-&#x20;     "field0":"2022-04-01",
-
-&#x20;     "field1":{
-
-&#x20;        "field0":"Applicant Legal Name",
-
-&#x20;        "field1":"Registered address line 1",
-
-&#x20;        "field2":"Registered address line 2",
-
-&#x20;        "field3":"Registered address line 3",
-
-&#x20;        "field4":"Postal (ZIP) code",
-
-&#x20;        "field5":"Country",
-
-&#x20;        "field6":"Legal Status",
-
-&#x20;        "field7":"Country of company registration/private residence",
-
-&#x20;        "field8":"Corporate registration number/passport number",
-
-&#x20;        "field9":"VAT number",
-
-&#x20;        "field10":"Website URL",
-
-&#x20;        "field11":"Main business (e.g. food retailer)",
-
-&#x20;        "field12":2022,
-
-&#x20;        "field13":1,
-
-&#x20;        "field14":"Name of the Chief Executive Officer/General Manager",
-
-&#x20;        "field15":"Chief Executive Officer/General Manager passport number",
-
-&#x20;        "field16":"Please state in which countries the organization is active",
-
-&#x20;        "field17":"Please list the main (>10%) shareholders",
-
-&#x20;        "field18":1,
-
-&#x20;        "field19":"test@mail.ru",
-
-&#x20;        "type":"4510d95d-ed9d-4785-a5ed-5c1e334611dd",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "field2":{
-
-&#x20;        "field0":"Organization Name",
-
-&#x20;        "field1":"Address line 1",
-
-&#x20;        "field2":"Address line 2",
-
-&#x20;        "field3":"Address line 3",
-
-&#x20;        "field4":"Postal code",
-
-&#x20;        "field5":"Country",
-
-&#x20;        "field6":"Contact person",
-
-&#x20;        "field7":"test@mail.ru",
-
-&#x20;        "field8":"Telephone",
-
-&#x20;        "field9":"Fax",
-
-&#x20;        "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-
-&#x20;        "type":"56ce048d-8e24-4aec-b76d-802688f651e8",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "field3":{
-
-&#x20;        "field0":"Family Name (surname)",
-
-&#x20;        "field1":"Other (Given) Names",
-
-&#x20;        "field2":"Title",
-
-&#x20;        "field3":"test@mail.ru",
-
-&#x20;        "field4":"Telephone",
-
-&#x20;        "field5":"Fax",
-
-&#x20;        "type":"fb8c1458-e86f-444a-a408-665149bda777",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "type":"762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0",
-
-&#x20;     "@context":\[
-
-&#x20;        "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;     ]
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="ref" %}
-null
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### Root Authority (Get Registrant Application to Approve)
-
-#### Make GET request and get data\[i] and change option.status = “Approved”
-
-BLOCK : registrants\_grid
-
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Getting Registrant Application for approval" %}
-{% swagger-description %}
-/policies/626c0490d24497fe1b1e415d/blocks/2f237418-9ed5-4a1e-a2ea-c7f978554784
 {% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
-   "data":[
-      {
-         "id":"626c056cd24497fe1b1e4163",
-         "owner":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-         "hash":"GkX1mNd5wxWKCdkBYC6PBGHm9jmkNzsjb9ycqcP4jgPb",
-         "document":{
-            "id":"9d537f1d-c906-4013-9ac6-c6a0fd211e4a",
-            "type":[
-               "VerifiableCredential"
-            ],
-            "issuer":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-            "issuanceDate":"2022-04-29T15:33:48.168Z",
-            "@context":[
-               "https://www.w3.org/2018/credentials/v1"
-            ],
-            "credentialSubject":[
-               {
-                  "field0":"2022-04-08",
-                  "field1":{
-                     "field0":"Applicant Legal Name",
-                     "field1":"Registered address line 1",
-                     "field2":"Registered address line 2",
-                     "field3":"Registered address line 3",
-                     "field4":"Postal (ZIP) code",
-                     "field5":"Country",
-                     "field6":"Legal Status",
-                     "field7":"Country of company registration/private residence",
-                     "field8":"Corporate registration number/passport number",
-                     "field9":"VAT number",
-                     "field10":"Website URL",
-                     "field11":"Main business (e.g. food retailer)",
-                     "field12":1,
-                     "field13":1,
-                     "field14":"Name of the Chief Executive Officer/General Manager",
-                     "field15":"Chief Executive Officer/General Manager passport number",
-                     "field16":"Please state in which countries the organization is active",
-                     "field17":"Please list the main (>10%) shareholders",
-                     "field18":1,
-                     "field19":"test@mail.ru",
-                     "type":"f7bd122d-4220-4d9d-abb2-fa9366e79975",
-                     "@context":[
-                        "https://ipfs.io/ipfs/bafkreiess6ak6lwlhar55ezckdwo6y7ki3wlyzyl3a7tadda2zuqaxwmbm"
-                     ]
-                  },
-                  "field2":{
-                     "field0":"Organization Name",
-                     "field1":"Address line 1",
-                     "field2":"Address line 2",
-                     "field3":"Address line 3",
-                     "field4":"Postal code",
-                     "field5":"Country",
-                     "field6":"Contact person",
-                     "field7":"test@mail.ru",
-                     "field8":"Telephone",
-                     "field9":"Fax",
-                     "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-                     "type":"a68073e6-bf56-43e3-99c4-5b433c983654",
-                     "@context":[
-                        "https://ipfs.io/ipfs/bafkreiess6ak6lwlhar55ezckdwo6y7ki3wlyzyl3a7tadda2zuqaxwmbm"
-                     ]
-                  },
-                  "field3":{
-                     "field0":"Family Name (surname)",
-                     "field1":"Other (Given) Names",
-                     "field2":"Title",
-                     "field3":"test@mail.ru",
-                     "field4":"Telephone",
-                     "field5":"Fax",
-                     "type":"9dca2898-d548-48a4-beec-fefd308f93cf",
-                     "@context":[
-                        "https://ipfs.io/ipfs/bafkreiess6ak6lwlhar55ezckdwo6y7ki3wlyzyl3a7tadda2zuqaxwmbm"
-                     ]
-                  },
-                  "policyId":"626c0490d24497fe1b1e415d",
-                  "@context":[
-                     "https://ipfs.io/ipfs/bafkreiess6ak6lwlhar55ezckdwo6y7ki3wlyzyl3a7tadda2zuqaxwmbm"
-                  ],
-                  "id":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-                  "type":"7b652d73-5978-45b4-992e-cc3ce732e27a&1.0.0"
-               }
-            ],
-            "proof":{
-               "type":"Ed25519Signature2018",
-               "created":"2022-04-29T15:33:48Z",
-               "verificationMethod":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316#did-root-key",
-               "proofPurpose":"assertionMethod",
-               "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..GaOyMZ9dR5J0-iu6SICVNlWifON3DT0ytz2z_eCHeOSRY5oQ7Jb3219G7aUrztIEppMcfzG6teO-YvuNPiAfBw"
+    "hash": "GChWHiV7Ef1e6Gec9dLjcVHVkn2SCxceBQbSndwMmL91",
+    "schemes": [
+        {
+            "id": "628bde88b51d44b0198a3092",
+            "uuid": "MintNFToken",
+            "hash": "",
+            "name": "MintNFToken",
+            "entity": "MINT_NFTOKEN",
+            "status": "PUBLISHED",
+            "readonly": true,
+            "document": {
+                "$id": "#MintNFToken&1.0.0",
+                "$comment": "{ \"term\": \"MintNFToken&1.0.0\", \"@id\": \"undefined#MintNFToken&1.0.0\" }",
+                "title": "MintNFToken",
+                "description": "MintNFToken",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "date": {
+                        "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "date",
+                        "description": "date",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "serials": {
+                        "$comment": "{\"term\": \"serials\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "serials",
+                        "description": "serials",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "readOnly": false
+                    },
+                    "tokenId": {
+                        "$comment": "{\"term\": \"tokenId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "tokenId",
+                        "description": "tokenId",
+                        "type": "string",
+                        "readOnly": false
+                    }
+                },
+                "required": [
+                    "date",
+                    "serials",
+                    "tokenId"
+                ],
+                "additionalProperties": false
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "MintNFToken&1.0.0": {
+                        "@id": "undefined#MintNFToken&1.0.0",
+                        "@context": {
+                            "date": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "serials": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "tokenId": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": null,
+            "owner": null,
+            "topicId": "0.0.29614911",
+            "messageId": "1648050452.168946122",
+            "documentURL": "https://ipfs.io/ipfs/bafkreifqbo5ncushds37awkwpkwwqs2mimprz2dlyhxzzsv4xxytnw2y4i",
+            "contextURL": "https://ipfs.io/ipfs/bafkreiczty4owaqfkhyrjo2mzntkewcg4kwewgvhmwap662gvgj4cggwwy",
+            "iri": "#MintNFToken&1.0.0",
+            "createDate": "2022-05-23T19:20:40.553Z",
+            "category": "SYSTEM"
+        },
+        {
+            "id": "628bde89b51d44b0198a3093",
+            "uuid": "MintToken",
+            "hash": "",
+            "name": "MintToken",
+            "entity": "MINT_TOKEN",
+            "status": "PUBLISHED",
+            "readonly": true,
+            "document": {
+                "$id": "#MintToken&1.0.0",
+                "$comment": "{ \"term\": \"MintToken&1.0.0\", \"@id\": \"undefined#MintToken&1.0.0\" }",
+                "title": "MintToken",
+                "description": "MintToken",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "date": {
+                        "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "date",
+                        "description": "date",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "amount": {
+                        "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "amount",
+                        "description": "amount",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "tokenId": {
+                        "$comment": "{\"term\": \"tokenId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "tokenId",
+                        "description": "tokenId",
+                        "type": "string",
+                        "readOnly": false
+                    }
+                },
+                "required": [
+                    "date",
+                    "amount",
+                    "tokenId"
+                ],
+                "additionalProperties": false
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "MintToken&1.0.0": {
+                        "@id": "undefined#MintToken&1.0.0",
+                        "@context": {
+                            "date": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "amount": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "tokenId": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": null,
+            "owner": null,
+            "topicId": "0.0.29614911",
+            "messageId": "1648050464.170190891",
+            "documentURL": "https://ipfs.io/ipfs/bafkreiflfkyh4fhft7yyrq7g7rnvqwac3mengo555vlz72qtsnqmhcy77q",
+            "contextURL": "https://ipfs.io/ipfs/bafkreiaamzhmh3l5pn5nneib5yifb3gjwlotf6fr6vb65j7tfi4tefxcza",
+            "iri": "#MintToken&1.0.0",
+            "createDate": "2022-05-23T19:20:41.086Z",
+            "category": "SYSTEM"
+        },
+        {
+            "id": "628bde8eb51d44b0198a3094",
+            "uuid": "Policy",
+            "hash": "",
+            "name": "Policy",
+            "entity": "POLICY",
+            "status": "PUBLISHED",
+            "readonly": true,
+            "document": {
+                "$id": "#Policy&1.0.0",
+                "$comment": "{ \"term\": \"Policy&1.0.0\", \"@id\": \"undefined#Policy&1.0.0\" }",
+                "title": "Policy",
+                "description": "Policy",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "$comment": "{\"term\": \"name\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "name",
+                        "description": "name",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "description": {
+                        "$comment": "{\"term\": \"description\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "description",
+                        "description": "description",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "topicDescription": {
+                        "$comment": "{\"term\": \"topicDescription\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "topicDescription",
+                        "description": "topicDescription",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "version": {
+                        "$comment": "{\"term\": \"version\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "version",
+                        "description": "version",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "policyTag": {
+                        "$comment": "{\"term\": \"policyTag\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "policyTag",
+                        "description": "policyTag",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "owner": {
+                        "$comment": "{\"term\": \"owner\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "owner",
+                        "description": "owner",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "cid": {
+                        "$comment": "{\"term\": \"cid\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "cid",
+                        "description": "cid",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "url": {
+                        "$comment": "{\"term\": \"url\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "url",
+                        "description": "url",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "uuid": {
+                        "$comment": "{\"term\": \"uuid\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "uuid",
+                        "description": "uuid",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "operation": {
+                        "$comment": "{\"term\": \"operation\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "operation",
+                        "description": "operation",
+                        "type": "string",
+                        "readOnly": false
+                    }
+                },
+                "required": [
+                    "name",
+                    "description",
+                    "topicDescription",
+                    "version",
+                    "policyTag",
+                    "owner",
+                    "cid",
+                    "url",
+                    "uuid",
+                    "operation"
+                ],
+                "additionalProperties": false
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "Policy&1.0.0": {
+                        "@id": "undefined#Policy&1.0.0",
+                        "@context": {
+                            "name": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "description": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "topicDescription": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "version": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "policyTag": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "owner": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "cid": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "url": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "uuid": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "operation": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": null,
+            "owner": null,
+            "topicId": "0.0.29614911",
+            "messageId": "1648050474.194518992",
+            "documentURL": "https://ipfs.io/ipfs/bafkreianlv66ew6dcrjzyryrbh6hkkkyly7axdrtxybuw5t52zw64ccu3a",
+            "contextURL": "https://ipfs.io/ipfs/bafkreif342gfzasmqaayyhs7rdcc7mxzcbxw3jxer22ws3eoatgdqjorbi",
+            "iri": "#Policy&1.0.0",
+            "createDate": "2022-05-23T19:20:46.429Z",
+            "category": "SYSTEM"
+        },
+        {
+            "id": "628bde8fb51d44b0198a3095",
+            "uuid": "RootAuthority",
+            "hash": "",
+            "name": "RootAuthority",
+            "entity": "ROOT_AUTHORITY",
+            "status": "PUBLISHED",
+            "readonly": true,
+            "document": {
+                "$id": "#RootAuthority&1.0.0",
+                "$comment": "{ \"term\": \"RootAuthority&1.0.0\", \"@id\": \"undefined#RootAuthority&1.0.0\" }",
+                "title": "RootAuthority",
+                "description": "RootAuthority",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "name",
+                        "description": "name",
+                        "type": "string",
+                        "readOnly": false
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "additionalProperties": false
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "RootAuthority&1.0.0": {
+                        "@id": "undefined#RootAuthority&1.0.0",
+                        "@context": {
+                            "date": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": null,
+            "owner": null,
+            "topicId": "0.0.29614911",
+            "messageId": "1648050485.461249427",
+            "documentURL": "https://ipfs.io/ipfs/bafkreibvid2tikh3nv5rblgvqcj6zcskpm5w65iszkofnhqnipdjrfgji4",
+            "contextURL": "https://ipfs.io/ipfs/bafkreibzihfnj67xgs74xfv2ap7rallevyce6uj5sg73j3p2cxlm2qx6ru",
+            "iri": "#RootAuthority&1.0.0",
+            "createDate": "2022-05-23T19:20:47.324Z",
+            "category": "SYSTEM"
+        },
+        {
+            "id": "628bde9ab51d44b0198a3096",
+            "uuid": "WipeToken",
+            "hash": "",
+            "name": "WipeToken",
+            "entity": "WIPE_TOKEN",
+            "status": "PUBLISHED",
+            "readonly": true,
+            "document": {
+                "$id": "#WipeToken&1.0.0",
+                "$comment": "{ \"term\": \"WipeToken&1.0.0\", \"@id\": \"undefined#WipeToken&1.0.0\" }",
+                "title": "WipeToken",
+                "description": "WipeToken",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "date": {
+                        "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "date",
+                        "description": "date",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "amount": {
+                        "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "amount",
+                        "description": "amount",
+                        "type": "string",
+                        "readOnly": false
+                    },
+                    "tokenId": {
+                        "$comment": "{\"term\": \"tokenId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "title": "tokenId",
+                        "description": "tokenId",
+                        "type": "string",
+                        "readOnly": false
+                    }
+                },
+                "required": [
+                    "date",
+                    "amount",
+                    "tokenId"
+                ],
+                "additionalProperties": false
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "WipeToken&1.0.0": {
+                        "@id": "undefined#WipeToken&1.0.0",
+                        "@context": {
+                            "date": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "amount": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "tokenId": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": null,
+            "owner": null,
+            "topicId": "0.0.29614911",
+            "messageId": "1648050495.614894000",
+            "documentURL": "https://ipfs.io/ipfs/bafkreigjygpnik6azk5f4zvnxvjjqgceestej3voybjaoqlebfu2hi6nvq",
+            "contextURL": "https://ipfs.io/ipfs/bafkreihgj2td6c4faf5zibq7rrkbkkqryxxflfednbvbahvjft4brsco6q",
+            "iri": "#WipeToken&1.0.0",
+            "createDate": "2022-05-23T19:20:58.055Z",
+            "category": "SYSTEM"
+        },
+        {
+            "id": "628d274eb51d44b0198a30ac",
+            "uuid": "ef5fa54f-ef88-4e4e-8d0e-29904bd222f2",
+            "hash": "",
+            "name": "I-REC Registrant & Participant App",
+            "description": "I-REC Registrant & Participant App",
+            "entity": "VC",
+            "status": "PUBLISHED",
+            "readonly": false,
+            "document": {
+                "$id": "#ef5fa54f-ef88-4e4e-8d0e-29904bd222f2&1.0.0",
+                "$comment": "{\"term\": \"ef5fa54f-ef88-4e4e-8d0e-29904bd222f2&1.0.0\", \"@id\": \"https://ipfs.io/ipfs/bafkreiejsgxjj4ntamvgattviac5vtf5rtpvnvmojk444lyawutwsfnvwi#ef5fa54f-ef88-4e4e-8d0e-29904bd222f2&1.0.0\"}",
+                "title": "I-REC Registrant & Participant App",
+                "description": "I-REC Registrant & Participant App",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "field0": {
+                        "title": "Date",
+                        "description": "Date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field1": {
+                        "title": "Applicant Details",
+                        "description": "Applicant Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field1\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#4e8d5404-892d-48ed-b63f-b7a009c0eba1\"}",
+                        "$ref": "#4e8d5404-892d-48ed-b63f-b7a009c0eba1"
+                    },
+                    "field2": {
+                        "title": "Primary Contact Details",
+                        "description": "Primary Contact Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field2\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#74a38111-b583-47c3-93b9-e453132ecbb5\"}",
+                        "$ref": "#74a38111-b583-47c3-93b9-e453132ecbb5"
+                    },
+                    "field3": {
+                        "title": "Lead User Details\t",
+                        "description": "Lead User Details\t",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field3\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#a772f46e-2764-4909-b1a1-287c09d7a785\"}",
+                        "$ref": "#a772f46e-2764-4909-b1a1-287c09d7a785"
+                    },
+                    "policyId": {
+                        "title": "policyId",
+                        "description": "policyId",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "ref": {
+                        "title": "ref",
+                        "description": "ref",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "@context",
+                    "type",
+                    "field1",
+                    "field2",
+                    "field3",
+                    "policyId"
+                ],
+                "additionalProperties": false,
+                "$defs": {
+                    "#4e8d5404-892d-48ed-b63f-b7a009c0eba1": {
+                        "$id": "#4e8d5404-892d-48ed-b63f-b7a009c0eba1",
+                        "$comment": "{\"term\": \"4e8d5404-892d-48ed-b63f-b7a009c0eba1\", \"@id\": \"https://ipfs.io/ipfs/bafkreihe55hxacf32sxuybe3s3otblhfs3y5qlk3lccjvksh7kncwf6ura#4e8d5404-892d-48ed-b63f-b7a009c0eba1\"}",
+                        "title": "Applicant Details",
+                        "description": " Applicant Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Applicant Legal Name",
+                                "description": "Applicant Legal Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Registered address line 1",
+                                "description": "Registered address line 1",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Registered address line 2",
+                                "description": "Registered address line 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Registered address line 3",
+                                "description": "Registered address line 3",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Postal (ZIP) code",
+                                "description": "Postal (ZIP) code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Legal Status",
+                                "description": "Legal Status",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "Country of company registration/private residence",
+                                "description": "Country of company registration/private residence",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field8": {
+                                "title": "Corporate registration number/passport number",
+                                "description": "Corporate registration number/passport number",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "VAT number",
+                                "description": "VAT number",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field10": {
+                                "title": "Website URL",
+                                "description": "Website URL",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field11": {
+                                "title": "Main business (e.g. food retailer)",
+                                "description": "Main business (e.g. food retailer)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field12": {
+                                "title": "Year of registration",
+                                "description": "Year of registration",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "integer"
+                            },
+                            "field13": {
+                                "title": "Approximate number of employees",
+                                "description": "Approximate number of employees",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "integer"
+                            },
+                            "field14": {
+                                "title": "Name of the Chief Executive Officer/General Manager",
+                                "description": "Name of the Chief Executive Officer/General Manager",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field14\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field15": {
+                                "title": "Chief Executive Officer/General Manager passport number",
+                                "description": "Chief Executive Officer/General Manager passport number",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field15\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field16": {
+                                "title": "Please state in which countries the organization is active",
+                                "description": "Please state in which countries the organization is active",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field16\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field17": {
+                                "title": "Please list the main (>10%) shareholders ",
+                                "description": "Please list the main (>10%) shareholders ",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field17\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field18": {
+                                "title": "Balance sheet total for last financial year (in USD)",
+                                "description": "Balance sheet total for last financial year (in USD)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field18\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "number"
+                            },
+                            "field19": {
+                                "title": "Email address for Accounts Department",
+                                "description": "Email address for Accounts Department",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field19\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#74a38111-b583-47c3-93b9-e453132ecbb5": {
+                        "$id": "#74a38111-b583-47c3-93b9-e453132ecbb5",
+                        "$comment": "{\"term\": \"74a38111-b583-47c3-93b9-e453132ecbb5\", \"@id\": \"https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#74a38111-b583-47c3-93b9-e453132ecbb5\"}",
+                        "title": "Contact Details",
+                        "description": "Contact Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Organization Name",
+                                "description": "Organization Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address line 1",
+                                "description": "Address line 1",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Address line 2",
+                                "description": "Address line 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Address line 3",
+                                "description": "Address line 3",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Contact person",
+                                "description": "Contact person",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "e-mail",
+                                "description": "e-mail",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "field8": {
+                                "title": "Telephone",
+                                "description": "Telephone",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "Fax",
+                                "description": "Fax",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field10": {
+                                "title": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "description": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#a772f46e-2764-4909-b1a1-287c09d7a785": {
+                        "$id": "#a772f46e-2764-4909-b1a1-287c09d7a785",
+                        "$comment": "{\"term\": \"a772f46e-2764-4909-b1a1-287c09d7a785\", \"@id\": \"https://ipfs.io/ipfs/bafkreicwhwmdbu4r3zv3cfifbb47dd7y5bf7l6qzycf66ll6pskk2r7gyq#a772f46e-2764-4909-b1a1-287c09d7a785\"}",
+                        "title": "Lead User Details",
+                        "description": "Lead User Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Family Name (surname)",
+                                "description": "Family Name (surname)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Other (Given) Names",
+                                "description": "Other (Given) Names",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Title",
+                                "description": "Title",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "e-mail",
+                                "description": "e-mail",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "field4": {
+                                "title": "Telephone",
+                                "description": "Telephone",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Fax",
+                                "description": "Fax",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "4e8d5404-892d-48ed-b63f-b7a009c0eba1": {
+                        "@id": "https://ipfs.io/ipfs/bafkreihe55hxacf32sxuybe3s3otblhfs3y5qlk3lccjvksh7kncwf6ura#4e8d5404-892d-48ed-b63f-b7a009c0eba1",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field13": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field14": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field15": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field16": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field17": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field18": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field19": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "74a38111-b583-47c3-93b9-e453132ecbb5": {
+                        "@id": "https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#74a38111-b583-47c3-93b9-e453132ecbb5",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "a772f46e-2764-4909-b1a1-287c09d7a785": {
+                        "@id": "https://ipfs.io/ipfs/bafkreicwhwmdbu4r3zv3cfifbb47dd7y5bf7l6qzycf66ll6pskk2r7gyq#a772f46e-2764-4909-b1a1-287c09d7a785",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "ef5fa54f-ef88-4e4e-8d0e-29904bd222f2&1.0.0": {
+                        "@id": "https://ipfs.io/ipfs/bafkreiejsgxjj4ntamvgattviac5vtf5rtpvnvmojk444lyawutwsfnvwi#ef5fa54f-ef88-4e4e-8d0e-29904bd222f2&1.0.0",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "policyId": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "ref": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#4e8d5404-892d-48ed-b63f-b7a009c0eba1"
+                            },
+                            "field2": {
+                                "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#74a38111-b583-47c3-93b9-e453132ecbb5"
+                            },
+                            "field3": {
+                                "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#a772f46e-2764-4909-b1a1-287c09d7a785"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": "did:hedera:testnet:DxUh34RvLVnepXjKmQK9q46remcasWfxtSaj3BcwbCGG;hedera:testnet:tid=0.0.34895921",
+            "owner": "did:hedera:testnet:DxUh34RvLVnepXjKmQK9q46remcasWfxtSaj3BcwbCGG;hedera:testnet:tid=0.0.34895921",
+            "topicId": "0.0.34904155",
+            "messageId": "1653417819.330557775",
+            "documentURL": "https://ipfs.io/ipfs/bafkreidgia4grz7wu75uk63o7tmkfs3eho2gfai4hswuaftiwwhkazviqu",
+            "contextURL": "https://ipfs.io/ipfs/bafkreiecxdjqan75ufso7ofgc65ywrx7ettqigvtuovr4jl7rtss4abx2u",
+            "iri": "#ef5fa54f-ef88-4e4e-8d0e-29904bd222f2&1.0.0",
+            "createDate": "2022-05-24T18:43:26.925Z",
+            "category": "USER"
+        },
+        {
+            "id": "628d2751b51d44b0198a30ad",
+            "uuid": "00526b15-79e2-4432-90d6-c895cee289b1",
+            "hash": "",
+            "name": "I-REC Facility & Device Reg",
+            "description": "I-REC Facility & Device Reg",
+            "entity": "VC",
+            "status": "PUBLISHED",
+            "readonly": false,
+            "document": {
+                "$id": "#00526b15-79e2-4432-90d6-c895cee289b1&1.0.0",
+                "$comment": "{\"term\": \"00526b15-79e2-4432-90d6-c895cee289b1&1.0.0\", \"@id\": \"https://ipfs.io/ipfs/bafkreiarfdavk3bq23pay336sekvlhalvklot2egjenotiy5cigc37xhzy#00526b15-79e2-4432-90d6-c895cee289b1&1.0.0\"}",
+                "title": "I-REC Facility & Device Reg",
+                "description": "I-REC Facility & Device Reg",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "field0": {
+                        "title": "Registrant Id",
+                        "description": "Registrant Id",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field1": {
+                        "title": "Date",
+                        "description": "Date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field2": {
+                        "title": "Is the Registrant also the owner of the Device? (provide evidence) ",
+                        "description": "Is the Registrant also the owner of the Device? (provide evidence) ",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field3": {
+                        "title": "Registrant Details",
+                        "description": "Registrant Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field3\", \"@id\": \"https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#74a38111-b583-47c3-93b9-e453132ecbb5\"}",
+                        "$ref": "#74a38111-b583-47c3-93b9-e453132ecbb5"
+                    },
+                    "field4": {
+                        "title": "Production Device Details",
+                        "description": "Production Device Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field4\", \"@id\": \"https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#11496321-dbb9-423c-ba00-883983e0859f\"}",
+                        "$ref": "#11496321-dbb9-423c-ba00-883983e0859f"
+                    },
+                    "field5": {
+                        "title": "Energy Sources",
+                        "description": "Energy Sources",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field5\", \"@id\": \"https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#c20662fc-7d19-4f9f-b190-d7b219dda16f\"}",
+                        "$ref": "#c20662fc-7d19-4f9f-b190-d7b219dda16f"
+                    },
+                    "policyId": {
+                        "title": "policyId",
+                        "description": "policyId",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "ref": {
+                        "title": "ref",
+                        "description": "ref",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "@context",
+                    "type",
+                    "field3",
+                    "field4",
+                    "field5",
+                    "policyId"
+                ],
+                "additionalProperties": false,
+                "$defs": {
+                    "#74a38111-b583-47c3-93b9-e453132ecbb5": {
+                        "$id": "#74a38111-b583-47c3-93b9-e453132ecbb5",
+                        "$comment": "{\"term\": \"74a38111-b583-47c3-93b9-e453132ecbb5\", \"@id\": \"https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#74a38111-b583-47c3-93b9-e453132ecbb5\"}",
+                        "title": "Contact Details",
+                        "description": "Contact Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Organization Name",
+                                "description": "Organization Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address line 1",
+                                "description": "Address line 1",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Address line 2",
+                                "description": "Address line 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Address line 3",
+                                "description": "Address line 3",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Contact person",
+                                "description": "Contact person",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "e-mail",
+                                "description": "e-mail",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "field8": {
+                                "title": "Telephone",
+                                "description": "Telephone",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "Fax",
+                                "description": "Fax",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field10": {
+                                "title": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "description": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#11496321-dbb9-423c-ba00-883983e0859f": {
+                        "$id": "#11496321-dbb9-423c-ba00-883983e0859f",
+                        "$comment": "{\"term\": \"11496321-dbb9-423c-ba00-883983e0859f\", \"@id\": \"https://ipfs.io/ipfs/bafkreibfmmst6ivkxzdcpmxf75lmtlhewgniohcexyhnbdqzg3lbnsgmte#11496321-dbb9-423c-ba00-883983e0859f\"}",
+                        "title": "Production Device",
+                        "description": "Production Device",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Device Name",
+                                "description": "Device Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address",
+                                "description": "Address",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Longitude",
+                                "description": "Longitude",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Latitude",
+                                "description": "Latitude",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "TSO’s ID for measurement point",
+                                "description": "TSO’s ID for measurement point",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "Installed capacity (kW)",
+                                "description": "Installed capacity (kW)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "number"
+                            },
+                            "field8": {
+                                "title": "Number of generating units",
+                                "description": "Number of generating units",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "integer"
+                            },
+                            "field9": {
+                                "title": "Date of commissioning",
+                                "description": "Date of commissioning",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "field10": {
+                                "title": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                "description": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field11": {
+                                "title": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                "description": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field12": {
+                                "title": "Expected form of volume evidence",
+                                "description": "Expected form of volume evidence",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field13": {
+                                "title": "If other please specify",
+                                "description": "If other please specify",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#c20662fc-7d19-4f9f-b190-d7b219dda16f": {
+                        "$id": "#c20662fc-7d19-4f9f-b190-d7b219dda16f",
+                        "$comment": "{\"term\": \"c20662fc-7d19-4f9f-b190-d7b219dda16f\", \"@id\": \"https://ipfs.io/ipfs/bafkreicdymqudwen65zkey2eoirbvkbszcs75yr3b6x52zihmdro6dbmlm#c20662fc-7d19-4f9f-b190-d7b219dda16f\"}",
+                        "title": "Energy Sources",
+                        "description": "Energy Sources",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Energy Source (Input) – see Appendix 2",
+                                "description": "Energy Source (Input) – see Appendix 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Technology – see Appendix 2",
+                                "description": "Technology – see Appendix 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "On-site consumer present?",
+                                "description": "On-site consumer present?",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "boolean"
+                            },
+                            "field3": {
+                                "title": "If yes give details",
+                                "description": "If yes give details",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Auxiliary/standby energy sources present?",
+                                "description": "Auxiliary/standby energy sources present?",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "boolean"
+                            },
+                            "field5": {
+                                "title": "If yes give details",
+                                "description": "If yes give details",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Please give details of how the site can import electricity by means other than through the meter(s) specified above",
+                                "description": "Please give details of how the site can import electricity by means other than through the meter(s) specified above",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
+                                "description": "Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field8": {
+                                "title": "Please identify any labeling schemes for which the Device is accredited",
+                                "description": "Please identify any labeling schemes for which the Device is accredited",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "Has the Device ever received public (government) funding (e.g. Feed in Tariff)?",
+                                "description": "Has the Device ever received public (government) funding (e.g. Feed in Tariff)?",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "boolean"
+                            },
+                            "field10": {
+                                "title": "If public (government) funding has been received when did/will it finish?",
+                                "description": "If public (government) funding has been received when did/will it finish?",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field11": {
+                                "title": "Requested effective date of registration (no earlier than 12 months prior to submitting this form)",
+                                "description": "Requested effective date of registration (no earlier than 12 months prior to submitting this form)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "field12": {
+                                "title": "Preferred I-REC Device Verifier",
+                                "description": "Preferred I-REC Device Verifier",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "74a38111-b583-47c3-93b9-e453132ecbb5": {
+                        "@id": "https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#74a38111-b583-47c3-93b9-e453132ecbb5",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "11496321-dbb9-423c-ba00-883983e0859f": {
+                        "@id": "https://ipfs.io/ipfs/bafkreibfmmst6ivkxzdcpmxf75lmtlhewgniohcexyhnbdqzg3lbnsgmte#11496321-dbb9-423c-ba00-883983e0859f",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field13": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "c20662fc-7d19-4f9f-b190-d7b219dda16f": {
+                        "@id": "https://ipfs.io/ipfs/bafkreicdymqudwen65zkey2eoirbvkbszcs75yr3b6x52zihmdro6dbmlm#c20662fc-7d19-4f9f-b190-d7b219dda16f",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "00526b15-79e2-4432-90d6-c895cee289b1&1.0.0": {
+                        "@id": "https://ipfs.io/ipfs/bafkreiarfdavk3bq23pay336sekvlhalvklot2egjenotiy5cigc37xhzy#00526b15-79e2-4432-90d6-c895cee289b1&1.0.0",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "policyId": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "ref": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#74a38111-b583-47c3-93b9-e453132ecbb5"
+                            },
+                            "field4": {
+                                "@id": "https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#11496321-dbb9-423c-ba00-883983e0859f"
+                            },
+                            "field5": {
+                                "@id": "https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#c20662fc-7d19-4f9f-b190-d7b219dda16f"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": "did:hedera:testnet:DxUh34RvLVnepXjKmQK9q46remcasWfxtSaj3BcwbCGG;hedera:testnet:tid=0.0.34895921",
+            "owner": "did:hedera:testnet:DxUh34RvLVnepXjKmQK9q46remcasWfxtSaj3BcwbCGG;hedera:testnet:tid=0.0.34895921",
+            "topicId": "0.0.34904155",
+            "messageId": "1653417825.201434396",
+            "documentURL": "https://ipfs.io/ipfs/bafkreihesagko7flofgvb3smausrt5nejp4zxm5puwj4cgsyehtfeilyu4",
+            "contextURL": "https://ipfs.io/ipfs/bafkreigdplzcs6ljxtaxlnkffq6mby5o4l5ckwx4vkqoo4ja36wn5g6k2e",
+            "iri": "#00526b15-79e2-4432-90d6-c895cee289b1&1.0.0",
+            "createDate": "2022-05-24T18:43:29.078Z",
+            "category": "USER"
+        },
+        {
+            "id": "628d2752b51d44b0198a30ae",
+            "uuid": "7cf248b0-7f04-40df-ac1f-46903f07123b",
+            "hash": "",
+            "name": "I-REC Issue Request",
+            "description": "I-REC Issue Request",
+            "entity": "VC",
+            "status": "PUBLISHED",
+            "readonly": false,
+            "document": {
+                "$id": "#7cf248b0-7f04-40df-ac1f-46903f07123b&1.0.0",
+                "$comment": "{\"term\": \"7cf248b0-7f04-40df-ac1f-46903f07123b&1.0.0\", \"@id\": \"https://ipfs.io/ipfs/bafkreihyzgmwkeaizxlvwc7kvvj2l7xjaajp6gnaejx7gvqumtsmc3o2he#7cf248b0-7f04-40df-ac1f-46903f07123b&1.0.0\"}",
+                "title": "I-REC Issue Request",
+                "description": "I-REC Issue Request",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "field0": {
+                        "title": "Registrant Id",
+                        "description": "Registrant Id",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field1": {
+                        "title": "Production Device/Production Group Id",
+                        "description": "Production Device/Production Group Id",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field2": {
+                        "title": "Registrant Details",
+                        "description": "Registrant Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field2\", \"@id\": \"https://ipfs.io/ipfs/bafkreigvosme6ktbnfrbjcmttddtqqvvjzvoxjiakum4ahxuq3s4owswgq#74a38111-b583-47c3-93b9-e453132ecbb5\"}",
+                        "$ref": "#74a38111-b583-47c3-93b9-e453132ecbb5"
+                    },
+                    "field3": {
+                        "title": "Production Device/Production Group",
+                        "description": "Production Device/Production Group",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field3\", \"@id\": \"https://ipfs.io/ipfs/bafkreigvosme6ktbnfrbjcmttddtqqvvjzvoxjiakum4ahxuq3s4owswgq#11496321-dbb9-423c-ba00-883983e0859f\"}",
+                        "$ref": "#11496321-dbb9-423c-ba00-883983e0859f"
+                    },
+                    "field4": {
+                        "title": "Labelling scheme(s)",
+                        "description": "labeling scheme(s)",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field5": {
+                        "title": "Last registration date",
+                        "description": "Last registration date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field6": {
+                        "title": "Production Period Start Date",
+                        "description": "Production Period Start Date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field7": {
+                        "title": "Total kWh Produced in this period",
+                        "description": "Total kWh Produced in this period",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "number"
+                    },
+                    "field8": {
+                        "title": "Production Period End Date",
+                        "description": "Production Period End Date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field9": {
+                        "title": "Percentage of eligible total applied for",
+                        "description": "Percentage of eligible total applied for",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "integer"
+                    },
+                    "field10": {
+                        "title": "Type a: Settlement Metering data",
+                        "description": "Type a: Settlement Metering data",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field11": {
+                        "title": "Type b: Non-settlement Metering data",
+                        "description": "Type b: Non-settlement Metering data",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field12": {
+                        "title": "Type c: Measured Volume Transfer documentation",
+                        "description": "Type c: Measured Volume Transfer documentation",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field13": {
+                        "title": "Type d: Other",
+                        "description": "Type d: Other",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field14": {
+                        "title": "Is the production of this electricity counted towards a national, sub-national or regulatory target?",
+                        "description": "Is the production of this electricity counted towards a national, sub-national or regulatory target?",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field14\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "boolean"
+                    },
+                    "field15": {
+                        "title": "Is any of this production subject to a public consumption obligation?",
+                        "description": "Is any of this production subject to a public consumption obligation?",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field15\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "boolean"
+                    },
+                    "field16": {
+                        "title": "Do you retain the right to obtain emissions reduction certificates or carbon offsets for the energy nominated in this Issue Request?",
+                        "description": "Do you retain the right to obtain emissions reduction certificates or carbon offsets for the energy nominated in this Issue Request?",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field16\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "boolean"
+                    },
+                    "field17": {
+                        "title": "I-REC Participant name",
+                        "description": "I-REC Participant name",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field17\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field18": {
+                        "title": "Account number",
+                        "description": "Account number",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field18\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "policyId": {
+                        "title": "policyId",
+                        "description": "policyId",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "ref": {
+                        "title": "ref",
+                        "description": "ref",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "@context",
+                    "type",
+                    "field2",
+                    "field3",
+                    "field6",
+                    "field7",
+                    "field8",
+                    "field17",
+                    "field18",
+                    "policyId"
+                ],
+                "additionalProperties": false,
+                "$defs": {
+                    "#74a38111-b583-47c3-93b9-e453132ecbb5": {
+                        "$id": "#74a38111-b583-47c3-93b9-e453132ecbb5",
+                        "$comment": "{\"term\": \"74a38111-b583-47c3-93b9-e453132ecbb5\", \"@id\": \"https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#74a38111-b583-47c3-93b9-e453132ecbb5\"}",
+                        "title": "Contact Details",
+                        "description": "Contact Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Organization Name",
+                                "description": "Organization Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address line 1",
+                                "description": "Address line 1",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Address line 2",
+                                "description": "Address line 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Address line 3",
+                                "description": "Address line 3",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Contact person",
+                                "description": "Contact person",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "e-mail",
+                                "description": "e-mail",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "field8": {
+                                "title": "Telephone",
+                                "description": "Telephone",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "Fax",
+                                "description": "Fax",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field10": {
+                                "title": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "description": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#11496321-dbb9-423c-ba00-883983e0859f": {
+                        "$id": "#11496321-dbb9-423c-ba00-883983e0859f",
+                        "$comment": "{\"term\": \"11496321-dbb9-423c-ba00-883983e0859f\", \"@id\": \"https://ipfs.io/ipfs/bafkreibfmmst6ivkxzdcpmxf75lmtlhewgniohcexyhnbdqzg3lbnsgmte#11496321-dbb9-423c-ba00-883983e0859f\"}",
+                        "title": "Production Device",
+                        "description": "Production Device",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Device Name",
+                                "description": "Device Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address",
+                                "description": "Address",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Longitude",
+                                "description": "Longitude",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Latitude",
+                                "description": "Latitude",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "TSO’s ID for measurement point",
+                                "description": "TSO’s ID for measurement point",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "Installed capacity (kW)",
+                                "description": "Installed capacity (kW)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "number"
+                            },
+                            "field8": {
+                                "title": "Number of generating units",
+                                "description": "Number of generating units",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "integer"
+                            },
+                            "field9": {
+                                "title": "Date of commissioning",
+                                "description": "Date of commissioning",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "field10": {
+                                "title": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                "description": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field11": {
+                                "title": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                "description": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field12": {
+                                "title": "Expected form of volume evidence",
+                                "description": "Expected form of volume evidence",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field13": {
+                                "title": "If other please specify",
+                                "description": "If other please specify",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "74a38111-b583-47c3-93b9-e453132ecbb5": {
+                        "@id": "https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#74a38111-b583-47c3-93b9-e453132ecbb5",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "11496321-dbb9-423c-ba00-883983e0859f": {
+                        "@id": "https://ipfs.io/ipfs/bafkreibfmmst6ivkxzdcpmxf75lmtlhewgniohcexyhnbdqzg3lbnsgmte#11496321-dbb9-423c-ba00-883983e0859f",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field13": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "7cf248b0-7f04-40df-ac1f-46903f07123b&1.0.0": {
+                        "@id": "https://ipfs.io/ipfs/bafkreihyzgmwkeaizxlvwc7kvvj2l7xjaajp6gnaejx7gvqumtsmc3o2he#7cf248b0-7f04-40df-ac1f-46903f07123b&1.0.0",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field13": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field14": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field15": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field16": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field17": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field18": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "policyId": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "ref": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://ipfs.io/ipfs/bafkreigvosme6ktbnfrbjcmttddtqqvvjzvoxjiakum4ahxuq3s4owswgq#74a38111-b583-47c3-93b9-e453132ecbb5"
+                            },
+                            "field3": {
+                                "@id": "https://ipfs.io/ipfs/bafkreigvosme6ktbnfrbjcmttddtqqvvjzvoxjiakum4ahxuq3s4owswgq#11496321-dbb9-423c-ba00-883983e0859f"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": "did:hedera:testnet:DxUh34RvLVnepXjKmQK9q46remcasWfxtSaj3BcwbCGG;hedera:testnet:tid=0.0.34895921",
+            "owner": "did:hedera:testnet:DxUh34RvLVnepXjKmQK9q46remcasWfxtSaj3BcwbCGG;hedera:testnet:tid=0.0.34895921",
+            "topicId": "0.0.34904155",
+            "messageId": "1653417831.371325000",
+            "documentURL": "https://ipfs.io/ipfs/bafkreie2o56rs5zgwnw3z6effsgiotgeelsnrhzrhofpf2vejd6b2b5pjy",
+            "contextURL": "https://ipfs.io/ipfs/bafkreia47khrdqlcstlf6rxfcnaou7v4bjyswqn7kj2vm3gfuci5ivmdla",
+            "iri": "#7cf248b0-7f04-40df-ac1f-46903f07123b&1.0.0",
+            "createDate": "2022-05-24T18:43:30.919Z",
+            "category": "USER"
+        },
+        {
+            "id": "628fad54b51d44b0198a30d2",
+            "uuid": "1af5b61a-7f1f-410e-87cc-a3c74823d74e",
+            "hash": "",
+            "name": "I-REC Registrant & Participant App",
+            "description": "I-REC Registrant & Participant App",
+            "entity": "VC",
+            "status": "PUBLISHED",
+            "readonly": false,
+            "document": {
+                "$id": "#1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0",
+                "$comment": "{\"term\": \"1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0\", \"@id\": \"https://ipfs.io/ipfs/bafkreiejsgxjj4ntamvgattviac5vtf5rtpvnvmojk444lyawutwsfnvwi#1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0\"}",
+                "title": "I-REC Registrant & Participant App",
+                "description": "I-REC Registrant & Participant App",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "field0": {
+                        "title": "Date",
+                        "description": "Date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field1": {
+                        "title": "Applicant Details",
+                        "description": "Applicant Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field1\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#689e077b-07b6-40af-8fe9-0228ab4b94a4\"}",
+                        "$ref": "#689e077b-07b6-40af-8fe9-0228ab4b94a4"
+                    },
+                    "field2": {
+                        "title": "Primary Contact Details",
+                        "description": "Primary Contact Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field2\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#7a022a66-7912-46e8-b634-a636a08bbb19\"}",
+                        "$ref": "#7a022a66-7912-46e8-b634-a636a08bbb19"
+                    },
+                    "field3": {
+                        "title": "Lead User Details\t",
+                        "description": "Lead User Details\t",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field3\", \"@id\": \"https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#40e734f4-befb-4962-bef4-cce68932f35d\"}",
+                        "$ref": "#40e734f4-befb-4962-bef4-cce68932f35d"
+                    },
+                    "policyId": {
+                        "title": "policyId",
+                        "description": "policyId",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "ref": {
+                        "title": "ref",
+                        "description": "ref",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "@context",
+                    "type",
+                    "field1",
+                    "field2",
+                    "field3",
+                    "policyId"
+                ],
+                "additionalProperties": false,
+                "$defs": {
+                    "#689e077b-07b6-40af-8fe9-0228ab4b94a4": {
+                        "$id": "#689e077b-07b6-40af-8fe9-0228ab4b94a4",
+                        "$comment": "{\"term\": \"689e077b-07b6-40af-8fe9-0228ab4b94a4\", \"@id\": \"https://ipfs.io/ipfs/bafkreihe55hxacf32sxuybe3s3otblhfs3y5qlk3lccjvksh7kncwf6ura#689e077b-07b6-40af-8fe9-0228ab4b94a4\"}",
+                        "title": "Applicant Details",
+                        "description": " Applicant Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Applicant Legal Name",
+                                "description": "Applicant Legal Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Registered address line 1",
+                                "description": "Registered address line 1",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Registered address line 2",
+                                "description": "Registered address line 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Registered address line 3",
+                                "description": "Registered address line 3",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Postal (ZIP) code",
+                                "description": "Postal (ZIP) code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Legal Status",
+                                "description": "Legal Status",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "Country of company registration/private residence",
+                                "description": "Country of company registration/private residence",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field8": {
+                                "title": "Corporate registration number/passport number",
+                                "description": "Corporate registration number/passport number",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "VAT number",
+                                "description": "VAT number",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field10": {
+                                "title": "Website URL",
+                                "description": "Website URL",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field11": {
+                                "title": "Main business (e.g. food retailer)",
+                                "description": "Main business (e.g. food retailer)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field12": {
+                                "title": "Year of registration",
+                                "description": "Year of registration",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "integer"
+                            },
+                            "field13": {
+                                "title": "Approximate number of employees",
+                                "description": "Approximate number of employees",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "integer"
+                            },
+                            "field14": {
+                                "title": "Name of the Chief Executive Officer/General Manager",
+                                "description": "Name of the Chief Executive Officer/General Manager",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field14\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field15": {
+                                "title": "Chief Executive Officer/General Manager passport number",
+                                "description": "Chief Executive Officer/General Manager passport number",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field15\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field16": {
+                                "title": "Please state in which countries the organization is active",
+                                "description": "Please state in which countries the organization is active",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field16\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field17": {
+                                "title": "Please list the main (>10%) shareholders ",
+                                "description": "Please list the main (>10%) shareholders ",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field17\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field18": {
+                                "title": "Balance sheet total for last financial year (in USD)",
+                                "description": "Balance sheet total for last financial year (in USD)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field18\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "number"
+                            },
+                            "field19": {
+                                "title": "Email address for Accounts Department",
+                                "description": "Email address for Accounts Department",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field19\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#7a022a66-7912-46e8-b634-a636a08bbb19": {
+                        "$id": "#7a022a66-7912-46e8-b634-a636a08bbb19",
+                        "$comment": "{\"term\": \"7a022a66-7912-46e8-b634-a636a08bbb19\", \"@id\": \"https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#7a022a66-7912-46e8-b634-a636a08bbb19\"}",
+                        "title": "Contact Details",
+                        "description": "Contact Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Organization Name",
+                                "description": "Organization Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address line 1",
+                                "description": "Address line 1",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Address line 2",
+                                "description": "Address line 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Address line 3",
+                                "description": "Address line 3",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Contact person",
+                                "description": "Contact person",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "e-mail",
+                                "description": "e-mail",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "field8": {
+                                "title": "Telephone",
+                                "description": "Telephone",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "Fax",
+                                "description": "Fax",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field10": {
+                                "title": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "description": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#40e734f4-befb-4962-bef4-cce68932f35d": {
+                        "$id": "#40e734f4-befb-4962-bef4-cce68932f35d",
+                        "$comment": "{\"term\": \"40e734f4-befb-4962-bef4-cce68932f35d\", \"@id\": \"https://ipfs.io/ipfs/bafkreicwhwmdbu4r3zv3cfifbb47dd7y5bf7l6qzycf66ll6pskk2r7gyq#40e734f4-befb-4962-bef4-cce68932f35d\"}",
+                        "title": "Lead User Details",
+                        "description": "Lead User Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Family Name (surname)",
+                                "description": "Family Name (surname)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Other (Given) Names",
+                                "description": "Other (Given) Names",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Title",
+                                "description": "Title",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "e-mail",
+                                "description": "e-mail",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "field4": {
+                                "title": "Telephone",
+                                "description": "Telephone",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Fax",
+                                "description": "Fax",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "689e077b-07b6-40af-8fe9-0228ab4b94a4": {
+                        "@id": "https://ipfs.io/ipfs/bafkreihe55hxacf32sxuybe3s3otblhfs3y5qlk3lccjvksh7kncwf6ura#689e077b-07b6-40af-8fe9-0228ab4b94a4",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field13": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field14": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field15": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field16": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field17": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field18": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field19": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "7a022a66-7912-46e8-b634-a636a08bbb19": {
+                        "@id": "https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#7a022a66-7912-46e8-b634-a636a08bbb19",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "40e734f4-befb-4962-bef4-cce68932f35d": {
+                        "@id": "https://ipfs.io/ipfs/bafkreicwhwmdbu4r3zv3cfifbb47dd7y5bf7l6qzycf66ll6pskk2r7gyq#40e734f4-befb-4962-bef4-cce68932f35d",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0": {
+                        "@id": "https://ipfs.io/ipfs/bafkreiejsgxjj4ntamvgattviac5vtf5rtpvnvmojk444lyawutwsfnvwi#1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "policyId": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "ref": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#689e077b-07b6-40af-8fe9-0228ab4b94a4"
+                            },
+                            "field2": {
+                                "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#7a022a66-7912-46e8-b634-a636a08bbb19"
+                            },
+                            "field3": {
+                                "@id": "https://ipfs.io/ipfs/bafkreihxsmllnneje7shxerizd4nmjj3mg4mexaskixzkskqpdsksyd6qe#40e734f4-befb-4962-bef4-cce68932f35d"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+            "owner": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+            "topicId": "0.0.34920819",
+            "messageId": "1653583202.782128916",
+            "documentURL": "https://ipfs.io/ipfs/bafkreib2rt6ud4dhkurf7auoa7bpihz42k65vqb43vhnhd5ibr2sh3h4h4",
+            "contextURL": "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri",
+            "iri": "#1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0",
+            "createDate": "2022-05-26T16:39:48.593Z",
+            "category": "USER"
+        },
+        {
+            "id": "628fad56b51d44b0198a30d3",
+            "uuid": "7fcd8807-0450-4eab-8ba5-d35b4cce48ba",
+            "hash": "",
+            "name": "I-REC Facility & Device Reg",
+            "description": "I-REC Facility & Device Reg",
+            "entity": "VC",
+            "status": "PUBLISHED",
+            "readonly": false,
+            "document": {
+                "$id": "#7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0",
+                "$comment": "{\"term\": \"7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0\", \"@id\": \"https://ipfs.io/ipfs/bafkreiarfdavk3bq23pay336sekvlhalvklot2egjenotiy5cigc37xhzy#7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0\"}",
+                "title": "I-REC Facility & Device Reg",
+                "description": "I-REC Facility & Device Reg",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "field0": {
+                        "title": "Registrant Id",
+                        "description": "Registrant Id",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field1": {
+                        "title": "Date",
+                        "description": "Date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field2": {
+                        "title": "Is the Registrant also the owner of the Device? (provide evidence) ",
+                        "description": "Is the Registrant also the owner of the Device? (provide evidence) ",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field3": {
+                        "title": "Registrant Details",
+                        "description": "Registrant Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field3\", \"@id\": \"https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#7a022a66-7912-46e8-b634-a636a08bbb19\"}",
+                        "$ref": "#7a022a66-7912-46e8-b634-a636a08bbb19"
+                    },
+                    "field4": {
+                        "title": "Production Device Details",
+                        "description": "Production Device Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field4\", \"@id\": \"https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#45abb4cb-7503-4ac4-9d31-44c468d64741\"}",
+                        "$ref": "#45abb4cb-7503-4ac4-9d31-44c468d64741"
+                    },
+                    "field5": {
+                        "title": "Energy Sources",
+                        "description": "Energy Sources",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field5\", \"@id\": \"https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#a68191f7-7b10-486e-b3f2-19ab2aa41742\"}",
+                        "$ref": "#a68191f7-7b10-486e-b3f2-19ab2aa41742"
+                    },
+                    "policyId": {
+                        "title": "policyId",
+                        "description": "policyId",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "ref": {
+                        "title": "ref",
+                        "description": "ref",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "@context",
+                    "type",
+                    "field3",
+                    "field4",
+                    "field5",
+                    "policyId"
+                ],
+                "additionalProperties": false,
+                "$defs": {
+                    "#7a022a66-7912-46e8-b634-a636a08bbb19": {
+                        "$id": "#7a022a66-7912-46e8-b634-a636a08bbb19",
+                        "$comment": "{\"term\": \"7a022a66-7912-46e8-b634-a636a08bbb19\", \"@id\": \"https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#7a022a66-7912-46e8-b634-a636a08bbb19\"}",
+                        "title": "Contact Details",
+                        "description": "Contact Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Organization Name",
+                                "description": "Organization Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address line 1",
+                                "description": "Address line 1",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Address line 2",
+                                "description": "Address line 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Address line 3",
+                                "description": "Address line 3",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Contact person",
+                                "description": "Contact person",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "e-mail",
+                                "description": "e-mail",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "field8": {
+                                "title": "Telephone",
+                                "description": "Telephone",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "Fax",
+                                "description": "Fax",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field10": {
+                                "title": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "description": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#45abb4cb-7503-4ac4-9d31-44c468d64741": {
+                        "$id": "#45abb4cb-7503-4ac4-9d31-44c468d64741",
+                        "$comment": "{\"term\": \"45abb4cb-7503-4ac4-9d31-44c468d64741\", \"@id\": \"https://ipfs.io/ipfs/bafkreibfmmst6ivkxzdcpmxf75lmtlhewgniohcexyhnbdqzg3lbnsgmte#45abb4cb-7503-4ac4-9d31-44c468d64741\"}",
+                        "title": "Production Device",
+                        "description": "Production Device",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Device Name",
+                                "description": "Device Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address",
+                                "description": "Address",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Longitude",
+                                "description": "Longitude",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Latitude",
+                                "description": "Latitude",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "TSO’s ID for measurement point",
+                                "description": "TSO’s ID for measurement point",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "Installed capacity (kW)",
+                                "description": "Installed capacity (kW)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "number"
+                            },
+                            "field8": {
+                                "title": "Number of generating units",
+                                "description": "Number of generating units",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "integer"
+                            },
+                            "field9": {
+                                "title": "Date of commissioning",
+                                "description": "Date of commissioning",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "field10": {
+                                "title": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                "description": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field11": {
+                                "title": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                "description": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field12": {
+                                "title": "Expected form of volume evidence",
+                                "description": "Expected form of volume evidence",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field13": {
+                                "title": "If other please specify",
+                                "description": "If other please specify",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#a68191f7-7b10-486e-b3f2-19ab2aa41742": {
+                        "$id": "#a68191f7-7b10-486e-b3f2-19ab2aa41742",
+                        "$comment": "{\"term\": \"a68191f7-7b10-486e-b3f2-19ab2aa41742\", \"@id\": \"https://ipfs.io/ipfs/bafkreicdymqudwen65zkey2eoirbvkbszcs75yr3b6x52zihmdro6dbmlm#a68191f7-7b10-486e-b3f2-19ab2aa41742\"}",
+                        "title": "Energy Sources",
+                        "description": "Energy Sources",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Energy Source (Input) – see Appendix 2",
+                                "description": "Energy Source (Input) – see Appendix 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Technology – see Appendix 2",
+                                "description": "Technology – see Appendix 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "On-site consumer present?",
+                                "description": "On-site consumer present?",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "boolean"
+                            },
+                            "field3": {
+                                "title": "If yes give details",
+                                "description": "If yes give details",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Auxiliary/standby energy sources present?",
+                                "description": "Auxiliary/standby energy sources present?",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "boolean"
+                            },
+                            "field5": {
+                                "title": "If yes give details",
+                                "description": "If yes give details",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Please give details of how the site can import electricity by means other than through the meter(s) specified above",
+                                "description": "Please give details of how the site can import electricity by means other than through the meter(s) specified above",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
+                                "description": "Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field8": {
+                                "title": "Please identify any labeling schemes for which the Device is accredited",
+                                "description": "Please identify any labeling schemes for which the Device is accredited",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "Has the Device ever received public (government) funding (e.g. Feed in Tariff)?",
+                                "description": "Has the Device ever received public (government) funding (e.g. Feed in Tariff)?",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "boolean"
+                            },
+                            "field10": {
+                                "title": "If public (government) funding has been received when did/will it finish?",
+                                "description": "If public (government) funding has been received when did/will it finish?",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field11": {
+                                "title": "Requested effective date of registration (no earlier than 12 months prior to submitting this form)",
+                                "description": "Requested effective date of registration (no earlier than 12 months prior to submitting this form)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "field12": {
+                                "title": "Preferred I-REC Device Verifier",
+                                "description": "Preferred I-REC Device Verifier",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "7a022a66-7912-46e8-b634-a636a08bbb19": {
+                        "@id": "https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#7a022a66-7912-46e8-b634-a636a08bbb19",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "45abb4cb-7503-4ac4-9d31-44c468d64741": {
+                        "@id": "https://ipfs.io/ipfs/bafkreibfmmst6ivkxzdcpmxf75lmtlhewgniohcexyhnbdqzg3lbnsgmte#45abb4cb-7503-4ac4-9d31-44c468d64741",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field13": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "a68191f7-7b10-486e-b3f2-19ab2aa41742": {
+                        "@id": "https://ipfs.io/ipfs/bafkreicdymqudwen65zkey2eoirbvkbszcs75yr3b6x52zihmdro6dbmlm#a68191f7-7b10-486e-b3f2-19ab2aa41742",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0": {
+                        "@id": "https://ipfs.io/ipfs/bafkreiarfdavk3bq23pay336sekvlhalvklot2egjenotiy5cigc37xhzy#7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "policyId": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "ref": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#7a022a66-7912-46e8-b634-a636a08bbb19"
+                            },
+                            "field4": {
+                                "@id": "https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#45abb4cb-7503-4ac4-9d31-44c468d64741"
+                            },
+                            "field5": {
+                                "@id": "https://ipfs.io/ipfs/bafkreie567lxme4xxcz7gjyyj7lk2jhf3oa5hnbukqctyjjx42y2pfrqx4#a68191f7-7b10-486e-b3f2-19ab2aa41742"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+            "owner": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+            "topicId": "0.0.34920819",
+            "messageId": "1653583208.436214000",
+            "documentURL": "https://ipfs.io/ipfs/bafkreicwqzpahxtokrrorefcf555fqcmmncssie4gifreozeedmw4kq5aa",
+            "contextURL": "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda",
+            "iri": "#7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0",
+            "createDate": "2022-05-26T16:39:50.767Z",
+            "category": "USER"
+        },
+        {
+            "id": "628fad58b51d44b0198a30d4",
+            "uuid": "43c55ee0-6a1e-4d33-8bbf-710b1b4749be",
+            "hash": "",
+            "name": "I-REC Issue Request",
+            "description": "I-REC Issue Request",
+            "entity": "VC",
+            "status": "PUBLISHED",
+            "readonly": false,
+            "document": {
+                "$id": "#43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0",
+                "$comment": "{\"term\": \"43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0\", \"@id\": \"https://ipfs.io/ipfs/bafkreihyzgmwkeaizxlvwc7kvvj2l7xjaajp6gnaejx7gvqumtsmc3o2he#43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0\"}",
+                "title": "I-REC Issue Request",
+                "description": "I-REC Issue Request",
+                "type": "object",
+                "properties": {
+                    "@context": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "type": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "field0": {
+                        "title": "Registrant Id",
+                        "description": "Registrant Id",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field1": {
+                        "title": "Production Device/Production Group Id",
+                        "description": "Production Device/Production Group Id",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field2": {
+                        "title": "Registrant Details",
+                        "description": "Registrant Details",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field2\", \"@id\": \"https://ipfs.io/ipfs/bafkreigvosme6ktbnfrbjcmttddtqqvvjzvoxjiakum4ahxuq3s4owswgq#7a022a66-7912-46e8-b634-a636a08bbb19\"}",
+                        "$ref": "#7a022a66-7912-46e8-b634-a636a08bbb19"
+                    },
+                    "field3": {
+                        "title": "Production Device/Production Group",
+                        "description": "Production Device/Production Group",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field3\", \"@id\": \"https://ipfs.io/ipfs/bafkreigvosme6ktbnfrbjcmttddtqqvvjzvoxjiakum4ahxuq3s4owswgq#45abb4cb-7503-4ac4-9d31-44c468d64741\"}",
+                        "$ref": "#45abb4cb-7503-4ac4-9d31-44c468d64741"
+                    },
+                    "field4": {
+                        "title": "Labelling scheme(s)",
+                        "description": "labeling scheme(s)",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field5": {
+                        "title": "Last registration date",
+                        "description": "Last registration date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field6": {
+                        "title": "Production Period Start Date",
+                        "description": "Production Period Start Date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field7": {
+                        "title": "Total kWh Produced in this period",
+                        "description": "Total kWh Produced in this period",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "number"
+                    },
+                    "field8": {
+                        "title": "Production Period End Date",
+                        "description": "Production Period End Date",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "field9": {
+                        "title": "Percentage of eligible total applied for",
+                        "description": "Percentage of eligible total applied for",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "integer"
+                    },
+                    "field10": {
+                        "title": "Type a: Settlement Metering data",
+                        "description": "Type a: Settlement Metering data",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field11": {
+                        "title": "Type b: Non-settlement Metering data",
+                        "description": "Type b: Non-settlement Metering data",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field12": {
+                        "title": "Type c: Measured Volume Transfer documentation",
+                        "description": "Type c: Measured Volume Transfer documentation",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field13": {
+                        "title": "Type d: Other",
+                        "description": "Type d: Other",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field14": {
+                        "title": "Is the production of this electricity counted towards a national, sub-national or regulatory target?",
+                        "description": "Is the production of this electricity counted towards a national, sub-national or regulatory target?",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field14\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "boolean"
+                    },
+                    "field15": {
+                        "title": "Is any of this production subject to a public consumption obligation?",
+                        "description": "Is any of this production subject to a public consumption obligation?",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field15\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "boolean"
+                    },
+                    "field16": {
+                        "title": "Do you retain the right to obtain emissions reduction certificates or carbon offsets for the energy nominated in this Issue Request?",
+                        "description": "Do you retain the right to obtain emissions reduction certificates or carbon offsets for the energy nominated in this Issue Request?",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field16\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "boolean"
+                    },
+                    "field17": {
+                        "title": "I-REC Participant name",
+                        "description": "I-REC Participant name",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field17\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "field18": {
+                        "title": "Account number",
+                        "description": "Account number",
+                        "readOnly": false,
+                        "$comment": "{\"term\": \"field18\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "policyId": {
+                        "title": "policyId",
+                        "description": "policyId",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"policyId\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    },
+                    "ref": {
+                        "title": "ref",
+                        "description": "ref",
+                        "readOnly": true,
+                        "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "@context",
+                    "type",
+                    "field2",
+                    "field3",
+                    "field6",
+                    "field7",
+                    "field8",
+                    "field17",
+                    "field18",
+                    "policyId"
+                ],
+                "additionalProperties": false,
+                "$defs": {
+                    "#7a022a66-7912-46e8-b634-a636a08bbb19": {
+                        "$id": "#7a022a66-7912-46e8-b634-a636a08bbb19",
+                        "$comment": "{\"term\": \"7a022a66-7912-46e8-b634-a636a08bbb19\", \"@id\": \"https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#7a022a66-7912-46e8-b634-a636a08bbb19\"}",
+                        "title": "Contact Details",
+                        "description": "Contact Details",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Organization Name",
+                                "description": "Organization Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address line 1",
+                                "description": "Address line 1",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Address line 2",
+                                "description": "Address line 2",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Address line 3",
+                                "description": "Address line 3",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "Contact person",
+                                "description": "Contact person",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "e-mail",
+                                "description": "e-mail",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "field8": {
+                                "title": "Telephone",
+                                "description": "Telephone",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field9": {
+                                "title": "Fax",
+                                "description": "Fax",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field10": {
+                                "title": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "description": "Existing I-REC Registry organization(s) to become subsidiary",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "#45abb4cb-7503-4ac4-9d31-44c468d64741": {
+                        "$id": "#45abb4cb-7503-4ac4-9d31-44c468d64741",
+                        "$comment": "{\"term\": \"45abb4cb-7503-4ac4-9d31-44c468d64741\", \"@id\": \"https://ipfs.io/ipfs/bafkreibfmmst6ivkxzdcpmxf75lmtlhewgniohcexyhnbdqzg3lbnsgmte#45abb4cb-7503-4ac4-9d31-44c468d64741\"}",
+                        "title": "Production Device",
+                        "description": "Production Device",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "field0": {
+                                "title": "Device Name",
+                                "description": "Device Name",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field0\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field1": {
+                                "title": "Address",
+                                "description": "Address",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field1\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field2": {
+                                "title": "Postal code",
+                                "description": "Postal code",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field2\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field3": {
+                                "title": "Country",
+                                "description": "Country",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field3\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field4": {
+                                "title": "Longitude",
+                                "description": "Longitude",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field4\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field5": {
+                                "title": "Latitude",
+                                "description": "Latitude",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field5\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field6": {
+                                "title": "TSO’s ID for measurement point",
+                                "description": "TSO’s ID for measurement point",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field6\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field7": {
+                                "title": "Installed capacity (kW)",
+                                "description": "Installed capacity (kW)",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field7\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "number"
+                            },
+                            "field8": {
+                                "title": "Number of generating units",
+                                "description": "Number of generating units",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field8\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "integer"
+                            },
+                            "field9": {
+                                "title": "Date of commissioning",
+                                "description": "Date of commissioning",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field9\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "field10": {
+                                "title": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                "description": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field10\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field11": {
+                                "title": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                "description": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field11\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field12": {
+                                "title": "Expected form of volume evidence",
+                                "description": "Expected form of volume evidence",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field12\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            },
+                            "field13": {
+                                "title": "If other please specify",
+                                "description": "If other please specify",
+                                "readOnly": false,
+                                "$comment": "{\"term\": \"field13\", \"@id\": \"https://www.schema.org/text\"}",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "context": {
+                "@context": {
+                    "@version": 1.1,
+                    "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+                    "id": "@id",
+                    "type": "@type",
+                    "7a022a66-7912-46e8-b634-a636a08bbb19": {
+                        "@id": "https://ipfs.io/ipfs/bafkreidwms3pistbvq472d3zkhpll7eth7azpwmftour4xmzrntvibhk2u#7a022a66-7912-46e8-b634-a636a08bbb19",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "45abb4cb-7503-4ac4-9d31-44c468d64741": {
+                        "@id": "https://ipfs.io/ipfs/bafkreibfmmst6ivkxzdcpmxf75lmtlhewgniohcexyhnbdqzg3lbnsgmte#45abb4cb-7503-4ac4-9d31-44c468d64741",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field3": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field13": {
+                                "@id": "https://www.schema.org/text"
+                            }
+                        }
+                    },
+                    "43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0": {
+                        "@id": "https://ipfs.io/ipfs/bafkreihyzgmwkeaizxlvwc7kvvj2l7xjaajp6gnaejx7gvqumtsmc3o2he#43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0",
+                        "@context": {
+                            "field0": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field1": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field4": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field5": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field6": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field7": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field8": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field9": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field10": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field11": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field12": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field13": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field14": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field15": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field16": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field17": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field18": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "policyId": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "ref": {
+                                "@id": "https://www.schema.org/text"
+                            },
+                            "field2": {
+                                "@id": "https://ipfs.io/ipfs/bafkreigvosme6ktbnfrbjcmttddtqqvvjzvoxjiakum4ahxuq3s4owswgq#7a022a66-7912-46e8-b634-a636a08bbb19"
+                            },
+                            "field3": {
+                                "@id": "https://ipfs.io/ipfs/bafkreigvosme6ktbnfrbjcmttddtqqvvjzvoxjiakum4ahxuq3s4owswgq#45abb4cb-7503-4ac4-9d31-44c468d64741"
+                            }
+                        }
+                    }
+                }
+            },
+            "version": "1.0.0",
+            "creator": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+            "owner": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+            "topicId": "0.0.34920819",
+            "messageId": "1653583213.755742489",
+            "documentURL": "https://ipfs.io/ipfs/bafkreic7wli3enjozefcs2556j7ru74ba73sooufkalzqna6beojhghcy4",
+            "contextURL": "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi",
+            "iri": "#43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0",
+            "createDate": "2022-05-26T16:39:52.946Z",
+            "category": "USER"
+        }
+    ],
+    "data": {
+        "vpDocument": {
+            "type": "VP",
+            "title": "Verified Presentation",
+            "tag": "mint_token",
+            "hash": "GChWHiV7Ef1e6Gec9dLjcVHVkn2SCxceBQbSndwMmL91",
+            "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+            "username": "ikapqhvd",
+            "document": {
+                "id": "628fae64b51d44b0198a30e7",
+                "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                "hash": "GChWHiV7Ef1e6Gec9dLjcVHVkn2SCxceBQbSndwMmL91",
+                "document": {
+                    "id": "90c00f1d-aae7-4a60-a0f3-907da02f30a1",
+                    "type": [
+                        "VerifiablePresentation"
+                    ],
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1"
+                    ],
+                    "verifiableCredential": [
+                        {
+                            "id": "dca9415a-505e-4050-b524-b2bea0eba1f6",
+                            "type": [
+                                "VerifiableCredential"
+                            ],
+                            "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                            "issuanceDate": "2022-05-26T16:44:08.941Z",
+                            "@context": [
+                                "https://www.w3.org/2018/credentials/v1"
+                            ],
+                            "credentialSubject": [
+                                {
+                                    "field0": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                    "field1": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                    "field2": {
+                                        "type": "7a022a66-7912-46e8-b634-a636a08bbb19",
+                                        "@context": [
+                                            "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                        ],
+                                        "field0": "Organization Name",
+                                        "field1": "Address line 1",
+                                        "field2": "Address line 2",
+                                        "field3": "Address line 3",
+                                        "field4": "Postal code",
+                                        "field5": "Country",
+                                        "field6": "Contact person",
+                                        "field7": "email@email.com",
+                                        "field8": "123456789",
+                                        "field9": "Fax",
+                                        "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                                    },
+                                    "field3": {
+                                        "type": "45abb4cb-7503-4ac4-9d31-44c468d64741",
+                                        "@context": [
+                                            "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                        ],
+                                        "field0": "Device Name",
+                                        "field1": "Address",
+                                        "field2": "Postal code",
+                                        "field3": "Country",
+                                        "field4": "Longitude",
+                                        "field5": "Latitude",
+                                        "field6": "TSO’s ID for measurement point",
+                                        "field7": 1,
+                                        "field8": 1,
+                                        "field9": "2022-05-11",
+                                        "field10": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                        "field11": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                        "field12": "Expected form of volume evidence",
+                                        "field13": "If other please specify"
+                                    },
+                                    "field4": "labeling scheme(s)",
+                                    "field5": "2022-05-01",
+                                    "field6": "2022-05-01",
+                                    "field7": 1,
+                                    "field8": "2022-05-31",
+                                    "field9": 1,
+                                    "field10": "Type a: Settlement Metering data",
+                                    "field11": "Type b: Non-settlement Metering data",
+                                    "field12": "Type c: Measured Volume Transfer documentation",
+                                    "field13": "Type d: Other",
+                                    "field14": true,
+                                    "field15": true,
+                                    "field16": true,
+                                    "field17": "ikapqhvd",
+                                    "field18": "0.0.34920818",
+                                    "policyId": "628fad58b51d44b0198a30d5",
+                                    "ref": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                    ],
+                                    "id": "a91c0d59-94cd-47fd-8e20-6dec9217c404",
+                                    "type": "43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0"
+                                }
+                            ],
+                            "proof": {
+                                "type": "Ed25519Signature2018",
+                                "created": "2022-05-26T16:44:08Z",
+                                "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                                "proofPurpose": "assertionMethod",
+                                "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..nekiIoY2eGxrMWsEK272nKGeQihC84N_3Ne1EqS0RZ87CfBp-LSwBvxrArvgBYEVWqeVMiURjWq4d43eM-sCCg"
+                            }
+                        },
+                        {
+                            "id": "973b16cb-ed03-48c8-ab22-6ed70d127797",
+                            "type": [
+                                "VerifiableCredential"
+                            ],
+                            "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                            "issuanceDate": "2022-05-26T16:44:12.783Z",
+                            "@context": [
+                                "https://www.w3.org/2018/credentials/v1"
+                            ],
+                            "credentialSubject": [
+                                {
+                                    "date": "2022-05-26T16:44:12.779Z",
+                                    "tokenId": "0.0.34920820",
+                                    "amount": "1",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreiaamzhmh3l5pn5nneib5yifb3gjwlotf6fr6vb65j7tfi4tefxcza"
+                                    ],
+                                    "type": "MintToken&1.0.0"
+                                }
+                            ],
+                            "proof": {
+                                "type": "Ed25519Signature2018",
+                                "created": "2022-05-26T16:44:12Z",
+                                "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                                "proofPurpose": "assertionMethod",
+                                "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..3fM9mKooHcW7GMgMmkgoXATFcRnzmpdL6y9DqZ3EtNyLvbfWVRwUiFq_nGz7R2p3AqyP7OxogiHNjIsJGRJzDA"
+                            }
+                        }
+                    ],
+                    "proof": {
+                        "type": "Ed25519Signature2018",
+                        "created": "2022-05-26T16:44:12Z",
+                        "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                        "proofPurpose": "authentication",
+                        "challenge": "123",
+                        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..K_uamuxowiPFUMD2x1NQj1akhJhCSBthrLgx71Q9v2OouIfJrhFdDF6EltDMUl64B8mjPXL-bS9kNwUcpW-HAA"
+                    }
+                },
+                "createDate": "2022-05-26T16:44:20.864Z",
+                "updateDate": "2022-05-26T16:44:20.864Z",
+                "status": "NEW",
+                "signature": 0,
+                "type": "mint",
+                "policyId": "628fad58b51d44b0198a30d5",
+                "tag": "mint_token",
+                "messageId": "1653583459.200350695",
+                "topicId": "0.0.34920825"
             }
-         },
-         "createDate":"2022-04-29T15:34:04.021Z",
-         "updateDate":"2022-04-29T15:34:04.021Z",
-         "hederaStatus":"ISSUE",
-         "signature":0,
-         "type":"registrant",
-         "policyId":"626c0490d24497fe1b1e415d",
-         "tag":"create_application(db)",
-         "option":{
-            "status":"Waiting for approval"
-         },
-         "schema":"#7b652d73-5978-45b4-992e-cc3ce732e27a&1.0.0",
-         "messageId":"1651246443.516813000",
-         "topicId":"0.0.34352381",
-         "relationships":[
-            
-         ],
-         "__sourceTag__":"registrants_source(need_approve)"
-      }
-   ],
-   "blocks":[
-      
-   ],
-   "commonAddons":[
-      {
-         "id":"c0dbe6b1-6963-4010-9dc4-c676679376dd",
-         "blockType":"documentsSourceAddon"
-      },
-      {
-         "id":"540a115b-a94e-4d16-af46-e4b817f07b98",
-         "blockType":"documentsSourceAddon"
-      }
-   ],
-   "fields":[
-      {
-         "title":"Legal Name",
-         "name":"document.credentialSubject.0.field1.field0",
-         "type":"text"
-      },
-      {
-         "title":"Organization Name",
-         "name":"document.credentialSubject.0.field2.field0",
-         "type":"text"
-      },
-      {
-         "title":"Operation",
-         "name":"option.status",
-         "type":"text",
-         "width":"250px",
-         "bindGroup":"registrants_source(approved)",
-         "action":"",
-         "url":"",
-         "dialogContent":"",
-         "dialogClass":"",
-         "dialogType":"",
-         "bindBlock":""
-      },
-      {
-         "title":"Operation",
-         "name":"option.status",
-         "tooltip":"",
-         "type":"block",
-         "action":"",
-         "url":"",
-         "dialogContent":"",
-         "dialogClass":"",
-         "dialogType":"",
-         "bindBlock":"approve_registrant_btn",
-         "width":"250px",
-         "bindGroup":"registrants_source(need_approve)"
-      },
-      {
-         "name":"document",
-         "title":"Document",
-         "tooltip":"",
-         "type":"button",
-         "action":"dialog",
-         "content":"View Document",
-         "uiClass":"link",
-         "dialogContent":"VC",
-         "dialogClass":"",
-         "dialogType":"json"
-      }
-   ]
-}
-
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### Root Authority (Approve Registrant Application)
-
-BLOCK : approve\_registrant\_btn
-
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Approving Registrant Application" %}
-{% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/7f091726-126e-4bc7-8e2e-9cd7bb220ed0
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="id" %}
-626bf6ddd24497fe1b1e413f
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="owner" %}
-did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="hash" %}
-25J2gLm7phAEFu5yyQtVa8WqjUd8pDaxX1n6CtKR91rQ
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="document" %}
-&#x20;     "id":"ebdc5776-e756-4cda-8e10-04c04adc535b",
-
-&#x20;     "type":\[
-
-&#x20;        "VerifiableCredential"
-
-&#x20;     ],
-
-&#x20;     "issuer":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;     "issuanceDate":"2022-04-29T14:31:39.500Z",
-
-&#x20;     "@context":\[
-
-&#x20;        "https://www.w3.org/2018/credentials/v1"
-
-&#x20;     ],
-
-&#x20;     "credentialSubject":\[
-
-&#x20;        {
-
-&#x20;           "field0":"2022-04-01",
-
-&#x20;           "field1":{
-
-&#x20;              "field0":"Applicant Legal Name",
-
-&#x20;              "field1":"Registered address line 1",
-
-&#x20;              "field2":"Registered address line 2",
-
-&#x20;              "field3":"Registered address line 3",
-
-&#x20;              "field4":"Postal (ZIP) code",
-
-&#x20;              "field5":"Country",
-
-&#x20;              "field6":"Legal Status",
-
-&#x20;              "field7":"Country of company registration/private residence",
-
-&#x20;              "field8":"Corporate registration number/passport number",
-
-&#x20;              "field9":"VAT number",
-
-&#x20;              "field10":"Website URL",
-
-&#x20;              "field11":"Main business (e.g. food retailer)",
-
-&#x20;              "field12":2022,
-
-&#x20;              "field13":1,
-
-&#x20;              "field14":"Name of the Chief Executive Officer/General Manager",
-
-&#x20;              "field15":"Chief Executive Officer/General Manager passport number",
-
-&#x20;              "field16":"Please state in which countries the organization is active",
-
-&#x20;              "field17":"Please list the main (>10%) shareholders",
-
-&#x20;              "field18":1,
-
-&#x20;              "field19":"test@mail.ru",
-
-&#x20;              "type":"4510d95d-ed9d-4785-a5ed-5c1e334611dd",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;              ]
-
-&#x20;           },
-
-&#x20;           "field2":{
-
-&#x20;              "field0":"Organization Name",
-
-&#x20;              "field1":"Address line 1",
-
-&#x20;              "field2":"Address line 2",
-
-&#x20;              "field3":"Address line 3",
-
-&#x20;              "field4":"Postal code",
-
-&#x20;              "field5":"Country",
-
-&#x20;              "field6":"Contact person",
-
-&#x20;              "field7":"test@mail.ru",
-
-&#x20;              "field8":"Telephone",
-
-&#x20;              "field9":"Fax",
-
-&#x20;              "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-
-&#x20;              "type":"56ce048d-8e24-4aec-b76d-802688f651e8",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;              ]
-
-&#x20;           },
-
-&#x20;           "field3":{
-
-&#x20;              "field0":"Family Name (surname)",
-
-&#x20;              "field1":"Other (Given) Names",
-
-&#x20;              "field2":"Title",
-
-&#x20;              "field3":"test@mail.ru",
-
-&#x20;              "field4":"Telephone",
-
-&#x20;              "field5":"Fax",
-
-&#x20;              "type":"fb8c1458-e86f-444a-a408-665149bda777",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;              ]
-
-&#x20;           },
-
-&#x20;           "policyId":"626bf178d24497fe1b1e4139",
-
-&#x20;           "@context":\[
-
-&#x20;              "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;           ],
-
-&#x20;           "id":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;           "type":"762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0"
-
-&#x20;        }
-
-&#x20;     ],
-
-&#x20;     "proof":{
-
-&#x20;        "type":"Ed25519Signature2018",
-
-&#x20;        "created":"2022-04-29T14:31:39Z",
-
-&#x20;        "verificationMethod":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316#did-root-key",
-
-&#x20;        "proofPurpose":"assertionMethod",
-
-&#x20;        "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..I1EzRS7Ct-CaDMaNYuMKi\_GseppZm9jtIJMZbilchmWlV7W3mNsapSSche8UzAWYfKnhwjQuwvlMr0c8HlVEBQ"
-
-&#x20;     }
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="createDate" %}
-2022-04-29T14:31:57.918Z
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="updateDate" %}
-2022-04-29T14:31:57.918Z
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="hederaStatus" %}
-ISSUE
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="signature" %}
-0
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="type" %}
-registrant
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="policyID" %}
-626bf178d24497fe1b1e4139
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="tag" %}
-create_application(db)
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="option" %}
-{
-
-&#x20;     "status":"Approved"
-
-&#x20;  },
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="schema" %}
-\#762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="messageId" %}
-1651242715.948867898
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="topidId" %}
-0.0.34350746
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="relationships" %}
-null
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="__sourceTag__" %}
-registrants_source(need_approve)
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### User (CREATE DEVICE)
-
-BLOCK : create\_device\_form
-
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Creating Device" %}
-{% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/3db29027-8753-4e7f-af40-ca31b72ce95c
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="document" %}
-"field0":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;     "field1":"2022-04-08",
-
-&#x20;     "field2":"Is the Registrant also the owner of the Device? (provide evidence)",
-
-&#x20;     "field3":{
-
-&#x20;        "field0":"Organization Name",
-
-&#x20;        "field1":"Address line 1",
-
-&#x20;        "field2":"Address line 2",
-
-&#x20;        "field3":"Address line 3",
-
-&#x20;        "field4":"Postal code",
-
-&#x20;        "field5":"Country",
-
-&#x20;        "field6":"Contact person",
-
-&#x20;        "field7":"test@mail.ru",
-
-&#x20;        "field8":"Telephone",
-
-&#x20;        "field9":"Fax",
-
-&#x20;        "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-
-&#x20;        "type":"56ce048d-8e24-4aec-b76d-802688f651e8",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "field4":{
-
-&#x20;        "field0":"Device Name",
-
-&#x20;        "field1":"Address",
-
-&#x20;        "field2":"Postal code",
-
-&#x20;        "field3":"Country",
-
-&#x20;        "field4":"Longitude",
-
-&#x20;        "field5":"Latitude",
-
-&#x20;        "field6":"TSO’s ID for measurement point",
-
-&#x20;        "field7":1,
-
-&#x20;        "field8":1,
-
-&#x20;        "field9":"2022-04-29",
-
-&#x20;        "field10":"Owner of the network to which the Production Device is connected and the voltage of that connection",
-
-&#x20;        "field11":"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
-
-&#x20;        "field12":"Expected form of volume evidence",
-
-&#x20;        "field13":"If other please specify",
-
-&#x20;        "type":"fd49e6e4-58d7-425a-9518-9a2c4a178b15",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "field5":{
-
-&#x20;        "field0":"Energy Source (Input) – see Appendix 2",
-
-&#x20;        "field1":"Technology – see Appendix 2",
-
-&#x20;        "field2":true,
-
-&#x20;        "field3":"If yes give details",
-
-&#x20;        "field4":true,
-
-&#x20;        "field5":"If yes give details",
-
-&#x20;        "field6":"Please give details of how the site can import electricity by means other than through the meter(s) specified above",
-
-&#x20;        "field7":"Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
-
-&#x20;        "field8":"Please identify any labeling schemes for which the Device is accredited",
-
-&#x20;        "field9":true,
-
-&#x20;        "field10":"If public (government) funding has been received when did/will it finish?",
-
-&#x20;        "field11":"2022-04-29",
-
-&#x20;        "field12":"Preferred I-REC Device Verifier",
-
-&#x20;        "type":"d7a15512-bb46-4826-864d-1e37bf7b321f",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "type":"4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0",
-
-&#x20;     "@context":\[
-
-&#x20;        "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;     ]
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="ref" %}
-&#x20;     "id":"626bf76ad24497fe1b1e4140",
-
-&#x20;     "owner":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;     "hash":"BQTRbH4qtRfAXWW8T7EAa5vEncnNEEnaj8CT2ax7YJBs",
-
-&#x20;     "document":{
-
-&#x20;        "id":"849228e1-4c7d-4bf4-8eb4-df1f3c24429b",
-
-&#x20;        "type":\[
-
-&#x20;           "VerifiableCredential"
-
-&#x20;        ],
-
-&#x20;        "issuer":"did:hedera:testnet:A7cP5xLNaF5LPtXkDUTsP6fATh4uarAjCujnZ3qR2vcw;hedera:testnet:tid=0.0.34349531",
-
-&#x20;        "issuanceDate":"2022-04-29T14:34:10.327Z",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://www.w3.org/2018/credentials/v1"
-
-&#x20;        ],
-
-&#x20;        "credentialSubject":\[
-
-&#x20;           {
-
-&#x20;              "field0":"2022-04-01",
-
-&#x20;              "field1":{
-
-&#x20;                 "field0":"Applicant Legal Name",
-
-&#x20;                 "field1":"Registered address line 1",
-
-&#x20;                 "field2":"Registered address line 2",
-
-&#x20;                 "field3":"Registered address line 3",
-
-&#x20;                 "field4":"Postal (ZIP) code",
-
-&#x20;                 "field5":"Country",
-
-&#x20;                 "field6":"Legal Status",
-
-&#x20;                 "field7":"Country of company registration/private residence",
-
-&#x20;                 "field8":"Corporate registration number/passport number",
-
-&#x20;                 "field9":"VAT number",
-
-&#x20;                 "field10":"Website URL",
-
-&#x20;                 "field11":"Main business (e.g. food retailer)",
-
-&#x20;                 "field12":2022,
-
-&#x20;                 "field13":1,
-
-&#x20;                 "field14":"Name of the Chief Executive Officer/General Manager",
-
-&#x20;                 "field15":"Chief Executive Officer/General Manager passport number",
-
-&#x20;                 "field16":"Please state in which countries the organization is active",
-
-&#x20;                 "field17":"Please list the main (>10%) shareholders",
-
-&#x20;                 "field18":1,
-
-&#x20;                 "field19":"test@mail.ru",
-
-&#x20;                 "type":"4510d95d-ed9d-4785-a5ed-5c1e334611dd",
-
-&#x20;                 "@context":\[
-
-&#x20;                    "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;                 ]
-
-&#x20;              },
-
-&#x20;              "field2":{
-
-&#x20;                 "field0":"Organization Name",
-
-&#x20;                 "field1":"Address line 1",
-
-&#x20;                 "field2":"Address line 2",
-
-&#x20;                 "field3":"Address line 3",
-
-&#x20;                 "field4":"Postal code",
-
-&#x20;                 "field5":"Country",
-
-&#x20;                 "field6":"Contact person",
-
-&#x20;                 "field7":"test@mail.ru",
-
-&#x20;                 "field8":"Telephone",
-
-&#x20;                 "field9":"Fax",
-
-&#x20;                 "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-
-&#x20;                 "type":"56ce048d-8e24-4aec-b76d-802688f651e8",
-
-&#x20;                 "@context":\[
-
-&#x20;                    "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;                 ]
-
-&#x20;              },
-
-&#x20;              "field3":{
-
-&#x20;                 "field0":"Family Name (surname)",
-
-&#x20;                 "field1":"Other (Given) Names",
-
-&#x20;                 "field2":"Title",
-
-&#x20;                 "field3":"test@mail.ru",
-
-&#x20;                 "field4":"Telephone",
-
-&#x20;                 "field5":"Fax",
-
-&#x20;                 "type":"fb8c1458-e86f-444a-a408-665149bda777",
-
-&#x20;                 "@context":\[
-
-&#x20;                    "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;                 ]
-
-&#x20;              },
-
-&#x20;              "policyId":"626bf178d24497fe1b1e4139",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreighh26v7eg7xsfzie674yhgz4ph3wf5yjadbec4wynyfevoshtdty"
-
-&#x20;              ],
-
-&#x20;              "id":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;              "type":"762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0"
-
-&#x20;           }
-
-&#x20;        ],
-
-&#x20;        "proof":{
-
-&#x20;           "type":"Ed25519Signature2018",
-
-&#x20;           "created":"2022-04-29T14:34:10Z",
-
-&#x20;           "verificationMethod":"did:hedera:testnet:A7cP5xLNaF5LPtXkDUTsP6fATh4uarAjCujnZ3qR2vcw;hedera:testnet:tid=0.0.34349531#did-root-key",
-
-&#x20;           "proofPurpose":"assertionMethod",
-
-&#x20;           "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..rjry6W0iAoXzRx7Upb6hxeu0LbxjuNwDULq2p4IIQsOFwY5h4zxBCOVZIGmwIJ\_xY2a0V0-pyX1xTwTUV8aPDQ"
-
-&#x20;        }
-
-&#x20;     },
-
-&#x20;     "createDate":"2022-04-29T14:34:18.048Z",
-
-&#x20;     "updateDate":"2022-04-29T14:34:18.048Z",
-
-&#x20;     "hederaStatus":"ISSUE",
-
-&#x20;     "signature":0,
-
-&#x20;     "type":"registrant(Approved)",
-
-&#x20;     "policyId":"626bf178d24497fe1b1e4139",
-
-&#x20;     "tag":"save\_copy\_application",
-
-&#x20;     "option":{
-
-&#x20;        "status":"Approved"
-
-&#x20;     },
-
-&#x20;     "schema":"#762694d6-8fbb-4377-ae3e-ef400bbc3ea5&1.0.0",
-
-&#x20;     "messageId":"1651242856.179215415",
-
-&#x20;     "topicId":"0.0.34350746",
-
-&#x20;     "relationships":\[
-
-&#x20;        "1651242715.948867898"
-
-&#x20;     ],
-
-&#x20;     "\_\_sourceTag\_\_":"current\_registrant"
-
-&#x20;  }
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### Root Authority (Get Device to Approve)
-
-#### Make GET request and get data\[i] and change option.status = “Approved”:
-
-BLOCK : approve\_devices\_grid
-
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Submitting Device for Approval" %}
-{% swagger-description %}
-/policies/626c0490d24497fe1b1e415d/blocks/2d99bfd9-38d3-4777-abda-f1ea5cecb613
-{% endswagger-description %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-   "data":[
-      {
-         "id":"626c056cd24497fe1b1e4163",
-         "owner":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-         "hash":"GkX1mNd5wxWKCdkBYC6PBGHm9jmkNzsjb9ycqcP4jgPb",
-         "document":{
-            "id":"9d537f1d-c906-4013-9ac6-c6a0fd211e4a",
-            "type":[
-               "VerifiableCredential"
-            ],
-            "issuer":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-            "issuanceDate":"2022-04-29T15:33:48.168Z",
-            "@context":[
-               "https://www.w3.org/2018/credentials/v1"
-            ],
-            "credentialSubject":[
-               {
-                  "field0":"2022-04-08",
-                  "field1":{
-                     "field0":"Applicant Legal Name",
-                     "field1":"Registered address line 1",
-                     "field2":"Registered address line 2",
-                     "field3":"Registered address line 3",
-                     "field4":"Postal (ZIP) code",
-                     "field5":"Country",
-                     "field6":"Legal Status",
-                     "field7":"Country of company registration/private residence",
-                     "field8":"Corporate registration number/passport number",
-                     "field9":"VAT number",
-                     "field10":"Website URL",
-                     "field11":"Main business (e.g. food retailer)",
-                     "field12":1,
-                     "field13":1,
-                     "field14":"Name of the Chief Executive Officer/General Manager",
-                     "field15":"Chief Executive Officer/General Manager passport number",
-                     "field16":"Please state in which countries the organization is active",
-                     "field17":"Please list the main (>10%) shareholders",
-                     "field18":1,
-                     "field19":"test@mail.ru",
-                     "type":"f7bd122d-4220-4d9d-abb2-fa9366e79975",
-                     "@context":[
-                        "https://ipfs.io/ipfs/bafkreiess6ak6lwlhar55ezckdwo6y7ki3wlyzyl3a7tadda2zuqaxwmbm"
-                     ]
-                  },
-                  "field2":{
-                     "field0":"Organization Name",
-                     "field1":"Address line 1",
-                     "field2":"Address line 2",
-                     "field3":"Address line 3",
-                     "field4":"Postal code",
-                     "field5":"Country",
-                     "field6":"Contact person",
-                     "field7":"test@mail.ru",
-                     "field8":"Telephone",
-                     "field9":"Fax",
-                     "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-                     "type":"a68073e6-bf56-43e3-99c4-5b433c983654",
-                     "@context":[
-                        "https://ipfs.io/ipfs/bafkreiess6ak6lwlhar55ezckdwo6y7ki3wlyzyl3a7tadda2zuqaxwmbm"
-                     ]
-                  },
-                  "field3":{
-                     "field0":"Family Name (surname)",
-                     "field1":"Other (Given) Names",
-                     "field2":"Title",
-                     "field3":"test@mail.ru",
-                     "field4":"Telephone",
-                     "field5":"Fax",
-                     "type":"9dca2898-d548-48a4-beec-fefd308f93cf",
-                     "@context":[
-                        "https://ipfs.io/ipfs/bafkreiess6ak6lwlhar55ezckdwo6y7ki3wlyzyl3a7tadda2zuqaxwmbm"
-                     ]
-                  },
-                  "policyId":"626c0490d24497fe1b1e415d",
-                  "@context":[
-                     "https://ipfs.io/ipfs/bafkreiess6ak6lwlhar55ezckdwo6y7ki3wlyzyl3a7tadda2zuqaxwmbm"
-                  ],
-                  "id":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-                  "type":"7b652d73-5978-45b4-992e-cc3ce732e27a&1.0.0"
-               }
-            ],
-            "proof":{
-               "type":"Ed25519Signature2018",
-               "created":"2022-04-29T15:33:48Z",
-               "verificationMethod":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316#did-root-key",
-               "proofPurpose":"assertionMethod",
-               "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..GaOyMZ9dR5J0-iu6SICVNlWifON3DT0ytz2z_eCHeOSRY5oQ7Jb3219G7aUrztIEppMcfzG6teO-YvuNPiAfBw"
+        },
+        "vcDocument": null,
+        "mintDocument": {
+            "type": "VC",
+            "tokenId": "0.0.34920820",
+            "date": "2022-05-26T16:44:12.779Z",
+            "tag": "mint_token",
+            "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+            "username": "ikapqhvd",
+            "document": {
+                "owner": null,
+                "hash": null,
+                "type": null,
+                "policyId": null,
+                "tag": null,
+                "option": null,
+                "document": {
+                    "id": "973b16cb-ed03-48c8-ab22-6ed70d127797",
+                    "type": [
+                        "VerifiableCredential"
+                    ],
+                    "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                    "issuanceDate": "2022-05-26T16:44:12.783Z",
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1"
+                    ],
+                    "credentialSubject": [
+                        {
+                            "date": "2022-05-26T16:44:12.779Z",
+                            "tokenId": "0.0.34920820",
+                            "amount": "1",
+                            "@context": [
+                                "https://ipfs.io/ipfs/bafkreiaamzhmh3l5pn5nneib5yifb3gjwlotf6fr6vb65j7tfi4tefxcza"
+                            ],
+                            "type": "MintToken&1.0.0"
+                        }
+                    ],
+                    "proof": {
+                        "type": "Ed25519Signature2018",
+                        "created": "2022-05-26T16:44:12Z",
+                        "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                        "proofPurpose": "assertionMethod",
+                        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..3fM9mKooHcW7GMgMmkgoXATFcRnzmpdL6y9DqZ3EtNyLvbfWVRwUiFq_nGz7R2p3AqyP7OxogiHNjIsJGRJzDA"
+                    }
+                }
             }
-         },
-         "createDate":"2022-04-29T15:34:04.021Z",
-         "updateDate":"2022-04-29T15:34:04.021Z",
-         "hederaStatus":"ISSUE",
-         "signature":0,
-         "type":"registrant",
-         "policyId":"626c0490d24497fe1b1e415d",
-         "tag":"create_application(db)",
-         "option":{
-            "status":"Waiting for approval"
-         },
-         "schema":"#7b652d73-5978-45b4-992e-cc3ce732e27a&1.0.0",
-         "messageId":"1651246443.516813000",
-         "topicId":"0.0.34352381",
-         "relationships":[
-            
-         ],
-         "__sourceTag__":"registrants_source(need_approve)"
-      }
-   ],
-   "blocks":[
-      
-   ],
-   "commonAddons":[
-      {
-         "id":"c0dbe6b1-6963-4010-9dc4-c676679376dd",
-         "blockType":"documentsSourceAddon"
-      },
-      {
-         "id":"540a115b-a94e-4d16-af46-e4b817f07b98",
-         "blockType":"documentsSourceAddon"
-      }
-   ],
-   "fields":[
-      {
-         "title":"Legal Name",
-         "name":"document.credentialSubject.0.field1.field0",
-         "type":"text"
-      },
-      {
-         "title":"Organization Name",
-         "name":"document.credentialSubject.0.field2.field0",
-         "type":"text"
-      },
-      {
-         "title":"Operation",
-         "name":"option.status",
-         "type":"text",
-         "width":"250px",
-         "bindGroup":"registrants_source(approved)",
-         "action":"",
-         "url":"",
-         "dialogContent":"",
-         "dialogClass":"",
-         "dialogType":"",
-         "bindBlock":""
-      },
-      {
-         "title":"Operation",
-         "name":"option.status",
-         "tooltip":"",
-         "type":"block",
-         "action":"",
-         "url":"",
-         "dialogContent":"",
-         "dialogClass":"",
-         "dialogType":"",
-         "bindBlock":"approve_registrant_btn",
-         "width":"250px",
-         "bindGroup":"registrants_source(need_approve)"
-      },
-      {
-         "name":"document",
-         "title":"Document",
-         "tooltip":"",
-         "type":"button",
-         "action":"dialog",
-         "content":"View Document",
-         "uiClass":"link",
-         "dialogContent":"VC",
-         "dialogClass":"",
-         "dialogType":"json"
-      }
-   ]
-}
-
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### Root Authority (Approve Device)
-
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Device Approval" %}
-{% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/918a113d-a88b-4595-806e-823e4fbb8bf6
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="id" %}
-626bf826d24497fe1b1e4144
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="owner" %}
-did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="hash" %}
-2qUPLPToSW3S33DAyY2wyJe5YPpWNuZKLLhTZRBowCAn
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="document" %}
-"id":"c48ffb77-58d9-4809-aaa9-ff80950142ea",
-
-&#x20;     "type":\[
-
-&#x20;        "VerifiableCredential"
-
-&#x20;     ],
-
-&#x20;     "issuer":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;     "issuanceDate":"2022-04-29T14:37:18.619Z",
-
-&#x20;     "@context":\[
-
-&#x20;        "https://www.w3.org/2018/credentials/v1"
-
-&#x20;     ],
-
-&#x20;     "credentialSubject":\[
-
-&#x20;        {
-
-&#x20;           "field0":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;           "field1":"2022-04-08",
-
-&#x20;           "field2":"Is the Registrant also the owner of the Device? (provide evidence)",
-
-&#x20;           "field3":{
-
-&#x20;              "field0":"Organization Name",
-
-&#x20;              "field1":"Address line 1",
-
-&#x20;              "field2":"Address line 2",
-
-&#x20;              "field3":"Address line 3",
-
-&#x20;              "field4":"Postal code",
-
-&#x20;              "field5":"Country",
-
-&#x20;              "field6":"Contact person",
-
-&#x20;              "field7":"test@mail.ru",
-
-&#x20;              "field8":"Telephone",
-
-&#x20;              "field9":"Fax",
-
-&#x20;              "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-
-&#x20;              "type":"56ce048d-8e24-4aec-b76d-802688f651e8",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;              ]
-
-&#x20;           },
-
-&#x20;           "field4":{
-
-&#x20;              "field0":"Device Name",
-
-&#x20;              "field1":"Address",
-
-&#x20;              "field2":"Postal code",
-
-&#x20;              "field3":"Country",
-
-&#x20;              "field4":"Longitude",
-
-&#x20;              "field5":"Latitude",
-
-&#x20;              "field6":"TSO’s ID for measurement point",
-
-&#x20;              "field7":1,
-
-&#x20;              "field8":1,
-
-&#x20;              "field9":"2022-04-29",
-
-&#x20;              "field10":"Owner of the network to which the Production Device is connected and the voltage of that connection",
-
-&#x20;              "field11":"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
-
-&#x20;              "field12":"Expected form of volume evidence",
-
-&#x20;              "field13":"If other please specify",
-
-&#x20;              "type":"fd49e6e4-58d7-425a-9518-9a2c4a178b15",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;              ]
-
-&#x20;           },
-
-&#x20;           "field5":{
-
-&#x20;              "field0":"Energy Source (Input) – see Appendix 2",
-
-&#x20;              "field1":"Technology – see Appendix 2",
-
-&#x20;              "field2":true,
-
-&#x20;              "field3":"If yes give details",
-
-&#x20;              "field4":true,
-
-&#x20;              "field5":"If yes give details",
-
-&#x20;              "field6":"Please give details of how the site can import electricity by means other than through the meter(s) specified above",
-
-&#x20;              "field7":"Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
-
-&#x20;              "field8":"Please identify any labeling schemes for which the Device is accredited",
-
-&#x20;              "field9":true,
-
-&#x20;              "field10":"If public (government) funding has been received when did/will it finish?",
-
-&#x20;              "field11":"2022-04-29",
-
-&#x20;              "field12":"Preferred I-REC Device Verifier",
-
-&#x20;              "type":"d7a15512-bb46-4826-864d-1e37bf7b321f",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;              ]
-
-&#x20;           },
-
-&#x20;           "ref":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;           "policyId":"626bf178d24497fe1b1e4139",
-
-&#x20;           "@context":\[
-
-&#x20;              "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;           ],
-
-&#x20;           "id":"did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724",
-
-&#x20;           "type":"4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0"
-
-&#x20;        }
-
-&#x20;     ],
-
-&#x20;     "proof":{
-
-&#x20;        "type":"Ed25519Signature2018",
-
-&#x20;        "created":"2022-04-29T14:37:18Z",
-
-&#x20;        "verificationMethod":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316#did-root-key",
-
-&#x20;        "proofPurpose":"assertionMethod",
-
-&#x20;        "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..fH8UEbWTElaBYZ-mznxFndkZU29h45Px1BL8lwzL73PUpmDeDEc2iJINx6Kmh\_uxcMpm7lhkf9JKQxADEl5-Dg"
-
-&#x20;     }
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="createDate" %}
-2022-04-29T14:37:26.605Z
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="updateDate" %}
-2022-04-29T14:37:26.605Z
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="hederaStatus" %}
-ISSUE
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="signature" %}
-0
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="type" %}
-device
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="policyId" %}
-626bf178d24497fe1b1e4139
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="tag" %}
-create_device
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="option" %}
-{
-
-&#x20;     "status":"Approved"
-
-&#x20;  },
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="schema" %}
-\#4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="messageId" %}
-1651243044.613728925
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="topicId" %}
-0.0.34350746
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="relationships" %}
-\[
-
-&#x20;     "1651242856.179215415
-
-]
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="__sourceTag__" %}
-approve_devices_source(need_approve)
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### User (CREATE ISSUE)
-
-BLOCK : create\_issue\_request\_form
-
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Creating Issue" %}
-{% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/8bd8c3da-043a-4ef0-8bb4-10f60bd80832
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="document" %}
-&#x20;     "field0":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;     "field1":"did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724",
-
-&#x20;     "field2":{
-
-&#x20;        "field0":"Organization Name",
-
-&#x20;        "field1":"Address line 1",
-
-&#x20;        "field2":"Address line 2",
-
-&#x20;        "field3":"Address line 3",
-
-&#x20;        "field4":"Postal code",
-
-&#x20;        "field5":"Country",
-
-&#x20;        "field6":"Contact person",
-
-&#x20;        "field7":"test@mail.ru",
-
-&#x20;        "field8":"Telephone",
-
-&#x20;        "field9":"Fax",
-
-&#x20;        "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-
-&#x20;        "type":"56ce048d-8e24-4aec-b76d-802688f651e8",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq"
-
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "field3":{
-
-&#x20;        "field0":"Device Name",
-
-&#x20;        "field1":"Address",
-
-&#x20;        "field2":"Postal code",
-
-&#x20;        "field3":"Country",
-
-&#x20;        "field4":"Longitude",
-
-&#x20;        "field5":"Latitude",
-
-&#x20;        "field6":"TSO’s ID for measurement point",
-
-&#x20;        "field7":1,
-
-&#x20;        "field8":1,
-
-&#x20;        "field9":"2022-04-29",
-
-&#x20;        "field10":"Owner of the network to which the Production Device is connected and the voltage of that connection",
-
-&#x20;        "field11":"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
-
-&#x20;        "field12":"Expected form of volume evidence",
-
-&#x20;        "field13":"If other please specify",
-
-&#x20;        "type":"fd49e6e4-58d7-425a-9518-9a2c4a178b15",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq"
-
-&#x20;        ]
-
-&#x20;     },
-
-&#x20;     "field4":" labeling scheme(s)",
-
-&#x20;     "field5":"2022-04-29",
-
-&#x20;     "field6":"2022-04-29",
-
-&#x20;     "field7":1,
-
-&#x20;     "field8":"2022-04-29",
-
-&#x20;     "field9":1,
-
-&#x20;     "field10":"Type a: Settlement Metering data",
-
-&#x20;     "field11":"Type b: Non-settlement Metering data",
-
-&#x20;     "field12":"Type c: Measured Volume Transfer documentation",
-
-&#x20;     "field13":"Type d: Other",
-
-&#x20;     "field14":true,
-
-&#x20;     "field15":true,
-
-&#x20;     "field16":true,
-
-&#x20;     "field17":"Installer",
-
-&#x20;     "field18":"0.0.34235315",
-
-&#x20;     "type":"88f6b2ad-5945-4086-b15c-8181654948c8&1.0.0",
-
-&#x20;     "@context":\[
-
-&#x20;        "https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq"
-
-&#x20;     ]
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="ref" %}
-&#x20;     "id":"626bf95ed24497fe1b1e4145",
-
-&#x20;     "owner":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;     "hash":"Gq2osAVHzB6LpFEDXKQkeVbpcteV7pBDdFhL93SmyPt7",
-
-&#x20;     "document":{
-
-&#x20;        "id":"aebb99c3-a897-4d71-8819-2362a43944ea",
-
-&#x20;        "type":\[
-
-&#x20;           "VerifiableCredential"
-
-&#x20;        ],
-
-&#x20;        "issuer":"did:hedera:testnet:A7cP5xLNaF5LPtXkDUTsP6fATh4uarAjCujnZ3qR2vcw;hedera:testnet:tid=0.0.34349531",
-
-&#x20;        "iszw2suanceDate":"2022-04-29T14:42:27.523Z",
-
-&#x20;        "@context":\[
-
-&#x20;           "https://www.w3.org/2018/credentials/v1"
-
-&#x20;        ],
-
-&#x20;        "credentialSubject":\[
-
-&#x20;           {
-
-&#x20;              "field0":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;              "field1":"2022-04-08",
-
-&#x20;              "field2":"Is the Registrant also the owner of the Device? (provide evidence)",
-
-&#x20;              "field3":{
-
-&#x20;                 "field0":"Organization Name",
-
-&#x20;                 "field1":"Address line 1",
-
-&#x20;                 "field2":"Address line 2",
-
-&#x20;                 "field3":"Address line 3",
-
-&#x20;                 "field4":"Postal code",
-
-&#x20;                 "field5":"Country",
-
-&#x20;                 "field6":"Contact person",
-
-&#x20;                 "field7":"test@mail.ru",
-
-&#x20;                 "field8":"Telephone",
-
-&#x20;                 "field9":"Fax",
-
-&#x20;                 "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-
-&#x20;                 "type":"56ce048d-8e24-4aec-b76d-802688f651e8",
-
-&#x20;                 "@context":\[
-
-&#x20;                    "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;                 ]
-
-&#x20;              },
-
-&#x20;              "field4":{
-
-&#x20;                 "field0":"Device Name",
-
-&#x20;                 "field1":"Address",
-
-&#x20;                 "field2":"Postal code",
-
-&#x20;                 "field3":"Country",
-
-&#x20;                 "field4":"Longitude",
-
-&#x20;                 "field5":"Latitude",
-
-&#x20;                 "field6":"TSO’s ID for measurement point",
-
-&#x20;                 "field7":1,
-
-&#x20;                 "field8":1,
-
-&#x20;                 "field9":"2022-04-29",
-
-&#x20;                 "field10":"Owner of the network to which the Production Device is connected and the voltage of that connection",
-
-&#x20;                 "field11":"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
-
-&#x20;                 "field12":"Expected form of volume evidence",
-
-&#x20;                 "field13":"If other please specify",
-
-&#x20;                 "type":"fd49e6e4-58d7-425a-9518-9a2c4a178b15",
-
-&#x20;                 "@context":\[
-
-&#x20;                    "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;                 ]
-
-&#x20;              },
-
-&#x20;              "field5":{
-
-&#x20;                 "field0":"Energy Source (Input) – see Appendix 2",
-
-&#x20;                 "field1":"Technology – see Appendix 2",
-
-&#x20;                 "field2":true,
-
-&#x20;                 "field3":"If yes give details",
-
-&#x20;                 "field4":true,
-
-&#x20;                 "field5":"If yes give details",
-
-&#x20;                 "field6":"Please give details of how the site can import electricity by means other than through the meter(s) specified above",
-
-&#x20;                 "field7":"Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
-
-&#x20;                 "field8":"Please identify any labeling schemes for which the Device is accredited",
-
-&#x20;                 "field9":true,
-
-&#x20;                 "field10":"If public (government) funding has been received when did/will it finish?",
-
-&#x20;                 "field11":"2022-04-29",
-
-&#x20;                 "field12":"Preferred I-REC Device Verifier",
-
-&#x20;                 "type":"d7a15512-bb46-4826-864d-1e37bf7b321f",
-
-&#x20;                 "@context":\[
-
-&#x20;                    "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;                 ]
-
-&#x20;              },
-
-&#x20;              "ref":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;              "policyId":"626bf178d24497fe1b1e4139",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreicra2ajpwjpukzhch3ienkqcyzi7fnnjwp65nom6vq25lwra6gx4i"
-
-&#x20;              ],
-
-&#x20;              "id":"did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724",
-
-&#x20;              "type":"4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0"
-
-&#x20;           }
-
-&#x20;        ],
-
-&#x20;        "proof":{
-
-&#x20;           "type":"Ed25519Signature2018",
-
-&#x20;           "created":"2022-04-29T14:42:27Z",
-
-&#x20;           "verificationMethod":"did:hedera:testnet:A7cP5xLNaF5LPtXkDUTsP6fATh4uarAjCujnZ3qR2vcw;hedera:testnet:tid=0.0.34349531#did-root-key",
-
-&#x20;           "proofPurpose":"assertionMethod",
-
-&#x20;           "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..\_o526p84cDF4qa1z5obliK-9WGVxsadhtCIIlq8fnjTiiOlYk54lrBZ4EeOw5xJ7DTMJ2ukLEp3PvTKVqIL3CQ"
-
-&#x20;        }
-
-&#x20;     },
-
-&#x20;     "createDate":"2022-04-29T14:42:38.469Z",
-
-&#x20;     "updateDate":"2022-04-29T14:42:38.469Z",
-
-&#x20;     "hederaStatus":"ISSUE",
-
-&#x20;     "signature":0,
-
-&#x20;     "type":"device(Approved)",
-
-&#x20;     "policyId":"626bf178d24497fe1b1e4139",
-
-&#x20;     "tag":"save\_copy\_device",
-
-&#x20;     "option":{
-
-&#x20;        "status":"Approved"
-
-&#x20;     },
-
-&#x20;     "schema":"#4713cc2e-4036-49b6-ba19-6475ed590c33&1.0.0",
-
-&#x20;     "messageId":"1651243356.729744000",
-
-&#x20;     "topicId":"0.0.34350746",
-
-&#x20;     "relationships":\[
-
-&#x20;        "1651243044.613728925"
-
-&#x20;     ],
-
-&#x20;     "\_\_sourceTag\_\_":"devices\_source(approved)"
-
-&#x20;  }
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### Root Authority (GET ISSUE TO APPROVE)
-
-#### Make GET request and get data\[i] and change option.status = “Approved”:
-
-BLOCK issue\_requests\_grid(evident)
-
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="" %}
-{% swagger-description %}
-/policies/626c0490d24497fe1b1e415d/blocks/4838bdc7-f141-4c64-a5e0-a40c2b268766
-{% endswagger-description %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-   "data":[
-      {
-         "id":"626c0a7cd24497fe1b1e416c",
-         "owner":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-         "hash":"44XX8ok6Y9gy6FRaTzQzaewDGPLqArqvAaWKQBrXKNqi",
-         "document":{
-            "id":"2d20d104-35ad-49f5-8530-7444e3228c13",
-            "type":[
-               "VerifiableCredential"
-            ],
-            "issuer":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-            "issuanceDate":"2022-04-29T15:55:31.487Z",
-            "@context":[
-               "https://www.w3.org/2018/credentials/v1"
-            ],
-            "credentialSubject":[
-               {
-                  "field0":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-                  "field1":"did:hedera:testnet:HyjFdpTRX2mBpiHuHHWb45hMsGejYCS6Njecy2YBXEfu;hedera:testnet:tid=0.0.34352260",
-                  "field2":{
-                     "field0":"Organization Name",
-                     "field1":"Address line 1",
-                     "field2":"Address line 2",
-                     "field3":"Address line 3",
-                     "field4":"Postal code",
-                     "field5":"Country",
-                     "field6":"Contact person",
-                     "field7":"test@mail.ru",
-                     "field8":"Telephone",
-                     "field9":"Fax",
-                     "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-                     "type":"a68073e6-bf56-43e3-99c4-5b433c983654",
-                     "@context":[
-                        "https://ipfs.io/ipfs/bafkreidnvwylajvvgaza7fxg57fjf5dvdbgvylfkw3tsxjlbiffincxsdq"
-                     ]
-                  },
-                  "field3":{
-                     "field0":"Device Name",
-                     "field1":"Address",
-                     "field2":"Postal code",
-                     "field3":"Country",
-                     "field4":"Longitude",
-                     "field5":"Latitude",
-                     "field6":"TSO’s ID for measurement point",
-                     "field7":1,
-                     "field8":1,
-                     "field9":"2022-04-29",
-                     "field10":"Owner of the network to which the Production Device is connected and the voltage of that connection",
-                     "field11":"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
-                     "field12":"Expected form of volume evidence",
-                     "field13":"If other please specify",
-                     "type":"a35f095b-ebc6-4006-a551-1f1d22c329b8",
-                     "@context":[
-                        "https://ipfs.io/ipfs/bafkreidnvwylajvvgaza7fxg57fjf5dvdbgvylfkw3tsxjlbiffincxsdq"
-                     ]
-                  },
-                  "field4":"labeling scheme(s)",
-                  "field5":"2022-04-29",
-                  "field6":"2022-04-29",
-                  "field7":1,
-                  "field8":"2022-04-29",
-                  "field9":1,
-                  "field10":"Type a: Settlement Metering data",
-                  "field11":"Type b: Non-settlement Metering data",
-                  "field12":"Type c: Measured Volume Transfer documentation",
-                  "field13":"Type d: Other",
-                  "field14":true,
-                  "field15":true,
-                  "field16":true,
-                  "field17":"Installer",
-                  "field18":"0.0.34235315",
-                  "ref":"did:hedera:testnet:HyjFdpTRX2mBpiHuHHWb45hMsGejYCS6Njecy2YBXEfu;hedera:testnet:tid=0.0.34352260",
-                  "policyId":"626c0490d24497fe1b1e415d",
-                  "@context":[
-                     "https://ipfs.io/ipfs/bafkreidnvwylajvvgaza7fxg57fjf5dvdbgvylfkw3tsxjlbiffincxsdq"
-                  ],
-                  "id":"3d31e722-7a17-4f13-a66d-c21c0042b6d3",
-                  "type":"c8a8aae3-2125-4872-9396-ac6b4dba8c2f&1.0.0"
-               }
-            ],
-            "proof":{
-               "type":"Ed25519Signature2018",
-               "created":"2022-04-29T15:55:31Z",
-               "verificationMethod":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316#did-root-key",
-               "proofPurpose":"assertionMethod",
-               "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..2MmXAW9khzXExyU2NVfBWTAQxro_eLWO6zxyABGb2nWvdsg5RcjmV-e_8HggxclU9wVECDW337gVFv_hkT0ZBA"
+        },
+        "policyDocument": {
+            "type": "VC",
+            "name": "iRec_2_1650456840748_1653583192967",
+            "description": "iRec Description",
+            "version": "1.0.0",
+            "tag": "Policy Created",
+            "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+            "username": "pwjhazo2",
+            "document": {
+                "id": "628fad77b51d44b0198a30d7",
+                "owner": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                "hash": "7EzEWBcxuXXMTkDsroou62gsXUvX8kNYYkk4kDHDCAiJ",
+                "document": {
+                    "id": "0c8b519c-ea10-4ca1-9102-7bd020d9af05",
+                    "type": [
+                        "VerifiableCredential"
+                    ],
+                    "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                    "issuanceDate": "2022-05-26T16:40:23.553Z",
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1"
+                    ],
+                    "credentialSubject": [
+                        {
+                            "name": "iRec_2_1650456840748_1653583192967",
+                            "description": "iRec Description",
+                            "topicDescription": "iRec Description",
+                            "version": "1.0.0",
+                            "policyTag": "Tag_1653583170544",
+                            "owner": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                            "cid": "bafkreiav4oc2w2ftj32uj7yzysoszacgd2j7w4qvlqcz3gwas2spg2wkcm",
+                            "url": "https://ipfs.io/ipfs/bafkreiav4oc2w2ftj32uj7yzysoszacgd2j7w4qvlqcz3gwas2spg2wkcm",
+                            "uuid": "3d4f1bfc-e128-438b-aedd-5728541927bd",
+                            "operation": "PUBLISH",
+                            "@context": [
+                                "https://ipfs.io/ipfs/bafkreif342gfzasmqaayyhs7rdcc7mxzcbxw3jxer22ws3eoatgdqjorbi"
+                            ],
+                            "id": "1653583219.617650000",
+                            "type": "Policy&1.0.0"
+                        }
+                    ],
+                    "proof": {
+                        "type": "Ed25519Signature2018",
+                        "created": "2022-05-26T16:40:23Z",
+                        "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                        "proofPurpose": "assertionMethod",
+                        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Z_DLoz13hfNN4k0vxhLCbcOZ1PQWY284YkfFBMCr56AJk3nkyGFqYbYlyLRMy7bYdz3ompo8Q0xFchuTrQD8Bg"
+                    }
+                },
+                "createDate": "2022-05-26T16:40:23.581Z",
+                "updateDate": "2022-05-26T16:40:23.581Z",
+                "hederaStatus": "NEW",
+                "signature": 0,
+                "type": "POLICY",
+                "policyId": "628fad58b51d44b0198a30d5",
+                "option": {}
             }
-         },
-         "createDate":"2022-04-29T15:55:40.477Z",
-         "updateDate":"2022-04-29T15:55:40.477Z",
-         "hederaStatus":"ISSUE",
-         "signature":0,
-         "type":"issue_request",
-         "policyId":"626c0490d24497fe1b1e415d",
-         "tag":"create_issue_request",
-         "option":{
-            "status":"Waiting for approval"
-         },
-         "schema":"#c8a8aae3-2125-4872-9396-ac6b4dba8c2f&1.0.0",
-         "messageId":"1651247740.133346000",
-         "topicId":"0.0.34352381",
-         "relationships":[
-            "1651247655.671887000"
-         ],
-         "__sourceTag__":"issue_requests_source(need_approve)"
-      }
-   ],
-   "blocks":[
-      
-   ],
-   "commonAddons":[
-      {
-         "id":"03aa71e0-8c5c-4685-aac4-250f4bd72206",
-         "blockType":"documentsSourceAddon"
-      },
-      {
-         "id":"cdcf0d38-f2a0-4678-95bb-5489d65b3dec",
-         "blockType":"documentsSourceAddon"
-      }
-   ],
-   "fields":[
-      {
-         "title":"Organization Name",
-         "name":"document.credentialSubject.0.field2.field0",
-         "type":"text"
-      },
-      {
-         "title":"Production Period Start Date",
-         "name":"document.credentialSubject.0.field6",
-         "type":"text"
-      },
-      {
-         "title":"Production Period End Date",
-         "name":"document.credentialSubject.0.field8",
-         "type":"text"
-      },
-      {
-         "title":"Total kWh Produced in this period",
-         "name":"document.credentialSubject.0.field7",
-         "type":"text"
-      },
-      {
-         "title":"Date",
-         "name":"document.issuanceDate",
-         "type":"text"
-      },
-      {
-         "name":"option.status",
-         "title":"Operation",
-         "type":"text",
-         "width":"250px",
-         "bindGroup":"issue_requests_source(approved)",
-         "action":"",
-         "url":"",
-         "dialogContent":"",
-         "dialogClass":"",
-         "dialogType":"",
-         "bindBlock":""
-      },
-      {
-         "title":"Operation",
-         "name":"option.status",
-         "tooltip":"",
-         "type":"block",
-         "action":"",
-         "url":"",
-         "dialogContent":"",
-         "dialogClass":"",
-         "dialogType":"",
-         "bindBlock":"approve_issue_requests_btn",
-         "width":"250px",
-         "bindGroup":"issue_requests_source(need_approve)"
-      },
-      {
-         "name":"document",
-         "title":"Document",
-         "tooltip":"",
-         "type":"button",
-         "action":"dialog",
-         "content":"View Document",
-         "uiClass":"link",
-         "dialogContent":"VC",
-         "dialogClass":"",
-         "dialogType":"json"
-      }
-   ]
-}
-
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### Root Authority (Approve Issue)
-
-BLOCK approve\_issue\_requests\_btn
-
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Approving Issue" %}
-{% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/4185c3b7-f200-4219-a503-17c84fea752f
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="id" %}
-626bf9e1d24497fe1b1e4148
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="owner" %}
-did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="hash" %}
-9Ny3w8HaH6ukaUnRgKrdWadbRM1by5rgn2nS8MQLJipm
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="document" %}
-&#x20;
-
-&#x20;     "id":"e676b23e-61b9-4243-98fc-349fd9708d67",
-
-&#x20;     "type":\[
-
-&#x20;        "VerifiableCredential"
-
-&#x20;     ],
-
-&#x20;     "issuer":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;     "issuanceDate":"2022-04-29T14:44:38.373Z",
-
-&#x20;     "@context":\[
-
-&#x20;        "https://www.w3.org/2018/credentials/v1"
-
-&#x20;     ],
-
-&#x20;     "credentialSubject":\[
-
-&#x20;        {
-
-&#x20;           "field0":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316",
-
-&#x20;           "field1":"did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724",
-
-&#x20;           "field2":{
-
-&#x20;              "field0":"Organization Name",
-
-&#x20;              "field1":"Address line 1",
-
-&#x20;              "field2":"Address line 2",
-
-&#x20;              "field3":"Address line 3",
-
-&#x20;              "field4":"Postal code",
-
-&#x20;              "field5":"Country",
-
-&#x20;              "field6":"Contact person",
-
-&#x20;              "field7":"test@mail.ru",
-
-&#x20;              "field8":"Telephone",
-
-&#x20;              "field9":"Fax",
-
-&#x20;              "field10":"Existing I-REC Registry organization(s) to become subsidiary",
-
-&#x20;              "type":"56ce048d-8e24-4aec-b76d-802688f651e8",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq"
-
-&#x20;              ]
-
-&#x20;           },
-
-&#x20;           "field3":{
-
-&#x20;              "field0":"Device Name",
-
-&#x20;              "field1":"Address",
-
-&#x20;              "field2":"Postal code",
-
-&#x20;              "field3":"Country",
-
-&#x20;              "field4":"Longitude",
-
-&#x20;              "field5":"Latitude",
-
-&#x20;              "field6":"TSO’s ID for measurement point",
-
-&#x20;              "field7":1,
-
-&#x20;              "field8":1,
-
-&#x20;              "field9":"2022-04-29",
-
-&#x20;              "field10":"Owner of the network to which the Production Device is connected and the voltage of that connection",
-
-&#x20;              "field11":"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
-
-&#x20;              "field12":"Expected form of volume evidence",
-
-&#x20;              "field13":"If other please specify",
-
-&#x20;              "type":"fd49e6e4-58d7-425a-9518-9a2c4a178b15",
-
-&#x20;              "@context":\[
-
-&#x20;                 "https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq"
-
-&#x20;              ]
-
-&#x20;           },
-
-&#x20;           "field4":" labeling scheme(s)",
-
-&#x20;           "field5":"2022-04-29",
-
-&#x20;           "field6":"2022-04-29",
-
-&#x20;           "field7":1,
-
-&#x20;           "field8":"2022-04-29",
-
-&#x20;           "field9":1,
-
-&#x20;           "field10":"Type a: Settlement Metering data",
-
-&#x20;           "field11":"Type b: Non-settlement Metering data",
-
-&#x20;           "field12":"Type c: Measured Volume Transfer documentation",
-
-&#x20;           "field13":"Type d: Other",
-
-&#x20;           "field14":true,
-
-&#x20;           "field15":true,
-
-&#x20;           "field16":true,
-
-&#x20;           "field17":"Installer",
-
-&#x20;           "field18":"0.0.34235315",
-
-&#x20;           "ref":"did:hedera:testnet:2PNs5TABEKMm7WNMSLrFQDSaBqkhppjPqcj9ovkbzkrq;hedera:testnet:tid=0.0.34350724",
-
-&#x20;           "policyId":"626bf178d24497fe1b1e4139",
-
-&#x20;           "@context":\[
-
-&#x20;              "https://ipfs.io/ipfs/bafkreigth2xnezvhywqijetrzvi6czxvfduyfn5f7cbln7n5u6kds2vypq"
-
-&#x20;           ],
-
-&#x20;           "id":"a69c8c0e-6fcd-4c63-b4a6-57b44cff63db",
-
-&#x20;           "type":"88f6b2ad-5945-4086-b15c-8181654948c8&1.0.0"
-
-&#x20;        }
-
-&#x20;     ],
-
-&#x20;     "proof":{
-
-&#x20;        "type":"Ed25519Signature2018",
-
-&#x20;        "created":"2022-04-29T14:44:38Z",
-
-&#x20;        "verificationMethod":"did:hedera:testnet:CV94CdDeDK5J361y1ocNMVxVbYjRZvSJChDkKCz88my;hedera:testnet:tid=0.0.34235316#did-root-key",
-
-&#x20;        "proofPurpose":"assertionMethod",
-
-&#x20;        "jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..rEWtgLl9X\_t2EdAYZhKE2ITptj9wEnihu1DhDPLoBBVZN7aV-bgedyDYYOLigPxV580gfm6NJztq\_wXFC4noAA"
-
-&#x20;     }
-
-&#x20;  },
-
-&#x20; &#x20;
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="createDate" %}
-2022-04-29T14:44:49.331Z
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="updateDate" %}
-2022-04-29T14:44:49.331Z
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="hederaStatus" %}
-ISSUE
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="signature" %}
-0
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="type" %}
-issue_request
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="policyId" %}
-626bf178d24497fe1b1e4139
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="tag" %}
-create_issue_request
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="option" %}
-{
-
-&#x20;     "status":"Approved"
-
-&#x20;  },
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="schema" %}
-\#88f6b2ad-5945-4086-b15c-8181654948c8&1.0.0
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="messageId" %}
-1651243487.331059459
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="topicId" %}
-0.0.34350746
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="relationships" %}
-\[
-
-&#x20;     "1651243356.729744000"
-
-&#x20;  ],
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="__sourceTag__" %}
-issue_requests_source(need_approve)
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
-
-### Root Authority (Get TrustChain)
-
-BLOCK trustChainBlock
-
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{blockId}" summary="Displaying TrustChain" %}
-{% swagger-description %}
-/policies/626bf178d24497fe1b1e4139/blocks/61235b3d-b793-4363-b51d-62df371493cd
-{% endswagger-description %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/PolicyBlockData'
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
+        },
+        "policyCreatorDocument": {
+            "type": "VC",
+            "title": "RootAuthority",
+            "description": "Account Creation",
+            "visible": true,
+            "tag": "Account Creation",
+            "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+            "username": "pwjhazo2",
+            "document": {
+                "id": "628fad77b51d44b0198a30d7",
+                "owner": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                "hash": "7EzEWBcxuXXMTkDsroou62gsXUvX8kNYYkk4kDHDCAiJ",
+                "document": {
+                    "id": "0c8b519c-ea10-4ca1-9102-7bd020d9af05",
+                    "type": [
+                        "VerifiableCredential"
+                    ],
+                    "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                    "issuanceDate": "2022-05-26T16:40:23.553Z",
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1"
+                    ],
+                    "credentialSubject": [
+                        {
+                            "name": "iRec_2_1650456840748_1653583192967",
+                            "description": "iRec Description",
+                            "topicDescription": "iRec Description",
+                            "version": "1.0.0",
+                            "policyTag": "Tag_1653583170544",
+                            "owner": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                            "cid": "bafkreiav4oc2w2ftj32uj7yzysoszacgd2j7w4qvlqcz3gwas2spg2wkcm",
+                            "url": "https://ipfs.io/ipfs/bafkreiav4oc2w2ftj32uj7yzysoszacgd2j7w4qvlqcz3gwas2spg2wkcm",
+                            "uuid": "3d4f1bfc-e128-438b-aedd-5728541927bd",
+                            "operation": "PUBLISH",
+                            "@context": [
+                                "https://ipfs.io/ipfs/bafkreif342gfzasmqaayyhs7rdcc7mxzcbxw3jxer22ws3eoatgdqjorbi"
+                            ],
+                            "id": "1653583219.617650000",
+                            "type": "Policy&1.0.0"
+                        }
+                    ],
+                    "proof": {
+                        "type": "Ed25519Signature2018",
+                        "created": "2022-05-26T16:40:23Z",
+                        "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                        "proofPurpose": "assertionMethod",
+                        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Z_DLoz13hfNN4k0vxhLCbcOZ1PQWY284YkfFBMCr56AJk3nkyGFqYbYlyLRMy7bYdz3ompo8Q0xFchuTrQD8Bg"
+                    }
+                },
+                "createDate": "2022-05-26T16:40:23.581Z",
+                "updateDate": "2022-05-26T16:40:23.581Z",
+                "hederaStatus": "NEW",
+                "signature": 0,
+                "type": "POLICY",
+                "policyId": "628fad58b51d44b0198a30d5",
+                "option": {}
+            }
+        },
+        "documents": [
+            {
+                "type": "VC",
+                "title": "Token",
+                "description": "Token[s] minted.",
+                "visible": true,
+                "tag": "mint_token",
+                "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                "username": "pwjhazo2",
+                "document": {
+                    "id": "628fae60b51d44b0198a30e6",
+                    "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                    "hash": "G2ugkfkZrLUZcF5U5PrNWrBCRtKS2PZSdhMFE4tYzXGS",
+                    "document": {
+                        "id": "973b16cb-ed03-48c8-ab22-6ed70d127797",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:44:12.783Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "date": "2022-05-26T16:44:12.779Z",
+                                "tokenId": "0.0.34920820",
+                                "amount": "1",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreiaamzhmh3l5pn5nneib5yifb3gjwlotf6fr6vb65j7tfi4tefxcza"
+                                ],
+                                "type": "MintToken&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:44:12Z",
+                            "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..3fM9mKooHcW7GMgMmkgoXATFcRnzmpdL6y9DqZ3EtNyLvbfWVRwUiFq_nGz7R2p3AqyP7OxogiHNjIsJGRJzDA"
+                        }
+                    },
+                    "createDate": "2022-05-26T16:44:16.845Z",
+                    "updateDate": "2022-05-26T16:44:16.845Z",
+                    "hederaStatus": "NEW",
+                    "signature": 0,
+                    "type": "mint",
+                    "policyId": "628fad58b51d44b0198a30d5",
+                    "tag": "mint_token",
+                    "option": {},
+                    "schema": "#MintToken&1.0.0",
+                    "messageId": "1653583455.269819728",
+                    "topicId": "0.0.34920825"
+                },
+                "iconType": "COMMON"
+            },
+            {
+                "type": "VC",
+                "title": "Issue Request Review",
+                "description": "Issue Request processed.",
+                "visible": true,
+                "tag": "save_issue_status(minted)",
+                "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                "username": "pwjhazo2",
+                "document": {
+                    "id": "628fae5cb51d44b0198a30e5",
+                    "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                    "assign": null,
+                    "hash": "6GGKsBMp4b3dHowKv7oy67U5YHytU2XxjmpvK5gvz8oC",
+                    "document": {
+                        "id": "dca9415a-505e-4050-b524-b2bea0eba1f6",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:44:08.941Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "field0": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "field1": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                "field2": {
+                                    "type": "7a022a66-7912-46e8-b634-a636a08bbb19",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                    ],
+                                    "field0": "Organization Name",
+                                    "field1": "Address line 1",
+                                    "field2": "Address line 2",
+                                    "field3": "Address line 3",
+                                    "field4": "Postal code",
+                                    "field5": "Country",
+                                    "field6": "Contact person",
+                                    "field7": "email@email.com",
+                                    "field8": "123456789",
+                                    "field9": "Fax",
+                                    "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                                },
+                                "field3": {
+                                    "type": "45abb4cb-7503-4ac4-9d31-44c468d64741",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                    ],
+                                    "field0": "Device Name",
+                                    "field1": "Address",
+                                    "field2": "Postal code",
+                                    "field3": "Country",
+                                    "field4": "Longitude",
+                                    "field5": "Latitude",
+                                    "field6": "TSO’s ID for measurement point",
+                                    "field7": 1,
+                                    "field8": 1,
+                                    "field9": "2022-05-11",
+                                    "field10": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                    "field11": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                    "field12": "Expected form of volume evidence",
+                                    "field13": "If other please specify"
+                                },
+                                "field4": "labeling scheme(s)",
+                                "field5": "2022-05-01",
+                                "field6": "2022-05-01",
+                                "field7": 1,
+                                "field8": "2022-05-31",
+                                "field9": 1,
+                                "field10": "Type a: Settlement Metering data",
+                                "field11": "Type b: Non-settlement Metering data",
+                                "field12": "Type c: Measured Volume Transfer documentation",
+                                "field13": "Type d: Other",
+                                "field14": true,
+                                "field15": true,
+                                "field16": true,
+                                "field17": "ikapqhvd",
+                                "field18": "0.0.34920818",
+                                "policyId": "628fad58b51d44b0198a30d5",
+                                "ref": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                ],
+                                "id": "a91c0d59-94cd-47fd-8e20-6dec9217c404",
+                                "type": "43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:44:08Z",
+                            "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..nekiIoY2eGxrMWsEK272nKGeQihC84N_3Ne1EqS0RZ87CfBp-LSwBvxrArvgBYEVWqeVMiURjWq4d43eM-sCCg"
+                        }
+                    },
+                    "createDate": "2022-05-26T16:44:12.736Z",
+                    "updateDate": "2022-05-26T16:44:12.736Z",
+                    "hederaStatus": "ISSUE",
+                    "signature": 0,
+                    "type": "issue_request(Approved)",
+                    "policyId": "628fad58b51d44b0198a30d5",
+                    "tag": "save_issue_status(minted)",
+                    "option": {
+                        "status": "Minted"
+                    },
+                    "schema": "#43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0",
+                    "messageId": "1653583451.120936000",
+                    "topicId": "0.0.34920825",
+                    "relationships": [
+                        "1653583432.992626000"
+                    ]
+                },
+                "iconType": "COMMON"
+            },
+            {
+                "type": "VC",
+                "title": "Issue Request",
+                "description": "Registrant submitted Issue Request to Issuer.",
+                "visible": true,
+                "tag": "save_issue_status(approved)",
+                "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                "username": "ikapqhvd",
+                "document": {
+                    "id": "628fae4ab51d44b0198a30e4",
+                    "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                    "assign": null,
+                    "hash": "HhvMGWusV4a7gJgaaiAognXLePh72wYZj4sGonXvdthf",
+                    "document": {
+                        "id": "287c2af2-875f-42b6-b460-95727f405a6e",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:43:50.514Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "field2": {
+                                    "type": "7a022a66-7912-46e8-b634-a636a08bbb19",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                    ],
+                                    "field0": "Organization Name",
+                                    "field1": "Address line 1",
+                                    "field2": "Address line 2",
+                                    "field3": "Address line 3",
+                                    "field4": "Postal code",
+                                    "field5": "Country",
+                                    "field6": "Contact person",
+                                    "field7": "email@email.com",
+                                    "field8": "123456789",
+                                    "field9": "Fax",
+                                    "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                                },
+                                "field3": {
+                                    "type": "45abb4cb-7503-4ac4-9d31-44c468d64741",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                    ],
+                                    "field0": "Device Name",
+                                    "field1": "Address",
+                                    "field2": "Postal code",
+                                    "field3": "Country",
+                                    "field4": "Longitude",
+                                    "field5": "Latitude",
+                                    "field6": "TSO’s ID for measurement point",
+                                    "field7": 1,
+                                    "field8": 1,
+                                    "field9": "2022-05-11",
+                                    "field10": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                    "field11": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                    "field12": "Expected form of volume evidence",
+                                    "field13": "If other please specify"
+                                },
+                                "field4": "labeling scheme(s)",
+                                "field5": "2022-05-01",
+                                "field6": "2022-05-01",
+                                "field7": 1,
+                                "field8": "2022-05-31",
+                                "field9": 1,
+                                "field10": "Type a: Settlement Metering data",
+                                "field11": "Type b: Non-settlement Metering data",
+                                "field12": "Type c: Measured Volume Transfer documentation",
+                                "field13": "Type d: Other",
+                                "field14": true,
+                                "field15": true,
+                                "field16": true,
+                                "field17": "ikapqhvd",
+                                "field18": "0.0.34920818",
+                                "field0": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "field1": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                "ref": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                "policyId": "628fad58b51d44b0198a30d5",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreihyatvhddgxby6lauuutjuon777rrk46yzwpp7dvrr3g4sjmyo3qi"
+                                ],
+                                "id": "a91c0d59-94cd-47fd-8e20-6dec9217c404",
+                                "type": "43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:43:50Z",
+                            "verificationMethod": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..oaOfVfnc54-us4fYfJYKkjtuPKJ6JNoAFadkkpivSOwVfx6g9q6YpWbefb52z0d_SDhVw847GZdX8gBUnIOMDg"
+                        }
+                    },
+                    "createDate": "2022-05-26T16:43:54.973Z",
+                    "updateDate": "2022-05-26T16:43:54.973Z",
+                    "hederaStatus": "ISSUE",
+                    "signature": 0,
+                    "type": "issue_request",
+                    "policyId": "628fad58b51d44b0198a30d5",
+                    "tag": "save_issue_status(approved)",
+                    "option": {
+                        "status": "Approved"
+                    },
+                    "schema": "#43c55ee0-6a1e-4d33-8bbf-710b1b4749be&1.0.0",
+                    "messageId": "1653583432.992626000",
+                    "topicId": "0.0.34920825",
+                    "relationships": [
+                        "1653583321.808582000"
+                    ]
+                },
+                "iconType": "COMMON"
+            },
+            {
+                "type": "VC",
+                "title": "Device Review",
+                "description": "Device registration request processed.",
+                "visible": true,
+                "tag": "save_copy_device",
+                "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                "username": "pwjhazo2",
+                "document": {
+                    "id": "628fae36b51d44b0198a30e1",
+                    "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                    "hash": "GfXVzcjHQqZBm4wuZimtCQBui2oyHkpysVc4nFZWEo6r",
+                    "document": {
+                        "id": "0c29a512-8771-46eb-bc63-7c6622d267af",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:43:29.699Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "field1": "2022-05-11",
+                                "field2": "Is the Registrant also the owner of the Device? (provide evidence)",
+                                "field3": {
+                                    "type": "7a022a66-7912-46e8-b634-a636a08bbb19",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda"
+                                    ],
+                                    "field0": "Organization Name",
+                                    "field1": "Address line 1",
+                                    "field2": "Address line 2",
+                                    "field3": "Address line 3",
+                                    "field4": "Postal code",
+                                    "field5": "Country",
+                                    "field6": "Contact person",
+                                    "field7": "email@email.com",
+                                    "field8": "123456789",
+                                    "field9": "Fax",
+                                    "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                                },
+                                "field4": {
+                                    "type": "45abb4cb-7503-4ac4-9d31-44c468d64741",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda"
+                                    ],
+                                    "field0": "Device Name",
+                                    "field1": "Address",
+                                    "field2": "Postal code",
+                                    "field3": "Country",
+                                    "field4": "Longitude",
+                                    "field5": "Latitude",
+                                    "field6": "TSO’s ID for measurement point",
+                                    "field7": 1,
+                                    "field8": 1,
+                                    "field9": "2022-05-11",
+                                    "field10": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                    "field11": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                    "field12": "Expected form of volume evidence",
+                                    "field13": "If other please specify"
+                                },
+                                "field5": {
+                                    "type": "a68191f7-7b10-486e-b3f2-19ab2aa41742",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda"
+                                    ],
+                                    "field0": "Energy Source (Input) – see Appendix 2",
+                                    "field1": "Technology – see Appendix 2",
+                                    "field2": true,
+                                    "field3": "If yes give details",
+                                    "field4": true,
+                                    "field5": "If yes give details",
+                                    "field6": "Please give details of how the site can import electricity by means other than through the meter(s) specified above",
+                                    "field7": "Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
+                                    "field8": "Please identify any labeling schemes for which the Device is accredited",
+                                    "field9": true,
+                                    "field10": "If public (government) funding has been received when did/will it finish?",
+                                    "field11": "2022-05-11",
+                                    "field12": "Preferred I-REC Device Verifier"
+                                },
+                                "field0": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "ref": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "policyId": "628fad58b51d44b0198a30d5",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda"
+                                ],
+                                "id": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                "type": "7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:43:29Z",
+                            "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..p7ywR4ihGyQfTqy94VVsA3SWE72Oth2833mSIo3pPqRF65z0XCx1z1ptwwm5IMGpFJ1ARCLgKK4nDiiPbnv2BQ"
+                        }
+                    },
+                    "createDate": "2022-05-26T16:43:34.307Z",
+                    "updateDate": "2022-05-26T16:43:34.307Z",
+                    "hederaStatus": "ISSUE",
+                    "signature": 0,
+                    "type": "device(Approved)",
+                    "policyId": "628fad58b51d44b0198a30d5",
+                    "tag": "save_copy_device",
+                    "option": {
+                        "status": "Approved"
+                    },
+                    "schema": "#7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0",
+                    "messageId": "1653583412.047133000",
+                    "topicId": "0.0.34920825",
+                    "relationships": [
+                        "1653583321.808582000"
+                    ]
+                },
+                "iconType": "COMMON"
+            },
+            {
+                "type": "VC",
+                "title": "Device Registration",
+                "description": "Production Facility/Device registration request submitted to Issuer.",
+                "visible": true,
+                "tag": "save_device_status(approved)",
+                "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                "username": "ikapqhvd",
+                "document": {
+                    "id": "628faddbb51d44b0198a30e0",
+                    "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                    "assign": null,
+                    "hash": "JC8N24KUYD1SN312ueH12zxEovQYN5utBhK3wU2Xozmk",
+                    "document": {
+                        "id": "8994cbc1-8c5f-4e34-a599-4c5f33ac8cf8",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:41:58.595Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "field1": "2022-05-11",
+                                "field2": "Is the Registrant also the owner of the Device? (provide evidence)",
+                                "field3": {
+                                    "type": "7a022a66-7912-46e8-b634-a636a08bbb19",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda"
+                                    ],
+                                    "field0": "Organization Name",
+                                    "field1": "Address line 1",
+                                    "field2": "Address line 2",
+                                    "field3": "Address line 3",
+                                    "field4": "Postal code",
+                                    "field5": "Country",
+                                    "field6": "Contact person",
+                                    "field7": "email@email.com",
+                                    "field8": "123456789",
+                                    "field9": "Fax",
+                                    "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                                },
+                                "field4": {
+                                    "type": "45abb4cb-7503-4ac4-9d31-44c468d64741",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda"
+                                    ],
+                                    "field0": "Device Name",
+                                    "field1": "Address",
+                                    "field2": "Postal code",
+                                    "field3": "Country",
+                                    "field4": "Longitude",
+                                    "field5": "Latitude",
+                                    "field6": "TSO’s ID for measurement point",
+                                    "field7": 1,
+                                    "field8": 1,
+                                    "field9": "2022-05-11",
+                                    "field10": "Owner of the network to which the Production Device is connected and the voltage of that connection",
+                                    "field11": "If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers",
+                                    "field12": "Expected form of volume evidence",
+                                    "field13": "If other please specify"
+                                },
+                                "field5": {
+                                    "type": "a68191f7-7b10-486e-b3f2-19ab2aa41742",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda"
+                                    ],
+                                    "field0": "Energy Source (Input) – see Appendix 2",
+                                    "field1": "Technology – see Appendix 2",
+                                    "field2": true,
+                                    "field3": "If yes give details",
+                                    "field4": true,
+                                    "field5": "If yes give details",
+                                    "field6": "Please give details of how the site can import electricity by means other than through the meter(s) specified above",
+                                    "field7": "Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case",
+                                    "field8": "Please identify any labeling schemes for which the Device is accredited",
+                                    "field9": true,
+                                    "field10": "If public (government) funding has been received when did/will it finish?",
+                                    "field11": "2022-05-11",
+                                    "field12": "Preferred I-REC Device Verifier"
+                                },
+                                "field0": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "ref": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "policyId": "628fad58b51d44b0198a30d5",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreifkvs7ubenmxnn6qs5gjvshsewidv23wipxqndjtgbi6mbglywuda"
+                                ],
+                                "id": "did:hedera:testnet:7cQxoxXvaH8ELCpJC3qUYkrnY7HCKrC3FsjW41atZDXm;hedera:testnet:tid=0.0.34920823",
+                                "type": "7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:41:58Z",
+                            "verificationMethod": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..3yNZxti1L2kuk4yLv8bbVX83BuLbyo0zYFsNc0ey8DZj5T6xnyTnKStKQc7Q-URW1L8SBu3iqnWvBhLjcNT0Dw"
+                        }
+                    },
+                    "createDate": "2022-05-26T16:42:03.632Z",
+                    "updateDate": "2022-05-26T16:42:03.632Z",
+                    "hederaStatus": "ISSUE",
+                    "signature": 0,
+                    "type": "device",
+                    "policyId": "628fad58b51d44b0198a30d5",
+                    "tag": "save_device_status(approved)",
+                    "option": {
+                        "status": "Approved"
+                    },
+                    "schema": "#7fcd8807-0450-4eab-8ba5-d35b4cce48ba&1.0.0",
+                    "messageId": "1653583321.808582000",
+                    "topicId": "0.0.34920825",
+                    "relationships": [
+                        "1653583293.497344059"
+                    ]
+                },
+                "iconType": "COMMON"
+            },
+            {
+                "type": "VC",
+                "title": "Application Review",
+                "description": "Application/KYC processed.",
+                "visible": true,
+                "tag": "save_copy_application",
+                "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                "username": "pwjhazo2",
+                "document": {
+                    "id": "628fadbfb51d44b0198a30dc",
+                    "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                    "hash": "9wwqSWouE2Dgz5QLGWWvQvdHFbDZrHQ7AQibyNBvBthA",
+                    "document": {
+                        "id": "0c3081ec-6e93-4a21-ae96-9f29a1783087",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:41:31.077Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "field0": "2022-05-11",
+                                "field1": {
+                                    "type": "689e077b-07b6-40af-8fe9-0228ab4b94a4",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri"
+                                    ],
+                                    "field0": "Applicant Legal Name",
+                                    "field1": "Registered address line 1",
+                                    "field2": "Registered address line 2",
+                                    "field3": "Registered address line 3",
+                                    "field4": "Postal (ZIP) code",
+                                    "field5": "Country",
+                                    "field6": "Legal Status",
+                                    "field7": "Country of company registration/private residence",
+                                    "field8": "Corporate registration number/passport number",
+                                    "field9": "VAT number",
+                                    "field10": "Website URL",
+                                    "field11": "Main business (e.g. food retailer)",
+                                    "field12": 1,
+                                    "field13": 1,
+                                    "field14": "Name of the Chief Executive Officer/General Manager",
+                                    "field15": "Chief Executive Officer/General Manager passport number",
+                                    "field16": "Please state in which countries the organization is active",
+                                    "field17": "Please list the main (>10%) shareholders",
+                                    "field18": 1,
+                                    "field19": "email@email.com"
+                                },
+                                "field2": {
+                                    "type": "7a022a66-7912-46e8-b634-a636a08bbb19",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri"
+                                    ],
+                                    "field0": "Organization Name",
+                                    "field1": "Address line 1",
+                                    "field2": "Address line 2",
+                                    "field3": "Address line 3",
+                                    "field4": "Postal code",
+                                    "field5": "Country",
+                                    "field6": "Contact person",
+                                    "field7": "email@email.com",
+                                    "field8": "123456789",
+                                    "field9": "Fax",
+                                    "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                                },
+                                "field3": {
+                                    "type": "40e734f4-befb-4962-bef4-cce68932f35d",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri"
+                                    ],
+                                    "field0": "Family Name (surname)",
+                                    "field1": "Other (Given) Names",
+                                    "field2": "Title",
+                                    "field3": "email@email.com",
+                                    "field4": "123456789",
+                                    "field5": "Fax"
+                                },
+                                "policyId": "628fad58b51d44b0198a30d5",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri"
+                                ],
+                                "id": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "type": "1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:41:31Z",
+                            "verificationMethod": "did:hedera:testnet:CtcLfcnrP4BDEHBFmWRHpEovwr8v1U6BNLrrVhSHjeuv;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..rTayqUFES8Gs0BW9wIZZxdhWWsS3p1VJ57X94ZIlyKGrbIy0q7AXTaA9h8yRSTREZ4y5viqDpbnuKeSd_2E1Dw"
+                        }
+                    },
+                    "createDate": "2022-05-26T16:41:35.298Z",
+                    "updateDate": "2022-05-26T16:41:35.298Z",
+                    "hederaStatus": "ISSUE",
+                    "signature": 0,
+                    "type": "registrant(Approved)",
+                    "policyId": "628fad58b51d44b0198a30d5",
+                    "tag": "save_copy_application",
+                    "option": {
+                        "status": "Approved"
+                    },
+                    "schema": "#1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0",
+                    "messageId": "1653583293.497344059",
+                    "topicId": "0.0.34920825",
+                    "relationships": [
+                        "1653583276.830802000"
+                    ]
+                },
+                "iconType": "COMMON"
+            },
+            {
+                "type": "VC",
+                "title": "Registrant Application",
+                "description": "Application submitted to Issuer.",
+                "visible": true,
+                "tag": "save_application_status(approve)",
+                "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                "username": "ikapqhvd",
+                "document": {
+                    "id": "628fadadb51d44b0198a30db",
+                    "owner": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                    "assign": null,
+                    "hash": "8jqdsF8Sg4GdQcj7Rs2cUFjW1Mbf1V9KAJLZmzt33kDo",
+                    "document": {
+                        "id": "e0ff7f8d-0317-4684-ac9f-543b3f2ff804",
+                        "type": [
+                            "VerifiableCredential"
+                        ],
+                        "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                        "issuanceDate": "2022-05-26T16:41:08.141Z",
+                        "@context": [
+                            "https://www.w3.org/2018/credentials/v1"
+                        ],
+                        "credentialSubject": [
+                            {
+                                "field0": "2022-05-11",
+                                "field1": {
+                                    "type": "689e077b-07b6-40af-8fe9-0228ab4b94a4",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri"
+                                    ],
+                                    "field0": "Applicant Legal Name",
+                                    "field1": "Registered address line 1",
+                                    "field2": "Registered address line 2",
+                                    "field3": "Registered address line 3",
+                                    "field4": "Postal (ZIP) code",
+                                    "field5": "Country",
+                                    "field6": "Legal Status",
+                                    "field7": "Country of company registration/private residence",
+                                    "field8": "Corporate registration number/passport number",
+                                    "field9": "VAT number",
+                                    "field10": "Website URL",
+                                    "field11": "Main business (e.g. food retailer)",
+                                    "field12": 1,
+                                    "field13": 1,
+                                    "field14": "Name of the Chief Executive Officer/General Manager",
+                                    "field15": "Chief Executive Officer/General Manager passport number",
+                                    "field16": "Please state in which countries the organization is active",
+                                    "field17": "Please list the main (>10%) shareholders",
+                                    "field18": 1,
+                                    "field19": "email@email.com"
+                                },
+                                "field2": {
+                                    "type": "7a022a66-7912-46e8-b634-a636a08bbb19",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri"
+                                    ],
+                                    "field0": "Organization Name",
+                                    "field1": "Address line 1",
+                                    "field2": "Address line 2",
+                                    "field3": "Address line 3",
+                                    "field4": "Postal code",
+                                    "field5": "Country",
+                                    "field6": "Contact person",
+                                    "field7": "email@email.com",
+                                    "field8": "123456789",
+                                    "field9": "Fax",
+                                    "field10": "Existing I-REC Registry organization(s) to become subsidiary"
+                                },
+                                "field3": {
+                                    "type": "40e734f4-befb-4962-bef4-cce68932f35d",
+                                    "@context": [
+                                        "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri"
+                                    ],
+                                    "field0": "Family Name (surname)",
+                                    "field1": "Other (Given) Names",
+                                    "field2": "Title",
+                                    "field3": "email@email.com",
+                                    "field4": "123456789",
+                                    "field5": "Fax"
+                                },
+                                "policyId": "628fad58b51d44b0198a30d5",
+                                "@context": [
+                                    "https://ipfs.io/ipfs/bafkreicwr4u55lbcod3czcbwhfoyx7qy5en27orscjv3mpr3puvzwsptri"
+                                ],
+                                "id": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
+                                "type": "1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0"
+                            }
+                        ],
+                        "proof": {
+                            "type": "Ed25519Signature2018",
+                            "created": "2022-05-26T16:41:08Z",
+                            "verificationMethod": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817#did-root-key",
+                            "proofPurpose": "assertionMethod",
+                            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..qDwai3thhJkBjJmflrqcrgs2Ka64QGRRXHcvHVoChYPTs2bjVOJhSqqfYDQ7KYqBmTpgdLhioTSOKDxQeqTvAQ"
+                        }
+                    },
+                    "createDate": "2022-05-26T16:41:17.687Z",
+                    "updateDate": "2022-05-26T16:41:17.687Z",
+                    "hederaStatus": "ISSUE",
+                    "signature": 0,
+                    "type": "registrant",
+                    "policyId": "628fad58b51d44b0198a30d5",
+                    "tag": "save_application_status(approve)",
+                    "option": {
+                        "status": "Approved"
+                    },
+                    "schema": "#1af5b61a-7f1f-410e-87cc-a3c74823d74e&1.0.0",
+                    "messageId": "1653583276.830802000",
+                    "topicId": "0.0.34920825",
+                    "relationships": []
+                },
+                "iconType": "COMMON"
+            }
+        ]
+    }
 }
 ```
 {% endswagger-response %}
