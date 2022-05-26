@@ -2,14 +2,18 @@
 
 ### Properties
 
-| Block Property | Definition                                                                                             | Example Input                                                        |
-| -------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| type           | A block type which outputs information from the DB as grid.                                            | **InterfaceDocumentsSource** Block (Can't be changed).               |
-| tag            | Unique name for the logic block.                                                                       | sensors\_grid.                                                       |
-| permissions    | Which entity has rights to interact at this part of the workflow.                                      | Installer.                                                           |
-| defaultActive  | Shows whether this block is active at this time and whether it needs to be shown.                      | Checked or unchecked.                                                |
-| dependencies   | Automatic update. The block is automatically re-rendered if any of the linked components gets updated. | Select the appropriate block from the dropdown.                      |
-| dataType       | Specify the table to request the data from.                                                            | Current options are: Verifiable Credential, DID, Approve, or Hedera. |
+| Block Property | Definition                                                                                             | Example Input                                                        | Status                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | ------------------------------------------ |
+| type           | A block type which outputs information from the DB as grid.                                            | **InterfaceDocumentsSource** Block (Can't be changed).               |                                            |
+| tag            | Unique name for the logic block.                                                                       | sensors\_grid.                                                       |                                            |
+| permissions    | Which entity has rights to interact at this part of the workflow.                                      | Installer.                                                           |                                            |
+| defaultActive  | Shows whether this block is active at this time and whether it needs to be shown.                      | Checked or unchecked.                                                |                                            |
+| dependencies   | Automatic update. The block is automatically re-rendered if any of the linked components gets updated. | Select the appropriate block from the dropdown.                      | <mark style="color:red;">Deprecated</mark> |
+| dataType       | Specify the table to request the data from.                                                            | Current options are: Verifiable Credential, DID, Approve, or Hedera. |                                            |
+
+{% hint style="info" %}
+RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
+{% endhint %}
 
 ### UI Properties
 
@@ -29,6 +33,20 @@
 | Dialogue Type      | Currently only json type is supported. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                              |
 | Dialogue Content   | Provide content for the dialogue box. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                               |
 | Dialogue Class     | Dialog style. Needs for the field type to be a BUTTON and Action to be DIALOGUE.                                                                                                       |
+
+### Events
+
+| Property Name | Name in JSON | Property Value                                                    | Value in JSON                                                                                                                   | Description |
+| ------------- | ------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Event Type    | -            | <p>Input Event</p><p>Output Event</p>                             | Type of the event - determines whether this is ingress or egress event for the current block.                                   |             |
+| Source        | "source"     | Block tag(string)                                                 | The block which initiates the event.                                                                                            |             |
+| Target        | "target"     | Block tag(string)                                                 | The block which receives the event.                                                                                             |             |
+| Output Event  | "output"     | Event name(string)                                                | Action or issue that caused the event.                                                                                          |             |
+| Input Event   | "input"      | Event name(string)                                                | Action which will be triggered by the event.                                                                                    |             |
+| Event Actor   | "actor"      | <p>Event Initiator</p><p>Document Owner</p><p>Document Issuer</p> | Allows to transfer control of the block (execution context) to another user. Empty field leaves control at the Event Initiator. |             |
+| Disabled      | "disabled"   | True/False                                                        | Allows to disable the event without deleting it.                                                                                |             |
+
+To know more information about events, please look at [events.md](events.md "mention").
 
 ### API Parameters
 
