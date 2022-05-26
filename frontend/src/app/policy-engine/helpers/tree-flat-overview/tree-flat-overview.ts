@@ -39,8 +39,9 @@ export class TreeFlatOverview {
     @Output('select') select = new EventEmitter();
     @Output('reorder') reorder = new EventEmitter();
     @Output('change') change = new EventEmitter();
+    @Output('init') init = new EventEmitter();
 
-    currentBlock!: BlockNode;
+    currentBlock: any;
     root!: BlockNode;
 
     treeControl: FlatTreeControl<FlatBlockNode>;
@@ -69,6 +70,14 @@ export class TreeFlatOverview {
             this.isCollapseAll = !e.source.selected.length;
             this.change.emit();
         })
+    }
+
+    ngAfterViewInit(): void {
+        this.init.emit(this);
+    }
+
+    ngOnDestroy(): void {
+        this.init.emit(null);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -252,13 +261,23 @@ export class TreeFlatOverview {
     rebuildTreeForData(data: BlockNode[]) {
         this.blocks = data;
         this.root = data[0];
-        this.currentBlock = this.root;
         this.dataSource.data = data;
         this.treeControl.expansionModel.clear();
         this.expansionModel.selected.forEach((id) => {
             const node: any = this.treeControl.dataNodes.find((n) => n.node.id === id);
             this.treeControl.expand(node);
         });
+        if (this.currentBlock) {
+            const node: any = this.treeControl.dataNodes.find((n) => n.node.id === this.currentBlock.id);
+            if (node) {
+                this.currentBlock = node.node;
+            } else {
+                this.currentBlock = this.root;
+            }
+        } else {
+            this.currentBlock = this.root;
+        }
+
     }
 
     getName(node: FlatBlockNode) {
@@ -312,5 +331,14 @@ export class TreeFlatOverview {
         this.isCollapseAll = true;
         this.treeControl.collapseAll();
         this.expansionModel.clear();
+    }
+
+    public selectItem(block: any) {
+        if (block) {
+            const node: any = this.treeControl.dataNodes.find((n) => n.node.id === block.id);
+            this.currentBlock = node.node;
+        } else {
+            this.currentBlock = undefined;
+        }
     }
 }
