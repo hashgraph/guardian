@@ -113,6 +113,8 @@ export interface IPolicyContainerBlock extends IPolicyBlock {
 export interface IPolicySourceBlock extends IPolicyBlock {
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
 
+    getChildFiltersAddons(): IPolicyBlock[];
+
     getFiltersAddons(): IPolicyBlock[];
 
     getSources(user: IAuthUser, sliceData?: any): Promise<any[]>

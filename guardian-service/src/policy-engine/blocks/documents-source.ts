@@ -31,7 +31,7 @@ export class InterfaceDocumentsSource {
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
-        const blocks = ref.getFiltersAddons().map(addon => {
+        const childFilters = ref.getChildFiltersAddons().map(addon => {
             return {
                 id: addon.uuid,
                 uiMetaData: addon.options.uiMetaData,
@@ -47,6 +47,16 @@ export class InterfaceDocumentsSource {
             }
         });
 
+        const filters = ref.getCommonAddons().filter(addon => {
+            return addon.blockType === 'filtersAddon';
+        }) as IPolicyAddonBlock[];
+
+        const filterObject = {};
+
+        for (let filter of filters) {
+            Object.assign(filterObject, filter.getFilters(user))
+        }
+
         const pagination = ref.getCommonAddons().find(addon => {
             return addon.blockType === 'paginationAddon';
         }) as IPolicyAddonBlock;
@@ -54,11 +64,12 @@ export class InterfaceDocumentsSource {
         let paginationData = null;
         if (pagination) {
             paginationData = await pagination.getState(user);
+            Object.assign(filterObject, paginationData)
         }
 
         return Object.assign({
             data: await ref.getSources(user, paginationData),
-            blocks,
+            blocks: [...childFilters, ...filters],
             commonAddons
         }, ref.options.uiMetaData);
     }
