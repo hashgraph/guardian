@@ -181,7 +181,8 @@ export class PolicyEngineService {
     }
 
     private async publishSchemes(model: Policy, owner: string): Promise<Policy> {
-        const schemaIRIs = findAllEntities(model.config, SchemaFields);
+        const schemas = await getMongoRepository(SchemaCollection).find({ topicId: model.topicId });
+        const schemaIRIs = schemas.map(s => s.iri);
         for (let i = 0; i < schemaIRIs.length; i++) {
             const schemaIRI = schemaIRIs[i];
             const schema = await incrementSchemaVersion(schemaIRI, owner);
