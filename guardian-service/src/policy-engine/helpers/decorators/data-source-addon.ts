@@ -2,6 +2,7 @@ import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { BlockActionError } from '@policy-engine/errors';
+import { IAuthUser } from '@auth/auth.interface';
 
 export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
     return function (constructor: new (...args: any) => any): any {
@@ -44,24 +45,25 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
                 return result;
             }
 
-            protected async getSources(...args): Promise<any[]> {
-                let data = [];
-                for (let child of this.children) {
-                    if (child.blockClassName === 'SourceAddon') {
-                        const childData = await child.getFromSource(...args);
-                        data = data.concat(childData)
-                    }
-                }
-                return data;
-            }
-
             protected setFilters(filters, user): void {
                 if (typeof super.setFilters === 'function') {
                     super.setFilters(filters, user);
                 } else {
                     this.filters[user.did] = filters
                 }
+            }
 
+            protected async getSources(user: IAuthUser, globalFilters: any): Promise<any[]> {
+                let data = [];
+                for (let child of this.children) {
+                    if (child.blockClassName === 'SourceAddon') {
+                        const childData = await child.getFromSource(user, globalFilters);
+                        for (const item of childData) {
+                            data.push(item);
+                        }
+                    }
+                }
+                return data;
             }
         }
     }

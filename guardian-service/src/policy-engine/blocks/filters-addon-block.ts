@@ -49,7 +49,7 @@ export class FiltersAddonBlock {
             canBeEmpty: ref.options.canBeEmpty
         };
 
-        let data: any[] = await ref.getSources(user);
+        let data: any[] = await ref.getSources(user, null);
 
         if (ref.options.type == 'dropdown') {
             const blockState = this.state[user.did] || {};

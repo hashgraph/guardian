@@ -38,7 +38,7 @@ export class PaginationAddon {
             }
         }
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const totalCount = (await (ref.parent as IPolicySourceBlock).getSources(user)).length;
+        const totalCount = (await (ref.parent as IPolicySourceBlock).getGlobalSources(user, null)).length;
 
         if (this.state[user.did].size !== totalCount) {
             this.state[user.did].size = totalCount;

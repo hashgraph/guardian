@@ -32,7 +32,7 @@ export class DocumentsSourceAddon {
     @Inject()
     private users: Users;
 
-    async getFromSource(user: IAuthUser) {
+    async getFromSource(user: IAuthUser, globalFilters: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         let filters: any = {};
@@ -57,19 +57,19 @@ export class DocumentsSourceAddon {
 
             switch (filter.type) {
                 case 'equal':
-                    Object.assign(expr, {$eq: filter.value})
+                    Object.assign(expr, { $eq: filter.value })
                     break;
 
                 case 'not_equal':
-                    Object.assign(expr, {$ne: filter.value});
+                    Object.assign(expr, { $ne: filter.value });
                     break;
 
                 case 'in':
-                    Object.assign(expr, {$in: filter.value.split(',')});
+                    Object.assign(expr, { $in: filter.value.split(',') });
                     break;
 
                 case 'not_in':
-                    Object.assign(expr, {$nin: filter.value.split(',')});
+                    Object.assign(expr, { $nin: filter.value.split(',') });
                     break;
 
                 default:
@@ -80,10 +80,13 @@ export class DocumentsSourceAddon {
 
         const dynFilters = {};
         for (let [key, value] of Object.entries(ref.getFilters(user))) {
-            dynFilters[key] = {$eq: value};
+            dynFilters[key] = { $eq: value };
         }
 
         Object.assign(filters, dynFilters);
+        if(globalFilters) {
+            Object.assign(filters, globalFilters);
+        }
 
         let data: any[];
         switch (ref.options.dataType) {
@@ -135,7 +138,7 @@ export class DocumentsSourceAddon {
                     resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                     return;
                 }
-                const schema = await getMongoRepository(SchemaCollection).findOne({iri: ref.options.schema});
+                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;
