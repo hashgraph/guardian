@@ -201,7 +201,7 @@ export class AggregateBlock {
                     for (let i = 0; i < vars.length; i++) {
                         const varName = vars[i];
                         if (!variables[varName]) {
-                            resultsContainer.addBlockError(ref.uuid, `Variable ${varName} not defined`);
+                            resultsContainer.addBlockError(ref.uuid, `Variable '${varName}' not defined`);
                         }
                     }
                 }
