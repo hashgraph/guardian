@@ -548,8 +548,6 @@ export class PolicyBlockModel {
     }
 
     public rebuild(object: any) {
-        debugger;
-
         delete object.children;
         delete object.events;
 
