@@ -40,7 +40,7 @@ export class SchemaService {
     public getSchemesByPolicy(policyId: string): Observable<ISchema[]> {
         return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}`);
     }
-    
+
     public getSchemesByPage(topicId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
         let url = `${this.url}`;
         if (topicId) {
@@ -50,6 +50,14 @@ export class SchemaService {
             url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
         }
         return this.http.get<any>(url, { observe: 'response' });
+    }
+
+    public getSchemesByType(type: string): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.url}/type/${type}`);
+    }
+
+    public getSchemesByEntity(entity: string): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.url}/entity/${entity}`);
     }
 
     public publish(id: string, version: string): Observable<ISchema[]> {

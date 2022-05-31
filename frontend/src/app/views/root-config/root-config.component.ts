@@ -36,8 +36,7 @@ export class RootConfigComponent implements OnInit {
     vcForm: FormGroup;
     hideVC: any;
     formValid: boolean = false;
-    schemas!: Schema[];
-    // schema: any;
+    schema!: Schema;
 
     constructor(
         private auth: AuthService,
@@ -81,7 +80,7 @@ export class RootConfigComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.schemaService.getSchemes()
+            this.schemaService.getSchemesByEntity('ROOT_AUTHORITY')
         ]).subscribe((value) => {
             if(!value[2]) {
                 this.errorLoadSchema = true;
@@ -91,8 +90,7 @@ export class RootConfigComponent implements OnInit {
 
             const profile = value[0];
             const balance = value[1];
-
-            this.schemas = SchemaHelper.map(value[2]);
+            const schema = value[2];
 
             this.isConfirmed = !!(profile.confirmed);
             this.isFailed = !!(profile.failed);
@@ -101,6 +99,10 @@ export class RootConfigComponent implements OnInit {
             if (this.isConfirmed) {
                 this.balance = balance;
                 this.profile = profile;
+            }
+
+            if(schema) {
+                this.schema = new Schema(schema);
             }
 
             setTimeout(() => {
@@ -142,7 +144,6 @@ export class RootConfigComponent implements OnInit {
                 document: document.document,
                 title: title,
                 type: 'VC',
-                schemas: this.schemas,
                 viewDocument: true
             }
         });

@@ -144,7 +144,7 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         }
         let topicId = null;
         const policyId = req.query?.policyId;
-        if(policyId) {
+        if (policyId) {
             const engineService = new PolicyEngine();
             const model = (await engineService.getPolicy({
                 filters: policyId,
@@ -401,6 +401,58 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.ROOT_AUTHORITY
         res.setHeader('Content-disposition', `attachment; filename=${name}`);
         res.setHeader('Content-type', 'application/zip');
         arcStream.pipe(res);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.get('/type/:schemaType', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        if (!req.params.schemaType) {
+            throw new Error(`Schema not found: ${req.params.schemaType}`);
+        }
+        const guardians = new Guardians();
+        const schema = await guardians.getSchemaByType(req.params.schemaType);
+        if (!schema) {
+            throw new Error(`Schema not found: ${req.params.schemaType}`);
+        }
+        res.status(200).send({
+            uuid: schema.uuid,
+            iri: schema.iri,
+            name: schema.name,
+            version: schema.version,
+            document: schema.document,
+            documentURL: schema.documentURL,
+            context: schema.context,
+            contextURL: schema.contextURL,
+        });
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.get('/entity/:schemaEntity', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        if (!req.params.schemaEntity) {
+            throw new Error(`Schema not found: ${req.params.schemaEntity}`);
+        }
+        const guardians = new Guardians();
+        const schema = await guardians.getSchemaByEntity(req.params.schemaEntity);
+        if (!schema) {
+            throw new Error(`Schema not found: ${req.params.schemaEntity}`);
+        }
+        res.status(200).send({
+            uuid: schema.uuid,
+            iri: schema.iri,
+            name: schema.name,
+            version: schema.version,
+            document: schema.document,
+            documentURL: schema.documentURL,
+            context: schema.context,
+            contextURL: schema.contextURL,
+        });
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });

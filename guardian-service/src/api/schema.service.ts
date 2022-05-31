@@ -403,8 +403,26 @@ export const schemaAPI = async function (channel: MessageBrokerChannel, schemaRe
             if (!msg) {
                 return new MessageError('Invalid load schema parameter');
             }
-            const schema = await schemaRepository.findOne(msg.id);
-            return new MessageResponse(schema);
+            if (msg.id) {
+                const schema = await schemaRepository.findOne(msg.id);
+                return new MessageResponse(schema);
+            }
+            if (msg.type) {
+                const iri = `#${msg.type}`;
+                const schema = await schemaRepository.findOne({
+                    iri,
+                    status: SchemaStatus.PUBLISHED
+                });
+                return new MessageResponse(schema);
+            }
+            if (msg.entity) {
+                const iri = `#${msg.type}`;
+                const schema = await schemaRepository.findOne({
+                    entity: msg.entity,
+                    status: SchemaStatus.PUBLISHED
+                });
+                return new MessageResponse(schema);
+            }
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

@@ -239,6 +239,28 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Return schema by type
+     *
+     * @param {string} type - schema type
+     *
+     * @returns {ISchema} - schema
+     */
+     public async getSchemaByType(type: string): Promise<ISchema> {
+        return await this.request(MessageAPI.GET_SCHEMA, { type: type });
+    }
+
+    /**
+     * Return schema by entity
+     *
+     * @param {string} entity - schema entity
+     *
+     * @returns {ISchema} - schema
+     */
+     public async getSchemaByEntity(entity: string): Promise<ISchema> {
+        return await this.request(MessageAPI.GET_SCHEMA, { entity: entity });
+    }
+
+    /**
      * Return schema by id
      *
      * @param {string} id - schema id
