@@ -31,7 +31,7 @@ export class InterfaceDocumentsSource {
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
-        const blocks = ref.getFiltersAddons().map(addon => {
+        const filters = ref.getFiltersAddons().map(addon => {
             return {
                 id: addon.uuid,
                 uiMetaData: addon.options.uiMetaData,
@@ -56,9 +56,10 @@ export class InterfaceDocumentsSource {
             paginationData = await pagination.getState(user);
         }
 
+        const data = await ref.getGlobalSources(user, paginationData);
         return Object.assign({
-            data: await ref.getSources(user, paginationData),
-            blocks,
+            data: data,
+            blocks: filters,
             commonAddons
         }, ref.options.uiMetaData);
     }

@@ -113,9 +113,13 @@ export interface IPolicyContainerBlock extends IPolicyBlock {
 export interface IPolicySourceBlock extends IPolicyBlock {
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
 
+    getChildFiltersAddons(): IPolicyBlock[];
+
     getFiltersAddons(): IPolicyBlock[];
 
-    getSources(user: IAuthUser, sliceData?: any): Promise<any[]>
+    getSources(user: IAuthUser, globalFilters: any, paginationData: any): Promise<any[]>;
+
+    getGlobalSources(user: IAuthUser, paginationData: any): Promise<any[]>;
 
     getCommonAddons(): IPolicyBlock[];
 }
@@ -127,9 +131,9 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
 
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
 
-    getSources(user: IAuthUser): any;
+    getSources(user: IAuthUser, globalFilters: any): any;
 
-    getFromSource(user: IAuthUser): any;
+    getFromSource(user: IAuthUser, globalFilters: any): any;
 
     getFilters(user: IAuthUser): { [key: string]: string };
 

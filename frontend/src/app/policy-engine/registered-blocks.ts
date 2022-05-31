@@ -366,6 +366,9 @@ export class RegisteredBlocks {
             factory: DocumentsSourceBlockComponent,
             property: DocumentSourceComponent,
             allowedChildren: [{
+                type: BlockType.FiltersAddon,
+                group: BlockGroup.UnGrouped
+            },{
                 type: BlockType.DocumentsSourceAddon,
                 group: BlockGroup.UnGrouped
             }, {

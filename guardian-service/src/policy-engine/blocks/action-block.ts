@@ -45,7 +45,7 @@ export class InterfaceDocumentActionBlock {
     private wallet: Wallet;
 
     async getData(user: IAuthUser): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const data: any = {
             id: ref.uuid,
@@ -60,7 +60,7 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type == 'dropdown') {
-            let documents: any[] = await this.getSources(user);
+            let documents: any[] = await ref.getSources(user, null);
             data.name = ref.options.name;
             data.value = ref.options.value;
             data.field = ref.options.field;
@@ -213,17 +213,6 @@ export class InterfaceDocumentActionBlock {
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
         }
-    }
-
-    private async getSources(user: IAuthUser): Promise<any[]> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
-        let data = [];
-        for (let child of ref.children) {
-            if (child.blockClassName === 'SourceAddon') {
-                data = data.concat(await PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(child).getFromSource(user))
-            }
-        }
-        return data;
     }
 
     private findOptions(document: any, field: any, options: any[]) {
