@@ -20,9 +20,17 @@ export enum DataTypes {
 
 export class PolicyUtils {
     public static variables(formula: string): string[] {
-        return mathjs.parse(formula)
-            .filter((node: any) => node.isSymbolNode)
-            .map((node: any) => node.name);
+        const variables = [];
+        try {
+            mathjs.parse(formula).traverse((node: any) => {
+                if (node.isSymbolNode && !mathjs[node.name]) {
+                    variables.push(node.name);
+                }
+            });
+            return variables;
+        } catch (error) {
+            return variables;
+        }
     }
 
     public static evaluate(formula: string, scope: any) {

@@ -26,7 +26,7 @@
 | Schema         | Pre-configured schemas relevant for download to be selected from the drop down of available schemas in your Guardian instance. Only needed in the reference implementation of the Guardian because of the IoT Simulator that is generating MRV data. Action workflow type needs to be DOWNLOAD. |                                            |
 | Target URL     | Set the target URL where the file should be stored. Only needed in the reference implementation of the Guardian because of the IoT Simulator that is generating MRV data. Action workflow type needs to be DOWNLOAD.                                                                            |                                            |
 | User           | Action workflow type needs to be SELECTOR. It determines who will get update actions (Dependencies property in other blocks) and which user will be used in next Blocks. It can be "Current" or "Owner". "Current" - user under which the action is performed. "Owner" - document owner.        |                                            |
-| Option Tag     | Name of the dynamic events                                                                                                                                                                                                                                                                      | Approve Event                              |
+| Option Tag     | Name of the dynamic events                                                                                                                                                                                                                                                                      |                                            |
 
 
 
@@ -34,15 +34,15 @@
 
 ### Events
 
-| Property Name | Name in JSON | Property Value                                                    | Value in JSON                                                                                                                   | Description |
-| ------------- | ------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| Event Type    | -            | <p>Input Event</p><p>Output Event</p>                             | Type of the event - determines whether this is ingress or egress event for the current block.                                   |             |
-| Source        | "source"     | Block tag(string)                                                 | The block which initiates the event.                                                                                            |             |
-| Target        | "target"     | Block tag(string)                                                 | The block which receives the event.                                                                                             |             |
-| Output Event  | "output"     | Event name(string)                                                | Action or issue that caused the event.                                                                                          |             |
-| Input Event   | "input"      | Event name(string)                                                | Action which will be triggered by the event.                                                                                    |             |
-| Event Actor   | "actor"      | <p>Event Initiator</p><p>Document Owner</p><p>Document Issuer</p> | Allows to transfer control of the block (execution context) to another user. Empty field leaves control at the Event Initiator. |             |
-| Disabled      | "disabled"   | True/False                                                        | Allows to disable the event without deleting it.                                                                                |             |
+| Property Name | Name in JSON | Property Value                                                    | Value in JSON                          | Description                                                                                                                     |
+| ------------- | ------------ | ----------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Event Type    | -            | <p>Input Event</p><p>Output Event</p>                             | -                                      | Type of the event - determines whether this is ingress or egress event for the current block.                                   |
+| Source        | "source"     | Block tag(string)                                                 | "block\_tag"                           | The block which initiates the event.                                                                                            |
+| Target        | "target"     | Block tag(string)                                                 | "block\_tag"                           | The block which receives the event.                                                                                             |
+| Output Event  | "output"     | Event name(string)                                                | "event\_name"                          | Action or issue that caused the event.                                                                                          |
+| Input Event   | "input"      | Event name(string)                                                | "event\_name"                          | Action which will be triggered by the event.                                                                                    |
+| Event Actor   | "actor"      | <p>Event Initiator</p><p>Document Owner</p><p>Document Issuer</p> | <p>""</p><p>"owner"</p><p>"issuer"</p> | Allows to transfer control of the block (execution context) to another user. Empty field leaves control at the Event Initiator. |
+| Disabled      | "disabled"   | True/False                                                        | true/false                             | Allows to disable the event without deleting it.                                                                                |
 
 To know more information about events, please look at [events.md](events.md "mention").
 
