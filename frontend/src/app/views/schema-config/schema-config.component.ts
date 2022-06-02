@@ -28,7 +28,8 @@ export class SchemaConfigComponent implements OnInit {
     isConfirmed: boolean = false;
     schemes: Schema[] = [];
     schemesCount: any;
-    schemaColumns: string[] = [
+    columns: string[] = [];
+    policySchemaColumns: string[] = [
         'policy',
         'type',
         'topic',
@@ -41,6 +42,16 @@ export class SchemaConfigComponent implements OnInit {
         'delete',
         'document',
     ];
+    systemSchemaColumns: string[] = [
+        'type',
+        'owner',
+        'entity',
+        'active',
+        'activeOperation',
+        'editSystem',
+        'deleteSystem',
+        'document',
+    ];
     selectedAll!: boolean;
     policies: any[] | null;
     currentTopicPolicy: any = '';
@@ -48,6 +59,7 @@ export class SchemaConfigComponent implements OnInit {
     pageSize: number;
     schemesMap: any;
     policyNameByTopic: any;
+    system: boolean = false;
 
     constructor(
         private auth: AuthService,
@@ -64,42 +76,53 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     ngOnInit() {
+        const type = this.route.snapshot.queryParams['type'];
+        this.system = type == 'system';
         this.loadProfile()
     }
 
     loadProfile() {
         this.loading = true;
-        this.profileService.getProfile().subscribe((profile: IUser | null) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.policyEngineService.all(),
+        ]).subscribe((value) => {
+            this.loading = false;
+
+            const profile: IUser | null = value[0];
+            const policies: any[] = value[1] || [];
+
             this.isConfirmed = !!(profile && profile.confirmed);
-            if (this.isConfirmed) {
-                this.loadData();
-            } else {
-                this.loading = false;
+            if (!this.isConfirmed) {
+                this.system = true;
             }
+            this.policyNameByTopic = {};
+            this.policies = [];
+            for (let i = 0; i < policies.length; i++) {
+                const policy = policies[i];
+                if (policy.topicId && !this.policyNameByTopic.hasOwnProperty(policy.topicId)) {
+                    this.policyNameByTopic[policy.topicId] = policy.name;
+                    this.policies.push(policy);
+                }
+            }
+
+            this.pageIndex = 0;
+            this.pageSize = 100;
+            this.currentTopicPolicy = undefined;
+            this.loadSchemes();
         }, (error) => {
             this.loading = false;
             console.error(error);
         });
     }
 
-    loadData() {
-        this.pageIndex = 0;
-        this.pageSize = 100;
-        forkJoin([
-            this.policyEngineService.all(),
-            this.schemaService.getSchemesByPage(undefined, this.pageIndex, this.pageSize)
-        ]).subscribe((value) => {
-            const policies: any[] = value[0];
-            const schemesResponse = value[1] as HttpResponse<ISchema[]>;
-            this.policyNameByTopic = {};
-            this.policies = [];
-            for (let i = 0; i < policies.length; i++) {
-                const policy = policies[i];
-                if(policy.topicId && !this.policyNameByTopic.hasOwnProperty(policy.topicId)) {
-                    this.policyNameByTopic[policy.topicId] = policy.name;
-                    this.policies.push(policy);
-                }
-            }
+    loadSchemes() {
+        this.loading = true;
+        const request = this.system ?
+            this.schemaService.getSystemSchemes(this.pageIndex, this.pageSize) :
+            this.schemaService.getSchemesByPage(this.currentTopicPolicy, this.pageIndex, this.pageSize);
+        this.columns = this.system ? this.systemSchemaColumns : this.policySchemaColumns;
+        request.subscribe((schemesResponse: HttpResponse<ISchema[]>) => {
             this.schemes = SchemaHelper.map(schemesResponse.body || []);
             this.schemesCount = schemesResponse.headers.get('X-Total-Count') || this.schemes.length;
             this.schemaMapping(this.schemes);
@@ -107,23 +130,9 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, (e) => {
+            console.error(e.error);
             this.loading = false;
         });
-    }
-
-    loadSchemes() {
-        this.loading = true;
-        this.schemaService.getSchemesByPage(this.currentTopicPolicy, this.pageIndex, this.pageSize)
-            .subscribe((schemesResponse: HttpResponse<ISchema[]>) => {
-                this.schemes = SchemaHelper.map(schemesResponse.body || []);
-                this.schemesCount = schemesResponse.headers.get('X-Total-Count') || this.schemes.length;
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
     }
 
     onFilter() {
@@ -157,12 +166,12 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     newSchemes() {
-
         const dialogRef = this.dialog.open(SchemaDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                system: this.system,
                 type: 'new',
                 schemesMap: this.schemesMap,
                 topicId: this.currentTopicPolicy,
@@ -172,12 +181,21 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.create(schema, schema.topicId).subscribe((data) => {
-                    this.loadSchemes();
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
+                if (schema.system) {
+                    this.schemaService.createSystemSchemes(schema).subscribe((data) => {
+                        this.loadSchemes();
+                    }, (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    });
+                } else {
+                    this.schemaService.create(schema, schema.topicId).subscribe((data) => {
+                        this.loadSchemes();
+                    }, (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    });
+                }
             }
         });
     }
@@ -210,7 +228,11 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.update(schema, element.id).subscribe((data) => {
+
+                const request = this.system ?
+                    this.schemaService.updateSystemSchemes(schema, element.id) :
+                    this.schemaService.update(schema, element.id);
+                request.subscribe((data) => {
                     this.loadSchemes();
                 }, (e) => {
                     console.error(e.error);
@@ -316,7 +338,12 @@ export class SchemaConfigComponent implements OnInit {
 
     deleteSchema(element: any) {
         this.loading = true;
-        this.schemaService.delete(element.id).subscribe((data: any) => {
+
+        const request = this.system ?
+            this.schemaService.deleteSystemSchemes(element.id) :
+            this.schemaService.delete(element.id);
+
+        request.subscribe((data: any) => {
             const schemes = SchemaHelper.map(data);
             this.schemaMapping(schemes);
             this.loadSchemes();
@@ -417,5 +444,27 @@ export class SchemaConfigComponent implements OnInit {
             }
         }
         this.schemes = this.schemes.slice();
+    }
+
+    onChangeType(event: any) {
+        this.pageIndex = 0;
+        this.pageSize = 100;
+        this.currentTopicPolicy = undefined;
+        this.router.navigate(['/schemes'], {
+            queryParams: {
+                type: this.system ? 'system' : 'policy'
+            }
+        });
+        this.loadSchemes();
+    }
+
+    active(element: any) {
+        this.loading = true;
+        this.schemaService.activeSystemSchemes(element.id).subscribe((res) => {
+            this.loading = false;
+            this.loadSchemes();
+        }, (e) => {
+            this.loading = false;
+        });
     }
 }

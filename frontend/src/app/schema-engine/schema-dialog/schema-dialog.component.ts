@@ -21,6 +21,7 @@ export class SchemaDialog {
     type: 'new' | 'edit' | 'version' = 'new';
     topicId: any;
     policies: any[];
+    system: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
@@ -31,6 +32,7 @@ export class SchemaDialog {
         this.type = data.type || null;
         this.topicId = data.topicId || null;
         this.policies = data.policies || [];
+        this.system = data.system || false;
     }
 
     ngOnInit(): void {

@@ -29,7 +29,7 @@ export const demoAPI = async function (
             });
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
+            return new MessageError(error.message);
         }
     });
 
@@ -51,7 +51,7 @@ export const demoAPI = async function (
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
+            return new MessageError(error.message);
         }
     })
 }

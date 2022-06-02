@@ -24,7 +24,7 @@ import {
 } from './policy-engine.interface';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { incrementSchemaVersion, publishSchema } from '@api/schema.service';
+import { incrementSchemaVersion, findAndPublishSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
@@ -189,7 +189,7 @@ export class PolicyEngineService {
             if (schema.status == SchemaStatus.PUBLISHED) {
                 continue;
             }
-            const newSchema = await publishSchema(schema.id, schema.version, owner);
+            const newSchema = await findAndPublishSchema(schema.id, schema.version, owner);
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
         }
         return model;

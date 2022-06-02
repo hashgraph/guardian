@@ -26,6 +26,7 @@ export class SchemaConfigurationComponent implements OnInit {
     @Input('schemes-map') schemesMap!: { [x: string]: Schema[] };
     @Input('policies') policies!: any[];
     @Input('topicId') topicId!: any;
+    @Input('system') system!: boolean;
 
     started = false;
     fieldsForm!: FormGroup;
@@ -103,6 +104,7 @@ export class SchemaConfigurationComponent implements OnInit {
             }
         ];
         this.defaultFieldsMap["TOKEN"] = [];
+        this.defaultFieldsMap["ROOT_AUTHORITY"] = [];
 
         this.types = [
             { name: "Number", value: "1" },
@@ -184,21 +186,6 @@ export class SchemaConfigurationComponent implements OnInit {
             pattern: '^((https):\/\/)?ipfs.io\/ipfs\/.+',
             isRef: false
         };
-
-        this.fieldsForm = this.fb.group({});
-        this.conditionsForm = new FormGroup({});
-        this.defaultFields = new FormControl("VC", Validators.required);
-        this.dataForm = this.fb.group({
-            name: ['', Validators.required],
-            description: [''],
-            topicId: ['', Validators.required],
-            entity: this.defaultFields,
-            fields: this.fieldsForm,
-            conditions: this.conditionsForm
-        });
-        this.fields = [];
-        this.conditions = [];
-        this.schemes = [];
     }
 
     ngOnInit(): void {
@@ -208,15 +195,57 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.updateSubSchemes(this.value?.topicId || this.topicId);
-        this.dataForm.setValue({
-            name: '',
-            description: '',
-            entity: 'VC',
-            topicId: this.topicId,
-            fields: {},
-            conditions: {}
-        })
+        if (this.system) {
+            this.updateSubSchemes(undefined);
+        } else {
+            this.updateSubSchemes(this.value?.topicId || this.topicId);
+        }
+        if (this.dataForm) {
+            if (this.system) {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
+                    entity: 'ROOT_AUTHORITY',
+                    fields: {},
+                    conditions: {}
+                });
+            } else {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
+                    entity: 'VC',
+                    topicId: this.topicId,
+                    fields: {},
+                    conditions: {}
+                });
+            }
+        } else {
+            this.fieldsForm = this.fb.group({});
+            this.conditionsForm = new FormGroup({});
+            if (this.system) {
+                this.defaultFields = new FormControl("ROOT_AUTHORITY", Validators.required);
+                this.dataForm = this.fb.group({
+                    name: ['', Validators.required],
+                    description: [''],
+                    entity: this.defaultFields,
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                });
+            } else {
+                this.defaultFields = new FormControl("VC", Validators.required);
+                this.dataForm = this.fb.group({
+                    name: ['', Validators.required],
+                    description: [''],
+                    topicId: ['', Validators.required],
+                    entity: this.defaultFields,
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                });
+            }
+            this.fields = [];
+            this.conditions = [];
+            this.schemes = [];
+        }
         if (changes.value && this.value) {
             this.updateFormControls();
         }
@@ -679,6 +708,9 @@ export class SchemaConfigurationComponent implements OnInit {
         const value = this.dataForm.value;
         const schema = this.buildSchema(value);
         schema.topicId = value.topicId;
+        schema.system = this.system;
+        schema.active = false;
+        schema.readonly = false;
         return schema;
     }
 

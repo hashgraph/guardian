@@ -245,19 +245,8 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema} - schema
      */
-     public async getSchemaByType(type: string): Promise<ISchema> {
+    public async getSchemaByType(type: string): Promise<ISchema> {
         return await this.request(MessageAPI.GET_SCHEMA, { type: type });
-    }
-
-    /**
-     * Return schema by entity
-     *
-     * @param {string} entity - schema entity
-     *
-     * @returns {ISchema} - schema
-     */
-     public async getSchemaByEntity(entity: string): Promise<ISchema> {
-        return await this.request(MessageAPI.GET_SCHEMA, { entity: entity });
     }
 
     /**
@@ -399,11 +388,67 @@ export class Guardians extends ServiceRequestsBase {
      * Get user roles in policy
      *
      * @param {string} did - User did
-     * @param {string} policyId - Policy identifier
      *
      * @returns {any[]} - Policies and user roles
      */
     public async getUserRoles(did: string): Promise<string[]> {
         return await this.request(MessageAPI.GET_USER_ROLES, { did });
+    }
+
+    /**
+     * Create system schema
+     *
+     * @param {ISchema} item - schema
+     *
+     * @returns {ISchema[]} - all schemes
+     */
+    public async createSystemSchema(item: ISchema | any): Promise<ISchema> {
+        return await this.request(MessageAPI.CREATE_SYSTEM_SCHEMA, item);
+    }
+
+    /**
+     * Return schemes
+     * @param {string} username
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemes
+     */
+    public async getSystemSchemes(
+        username: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<{
+        schemes: ISchema[],
+        count: number
+    }> {
+        console.log(MessageAPI.GET_SYSTEM_SCHEMES)
+        return await this.request(MessageAPI.GET_SYSTEM_SCHEMES, {
+            owner: username,
+            pageIndex: pageIndex,
+            pageSize: pageSize
+        });
+    }
+
+    /**
+     * Changing the status of a schema on active.
+     *
+     * @param {string} id - schema id
+     *
+     * @returns {ISchema} - message
+     */
+    public async activeSchema(id: string): Promise<ISchema> {
+        return await this.request(MessageAPI.ACTIVE_SCHEMA, { id });
+    }
+
+    /**
+     * Return schema by entity
+     *
+     * @param {string} entity - schema entity
+     *
+     * @returns {ISchema} - schema
+     */
+    public async getSchemaByEntity(entity: string): Promise<ISchema> {
+        return await this.request(MessageAPI.GET_SYSTEM_SCHEMA, { entity: entity });
     }
 }

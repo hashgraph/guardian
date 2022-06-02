@@ -38,7 +38,7 @@ a {
 
 .actions {
     display: grid;
-    grid-template-columns: auto 290px;
+    grid-template-columns: 300px auto 290px;
     padding: 14px 14px 14px 14px;
     border-bottom: 1px solid #eee;
     margin: 0;
@@ -192,6 +192,7 @@ a {
     padding-left: 10px;
 }
 
+.schemes-table .mat-column-activeOperation,
 .schemes-table .mat-column-operation {
     width: 135px;
     border-left: 1px solid #dddddd;
@@ -213,6 +214,7 @@ a {
     padding-left: 10px;
 }
 
+.schemes-table .mat-column-deleteSystem,
 .schemes-table .mat-column-delete {
     width: 25px;
     max-width: 25px;
@@ -233,4 +235,23 @@ a {
     transform: translate(-50%, -50%);
     font-size: 20px;
     color: darkgrey;
+}
+
+.schemes-table[system="true"] .mat-column-entity {
+    width: 250px;
+    max-width: 250px;
+}
+
+.schemes-table .mat-column-active {
+    width: 225px;
+    max-width: 225px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.schemes-table .mat-column-editSystem {
+    width: 25px;
+    max-width: 25px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
 }

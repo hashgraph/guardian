@@ -12,6 +12,10 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         const user = await users.getUser(req.user.username);
+        if (!user.did) {
+            res.status(200).setHeader('X-Total-Count', 0).json([]);
+            return;
+        }
         let pageIndex: any, pageSize: any;
         if (req.query && req.query.pageIndex && req.query.pageSize) {
             pageIndex = req.query.pageIndex;

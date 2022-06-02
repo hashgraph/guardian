@@ -27,8 +27,6 @@ export async function generateZipFile(schemes: ISchema[]): Promise<JSZip> {
 
 export async function createSchema(newSchema: ISchema, owner: string, topicId?: string): Promise<ISchema[]> {
     const guardians = new Guardians();
-    const engineService = new PolicyEngine();
-
     if (newSchema.id) {
         const schema = await guardians.getSchemaById(newSchema.id);
         if (!schema) {
@@ -69,16 +67,28 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
     return schemes;
 }
 
-function toOld(schemes: any[]): any[] {
+function toOld<T extends ISchema | ISchema[]>(schemes: T): T {
     if (schemes) {
-        for (let i = 0; i < schemes.length; i++) {
-            const schema = schemes[i];
+        if (Array.isArray(schemes)) {
+            for (let i = 0; i < schemes.length; i++) {
+                const schema: any = schemes[i];
+                if (schema.document) {
+                    schema.document = JSON.stringify(schema.document);
+                }
+                if (schema.context) {
+                    schema.context = JSON.stringify(schema.context);
+                }
+            }
+            return schemes;
+        } else {
+            const schema: any = schemes;
             if (schema.document) {
                 schema.document = JSON.stringify(schema.document);
             }
             if (schema.context) {
                 schema.context = JSON.stringify(schema.context);
             }
+            return schema;
         }
     }
     return schemes;
@@ -189,6 +199,20 @@ schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
     try {
         const user = req.user;
         const newSchema = req.body;
+        const guardians = new Guardians();
+        const schema = await guardians.getSchemaById(newSchema.id);
+        if (!schema) {
+            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+            return;
+        }
+        if (schema.creator != user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid creator.' });
+            return;
+        }
+        if (schema.system) {
+            res.status(500).json({ code: 500, message: 'Schema is system.' });
+            return;
+        }
         fromOld(newSchema);
         const schemes = await updateSchema(newSchema, user.did)
         res.status(200).json(toOld(schemes));
@@ -210,6 +234,10 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async 
         }
         if (schema.creator != user.did) {
             res.status(500).json({ code: 500, message: 'Invalid creator.' });
+            return;
+        }
+        if (schema.system) {
+            res.status(500).json({ code: 500, message: 'Schema is system.' });
             return;
         }
         const schemes = (await guardians.deleteSchema(schemaId));
@@ -235,6 +263,11 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
             res.status(500).json({ code: 500, message: 'Invalid creator.' });
             return;
         }
+        if (schema.system) {
+            res.status(500).json({ code: 500, message: 'Schema is system.' });
+            return;
+        }
+
         const allVersion = await guardians.getSchemesByUUID(schema.uuid);
         const { version } = req.body;
         if (allVersion.findIndex(s => s.version == version) !== -1) {
@@ -433,7 +466,136 @@ schemaAPI.get('/type/:schemaType', async (req: AuthenticatedRequest, res: Respon
     }
 });
 
-schemaAPI.get('/entity/:schemaEntity', async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const newSchema = req.body;
+        const guardians = new Guardians();
+        const owner = user.username;
+
+        fromOld(newSchema);
+        delete newSchema.version;
+        delete newSchema.id;
+        delete newSchema.status;
+        delete newSchema.topicId;
+
+        SchemaHelper.updateOwner(newSchema, owner);
+        const schema = await guardians.createSystemSchema(newSchema);
+
+        res.status(201).json(toOld(schema));
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.get('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const owner = user.username;
+        let pageIndex: any, pageSize: any;
+        if (req.query && req.query.pageIndex && req.query.pageSize) {
+            pageIndex = req.query.pageIndex;
+            pageSize = req.query.pageSize;
+        }
+        const { schemes, count } = await guardians.getSystemSchemes(owner, pageIndex, pageSize);
+        schemes.forEach((s) => {s.readonly = s.readonly || s.owner != owner});
+        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemes));
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: error.code, message: error.message });
+    }
+});
+
+schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        const schema = await guardians.getSchemaById(schemaId);
+        if (!schema) {
+            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+            return;
+        }
+        if (schema.owner != user.username) {
+            res.status(500).json({ code: 500, message: 'Invalid creator.' });
+            return;
+        }
+        if (schema.active) {
+            res.status(500).json({ code: 500, message: 'Schema is active.' });
+            return;
+        }
+        if (!schema.system) {
+            res.status(500).json({ code: 500, message: 'Schema is not system.' });
+            return;
+        }
+        await guardians.deleteSchema(schemaId);
+        res.status(200).json(null);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.put('/system', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const newSchema = req.body;
+        const guardians = new Guardians();
+        const schema = await guardians.getSchemaById(newSchema.id);
+        if (!schema) {
+            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+            return;
+        }
+        if (schema.owner != user.username) {
+            res.status(500).json({ code: 500, message: 'Invalid creator.' });
+            return;
+        }
+        if (schema.active) {
+            res.status(500).json({ code: 500, message: 'Schema is active.' });
+            return;
+        }
+        if (!schema.system) {
+            res.status(500).json({ code: 500, message: 'Schema is not system.' });
+            return;
+        }
+        fromOld(newSchema);
+        const schemes = await updateSchema(newSchema, user.did);
+        res.status(200).json(toOld(schemes));
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.put('/system/:schemaId/active', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemaId = req.params.schemaId;
+        const schema = await guardians.getSchemaById(schemaId);
+        if (!schema) {
+            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+            return;
+        }
+        if (schema.active) {
+            res.status(500).json({ code: 500, message: 'Schema is active.' });
+            return;
+        }
+        if (!schema.system) {
+            res.status(500).json({ code: 500, message: 'Schema is not system.' });
+            return;
+        }
+        await guardians.activeSchema(schemaId);
+        res.status(200).json(null);
+    } catch (error) {
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.get('/system/entity/:schemaEntity', async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.params.schemaEntity) {
             throw new Error(`Schema not found: ${req.params.schemaEntity}`);

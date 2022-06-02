@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ISchema, Schema, SchemaEntity } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { AuthService } from './auth.service';
 
 /**
  * Services for working from Schemes.
@@ -12,7 +13,8 @@ export class SchemaService {
     private readonly url: string = `${API_BASE_URL}/schemas`;
 
     constructor(
-        private http: HttpClient
+        private http: HttpClient,
+        private auth: AuthService
     ) {
     }
 
@@ -54,10 +56,6 @@ export class SchemaService {
 
     public getSchemesByType(type: string): Observable<ISchema> {
         return this.http.get<ISchema>(`${this.url}/type/${type}`);
-    }
-
-    public getSchemesByEntity(entity: string): Observable<ISchema> {
-        return this.http.get<ISchema>(`${this.url}/entity/${entity}`);
     }
 
     public publish(id: string, version: string): Observable<ISchema[]> {
@@ -104,5 +102,36 @@ export class SchemaService {
                 'Content-Type': 'binary/octet-stream'
             }
         });
+    }
+
+    public createSystemSchemes(schema: Schema): Observable<ISchema> {
+        const username = encodeURIComponent(this.auth.getUsername());
+        return this.http.post<any>(`${this.url}/system/${username}`, schema);
+    }
+
+    public getSystemSchemes(pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+        const username = encodeURIComponent(this.auth.getUsername());
+        let url = `${this.url}/system/${username}`;
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+        }
+        return this.http.get<any>(url, { observe: 'response' });
+    }
+
+    public deleteSystemSchemes(id: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/system/${id}`);
+    }
+
+    public updateSystemSchemes(schema: Schema, id?: string): Observable<ISchema[]> {
+        const data = Object.assign({}, schema, { id: id || schema.id });
+        return this.http.put<any[]>(`${this.url}/system`, data);
+    }
+
+    public activeSystemSchemes(id: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/system/${id}/active`, null);
+    }
+
+    public getSystemSchemesByEntity(entity: SchemaEntity): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.url}/system/entity/${entity}`);
     }
 }

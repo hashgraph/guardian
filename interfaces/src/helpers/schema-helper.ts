@@ -542,4 +542,40 @@ export class SchemaHelper {
             return schema;
         }
     }
+
+    private static _clearFieldsContext(json: any): any {
+        delete json['type'];
+        delete json['@context'];
+
+        const keys = Object.keys(json);
+        for (const key of keys) {
+            if (Object.prototype.toString.call(json[key]) === '[object Object]') {
+                json[key] = this._clearFieldsContext(json[key]);
+            }
+        }
+
+        return json;
+    }
+
+    private static _updateFieldsContext(fields: SchemaField[], json: any): any {
+        if (Object.prototype.toString.call(json) !== '[object Object]') {
+            return json;
+        }
+        for (const field of fields) {
+            const value = json[field.name];
+            if (field.isRef && value) {
+                this._updateFieldsContext(field.fields, value);
+                value['type'] = field.context.type;
+                value['@context'] = field.context.context;
+            }
+        }
+    }
+
+    public static updateObjectContext(schema: Schema, json: any): any {
+        json = this._clearFieldsContext(json);
+        json = this._updateFieldsContext(schema.fields, json);
+        json['type'] = schema.type;
+        json['@context'] = [schema.contextURL];
+        return json;
+    }
 }
