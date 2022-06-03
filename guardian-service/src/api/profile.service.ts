@@ -149,6 +149,9 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             let schemaObject: Schema;
             try {
                 if (newTopic && schema) {
+                    schema.readonly = true;
+                    schema.system = false;
+                    schema.active = false;
                     logger.info('Publish System Schema', ['GUARDIAN_SERVICE']);
                     const item = await publishSchema(schema, '1.0.0', messageServer, MessageAction.PublishSystemSchema);
                     const newItem = getMongoRepository(SchemaCollection).create(item);

@@ -34,12 +34,22 @@ export interface IPolicyBlock {
     policyId: string;
     policyOwner: string;
     policyInstance: any;
+    topicId: string;
 
     readonly actions: any[];
     readonly outputActions: any[];
     readonly events: EventConfig[];
 
     readonly next: IPolicyBlock;
+
+
+    setPolicyId(id: string): void;
+
+    setPolicyOwner(did: string): void;
+
+    setPolicyInstance(policy: any): void;
+
+    setTopicId(id: string): void;
 
     getChild(uuid: string): IPolicyBlock;
 

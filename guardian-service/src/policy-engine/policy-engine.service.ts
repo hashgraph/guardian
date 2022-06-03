@@ -24,7 +24,7 @@ import {
 } from './policy-engine.interface';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { incrementSchemaVersion, findAndPublishSchema } from '@api/schema.service';
+import { incrementSchemaVersion, findAndPublishSchema, publishSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
@@ -40,6 +40,7 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
 import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from '@guardian/common';
 import { PolicyConverterUtils } from './policy-converter-utils';
+import { PolicyUtils } from './helpers/utils';
 
 export class PolicyEngineService {
     @Inject()
@@ -154,6 +155,23 @@ export class PolicyEngineService {
 
             await topicHelper.link(topic, parent, messageStatus.getId());
             newTopic = topic;
+
+            const systemSchemes = new Array(4);
+            systemSchemes[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);
+            systemSchemes[1] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN);
+            systemSchemes[2] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN);
+            systemSchemes[3] = await PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN);
+
+            for (let i = 0; i < systemSchemes.length; i++) {
+                const schema = systemSchemes[i];
+                schema.readonly = true;
+                schema.system = false;
+                schema.active = false;
+                schema.topicId = topic.topicId;
+                const item = await publishSchema(schema, '1.0.0', messageServer, MessageAction.PublishSystemSchema);
+                const newItem = getMongoRepository(SchemaCollection).create(item);
+                await getMongoRepository(SchemaCollection).save(newItem);
+            }
         }
 
         model.codeVersion = PolicyConverterUtils.VERSION;
@@ -196,6 +214,11 @@ export class PolicyEngineService {
     }
 
     private async publishPolicy(model: Policy, owner: string, version: string): Promise<Policy> {
+        const root = await this.users.getHederaAccount(owner);
+        const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+            .setTopicObject(topic);
+
         model = await this.publishSchemes(model, owner);
         model.status = 'PUBLISH';
         model.version = version;
@@ -203,10 +226,6 @@ export class PolicyEngineService {
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
-
-        const root = await this.users.getHederaAccount(owner);
-        const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
 
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const rootTopic = await topicHelper.create({
@@ -220,7 +239,7 @@ export class PolicyEngineService {
 
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.setTopicObject(topic).sendMessage(message);
+        const result = await messageServer.sendMessage(message);
         model.messageId = result.getId();
         model.instanceTopicId = rootTopic.topicId;
 
@@ -228,7 +247,9 @@ export class PolicyEngineService {
 
         const messageId = result.getId();
         const url = result.getUrl();
-        const policySchema = await getMongoRepository(SchemaCollection).findOne({ entity: SchemaEntity.POLICY });
+
+        const policySchema = await PolicyUtils.getSchema(model.topicId, SchemaEntity.POLICY);
+
         const vcHelper = new VcHelper();
         const credentialSubject = {
             ...SchemaHelper.getContext(policySchema),

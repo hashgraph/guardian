@@ -37,65 +37,52 @@ export async function setDefaultSchema() {
         throw ('you need to create a file \'system-schemes.json\'');
     }
 
-    if (!fileContent.hasOwnProperty('MINT_NFTOKEN')) {
+    const map: any = {};
+    for (const schema of fileContent) {
+        map[schema.entity] = schema;
+    }
+
+    if (!map.hasOwnProperty('MINT_NFTOKEN')) {
         throw ('You need to fill MINT_NFTOKEN field in system-schemes.json file');
     }
 
-    if (!fileContent.hasOwnProperty('MINT_TOKEN')) {
+    if (!map.hasOwnProperty('MINT_TOKEN')) {
         throw ('You need to fill MINT_TOKEN field in system-schemes.json file');
     }
 
-    if (!fileContent.hasOwnProperty('POLICY')) {
+    if (!map.hasOwnProperty('POLICY')) {
         throw ('You need to fill POLICY field in system-schemes.json file');
     }
 
-    if (!fileContent.hasOwnProperty('ROOT_AUTHORITY')) {
+    if (!map.hasOwnProperty('ROOT_AUTHORITY')) {
         throw ('You need to fill ROOT_AUTHORITY field in system-schemes.json file');
     }
 
-    if (!fileContent.hasOwnProperty('WIPE_TOKEN')) {
+    if (!map.hasOwnProperty('WIPE_TOKEN')) {
         throw ('You need to fill WIPE_TOKEN field in system-schemes.json file');
     }
 
-    const messages = Object.values(fileContent);
-    const wait = async (timeout: number) => {
-        return new Promise(function (resolve, reject) {
-            setTimeout(function () {
-                resolve(true)
-            }, timeout);
-        });
-    }
-    const fn = async () => {
-        try {
-            const existingSchemes = await getMongoRepository(SchemaCollection).find({
-                where: {
-                    messageId: { $in: messages }
-                }
-            });
-            for (let i = 0; i < messages.length; i++) {
-                const messageId = messages[i] as string;
-                const existingItem = existingSchemes.find(s => s.messageId === messageId);
-                if (existingItem) {
-                    console.log(`Skip schema: ${existingItem.messageId}`);
-                    continue;
-                }
-                const schema = await loadSchema(messageId, null) as ISchema;
-                schema.owner = null;
-                schema.creator = null;
-                schema.readonly = true;
-                schema.system = true;
-                schema.active = true;
-                console.log(`Start loading schema: ${messageId}`);
-                const item: any = getMongoRepository(SchemaCollection).create(schema);
-                await getMongoRepository(SchemaCollection).save(item);
-                console.log(`Created schema: ${item.messageId}`);
-            }
-        } catch (error) {
-            await wait(10000);
-            await fn();
+    const fn = async (schema: any) => {
+        const existingSchemes = await getMongoRepository(SchemaCollection).findOne({ uuid: schema.uuid });
+        if (existingSchemes) {
+            console.log(`Skip schema: ${schema.uuid}`);
+            return;
         }
+        schema.owner = null;
+        schema.creator = null;
+        schema.readonly = true;
+        schema.system = true;
+        schema.active = true;
+        const item: any = getMongoRepository(SchemaCollection).create(schema);
+        await getMongoRepository(SchemaCollection).save(item);
+        console.log(`Created schema: ${schema.uuid}`);
     }
-    await fn();
+
+    await fn(map['MINT_NFTOKEN']);
+    await fn(map['MINT_TOKEN']);
+    await fn(map['POLICY']);
+    await fn(map['ROOT_AUTHORITY']);
+    await fn(map['WIPE_TOKEN']);
 }
 
 const loadSchema = async function (messageId: string, owner: string) {
