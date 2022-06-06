@@ -177,3 +177,7 @@
 ## External APIs
 
 * [Sends Data from External Source](external-apis/sends-data-from-external-source.md)
+
+## FAQs
+
+* [FAQs](faqs/faqs.md)
