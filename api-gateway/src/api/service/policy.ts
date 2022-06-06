@@ -182,7 +182,6 @@ policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: R
     const engineService = new PolicyEngine();
     try {
         const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
-        console.log(policyFile)
         const policy: any = await engineService.getPolicy({ filters: req.params.policyId });
         res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
         res.setHeader('Content-type', 'application/zip');

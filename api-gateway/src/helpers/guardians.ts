@@ -422,7 +422,6 @@ export class Guardians extends ServiceRequestsBase {
         schemas: ISchema[],
         count: number
     }> {
-        console.log(MessageAPI.GET_SYSTEM_SCHEMAS)
         return await this.request(MessageAPI.GET_SYSTEM_SCHEMAS, {
             owner: username,
             pageIndex: pageIndex,

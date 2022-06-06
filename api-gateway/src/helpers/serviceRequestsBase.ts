@@ -40,7 +40,6 @@ export abstract class ServiceRequestsBase {
             }
             return response.body;
         } catch (error) {
-            console.log(error);
             const err = new ServiceError(`${this.target} (${entity}) send: ` + error.error);
             err.code = error.code;
             throw err

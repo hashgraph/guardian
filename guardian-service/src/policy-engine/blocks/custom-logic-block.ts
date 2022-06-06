@@ -75,7 +75,8 @@ export class CustomLogicBlock {
                 try {
                     const root = await this.users.getHederaAccount(ref.policyOwner);
                     const outputSchema = await getMongoRepository(SchemaCollection).findOne({
-                        iri: ref.options.outputSchema
+                        iri: ref.options.outputSchema,
+                        topicId: ref.topicId
                     });
                     const context = SchemaHelper.getContext(outputSchema);
                     const owner = documents[0].owner;

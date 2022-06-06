@@ -161,7 +161,6 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
                 userDid: user.did,
             })) as any;
             topicId = model?.topicId;
-            console.log(topicId)
         }
         const { schemas, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemas, user.did);

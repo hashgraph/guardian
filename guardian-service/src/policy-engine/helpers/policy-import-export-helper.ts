@@ -11,14 +11,16 @@ import { getMongoRepository } from 'typeorm';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
-import { TopicType } from '@guardian/interfaces';
+import { SchemaEntity, TopicType } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
-import { importSchemaByFiles } from '@api/schema.service';
+import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
 import { TopicHelper } from '@helpers/topicHelper';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
+import { PolicyUtils } from './utils';
+import { Schema as SchemaCollection } from '@entity/schema';
 
 export class PolicyImportExportHelper {
     static policyFileName = 'policy.json';
@@ -31,35 +33,20 @@ export class PolicyImportExportHelper {
      */
     static async generateZipFile(policy: Policy): Promise<JSZip> {
         const policyObject = { ...policy };
+        const topicId = policyObject.topicId;
+
         delete policyObject.id;
         delete policyObject.messageId;
         delete policyObject.registeredUsers;
         delete policyObject.status;
+        delete policyObject.topicId;
+
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
-        const schemasIds = findAllEntities(policyObject.config, SchemaFields);
 
         const tokens = await getMongoRepository(Token).find({ where: { tokenId: { $in: tokenIds } } });
-        const rootSchemas = await getMongoRepository(Schema).find({
-            where: { iri: { $in: schemasIds } }
-        });
-        const defs: any[] = rootSchemas.map(s => s.document.$defs);
-        const map: any = {};
-        for (let i = 0; i < rootSchemas.length; i++) {
-            const id = rootSchemas[i].iri;
-            map[id] = id;
-        }
-        for (let i = 0; i < defs.length; i++) {
-            if (defs[i]) {
-                const ids = Object.keys(defs[i]);
-                for (let j = 0; j < ids.length; j++) {
-                    const id = ids[j];
-                    map[id] = id;
-                }
-            }
-        }
-        const allSchemasIds = Object.keys(map);
         const schemas = await getMongoRepository(Schema).find({
-            where: { iri: { $in: allSchemasIds } }
+            topicId: topicId,
+            readonly: false
         });
 
         const zip = new JSZip();
@@ -95,7 +82,7 @@ export class PolicyImportExportHelper {
     static async parseZipFile(zipFile: any): Promise<any> {
         const zip = new JSZip();
         const content = await zip.loadAsync(zipFile);
-        if(!content.files[this.policyFileName] || content.files[this.policyFileName].dir) {
+        if (!content.files[this.policyFileName] || content.files[this.policyFileName].dir) {
             throw 'Zip file is not a policy';
         }
         let policyString = await content.files[this.policyFileName].async('string');
@@ -160,6 +147,20 @@ export class PolicyImportExportHelper {
             .sendMessage(message);
 
         await topicHelper.link(topicRow, parent, messageStatus.getId());
+
+        const systemSchemas = new Array(4);
+        systemSchemas[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);
+        systemSchemas[1] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN);
+        systemSchemas[2] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN);
+        systemSchemas[3] = await PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN);
+
+        for (let i = 0; i < systemSchemas.length; i++) {
+            messageServer.setTopicObject(topicRow);
+            const schema = systemSchemas[i];
+            const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
+            const newItem = getMongoRepository(SchemaCollection).create(item);
+            await getMongoRepository(SchemaCollection).save(newItem);
+        }
 
         // Import Tokens
         if (tokens) {
