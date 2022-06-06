@@ -54,57 +54,48 @@ export class SchemaConfigurationComponent implements OnInit {
     ) {
 
         this.defaultFieldsMap = {};
-        this.defaultFieldsMap["NONE"] = [];
-        this.defaultFieldsMap["VC"] = [
-            {
-                name: 'policyId',
-                description: '',
-                required: true,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            },
-            {
-                name: 'ref',
-                description: '',
-                required: false,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            }
-        ];
-        this.defaultFieldsMap["MRV"] = [
-            {
-                name: 'accountId',
-                description: '',
-                required: true,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            },
-            {
-                name: 'policyId',
-                description: '',
-                required: true,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            }
-        ];
-        this.defaultFieldsMap["TOKEN"] = [];
-        this.defaultFieldsMap["ROOT_AUTHORITY"] = [];
+        this.defaultFieldsMap["VC"] = [{
+            name: 'policyId',
+            description: '',
+            required: true,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
+        }, {
+            name: 'ref',
+            description: '',
+            required: false,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
+        }];
+        this.defaultFieldsMap["MRV"] = [{
+            name: 'accountId',
+            description: '',
+            required: true,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
+        }, {
+            name: 'policyId',
+            description: '',
+            required: true,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
+        }];
 
         this.types = [
             { name: "Number", value: "1" },
@@ -626,7 +617,7 @@ export class SchemaConfigurationComponent implements OnInit {
             })
 
         }
-        const defaultFields = this.defaultFieldsMap[value.entity];
+        const defaultFields = this.defaultFieldsMap[value.entity] || [];
         for (let i = 0; i < defaultFields.length; i++) {
             const element = defaultFields[i];
             fields.push({

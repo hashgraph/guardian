@@ -7,7 +7,7 @@
                 <mat-button-toggle [value]="false">Policy Schemas</mat-button-toggle>
             </mat-button-toggle-group>
         </div>
-        <div *ngIf="!system">
+        <div *ngIf="!system && isConfirmed">
             <mat-form-field appearance="outline">
                 <mat-label>Policy</mat-label>
                 <mat-select [(value)]="currentTopicPolicy" (selectionChange)="onFilter()">
@@ -23,8 +23,10 @@
 
         </div>
         <div style="text-align: end">
-            <button mat-raised-button color="primary" class="g-btn" (click)="newSchemas()">New</button>
-            <button *ngIf="!system" mat-raised-button color="primary" class="g-btn" (click)="importSchemas()">
+            <button *ngIf="system || (!system && isConfirmed)" mat-raised-button color="primary" class="g-btn"
+                (click)="newSchemas()">New</button>
+            <button *ngIf="!system&& isConfirmed" mat-raised-button color="primary" class="g-btn"
+                (click)="importSchemas()">
                 Import
             </button>
         </div>
@@ -207,7 +209,7 @@
             <tr mat-row *matRowDef="let row; columns: columns;"></tr>
         </table>
     </div>
-    <div class="table-paginator">
+    <div *ngIf="system || (!system && isConfirmed)" class="table-paginator">
         <mat-paginator [length]="schemasCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
             [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPage($event)" aria-label="Select page">
         </mat-paginator>

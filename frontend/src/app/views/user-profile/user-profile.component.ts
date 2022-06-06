@@ -5,14 +5,16 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
-import { IUser, Token, IToken } from '@guardian/interfaces';
+import { IUser, Token, IToken, SchemaEntity, Schema } from '@guardian/interfaces';
 import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { SchemaService } from 'src/app/services/schema.service';
 
 interface IHederaForm {
     id: string,
     key: string,
     rootAuthority: string,
+    vc?: any
 }
 
 /**
@@ -31,7 +33,8 @@ export class UserProfileComponent implements OnInit {
     profile?: IUser | null;
     balance?: string | null;
     tokens?: Token[] | null;
-    didDocument?: string;
+    didDocument?: any;
+    vcDocument?: any;
     rootAuthorities?: IUser[];
 
     hederaForm = this.fb.group({
@@ -52,14 +55,23 @@ export class UserProfileComponent implements OnInit {
 
     private interval: any;
 
+    hideVC: any;
+    schema!: Schema | null;
+    vcForm!: FormGroup;
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
         private otherService: DemoService,
+        private schemaService: SchemaService,
         private fb: FormBuilder,
         public dialog: MatDialog) {
-            this.rootAuthorities = [];
+        this.rootAuthorities = [];
+        this.hideVC = {
+            id: true
+        }
+        this.vcForm = new FormGroup({});
     }
 
     ngOnInit() {
@@ -88,7 +100,8 @@ export class UserProfileComponent implements OnInit {
             this.profileService.getProfile(),
             this.profileService.getBalance(),
             this.tokenService.getTokens(),
-            this.auth.getRootAuthorities()
+            this.auth.getRootAuthorities(),
+            this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER)
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
             this.balance = value[1] as string;
@@ -104,12 +117,19 @@ export class UserProfileComponent implements OnInit {
             this.isFailed = !!this.profile.failed;
             this.isNewAccount = !this.profile.didDocument;
 
-            this.didDocument = "";
+            this.didDocument = null;
+            this.vcDocument = null;
             if (this.isConfirmed) {
-                const didDocument = this.profile?.didDocument?.document;
-                if (didDocument) {
-                    this.didDocument = JSON.stringify((didDocument), null, 4);
-                }
+                this.didDocument = this.profile?.didDocument;
+                this.vcDocument = this.profile?.vcDocument;
+            }
+
+            const schema = value[4];
+            if (schema) {
+                this.schema = new Schema(schema);
+                this.hederaForm.addControl('vc', this.vcForm);
+            } else {
+                this.schema = null;
             }
 
             setTimeout(() => {
@@ -129,10 +149,14 @@ export class UserProfileComponent implements OnInit {
 
     createDID(data: IHederaForm) {
         this.loading = true;
-        const profile = {
+        const vcDocument = data.vc;
+        const profile: any = {
             hederaAccountId: data.id,
             hederaAccountKey: data.key,
-            parent: data.rootAuthority
+            parent: data.rootAuthority,
+        }
+        if (vcDocument) {
+            profile.vcDocument = vcDocument;
         }
         this.profileService.setProfile(profile).subscribe(() => {
             this.loadDate();
@@ -144,20 +168,22 @@ export class UserProfileComponent implements OnInit {
 
     randomKey() {
         this.loading = true;
+        const value: any = {
+            rootAuthority: this.hederaForm.value.rootAuthority,
+        }
+        if (this.hederaForm.value.vc) {
+            value.vc = this.hederaForm.value.vc;
+        }
         this.otherService.getRandomKey().subscribe((treasury) => {
             this.loading = false;
-            this.hederaForm.setValue({
-                rootAuthority: this.hederaForm.value.rootAuthority,
-                id: treasury.id,
-                key: treasury.key
-            });
+            value.id = treasury.id;
+            value.key = treasury.key;
+            this.hederaForm.setValue(value);
         }, (error) => {
             this.loading = false;
-            this.hederaForm.setValue({
-                rootAuthority: this.hederaForm.value.rootAuthority,
-                id: '',
-                key: '',
-            });
+            value.id = '';
+            value.key = '';
+            this.hederaForm.setValue(value);
         });
     }
 
@@ -176,15 +202,28 @@ export class UserProfileComponent implements OnInit {
         });
     }
 
-    openDocument(document: any) {
+    openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
-                document: JSON.parse(document),
-                title: "DID",
+                document: document.document,
+                title: title,
+                type: 'VC',
+                viewDocument: true
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+        });
+    }
+
+    openDIDDocument(document: any, title: string) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
+            width: '850px',
+            data: {
+                document: document.document,
+                title: title,
                 type: 'JSON',
             }
-
         });
 
         dialogRef.afterClosed().subscribe(async (result) => {
@@ -205,5 +244,9 @@ export class UserProfileComponent implements OnInit {
         return policies.length === 1
             ? policies[0]
             : `Used in ${policies.length} policies`;
+    }
+
+    onChangeForm() {
+        this.vcForm.updateValueAndValidity();
     }
 }

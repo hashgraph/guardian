@@ -157,6 +157,8 @@ export class PolicyImportExportHelper {
         for (let i = 0; i < systemSchemas.length; i++) {
             messageServer.setTopicObject(topicRow);
             const schema = systemSchemas[i];
+            schema.creator = policyOwner;
+            schema.owner = policyOwner;
             const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
             const newItem = getMongoRepository(SchemaCollection).create(item);
             await getMongoRepository(SchemaCollection).save(newItem);

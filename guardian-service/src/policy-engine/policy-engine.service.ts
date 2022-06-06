@@ -165,6 +165,8 @@ export class PolicyEngineService {
                 logger.info('Create Policy: Publish System Schema', ['GUARDIAN_SERVICE']);
                 messageServer.setTopicObject(topic);
                 const schema = systemSchemas[i];
+                schema.creator = owner;
+                schema.owner = owner;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 const newItem = getMongoRepository(SchemaCollection).create(item);
                 await getMongoRepository(SchemaCollection).save(newItem);

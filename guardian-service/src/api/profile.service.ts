@@ -76,20 +76,13 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                 entity
             } = msg;
 
-            let topic: any = null;
+            let topic: Topic = null;
             let newTopic = false;
-            let schema: SchemaCollection = null;
+
             if (parent) {
                 topic = await getMongoRepository(Topic).findOne({
                     owner: parent,
                     type: TopicType.UserTopic
-                });
-            }
-            if (entity) {
-                schema = await getMongoRepository(SchemaCollection).findOne({
-                    entity: entity,
-                    system: true,
-                    active: true
                 });
             }
 
@@ -100,7 +93,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                     type: TopicType.UserTopic,
                     name: TopicType.UserTopic,
                     description: TopicType.UserTopic,
-                    owner: topic,
+                    owner: null,
                     policyId: null,
                     policyUUID: null
                 });
@@ -147,13 +140,57 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             // ------------------
             let schemaObject: Schema;
             try {
-                if (newTopic && schema) {
-                    logger.info('Publish System Schema', ['GUARDIAN_SERVICE']);
-                    const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                    const newItem = getMongoRepository(SchemaCollection).create(item);
-                    await getMongoRepository(SchemaCollection).save(newItem);
-                    schemaObject = new Schema(newItem);
-                    console.log('Publish Schema 2', JSON.stringify(item, null, 4));
+                let schema: SchemaCollection = null;
+
+                schema = await getMongoRepository(SchemaCollection).findOne({
+                    entity: SchemaEntity.ROOT_AUTHORITY,
+                    readonly: true,
+                    topicId: topic.topicId
+                });
+                if (!schema) {
+                    schema = await getMongoRepository(SchemaCollection).findOne({
+                        entity: SchemaEntity.ROOT_AUTHORITY,
+                        system: true,
+                        active: true
+                    });
+                    if (schema) {
+                        logger.info('Publish System Schema (ROOT_AUTHORITY)', ['GUARDIAN_SERVICE']);
+                        schema.creator = didMessage.did;
+                        schema.owner = didMessage.did;
+                        const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
+                        const newItem = getMongoRepository(SchemaCollection).create(item);
+                        await getMongoRepository(SchemaCollection).save(newItem);
+                    }
+                }
+
+                schema = await getMongoRepository(SchemaCollection).findOne({
+                    entity: SchemaEntity.USER,
+                    readonly: true,
+                    topicId: topic.topicId
+                });
+                if (!schema) {
+                    schema = await getMongoRepository(SchemaCollection).findOne({
+                        entity: SchemaEntity.USER,
+                        system: true,
+                        active: true
+                    });
+                    if (schema) {
+                        logger.info('Publish System Schema (USER)', ['GUARDIAN_SERVICE']);
+                        schema.creator = didMessage.did;
+                        schema.owner = didMessage.did;
+                        const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
+                        const newItem = getMongoRepository(SchemaCollection).create(item);
+                        await getMongoRepository(SchemaCollection).save(newItem);
+                    }
+                }
+
+                if (entity) {
+                    schema = await getMongoRepository(SchemaCollection).findOne({
+                        entity: entity,
+                        readonly: true,
+                        topicId: topic.topicId
+                    });
+                    schemaObject = new Schema(schema);
                 }
             } catch (error) {
                 logger.error(error, ['GUARDIAN_SERVICE']);
@@ -176,8 +213,6 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                     credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
                 }
 
-                console.log('Create VC Document 2', JSON.stringify(credentialSubject, null, 4))
-
                 const vcObject = await vcHelper.createVC(userDID, hederaAccountKey, credentialSubject);
                 const vcMessage = new VCMessage(MessageAction.CreateVC);
                 vcMessage.setDocument(vcObject);
@@ -185,7 +220,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                     hash: vcMessage.hash,
                     owner: didMessage.did,
                     document: vcMessage.document,
-                    type: SchemaEntity.ROOT_AUTHORITY
+                    type: schemaObject?.entity
                 });
                 vcDoc = await getMongoRepository(VcDocumentCollection).save(vcDoc);
 

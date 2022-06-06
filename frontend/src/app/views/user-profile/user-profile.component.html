@@ -31,7 +31,13 @@
                     <div class="profile-item">
                         <div class="profile-item-name"> DID Document:</div>
                         <div class="profile-item-value">
-                            <a (click)="openDocument(didDocument)">View Document</a>
+                            <a (click)="openDIDDocument(didDocument, 'DID')">View Document</a>
+                        </div>
+                    </div>
+                    <div *ngIf="vcDocument" class="profile-item">
+                        <div class="profile-item-name"> VC Document:</div>
+                        <div class="profile-item-value">
+                            <a (click)="openVCDocument(vcDocument, 'VC')">View Document</a>
                         </div>
                     </div>
                 </mat-tab>
@@ -97,26 +103,36 @@
     <ng-template #elseTemplate>
         <div *ngIf="isNewAccount && !isFailed" class="list">
             <form [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
+                <div class="list-item"
+                    style="border-bottom: 1px solid #c8c8c8;padding-bottom: 32px;margin-bottom: 46px;">
+                    <mat-form-field appearance="outline" floatLabel="always">
+                        <mat-label>Root Authority:</mat-label>
+                        <mat-select formControlName="rootAuthority" placeholder="Choose Root Authority">
+                            <mat-option *ngFor="let user of rootAuthorities" [value]="user.did">
+                                <span>{{user.username}}</span>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
 
-                <mat-form-field appearance="outline" floatLabel="always">
-                    <mat-label>Root Authority:</mat-label>
-                    <mat-select formControlName="rootAuthority" placeholder="Choose Root Authority">
-                        <mat-option *ngFor="let user of rootAuthorities" [value]="user.did">
-                            <span>{{user.username}}</span>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
+                <div *ngIf="schema" class="list-item">
+                    <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
+                        (change)="onChangeForm()">
+                    </app-schema-form>
+                </div>
 
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>OPERATOR ID:</mat-label>
-                    <input matInput placeholder="0.0.1548173" formControlName="id">
-                </mat-form-field>
+                <div class="list-item">
+                    <mat-form-field class="example-full-width" appearance="outline">
+                        <mat-label>OPERATOR ID:</mat-label>
+                        <input matInput placeholder="0.0.1548173" formControlName="id">
+                    </mat-form-field>
 
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>OPERATOR KEY:</mat-label>
-                    <input matInput placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
-                        formControlName="key">
-                </mat-form-field>
+                    <mat-form-field class="example-full-width" appearance="outline">
+                        <mat-label>OPERATOR KEY:</mat-label>
+                        <input matInput placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
+                            formControlName="key">
+                    </mat-form-field>
+                </div>
 
                 <button mat-raised-button type="button" color="primary" class="generate-btn"
                     (click)="randomKey()">Generate</button>

@@ -16,6 +16,7 @@
             <mat-label>For (Entity)</mat-label>
             <mat-select *ngIf="system" formControlName="entity" tabindex='-1'>
                 <mat-option value="ROOT_AUTHORITY">ROOT_AUTHORITY</mat-option>
+                <mat-option value="USER">USER</mat-option>
             </mat-select>
             <mat-select *ngIf="!system" formControlName="entity" tabindex='-1'>
                 <mat-option value="NONE">NONE</mat-option>
