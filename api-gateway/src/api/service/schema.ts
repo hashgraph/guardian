@@ -602,7 +602,8 @@ schemaAPI.get('/system/entity/:schemaEntity', async (req: AuthenticatedRequest, 
         const guardians = new Guardians();
         const schema = await guardians.getSchemaByEntity(req.params.schemaEntity);
         if (!schema) {
-            throw new Error(`Schema not found: ${req.params.schemaEntity}`);
+            res.status(200).send(null);
+            return;
         }
         res.status(200).send({
             uuid: schema.uuid,

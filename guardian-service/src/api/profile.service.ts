@@ -190,7 +190,9 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                         readonly: true,
                         topicId: topic.topicId
                     });
-                    schemaObject = new Schema(schema);
+                    if(schema) {
+                        schemaObject = new Schema(schema);
+                    }
                 }
             } catch (error) {
                 logger.error(error, ['GUARDIAN_SERVICE']);
