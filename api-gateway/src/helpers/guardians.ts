@@ -101,7 +101,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {IChainItem[]} - trust chain
      */
     public async getChain(id: string): Promise<IChainItem[]> {
-        return await this.request(MessageAPI.GET_CHAIN, id);
+        return await this.request(MessageAPI.GET_CHAIN, { id });
     }
 
     /**

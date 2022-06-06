@@ -214,7 +214,7 @@ export const trustChainAPI = async function (
      */
     ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg) => {
         try {
-            const hash = msg;
+            const hash = msg.id;
             const chain: IChainItem[] = [];
             let root: VcDocument | VpDocument;
 
