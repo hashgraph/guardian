@@ -48,7 +48,6 @@ export class ReportBlockComponent implements OnInit {
     policyDocument: IPolicyReport | undefined;
     documents: IReportItem[] | undefined;
     policyCreatorDocument: IReportItem | undefined;
-    schemes!: Schema[];
     searchForm = this.fb.group({
         value: ['', Validators.required],
     });
@@ -118,14 +117,12 @@ export class ReportBlockComponent implements OnInit {
             this.mintDocument = undefined;
             this.policyDocument = undefined;
             this.documents = undefined;
-            this.schemes = [];
             this.hash = "";
         }
     }
 
     loadTrustChainData(data: any) {
         const uiMetaData = data.uiMetaData || {};
-        const schemes = data.schemes || [];
         const report = data.data as IReport;
         this.hash = data.hash;
         this.searchForm.patchValue({
@@ -137,7 +134,6 @@ export class ReportBlockComponent implements OnInit {
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
-        this.schemes = SchemaHelper.map(schemes);
         if (this.policyDocument) {
             this.documents.push({
                 type: this.policyDocument.type,

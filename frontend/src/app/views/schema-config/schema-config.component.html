@@ -3,8 +3,8 @@
     <div class="actions">
         <div style="padding: 6px 0px">
             <mat-button-toggle-group [(ngModel)]="system" (change)="onChangeType($event)">
-                <mat-button-toggle [value]="true">System Schemes</mat-button-toggle>
-                <mat-button-toggle [value]="false">Policy Schemes</mat-button-toggle>
+                <mat-button-toggle [value]="true">System Schemas</mat-button-toggle>
+                <mat-button-toggle [value]="false">Policy Schemas</mat-button-toggle>
             </mat-button-toggle-group>
         </div>
         <div *ngIf="!system">
@@ -23,15 +23,15 @@
 
         </div>
         <div style="text-align: end">
-            <button mat-raised-button color="primary" class="g-btn" (click)="newSchemes()">New</button>
-            <button *ngIf="!system" mat-raised-button color="primary" class="g-btn" (click)="importSchemes()">
+            <button mat-raised-button color="primary" class="g-btn" (click)="newSchemas()">New</button>
+            <button *ngIf="!system" mat-raised-button color="primary" class="g-btn" (click)="importSchemas()">
                 Import
             </button>
         </div>
     </div>
 
     <div *ngIf="system || (!system && isConfirmed)" class="table-container">
-        <table mat-table [dataSource]="schemes" class="schemes-table" [attr.system]="system">
+        <table mat-table [dataSource]="schemas" class="schemas-table" [attr.system]="system">
             <ng-container matColumnDef="selected">
                 <th mat-header-cell *matHeaderCellDef>
                     <mat-checkbox class="example-margin" [checked]="selectedAll" color="primary"
@@ -208,7 +208,7 @@
         </table>
     </div>
     <div class="table-paginator">
-        <mat-paginator [length]="schemesCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
+        <mat-paginator [length]="schemasCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
             [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPage($event)" aria-label="Select page">
         </mat-paginator>
     </div>

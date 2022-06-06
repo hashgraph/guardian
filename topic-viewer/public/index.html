@@ -55,6 +55,7 @@
     
         .message-name {
             font-weight: bold;
+            cursor: pointer;
         }
 
         .topic-name {
@@ -93,6 +94,10 @@
         .type-Schema {
             background: rgb(255 118 0 / 5%);
             border-color: #c77000;
+        }
+
+        .type-Schema.action-publish-system-schema {
+            background: rgb(255 0 0 / 8%);
         }
 
         .type-Instance-Policy {
@@ -169,6 +174,10 @@
 
 <body>
     <div class="header">
+        <div style="position: absolute;left: 46px;top: 20px;">
+            <button id="collapseAll">Collapse All</button>
+            <button id="expandAll">Expand All</button>
+        </div>
         <select id="inputType" name="inputType">
             <option value="topic">Topic</option>
             <option value="message">Message</option>

@@ -61,7 +61,7 @@ export class DocumentViewComponent implements OnInit {
 
     loadSchema(type: string) {
         if (type) {
-            this.schemaService.getSchemesByType(type).subscribe((result) => {
+            this.schemaService.getSchemasByType(type).subscribe((result) => {
                 if(result) {
                     this.schemaMap[type] = new Schema(result);
                 } else {

@@ -53,9 +53,9 @@ export class HeaderComponent implements OnInit {
             disabled: false,
             link: '/config'
         }, {
-            name: "Schemes",
+            name: "Schemas",
             disabled: false,
-            link: '/schemes'
+            link: '/schemas'
         }, {
             name: "Tokens",
             disabled: false,

@@ -132,8 +132,8 @@ export const documentsAPI = async function (
                 return new MessageResponse(vcDocuments);
             }
         }
-        catch (e) {
-            return new MessageError(e.message);
+        catch (error) {
+            return new MessageError(error);
         }
     });
 

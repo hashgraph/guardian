@@ -16,7 +16,7 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-mode
 export class CustomLogicConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemes') schemes!: Schema[];
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
@@ -60,7 +60,7 @@ export class CustomLogicConfigComponent implements OnInit {
 
     onSelectOutput() {
         this.block.inputFields = [];
-        const schema = this.schemes.find(e => e.iri == this.block.outputSchema)
+        const schema = this.schemas.find(e => e.iri == this.block.outputSchema)
         if (schema) {
             for (let i = 0; i < schema.fields.length; i++) {
                 const field = schema.fields[i];

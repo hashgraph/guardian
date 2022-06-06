@@ -93,8 +93,8 @@ export class VcSubject {
         try {
             const root = JSON.parse(json);
             result = VcSubject.fromJsonTree(root);
-        } catch (e) {
-            throw new Error('Given JSON string is not a valid VcSubject ' + e.message);
+        } catch (error) {
+            throw new Error('Given JSON string is not a valid VcSubject ' + error.message);
         }
         return result;
     }

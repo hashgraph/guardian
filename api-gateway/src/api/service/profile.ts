@@ -77,7 +77,7 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
         const wallet = new Wallet();
         const guardians = new Guardians();
 
-        const profile: IUser = req.body;
+        const profile: any = req.body;
         const user = await users.getUser(req.user.username);
 
         if (!profile.hederaAccountId) {
@@ -91,6 +91,7 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
 
         let did: string;
         if (user.role === UserRole.ROOT_AUTHORITY) {
+            profile.entity = SchemaEntity.ROOT_AUTHORITY;
             did = await guardians.createRootAuthorityProfile(profile);
         } else if (user.role === UserRole.USER) {
             did = await guardians.createUserProfile(profile);

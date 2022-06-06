@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 /**
- * Dialog allowing you to select a file and load schemes.
+ * Dialog allowing you to select a file and load schemas.
  */
 @Component({
     selector: 'set-version-dialog',

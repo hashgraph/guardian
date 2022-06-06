@@ -104,7 +104,6 @@ export class ReportBlock {
                 return {
                     hash: null,
                     uiMetaData: ref.options.uiMetaData,
-                    schemes: null,
                     data: null
                 };
             }

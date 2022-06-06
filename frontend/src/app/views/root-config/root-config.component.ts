@@ -80,7 +80,7 @@ export class RootConfigComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.schemaService.getSystemSchemesByEntity(SchemaEntity.ROOT_AUTHORITY)
+            this.schemaService.getSystemSchemasByEntity(SchemaEntity.ROOT_AUTHORITY)
         ]).subscribe((value) => {
             if(!value[2]) {
                 this.errorLoadSchema = true;

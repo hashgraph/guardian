@@ -454,11 +454,11 @@ export class SchemaHelper {
         return true;
     }
 
-    public static findRefs(target: Schema, schemes: Schema[]) {
+    public static findRefs(target: Schema, schemas: Schema[]) {
         const map = {};
         const schemaMap = {};
-        for (let i = 0; i < schemes.length; i++) {
-            const element = schemes[i];
+        for (let i = 0; i < schemas.length; i++) {
+            const element = schemas[i];
             schemaMap[element.iri] = element.document;
         }
         for (let i = 0; i < target.fields.length; i++) {
@@ -569,6 +569,7 @@ export class SchemaHelper {
                 value['@context'] = field.context.context;
             }
         }
+        return json;
     }
 
     public static updateObjectContext(schema: Schema, json: any): any {

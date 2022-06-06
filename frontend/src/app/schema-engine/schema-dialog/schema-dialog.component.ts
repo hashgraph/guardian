@@ -5,7 +5,7 @@ import { SchemaConfigurationComponent } from '../schema-configuration/schema-con
 import { Schema } from '@guardian/interfaces';
 
 /**
- * Dialog for creating and editing schemes.
+ * Dialog for creating and editing schemas.
  */
 @Component({
     selector: 'schema-dialog',
@@ -16,7 +16,7 @@ export class SchemaDialog {
     @ViewChild('document') schemaControl!: SchemaConfigurationComponent;
 
     scheme: Schema;
-    schemesMap: any;
+    schemasMap: any;
     started: boolean = false;
     type: 'new' | 'edit' | 'version' = 'new';
     topicId: any;
@@ -27,7 +27,7 @@ export class SchemaDialog {
         public dialogRef: MatDialogRef<SchemaDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.schemesMap = data.schemesMap || {};
+        this.schemasMap = data.schemasMap || {};
         this.scheme = data.scheme || null;
         this.type = data.type || null;
         this.topicId = data.topicId || null;

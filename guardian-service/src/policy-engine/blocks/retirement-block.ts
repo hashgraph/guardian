@@ -187,8 +187,8 @@ export class RetirementBlock {
 
             ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
-        } catch (e) {
-            throw e;
+        } catch (error) {
+            throw error;
         }
     }
 

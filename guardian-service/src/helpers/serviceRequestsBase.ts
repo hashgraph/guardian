@@ -35,8 +35,8 @@ export abstract class ServiceRequestsBase {
                 throw response.error;
             }
             return response.body;
-        } catch (e) {
-            throw new Error(`Guardian (${entity}) send: ` + e);
+        } catch (error) {
+            throw new Error(`Guardian (${entity}) send: ` + error);
         }
     }
 }

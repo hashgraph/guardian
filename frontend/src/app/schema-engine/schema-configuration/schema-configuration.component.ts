@@ -9,7 +9,7 @@ import { takeUntil } from 'rxjs/operators';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 
 /**
- * Schemes constructor
+ * Schemas constructor
  */
 @Component({
     selector: 'app-schema-configuration',
@@ -23,7 +23,7 @@ import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 export class SchemaConfigurationComponent implements OnInit {
     @Input('value') value!: Schema;
     @Input('type') type!: string;
-    @Input('schemes-map') schemesMap!: { [x: string]: Schema[] };
+    @Input('schemas-map') schemasMap!: { [x: string]: Schema[] };
     @Input('policies') policies!: any[];
     @Input('topicId') topicId!: any;
     @Input('system') system!: boolean;
@@ -41,7 +41,7 @@ export class SchemaConfigurationComponent implements OnInit {
     schemaTypes!: any;
     schemaTypeMap!: any;
     destroy$: Subject<boolean> = new Subject<boolean>();
-    schemes!: Schema[];
+    schemas!: Schema[];
 
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
@@ -196,9 +196,9 @@ export class SchemaConfigurationComponent implements OnInit {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (this.system) {
-            this.updateSubSchemes(undefined);
+            this.updateSubSchemas(undefined);
         } else {
-            this.updateSubSchemes(this.value?.topicId || this.topicId);
+            this.updateSubSchemas(this.value?.topicId || this.topicId);
         }
         if (this.dataForm) {
             if (this.system) {
@@ -244,7 +244,7 @@ export class SchemaConfigurationComponent implements OnInit {
             }
             this.fields = [];
             this.conditions = [];
-            this.schemes = [];
+            this.schemas = [];
         }
         if (changes.value && this.value) {
             this.updateFormControls();
@@ -253,30 +253,30 @@ export class SchemaConfigurationComponent implements OnInit {
 
     onFilter(event: any) {
         const topicId = event.value;
-        this.updateSubSchemes(topicId);
+        this.updateSubSchemas(topicId);
     }
 
-    updateSubSchemes(topicId: any) {
+    updateSubSchemas(topicId: any) {
         this.schemaTypes = [];
-        if (this.schemesMap) {
-            this.schemes = this.schemesMap[topicId];
+        if (this.schemasMap) {
+            this.schemas = this.schemasMap[topicId];
         }
-        if (this.schemes) {
-            for (let i = 0; i < this.schemes.length; i++) {
+        if (this.schemas) {
+            for (let i = 0; i < this.schemas.length; i++) {
                 const index = String(this.types.length + i + 1);
                 this.schemaTypes.push({
-                    name: this.schemes[i].name,
+                    name: this.schemas[i].name,
                     value: index
                 });
                 this.schemaTypeMap[index] = {
-                    type: this.schemes[i].iri,
+                    type: this.schemas[i].iri,
                     format: undefined,
                     pattern: undefined,
                     isRef: true,
                 }
             }
         } else {
-            this.schemes = [];
+            this.schemas = [];
         }
     }
 
@@ -700,7 +700,7 @@ export class SchemaConfigurationComponent implements OnInit {
             });
         }
         schema.update(fields, conditions);
-        schema.updateRefs(this.schemes);
+        schema.updateRefs(this.schemas);
         return schema;
     }
 

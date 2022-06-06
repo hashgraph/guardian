@@ -25,7 +25,7 @@ ipfsAPI.post('/file', async (req: any, res: Response) => {
 
         res.status(201).json(cid);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });

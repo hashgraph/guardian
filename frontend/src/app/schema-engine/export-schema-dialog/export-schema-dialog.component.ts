@@ -37,7 +37,7 @@ export class ExportSchemaDialog {
             .subscribe((result) => {
                 let downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(result);
-                downloadLink.setAttribute('download', `schemes_${Date.now()}.zip`);
+                downloadLink.setAttribute('download', `schemas_${Date.now()}.zip`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 setTimeout(() => {

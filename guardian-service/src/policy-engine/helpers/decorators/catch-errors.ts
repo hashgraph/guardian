@@ -10,10 +10,9 @@ export function CatchErrors() {
                 const f = async () => {
                     try {
                         await target.apply(thisArg, argArray);
-                    } catch (e) {
-                        new Logger().error(e.message, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
-                        console.error(e.message);
-                        PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, e.message, user);
+                    } catch (error) {
+                        new Logger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
+                        PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {
                                 setTimeout(f, parseInt(thisArg.options.errorTimeout, 10));

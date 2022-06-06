@@ -58,7 +58,7 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
         await setTokensPolicies(tokens, user);
         res.status(201).json(tokens);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: error.code || 500, message: error.message });
     }
 });
@@ -80,7 +80,7 @@ tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), asyn
         await setTokensPolicies(tokens, user);
         res.status(200).json(tokens);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: error.code || 500, message: error.message });
     }
 });
@@ -97,7 +97,7 @@ tokenAPI.put('/:tokenId/associate', permissionHelper(UserRole.USER), async (req:
         const status = await guardians.associateToken(tokenId, userDID);
         res.status(200).json(status);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
@@ -114,7 +114,7 @@ tokenAPI.put('/:tokenId/dissociate', permissionHelper(UserRole.USER), async (req
         const status = await guardians.dissociateToken(tokenId, userDID);
         res.status(200).json(status);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
@@ -132,7 +132,7 @@ tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTH
         const result = await guardians.grantKycToken(tokenId, username, owner);
         res.status(200).json(result);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
@@ -150,7 +150,7 @@ tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUT
         const result = await guardians.revokeKycToken(tokenId, username, owner);
         res.status(200).json(result);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
@@ -168,7 +168,7 @@ tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHOR
         const result = await guardians.freezeToken(tokenId, username, owner);
         res.status(200).json(result);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
@@ -186,7 +186,7 @@ tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTH
         const result = await guardians.unfreezeToken(tokenId, username, owner);
         res.status(200).json(result);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
@@ -204,7 +204,7 @@ tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.ROOT_AUTHORIT
         const result = await guardians.getInfoToken(tokenId, username, owner);
         res.status(200).json(result as ITokenInfo);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });

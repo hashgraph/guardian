@@ -187,8 +187,8 @@ export class MintBlock {
             const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
-        } catch (e) {
-            throw e;
+        } catch (error) {
+            throw error;
         }
     }
 

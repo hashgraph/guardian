@@ -21,6 +21,8 @@ import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 
 export class PolicyImportExportHelper {
+    static policyFileName = 'policy.json';
+
     /**
      * Generate Zip File
      * @param policy policy to pack
@@ -34,16 +36,16 @@ export class PolicyImportExportHelper {
         delete policyObject.registeredUsers;
         delete policyObject.status;
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
-        const schemesIds = findAllEntities(policyObject.config, SchemaFields);
+        const schemasIds = findAllEntities(policyObject.config, SchemaFields);
 
         const tokens = await getMongoRepository(Token).find({ where: { tokenId: { $in: tokenIds } } });
-        const rootSchemes = await getMongoRepository(Schema).find({
-            where: { iri: { $in: schemesIds } }
+        const rootSchemas = await getMongoRepository(Schema).find({
+            where: { iri: { $in: schemasIds } }
         });
-        const defs: any[] = rootSchemes.map(s => s.document.$defs);
+        const defs: any[] = rootSchemas.map(s => s.document.$defs);
         const map: any = {};
-        for (let i = 0; i < rootSchemes.length; i++) {
-            const id = rootSchemes[i].iri;
+        for (let i = 0; i < rootSchemas.length; i++) {
+            const id = rootSchemas[i].iri;
             map[id] = id;
         }
         for (let i = 0; i < defs.length; i++) {
@@ -55,9 +57,9 @@ export class PolicyImportExportHelper {
                 }
             }
         }
-        const allSchemesIds = Object.keys(map);
-        const schemes = await getMongoRepository(Schema).find({
-            where: { iri: { $in: allSchemesIds } }
+        const allSchemasIds = Object.keys(map);
+        const schemas = await getMongoRepository(Schema).find({
+            where: { iri: { $in: allSchemasIds } }
         });
 
         const zip = new JSZip();
@@ -72,16 +74,16 @@ export class PolicyImportExportHelper {
             token.freezeKey = token.freezeKey ? "..." : null;
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
         }
-        zip.folder('schemes')
-        for (let schema of schemes) {
+        zip.folder('schemas')
+        for (let schema of schemas) {
             const item = { ...schema };
             delete item.id;
             delete item.status;
             delete item.readonly;
-            zip.file(`schemes/${schema.iri}.json`, JSON.stringify(schema));
+            zip.file(`schemas/${schema.iri}.json`, JSON.stringify(schema));
         }
 
-        zip.file(`policy.json`, JSON.stringify(policyObject));
+        zip.file(this.policyFileName, JSON.stringify(policyObject));
         return zip;
     }
 
@@ -93,22 +95,24 @@ export class PolicyImportExportHelper {
     static async parseZipFile(zipFile: any): Promise<any> {
         const zip = new JSZip();
         const content = await zip.loadAsync(zipFile);
-        let policyString = await content.files['policy.json'].async('string');
+        if(!content.files[this.policyFileName] || content.files[this.policyFileName].dir) {
+            throw 'Zip file is not a policy';
+        }
+        let policyString = await content.files[this.policyFileName].async('string');
         const tokensStringArray = await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)
             .filter(file => /^tokens\/.+/.test(file[0]))
             .map(file => file[1].async('string')));
 
-        const schemesStringArray = await Promise.all(Object.entries(content.files)
+        const schemasStringArray = await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)
-            .filter(file => /^schemes\/.+/.test(file[0]))
+            .filter(file => /^schem[a,e]s\/.+/.test(file[0]))
             .map(file => file[1].async('string')));
 
         const policy = JSON.parse(policyString);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
-        const schemes = schemesStringArray.map(item => JSON.parse(item));
-
-        return { policy, tokens, schemes };
+        const schemas = schemasStringArray.map(item => JSON.parse(item));
+        return { policy, tokens, schemas };
     }
 
     /**
@@ -119,7 +123,7 @@ export class PolicyImportExportHelper {
      * @returns Policies by owner
      */
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
-        const { policy, tokens, schemes } = policyToImport;
+        const { policy, tokens, schemas } = policyToImport;
 
         delete policy.id;
         delete policy.messageId;
@@ -131,7 +135,6 @@ export class PolicyImportExportHelper {
         policy.creator = policyOwner;
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
-
 
         const users = new Users();
         const root = await users.getHederaAccount(policyOwner);
@@ -212,11 +215,11 @@ export class PolicyImportExportHelper {
             }
         }
 
-        // Import Schemes
-        const schemesMap = await importSchemaByFiles(policyOwner, schemes, topicRow.topicId);
+        // Import Schemas
+        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId);
 
         // Replace id
-        await this.replaceConfig(policy, schemesMap);
+        await this.replaceConfig(policy, schemasMap);
 
         // Save
         const model = getMongoRepository(Policy).create(policy as Policy);
@@ -229,13 +232,13 @@ export class PolicyImportExportHelper {
         return result;
     }
 
-    static async replaceConfig(policy: Policy, schemesMap: any) {
+    static async replaceConfig(policy: Policy, schemasMap: any) {
         if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
 
-        for (let index = 0; index < schemesMap.length; index++) {
-            const item = schemesMap[index];
+        for (let index = 0; index < schemasMap.length; index++) {
+            const item = schemasMap[index];
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
         }
 

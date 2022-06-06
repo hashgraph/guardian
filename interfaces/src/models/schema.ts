@@ -180,7 +180,7 @@ export class Schema implements ISchema {
         this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 
-    public updateRefs(schemes: Schema[]): void {
-        this.document.$defs = SchemaHelper.findRefs(this, schemes);
+    public updateRefs(schemas: Schema[]): void {
+        this.document.$defs = SchemaHelper.findRefs(this, schemas);
     }
 }

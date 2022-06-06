@@ -38,8 +38,8 @@ export const loaderAPI = async function (
             }
             return new MessageError('Document not found');
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(error.message);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
     });
 
@@ -68,8 +68,8 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(error.message);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
     });
 
@@ -97,8 +97,8 @@ export const loaderAPI = async function (
             }
         }
         catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(error.message);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
     });
 }

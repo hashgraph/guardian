@@ -5,7 +5,7 @@
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.schema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -130,7 +130,7 @@
         <td class="propRowCell cellName">Preset Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.presetSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
-                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>

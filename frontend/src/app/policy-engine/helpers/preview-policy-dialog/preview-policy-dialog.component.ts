@@ -14,7 +14,7 @@ export class PreviewPolicyDialog {
     loading = true;
     policyId!: any;
     policy!: any;
-    schemes!: string;
+    schemas!: string;
     tokens!: string;
     policyRoles!: string;
     newVersions: any[] = [];
@@ -30,10 +30,10 @@ export class PreviewPolicyDialog {
             this.policy = data.policy.policy;
             this.policyRoles = (this.policy.policyRoles || []).join(', ');
 
-            const schemes = data.policy.schemes || [];
+            const schemas = data.policy.schemas || [];
             const tokens = data.policy.tokens || [];
 
-            this.schemes = schemes.map((s: any) => {
+            this.schemas = schemas.map((s: any) => {
                 if (s.version) {
                     return `${s.name} (${s.version})`;
                 }

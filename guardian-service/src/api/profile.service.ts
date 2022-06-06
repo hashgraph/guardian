@@ -27,7 +27,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topicHelper';
 import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
-import { publishSchema } from './schema.service';
+import { publishSystemSchema } from './schema.service';
 
 /**
  * Connect to the message broker methods of working with Address books.
@@ -58,9 +58,9 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             const balance = await client.balance(user.hederaAccountId);
             return new MessageResponse(balance);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 500);
+            return new MessageError(error, 500);
         }
     })
 
@@ -134,8 +134,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                 didDoc.topicId = didMessageResult.getTopicId();
                 getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             } catch (error) {
-                logger.error(error.message, ['GUARDIAN_SERVICE']);
-                console.error(error);
+                logger.error(error, ['GUARDIAN_SERVICE']);
                 didDoc.status = DidDocumentStatus.FAILED;
                 await getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
             }
@@ -149,18 +148,15 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             let schemaObject: Schema;
             try {
                 if (newTopic && schema) {
-                    schema.readonly = true;
-                    schema.system = false;
-                    schema.active = false;
                     logger.info('Publish System Schema', ['GUARDIAN_SERVICE']);
-                    const item = await publishSchema(schema, '1.0.0', messageServer, MessageAction.PublishSystemSchema);
+                    const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                     const newItem = getMongoRepository(SchemaCollection).create(item);
                     await getMongoRepository(SchemaCollection).save(newItem);
                     schemaObject = new Schema(newItem);
+                    console.log('Publish Schema 2', JSON.stringify(item, null, 4));
                 }
             } catch (error) {
-                logger.error(error.message, ['GUARDIAN_SERVICE']);
-                console.error(error);
+                logger.error(error, ['GUARDIAN_SERVICE']);
             }
             // ------------------
             // Publish Schema -->
@@ -179,6 +175,8 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                 if (schemaObject) {
                     credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
                 }
+
+                console.log('Create VC Document 2', JSON.stringify(credentialSubject, null, 4))
 
                 const vcObject = await vcHelper.createVC(userDID, hederaAccountKey, credentialSubject);
                 const vcMessage = new VCMessage(MessageAction.CreateVC);
@@ -200,8 +198,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                     vcDoc.topicId = vcMessageResult.getTopicId();
                     getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
                 } catch (error) {
-                    logger.error(error.message, ['GUARDIAN_SERVICE']);
-                    console.error(error);
+                    logger.error(error, ['GUARDIAN_SERVICE']);
                     vcDoc.hederaStatus = DocumentStatus.FAILED;
                     await getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
                 }
@@ -217,9 +214,9 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
 
             return new MessageResponse(userDID);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 500);
+            return new MessageError(error, 500);
         }
     })
 }
