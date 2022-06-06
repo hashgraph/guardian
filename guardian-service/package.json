@@ -14,7 +14,6 @@
     "@guardian/common": "^2.0.0",
     "@guardian/interfaces": "^2.0.0",
     "@guardian/logger-helper": "^2.0.0",
-    "@hashgraph/did-sdk-js": "0.1.1",
     "@hashgraph/sdk": "2.12.1",
     "@transmute/credentials-context": "0.7.0-unstable.40",
     "@transmute/did-context": "0.7.0-unstable.40",
