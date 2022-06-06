@@ -8,6 +8,7 @@ import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema, SchemaHelper } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -15,7 +16,14 @@ import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.compon
 @Component({
     selector: 'documents-source-block',
     templateUrl: './documents-source-block.component.html',
-    styleUrls: ['./documents-source-block.component.css']
+    styleUrls: ['./documents-source-block.component.css'],
+    animations: [
+        trigger('statusExpand', [
+          state('collapsed', style({height: '0px', minHeight: '0'})),
+          state('expanded', style({height: '*'})),
+          transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ]
 })
 export class DocumentsSourceBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -37,6 +45,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     fieldMap!: { [x: string]: any[] };
     commonAddons: any[];
     paginationAddon: any;
+    statusDetailed: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -121,6 +130,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
             this.children = data.children;
             this.columns = this.fields.map(f => f.index);
+            this.columns.unshift('history');
             this.documents = data.data || [];
             this.isActive = true;
             this.insert = data.insert;

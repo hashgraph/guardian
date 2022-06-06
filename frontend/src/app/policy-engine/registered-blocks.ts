@@ -30,6 +30,8 @@ import { TimerConfigComponent } from "./policy-configuration/blocks/documents/ti
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 import { SwitchConfigComponent } from "./policy-configuration/blocks/main/switch-config/switch-config.component";
 import { PolicyBlockModel } from "./policy-model";
+import { RevokeConfigComponent } from "./policy-configuration/blocks/documents/revoke-config/revoke-config.component";
+import { RevokeBlockComponent } from "./policy-viewer/blocks/revoke-block/revoke-block.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -55,6 +57,8 @@ export enum BlockType {
     TimerBlock = 'timerBlock',
     CustomLogicBlock = 'customLogicBlock',
     Switch = 'switchBlock',
+    RevokeBlock = 'revokeBlock',
+    SetRelationshipsBlock = 'setRelationshipsBlock'
 }
 
 export enum BlockGroup {
@@ -264,7 +268,9 @@ export class RegisteredBlocks {
             { type: BlockType.Wipe },
             { type: BlockType.Calculate },
             { type: BlockType.CustomLogicBlock },
-            { type: BlockType.Report }
+            { type: BlockType.Report },
+            { type: BlockType.RevokeBlock },
+            { type: BlockType.SetRelationshipsBlock }
         ];
 
         // Main, UI Components
@@ -388,6 +394,14 @@ export class RegisteredBlocks {
                 group: BlockGroup.UnGrouped
             }]
         });
+        this.registerBlock({
+            type: BlockType.RevokeBlock,
+            icon: 'restart_alt',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.UIComponents,
+            factory: RevokeBlockComponent,
+            property: RevokeConfigComponent,
+        });
 
         // Documents, Server Blocks
         this.registerBlock({
@@ -421,6 +435,20 @@ export class RegisteredBlocks {
             header: BlockHeaders.ServerBlocks,
             factory: null,
             property: ReassigningConfigComponent,
+        });
+        this.registerBlock({
+            type: BlockType.SetRelationshipsBlock,
+            icon: 'settings',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
+            factory: null,
+            property: null,
+            allowedChildren: [
+                {
+                    type: BlockType.DocumentsSourceAddon,
+                    group: BlockGroup.UnGrouped
+                }
+            ]
         });
 
         // Documents, Addons

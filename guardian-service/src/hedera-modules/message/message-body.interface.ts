@@ -7,6 +7,9 @@ export interface MessageBody {
     status: MessageStatus;
     type: MessageType;
     action: MessageAction;
+    revokeMessage?: string;
+    reason?: string;
+    parentIds?: string[];
 }
 
 export interface DidMessageBody extends MessageBody {

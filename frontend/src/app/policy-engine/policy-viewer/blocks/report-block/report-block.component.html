@@ -116,6 +116,10 @@
                                 
                                 {{item.title}}
                             </div>
+                            <div *ngIf="item.document && item.document.revokeMessage" class="revoke-container">
+                                <mat-icon class="revoke-icon">warning</mat-icon>
+                                <b>Revoked with reason: "{{item.document.revokeMessage}}"</b>
+                            </div>
                             <div class="chain-id">
                                 {{item.description}}
                             </div>

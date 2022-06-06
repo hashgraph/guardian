@@ -53,6 +53,9 @@ import { TimerConfigComponent } from './policy-configuration/blocks/documents/ti
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
+import { ConfirmationDialog } from './policy-viewer/blocks/confirmation-dialog/confirmation-dialog.component';
+import { RevokeBlockComponent } from './policy-viewer/blocks/revoke-block/revoke-block.component';
+import { RevokeConfigComponent } from './policy-configuration/blocks/documents/revoke-config/revoke-config.component';
 import { EventsOverview } from './helpers/events-overview/events-overview';
 
 @NgModule({
@@ -102,7 +105,10 @@ import { EventsOverview } from './helpers/events-overview/events-overview';
         CustomLogicConfigComponent,
         CodeEditorDialogComponent,
         SwitchConfigComponent,
-        EventsOverview
+        EventsOverview,
+        ConfirmationDialog,
+        RevokeBlockComponent,
+        RevokeConfigComponent
     ],
     imports: [
         CommonModule,
@@ -115,6 +121,7 @@ import { EventsOverview } from './helpers/events-overview/events-overview';
         DragDropModule
     ],
     exports: [
+        RevokeConfigComponent,
         PolicyConfigurationComponent,
         DocumentSourceComponent,
         CommonPropertiesComponent,

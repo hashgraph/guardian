@@ -144,8 +144,10 @@ export class MessageServer {
         return result;
     }
 
-    public async sendMessage<T extends Message>(message: T): Promise<T> {
-        message = await this.sendIPFS(message);
+    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
+        if (sendToIPFS) {
+            message = await this.sendIPFS(message);
+        }
         message = await this.sendHedera(message);
         return message;
     }

@@ -1,0 +1,9 @@
+<div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+</div>
+
+<div *ngIf="visible" class="content">
+    <div *ngIf="uiMetaData.name" class="btn-option {{uiMetaData.uiClass}}" (click)="onSelectDialog()">
+        {{uiMetaData.name}}
+    </div>
+</div>

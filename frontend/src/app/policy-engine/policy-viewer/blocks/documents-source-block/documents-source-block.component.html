@@ -9,7 +9,18 @@
         </div>
     </div>
     <div *ngIf="fields && documents">
-        <table mat-table [dataSource]="documents" class="table">
+        <table mat-table [dataSource]="documents" class="table" multiTemplateDataRows>
+            <ng-container [matColumnDef]="'history'">
+                <th mat-header-cell *matHeaderCellDef>
+                    History
+                </th>
+                <td mat-cell *matCellDef="let element">
+                    <div *ngIf="element.history">
+                        <mat-icon>{{statusDetailed === element? 'keyboard_arrow_down' : 'keyboard_arrow_right'}}</mat-icon>
+                    </div>
+                </td>
+            </ng-container>
+
             <ng-container *ngFor="let field of fields" [matColumnDef]="field.index">
                 <th mat-header-cell *matHeaderCellDef>
                     {{field.title}}
@@ -21,11 +32,11 @@
                             <span *ngIf="option.type=='text'" class="text" [title]="getText(element, option)">
                                 {{getText(element, option)}}
                             </span>
-                            <span *ngIf="option.type=='button'" class="col-btn">
+                            <span *ngIf="option.type=='button'" class="col-btn" (click)="$event.stopImmediatePropagation();">
                                 <div class="btn-field {{option.uiClass}}" (click)="onButton($event, element, option)">
                                     {{getText(element, option)}}</div>
                             </span>
-                            <div *ngIf="option.type=='block'" class="col-btn">
+                            <div *ngIf="option.type=='block'" class="col-btn" (click)="$event.stopImmediatePropagation();">
                                 <render-block [block]="option._block"
                                     [static]="getConfig(element, option, option._block)" [policyId]="policyId">
                                 </render-block>
@@ -34,8 +45,26 @@
                     </div>
                 </td>
             </ng-container>
+
+            <ng-container [matColumnDef]="'statusDetails'">
+                <td mat-cell *matCellDef="let element" let class="expanded-detail" [attr.colspan]="fields.length + 1">
+                    <div [@statusExpand]="element == statusDetailed ? 'expanded' : 'collapsed'"
+                        *ngIf="element.history">
+                        <div class="timeline-container">
+                            <div *ngFor="let historyElem of element.history" class="timeline-item" [attr.date-is]='historyElem.created'>
+                                <h1>{{historyElem.status}}</h1>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
-            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;" 
+                class="table-row" [ngClass]="{'has-history-row': row.history}"
+                (click)="statusDetailed = statusDetailed === row ? null : row"
+            ></tr>
+            <tr mat-row *matRowDef="let row; columns: ['statusDetails']" class="detailed-row"></tr>
         </table>
         <div *ngIf="paginationAddon" class="pagination">
             <render-block [block]="paginationAddon"></render-block>
