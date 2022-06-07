@@ -44,11 +44,9 @@ export class MintBlock {
     @Inject()
     private users: Users;
 
-    private async createMintVC(root: any, token: any, data: any): Promise<VcDocument> {
+    private async createMintVC(root: any, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-        const policySchema = await getMongoRepository(SchemaCollection).findOne({
-            entity: SchemaEntity.MINT_TOKEN
-        });
+        const policySchema = await PolicyUtils.getSchema(ref.topicId, SchemaEntity.MINT_TOKEN);
         const amount = data as string;
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
@@ -88,7 +86,7 @@ export class MintBlock {
         const uuid = HederaUtils.randomUUID();
         const amount = PolicyUtils.aggregate(rule, document);
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
-        const mintVC = await this.createMintVC(root, token, tokenAmount);
+        const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
         const vcs = [].concat(document, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
@@ -189,8 +187,8 @@ export class MintBlock {
             const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
-        } catch (e) {
-            throw e;
+        } catch (error) {
+            throw error;
         }
     }
 

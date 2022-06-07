@@ -64,9 +64,9 @@ export const configAPI = async function (
             }
             return new MessageResponse(null);
         }
-        catch (e) {
-            new Logger().error(e.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(e);
+        catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
     });
 
@@ -87,9 +87,9 @@ export const configAPI = async function (
                 operatorKey: operatorKey?.value || process.env.OPERATOR_KEY
             });
         }
-        catch (e) {
-            new Logger().error(e.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(e);
+        catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
     });
 }

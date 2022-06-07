@@ -54,11 +54,11 @@
     <form *ngIf="!isConfirmed && isNewAccount" [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
         <div class="list">
             <h3>Finish Setup</h3>
-            <!-- <div class="list-item">
+            <div class="list-item">
                 <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
                     (change)="onChangeForm()">
                 </app-schema-form>
-            </div> -->
+            </div>
             <div class="list-item">
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR ID (Hedera Account):</mat-label>
@@ -94,7 +94,7 @@
     </div>
 
     <div *ngIf="errorLoadSchema" class="error-schema">
-        <p>Failed to load system schemes.</p>
+        <p>Failed to load system schemas.</p>
     </div>
 
 </div>

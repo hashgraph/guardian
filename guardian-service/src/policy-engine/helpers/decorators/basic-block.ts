@@ -78,6 +78,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public policyId: string;
             public policyOwner: string;
             public policyInstance: any;
+            public topicId: string;
 
             public sourceLinks: PolicyLink<any>[];
             public targetLinks: PolicyLink<any>[];
@@ -269,7 +270,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 })
             }
 
-            public setPolicyId(id): void {
+            public setPolicyId(id:string): void {
                 this.policyId = id;
             }
 
@@ -278,6 +279,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
             public setPolicyInstance(policy: any) {
                 this.policyInstance = policy;
+            }
+
+            public setTopicId(id:string): void {
+                this.topicId = id;
             }
 
             public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

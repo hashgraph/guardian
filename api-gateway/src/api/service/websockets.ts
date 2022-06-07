@@ -41,9 +41,9 @@ export class WebSocketsService {
                 if (token) {
                     ws.user = await new Users().getUserByToken(token);
                 }
-            } catch (e) {
-                new Logger().error(e.message, ['API_GATEWAY']);
-                console.error(e.message);
+            } catch (error) {
+                new Logger().error(error, ['API_GATEWAY']);
+                console.error(error.message);
             }
         });
     }
@@ -83,7 +83,7 @@ export class WebSocketsService {
                             ));
                         }
                         catch (error) {
-                            logger.error(error.toString(), ['API_GATEWAY'])
+                            logger.error(error, ['API_GATEWAY'])
                         }
                         break;
                 }
@@ -97,8 +97,8 @@ export class WebSocketsService {
                         type: MessageAPI.UPDATE_STATUS,
                         data: msg
                     }));
-                } catch (e) {
-                    console.error('WS Error', e);
+                } catch (error) {
+                    console.error('WS Error', error);
                 }
             });
             return new MessageResponse({})
@@ -113,8 +113,8 @@ export class WebSocketsService {
                         type: 'update-event',
                         data: msg.uuid
                     }));
-                } catch (e) {
-                    console.error('WS Error', e);
+                } catch (error) {
+                    console.error('WS Error', error);
                 }
             });
             return new MessageResponse({})
@@ -132,9 +132,9 @@ export class WebSocketsService {
                             }
                         }));
                     }
-                } catch (e) {
-                    new Logger().error(e.message, ['API_GATEWAY']);
-                    console.error('WS Error', e);
+                } catch (error) {
+                    new Logger().error(error, ['API_GATEWAY']);
+                    console.error('WS Error', error);
                 }
             });
             return new MessageResponse({})

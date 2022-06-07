@@ -19,7 +19,7 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-mode
 export class TimerConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemes') schemes!: Schema[];
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();

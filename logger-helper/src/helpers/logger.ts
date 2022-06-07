@@ -36,8 +36,8 @@ export class Logger {
                 throw response.error;
             }
             return response.body;
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -58,7 +58,8 @@ export class Logger {
         await this.write(LogType.WARN, message, attr);
     }
 
-    public async error(message: string, attr?: string[]): Promise<void> {
+    public async error(error: string | Error, attr?: string[]): Promise<void> {
+        const message = typeof error === 'string' ? error : error.message;
         await this.write(LogType.ERROR, message, attr);
     }
 

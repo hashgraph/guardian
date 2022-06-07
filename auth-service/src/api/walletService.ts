@@ -17,9 +17,9 @@ export class WalletService {
 
             try {
                 return new MessageResponse(await getMongoRepository(WalletAccount).findOne({ token, type: type + '|' + key }));
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message)
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error)
             }
         });
 
@@ -33,9 +33,9 @@ export class WalletService {
                     key: value
                 });
                 return new MessageResponse(await getMongoRepository(WalletAccount).save(walletAcc));
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message)
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error)
             }
         });
     }

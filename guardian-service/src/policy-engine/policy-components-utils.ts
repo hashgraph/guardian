@@ -169,7 +169,8 @@ export class PolicyComponentsUtils {
         blockInstance.setPolicyId(policyId);
         blockInstance.setPolicyOwner(policy.owner);
         blockInstance.setPolicyInstance(policy);
-
+        blockInstance.setTopicId(policy.topicId);
+        
         allInstances.push(blockInstance);
 
         if (children && children.length) {

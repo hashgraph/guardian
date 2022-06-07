@@ -18,7 +18,7 @@ export class CommonPropertiesComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
 
-    @Input('schemes') schemes!: Schema[];
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
@@ -188,7 +188,7 @@ export class CommonPropertiesComponent implements OnInit {
                 let componentRef: any = this.configContainer.createComponent(componentFactory);
                 componentRef.instance.policy = this.policy;
                 componentRef.instance.currentBlock = this.currentBlock;
-                componentRef.instance.schemes = this.schemes;
+                componentRef.instance.schemas = this.schemas;
                 componentRef.instance.tokens = this.tokens;
                 componentRef.instance.readonly = this.readonly;
             }

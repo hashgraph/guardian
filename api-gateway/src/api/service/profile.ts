@@ -27,11 +27,18 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
 
         let vcDocument: any = null;
         if (user.did) {
-            const vcDocuments = await guardians.getVcDocuments({
+            let vcDocuments = await guardians.getVcDocuments({
+                owner: user.did,
+                type: SchemaEntity.USER
+            });
+            if (vcDocuments && vcDocuments.length) {
+                vcDocument = vcDocuments[vcDocuments.length - 1];
+            }
+            vcDocuments = await guardians.getVcDocuments({
                 owner: user.did,
                 type: SchemaEntity.ROOT_AUTHORITY
             });
-            if (vcDocuments) {
+            if (vcDocuments && vcDocuments.length) {
                 vcDocument = vcDocuments[vcDocuments.length - 1];
             }
         }
@@ -39,10 +46,10 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
         let topic: any;
         if (user.did || user.parent) {
             const filters = [];
-            if(user.did) {
+            if (user.did) {
                 filters.push(user.did);
             }
-            if(user.parent) {
+            if (user.parent) {
                 filters.push(user.parent);
             }
             topic = await guardians.getTopic({
@@ -77,7 +84,7 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
         const wallet = new Wallet();
         const guardians = new Guardians();
 
-        const profile: IUser = req.body;
+        const profile: any = req.body;
         const user = await users.getUser(req.user.username);
 
         if (!profile.hederaAccountId) {
@@ -91,8 +98,10 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
 
         let did: string;
         if (user.role === UserRole.ROOT_AUTHORITY) {
+            profile.entity = SchemaEntity.ROOT_AUTHORITY;
             did = await guardians.createRootAuthorityProfile(profile);
         } else if (user.role === UserRole.USER) {
+            profile.entity = SchemaEntity.USER;
             did = await guardians.createUserProfile(profile);
         }
 

@@ -454,11 +454,11 @@ export class SchemaHelper {
         return true;
     }
 
-    public static findRefs(target: Schema, schemes: Schema[]) {
+    public static findRefs(target: Schema, schemas: Schema[]) {
         const map = {};
         const schemaMap = {};
-        for (let i = 0; i < schemes.length; i++) {
-            const element = schemes[i];
+        for (let i = 0; i < schemas.length; i++) {
+            const element = schemas[i];
             schemaMap[element.iri] = element.document;
         }
         for (let i = 0; i < target.fields.length; i++) {
@@ -541,5 +541,42 @@ export class SchemaHelper {
             schema.iri = null;
             return schema;
         }
+    }
+
+    private static _clearFieldsContext(json: any): any {
+        delete json.type;
+        delete json['@context'];
+
+        const keys = Object.keys(json);
+        for (const key of keys) {
+            if (Object.prototype.toString.call(json[key]) === '[object Object]') {
+                json[key] = this._clearFieldsContext(json[key]);
+            }
+        }
+
+        return json;
+    }
+
+    private static _updateFieldsContext(fields: SchemaField[], json: any): any {
+        if (Object.prototype.toString.call(json) !== '[object Object]') {
+            return json;
+        }
+        for (const field of fields) {
+            const value = json[field.name];
+            if (field.isRef && value) {
+                this._updateFieldsContext(field.fields, value);
+                value.type = field.context.type;
+                value['@context'] = field.context.context;
+            }
+        }
+        return json;
+    }
+
+    public static updateObjectContext(schema: Schema, json: any): any {
+        json = this._clearFieldsContext(json);
+        json = this._updateFieldsContext(schema.fields, json);
+        json.type = schema.type;
+        json['@context'] = [schema.contextURL];
+        return json;
     }
 }

@@ -88,7 +88,8 @@ export class RequestVcDocumentBlock {
 
         if (!this.schema) {
             const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema
+                iri: ref.options.schema,
+                topicId: ref.topicId
             });
             this.schema = schema ? new Schema(schema) : null;
         }
@@ -245,13 +246,19 @@ export class RequestVcDocumentBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+            const schema = await getMongoRepository(SchemaCollection).findOne({ 
+                iri: ref.options.schema,
+                topicId: ref.topicId
+            });
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;
             }
             if (ref.options.presetSchema) {
-                const presetSchema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.presetSchema });
+                const presetSchema = await getMongoRepository(SchemaCollection).findOne({ 
+                    iri: ref.options.presetSchema,
+                    topicId: ref.topicId
+                });
                 if (!presetSchema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
                     return;

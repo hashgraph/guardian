@@ -3,10 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
-import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
 import { forkJoin } from 'rxjs';
-import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, SchemaHelper } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
@@ -33,7 +30,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
     children: any[] | null;
     insert: any;
     addons: any;
-    schemas!: Schema[];
     fieldMap!: { [x: string]: any[] };
     commonAddons: any[];
     paginationAddon: any;
@@ -41,7 +37,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
     constructor(
         private policyEngineService: PolicyEngineService,
         private policyHelper: PolicyHelper,
-        private schemaService: SchemaService,
         private dialog: MatDialog
     ) {
         this.fields = [];
@@ -80,12 +75,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }, 500);
         } else {
             forkJoin([
-                this.policyEngineService.getBlockData(this.id, this.policyId),
-                this.schemaService.getSchemesByPolicy(this.policyId)
+                this.policyEngineService.getBlockData(this.id, this.policyId)
             ]).subscribe((value) => {
                 const data: any = value[0];
-                const schemes = value[1];
-                this.schemas = SchemaHelper.map(schemes);
                 this.setData(data).then(() => {
                     setTimeout(() => {
                         this.loading = false;
@@ -179,7 +171,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     document: document,
                     title: field.dialogContent,
                     type: 'VC',
-                    schemas: this.schemas,
                     viewDocument: true
                 }
             });

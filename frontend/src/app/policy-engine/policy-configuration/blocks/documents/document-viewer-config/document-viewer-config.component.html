@@ -99,7 +99,7 @@
             <td class="propRowCell">
                 <mat-select [(value)]="field.bindGroup" [disabled]="readonly">
                     <mat-select-trigger>
-                        <span class="custom">{{field?.bindGroup?.tag}}</span>
+                        <span class="custom">{{field?.bindGroup}}</span>
                     </mat-select-trigger>
                     <mat-option *ngFor="let item of allBlocks" [value]="item.value">
                         <div class="block-name">
@@ -141,7 +141,7 @@
                         <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
                             <mat-select-trigger>
                                 <span class="custom">
-                                    {{field?.bindBlock?.tag}}
+                                    {{field?.bindBlock}}
                                 </span>
                             </mat-select-trigger>
                             <mat-option *ngFor="let item of allBlocks" [value]="item.value">
@@ -190,7 +190,7 @@
                         <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
                             <mat-select-trigger>
                                 <span class="custom">
-                                    {{field?.bindBlock?.tag}}
+                                    {{field?.bindBlock}}
                                 </span>
                             </mat-select-trigger>
                             <mat-option *ngFor="let item of allBlocks" [value]="item.value">
@@ -218,7 +218,7 @@
                 <td class="propRowCell">
                     <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
                         <mat-select-trigger>
-                            <span class="custom">{{field?.bindBlock?.tag}}</span>
+                            <span class="custom">{{field?.bindBlock}}</span>
                         </mat-select-trigger>
                         <mat-option *ngFor="let item of allBlocks" [value]="item.value">
                             <div class="block-name">

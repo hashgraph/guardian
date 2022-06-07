@@ -3,14 +3,9 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
 import { IPolicyReport, IReport, IReportItem, ITokenReport, IVC, IVCReport, IVPReport, Schema, SchemaHelper } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
-import { AuditService } from 'src/app/services/audit.service';
-import { AuthService } from 'src/app/services/auth.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { SchemaService } from 'src/app/services/schema.service';
 
 const icons = [
     {
@@ -53,19 +48,12 @@ export class ReportBlockComponent implements OnInit {
     policyDocument: IPolicyReport | undefined;
     documents: IReportItem[] | undefined;
     policyCreatorDocument: IReportItem | undefined;
-    schemes!: Schema[];
     searchForm = this.fb.group({
         value: ['', Validators.required],
     });
 
     constructor(
         private policyEngineService: PolicyEngineService,
-        private policyHelper: PolicyHelper,
-        private auth: AuthService,
-        private schemaService: SchemaService,
-        private auditService: AuditService,
-        private route: ActivatedRoute,
-        private router: Router,
         private fb: FormBuilder,
         public dialog: MatDialog,
         iconRegistry: MatIconRegistry,
@@ -129,14 +117,12 @@ export class ReportBlockComponent implements OnInit {
             this.mintDocument = undefined;
             this.policyDocument = undefined;
             this.documents = undefined;
-            this.schemes = [];
             this.hash = "";
         }
     }
 
     loadTrustChainData(data: any) {
         const uiMetaData = data.uiMetaData || {};
-        const schemes = data.schemes || [];
         const report = data.data as IReport;
         this.hash = data.hash;
         this.searchForm.patchValue({
@@ -148,7 +134,6 @@ export class ReportBlockComponent implements OnInit {
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
-        this.schemes = SchemaHelper.map(schemes);
         if (this.policyDocument) {
             this.documents.push({
                 type: this.policyDocument.type,
@@ -177,8 +162,7 @@ export class ReportBlockComponent implements OnInit {
                 viewDocument: true,
                 document: item.document.document,
                 title: item.type,
-                type: 'VC',
-                schemas: this.schemes,
+                type: 'VC'
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => { });
@@ -191,8 +175,7 @@ export class ReportBlockComponent implements OnInit {
                 viewDocument: true,
                 document: item.document.document,
                 title: item.type,
-                type: 'VP',
-                schemas: this.schemes,
+                type: 'VP'
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => { });

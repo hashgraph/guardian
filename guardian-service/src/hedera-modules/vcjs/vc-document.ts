@@ -122,8 +122,8 @@ export class VcDocument {
         try {
             const root = JSON.parse(json);
             result = VcDocument.fromJsonTree(root);
-        } catch (e) {
-            throw new Error('Given JSON string is not a valid VcDocument ' + e.message);
+        } catch (error) {
+            throw new Error('Given JSON string is not a valid VcDocument ' + error.message);
         }
         return result;
     }

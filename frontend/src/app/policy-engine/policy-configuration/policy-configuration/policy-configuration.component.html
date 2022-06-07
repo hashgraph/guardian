@@ -220,7 +220,7 @@
                     </div>
                     <div class="common-properties">
                         <ng-container *ngIf="propTab=='Properties'">
-                            <common-properties [policy]="policyModel" [block]="currentBlock" [schemes]="schemes"
+                            <common-properties [policy]="policyModel" [block]="currentBlock" [schemas]="schemas"
                                 [readonly]="readonly" [tokens]="tokens" type="Common">
                             </common-properties>
                         </ng-container>
@@ -228,7 +228,7 @@
                             <json-properties [block]="currentBlock" [readonly]="readonly"></json-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='Events'">
-                            <common-properties [policy]="policyModel" [block]="currentBlock" [schemes]="schemes"
+                            <common-properties [policy]="policyModel" [block]="currentBlock" [schemas]="schemas"
                                 [readonly]="readonly" [tokens]="tokens" type="Events">
                             </common-properties>
                         </ng-container>

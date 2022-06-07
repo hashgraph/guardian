@@ -9,7 +9,7 @@ import { takeUntil } from 'rxjs/operators';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 
 /**
- * Schemes constructor
+ * Schemas constructor
  */
 @Component({
     selector: 'app-schema-configuration',
@@ -23,9 +23,10 @@ import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 export class SchemaConfigurationComponent implements OnInit {
     @Input('value') value!: Schema;
     @Input('type') type!: string;
-    @Input('schemes-map') schemesMap!: { [x: string]: Schema[] };
+    @Input('schemas-map') schemasMap!: { [x: string]: Schema[] };
     @Input('policies') policies!: any[];
     @Input('topicId') topicId!: any;
+    @Input('system') system!: boolean;
 
     started = false;
     fieldsForm!: FormGroup;
@@ -40,7 +41,7 @@ export class SchemaConfigurationComponent implements OnInit {
     schemaTypes!: any;
     schemaTypeMap!: any;
     destroy$: Subject<boolean> = new Subject<boolean>();
-    schemes!: Schema[];
+    schemas!: Schema[];
 
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
@@ -53,56 +54,48 @@ export class SchemaConfigurationComponent implements OnInit {
     ) {
 
         this.defaultFieldsMap = {};
-        this.defaultFieldsMap["NONE"] = [];
-        this.defaultFieldsMap["VC"] = [
-            {
-                name: 'policyId',
-                description: '',
-                required: true,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            },
-            {
-                name: 'ref',
-                description: '',
-                required: false,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            }
-        ];
-        this.defaultFieldsMap["MRV"] = [
-            {
-                name: 'accountId',
-                description: '',
-                required: true,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            },
-            {
-                name: 'policyId',
-                description: '',
-                required: true,
-                isArray: false,
-                isRef: false,
-                type: 'string',
-                format: undefined,
-                pattern: undefined,
-                readOnly: true
-            }
-        ];
-        this.defaultFieldsMap["TOKEN"] = [];
+        this.defaultFieldsMap["VC"] = [{
+            name: 'policyId',
+            description: '',
+            required: true,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
+        }, {
+            name: 'ref',
+            description: '',
+            required: false,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
+        }];
+        this.defaultFieldsMap["MRV"] = [{
+            name: 'accountId',
+            description: '',
+            required: true,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
+        }, {
+            name: 'policyId',
+            description: '',
+            required: true,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
+        }];
 
         this.types = [
             { name: "Number", value: "1" },
@@ -184,21 +177,6 @@ export class SchemaConfigurationComponent implements OnInit {
             pattern: '^((https):\/\/)?ipfs.io\/ipfs\/.+',
             isRef: false
         };
-
-        this.fieldsForm = this.fb.group({});
-        this.conditionsForm = new FormGroup({});
-        this.defaultFields = new FormControl("VC", Validators.required);
-        this.dataForm = this.fb.group({
-            name: ['', Validators.required],
-            description: [''],
-            topicId: ['', Validators.required],
-            entity: this.defaultFields,
-            fields: this.fieldsForm,
-            conditions: this.conditionsForm
-        });
-        this.fields = [];
-        this.conditions = [];
-        this.schemes = [];
     }
 
     ngOnInit(): void {
@@ -208,15 +186,57 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.updateSubSchemes(this.value?.topicId || this.topicId);
-        this.dataForm.setValue({
-            name: '',
-            description: '',
-            entity: 'VC',
-            topicId: this.topicId,
-            fields: {},
-            conditions: {}
-        })
+        if (this.system) {
+            this.updateSubSchemas(undefined);
+        } else {
+            this.updateSubSchemas(this.value?.topicId || this.topicId);
+        }
+        if (this.dataForm) {
+            if (this.system) {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
+                    entity: 'ROOT_AUTHORITY',
+                    fields: {},
+                    conditions: {}
+                });
+            } else {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
+                    entity: 'VC',
+                    topicId: this.topicId,
+                    fields: {},
+                    conditions: {}
+                });
+            }
+        } else {
+            this.fieldsForm = this.fb.group({});
+            this.conditionsForm = new FormGroup({});
+            if (this.system) {
+                this.defaultFields = new FormControl("ROOT_AUTHORITY", Validators.required);
+                this.dataForm = this.fb.group({
+                    name: ['', Validators.required],
+                    description: [''],
+                    entity: this.defaultFields,
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                });
+            } else {
+                this.defaultFields = new FormControl("VC", Validators.required);
+                this.dataForm = this.fb.group({
+                    name: ['', Validators.required],
+                    description: [''],
+                    topicId: ['', Validators.required],
+                    entity: this.defaultFields,
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                });
+            }
+            this.fields = [];
+            this.conditions = [];
+            this.schemas = [];
+        }
         if (changes.value && this.value) {
             this.updateFormControls();
         }
@@ -224,30 +244,30 @@ export class SchemaConfigurationComponent implements OnInit {
 
     onFilter(event: any) {
         const topicId = event.value;
-        this.updateSubSchemes(topicId);
+        this.updateSubSchemas(topicId);
     }
 
-    updateSubSchemes(topicId: any) {
+    updateSubSchemas(topicId: any) {
         this.schemaTypes = [];
-        if (this.schemesMap) {
-            this.schemes = this.schemesMap[topicId];
+        if (this.schemasMap) {
+            this.schemas = this.schemasMap[topicId];
         }
-        if (this.schemes) {
-            for (let i = 0; i < this.schemes.length; i++) {
+        if (this.schemas) {
+            for (let i = 0; i < this.schemas.length; i++) {
                 const index = String(this.types.length + i + 1);
                 this.schemaTypes.push({
-                    name: this.schemes[i].name,
+                    name: this.schemas[i].name,
                     value: index
                 });
                 this.schemaTypeMap[index] = {
-                    type: this.schemes[i].iri,
+                    type: this.schemas[i].iri,
                     format: undefined,
                     pattern: undefined,
                     isRef: true,
                 }
             }
         } else {
-            this.schemes = [];
+            this.schemas = [];
         }
     }
 
@@ -597,7 +617,7 @@ export class SchemaConfigurationComponent implements OnInit {
             })
 
         }
-        const defaultFields = this.defaultFieldsMap[value.entity];
+        const defaultFields = this.defaultFieldsMap[value.entity] || [];
         for (let i = 0; i < defaultFields.length; i++) {
             const element = defaultFields[i];
             fields.push({
@@ -671,7 +691,7 @@ export class SchemaConfigurationComponent implements OnInit {
             });
         }
         schema.update(fields, conditions);
-        schema.updateRefs(this.schemes);
+        schema.updateRefs(this.schemas);
         return schema;
     }
 
@@ -679,6 +699,9 @@ export class SchemaConfigurationComponent implements OnInit {
         const value = this.dataForm.value;
         const schema = this.buildSchema(value);
         schema.topicId = value.topicId;
+        schema.system = this.system;
+        schema.active = false;
+        schema.readonly = false;
         return schema;
     }
 

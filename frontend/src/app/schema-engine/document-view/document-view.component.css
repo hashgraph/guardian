@@ -1,116 +1,133 @@
 form {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    position: relative;
+    min-height: 400px;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
 }
 
 .group-label {
-  color: rgba(0,0,0,.6);
+    color: rgba(0, 0, 0, .6);
 }
 
 .group-form {
-  margin-left: 16px;
-  margin-top: 10px;
+    margin-left: 16px;
+    margin-top: 10px;
 }
 
 .form-field {
-  display: block;
-  width: 100%;
-  position: relative;
-  margin-bottom: 10px;
+    display: block;
+    width: 100%;
+    position: relative;
+    margin-bottom: 10px;
 }
 
 .form-field mat-form-field {
-  width: 100%;
+    width: 100%;
 }
 
 .form-field-group,
 .form-field-array {
-  display: block;
-  width: 100%;
-  position: relative;
-  box-sizing: border-box;
+    display: block;
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .group-label,
 .array-label {
-  color: rgba(0,0,0,.6);
-  background: #fff;
-  top: -10px;
-  left: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
+    color: rgba(0, 0, 0, .6);
+    background: #fff;
+    top: -10px;
+    left: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .form-field-array-item {
-  padding-right: 5px;
-  position: relative;
-  display: table;
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 50px;
+    padding-right: 5px;
+    position: relative;
+    display: table;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 50px;
 }
 
 .group-label {
-  color: gray;
-  font-size: 14px;
+    color: gray;
+    font-size: 14px;
 }
 
 .label-field {
-  font-size: 18px;
-  margin-bottom: 10px;
+    font-size: 18px;
+    margin-bottom: 10px;
 }
 
 .label-header {
-  font-size: 18px;
-  margin-bottom: 30px;
-  font-weight: 500;
+    font-size: 18px;
+    margin-bottom: 30px;
+    font-weight: 500;
 }
 
 .delimiter {
-  padding: 30px 50px 50px 50px;
-  width: 100%;
-  height: 80px;
-  box-sizing: border-box;
-  position: relative;
+    padding: 30px 50px 50px 50px;
+    width: 100%;
+    height: 80px;
+    box-sizing: border-box;
+    position: relative;
 }
 
 .delimiter::after {
-  content: '';
-  position: absolute;
-  height: 2px;
-  top: 30px;
-  left: 0px;
-  right: 0px;
-  border-top: 1px solid #c8c8c8;
+    content: '';
+    position: absolute;
+    height: 2px;
+    top: 30px;
+    left: 0px;
+    right: 0px;
+    border-top: 1px solid #c8c8c8;
 }
 
 .short-delimiter-container {
-  width: 50%;
-  margin: 0 auto;
+    width: 50%;
+    margin: 0 auto;
 }
 
 :host .mat-input-element {
-  font-size: 18px;
+    font-size: 18px;
 }
 
 :host ::ng-deep mat-radio-button {
-  margin-right: 20px;
+    margin-right: 20px;
 }
 
-.form-field-array-item > .form-field-group {
-  padding-left: 40px;
+.form-field-array-item>.form-field-group {
+    padding-left: 40px;
 }
 
-.schema-form-field-array-group > .form-field-array-item > .form-field-group,
-.form-field-array-item > .schema-form-field-group {
-  border-left: 2px dashed #c8c8c8;
+.schema-form-field-array-group>.form-field-array-item>.form-field-group,
+.form-field-array-item>.schema-form-field-group {
+    border-left: 2px dashed #c8c8c8;
 }
 
-.form-field-group > .form-field-array-item {
-  padding-right: 0;
+.form-field-group>.form-field-array-item {
+    padding-right: 0;
 }
 
 :host mat-form-field {
-  cursor: not-allowed;
+    cursor: not-allowed;
 }

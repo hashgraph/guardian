@@ -65,9 +65,9 @@ const PORT = process.env.PORT || 3005;
             
             console.log("created vc");
             console.log(document);
-        } catch (e) {
-            console.error(e);
-            res.status(500).json(e);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json(error);
             return;
         }
 
@@ -80,9 +80,9 @@ const PORT = process.env.PORT || 3005;
             console.error('start post');
             const resp = await axios.post(url, body);
             console.error('end post');
-        } catch (e) {
-            console.error(e);
-            res.status(500).json(e);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json(error);
             return;
         }
 

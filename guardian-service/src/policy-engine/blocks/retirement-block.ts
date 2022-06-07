@@ -44,11 +44,9 @@ export class RetirementBlock {
     @Inject()
     private users: Users;
 
-    private async createWipeVC(root: any, token: any, data: any): Promise<VcDocument> {
+    private async createWipeVC(root: any, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-        const policySchema = await getMongoRepository(SchemaCollection).findOne({
-            entity: SchemaEntity.WIPE_TOKEN
-        });
+        const policySchema = await PolicyUtils.getSchema(ref.topicId, SchemaEntity.WIPE_TOKEN);
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
             date: (new Date()).toISOString(),
@@ -87,7 +85,7 @@ export class RetirementBlock {
         const uuid = HederaUtils.randomUUID();
         const amount = PolicyUtils.aggregate(rule, document);
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
-        const wipeVC = await this.createWipeVC(root, token, tokenAmount);
+        const wipeVC = await this.createWipeVC(root, token, tokenAmount, ref);
         const vcs = [].concat(document, wipeVC);
         const vp = await this.createVP(root, uuid, vcs);
 
@@ -189,8 +187,8 @@ export class RetirementBlock {
 
             ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
-        } catch (e) {
-            throw e;
+        } catch (error) {
+            throw error;
         }
     }
 

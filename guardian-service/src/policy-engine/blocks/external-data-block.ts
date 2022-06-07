@@ -78,7 +78,10 @@ export class ExternalDataBlock {
                     return;
                 }
 
-                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+                const schema = await getMongoRepository(SchemaCollection).findOne({ 
+                    iri: ref.options.schema,
+                    topicId: ref.topicId
+                });
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;

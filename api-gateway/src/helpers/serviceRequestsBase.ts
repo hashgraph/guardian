@@ -39,9 +39,9 @@ export abstract class ServiceRequestsBase {
                 throw response;
             }
             return response.body;
-        } catch (e) {
-            const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
-            err.code = e.code;
+        } catch (error) {
+            const err = new ServiceError(`${this.target} (${entity}) send: ` + error.error);
+            err.code = error.code;
             throw err
         }
     }
@@ -59,9 +59,9 @@ export abstract class ServiceRequestsBase {
                 throw { error: 'Server is not available' };
             }
             return Buffer.from(response.body, 'base64');
-        } catch (e) {
-            const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
-            err.code = e.code;
+        } catch (error) {
+            const err = new ServiceError(`${this.target} (${entity}) send: ` + error.error);
+            err.code = error.code;
             throw err
         }
     }

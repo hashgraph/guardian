@@ -110,7 +110,10 @@ export class CalculateContainerBlock {
         const newJson = await this.calculate(json, ref);
 
         // <-- new vc
-        const outputSchema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.outputSchema });
+        const outputSchema = await getMongoRepository(SchemaCollection).findOne({ 
+            iri: ref.options.outputSchema,
+            topicId: ref.topicId
+        });
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...newJson
@@ -184,7 +187,8 @@ export class CalculateContainerBlock {
                 return;
             }
             const inputSchema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.inputSchema
+                iri: ref.options.inputSchema,
+                topicId: ref.topicId
             });
             if (!inputSchema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.inputSchema}" does not exist`);
@@ -201,7 +205,8 @@ export class CalculateContainerBlock {
                 return;
             }
             const outputSchema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.outputSchema
+                iri: ref.options.outputSchema,
+                topicId: ref.topicId
             })
             if (!outputSchema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.outputSchema}" does not exist`);

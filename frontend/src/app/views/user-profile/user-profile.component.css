@@ -268,3 +268,10 @@ a[disabled="true"]{
 .generate-btn {
     margin-bottom: 20px;
 }
+
+
+.list-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}

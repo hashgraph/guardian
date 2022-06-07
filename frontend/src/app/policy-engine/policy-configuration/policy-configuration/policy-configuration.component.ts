@@ -36,7 +36,7 @@ export class PolicyConfigurationComponent implements OnInit {
     currentView: string = 'blocks';
     code!: string;
 
-    schemes!: Schema[];
+    schemas!: Schema[];
     tokens!: Token[];
     policyId!: string;
     errors: any[] = [];
@@ -134,10 +134,10 @@ export class PolicyConfigurationComponent implements OnInit {
                 return;
             }
 
-            this.schemaService.getSchemes(this.policyModel.topicId).subscribe((data2: any) => {
-                const schemes = data2 || [];
-                this.schemes = SchemaHelper.map(schemes) || [];
-                this.schemes.unshift({ type: "" } as any);
+            this.schemaService.getSchemas(this.policyModel.topicId).subscribe((data2: any) => {
+                const schemas = data2 || [];
+                this.schemas = SchemaHelper.map(schemas) || [];
+                this.schemas.unshift({ type: "" } as any);
                 setTimeout(() => { this.loading = false; }, 500);
             }, (e) => {
                 this.loading = false;

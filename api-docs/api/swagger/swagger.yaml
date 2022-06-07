@@ -1401,7 +1401,280 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  /schemas/type/{type}:
+    get:
+      tags:
+        - schemas
+      description: Finds the schema using the json document type.
+      parameters:
+        - in: path
+          name: type
+          schema:
+            type: string
+          required: true
+          description: JSON type.
+      security:
+      - bearerAuth: []
+      summary: Returns schema by type.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /schemas/system/{username}:
+    post:
+      tags:
+        - schemas
+      description: Creates new system schema. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      security:
+      - bearerAuth: []
+      summary: Create new system schema.
+      requestBody:
+        description: Object that contains a valid schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Schema"
+      responses:
+        201:
+          description: Successful operation.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - schemas
+      description: Returns all system schemas by username. Only users with the Root Authority role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Returns all system schemas by username.
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /schemas/system/{schemaId}:
+    put:
+      tags:
+        - schemas
+      description: Updates the system schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Schema ID.
+      security:
+      - bearerAuth: []
+      summary: Updates the schema.
+      requestBody:
+        description: Object that contains a valid schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Schema"
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - schemas
+      description: Deletes the system schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Schema ID.
+      security:
+      - bearerAuth: []
+      summary: Deletes the schema.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /schemas/{schemaId}/active:
+    put:
+      tags:
+        - schemas
+      description: Makes the selected scheme active. Other schemes of the same type become inactive. Only users with the Root Authority role are allowed to make the request.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Schema ID.
+      security:
+      - bearerAuth: []
+      summary: Publishes the schema.
+      requestBody:
+        description: Object that contains policy version.
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /schemas/system/entity/{schemaEntity}:
+    get:
+      tags:
+        - schemas
+      description: Finds the schema using the schema type.
+      parameters:
+        - in: path
+          name: schemaEntity
+          schema:
+            type: string
+            enum: [ROOT_AUTHORITY, USER, POLICY, MINT_TOKEN, WIPE_TOKEN, MINT_NFTOKEN]
+          required: true
+          description: schema type.
+      security:
+      - bearerAuth: []
+      summary: Returns schema by schema type.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /tokens:
     get:
       tags:

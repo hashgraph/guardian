@@ -38,9 +38,8 @@ export class BlockTreeGenerator {
         for (let policy of policies) {
             try {
                 await this.generate(policy.id.toString());
-            } catch (e) {
-                new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
-                console.error(e.message);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
             }
         }
     }

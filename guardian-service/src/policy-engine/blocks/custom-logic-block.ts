@@ -56,8 +56,8 @@ export class CustomLogicBlock {
             event.data.data = await this.execute(event.data, event.user);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
-        } catch (e) {
-            ref.error(e.message);
+        } catch (error) {
+            ref.error(error.message);
         }
     }
 
@@ -75,7 +75,8 @@ export class CustomLogicBlock {
                 try {
                     const root = await this.users.getHederaAccount(ref.policyOwner);
                     const outputSchema = await getMongoRepository(SchemaCollection).findOne({
-                        iri: ref.options.outputSchema
+                        iri: ref.options.outputSchema,
+                        topicId: ref.topicId
                     });
                     const context = SchemaHelper.getContext(outputSchema);
                     const owner = documents[0].owner;
@@ -121,8 +122,8 @@ export class CustomLogicBlock {
                         return;
                     }
 
-                } catch (e) {
-                    reject(e);
+                } catch (error) {
+                    reject(error);
                 }
             }
 

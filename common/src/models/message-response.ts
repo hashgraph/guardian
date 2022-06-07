@@ -35,13 +35,13 @@ export class MessageError<T> implements IMessageResponse<T>, Error {
     public name: string;
     public message: string;
 
-    constructor(error: string, code: number = 500) {
+    constructor(error: string | Error, code: number = 500) {
         this.code = code;
         this.body = null;
-        this.error = error;
+        this.error = typeof error === 'string' ? error : error.message;
 
-        this.name = error;
-        this.message = error;
+        this.name = this.error;
+        this.message = this.error;
     }
 }
 

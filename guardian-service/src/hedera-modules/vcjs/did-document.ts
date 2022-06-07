@@ -423,8 +423,8 @@ export class DIDDocument {
                 throw new Error('The specified DID does not correspond to the given DID root key');
             }
             return result;
-        } catch (e) {
-            throw new Error('DID string is invalid. ' + e.message);
+        } catch (error) {
+            throw new Error('DID string is invalid. ' + error.message);
         }
     }
 }

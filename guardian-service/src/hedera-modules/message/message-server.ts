@@ -37,6 +37,13 @@ export class MessageServer {
         return this;
     }
 
+    public getTopic(): string {
+        if(this.topicId) {
+            return this.topicId.toString();
+        }
+        return undefined;
+    }
+
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
         const buffers = await message.toDocuments();
         const urls = [];
@@ -98,7 +105,7 @@ export class MessageServer {
             case MessageType.VPDocument:
                 message = VPMessage.fromMessageObject(json);
                 break;
-            // Default schemes
+            // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
                 break;
