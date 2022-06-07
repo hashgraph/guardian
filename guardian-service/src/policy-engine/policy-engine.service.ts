@@ -590,6 +590,7 @@ export class PolicyEngineService {
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
+                new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
                 const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
@@ -608,6 +609,8 @@ export class PolicyEngineService {
                 if (!messageId) {
                     throw new Error('Policy ID in body is empty');
                 }
+
+                new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
 
                 const root = await this.users.getHederaAccount(userFull.did);
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
