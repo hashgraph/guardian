@@ -544,7 +544,7 @@ export class SchemaHelper {
     }
 
     private static _clearFieldsContext(json: any): any {
-        delete json['type'];
+        delete json.type;
         delete json['@context'];
 
         const keys = Object.keys(json);
@@ -565,7 +565,7 @@ export class SchemaHelper {
             const value = json[field.name];
             if (field.isRef && value) {
                 this._updateFieldsContext(field.fields, value);
-                value['type'] = field.context.type;
+                value.type = field.context.type;
                 value['@context'] = field.context.context;
             }
         }
@@ -575,7 +575,7 @@ export class SchemaHelper {
     public static updateObjectContext(schema: Schema, json: any): any {
         json = this._clearFieldsContext(json);
         json = this._updateFieldsContext(schema.fields, json);
-        json['type'] = schema.type;
+        json.type = schema.type;
         json['@context'] = [schema.contextURL];
         return json;
     }
