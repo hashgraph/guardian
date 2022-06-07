@@ -4,7 +4,8 @@ import {
     SchemaStatus,
     TopicType,
     ModelHelper,
-    SchemaHelper
+    SchemaHelper,
+    Schema
 } from '@guardian/interfaces';
 import {
     findAllEntities,
@@ -270,8 +271,7 @@ export class PolicyEngineService {
         const policySchema = await PolicyUtils.getSchema(model.topicId, SchemaEntity.POLICY);
 
         const vcHelper = new VcHelper();
-        const credentialSubject = {
-            ...SchemaHelper.getContext(policySchema),
+        let credentialSubject: any = {
             id: messageId,
             name: model.name,
             description: model.description,
@@ -284,6 +284,11 @@ export class PolicyEngineService {
             uuid: model.uuid,
             operation: 'PUBLISH'
         }
+        if (policySchema) {
+            const schemaObject = new Schema(policySchema);
+            credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
+        }
+
         const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
         const doc = getMongoRepository(VcDocumentCollection).create({
             hash: vc.toCredentialHash(),

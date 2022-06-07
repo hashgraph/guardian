@@ -270,8 +270,8 @@ export class PolicyUtils {
     public static async getSchema(topicId: string, entity: SchemaEntity): Promise<SchemaCollection> {
         const policySchema = await getMongoRepository(SchemaCollection).findOne({
             entity: entity,
-            topicId: topicId,
-            system: true
+            readonly: true,
+            topicId: topicId
         });
         return policySchema;
     }
