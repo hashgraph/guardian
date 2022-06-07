@@ -249,8 +249,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @return {boolean} - true if state was changed
              */
             public updateDataState(user, state: any): boolean {
+
                 this.oldDataState[user.did] = this.currentDataState[user.did];
-                this.currentDataState[user.did] = state;
+                this.currentDataState[user.did] = {state};
                 return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
                     strict: true
                 })
@@ -410,7 +411,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-            
+
             protected log(message: string) {
                 this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
             }
