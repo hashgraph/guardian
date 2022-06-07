@@ -104,6 +104,8 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
     setData(user: IAuthUser | null, data: any): Promise<any>;
 
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+
+    updateDataState(user: IAuthUser, data: any): boolean;
 }
 
 export interface IPolicyContainerBlock extends IPolicyBlock {

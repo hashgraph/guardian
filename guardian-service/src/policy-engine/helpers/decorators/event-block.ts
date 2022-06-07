@@ -18,9 +18,7 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             async getData(...args) {
                 const [user] = args;
                 if (typeof super.getData === 'function') {
-                    const data = await super.getData(...args);
-                    const changed = (this as any).updateDataState(user, data);
-                    return data;
+                    return await super.getData(...args);
                 }
                 return {};
             }

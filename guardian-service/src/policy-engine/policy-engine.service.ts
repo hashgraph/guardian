@@ -31,7 +31,7 @@ import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { Logger } from '@guardian/logger-helper';
 import { Policy } from '@entity/policy';
-import { getConnection, getMongoRepository } from 'typeorm';
+import { getConnection, getMongoRepository, ObjectID } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -76,12 +76,26 @@ export class PolicyEngineService {
         const policy = await getMongoRepository(Policy).findOne(block.policyId)
         const role = policy.registeredUsers[user.did];
 
+        let changed = true;
+
         if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, user)) {
-            await this.channel.request(['api-gateway', 'update-block'].join('.'), {
-                uuid,
-                state,
-                user
-            })
+            if ([
+                'interfaceStepBlock',
+                'interfaceContainerBlock'
+            ].includes(block.blockType)) {
+                changed = true;
+            } else if (typeof PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).getData === 'function') {
+                const data = await PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).getData(user, null, null);
+                changed = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).updateDataState(user, data);
+            }
+
+            if (changed) {
+                await this.channel.request(['api-gateway', 'update-block'].join('.'), {
+                    uuid,
+                    state,
+                    user
+                });
+            }
         }
     }
 
@@ -145,6 +159,9 @@ export class PolicyEngineService {
                 policyUUID: null
             });
             model.topicId = topic.topicId;
+
+            let id = new ObjectID();
+            id.toString();
 
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
