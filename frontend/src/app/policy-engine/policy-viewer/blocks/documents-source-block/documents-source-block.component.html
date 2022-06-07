@@ -61,7 +61,7 @@
 
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
             <tr mat-row *matRowDef="let row; columns: columns;" 
-                class="table-row" [ngClass]="{'has-history-row': row.history}"
+                class="table-row" [ngClass]="{'has-history-row': row.history, 'revoked': row.option?.status === 'Revoked'}"
                 (click)="statusDetailed = statusDetailed === row ? null : row"
             ></tr>
             <tr mat-row *matRowDef="let row; columns: ['statusDetails']" class="detailed-row"></tr>

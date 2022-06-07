@@ -162,3 +162,20 @@ tr.detailed-row {
 .has-history-row {
     cursor: pointer;
 }
+
+.mat-column-history {
+    width: 30px;
+}
+
+tr.revoked td {
+    position: relative;
+}
+
+tr.revoked td:not(.mat-column-history):before {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    border-bottom: 2px solid rgb(105, 105, 105);
+    width: 100%;
+}
