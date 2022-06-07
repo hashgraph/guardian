@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { ISchema, UserRole, SchemaHelper } from '@guardian/interfaces';
+import { ISchema, UserRole, SchemaHelper, SchemaEntity } from '@guardian/interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
@@ -469,6 +469,16 @@ schemaAPI.post('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), a
     try {
         const user = req.user;
         const newSchema = req.body;
+
+        if (!newSchema) {
+            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+            return;
+        }
+        if (newSchema.entity != SchemaEntity.ROOT_AUTHORITY && newSchema.entity != SchemaEntity.USER ) {
+            res.status(500).json({ code: 500, message: 'Invalid schema types. Entity must be ROOT_AUTHORITY or USER' });
+            return;
+        }
+
         const guardians = new Guardians();
         const owner = user.username;
 
