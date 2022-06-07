@@ -124,7 +124,7 @@ export class SchemaService {
 
     public updateSystemSchemas(schema: Schema, id?: string): Observable<ISchema[]> {
         const data = Object.assign({}, schema, { id: id || schema.id });
-        return this.http.put<any[]>(`${this.url}/system`, data);
+        return this.http.put<any[]>(`${this.url}/system/${id}`, data);
     }
 
     public activeSystemSchemas(id: string): Observable<any> {

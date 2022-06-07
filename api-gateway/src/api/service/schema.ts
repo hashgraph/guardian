@@ -537,7 +537,7 @@ schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY),
     }
 });
 
-schemaAPI.put('/system', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const newSchema = req.body;
