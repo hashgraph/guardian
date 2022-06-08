@@ -27,7 +27,7 @@ WORKDIR /usr/ipfs-client
 COPY ./ipfs-client/package*.json ./
 COPY ./ipfs-client/tsconfig.json ./
 COPY ./ipfs-client/.env.docker ./.env
-RUN npm install
+RUN npm install --force
 ADD ./ipfs-client/src ./src/.
 RUN npm run build
 
