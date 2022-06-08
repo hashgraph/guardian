@@ -28,8 +28,8 @@ export class MessageBrokerChannel {
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
                     responseMessage = await handleFunc(JSON.parse(StringCodec().decode(m.data)));
-                } catch (err) {
-                    responseMessage = new MessageError(err.message, err.code);
+                } catch (error) {
+                    responseMessage = new MessageError(error, error.code);
                 }
                 const archResponse = zlib.deflateSync(JSON.stringify(responseMessage)).toString('binary');
                 m.respond(StringCodec().encode(archResponse));
@@ -37,8 +37,8 @@ export class MessageBrokerChannel {
         };
         try {
             await fn(sub);
-        } catch (err) {
-            console.error(err.message);
+        } catch (error) {
+            console.error(error.message);
         }
     }
     /**
@@ -71,16 +71,17 @@ export class MessageBrokerChannel {
             const unpackedString = zlib.inflateSync(new Buffer(StringCodec().decode(msg.data), 'binary')).toString();
             return JSON.parse(unpackedString);
 
-        } catch (e) {
+        } catch (error) {
             // Nats no subscribe error
-            if (e.code === '503') {
+            if (error.code === '503') {
                 console.warn('No listener for message event type =  %s', eventType);
                 return;
             }
-            console.error(e.message, e.stack, e);
-            throw e;
+            console.error(error.message, error.stack, error);
+            throw error;
         }
     }
+
     /**
      * Publish message to all Nats client subscribers
      * @param eventType 
