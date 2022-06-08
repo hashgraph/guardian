@@ -23,7 +23,7 @@ import { Logger } from '@guardian/logger-helper';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import { Policy } from '@entity/policy';
-import { MessageBrokerChannel, ApplicationState } from '@guardian/common';
+import { MessageBrokerChannel, ApplicationState, ExternalEventChannel } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([
@@ -51,6 +51,8 @@ Promise.all([
 
     IPFS.setChannel(channel);
     new Logger().setChannel(channel);
+    new ExternalEventChannel().setChannel(channel);
+
     new Wallet().setChannel(channel);
     new Users().setChannel(channel);
 

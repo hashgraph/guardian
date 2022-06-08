@@ -1,7 +1,7 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
 import { EventConfig, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
-import { PolicyRole } from '@guardian/interfaces';
+import { ExternalMessageEvents, PolicyRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/logger-helper';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
@@ -14,6 +14,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { Policy } from '@entity/policy';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { ExternalEventChannel } from '@guardian/common';
 
 /**
  * Basic block decorator
@@ -117,7 +118,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!Array.isArray(this.actions)) {
                     this.actions = [];
                 }
-                this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
+                this.actions.push([PolicyInputEventType.RunEvent, async (event) => {
+                    const result = await this.runAction(event);
+                    if (o.publishExternalEvent) {
+                        new ExternalEventChannel().publishMessage(ExternalMessageEvents.BLOCK_RUN_EVENTS, { uuid: this.uuid, blockType: this.blockType, blockTag: this.tag, data: event.data, result })
+                    }
+                    return result;
+                }
+                ]);
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
             }
 

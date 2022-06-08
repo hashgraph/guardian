@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Subscription, NatsConnection, StringCodec, connect } from 'nats';
+import { Subscription, NatsConnection, StringCodec, connect, JSONCodec } from 'nats';
 import { IMessageResponse, MessageError } from '../models/message-response';
 import * as zlib from 'zlib';
 
@@ -28,8 +28,8 @@ export class MessageBrokerChannel {
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
                     responseMessage = await handleFunc(JSON.parse(StringCodec().decode(m.data)));
-                } catch (error) {
-                    responseMessage = new MessageError(error, error.code);
+                } catch (err) {
+                    responseMessage = new MessageError(err.message, err.code);
                 }
                 const archResponse = zlib.deflateSync(JSON.stringify(responseMessage)).toString('binary');
                 m.respond(StringCodec().encode(archResponse));
@@ -37,8 +37,8 @@ export class MessageBrokerChannel {
         };
         try {
             await fn(sub);
-        } catch (error) {
-            console.error(error.message);
+        } catch (err) {
+            console.error(err.message);
         }
     }
     /**
@@ -71,22 +71,34 @@ export class MessageBrokerChannel {
             const unpackedString = zlib.inflateSync(new Buffer(StringCodec().decode(msg.data), 'binary')).toString();
             return JSON.parse(unpackedString);
 
-        } catch (error) {
+        } catch (e) {
             // Nats no subscribe error
-            if (error.code === '503') {
+            if (e.code === '503') {
                 console.warn('No listener for message event type =  %s', eventType);
                 return;
             }
-            console.error(error.message, error.stack, error);
-            throw error;
+            console.error(e.message, e.stack, e);
+            throw e;
         }
     }
+    /**
+     * Publish message to all Nats client subscribers
+     * @param eventType 
+     * @param data 
+     * @param allowError 
+     */
+    public publish<T>(eventType: string, data: T, allowError = true) {
+        try {
+            console.log('MQ publish: %s', eventType);
+            const sc = JSONCodec();
+            this.channel.publish(eventType, sc.encode(data));
+        } catch (e) {
 
-    public publish(eventType: string, data: string) {
-        const target = this.getTarget(eventType);
-        console.log('MQ publish: %s', target);
-        const sc = StringCodec();
-        this.channel.publish(target, sc.encode(data));
+            console.error(e.message, e.stack, e);
+            if (!allowError) {
+                throw e;
+            }
+        }
     }
     /**
      * Create the Nats MQ connection
@@ -103,5 +115,3 @@ export class MessageBrokerChannel {
         });
     };
 }
-export * from './message-broker-channel'
-export * from './external-channel'
