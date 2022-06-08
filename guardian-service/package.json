@@ -36,7 +36,7 @@
     "logger-helper": "file:../logger-helper",
     "mathjs": "^10.1.0",
     "module-alias": "^2.2.2",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "mongodb": "^4.2.1",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.41"
