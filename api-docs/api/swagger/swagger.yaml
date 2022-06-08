@@ -1447,7 +1447,7 @@ paths:
           description: Username.
       security:
       - bearerAuth: []
-      summary: Create new system schema.
+      summary: Creates new system schema.
       requestBody:
         description: Object that contains a valid schema.
         required: true
@@ -1486,19 +1486,19 @@ paths:
           name: pageIndex
           schema:
             type: integer
-          description: The number of pages to skip before starting to collect the result set
+          description: The number of pages to skip before starting to collect the result set.
           examples:
             pageIndex:
-              summary: Example of a pageIndex
+              summary: Example of a pageIndex.
               value: 0
         - in: query
           name: pageSize
           schema:
             type: integer
-          description: The numbers of items to return
+          description: The number of items to return.
           examples:
             pageSize:
-              summary: Example of a pageSize
+              summary: Example of a pageSize.
               value: 100
       responses:
         200:
@@ -1507,7 +1507,7 @@ paths:
             x-total-count:
               schema:
                 type: integer
-              description: Total items in the collection.
+              description: Total number of items in the collection.
           content:
             application/json:
               schema:
