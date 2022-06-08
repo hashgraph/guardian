@@ -133,6 +133,16 @@
 * [Importing Zip file containing Schema](schema-creation-using-the-guardian-apis/importing-zip-file-containing-schema.md)
 * [Importing Schema from IPFS](schema-creation-using-the-guardian-apis/importing-schema-from-ipfs.md)
 
+## System Schemas APIs
+
+* [Returns Schema by Type](system-schemas-apis/returns-schema-by-type.md)
+* [Creates New System Schema](system-schemas-apis/creates-new-system-schema.md)
+* [Returns Schema by Username](system-schemas-apis/returns-schema-by-username.md)
+* [Updates the Schema](system-schemas-apis/updates-the-schema.md)
+* [Delete System Schema](system-schemas-apis/delete-system-schema.md)
+* [Publishes the Schema](system-schemas-apis/publishes-the-schema.md)
+* [Schema Type](system-schemas-apis/schema-type.md)
+
 ## ACCOUNT APIS
 
 * [User listing except Root Authority and Auditor](account-apis/user-listing-except-root-authority-and-auditor.md)
