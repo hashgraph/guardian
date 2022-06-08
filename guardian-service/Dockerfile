@@ -30,8 +30,8 @@ COPY ./guardian-service/package*.json ./
 COPY ./guardian-service/tsconfig.json ./
 COPY ./guardian-service/.env.docker ./.env
 COPY ./guardian-service/system-schemas ./system-schemas/.
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz /usr/logger-helper/guardian-logger-helper-*.tgz
-RUN npm install
+RUN npm install --force /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz /usr/logger-helper/guardian-logger-helper-*.tgz
+RUN npm install --force
 ADD ./guardian-service/src ./src/.
 RUN npm run build
 
