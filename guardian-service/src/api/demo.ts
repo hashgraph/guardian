@@ -28,7 +28,7 @@ export const demoAPI = async function (
                 key: treasury.key.toString()
             });
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -50,7 +50,7 @@ export const demoAPI = async function (
             });
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     })

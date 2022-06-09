@@ -155,7 +155,10 @@ export class DocumentsSourceAddon {
                     resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                     return;
                 }
-                const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+                const schema = await getMongoRepository(SchemaCollection).findOne({ 
+                    iri: ref.options.schema,
+                    topicId: ref.topicId
+                });
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;

@@ -104,7 +104,6 @@ export class ReportBlock {
                 return {
                     hash: null,
                     uiMetaData: ref.options.uiMetaData,
-                    schemes: null,
                     data: null
                 };
             }
@@ -230,12 +229,9 @@ export class ReportBlock {
 
             await this.reportUserMap(report);
 
-            const schemes = await getMongoRepository(Schema).find({ status: SchemaStatus.PUBLISHED });
-
             return {
                 hash: hash,
                 uiMetaData: ref.options.uiMetaData,
-                schemes: schemes,
                 data: report
             };
         } catch (error) {

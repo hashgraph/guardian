@@ -123,7 +123,7 @@ const routes: Routes = [
 
     { path: 'config', component: RootConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
     { path: 'tokens', component: TokenConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
-    { path: 'schemes', component: SchemaConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
+    { path: 'schemas', component: SchemaConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
     {
         path: 'admin', component: AdminHeaderComponent, canActivate: [RootAuthorityGuard], canActivateChild: [RootAuthorityGuard],
         children: [

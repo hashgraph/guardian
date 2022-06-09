@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 /**
- * Page for creating, editing, importing and exporting schemes.
+ * Page for creating, editing, importing and exporting schemas.
  */
 @Component({
     selector: 'app-admin-panel',

@@ -52,8 +52,8 @@ export class Issuer {
         try {
             const root = JSON.parse(json);
             return this.fromJsonTree(root);
-        } catch (e) {
-            throw new Error('Given JSON string is not a valid Issuer ' + e.message);
+        } catch (error) {
+            throw new Error('Given JSON string is not a valid Issuer ' + error.message);
         }
     }
 }

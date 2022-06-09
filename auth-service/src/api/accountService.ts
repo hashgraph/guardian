@@ -39,8 +39,8 @@ export class AccountService {
                 const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, process.env.ACCESS_TOKEN_SECRET, {});
                 const user = await getMongoRepository(User).findOne({ username: decryptedToken.username });
                 return new MessageResponse(user);
-            } catch (e) {
-                return new MessageError(e.message);
+            } catch (error) {
+                return new MessageError(error);
             }
         });
 
@@ -65,9 +65,9 @@ export class AccountService {
                 });
                 return new MessageResponse(await getMongoRepository(User).save(user));
 
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message)
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error)
             }
         });
 
@@ -93,9 +93,9 @@ export class AccountService {
                     return new MessageError('Unauthorized request', 401);
                 }
 
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -107,9 +107,9 @@ export class AccountService {
                     did: e.did
                 }));
                 return new MessageResponse(userAccounts);
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -120,9 +120,9 @@ export class AccountService {
                     did: e.did
                 }));
                 return new MessageResponse(userAccounts);
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -136,9 +136,9 @@ export class AccountService {
                     role: e.role
                 }));
                 return new MessageResponse(userAccounts);
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -147,9 +147,9 @@ export class AccountService {
 
             try {
                 return new MessageResponse(await getMongoRepository(User).findOne({ username }));
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -158,9 +158,9 @@ export class AccountService {
 
             try {
                 return new MessageResponse(await getMongoRepository(User).findOne({ did }));
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -173,9 +173,9 @@ export class AccountService {
                         did: { $in: dids }
                     }
                 }));
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -184,9 +184,9 @@ export class AccountService {
 
             try {
                 return new MessageResponse(await getMongoRepository(User).find({ role }));
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -195,9 +195,9 @@ export class AccountService {
 
             try {
                 return new MessageResponse(await getMongoRepository(User).update({ username }, item));
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -206,9 +206,9 @@ export class AccountService {
 
             try {
                 return new MessageResponse(await getMongoRepository(User).save(user));
-            } catch (e) {
-                new Logger().error(e.toString(), ['AUTH_SERVICE']);
-                return new MessageError(e.message);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
             }
         });
     }

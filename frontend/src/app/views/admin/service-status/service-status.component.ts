@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { StatusService } from 'src/app/services/status.service';
 /**
- * Page for creating, editing, importing and exporting schemes.
+ * Page for creating, editing, importing and exporting schemas.
  */
 @Component({
     selector: 'app-service-status',

@@ -5,7 +5,7 @@ import { ImportType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 /**
- * Dialog allowing you to select a file and load schemes.
+ * Dialog allowing you to select a file and load schemas.
  */
 @Component({
     selector: 'import-schema-dialog',
@@ -59,7 +59,7 @@ export class ImportSchemaDialog {
         this.dialogRef.close({
           type: 'message',
           data: messageId,
-          schemes: result
+          schemas: result
         });
       }, error => {
         this.loading = false;
@@ -77,7 +77,7 @@ export class ImportSchemaDialog {
         this.dialogRef.close({
           type: 'file',
           data: arrayBuffer,
-          schemes: result
+          schemas: result
         });
       }, (e) => {
         this.loading = false;

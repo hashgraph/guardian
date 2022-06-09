@@ -44,9 +44,9 @@ export const fileAPI = async function (
 
             return new MessageResponse({ cid, url },);
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            return new MessageError(e.message);
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageError(error);
         }
     })
 
@@ -82,9 +82,9 @@ export const fileAPI = async function (
                     return new MessageResponse(fileRes.data)
             }
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            return new MessageResponse({ error: e.message });
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageResponse({ error: error.message });
         }
     })
 
@@ -116,9 +116,9 @@ export const fileAPI = async function (
             client = new NFTStorage({ token: settings.nftApiKey });
             return new MessageResponse({});
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            return new MessageResponse({ error: e.message });
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageResponse({ error: error.message });
         }
     })
 

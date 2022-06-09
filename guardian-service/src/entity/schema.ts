@@ -25,9 +25,6 @@ export class Schema implements ISchema {
     status: SchemaStatus;
 
     @Column()
-    readonly: boolean;
-
-    @Column()
     document: ISchemaDocument;
 
     @Column()
@@ -60,6 +57,15 @@ export class Schema implements ISchema {
     @CreateDateColumn()
     createDate: Date;
 
+    @Column()
+    readonly: boolean;
+
+    @Column()
+    system: boolean;
+
+    @Column()
+    active: boolean;
+
     /**
      * Virtual column.
      */
@@ -75,6 +81,8 @@ export class Schema implements ISchema {
         if (this.status == SchemaStatus.DRAFT) {
             this.messageId = null;
         }
+        this.system = this.system || false;
+        this.active = this.active || false;
     }
 
     @AfterLoad()

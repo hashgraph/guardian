@@ -19,8 +19,8 @@ export class ApplicationState {
             try {
                 return new MessageResponse(this.state);
             }
-            catch (e) {
-                return new MessageError(e);
+            catch (error) {
+                return new MessageError(error);
             }
         });
     }

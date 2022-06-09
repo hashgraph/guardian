@@ -138,7 +138,7 @@ export const trustChainAPI = async function (
 
             const policyImported = await vcDocumentRepository.findOne({
                 where: {
-                    type: { $eq: SchemaEntity.POLICY_IMPORTED },
+                    type: { $eq: 'POLICY_IMPORTED' },
                     policyId: { $eq: policyId }
                 }
             });
@@ -214,7 +214,7 @@ export const trustChainAPI = async function (
      */
     ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg) => {
         try {
-            const hash = msg;
+            const hash = msg.id;
             const chain: IChainItem[] = [];
             let root: VcDocument | VpDocument;
 
@@ -273,9 +273,9 @@ export const trustChainAPI = async function (
             await getPolicyInfo(chain, null);
             return new MessageResponse(chain);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     });
 }

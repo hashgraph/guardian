@@ -9,7 +9,7 @@
     "dotenv": "^16.0.0",
     "fs-extra": "^10.0.0",
     "module-alias": "^2.2.2",
-    "mongodb": "^4.2.1",
+    "mongodb": "4.2.1",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.41"
   },

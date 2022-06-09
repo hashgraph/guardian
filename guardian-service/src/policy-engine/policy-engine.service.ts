@@ -4,7 +4,8 @@ import {
     SchemaStatus,
     TopicType,
     ModelHelper,
-    SchemaHelper
+    SchemaHelper,
+    Schema
 } from '@guardian/interfaces';
 import {
     findAllEntities,
@@ -24,14 +25,14 @@ import {
 } from './policy-engine.interface';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { incrementSchemaVersion, publishSchema } from '@api/schema.service';
+import { incrementSchemaVersion, findAndPublishSchema, publishSchema, publishSystemSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { Logger } from '@guardian/logger-helper';
 import { Policy } from '@entity/policy';
-import { getConnection, getMongoRepository } from 'typeorm';
+import { getConnection, getMongoRepository, ObjectID } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -40,6 +41,7 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
 import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from '@guardian/common';
 import { PolicyConverterUtils } from './policy-converter-utils';
+import { PolicyUtils } from './helpers/utils';
 
 export class PolicyEngineService {
     @Inject()
@@ -75,12 +77,26 @@ export class PolicyEngineService {
         const policy = await getMongoRepository(Policy).findOne(block.policyId)
         const role = policy.registeredUsers[user.did];
 
+        let changed = true;
+
         if (PolicyComponentsUtils.IfUUIDRegistered(uuid) && PolicyComponentsUtils.IfHasPermission(uuid, role, user)) {
-            await this.channel.request(['api-gateway', 'update-block'].join('.'), {
-                uuid,
-                state,
-                user
-            })
+            if ([
+                'interfaceStepBlock',
+                'interfaceContainerBlock'
+            ].includes(block.blockType)) {
+                changed = true;
+            } else if (typeof PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).getData === 'function') {
+                const data = await PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).getData(user, null, null);
+                changed = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).updateDataState(user, data);
+            }
+
+            if (changed) {
+                await this.channel.request(['api-gateway', 'update-block'].join('.'), {
+                    uuid,
+                    state,
+                    user
+                });
+            }
         }
     }
 
@@ -97,6 +113,7 @@ export class PolicyEngineService {
     }
 
     private async createPolicy(data: Policy, owner: string): Promise<Policy> {
+        const logger = new Logger();
         const model = getMongoRepository(Policy).create(data as DeepPartial<Policy>);
         if (!model.config) {
             model.config = {
@@ -130,9 +147,8 @@ export class PolicyEngineService {
 
         let newTopic: Topic;
         const root = await this.users.getHederaAccount(owner);
-        if (model.topicId) {
-            const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
-        } else {
+        if (!model.topicId) {
+            logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await getMongoRepository(Topic).findOne({ owner: owner, type: TopicType.UserTopic });
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
             const topic = await topicHelper.create({
@@ -145,6 +161,9 @@ export class PolicyEngineService {
             });
             model.topicId = topic.topicId;
 
+            let id = new ObjectID();
+            id.toString();
+
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
@@ -153,11 +172,30 @@ export class PolicyEngineService {
                 .sendMessage(message);
 
             await topicHelper.link(topic, parent, messageStatus.getId());
+
+            const systemSchemas = new Array(4);
+            systemSchemas[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);
+            systemSchemas[1] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN);
+            systemSchemas[2] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN);
+            systemSchemas[3] = await PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN);
+
+            for (let i = 0; i < systemSchemas.length; i++) {
+                logger.info('Create Policy: Publish System Schema', ['GUARDIAN_SERVICE']);
+                messageServer.setTopicObject(topic);
+                const schema = systemSchemas[i];
+                schema.creator = owner;
+                schema.owner = owner;
+                const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
+                const newItem = getMongoRepository(SchemaCollection).create(item);
+                await getMongoRepository(SchemaCollection).save(newItem);
+            }
+
             newTopic = topic;
         }
 
         model.codeVersion = PolicyConverterUtils.VERSION;
         const policy = await getMongoRepository(Policy).save(model);
+
         if (newTopic) {
             newTopic.policyId = policy.id.toString();
             newTopic.policyUUID = policy.uuid;
@@ -180,7 +218,7 @@ export class PolicyEngineService {
         return await getMongoRepository(Policy).save(model);
     }
 
-    private async publishSchemes(model: Policy, owner: string): Promise<Policy> {
+    private async publishSchemas(model: Policy, owner: string): Promise<Policy> {
         const schemas = await getMongoRepository(SchemaCollection).find({ topicId: model.topicId });
         const schemaIRIs = schemas.map(s => s.iri);
         for (let i = 0; i < schemaIRIs.length; i++) {
@@ -189,24 +227,25 @@ export class PolicyEngineService {
             if (schema.status == SchemaStatus.PUBLISHED) {
                 continue;
             }
-            const newSchema = await publishSchema(schema.id, schema.version, owner);
+            const newSchema = await findAndPublishSchema(schema.id, schema.version, owner);
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
         }
         return model;
     }
 
     private async publishPolicy(model: Policy, owner: string, version: string): Promise<Policy> {
-        model = await this.publishSchemes(model, owner);
+        const root = await this.users.getHederaAccount(owner);
+        const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+            .setTopicObject(topic);
+
+        model = await this.publishSchemas(model, owner);
         model.status = 'PUBLISH';
         model.version = version;
 
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
-
-        const root = await this.users.getHederaAccount(owner);
-        const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
 
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const rootTopic = await topicHelper.create({
@@ -220,7 +259,7 @@ export class PolicyEngineService {
 
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.setTopicObject(topic).sendMessage(message);
+        const result = await messageServer.sendMessage(message);
         model.messageId = result.getId();
         model.instanceTopicId = rootTopic.topicId;
 
@@ -228,10 +267,11 @@ export class PolicyEngineService {
 
         const messageId = result.getId();
         const url = result.getUrl();
-        const policySchema = await getMongoRepository(SchemaCollection).findOne({ entity: SchemaEntity.POLICY });
+
+        const policySchema = await PolicyUtils.getSchema(model.topicId, SchemaEntity.POLICY);
+
         const vcHelper = new VcHelper();
-        const credentialSubject = {
-            ...SchemaHelper.getContext(policySchema),
+        let credentialSubject: any = {
             id: messageId,
             name: model.name,
             description: model.description,
@@ -244,6 +284,11 @@ export class PolicyEngineService {
             uuid: model.uuid,
             operation: 'PUBLISH'
         }
+        if (policySchema) {
+            const schemaObject = new Schema(policySchema);
+            credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
+        }
+
         const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
         const doc = getMongoRepository(VcDocumentCollection).create({
             hash: vc.toCredentialHash(),
@@ -320,7 +365,7 @@ export class PolicyEngineService {
 
                 return new MessageResponse({ policies, count });
             } catch (error) {
-                return new MessageError(error.message);
+                return new MessageError(error);
             }
         });
 
@@ -335,7 +380,7 @@ export class PolicyEngineService {
                 });
                 return new MessageResponse(policies);
             } catch (error) {
-                return new MessageError(error.message);
+                return new MessageError(error);
             }
         });
 
@@ -345,9 +390,9 @@ export class PolicyEngineService {
                 delete result.registeredUsers;
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
-                return new MessageError(error.message);
+                return new MessageError(error);
             }
         });
 
@@ -403,9 +448,8 @@ export class PolicyEngineService {
                     errors
                 });
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                console.error(error.message);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -419,8 +463,8 @@ export class PolicyEngineService {
                     policy
                 });
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -431,9 +475,9 @@ export class PolicyEngineService {
                 const userFull = await this.users.getUser(user.username);
                 return new MessageResponse(await block.getData(userFull, block.uuid));
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
-                return new MessageError(error.message);
+                return new MessageError(error);
             }
         });
 
@@ -444,8 +488,8 @@ export class PolicyEngineService {
                 const data = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(userFull, blockId, null)
                 return new MessageResponse(data);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -456,8 +500,8 @@ export class PolicyEngineService {
                 const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(userFull, data)
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -468,7 +512,7 @@ export class PolicyEngineService {
                 const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
                 return new MessageResponse({ id: block.uuid });
             } catch (error) {
-                return new MessageError(error.message);
+                return new MessageError(error);
             }
         });
 
@@ -485,8 +529,8 @@ export class PolicyEngineService {
                 }
                 return new MessageResponse(parents);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -502,9 +546,9 @@ export class PolicyEngineService {
                 console.log("File size: " + file.byteLength);
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
                 console.log(error);
-                return new MessageError(error.message);
+                return new MessageError(error);
             }
         });
 
@@ -524,8 +568,8 @@ export class PolicyEngineService {
                     owner: policy.owner
                 });
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -539,8 +583,9 @@ export class PolicyEngineService {
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
                 return new MessageResponse(policyToImport);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                console.log(error, error.message);
+                return new MessageError(error);
             }
         });
 
@@ -550,14 +595,15 @@ export class PolicyEngineService {
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
+                new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
                 const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -568,6 +614,8 @@ export class PolicyEngineService {
                 if (!messageId) {
                     throw new Error('Policy ID in body is empty');
                 }
+
+                new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
 
                 const root = await this.users.getHederaAccount(userFull.did);
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
@@ -604,8 +652,8 @@ export class PolicyEngineService {
 
                 return new MessageResponse(policyToImport);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -634,8 +682,8 @@ export class PolicyEngineService {
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -644,8 +692,8 @@ export class PolicyEngineService {
                 await PolicyComponentsUtils.ReceiveExternalData(msg);
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error.toString(), ['GUARDIAN_SERVICE']);
-                return new MessageError(error.message);
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -655,7 +703,7 @@ export class PolicyEngineService {
                 const about = PolicyComponentsUtils.GetBlockAbout();
                 return new MessageResponse(about);
             } catch (error) {
-                return new MessageError(error.message);
+                return new MessageError(error);
             }
         });
     }

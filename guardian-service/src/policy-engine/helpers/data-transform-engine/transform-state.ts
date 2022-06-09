@@ -20,8 +20,8 @@ export function TransformState(rules: any, state: any, updateSource: string, upd
     const updates = {};
     try {
         updates[configuration.target] = expression(state);
-    } catch (e) {
-        throw new BlockActionError(e.message, PolicyComponentsUtils.GetBlockByUUID(updateTarget).blockType, updateTarget);
+    } catch (error) {
+        throw new BlockActionError(error.message, PolicyComponentsUtils.GetBlockByUUID(updateTarget).blockType, updateTarget);
     }
     return Object.assign({}, state, updates);
 }

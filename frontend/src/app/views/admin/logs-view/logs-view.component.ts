@@ -14,7 +14,7 @@ import { LoggerService } from 'src/app/services/logger.service';
 import { DetailsLogDialog } from '../details-log-dialog/details-log-dialog.component';
 
 /**
- * Page for creating, editing, importing and exporting schemes.
+ * Page for creating, editing, importing and exporting schemas.
  */
 @Component({
     selector: 'app-logs-view',

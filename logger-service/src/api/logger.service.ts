@@ -22,8 +22,8 @@ export const loggerAPI = async function (
             await logRepository.save(message);
             return new MessageResponse(true);
         }
-        catch (e) {
-            return new MessageError(e);
+        catch (error) {
+            return new MessageError(error);
         }
     })
 
@@ -57,8 +57,8 @@ export const loggerAPI = async function (
                 totalCount
             });
         }
-        catch (e) {
-            return new MessageError(e.toString());
+        catch (error) {
+            return new MessageError(error);
         }
     })
 
@@ -87,8 +87,8 @@ export const loggerAPI = async function (
             attrCursor.close();
             return new MessageResponse(attrObject?.uniqueValues?.sort() || []);
         }
-        catch (e) {
-            return new MessageError<string>(e.toString());
+        catch (error) {
+            return new MessageError<string>(error.toString());
         }
     })
 }

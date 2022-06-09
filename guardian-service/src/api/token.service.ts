@@ -138,9 +138,9 @@ export const tokenAPI = async function (
             const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     })
 
@@ -175,9 +175,9 @@ export const tokenAPI = async function (
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -213,9 +213,9 @@ export const tokenAPI = async function (
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -252,9 +252,9 @@ export const tokenAPI = async function (
 
             return new MessageResponse(status);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -284,9 +284,9 @@ export const tokenAPI = async function (
 
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -329,9 +329,9 @@ export const tokenAPI = async function (
             }
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -395,9 +395,9 @@ export const tokenAPI = async function (
             const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     })
 }

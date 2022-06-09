@@ -1,13 +1,14 @@
 import { Token } from "@entity/token";
-import { HederaSDKHelper, HederaUtils, VcDocument, VpDocument } from "@hedera-modules";
+import { HederaSDKHelper, HederaUtils, VcDocument } from "@hedera-modules";
 import * as mathjs from 'mathjs';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
+import { Schema as SchemaCollection } from '@entity/schema';
 import { getMongoRepository } from "typeorm";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { IAuthUser } from "@auth/auth.interface";
-import { DocumentSignature, DocumentStatus, TopicType } from "@guardian/interfaces";
+import { SchemaEntity, TopicType } from "@guardian/interfaces";
 import { Topic } from "@entity/topic";
 import { TopicHelper } from "@helpers/topicHelper";
 import { DocumentState } from "@entity/document-state";
@@ -290,5 +291,23 @@ export class PolicyUtils {
             return null;
         }
         return null;
+    }
+
+    public static async getSchema(topicId: string, entity: SchemaEntity): Promise<SchemaCollection> {
+        const policySchema = await getMongoRepository(SchemaCollection).findOne({
+            entity: entity,
+            readonly: true,
+            topicId: topicId
+        });
+        return policySchema;
+    }
+
+    public static async getSystemSchema(entity: SchemaEntity): Promise<SchemaCollection> {
+        const policySchema = await getMongoRepository(SchemaCollection).findOne({
+            entity: entity,
+            system: true,
+            active: true
+        });
+        return policySchema;
     }
 }

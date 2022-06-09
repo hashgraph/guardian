@@ -17,7 +17,7 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 export class CalculateConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemes') schemes!: Schema[];
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
 
@@ -61,7 +61,7 @@ export class CalculateConfigComponent implements OnInit {
 
     onSelectInput() {
         this.block.inputFields = [];
-        const schema = this.schemes.find(e => e.iri == this.block.inputSchema)
+        const schema = this.schemas.find(e => e.iri == this.block.inputSchema)
         if (schema) {
             for (let i = 0; i < schema.fields.length; i++) {
                 const field = schema.fields[i];
@@ -76,7 +76,7 @@ export class CalculateConfigComponent implements OnInit {
 
     onSelectOutput() {
         this.block.outputFields = [];
-        const schema = this.schemes.find(e => e.iri == this.block.outputSchema)
+        const schema = this.schemas.find(e => e.iri == this.block.outputSchema)
         if (schema) {
             for (let i = 0; i < schema.fields.length; i++) {
                 const field = schema.fields[i];

@@ -1,0 +1,410 @@
+[
+    {
+        "uuid": "MintNFToken",
+        "name": "MintNFToken",
+        "entity": "MINT_NFTOKEN",
+        "document": {
+            "$id": "#MintNFToken",
+            "$comment": "{ \"term\": \"MintNFToken\", \"@id\": \"undefined#MintNFToken\" }",
+            "title": "MintNFToken",
+            "description": "MintNFToken",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "date": {
+                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "date",
+                    "description": "date",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "serials": {
+                    "$comment": "{\"term\": \"serials\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "serials",
+                    "description": "serials",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "readOnly": false
+                },
+                "tokenId": {
+                    "$comment": "{\"term\": \"tokenId\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "tokenId",
+                    "description": "tokenId",
+                    "type": "string",
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "date",
+                "serials",
+                "tokenId"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "MintToken",
+        "name": "MintToken",
+        "entity": "MINT_TOKEN",
+        "document": {
+            "$id": "#MintToken&1.0.0",
+            "$comment": "{ \"term\": \"MintToken&1.0.0\", \"@id\": \"undefined#MintToken&1.0.0\" }",
+            "title": "MintToken",
+            "description": "MintToken",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "date": {
+                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "date",
+                    "description": "date",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "amount": {
+                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "amount",
+                    "description": "amount",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "tokenId": {
+                    "$comment": "{\"term\": \"tokenId\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "tokenId",
+                    "description": "tokenId",
+                    "type": "string",
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "date",
+                "amount",
+                "tokenId"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "Policy",
+        "name": "Policy",
+        "entity": "POLICY",
+        "document": {
+            "$id": "#Policy&1.0.0",
+            "$comment": "{ \"term\": \"Policy&1.0.0\", \"@id\": \"undefined#Policy&1.0.0\" }",
+            "title": "Policy",
+            "description": "Policy",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "name": {
+                    "$comment": "{\"term\": \"name\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "name",
+                    "description": "name",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "description": {
+                    "$comment": "{\"term\": \"description\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "description",
+                    "description": "description",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "topicDescription": {
+                    "$comment": "{\"term\": \"topicDescription\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "topicDescription",
+                    "description": "topicDescription",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "version": {
+                    "$comment": "{\"term\": \"version\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "version",
+                    "description": "version",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "policyTag": {
+                    "$comment": "{\"term\": \"policyTag\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "policyTag",
+                    "description": "policyTag",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "owner": {
+                    "$comment": "{\"term\": \"owner\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "owner",
+                    "description": "owner",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "cid": {
+                    "$comment": "{\"term\": \"cid\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "cid",
+                    "description": "cid",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "url": {
+                    "$comment": "{\"term\": \"url\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "url",
+                    "description": "url",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "uuid": {
+                    "$comment": "{\"term\": \"uuid\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "uuid",
+                    "description": "uuid",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "operation": {
+                    "$comment": "{\"term\": \"operation\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "operation",
+                    "description": "operation",
+                    "type": "string",
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "name",
+                "description",
+                "topicDescription",
+                "version",
+                "policyTag",
+                "owner",
+                "cid",
+                "url",
+                "uuid",
+                "operation"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "RootAuthority",
+        "name": "RootAuthority",
+        "entity": "ROOT_AUTHORITY",
+        "document": {
+            "$id": "#RootAuthority&1.0.0",
+            "$comment": "{ \"term\": \"RootAuthority&1.0.0\", \"@id\": \"undefined#RootAuthority&1.0.0\" }",
+            "title": "RootAuthority",
+            "description": "RootAuthority",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "name": {
+                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "name",
+                    "description": "name",
+                    "type": "string",
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "WipeToken",
+        "name": "WipeToken",
+        "entity": "WIPE_TOKEN",
+        "document": {
+            "$id": "#WipeToken&1.0.0",
+            "$comment": "{ \"term\": \"WipeToken&1.0.0\", \"@id\": \"undefined#WipeToken&1.0.0\" }",
+            "title": "WipeToken",
+            "description": "WipeToken",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "date": {
+                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "date",
+                    "description": "date",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "amount": {
+                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "amount",
+                    "description": "amount",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "tokenId": {
+                    "$comment": "{\"term\": \"tokenId\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "tokenId",
+                    "description": "tokenId",
+                    "type": "string",
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "date",
+                "amount",
+                "tokenId"
+            ],
+            "additionalProperties": false
+        }
+    }
+]

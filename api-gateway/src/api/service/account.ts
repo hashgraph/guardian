@@ -21,9 +21,9 @@ accountAPI.get('/session', async (req: Request, res: Response) => {
         } else {
             res.sendStatus(401);
         }
-    } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: e.message });
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message });
     }
 });
 
@@ -32,8 +32,8 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
     try {
         const { username, password, role } = req.body;
         res.status(201).json(await users.registerNewUser(username, password, role));
-    } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
@@ -42,11 +42,10 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     const users = new Users();
     try {
         const { username, password } = req.body;
-
         res.status(200).json(await users.generateNewToken(username, password));
-    } catch (e) {
-        new Logger().error(e.message, ['API_GATEWAY']);
-        res.status(e.code).send({ code: e.code, message: e.message });
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(error.code).send({ code: error.code, message: error.message });
     }
 });
 
@@ -54,8 +53,8 @@ accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORIT
     try {
         const users = new Users();
         res.status(200).json(await users.getAllUserAccounts());
-    } catch (e) {
-        new Logger().error(e.message, ['API_GATEWAY']);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });

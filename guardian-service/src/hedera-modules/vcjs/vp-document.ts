@@ -156,8 +156,8 @@ export class VpDocument {
             const root = JSON.parse(json);
             result = this.fromJsonTree(root);
 
-        } catch (e) {
-            throw new Error('Given JSON string is not a valid VpDocument ' + e.message);
+        } catch (error) {
+            throw new Error('Given JSON string is not a valid VpDocument ' + error.message);
         }
         return result;
     }

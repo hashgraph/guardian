@@ -17,7 +17,7 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 export class RequestConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemes') schemes!: Schema[];
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
@@ -51,8 +51,8 @@ export class RequestConfigComponent implements OnInit {
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.type = this.block.uiMetaData.type || 'page';
         this.block.presetFields = this.block.presetFields || [];
-        const schema = this.schemes.find(e => e.iri == this.block.schema);
-        const presetSchema = this.schemes.find(e => e.iri == this.block.presetSchema);
+        const schema = this.schemas.find(e => e.iri == this.block.schema);
+        const presetSchema = this.schemas.find(e => e.iri == this.block.presetSchema);
         if (!schema || !presetSchema) {
             this.block.presetFields = [];
         }
@@ -76,8 +76,8 @@ export class RequestConfigComponent implements OnInit {
         this.block.presetFields = [];
         this.presetMap = [];
 
-        const schema = this.schemes.find(e => e.iri == this.block.schema);
-        const presetSchema = this.schemes.find(e => e.iri == this.block.presetSchema);
+        const schema = this.schemas.find(e => e.iri == this.block.schema);
+        const presetSchema = this.schemas.find(e => e.iri == this.block.presetSchema);
         if (schema && presetSchema && schema.fields) {
             for (let i = 0; i < schema.fields.length; i++) {
                 const field = schema.fields[i];
