@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/profiles/{username}" summary="Returns user account info" %}
 {% swagger-description %}
-Returns user account information. For users with the Root Authority role it also returns address book and VC document information
+Returns user account information. For users with the Standard Registry role it also returns address book and VC document information
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="username" type="String" required="true" %}

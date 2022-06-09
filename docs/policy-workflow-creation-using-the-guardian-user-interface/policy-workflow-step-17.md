@@ -9,7 +9,7 @@ We then name the block through the tag, set permissions, activate by default suc
 **Programmatically this workflow step looks like this:**
 
 ```
-    // Block to display rejection info (i.e. the INSTALLER was not approved by RootAuthority).
+    // Block to display rejection info (i.e. the INSTALLER was not approved by StandardRegistry).
     {
       "tag": "installer_rejected",
       "blockType": "InformationBlock",

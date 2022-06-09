@@ -13,7 +13,6 @@ import {
     IGenerateTokenMessage,
     IGenerateTokenResponse,
     IGetAllUserResponse,
-    IRootAuthorityUserResponse,
     IGetDemoUserResponse,
     IGetUserMessage,
     IUpdateUserMessage,
@@ -21,7 +20,8 @@ import {
     IGetUserByIdMessage,
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
-    IUser
+    IUser,
+    IStandardRegistryUserResponse
 } from '@guardian/interfaces';
 
 export class AccountService {
@@ -113,9 +113,9 @@ export class AccountService {
             }
         });
 
-        this.channel.response<any, IRootAuthorityUserResponse[]>(AuthEvents.GET_ALL_ROOT_AUTHORITY_ACCOUNTS, async (_) => {
+        this.channel.response<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS, async (_) => {
             try {
-                const userAccounts = (await getMongoRepository(User).find({ role: UserRole.ROOT_AUTHORITY })).map((e) => ({
+                const userAccounts = (await getMongoRepository(User).find({ role: UserRole.STANDARD_REGISTRY })).map((e) => ({
                     username: e.username,
                     did: e.did
                 }));

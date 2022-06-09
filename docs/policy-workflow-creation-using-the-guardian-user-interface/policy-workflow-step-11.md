@@ -34,7 +34,7 @@ To do that, we click on the “sensors\_grid” button, and then click on “Bin
               //  "did-documents".
               //  "vp-documents".
               //  "approve".
-              //  "root-authorities" - list of users with the RootAuthority role.
+              //  "root-authorities" - list of users with the Standard Registry role.
               "dataType": "vc-documents",
               // Custom filters, based on any existing fields.
               "filters": {

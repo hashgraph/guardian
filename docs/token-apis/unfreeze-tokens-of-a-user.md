@@ -4,7 +4,7 @@
 
 {% swagger method="put" path="" baseUrl="/tokens/{tokenId}/{username}/unfreeze" summary="Unfreezes transfers of the specified token for the user" %}
 {% swagger-description %}
-Unfreezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request
+Unfreezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="tokenID" type="String" required="true" %}

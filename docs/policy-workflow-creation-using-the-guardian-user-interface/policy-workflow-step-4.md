@@ -39,7 +39,7 @@ We then finish by giving the UI a Title and Description.
       "permissions": [
         "INSTALLER"
       ],
-      // Do not pass control to the next block after displaying the message as need to wait for RootAuthority approval.
+      // Do not pass control to the next block after displaying the message as need to wait for Standard Registry approval.
       "stopPropagation": true,
       "defaultActive": true
     },

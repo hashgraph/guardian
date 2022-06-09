@@ -20,7 +20,7 @@ async function setTokensPolicies(tokens: any[], user: IAuthUser) {
     const engineService = new PolicyEngine();
 
     let result: any;
-    if (user.role === UserRole.ROOT_AUTHORITY) {
+    if (user.role === UserRole.STANDARD_REGISTRY) {
         result = await engineService.getPolicies({ filters: { owner: user.did } });
     } else {
         result = await engineService.getPolicies({ filters: { status: 'PUBLISH' } });
@@ -42,7 +42,7 @@ async function setTokensPolicies(tokens: any[], user: IAuthUser) {
     }
 }
 
-tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+tokenAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const user = req.user;
@@ -63,13 +63,13 @@ tokenAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
     }
 });
 
-tokenAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
+tokenAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const user = req.user;
         let tokens = [];
 
-        if (user.role === UserRole.ROOT_AUTHORITY) {
+        if (user.role === UserRole.STANDARD_REGISTRY) {
             tokens = await guardians.getTokens({
                 did: user.did
             });
@@ -119,7 +119,7 @@ tokenAPI.put('/:tokenId/dissociate', permissionHelper(UserRole.USER), async (req
     }
 });
 
-tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const tokenId = req.params.tokenId;
@@ -137,7 +137,7 @@ tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.ROOT_AUTH
     }
 });
 
-tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const tokenId = req.params.tokenId;
@@ -155,7 +155,7 @@ tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.ROOT_AUT
     }
 });
 
-tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const tokenId = req.params.tokenId;
@@ -173,7 +173,7 @@ tokenAPI.put('/:tokenId/:username/freeze', permissionHelper(UserRole.ROOT_AUTHOR
     }
 });
 
-tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const tokenId = req.params.tokenId;
@@ -191,7 +191,7 @@ tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.ROOT_AUTH
     }
 });
 
-tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
         const tokenId = req.params.tokenId;

@@ -2,7 +2,7 @@
 
 Prior to creating a policy there are a few steps that need to be done first. Please see below for the prerequesite steps:
 
-### **New Root Authority registration**
+### **New Standard Registry registration**
 
 {% swagger method="post" path="" baseUrl="/api/v1/accounts/register" summary="" %}
 {% swagger-description %}
@@ -18,7 +18,7 @@ test
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="role" type="String" required="true" %}
-ROOT_AUTHORITY
+STANDARD_REGISTRY
 {% endswagger-parameter %}
 {% endswagger %}
 
@@ -43,7 +43,7 @@ test
     {
 	"username":"njkgur8x",
 	"did":null,
-	"role":"ROOT_AUTHORITY",
+	"role":"STANDARD_REGISTRY",
 	"accessToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5qa2d1cjh4IiwiZGlkIjpudWxsLCJyb2xlIjoiUk9PVF9BVVRIT1JJVFkiLCJpYXQiOjE2NDMwMTkxMDh9.Z4l77uhaPu09gkjSZpqcF2H0S27oGvFfOA-bytzrsL4"
 }
 }
@@ -90,7 +90,7 @@ DD
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="type" type="String" required="true" %}
-RootAuthority
+StandardRegistry
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="context" type="String" required="true" %}

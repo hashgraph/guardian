@@ -238,6 +238,6 @@ there are many use-cases where the VCs and various other artefacts produced in t
 
 The value of the token in hbar (or USD) will be set by the market, and thus external to the token itself (so there is no way to see in the token what it is worth in \$$). And what the token represents (CO2e etc) is determined by the policy under which it was minted. These tokens are the NFTs, and the metadata can include this data if the policy under which the tokens are minted has provisions for it.
 
-**20. What is the semantic of the DID in the message? Is it that the root authority signs VCs etc with the corresponding private key?**
+**20. What is the semantic of the DID in the message? Is it that the standard registry signs VCs etc with the corresponding private key?**
 
 DID is the the DID of the RA, i.e. is a globally unique reference linking to a DID document which is the identity - all VCs issued to or by an entity would then be ‘bound’ to this DID as per the ‘self-sovereign identity’ architecture.

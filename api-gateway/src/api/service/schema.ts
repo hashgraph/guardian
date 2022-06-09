@@ -112,7 +112,7 @@ export const schemaAPI = Router();
 /**
  * @deprecated 2022-08-04
  */
-schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const newSchema = req.body;
@@ -125,7 +125,7 @@ schemaAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authe
     }
 });
 
-schemaAPI.post('/:topicId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const newSchema = req.body;
@@ -149,7 +149,7 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             pageSize = req.query.pageSize;
         }
         let owner = user.parent;
-        if (user.role == UserRole.ROOT_AUTHORITY) {
+        if (user.role == UserRole.STANDARD_REGISTRY) {
             owner = user.did;
         }
         let topicId = null;
@@ -182,7 +182,7 @@ schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
             pageSize = req.query.pageSize;
         }
         let owner = user.parent;
-        if (user.role == UserRole.ROOT_AUTHORITY) {
+        if (user.role == UserRole.STANDARD_REGISTRY) {
             owner = user.did;
         }
         const { schemas, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
@@ -194,7 +194,7 @@ schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
     }
 });
 
-schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const newSchema = req.body;
@@ -221,7 +221,7 @@ schemaAPI.put('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Authen
     }
 });
 
-schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.delete('/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -248,7 +248,7 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async 
     }
 });
 
-schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -287,7 +287,7 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.ROOT_AUTHORITY), a
 /**
  * @deprecated 2022-08-04
  */
-schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -305,7 +305,7 @@ schemaAPI.post('/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), asy
 /**
  * @deprecated 2022-08-04
  */
-schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -324,7 +324,7 @@ schemaAPI.post('/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async 
     }
 });
 
-schemaAPI.post('/import/message/preview', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const messageId = req.body.messageId;
         if (!messageId) {
@@ -340,7 +340,7 @@ schemaAPI.post('/import/message/preview', permissionHelper(UserRole.ROOT_AUTHORI
     }
 });
 
-schemaAPI.post('/import/file/preview', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/file/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const zip = req.body;
         if (!zip) {
@@ -357,7 +357,7 @@ schemaAPI.post('/import/file/preview', permissionHelper(UserRole.ROOT_AUTHORITY)
     }
 });
 
-schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const topicId = req.params.topicId as string;
@@ -373,7 +373,7 @@ schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.ROOT_AUTHOR
     }
 });
 
-schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -393,7 +393,7 @@ schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.ROOT_AUTHORITY
     }
 });
 
-schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         if (!req.params.schemaId) {
             throw new Error("No schemas to export");
@@ -419,7 +419,7 @@ schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.ROOT_AUTHOR
     }
 });
 
-schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.params.schemaId) {
             throw new Error("No schemas to export");
@@ -465,7 +465,7 @@ schemaAPI.get('/type/:schemaType', async (req: AuthenticatedRequest, res: Respon
     }
 });
 
-schemaAPI.post('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const newSchema = req.body;
@@ -474,8 +474,11 @@ schemaAPI.post('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), a
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (newSchema.entity != SchemaEntity.ROOT_AUTHORITY && newSchema.entity != SchemaEntity.USER ) {
-            res.status(500).json({ code: 500, message: 'Invalid schema types. Entity must be ROOT_AUTHORITY or USER' });
+        if (newSchema.entity != SchemaEntity.STANDARD_REGISTRY && newSchema.entity != SchemaEntity.USER) {
+            res.status(500).json({
+                code: 500,
+                message: `Invalid schema types. Entity must be ${SchemaEntity.STANDARD_REGISTRY} or ${SchemaEntity.USER}`
+            });
             return;
         }
 
@@ -498,7 +501,7 @@ schemaAPI.post('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), a
     }
 });
 
-schemaAPI.get('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -509,7 +512,7 @@ schemaAPI.get('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), as
             pageSize = req.query.pageSize;
         }
         const { schemas, count } = await guardians.getSystemSchemas(owner, pageIndex, pageSize);
-        schemas.forEach((s) => {s.readonly = s.readonly || s.owner != owner});
+        schemas.forEach((s) => { s.readonly = s.readonly || s.owner != owner });
         res.status(200).setHeader('X-Total-Count', count).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
@@ -517,7 +520,7 @@ schemaAPI.get('/system/:username', permissionHelper(UserRole.ROOT_AUTHORITY), as
     }
 });
 
-schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -547,7 +550,7 @@ schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY),
     }
 });
 
-schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const newSchema = req.body;
@@ -578,7 +581,7 @@ schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.ROOT_AUTHORITY), as
     }
 });
 
-schemaAPI.put('/system/:schemaId/active', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/system/:schemaId/active', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();

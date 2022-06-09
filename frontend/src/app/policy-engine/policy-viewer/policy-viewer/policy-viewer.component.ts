@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IToken, IUser } from '@guardian/interfaces';
+import { IToken, IUser, UserRole } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
@@ -28,27 +28,7 @@ export class PolicyViewerComponent implements OnInit {
     policyInfo: any | null;
     policies: any[] | null;
     columns: string[] = [];
-    columnsRole = {
-        "ROOT_AUTHORITY": [
-            'name',
-            'description',
-            'roles',
-            'topic',
-            'version',
-            'status',
-            'operation',
-            'export',
-            'edit',
-            'open'
-        ],
-        "USER": [
-            'name',
-            'description',
-            'roles',
-            'version',
-            'open',
-        ]
-    };
+    columnsRole: any = {};
     role!: any;
     loading: boolean = true;
     isConfirmed: boolean = false;
@@ -70,6 +50,27 @@ export class PolicyViewerComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 100;
         this.policyCount = 0;
+        this.columnsRole = {};
+        this.columnsRole[UserRole.STANDARD_REGISTRY] = [
+            'name',
+            'description',
+            'roles',
+            'topic',
+            'version',
+            'status',
+            'operation',
+            'export',
+            'edit',
+            'open'
+        ]
+        this.columnsRole[UserRole.USER] = [
+            'name',
+            'description',
+            'roles',
+            'version',
+            'open',
+        ]
+
     }
 
     ngOnInit() {
@@ -93,10 +94,10 @@ export class PolicyViewerComponent implements OnInit {
         this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.role = profile ? profile.role : null;
-            if (this.role == 'ROOT_AUTHORITY') {
-                this.columns = this.columnsRole['ROOT_AUTHORITY'];
+            if (this.role == UserRole.STANDARD_REGISTRY) {
+                this.columns = this.columnsRole[UserRole.STANDARD_REGISTRY];
             } else {
-                this.columns = this.columnsRole['USER'];
+                this.columns = this.columnsRole[UserRole.USER];
             }
             if (this.isConfirmed) {
                 if (this.policyId) {

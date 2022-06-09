@@ -89,7 +89,7 @@ Input Events are received and processed by the egress interface of the ‘Target
 
 Allows to change the user-context of the execution
 
-_For example_: in the situation where the Root Authority confirms the form data from the user and the Policy author would like to come back to the execution of the StepBlock as the original user the ‘Document Owner’ should be configured here instead of the ‘Event Initiator’.
+_For example_: in the situation where the Standard Registry confirms the form data from the user and the Policy author would like to come back to the execution of the StepBlock as the original user the ‘Document Owner’ should be configured here instead of the ‘Event Initiator’.
 
 * Event Initiator - Actor which triggered the event.
 * Document Owner- Actor is changed to the owner of the document.

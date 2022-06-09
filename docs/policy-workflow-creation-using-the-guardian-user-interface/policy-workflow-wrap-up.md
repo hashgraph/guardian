@@ -147,7 +147,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
           "permissions": [
             "INSTALLER"
           ],
-          // Do not pass control to the next block after displaying the message as need to wait for RootAuthority approval.
+          // Do not pass control to the next block after displaying the message as need to wait for Standard Registry approval.
           "stopPropagation": true,
           "defaultActive": true
         },
@@ -222,7 +222,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                   //  "did-documents".
                   //  "vp-documents".
                   //  "approve".
-                  //  "root-authorities" - list of users with the RootAuthority role.
+                  //  "root-authorities" - list of users with the Standard Registry role.
                   "dataType": "vc-documents",
                   // Custom filters, based on any existing fields.
                   "filters": {
@@ -432,7 +432,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
             }
           ]
         },
-        // Block to display rejection info (i.e. the INSTALLER was not approved by RootAuthority).
+        // Block to display rejection info (i.e. the INSTALLER was not approved by Standard Registry).
         {
           "tag": "installer_rejected",
           "blockType": "InformationBlock",
@@ -450,10 +450,10 @@ The full coded version of the policy we just demoed is below (Reminder the coded
         }
       ]
     },
-    // This Policy branch is used by users with the RootAuthority roles.
+    // This Policy branch is used by users with the Standard Registry roles.
     //Starting with the ContainerBlock.
     {
-      "tag": "root_authority_header",
+      "tag": "standard_registry_header",
       "defaultActive": true,
       "permissions": [
         "OWNER"
@@ -476,7 +476,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
             "title": "Approve Documents"
           },
           "children": [
-            // Grid listing VCs of the Installers, which require approval from the RootAuthority.
+            // Grid listing VCs of the Installers, which require approval from the Standard Registry.
             {
               "tag": "approve_documents_grid",
               "defaultActive": true,

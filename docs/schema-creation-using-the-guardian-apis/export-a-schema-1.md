@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/file" summary="Return zip file with schemas" %}
 {% swagger-description %}
-Returns schema files for the schemas. Only users with the Root Authority role are allowed to make the request.
+Returns schema files for the schemas. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="schemaID" type="String" required="true" %}

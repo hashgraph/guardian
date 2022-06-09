@@ -2,7 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
+import { Schema, SchemaCondition, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -54,7 +54,7 @@ export class SchemaConfigurationComponent implements OnInit {
     ) {
 
         this.defaultFieldsMap = {};
-        this.defaultFieldsMap["VC"] = [{
+        this.defaultFieldsMap[SchemaEntity.VC] = [{
             name: 'policyId',
             description: '',
             required: true,
@@ -75,7 +75,7 @@ export class SchemaConfigurationComponent implements OnInit {
             pattern: undefined,
             readOnly: true
         }];
-        this.defaultFieldsMap["MRV"] = [{
+        this.defaultFieldsMap[SchemaEntity.MRV] = [{
             name: 'accountId',
             description: '',
             required: true,
@@ -196,7 +196,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.dataForm.setValue({
                     name: '',
                     description: '',
-                    entity: 'ROOT_AUTHORITY',
+                    entity: SchemaEntity.STANDARD_REGISTRY,
                     fields: {},
                     conditions: {}
                 });
@@ -204,7 +204,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.dataForm.setValue({
                     name: '',
                     description: '',
-                    entity: 'VC',
+                    entity: SchemaEntity.VC,
                     topicId: this.topicId,
                     fields: {},
                     conditions: {}
@@ -214,7 +214,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.fieldsForm = this.fb.group({});
             this.conditionsForm = new FormGroup({});
             if (this.system) {
-                this.defaultFields = new FormControl("ROOT_AUTHORITY", Validators.required);
+                this.defaultFields = new FormControl(SchemaEntity.STANDARD_REGISTRY, Validators.required);
                 this.dataForm = this.fb.group({
                     name: ['', Validators.required],
                     description: [''],
@@ -223,7 +223,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     conditions: this.conditionsForm
                 });
             } else {
-                this.defaultFields = new FormControl("VC", Validators.required);
+                this.defaultFields = new FormControl(SchemaEntity.VC, Validators.required);
                 this.dataForm = this.fb.group({
                     name: ['', Validators.required],
                     description: [''],

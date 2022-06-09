@@ -42,24 +42,24 @@ export async function setDefaultSchema() {
         map[schema.entity] = schema;
     }
 
-    if (!map.hasOwnProperty('MINT_NFTOKEN')) {
-        throw ('You need to fill MINT_NFTOKEN field in system-schemas.json file');
+    if (!map.hasOwnProperty(SchemaEntity.MINT_NFTOKEN)) {
+        throw (`You need to fill ${SchemaEntity.MINT_NFTOKEN} field in system-schemas.json file`);
     }
 
-    if (!map.hasOwnProperty('MINT_TOKEN')) {
-        throw ('You need to fill MINT_TOKEN field in system-schemas.json file');
+    if (!map.hasOwnProperty(SchemaEntity.MINT_TOKEN)) {
+        throw (`You need to fill ${SchemaEntity.MINT_TOKEN} field in system-schemas.json file`);
     }
 
-    if (!map.hasOwnProperty('POLICY')) {
-        throw ('You need to fill POLICY field in system-schemas.json file');
+    if (!map.hasOwnProperty(SchemaEntity.POLICY)) {
+        throw (`You need to fill ${SchemaEntity.POLICY} field in system-schemas.json file`);
     }
 
-    if (!map.hasOwnProperty('ROOT_AUTHORITY')) {
-        throw ('You need to fill ROOT_AUTHORITY field in system-schemas.json file');
+    if (!map.hasOwnProperty(SchemaEntity.STANDARD_REGISTRY)) {
+        throw (`You need to fill ${SchemaEntity.STANDARD_REGISTRY} field in system-schemas.json file`);
     }
 
-    if (!map.hasOwnProperty('WIPE_TOKEN')) {
-        throw ('You need to fill WIPE_TOKEN field in system-schemas.json file');
+    if (!map.hasOwnProperty(SchemaEntity.WIPE_TOKEN)) {
+        throw (`You need to fill ${SchemaEntity.WIPE_TOKEN} field in system-schemas.json file`);
     }
 
     const fn = async (schema: any) => {
@@ -78,11 +78,11 @@ export async function setDefaultSchema() {
         console.log(`Created schema: ${schema.uuid}`);
     }
 
-    await fn(map['MINT_NFTOKEN']);
-    await fn(map['MINT_TOKEN']);
-    await fn(map['POLICY']);
-    await fn(map['ROOT_AUTHORITY']);
-    await fn(map['WIPE_TOKEN']);
+    await fn(map[SchemaEntity.MINT_NFTOKEN]);
+    await fn(map[SchemaEntity.MINT_TOKEN]);
+    await fn(map[SchemaEntity.POLICY]);
+    await fn(map[SchemaEntity.STANDARD_REGISTRY]);
+    await fn(map[SchemaEntity.WIPE_TOKEN]);
 }
 
 const loadSchema = async function (messageId: string, owner: string) {

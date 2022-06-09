@@ -102,7 +102,7 @@ export class DocumentsSourceAddon {
                 data = await getMongoRepository(VpDocumentCollection).find(filters);
                 break;
             case 'root-authorities':
-                data = await this.users.getAllRootAuthorityAccounts() as IAuthUser[];
+                data = await this.users.getAllStandardRegistryAccounts() as IAuthUser[];
                 break;
 
             case 'approve':

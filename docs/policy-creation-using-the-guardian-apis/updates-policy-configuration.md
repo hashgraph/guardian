@@ -4,7 +4,7 @@
 
 {% swagger method="put" path="" baseUrl="/policies/{policyId}" summary="Updates policy configuration" %}
 {% swagger-description %}
-Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+Updates policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}

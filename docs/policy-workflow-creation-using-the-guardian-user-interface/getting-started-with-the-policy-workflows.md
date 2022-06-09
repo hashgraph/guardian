@@ -1,6 +1,6 @@
 # Getting Started with the Policy Workflows
 
-First, note that we are in the Policies Configuration Tab of the Guardian interface, and we have the role of the RootAuthority since only the RootAuthority can create a new policy.
+First, note that we are in the Policies Configuration Tab of the Guardian interface, and we have the role of the Standard Registry since only the Standard Registry can create a new policy.
 
 Second, you click on the blue **Create Policy** button!
 
@@ -25,7 +25,7 @@ The second Interface ContainerBlock is specific to the first workflow block. We 
 Let’s start with “Permissions”
 
 There are currently 3 permissions or roles with permissions configured that can be applied to a policy:\
-1\. Root Authority with the highest level of permissions, equivalent to an administrator of the policy,\
+1\. Standard Registry with the highest level of permissions, equivalent to an administrator of the policy,\
 2\. User which is the entity applying to receive the Renewable Energy Credits from iRec,\
 3\. Auditor as the entity that can view the “Trust Chain” or all of the important events that led to the creation of the Renewable Energy Credit
 

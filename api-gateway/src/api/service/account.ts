@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { Request, Response, Router } from 'express';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
@@ -30,7 +29,11 @@ accountAPI.get('/session', async (req: Request, res: Response) => {
 accountAPI.post('/register', async (req: Request, res: Response) => {
     const users = new Users();
     try {
-        const { username, password, role } = req.body;
+        let { username, password, role } = req.body;
+        // @deprecated 2022-10-01
+        if(role === 'ROOT_AUTHORITY') {
+            role = UserRole.STANDARD_REGISTRY;
+        }
         res.status(201).json(await users.registerNewUser(username, password, role));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
@@ -49,7 +52,7 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const users = new Users();
         res.status(200).json(await users.getAllUserAccounts());
@@ -63,7 +66,7 @@ accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORIT
 accountAPI.get('/root-authorities', authorizationHelper, async (req: Request, res: Response) => {
     try {
         const users = new Users();
-        const rootAuthorities = await users.getAllRootAuthorityAccounts();
+        const rootAuthorities = await users.getAllStandardRegistryAccounts();
         res.json(rootAuthorities);
     } catch (error) {
         console.error(error);

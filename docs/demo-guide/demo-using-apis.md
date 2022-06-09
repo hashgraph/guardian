@@ -299,7 +299,7 @@ Years of registration
 
 ![](<../.gitbook/assets/image (6) (1).png>)
 
-## 2. Login as a Root Authority
+## 2. Login as a Standard Registry
 
 ### 2.1 Request the list of policies.
 

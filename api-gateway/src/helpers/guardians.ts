@@ -179,7 +179,7 @@ export class Guardians extends ServiceRequestsBase {
         return await this.request(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
     }
 
-    public async createRootAuthorityProfile(profile: IUser): Promise<string> {
+    public async createStandardRegistryProfile(profile: IUser): Promise<string> {
         return await this.request(MessageAPI.CREATE_USER_PROFILE, profile);
     }
 

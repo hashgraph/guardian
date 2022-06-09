@@ -171,9 +171,9 @@ export const trustChainAPI = async function (
 
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
-                const rootAuthority = await vcDocumentRepository.findOne({
+                const standardRegistry = await vcDocumentRepository.findOne({
                     where: {
-                        type: { $eq: SchemaEntity.ROOT_AUTHORITY },
+                        type: { $eq: SchemaEntity.STANDARD_REGISTRY },
                         owner: { $eq: issuer }
                     }
                 });
@@ -189,15 +189,15 @@ export const trustChainAPI = async function (
                         tag: null
                     });
                 }
-                if (rootAuthority) {
+                if (standardRegistry) {
                     chain.push({
                         type: 'VC',
-                        id: rootAuthority.hash,
-                        document: rootAuthority.document,
-                        owner: rootAuthority.owner,
-                        schema: getField(rootAuthority, 'type'),
+                        id: standardRegistry.hash,
+                        document: standardRegistry.document,
+                        owner: standardRegistry.owner,
+                        schema: getField(standardRegistry, 'type'),
                         label: 'HASH',
-                        entity: 'RootAuthority',
+                        entity: 'StandardRegistry',
                         tag: "Account Creation"
                     });
                 }

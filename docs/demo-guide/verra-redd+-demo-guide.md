@@ -7,7 +7,7 @@ This folder contains a sample file that is referenced in the Demo Usage Guide&#x
 
 1.The Guardian reference implementation comes with three predefined users:&#x20;
 
-* **Verra (Root Authority)**
+* **Verra (Standard Registry)**
 * **Project Proponent**
 * **VVB**
 
@@ -15,7 +15,7 @@ This folder contains a sample file that is referenced in the Demo Usage Guide&#x
 
 ![](../.gitbook/assets/Verra\_1.png)
 
-3\. You'll now be prompted to configure your Verra account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
+3\. You'll now be prompted to configure your Verra account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
 ![](../.gitbook/assets/Verra\_2.png)
 

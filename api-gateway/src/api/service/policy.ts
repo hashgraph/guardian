@@ -22,7 +22,7 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             pageSize = req.query.pageSize;
         }
         let result: any;
-        if (user.role === UserRole.ROOT_AUTHORITY) {
+        if (user.role === UserRole.STANDARD_REGISTRY) {
             result = await engineService.getPolicies({
                 filters: {
                     owner: user.did,

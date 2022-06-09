@@ -6,12 +6,12 @@ This folder contains a sample file that is referenced in the Demo Guide&#x20;
 
 1.The Guardian reference implementation comes with two predefined users:&#x20;
 
-1. Issuer (Root Authority)&#x20;
+1. Issuer (Standard Registry)&#x20;
 2. Participant&#x20;
 
 2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/). Typically, the way we start the reference implementation demonstration is by logging in as an Issuer. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Issuer user.&#x20;
 
-3\. You will now be prompted to configure your Issuer account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
+3\. You will now be prompted to configure your Issuer account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
 ![](<../.gitbook/assets/Verra\_2 (1).png>)
 
