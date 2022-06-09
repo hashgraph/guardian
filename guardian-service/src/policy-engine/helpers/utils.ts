@@ -8,7 +8,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { getMongoRepository } from "typeorm";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { IAuthUser } from "@auth/auth.interface";
-import { SchemaEntity, TopicType } from "@guardian/interfaces";
+import { DocumentStatus, SchemaEntity, TopicType } from "@guardian/interfaces";
 import { Topic } from "@entity/topic";
 import { TopicHelper } from "@helpers/topicHelper";
 import { DocumentState } from "@entity/document-state";
