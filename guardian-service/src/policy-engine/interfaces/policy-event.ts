@@ -67,15 +67,24 @@ export class PolicyLink<T> {
     }
 
     private getOwner(data: any): string {
-        console.log('getOwner', data)
-        if (data) {
-            return data.owner;
+        console.log('getOwner', data);
+        if (!data) {
+            return null;
         }
-        return null;
+        if (data.data) {
+            data = Array.isArray(data.data) ? data.data[0] : data.data;
+        }
+        return data ? data.owner : null;
     }
 
     private getIssuer(data: any): string {
-        console.log('getIssuer', data)
+        console.log('getIssuer', data);
+        if (!data) {
+            return null;
+        }
+        if (data.data) {
+            data = Array.isArray(data.data) ? data.data[0] : data.data;
+        }
         if (data) {
             if (data.document) {
                 return data.document.issuer;

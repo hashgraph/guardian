@@ -12,6 +12,7 @@ import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
+import { DocumentState } from '@entity/document-state';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @SourceAddon({
@@ -118,7 +119,23 @@ export class DocumentsSourceAddon {
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
+        const documentState = getMongoRepository(DocumentState);
         for (let i = 0; i < data.length; i++) {
+            if (ref.options.viewHistory) {
+                data[i].history = (await documentState.find({
+                    where: {
+                        documentId: data[i].id
+                    },
+                    order: {
+                        'created': 'DESC'
+                    }
+                })).map(item => {
+                    return {
+                        status: item.status,
+                        created: new Date(item.created).toLocaleString()
+                    }
+                });
+            }
             data[i].__sourceTag__ = ref.tag;
         }
 

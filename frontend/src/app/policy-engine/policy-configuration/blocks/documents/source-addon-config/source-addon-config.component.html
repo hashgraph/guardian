@@ -40,6 +40,14 @@
         </td>
     </tr>
 
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">View History</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.viewHistory" [readonly]="readonly">
+        </td>
+    </tr>
+
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'filtersGroup')" [attr.collapse]="propHidden.filtersGroup">
             <mat-icon>

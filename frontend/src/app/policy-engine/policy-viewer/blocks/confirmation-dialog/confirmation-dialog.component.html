@@ -1,0 +1,13 @@
+<h1 mat-dialog-title>{{this.title}}</h1>
+<div mat-dialog-content class="content">
+    <div>{{this.description}}</div>
+    <div>
+        <mat-form-field appearance="outline">
+            <input matInput type="text" [formControl]="value">
+        </mat-form-field>
+    </div>
+    <div mat-dialog-actions>
+        <button mat-raised-button color="primary" (click)="onSubmit()">Ok</button>
+        <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+    </div>
+</div>

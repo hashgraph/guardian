@@ -102,6 +102,7 @@ export class MintBlock {
 
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
+        vcMessage.setRelationships(vsMessages);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
@@ -115,8 +116,9 @@ export class MintBlock {
             schema: `#${mintVC.getSubjectType()}`,
             messageId: vcMessageResult.getId(),
             topicId: vcMessageResult.getTopicId(),
+            relationships: vsMessages
         } as any);
-
+        vsMessages.push(vcMessageResult.getId());
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(vsMessages);

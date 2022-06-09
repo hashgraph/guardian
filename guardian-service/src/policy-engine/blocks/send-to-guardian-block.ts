@@ -121,25 +121,39 @@ export class SendToGuardianBlock {
     }
 
     async sendToDatabase(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
-        const { documentType } = ref.options;
+        let { documentType } = ref.options;
+        if (documentType === 'document')  {
+            const doc = document?.document;
+            if (doc && doc.verificationMethod) {
+                documentType = 'did';
+            } else if (doc.type && doc.type.includes('VerifiablePresentation')) {
+                documentType = 'vp';
+            } else if (doc.type && doc.type.includes('VerifiableCredential')) {
+                documentType = 'vc';
+            }
+        }
+
         switch (documentType) {
             case 'vc': {
                 const vc = HVcDocument.fromJsonTree(document.document);
                 const doc: any = {
                     policyId: ref.policyId,
                     tag: ref.tag,
-                    type: ref.options.entityType,
+                    type: ref.options.entityType || document.type,
                     hash: vc.toCredentialHash(),
                     document: vc.toJsonTree(),
                     owner: document.owner,
                     assign: document.assign,
                     option: document.option,
                     schema: document.schema,
-                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
+                    hederaStatus: document.revokeMessage 
+                        ? DocumentStatus.REVOKE 
+                        : (document.hederaStatus || DocumentStatus.NEW),
                     signature: document.signature || DocumentSignature.NEW,
                     messageId: document.messageId || null,
                     topicId: document.topicId || null,
                     relationships: document.relationships || [],
+                    revokeMessage: document.revokeMessage
                 };
                 return await PolicyUtils.updateVCRecord(doc);
             }
@@ -176,11 +190,14 @@ export class SendToGuardianBlock {
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
             vcMessage.setRelationships(document.relationships);
+            if (document.revokeMessage) {
+                vcMessage.revoke(document.revokeMessage);
+            }
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey);
             const vcMessageResult = await messageServer
                 .setTopicObject(topic)
                 .sendMessage(vcMessage);
-            document.hederaStatus = DocumentStatus.ISSUE;
+            document.hederaStatus = document.revokeMessage ? DocumentStatus.REVOKE : DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();
             return document;
@@ -194,7 +211,7 @@ export class SendToGuardianBlock {
 
         document.policyId = ref.policyId;
         document.tag = ref.tag;
-        document.type = ref.options.entityType;
+        document.type = ref.options.entityType || document.type;
 
         if (ref.options.forceNew) {
             document = { ...document };
@@ -257,7 +274,7 @@ export class SendToGuardianBlock {
             }
 
             if (ref.options.dataSource == 'database') {
-                if (!['vc', 'did', 'vp'].find(item => item === ref.options.documentType)) {
+                if (!['vc', 'did', 'vp', 'document'].find(item => item === ref.options.documentType)) {
                     resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of vc, did, vp');
                 }
             }

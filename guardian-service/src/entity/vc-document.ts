@@ -59,6 +59,9 @@ export class VcDocument implements IVCDocument {
     @Column()
     relationships: string[];
 
+    @Column()
+    revokeMessage?: string;
+
     @BeforeInsert()
     setDefaults() {
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
