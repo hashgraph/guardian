@@ -34,6 +34,7 @@ export class PolicyViewerComponent implements OnInit {
             'description',
             'roles',
             'topic',
+            'schemas',
             'version',
             'status',
             'operation',

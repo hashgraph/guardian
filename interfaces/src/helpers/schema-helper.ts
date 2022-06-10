@@ -136,6 +136,8 @@ export class SchemaHelper {
             const format = isRef || !property.format ? null : String(property.format);
             const pattern = isRef || !property.pattern ? null : String(property.pattern);
             const readOnly = !!property.readOnly;
+            const unit = isRef || !property.unit ? null : String(property.unit);
+            const unitSystem = isRef || !property.unitSystem ? null : String(property.unitSystem);
             fields.push({
                 name: name,
                 title: title,
@@ -143,6 +145,8 @@ export class SchemaHelper {
                 type: ref,
                 format: format,
                 pattern: pattern,
+                unit: unit,
+                unitSystem: unitSystem,
                 required: !!required[name],
                 isRef: isRef,
                 isArray: isArray,
@@ -299,6 +303,12 @@ export class SchemaHelper {
                 }
                 if (field.pattern) {
                     item.pattern = field.pattern;
+                }
+                if (field.unit) {
+                    item.unit = field.unit;
+                }
+                if (field.unitSystem) {
+                    item.unitSystem = field.unitSystem;
                 }
             }
             if (field.required) {

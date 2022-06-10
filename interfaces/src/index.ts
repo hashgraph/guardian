@@ -47,4 +47,5 @@ export { UserType } from './type/user.type';
 export { IDidDocument } from './interface/did-document';
 export { IVerificationMethod } from './interface/verification-method';
 export { ApplicationStates } from './type/application-states.type';
+export { FieldTypesDictionary } from './helpers/field-types-dictionary';
 export * from './interface/messages';
