@@ -161,9 +161,6 @@ export class PolicyEngineService {
             });
             model.topicId = topic.topicId;
 
-            let id = new ObjectID();
-            id.toString();
-
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
