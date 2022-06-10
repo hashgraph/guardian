@@ -54,7 +54,6 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        debugger
         const type = this.field.controlType.value;
         this.onTypeChange(type);
     }

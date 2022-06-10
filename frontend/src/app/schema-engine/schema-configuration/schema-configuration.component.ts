@@ -528,8 +528,6 @@ export class SchemaConfigurationComponent implements OnInit {
         schema.description = value.description;
         schema.entity = value.entity;
 
-        debugger;
-
         const fields: SchemaField[] = [];
         const fieldsWithNames: any[] = []
         for (let i = 0; i < this.fields.length; i++) {
