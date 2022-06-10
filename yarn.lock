@@ -169,11 +169,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.0.0, @guardian/common@workspace:common":
+"@guardian/common@^2.1.3, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
-    "@guardian/interfaces": ^2.0.0
+    "@guardian/interfaces": ^2.1.3
     "@types/node": ^17.0.13
     mocha-junit-reporter: ^2.0.2
     nats: ^2.6.1
@@ -184,7 +184,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.0.0, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.1.3, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -196,12 +196,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/logger-helper@^2.0.0, @guardian/logger-helper@workspace:logger-helper":
+"@guardian/logger-helper@^2.1.3, @guardian/logger-helper@workspace:logger-helper":
   version: 0.0.0-use.local
   resolution: "@guardian/logger-helper@workspace:logger-helper"
   dependencies:
-    "@guardian/common": ^2.0.0
-    "@guardian/interfaces": ^2.0.0
+    "@guardian/common": ^2.1.3
+    "@guardian/interfaces": ^2.1.3
     "@types/node": ^17.0.13
     mocha-junit-reporter: ^2.0.2
     tslint: ^6.1.3
@@ -1538,9 +1538,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
   dependencies:
-    "@guardian/common": ^2.0.0
-    "@guardian/interfaces": ^2.0.0
-    "@guardian/logger-helper": ^2.0.0
+    "@guardian/common": ^2.1.3
+    "@guardian/interfaces": ^2.1.3
+    "@guardian/logger-helper": ^2.1.3
     "@types/express": ^4.17.13
     "@types/jszip": ^3.4.1
     "@types/node": ^17.0.13
@@ -1711,9 +1711,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "auth-service@workspace:auth-service"
   dependencies:
-    "@guardian/common": ^2.0.0
-    "@guardian/interfaces": ^2.0.0
-    "@guardian/logger-helper": ^2.0.0
+    "@guardian/common": ^2.1.3
+    "@guardian/interfaces": ^2.1.3
+    "@guardian/logger-helper": ^2.1.3
     "@types/jsonwebtoken": ^8.5.4
     "@types/node": ^17.0.13
     chai: ^4.3.4
@@ -1723,7 +1723,7 @@ __metadata:
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
-    mongodb: ^4.2.1
+    mongodb: 4.2.1
     nodemon: ^2.0.12
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
@@ -1995,12 +1995,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^4.6.3":
-  version: 4.6.3
-  resolution: "bson@npm:4.6.3"
+"bson@npm:^4.6.0":
+  version: 4.6.4
+  resolution: "bson@npm:4.6.4"
   dependencies:
     buffer: ^5.6.0
-  checksum: da99222fc14842ce3e693c8bcda5592b43816795c312c57cff8ee11172965e757c4227543234f8fa3469d621e213d86cdd8f8759d6c67a64b971416f850f833c
+  checksum: f56375865c8fc048179075296019a0d2e058edbbb6692e54e2751da738840968de678a48a2276faf2ec8f8b36c5c26f14670ab4d414fe68f0169215efe15d570
   languageName: node
   linkType: hard
 
@@ -3900,9 +3900,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@guardian/common": ^2.0.0
-    "@guardian/interfaces": ^2.0.0
-    "@guardian/logger-helper": ^2.0.0
+    "@guardian/common": ^2.1.3
+    "@guardian/interfaces": ^2.1.3
+    "@guardian/logger-helper": ^2.1.3
     "@hashgraph/sdk": ^2.15.0
     "@transmute/credentials-context": ^0.7.0-unstable.60
     "@transmute/did-context": ^0.7.0-unstable.60
@@ -3933,7 +3933,7 @@ __metadata:
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
     moment: ^2.29.1
-    mongodb: ^4.2.1
+    mongodb: 4.2.1
     nodemon: ^2.0.12
     reflect-metadata: ^0.1.13
     rewire: ^6.0.0
@@ -4471,9 +4471,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ipfs-client@workspace:ipfs-client"
   dependencies:
-    "@guardian/common": ^2.0.0
-    "@guardian/interfaces": ^2.0.0
-    "@guardian/logger-helper": ^2.0.0
+    "@guardian/common": ^2.1.3
+    "@guardian/interfaces": ^2.1.3
+    "@guardian/logger-helper": ^2.1.3
     "@types/fs-extra": ^9.0.12
     "@types/js-yaml": ^4.0.3
     "@types/node": ^17.0.13
@@ -4490,7 +4490,7 @@ __metadata:
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
-    mongodb: ^4.2.1
+    mongodb: 4.2.1
     nft.storage: ^5.2.0
     nodemon: ^2.0.12
     reflect-metadata: ^0.1.13
@@ -5549,8 +5549,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "logger-service@workspace:logger-service"
   dependencies:
-    "@guardian/common": ^2.0.0
-    "@guardian/interfaces": ^2.0.0
+    "@guardian/common": ^2.1.3
+    "@guardian/interfaces": ^2.1.3
     "@types/fs-extra": ^9.0.12
     "@types/node": ^17.0.13
     "@web-std/fetch": 3.0.0
@@ -5561,7 +5561,7 @@ __metadata:
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
     module-alias: ^2.2.2
-    mongodb: ^4.2.1
+    mongodb: 4.2.1
     nodemon: ^2.0.12
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
@@ -6044,7 +6044,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-connection-string-url@npm:^2.5.2":
+"mongodb-connection-string-url@npm:^2.2.0":
   version: 2.5.2
   resolution: "mongodb-connection-string-url@npm:2.5.2"
   dependencies:
@@ -6054,19 +6054,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:^4.2.1":
-  version: 4.6.0
-  resolution: "mongodb@npm:4.6.0"
+"mongodb@npm:4.2.1":
+  version: 4.2.1
+  resolution: "mongodb@npm:4.2.1"
   dependencies:
-    bson: ^4.6.3
+    bson: ^4.6.0
     denque: ^2.0.1
-    mongodb-connection-string-url: ^2.5.2
+    mongodb-connection-string-url: ^2.2.0
     saslprep: ^1.0.3
-    socks: ^2.6.2
   dependenciesMeta:
     saslprep:
       optional: true
-  checksum: aa2a584fdb4e7f73b73b5f4019916e4f9cdba6e0aa81448eade44a5ff4e5d771ad62cd252f012b7a211eb80f6f88fba446c6ad8f0eb898ba56cf447719161540
+  checksum: 3bd32c0afe538ee1c7166b69721941c2fc2fe2c30bada62d3178530942a119d83083a13b9263005f9b468acc5b25df82f848b809a2bb67169ea2074d4ffb4cef
   languageName: node
   linkType: hard
 
