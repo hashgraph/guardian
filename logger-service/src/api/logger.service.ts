@@ -1,6 +1,6 @@
 import { MongoRepository } from 'typeorm';
 import { Log } from '@entity/log';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage } from '@guardian/interfaces';
 
 

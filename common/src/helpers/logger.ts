@@ -1,5 +1,7 @@
 import { ApplicationStates, ILog, IPageParameters, LogType, MessageAPI } from '@guardian/interfaces';
-import { MessageBrokerChannel, Singleton, IMessageResponse } from '@guardian/common';
+import { Singleton } from '../decorators/singleton';
+import { IMessageResponse } from '../models/message-response';
+import { MessageBrokerChannel } from '../mq';
 
 @Singleton
 export class Logger {

@@ -5,7 +5,6 @@
   "workspaces": [
     "interfaces",
     "common",
-    "logger-helper",
     "api-docs",
     "api-gateway",
     "auth-service",

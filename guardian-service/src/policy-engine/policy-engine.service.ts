@@ -30,7 +30,6 @@ import { PolicyImportExportHelper } from './helpers/policy-import-export-helper'
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { Logger } from '@guardian/logger-helper';
 import { Policy } from '@entity/policy';
 import { getConnection, getMongoRepository, ObjectID } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
@@ -39,7 +38,7 @@ import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse, Logger } from '@guardian/common';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
 
