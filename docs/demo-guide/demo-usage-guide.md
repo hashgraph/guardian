@@ -4,8 +4,9 @@
 
 This folder contains sample files that are referenced in the Demo Usage Guide
 
-1. Sample Schema for iRec Policy (`iRec_Application_Details.zip`)
-2. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
+1. Sample Schema for iRec Policy (`iREC Schema.zip`)
+2. Sample of iREC Policy (`IRec Policy 3.zip`)
+3. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
 
 1.The Guardian reference implementation comes with two predefined users:
 

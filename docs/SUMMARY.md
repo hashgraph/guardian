@@ -192,10 +192,6 @@
 
 * [Listen to external event published by guardian](external-events/external-events.md)
 
-
-[Listen to external event published by guardian](external-events/external-events.md 
-
-
 ## FAQs
 
 * [FAQs](faqs/faqs.md)
