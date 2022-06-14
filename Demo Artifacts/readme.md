@@ -3,7 +3,7 @@
 This folder contains sample files that are referenced in the Demo Usage Guide from previous versions of the Guardian. As of version 1.0.5 the following files will not be needed to follow the guide:
 
 1. Sample Schema of iREC (`iREC Schema.zip`)
-2. Sample of iREC Policy (`iRec Policy 3.zip`)
+2. Sample of iREC Policy (`IRec Policy 3.zip`)
 3. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
 4. Sample of Verra REDD Policy (`Verra REDD 2.zip`)
 5. Sample Schema design template for Verra REDD Policy (`REDD APD Schema Design Template.xlsx`)
