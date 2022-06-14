@@ -92,7 +92,7 @@ const loadSchema = async function (messageId: string, owner: string) {
         }
         const messageServer = new MessageServer();
         log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
-        const message = await messageServer.getMessage<SchemaMessage>(messageId);
+        const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
         log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
         const schemaToImport: any = {
             uuid: message.uuid,
@@ -639,7 +639,7 @@ export const schemaAPI = async function (
                 const schema = await loadSchema(messageId, null);
                 result.push(schema);
             }
-
+            
             const messageServer = new MessageServer();
             const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
             const anotherSchemas: SchemaMessage[] = [];

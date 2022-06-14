@@ -38,7 +38,7 @@ export class MessageServer {
     }
 
     public getTopic(): string {
-        if(this.topicId) {
+        if (this.topicId) {
             return this.topicId.toString();
         }
         return undefined;
@@ -79,13 +79,14 @@ export class MessageServer {
         return message;
     }
 
-    public static fromMessage(message: string): Message {
+    public static fromMessage<T extends Message>(message: string, type?: MessageType): T {
         const json = JSON.parse(message);
-        return this.fromMessageObject(json);
+        return this.fromMessageObject(json, type);
     }
 
-    public static fromMessageObject(json: any): Message {
+    public static fromMessageObject<T extends Message>(json: any, type?: MessageType): T {
         let message: Message;
+        json.type = json.type || type;
         switch (json.type) {
             case MessageType.VCDocument:
                 message = VCMessage.fromMessageObject(json);
@@ -119,31 +120,40 @@ export class MessageServer {
             console.error(`Invalid json: ${json.type}`);
             throw `Invalid json: ${json.type}`;
         }
-        return message;
+        return message as T;
     }
 
 
-    private async getTopicMessage(timeStamp: string): Promise<Message> {
+    private async getTopicMessage<T extends Message>(timeStamp: string, type?: MessageType): Promise<T> {
         const { topicId, message } = await this.client.getTopicMessage(timeStamp);
         new Logger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE']);
-        const result = MessageServer.fromMessage(message);
+        const result = MessageServer.fromMessage<T>(message, type);
         result.setId(timeStamp);
         result.setTopicId(topicId);
         return result;
     }
 
-    private async getTopicMessages(topicId: string | TopicId): Promise<Message[]> {
+    private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
         const topic = topicId.toString();
         const messages = await this.client.getTopicMessages(topic);
         new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
         const result: Message[] = [];
         for (let i = 0; i < messages.length; i++) {
+            const message = messages[i];
             try {
-                const message = messages[i];
                 const item = MessageServer.fromMessage(message.message);
-                item.setId(message.id);
-                item.setTopicId(topic);
-                result.push(item);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setId(message.id);
+                    item.setTopicId(topic);
+                    result.push(item);
+                }
             } catch (error) {
                 continue;
             }
@@ -159,21 +169,14 @@ export class MessageServer {
         return message;
     }
 
-    public async getMessage<T extends Message>(id: string): Promise<T> {
-        let message = await this.getTopicMessage(id);
+    public async getMessage<T extends Message>(id: string, type?: MessageType): Promise<T> {
+        let message = await this.getTopicMessage<T>(id, type);
         message = await this.loadIPFS(message);
         return message as T;
     }
 
-
     public async getMessages<T extends Message>(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<T[]> {
-        let messages = await this.getTopicMessages(topicId);
-        if (type) {
-            messages = messages.filter(m => m.type == type);
-        }
-        if (action) {
-            messages = messages.filter(m => m.action == action);
-        }
+        let messages = await this.getTopicMessages(topicId, type, action);
         return messages as T[];
     }
 
