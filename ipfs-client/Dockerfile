@@ -21,7 +21,7 @@ WORKDIR /usr/ipfs-client
 COPY ./ipfs-client/package*.json ./
 COPY ./ipfs-client/tsconfig.json ./
 COPY ./ipfs-client/.env.docker ./.env
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
+RUN npm install --force /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
 RUN npm install --force
 ADD ./ipfs-client/src ./src/.
 RUN npm run build
