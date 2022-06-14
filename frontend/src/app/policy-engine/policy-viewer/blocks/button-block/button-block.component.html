@@ -1,0 +1,19 @@
+<div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+</div>
+
+<div class="content">
+    <ng-container *ngFor="let button of buttons" >
+        <div *ngIf="button.type == 'selector' && button.visible">
+            <div *ngIf="button.name" class="btn-option {{button.uiClass}}" (click)="onSelect(button)">
+                {{button.name}}
+            </div>
+        </div>
+
+        <div *ngIf="button.type === 'selector-dialog' && button.visible">
+            <div *ngIf="button.name" class="btn-option {{button.uiClass}}" (click)="onSelectDialog(button)">
+                {{button.name}}
+            </div>
+        </div>
+    </ng-container>
+</div>

@@ -11,9 +11,14 @@ export class VCMessage extends Message {
     public hash: string;
     public issuer: string;
     public relationships: string[];
+    public documentStatus: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.VCDocument);
+    }
+
+    public setStatus(status: string): void {
+        this.documentStatus = status;
     }
 
     public setDocument(document: VcDocument): void {
@@ -41,6 +46,7 @@ export class VCMessage extends Message {
             relationships: this.relationships,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
+            documentStatus: this.documentStatus
         };
     }
 

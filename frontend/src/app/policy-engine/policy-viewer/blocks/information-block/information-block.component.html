@@ -9,4 +9,7 @@
         <div class="title">{{title}}</div>
         <div class="description">{{description}}</div>
     </div>
+    <div *ngIf="bindBlock">
+        <render-block [block]="bindBlock" [policyId]="policyId"></render-block>
+    </div>
 </div>

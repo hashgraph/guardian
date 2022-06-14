@@ -89,18 +89,23 @@ export class DocumentsSourceAddon {
             Object.assign(filters, globalFilters);
         }
 
+        const filtersWithOrder: any = { where: filters };
+        if (ref.options.createdOrderDirection) {
+            filtersWithOrder.order = { 'createDate': ref.options.createdOrderDirection }
+        }
+
         let data: any[];
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(VcDocumentCollection).find(filters);
+                data = await getMongoRepository(VcDocumentCollection).find(filtersWithOrder);
                 break;
             case 'did-documents':
-                data = await getMongoRepository(DidDocumentCollection).find(filters);
+                data = await getMongoRepository(DidDocumentCollection).find(filtersWithOrder);
                 break;
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(VpDocumentCollection).find(filters);
+                data = await getMongoRepository(VpDocumentCollection).find(filtersWithOrder);
                 break;
             case 'root-authorities':
                 data = await this.users.getAllRootAuthorityAccounts() as IAuthUser[];
@@ -108,7 +113,7 @@ export class DocumentsSourceAddon {
 
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(ApprovalDocumentCollection).find(filters);
+                data = await getMongoRepository(ApprovalDocumentCollection).find(filtersWithOrder);
                 break;
 
             case 'source':
@@ -132,7 +137,8 @@ export class DocumentsSourceAddon {
                 })).map(item => {
                     return {
                         status: item.status,
-                        created: new Date(item.created).toLocaleString()
+                        created: new Date(item.created).toLocaleString(),
+                        reason: item.reason
                     }
                 });
             }

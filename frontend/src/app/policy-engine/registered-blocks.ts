@@ -31,7 +31,8 @@ import { CustomLogicConfigComponent } from './policy-configuration/blocks/calcul
 import { SwitchConfigComponent } from "./policy-configuration/blocks/main/switch-config/switch-config.component";
 import { PolicyBlockModel } from "./policy-model";
 import { RevokeConfigComponent } from "./policy-configuration/blocks/documents/revoke-config/revoke-config.component";
-import { RevokeBlockComponent } from "./policy-viewer/blocks/revoke-block/revoke-block.component";
+import { ButtonConfigComponent } from "./policy-configuration/blocks/main/button-config/button-config.component";
+import { ButtonBlockComponent } from "./policy-viewer/blocks/button-block/button-block.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -58,7 +59,8 @@ export enum BlockType {
     CustomLogicBlock = 'customLogicBlock',
     Switch = 'switchBlock',
     RevokeBlock = 'revokeBlock',
-    SetRelationshipsBlock = 'setRelationshipsBlock'
+    SetRelationshipsBlock = 'setRelationshipsBlock',
+    ButtonBlock = 'buttonBlock'
 }
 
 export enum BlockGroup {
@@ -270,7 +272,8 @@ export class RegisteredBlocks {
             { type: BlockType.CustomLogicBlock },
             { type: BlockType.Report },
             { type: BlockType.RevokeBlock },
-            { type: BlockType.SetRelationshipsBlock }
+            { type: BlockType.SetRelationshipsBlock },
+            { type: BlockType.ButtonBlock }
         ];
 
         // Main, UI Components
@@ -340,6 +343,29 @@ export class RegisteredBlocks {
             }
         });
 
+        this.registerBlock({
+            type: BlockType.ButtonBlock,
+            icon: 'radio_button_checked',
+            group: BlockGroup.Main,
+            header: BlockHeaders.UIComponents,
+            factory: ButtonBlockComponent,
+            property: ButtonConfigComponent,
+            about: {
+                output: (value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => {
+                    const result = value ? value.slice() : [];
+                    if (block.properties.uiMetaData?.buttons) {
+                        for (const c of block.properties.uiMetaData.buttons) {
+                            if (c.tag) {
+                                result.push(c.tag);
+                            }
+
+                        }
+                    }
+                    return result;
+                }
+            }
+        });
+
         // Main, Server Blocks
         this.registerBlock({
             type: BlockType.Switch,
@@ -399,7 +425,7 @@ export class RegisteredBlocks {
             icon: 'restart_alt',
             group: BlockGroup.Documents,
             header: BlockHeaders.UIComponents,
-            factory: RevokeBlockComponent,
+            factory: null,
             property: RevokeConfigComponent,
         });
 

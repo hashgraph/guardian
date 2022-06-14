@@ -153,7 +153,8 @@ export class SendToGuardianBlock {
                     messageId: document.messageId || null,
                     topicId: document.topicId || null,
                     relationships: document.relationships || [],
-                    revokeMessage: document.revokeMessage
+                    revokeMessage: document.revokeMessage,
+                    statusChangeReason: document.statusChangeReason
                 };
                 return await PolicyUtils.updateVCRecord(doc);
             }
@@ -188,11 +189,11 @@ export class SendToGuardianBlock {
             const topic = await PolicyUtils.getTopic(ref.options.topic, root, topicOwner, ref);
             const vc = HVcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
+            if (document.option?.status) {
+                vcMessage.setStatus(document.option.status);
+            }
             vcMessage.setDocument(vc);
             vcMessage.setRelationships(document.relationships);
-            if (document.revokeMessage) {
-                vcMessage.revoke(document.revokeMessage);
-            }
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey);
             const vcMessageResult = await messageServer
                 .setTopicObject(topic)

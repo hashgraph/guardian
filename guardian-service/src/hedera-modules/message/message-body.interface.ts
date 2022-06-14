@@ -60,6 +60,7 @@ export interface VcMessageBody extends MessageBody {
     cid: string;
     url: string;
     relationships: string[];
+    documentStatus: string;
 }
 
 export interface VpMessageBody extends MessageBody {

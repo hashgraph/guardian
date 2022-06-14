@@ -1,54 +1,11 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Stop Propagation</td>
-        <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
-        </td>
-    </tr>
-    <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
-        </td>
-        <td class="propHeaderCell cellName">UI</td>
-        <td class="propHeaderCell"></td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Button Name</td>
-        <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.name" [readonly]="readonly">
-        </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Dialog Title</td>
-        <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
-        </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Dialog Description</td>
-        <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
-        </td>
-    </tr>
-    <tr class="propRow"
-        [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">UI Class</td>
-        <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.uiClass" [readonly]="readonly">
-        </td>
-    </tr>
     <tr class="propRow"
         [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Update previous document status</td>
         <td class="propRowCell">
-            <mat-checkbox [(ngModel)]="block.uiMetaData.updatePrevDoc" [disabled]="readonly"></mat-checkbox>
+            <input type="checkbox" [(ngModel)]="block.uiMetaData.updatePrevDoc" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow"
