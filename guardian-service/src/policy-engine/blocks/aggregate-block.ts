@@ -19,6 +19,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 @BasicBlock({
     blockType: 'aggregateDocumentBlock',
     commonBlock: true,
+    publishExternalEvent: true,
     about: {
         label: 'Aggregate Data',
         title: `Add 'Aggregate' Block`,
