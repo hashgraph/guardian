@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { PolicyEngine } from '@helpers/policyEngine';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 // import {PolicyComponentsUtils} from '@policy-engine/policy-components-stuff';
 
 /**

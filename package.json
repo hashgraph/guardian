@@ -5,13 +5,13 @@
   "workspaces": [
     "interfaces",
     "common",
-    "logger-helper",
     "api-docs",
     "api-gateway",
     "auth-service",
     "guardian-service",
     "ipfs-client",
-    "logger-service"
+    "logger-service",
+    "mrv-sender"
   ],
-  "version": "2.1.0"
+  "version": "2.1.3"
 }
