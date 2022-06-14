@@ -138,3 +138,21 @@ form {
     color: red;
     margin-bottom: 10px;
 }
+
+
+.form-field-value {
+    display: flex;
+    flex-direction: row;
+}
+
+
+.form-field-prefix {
+    padding: 22px 14px 1px 4px;
+    font-size: 20px;
+}
+
+
+.form-field-postfix {
+    padding: 22px 4px 1px 14px;
+    font-size: 20px;
+}

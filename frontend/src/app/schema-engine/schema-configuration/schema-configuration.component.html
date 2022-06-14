@@ -35,40 +35,9 @@
 
     <div *ngIf="fields && fields.length" class="fields">
         <div class="custom-fields">
-            <div *ngFor="let field of fields" class="custom-field">
-                <div class="custom-field-name">
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>* Field name</mat-label>
-                        <input matInput placeholder="Field name" [formControl]="field.controlName">
-                    </mat-form-field>
-                </div>
-                <div class="custom-field-type">
-                    <mat-form-field appearance="outline">
-                        <mat-label>Field type</mat-label>
-                        <mat-select [formControl]="field.controlType" #controlType>
-                            <mat-optgroup label="Simple Types">
-                                <mat-option *ngFor="let type of types" [value]="type.value">{{type.name}}</mat-option>
-                            </mat-optgroup>
-                            <mat-optgroup *ngIf="schemaTypes" label="Objects">
-                                <mat-option *ngFor="let type of schemaTypes" [value]="type.value">{{type.name}}
-                                </mat-option>
-                            </mat-optgroup>
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-                <div class="custom-field-required">
-                    <mat-checkbox color="primary" [formControl]="field.controlRequired">Required Field</mat-checkbox>
-                </div>
-                <div class="custom-field-isArray">
-                    <mat-checkbox color="primary" [formControl]="field.controlArray"
-                        [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
-                </div>
-                <div class="custom-field-remove">
-                    <div class="custom-fields-remove" (click)="onRemove(field)">
-                        <mat-icon>delete</mat-icon>
-                    </div>
-                </div>
-            </div>
+            <schema-field-configuration *ngFor="let field of fields" [form]="dataForm" [field]="field" [types]="types"
+                [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" (remove)="onRemove(field)">
+            </schema-field-configuration>
         </div>
     </div>
 
@@ -150,52 +119,16 @@
                                 </mat-radio-button>
                             </mat-radio-group>
                         </div>
-
-
                     </div>
-
 
                     <p class="condition-label">THEN</p>
                     <div *ngIf="condition.thenControls">
                         <div class="custom-fields">
-                            <div *ngFor="let conditionField of condition.thenControls" class="custom-field">
-                                <div class="custom-field-name">
-                                    <mat-form-field class="example-full-width" appearance="outline">
-                                        <mat-label>* Field name</mat-label>
-                                        <input matInput placeholder="Field name"
-                                            [formControl]="conditionField.controlName">
-                                    </mat-form-field>
-                                </div>
-                                <div class="custom-field-type">
-                                    <mat-form-field appearance="outline">
-                                        <mat-label>Field type</mat-label>
-                                        <mat-select [formControl]="conditionField.controlType" #controlType>
-                                            <mat-optgroup label="Simple Types">
-                                                <mat-option *ngFor="let type of types" [value]="type.value">
-                                                    {{type.name}}</mat-option>
-                                            </mat-optgroup>
-                                            <mat-optgroup *ngIf="schemaTypes" label="Objects">
-                                                <mat-option *ngFor="let type of schemaTypes" [value]="type.value">
-                                                    {{type.name}}</mat-option>
-                                            </mat-optgroup>
-                                        </mat-select>
-                                    </mat-form-field>
-                                </div>
-                                <div class="custom-field-required">
-                                    <mat-checkbox color="primary" [formControl]="conditionField.controlRequired">
-                                        Required Field</mat-checkbox>
-                                </div>
-                                <div class="custom-field-isArray">
-                                    <mat-checkbox color="primary" [formControl]="conditionField.controlArray"
-                                        [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
-                                </div>
-                                <div class="custom-field-remove">
-                                    <div class="custom-fields-remove"
-                                        (click)="onConditionFieldRemove(condition, conditionField, 'then')">
-                                        <mat-icon>delete</mat-icon>
-                                    </div>
-                                </div>
-                            </div>
+                            <schema-field-configuration *ngFor="let conditionField of condition.thenControls"
+                                [form]="dataForm" [field]="conditionField" [types]="types" [measureTypes]="measureTypes"
+                                [schemaTypes]="schemaTypes"
+                                (remove)="onConditionFieldRemove(condition, conditionField, 'then')">
+                            </schema-field-configuration>
                         </div>
                     </div>
                     <div class="add-btn" (click)="onConditionFieldAdd(condition, 'then')">
@@ -207,47 +140,13 @@
                     <p class="condition-label">ELSE</p>
                     <div *ngIf="condition.elseControls">
                         <div class="custom-fields">
-                            <div *ngFor="let conditionField of condition.elseControls" class="custom-field">
-                                <div class="custom-field-name">
-                                    <mat-form-field class="example-full-width" appearance="outline">
-                                        <mat-label>* Field name</mat-label>
-                                        <input matInput placeholder="Field name"
-                                            [formControl]="conditionField.controlName">
-                                    </mat-form-field>
-                                </div>
-                                <div class="custom-field-type">
-                                    <mat-form-field appearance="outline">
-                                        <mat-label>Field type</mat-label>
-                                        <mat-select [formControl]="conditionField.controlType" #controlType>
-                                            <mat-optgroup label="Simple Types">
-                                                <mat-option *ngFor="let type of types" [value]="type.value">
-                                                    {{type.name}}</mat-option>
-                                            </mat-optgroup>
-                                            <mat-optgroup *ngIf="schemaTypes" label="Objects">
-                                                <mat-option *ngFor="let type of schemaTypes" [value]="type.value">
-                                                    {{type.name}}</mat-option>
-                                            </mat-optgroup>
-                                        </mat-select>
-                                    </mat-form-field>
-                                </div>
-                                <div class="custom-field-required">
-                                    <mat-checkbox color="primary" [formControl]="conditionField.controlRequired">
-                                        Required Field</mat-checkbox>
-                                </div>
-                                <div class="custom-field-isArray">
-                                    <mat-checkbox color="primary" [formControl]="conditionField.controlArray"
-                                        [disabled]="controlType.value === '4'">Allow multiple answers</mat-checkbox>
-                                </div>
-                                <div class="custom-field-remove">
-                                    <div class="custom-fields-remove"
-                                        (click)="onConditionFieldRemove(condition, conditionField, 'else')">
-                                        <mat-icon>delete</mat-icon>
-                                    </div>
-                                </div>
-                            </div>
+                            <schema-field-configuration *ngFor="let conditionField of condition.elseControls"
+                                [form]="dataForm" [field]="conditionField" [types]="types" [measureTypes]="measureTypes"
+                                [schemaTypes]="schemaTypes"
+                                (remove)="onConditionFieldRemove(condition, conditionField, 'else')">
+                            </schema-field-configuration>
                         </div>
                     </div>
-
 
                     <div class="add-btn" (click)="onConditionFieldAdd(condition, 'else')">
                         <span>

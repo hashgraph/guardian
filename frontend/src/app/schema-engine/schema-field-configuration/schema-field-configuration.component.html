@@ -1,0 +1,50 @@
+<div class="custom-field" [formGroup]="form">
+    <div class="custom-field-name">
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>* Field name</mat-label>
+            <input matInput placeholder="Field name" [formControl]="field.controlName">
+        </mat-form-field>
+    </div>
+    <div class="custom-field-type">
+        <mat-form-field appearance="outline">
+            <mat-label>Field type</mat-label>
+            <mat-select [formControl]="field.controlType" #controlType (valueChange)="onTypeChange($event)">
+                <mat-optgroup label="Simple Types">
+                    <mat-option *ngFor="let type of types" [value]="type.value">
+                        {{type.name}}
+                    </mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Units of measure">
+                    <mat-option value="postfix">Postfix</mat-option>
+                    <mat-option value="prefix">Prefix</mat-option>
+                </mat-optgroup>
+                <mat-optgroup *ngIf="schemaTypes" label="Schema defined">
+                    <mat-option *ngFor="let type of schemaTypes" [value]="type.value">
+                        {{type.name}}
+                    </mat-option>
+                </mat-optgroup>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div *ngIf="unit" class="custom-field-unit">
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Unit</mat-label>
+            <input matInput placeholder="Unit" [formControl]="field.controlUnit">
+        </mat-form-field>
+    </div>
+    <div class="custom-field-required">
+        <mat-checkbox color="primary" [formControl]="field.controlRequired">
+            Required Field
+        </mat-checkbox>
+    </div>
+    <div class="custom-field-isArray">
+        <mat-checkbox color="primary" [formControl]="field.controlArray">
+            Allow multiple answers
+        </mat-checkbox>
+    </div>
+    <div class="custom-field-remove">
+        <div class="custom-fields-remove" (click)="onRemove(field)">
+            <mat-icon>delete</mat-icon>
+        </div>
+    </div>
+</div>

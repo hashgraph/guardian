@@ -30,6 +30,8 @@ export interface ISchemaDocument {
     format?: SchemaDataFormat;
     pattern?: string;
     readOnly?: boolean;
+    unit?: string,
+    unitSystem?: string,
     properties?: {
         [x: string]: ISchemaDocument;
     }
