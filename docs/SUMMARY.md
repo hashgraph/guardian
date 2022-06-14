@@ -17,6 +17,14 @@
 * [Security](getting-started/security.md)
 * [Reference Implementation](getting-started/reference-implementation.md)
 
+## Schema Flow
+
+* [Schema Demo](schema-flow/schema-demo.md)
+
+## Policy Flow
+
+* [Policy Demo](policy-flow/policy-demo.md)
+
 ## Demo Guide
 
 * [Demo Usage Guide](demo-guide/demo-usage-guide.md)
