@@ -41,7 +41,7 @@ class MockLogger {
     }
 }
 
-configAPIModule.__set__('logger_helper_1', {
+configAPIModule.__set__('common_1', {
     Logger: MockLogger
 });
 

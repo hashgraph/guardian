@@ -1,0 +1,325 @@
+.container {
+    width: 100%;
+    position: relative;
+    display: block;
+}
+
+.alert {
+    border-color: red;
+}
+
+.circle {
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    background-color: rgb(255 255 255);
+    position: absolute;
+    left: 35px;
+    top: 35px;
+    pointer-events: none;
+}
+
+.circle::after {
+    content: " ";
+    position: absolute;
+    display: block;
+    background-color: #aaa;
+    height: 10px;
+    margin-top: -5px;
+    top: 50%;
+    left: 5px;
+    right: 5px;
+    z-index: 9;
+}
+
+.circle::before {
+    content: " ";
+    position: absolute;
+    display: block;
+    background-color: #aaa;
+    width: 10px;
+    margin-left: -5px;
+    left: 50%;
+    top: 5px;
+    bottom: 5px;
+    z-index: 9;
+}
+
+.config {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    border: 1px dashed #000;
+    margin-bottom: 30px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button#start {
+    margin-bottom: 30px;
+}
+
+table#results {
+    position: relative;
+    width: 100%;
+    border: 1px solid #000;
+}
+
+
+.t-headers {
+    display: flex;
+}
+
+.t-row {
+    display: flex;
+}
+
+.t-col-1 {
+    width: 200px;
+    overflow: hidden;
+    display: block;
+    padding: 5px 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.t-col-2 {
+    width: 200px;
+    overflow: hidden;
+    display: block;
+    padding: 5px 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.t-col-3 {
+    width: 200px;
+    overflow: hidden;
+    display: block;
+    padding: 5px 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.t-col-4 {
+    width: 200px;
+    overflow: hidden;
+    display: block;
+    padding: 5px 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.t-col-5 {
+    width: 200px;
+    overflow: hidden;
+    display: block;
+    padding: 5px 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+
+
+
+
+
+
+.config-header {
+    display: flex;
+}
+
+.config-collapse-hide {
+    width: 0px;
+    height: 0px;
+    margin: 6px 0px 6px 8px;
+    border: 6px solid #999;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    cursor: pointer;
+}
+
+.config-collapse-show {
+    width: 0px;
+    height: 0px;
+    margin: 10px 4px 2px 4px;
+    border: 6px solid #999;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    cursor: pointer;
+}
+
+.config-status {
+    width: 16px;
+    height: 16px;
+
+    border-radius: 50%;
+    margin: 4px;
+}
+
+.config-status-stopped {
+    background: #f00;
+}
+
+.config-status-started {
+    background: #0f0;
+}
+
+.config-name {
+    height: 18px;
+    padding: 3px 12px;
+    min-width: 750px;
+}
+
+.config-control-start {
+    width: 0px;
+    height: 0px;
+    margin: 3px 4px 4px 4px;
+    border: 8px solid #00ab02;
+    border-left-width: 12px;
+    border-right-width: 0px;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    cursor: pointer;
+}
+
+.config-control-stop {
+    width: 4px;
+    height: 16px;
+    margin: 3px 4px 4px 4px;
+    border: 0px solid #ea0000;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    cursor: pointer;
+}
+
+.config-body-hide {
+    display: none;
+}
+
+.config-row {
+    position: relative;
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #e4e4e4;
+}
+
+.config-body {
+    border-top: 1px solid #e4e4e4;
+    padding-top: 8px;
+    padding-left: 22px;
+    margin-top: 4px;
+}
+
+.dialog {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+}
+
+.dialog-content {
+    background: #fff;
+    position: absolute;
+    width: 620px;
+    padding: 20px;
+    border-radius: 5px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.btn-cancel {
+    background-color: rgba(0, 0, 0, .12);
+    box-sizing: border-box;
+    position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    outline: none;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+    display: inline-block;
+    white-space: nowrap;
+    text-decoration: none;
+    vertical-align: baseline;
+    text-align: center;
+    margin: 0;
+    min-width: 64px;
+    line-height: 36px;
+    padding: 0 16px;
+    border-radius: 4px;
+    overflow: visible;
+    margin-left: 8px;
+}
+
+.btn-ok {
+    color: #fff;
+    background-color: #3f51b5;
+    box-sizing: border-box;
+    position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    outline: none;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+    display: inline-block;
+    white-space: nowrap;
+    text-decoration: none;
+    vertical-align: baseline;
+    text-align: center;
+    margin: 0;
+    min-width: 64px;
+    line-height: 36px;
+    padding: 0 16px;
+    border-radius: 4px;
+    overflow: visible;
+}
+
+.dialog-content-setting {
+    margin-bottom: 16px;
+}
+
+.dialog-content-row {
+    display: flex;
+    padding: 5px 0px;
+    height: 26px;
+}
+
+.dialog-row-name {
+    padding-right: 8px;
+    min-width: 70px;
+}
+
+.random-field .dialog-row-value {}
+
+.config-last-value,
+.config-config {
+    max-height: 280px;
+    overflow: auto;
+}
+
+.dialog-row-input {
+    margin-left: 10px;
+    padding-left: 10px;
+    border-left: 1px solid;
+    margin-right: 10px;
+}
+.dialog-row-decimal {
+    width: 25px;
+    margin-right: 10px;
+}
