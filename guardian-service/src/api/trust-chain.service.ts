@@ -171,7 +171,7 @@ export const trustChainAPI = async function (
 
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
-                const rootAuthority = await vcDocumentRepository.findOne({
+                const rootAuthorities = await vcDocumentRepository.find({
                     where: {
                         type: { $eq: SchemaEntity.ROOT_AUTHORITY },
                         owner: { $eq: issuer }
@@ -189,7 +189,7 @@ export const trustChainAPI = async function (
                         tag: null
                     });
                 }
-                if (rootAuthority) {
+                for (let rootAuthority of rootAuthorities) {
                     chain.push({
                         type: 'VC',
                         id: rootAuthority.hash,
