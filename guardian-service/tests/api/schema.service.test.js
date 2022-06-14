@@ -129,7 +129,7 @@ describe('Schema Service API', function () {
         schemaAPIModule.__set__('users_1', {
             Users: MockUsers,
         });
-        schemaAPIModule.__set__('logger_helper_1', {
+        schemaAPIModule.__set__('common_1', {
             Logger: MockLogger
         });
         schemaAPIModule.__set__('typeorm_1', {

@@ -41,7 +41,7 @@ class MockLogger {
     }
 }
 
-loaderAPIModule.__set__('logger_helper_1', {
+loaderAPIModule.__set__('common_1', {
     Logger: MockLogger
 });
 
