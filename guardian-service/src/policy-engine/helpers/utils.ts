@@ -8,10 +8,11 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { getMongoRepository } from "typeorm";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { IAuthUser } from "@auth/auth.interface";
-import { DocumentStatus, SchemaEntity, TopicType } from "@guardian/interfaces";
+import { DocumentStatus, ExternalMessageEvents, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { Topic } from "@entity/topic";
 import { TopicHelper } from "@helpers/topicHelper";
 import { DocumentState } from "@entity/document-state";
+import { ExternalEventChannel } from "@guardian/common";
 
 export enum DataTypes {
     MRV = 'mrv',
@@ -87,7 +88,7 @@ export class PolicyUtils {
 
     public static async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
         let item = await getMongoRepository(VcDocumentCollection).findOne({
-            where: { 
+            where: {
                 hash: { $eq: row.hash },
                 hederaStatus: {$not: { $eq: DocumentStatus.REVOKE }}
             }
@@ -193,6 +194,7 @@ export class PolicyUtils {
             await client.mint(tokenId, supplyKey, tokenValue, uuid);
             await client.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
         }
+        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid })
         console.log('Mint: End');
     }
 

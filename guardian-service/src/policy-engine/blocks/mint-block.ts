@@ -23,6 +23,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 @BasicBlock({
     blockType: 'mintDocumentBlock',
     commonBlock: true,
+    publishExternalEvent: true,
     about: {
         label: 'Mint',
         title: `Add 'Mint' Block`,

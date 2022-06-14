@@ -8,6 +8,7 @@ export interface PolicyBlockDecoratorOptions {
     blockType: string;
     commonBlock?: boolean;
     about?: BlockAbout;
+    publishExternalEvent?: boolean;
 }
 
 export interface PolicyBlockConstructorParams {

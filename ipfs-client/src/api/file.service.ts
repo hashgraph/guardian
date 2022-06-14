@@ -6,6 +6,7 @@ import { MongoRepository } from 'typeorm';
 import { Settings } from '../entity/settings';
 import {
     MessageAPI,
+    ExternalMessageEvents,
     CommonSettings,
     IGetFileMessage,
     IIpfsSettingsResponse,
@@ -40,6 +41,7 @@ export const fileAPI = async function (
             let blob = new Blob([Buffer.from(msg.content, 'base64')]);
             const cid = await client.storeBlob(blob);
             const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
+            channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url });
 
             return new MessageResponse({ cid, url },);
         }

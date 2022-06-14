@@ -1,7 +1,7 @@
 import { MongoRepository } from 'typeorm';
 import { Log } from '@entity/log';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
-import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage } from '@guardian/interfaces';
+import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage, LogType, ExternalMessageEvents } from '@guardian/interfaces';
 
 
 export const loggerAPI = async function (
@@ -19,7 +19,12 @@ export const loggerAPI = async function (
             if (!message) {
                 throw new Error("Log message is empty");
             }
+
             await logRepository.save(message);
+
+            if (message.type === LogType.ERROR) {
+                channel.publish(ExternalMessageEvents.ERROR_LOG, message);
+            }
             return new MessageResponse(true);
         }
         catch (error) {
