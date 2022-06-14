@@ -15,8 +15,8 @@
                     </mat-option>
                 </mat-optgroup>
                 <mat-optgroup label="Units of measure">
-                    <mat-option value="postfix">Postfix</mat-option>
                     <mat-option value="prefix">Prefix</mat-option>
+                    <mat-option value="postfix">Postfix</mat-option>
                 </mat-optgroup>
                 <mat-optgroup *ngIf="schemaTypes" label="Schema defined">
                     <mat-option *ngFor="let type of schemaTypes" [value]="type.value">
