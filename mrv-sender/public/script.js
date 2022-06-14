@@ -1,9 +1,5 @@
 const configs = [];
 
-async function makeRequest() {
-
-}
-
 function addFile() {
     let configFile;
     const config = document.getElementById('config');

@@ -10,7 +10,8 @@
     "auth-service",
     "guardian-service",
     "ipfs-client",
-    "logger-service"
+    "logger-service",
+    "mrv-sender"
   ],
   "version": "2.1.3"
 }
