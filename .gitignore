@@ -8,5 +8,11 @@ www-data/
 /guardian-service/config.json
 .env
 tsconfig.tsbuildinfo
-.yarn
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
 node_modules
