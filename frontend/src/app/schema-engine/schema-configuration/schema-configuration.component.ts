@@ -14,7 +14,8 @@ import {
     Schema,
     SchemaCondition,
     SchemaField,
-    FieldTypesDictionary
+    FieldTypesDictionary,
+    UnitSystem
 } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
@@ -121,23 +122,23 @@ export class SchemaConfigurationComponent implements OnInit {
             this.types.push({ name: type.name, value: value });
             this.schemaTypeMap[value] = { ...type };
         }
-        this.schemaTypeMap['measures'] = {
-            name: "measures",
+        this.schemaTypeMap[UnitSystem.Postfix] = {
+            name: UnitSystem.Postfix,
             type: 'number',
             format: undefined,
             pattern: undefined,
             isRef: false,
             unit: "",
-            unitSystem: "measures"
+            unitSystem: UnitSystem.Postfix
         };
-        this.schemaTypeMap['currency'] = {
-            name: "currency",
+        this.schemaTypeMap[UnitSystem.Prefix] = {
+            name: UnitSystem.Prefix,
             type: 'number',
             format: undefined,
             pattern: undefined,
             isRef: false,
             unit: "",
-            unitSystem: "currency"
+            unitSystem: UnitSystem.Prefix
         };
     }
 
@@ -414,11 +415,11 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     getType(field: SchemaField): string {
-        if (field.unitSystem == 'measures') {
-            return 'measures';
+        if (field.unitSystem == UnitSystem.Prefix) {
+            return UnitSystem.Prefix;
         }
-        if (field.unitSystem == 'currency') {
-            return 'currency';
+        if (field.unitSystem == UnitSystem.Postfix) {
+            return UnitSystem.Postfix;
         }
         const keys = Object.keys(this.schemaTypeMap);
         for (let i = 0; i < keys.length; i++) {

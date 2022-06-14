@@ -14,11 +14,11 @@
                         {{type.name}}
                     </mat-option>
                 </mat-optgroup>
-                <mat-optgroup label="Measures Types">
-                    <mat-option value="measures">Measures</mat-option>
-                    <mat-option value="currency">Currency</mat-option>
+                <mat-optgroup label="Units of measure">
+                    <mat-option value="postfix">Postfix</mat-option>
+                    <mat-option value="prefix">Prefix</mat-option>
                 </mat-optgroup>
-                <mat-optgroup *ngIf="schemaTypes" label="From Schema">
+                <mat-optgroup *ngIf="schemaTypes" label="Schema defined">
                     <mat-option *ngFor="let type of schemaTypes" [value]="type.value">
                         {{type.name}}
                     </mat-option>

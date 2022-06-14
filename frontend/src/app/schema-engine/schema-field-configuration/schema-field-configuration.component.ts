@@ -11,6 +11,7 @@ import {
     FormControl,
     FormGroup,
 } from '@angular/forms';
+import { UnitSystem } from '@guardian/interfaces';
 
 /**
  * Schemas constructor
@@ -73,6 +74,6 @@ export class SchemaFieldConfigurationComponent implements OnInit {
         } else {
             this.field.controlArray.enable();
         }
-        this.unit = event == 'measures' || event == 'currency';
+        this.unit = event == UnitSystem.Prefix || event == UnitSystem.Postfix;
     }
 }
