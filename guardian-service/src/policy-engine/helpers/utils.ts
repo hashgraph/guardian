@@ -85,8 +85,8 @@ export class PolicyUtils {
         }
     }
 
-    public static async updateVCRecord(row: any): Promise<VcDocumentCollection> {
-        let item: any = await getMongoRepository(VcDocumentCollection).findOne({
+    public static async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
+        let item = await getMongoRepository(VcDocumentCollection).findOne({
             where: { 
                 hash: { $eq: row.hash },
                 hederaStatus: {$not: { $eq: DocumentStatus.REVOKE }}
@@ -109,7 +109,7 @@ export class PolicyUtils {
             item.document = row.document;
             item.messageId = row.messageId || item.messageId;
             item.topicId = row.topicId || item.topicId;
-            item.revokeMessage = row.revokeMessage;
+            item.comment = row.comment;
             item.relationships = row.relationships;
             await getMongoRepository(VcDocumentCollection).update(item.id, item);
         } else {
@@ -121,7 +121,7 @@ export class PolicyUtils {
             docStatusRepo.save({
                 documentId: item.id,
                 status: item.option.status,
-                reason: row.statusChangeReason || item.revokeMessage
+                reason: item.comment
             });
         }
         return item;

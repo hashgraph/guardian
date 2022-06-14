@@ -16,6 +16,8 @@ import { DidDocument } from '@entity/did-document';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 
+export const RevokedStatus = 'Revoked';
+
 /**
  * Revoke document action with UI
  */
@@ -137,14 +139,16 @@ export class RevokeBlock {
                     policyTopicMessage, 
                     messageServer, 
                     ref, 
-                    data.revokeMessage, 
+                    data.comment, 
                     relatedMessage.parentIds
                 );
             }
         }
         const documents = await this.findDocumentByMessageIds(relatedMessages.map(item => item.id));
         for (const doc of documents) {
-            doc.revokeMessage = data.revokeMessage;
+            doc.option = doc.option || {};
+            doc.option.status = RevokedStatus;
+            doc.comment = data.comment;
         }
         if (uiMetaData && uiMetaData.updatePrevDoc && data.relationships) {
             const prevDocs = await this.findDocumentByMessageIds(data.relationships);

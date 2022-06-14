@@ -98,11 +98,22 @@ export class PolicyConverterUtils {
                 block.uiMetaData &&
                 block.uiMetaData.options
             ) {
+                block.blockType = 'buttonBlock';
+                block.uiMetaData.buttons = [];
                 const options: any[] = block.uiMetaData.options;
                 for (let i = 0; i < options.length; i++) {
                     if (!options[i].tag) {
                         options[i].tag = `Option_${i}`;
                     }
+                    block.uiMetaData.buttons.push({
+                        tag: options[i].tag,
+                        name: options[i].name,
+                        type: 'selector',
+                        filters: [],
+                        field: options[i].field,
+                        value: options[i].value,
+                        uiClass: options[i].uiClass
+                    });
                     const run: EventConfig = {
                         output: options[i].tag,
                         input: PolicyInputEventType.RunEvent,

@@ -2,7 +2,7 @@
     <mat-spinner></mat-spinner>
 </div>
 
-<div class="content">
+<div class="content" *ngIf="commonVisible">
     <ng-container *ngFor="let button of buttons" >
         <div *ngIf="button.type == 'selector' && button.visible">
             <div *ngIf="button.name" class="btn-option {{button.uiClass}}" (click)="onSelect(button)">

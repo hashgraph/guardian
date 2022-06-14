@@ -31,28 +31,4 @@
             </mat-select>
         </td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">
-            <mat-icon class="icon-link">
-                add_link
-            </mat-icon>
-            Bind Block
-        </td>
-        <td class="propRowCell">
-            <mat-select [(value)]="block.uiMetaData.bindBlock" [disabled]="readonly">
-                <mat-select-trigger>
-                    <span class="custom">{{block.uiMetaData?.bindBlock}}</span>
-                </mat-select-trigger>
-                <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                    <div class="block-name">
-                        <div class="block-icon">
-                            <mat-icon>{{item.icon}}</mat-icon>
-                        </div>
-                        {{item.name}}
-                    </div>
-                </mat-option>
-            </mat-select>
-        </td>
-    </tr>
 </table>

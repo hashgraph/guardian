@@ -420,14 +420,6 @@ export class RegisteredBlocks {
                 group: BlockGroup.UnGrouped
             }]
         });
-        this.registerBlock({
-            type: BlockType.RevokeBlock,
-            icon: 'restart_alt',
-            group: BlockGroup.Documents,
-            header: BlockHeaders.UIComponents,
-            factory: null,
-            property: RevokeConfigComponent,
-        });
 
         // Documents, Server Blocks
         this.registerBlock({
@@ -461,6 +453,14 @@ export class RegisteredBlocks {
             header: BlockHeaders.ServerBlocks,
             factory: null,
             property: ReassigningConfigComponent,
+        });
+        this.registerBlock({
+            type: BlockType.RevokeBlock,
+            icon: 'restart_alt',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
+            factory: null,
+            property: RevokeConfigComponent,
         });
         this.registerBlock({
             type: BlockType.SetRelationshipsBlock,

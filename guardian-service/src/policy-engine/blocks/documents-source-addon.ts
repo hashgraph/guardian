@@ -90,8 +90,14 @@ export class DocumentsSourceAddon {
         }
 
         const filtersWithOrder: any = { where: filters };
-        if (ref.options.createdOrderDirection) {
-            filtersWithOrder.order = { 'createDate': ref.options.createdOrderDirection }
+        if (ref.options.orderDirection) {
+            filtersWithOrder.order = {};
+            if (ref.options.orderField) {
+                filtersWithOrder.order[ref.options.orderField] = ref.options.createdOrderDirection;
+            } else {
+                filtersWithOrder.order['createDate'] = ref.options.createdOrderDirection;
+            }
+            
         }
 
         let data: any[];

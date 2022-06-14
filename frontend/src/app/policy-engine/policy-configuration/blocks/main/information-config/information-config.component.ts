@@ -28,7 +28,6 @@ export class InformationConfigComponent implements OnInit {
     };
 
     block!: any;
-    allBlocks!: any[];
 
     constructor(
         public registeredBlocks: RegisteredBlocks
@@ -45,26 +44,11 @@ export class InformationConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        if (this.policy?.allBlocks) {
-            this.allBlocks = this.policy.allBlocks.map(item => {
-                return {
-                    name: item.tag,
-                    icon: this.getIcon(item),
-                    value: item.tag
-                }
-            });
-        } else {
-            this.allBlocks = [];
-        }
         this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {}
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
     }
 }

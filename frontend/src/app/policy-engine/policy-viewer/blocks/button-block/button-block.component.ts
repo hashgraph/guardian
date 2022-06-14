@@ -24,6 +24,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
   uiMetaData: any;
   buttons: any;
   commonVisible: boolean = true;
+  private readonly _commentField: string = 'comment';
 
   constructor(
     private policyEngineService: PolicyEngineService,
@@ -93,31 +94,37 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
   }
 
   checkVisible(button: any) {
+    let result = true;
     if (!this.data) {
-      return true;
+      return result;
+    }
+    if (button.field) {
+      result = this.getObjectValue(this.data, button.field) !== button.value;
+    }
+    if (!result) {
+      return result;
     }
     if (!button.filters) {
-      return this.getObjectValue(this.data, button.field) !== button.value;
+      return result;
     }
-    let result = true;
     for (const filter of button.filters) {
       const fieldValue = this.getObjectValue(this.data, filter.field);
       switch (filter.type) {
         case 'equal':
-          result = fieldValue == filter.value;
+          result = result && (fieldValue == filter.value);
           break;
         case 'not_equal':
-          result = fieldValue != filter.value;
+          result = result && (fieldValue != filter.value);
           break;
         case 'in':
-          filter.value.split(',').foreach((val: any) => result = val == fieldValue);
+          filter.value.split(',').foreach((val: any) => result = result && (val == fieldValue));
           break;
         case 'not_in':
-          filter.value.split(',').foreach((val: any) => result = val != fieldValue);
+          filter.value.split(',').foreach((val: any) => result = result && (val != fieldValue));
           break;
         }
     }
-    return result && this.getObjectValue(this.data, button.field) != button.value;
+    return result;
   }
 
   getObjectValue(data: any, value: any) {
@@ -164,13 +171,13 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         title: button.title,
         description: button.description
       }
-    })
+    });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.setObjectValue(this.data, button.dialogField, result);
+        this.setObjectValue(this.data, this._commentField, result);
         this.onSelect(button);
       }
-    })
+    });
   }
 }

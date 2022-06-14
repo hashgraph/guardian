@@ -60,7 +60,7 @@ export class VcDocument implements IVCDocument {
     relationships: string[];
 
     @Column()
-    revokeMessage?: string;
+    comment?: string;
 
     @BeforeInsert()
     setDefaults() {

@@ -83,9 +83,6 @@ export class ButtonBlock {
                                 if (!button.description) {
                                     resultsContainer.addBlockError(ref.uuid, 'Option "description" does not set');
                                 }
-                                if (!button.dialogField) {
-                                    resultsContainer.addBlockError(ref.uuid, 'Option "dialogField" does not set');
-                                }
                                 break;
                             default:
                                 resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector|selector-dialog"');

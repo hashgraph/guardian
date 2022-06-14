@@ -47,12 +47,18 @@
             <input type="checkbox" [(ngModel)]="block.viewHistory" [readonly]="readonly">
         </td>
     </tr>
-
     <tr class="propRow" *ngIf="block.schema">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Order By Created</td>
+        <td class="propRowCell cellName">Order Field</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.createdOrderDirection" [disabled]="readonly">
+            <input [(ngModel)]="block.orderField" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow" *ngIf="block.schema">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Order Direction</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.orderDirection" [disabled]="readonly">
                 <mat-option value=""></mat-option>
                 <mat-option value="ASC">ASC</mat-option>
                 <mat-option value="DESC">DESC</mat-option>

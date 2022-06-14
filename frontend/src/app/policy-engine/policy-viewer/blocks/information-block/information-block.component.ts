@@ -23,8 +23,6 @@ export class InformationBlockComponent implements OnInit {
     type: any;
     title: any;
     description: any;
-    bindBlock: any;
-
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -79,25 +77,9 @@ export class InformationBlockComponent implements OnInit {
             this.description = uiMetaData.description;
 
             this.isActive = true;
-            if (uiMetaData.bindBlock) {
-                this.getBindBlock(uiMetaData.bindBlock).then(res => this.bindBlock = res);
-            }
         } else {
             this.content = null;
             this.isActive = false;
         }
-    }
-
-    async getBindBlock(bindBlock: any) {
-        return new Promise<any>(async (resolve, reject) => {
-            this.policyEngineService.getGetIdByName(bindBlock, this.policyId).subscribe(({ id }: any) => {
-                this.policyEngineService.getBlockData(id, this.policyId).subscribe((data: any) => {
-                    data.id = id;
-                    resolve(data);
-                }, (e) => {
-                    reject();
-                });
-            });
-        });
     }
 }
