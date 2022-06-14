@@ -1,8 +1,7 @@
 import { ApplicationStates } from '@guardian/interfaces';
-import { Logger } from '@guardian/logger-helper';
 import { NFTStorage } from 'nft.storage';
 import { createConnection } from 'typeorm';
-import { MessageBrokerChannel, ApplicationState } from '@guardian/common';
+import { MessageBrokerChannel, ApplicationState, Logger } from '@guardian/common';
 import { fileAPI } from './api/file.service';
 import { Settings } from './entity/settings';
 

@@ -13,13 +13,12 @@ import path from 'path';
 import { readJSON } from 'fs-extra';
 import { getMongoRepository, MongoRepository } from 'typeorm';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { Logger } from '@guardian/logger-helper';
 import { MessageAction, MessageServer, MessageType, SchemaMessage, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 
 export const schemaCache = {};
 

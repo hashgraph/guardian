@@ -9,7 +9,7 @@ import { HederaSDKHelper } from '../hedera-sdk-helper';
 import { MessageType } from './message-type';
 import { VCMessage } from './vc-message';
 import { DIDMessage } from './did-message';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 import { PolicyMessage } from './policy-message';
 import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
@@ -181,10 +181,10 @@ export class MessageServer {
         return await this.loadIPFS<T>(message);
     }
 
-    public async findTopic(messageId:string): Promise<string> {
+    public async findTopic(messageId: string): Promise<string> {
         try {
             console.log(messageId)
-            if(messageId) {
+            if (messageId) {
                 const { topicId, message } = await this.client.getTopicMessage(messageId);
                 console.log(topicId)
                 return topicId;

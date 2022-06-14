@@ -6,7 +6,7 @@ const fs = require('fs');
     const buildAndWatch = async (folder, skipWatch = false) => {
         const log = (message) => console.log(`${folder}: ${message}`);
 
-        await execSync(`npm install --prefix ${folder}`, { stdio: 'inherit', shell: true });
+        await execSync(`yarn --cwd ${folder}`, { stdio: 'inherit', shell: true });
 
         if (skipWatch) {
             log('skip watch project')
@@ -14,12 +14,12 @@ const fs = require('fs');
         }
 
         if (!fs.existsSync(folder + '/dist/')) {
-            await execSync(`npm run build --prefix ${folder}`, { stdio: 'inherit', shell: true });
+            await execSync(`yarn build --cwd ${folder}`, { stdio: 'inherit', shell: true });
         }
 
         await new Promise((resolve) => {
             log('Watching changes...');
-            const child = spaw('npm', ['run', 'dev', '--prefix', folder], { shell: true });
+            const child = spaw('yarn', ['dev', '--cwd', folder], { shell: true });
 
             child.stdout.on('data', log);
             child.stderr.on('data', log);
@@ -34,7 +34,6 @@ const fs = require('fs');
     await Promise.all([
         "interfaces",
         "common",
-        "logger-helper",
         "logger-service",
         "frontend",
         "auth-service",

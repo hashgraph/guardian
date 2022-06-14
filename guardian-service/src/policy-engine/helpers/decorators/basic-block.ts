@@ -2,7 +2,7 @@ import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-d
 import { EventConfig, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
 import { PolicyRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';

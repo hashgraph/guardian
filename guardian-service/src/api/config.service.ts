@@ -1,9 +1,8 @@
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
-import { Logger } from '@guardian/logger-helper';
 import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 
 /**

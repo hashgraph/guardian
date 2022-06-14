@@ -22,10 +22,6 @@ jobs:
           npm install
           npm run build
           popd
-          pushd logger-helper
-          npm install
-          npm run build
-          popd
           pushd logger-service
           npm install
           npm run build
@@ -53,7 +49,7 @@ jobs:
           pushd interfaces
           npm run lint
           popd
-          pushd logger-helper
+          pushd common
           npm run lint
           popd
           pushd logger-service
