@@ -22,7 +22,7 @@ services:
         volumes:
             - ./:/app
             - ~/.npm/:/root/.npm
-        restart: on-failure
+        restart: "no"
         command: 'node dev.js'
 
     api-docs:
@@ -48,7 +48,16 @@ services:
         environment:
             - MQ_ADDRESS=message-broker
             - DB_HOST=mongo
-
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl --fail http://0.0.0.0:3004/health || exit 1"
+                ]
+            start_period: 5s
+            interval: 30s
+            timeout: 3s
+            retries: 5
     auth-service:
         image: guardian-development
         restart: always
@@ -64,7 +73,16 @@ services:
         volumes:
             - ./:/app
         command: npm run dev:docker --prefix /app/auth-service
-
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl --fail http://0.0.0.0:3003/health || exit 1"
+                ]
+            start_period: 5s
+            interval: 30s
+            timeout: 3s
+            retries: 5
     api-gateway:
         image: guardian-development
         restart: always
@@ -85,7 +103,16 @@ services:
         volumes:
             - ./:/app
         command: npm run dev:docker --prefix /app/api-gateway
-
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl --fail http://0.0.0.0:3002/health || exit 1"
+                ]
+            start_period: 5s
+            interval: 30s
+            timeout: 3s
+            retries: 5
     topic-viewer:
         image: guardian-development
         restart: always
@@ -120,10 +147,19 @@ services:
             - DB_HOST=mongo
             - OPERATOR_ID=${OPERATOR_ID}
             - OPERATOR_KEY=${OPERATOR_KEY}
-            - SCHEMA_TOPIC_ID=${SCHEMA_TOPIC_ID}
         volumes:
             - ./:/app
         command: npm run dev:docker --prefix /app/guardian-service
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl --fail http://0.0.0.0:3001/health || exit 1"
+                ]
+            start_period: 5s
+            interval: 30s
+            timeout: 3s
+            retries: 5
 
     ipfs-client:
         image: guardian-development
@@ -146,7 +182,16 @@ services:
             - DB_HOST=mongo
             - NFT_API_KEY=${NFT_API_KEY}
         command: npm run dev:docker --prefix /app/ipfs-client
-
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl --fail http://0.0.0.0:3006/health || exit 1"
+                ]
+            start_period: 5s
+            interval: 30s
+            timeout: 3s
+            retries: 5
     mrv-sender:
         image: guardian-development
         expose:

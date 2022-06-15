@@ -6,7 +6,7 @@ import * as zlib from 'zlib';
 const MQ_TIMEOUT = +process.env.MQ_TIMEOUT || 300000;
 
 export class MessageBrokerChannel {
-    constructor(private channel: NatsConnection, public channelName: string) { }
+    constructor(public connection: NatsConnection, public channelName: string) { }
 
     private getTarget(eventType: string) {
         if (eventType.includes(this.channelName) || eventType.includes('*')) {
@@ -22,7 +22,7 @@ export class MessageBrokerChannel {
     public async response<TData, TResponse>(eventType: string, handleFunc: (data: TData) => Promise<IMessageResponse<TResponse>>) {
         const target = this.getTarget(eventType);
         console.log('MQ subscribed: %s', target);
-        const sub = this.channel.subscribe(target);
+        const sub = this.connection.subscribe(target);
         const fn = async (sub: Subscription) => {
             for await (const m of sub) {
                 let responseMessage: IMessageResponse<TResponse>;
@@ -64,7 +64,7 @@ export class MessageBrokerChannel {
                     stringPayload = '{}';
             }
 
-            const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), {
+            const msg = await this.connection.request(eventType, StringCodec().encode(stringPayload), {
                 timeout: timeout || MQ_TIMEOUT,
             });
 
@@ -92,7 +92,7 @@ export class MessageBrokerChannel {
         try {
             console.log('MQ publish: %s', eventType);
             const sc = JSONCodec();
-            this.channel.publish(eventType, sc.encode(data));
+            this.connection.publish(eventType, sc.encode(data));
         } catch (e) {
 
             console.error(e.message, e.stack, e);

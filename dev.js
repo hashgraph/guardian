@@ -13,13 +13,11 @@ const fs = require('fs');
             return;
         }
 
-        if (!fs.existsSync(folder + '/dist/')) {
-            await execSync(`yarn build --cwd ${folder}`, { stdio: 'inherit', shell: true });
-        }
+        await execSync(`yarn --cwd ${folder} build`, { stdio: 'inherit', shell: true });
 
         await new Promise((resolve) => {
             log('Watching changes...');
-            const child = spaw('yarn', ['dev', '--cwd', folder], { shell: true });
+            const child = spaw('yarn', ['--cwd', folder, 'dev'], { shell: true });
 
             child.stdout.on('data', log);
             child.stderr.on('data', log);
@@ -30,6 +28,7 @@ const fs = require('fs');
         });
 
     }
+    await execSync('yarn', { stdio: 'inherit', shell: true })
     console.log('Building and watching...');
     await Promise.all([
         "interfaces",
