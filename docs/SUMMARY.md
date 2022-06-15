@@ -74,7 +74,7 @@
 * [TimerBlock](available-policy-workflow-blocks/timerblock.md)
 * [revokeBlock](available-policy-workflow-blocks/revokeblock.md)
 * [setRelationshipsBlock](available-policy-workflow-blocks/setrelationshipsblock.md)
-* [button Block](available-policy-workflow-blocks/button-block.md)
+* [buttonBlock](available-policy-workflow-blocks/buttonblock.md)
 * [Events](available-policy-workflow-blocks/events.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
