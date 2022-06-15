@@ -187,9 +187,7 @@ export class SendToGuardianBlock {
             const topic = await PolicyUtils.getTopic(ref.options.topic, root, topicOwner, ref);
             const vc = HVcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
-            if (document.option?.status) {
-                vcMessage.setStatus(document.option.status);
-            }
+            vcMessage.setStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setDocument(vc);
             vcMessage.setRelationships(document.relationships);
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey);

@@ -110,7 +110,7 @@ export class PolicyConverterUtils {
                         name: options[i].name,
                         type: 'selector',
                         filters: [],
-                        field: options[i].field,
+                        field: block.field,
                         value: options[i].value,
                         uiClass: options[i].uiClass
                     });
