@@ -6,7 +6,6 @@ import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { IAuthUser } from '@auth/auth.interface';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
-import { PrivateKey } from '@hashgraph/sdk';
 import { MessageAPI, IToken } from '@guardian/interfaces';
 
 function getTokenInfo(info: any, token: any) {

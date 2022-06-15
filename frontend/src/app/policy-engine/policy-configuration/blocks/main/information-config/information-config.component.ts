@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -28,7 +29,9 @@ export class InformationConfigComponent implements OnInit {
 
     block!: any;
 
-    constructor() {
+    constructor(
+        public registeredBlocks: RegisteredBlocks
+    ) {
     }
 
     ngOnInit(): void {

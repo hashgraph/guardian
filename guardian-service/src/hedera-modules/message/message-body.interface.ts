@@ -1,6 +1,6 @@
-import { MessageStatus } from "./message";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { MessageStatus } from './message';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 
 export interface MessageBody {
     id: string;
@@ -60,6 +60,7 @@ export interface VcMessageBody extends MessageBody {
     cid: string;
     url: string;
     relationships: string[];
+    documentStatus: string;
 }
 
 export interface VpMessageBody extends MessageBody {

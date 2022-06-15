@@ -1,6 +1,6 @@
-import * as crypto from "crypto";
-import bs58 from "bs58";
-import { Base64 } from "js-base64";
+import * as crypto from 'crypto';
+import bs58 from 'bs58';
+import { Base64 } from 'js-base64';
 
 export class Hashing {
     public static readonly base58 = {

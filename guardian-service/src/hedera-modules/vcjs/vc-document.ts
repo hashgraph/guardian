@@ -1,10 +1,10 @@
-import { Timestamp } from "@hashgraph/sdk";
+import { Timestamp } from '@hashgraph/sdk';
 import { Hashing } from '../hashing';
 import { TimestampUtils } from '../timestamp-utils';
-import { IVC } from "@guardian/interfaces";
-import { DIDDocument } from "./did-document";
-import { Issuer } from "./issuer";
-import { VcSubject } from "./vc-subject";
+import { IVC } from '@guardian/interfaces';
+import { DIDDocument } from './did-document';
+import { Issuer } from './issuer';
+import { VcSubject } from './vc-subject';
 
 export class VcDocument {
     public static readonly CONTEXT = '@context';

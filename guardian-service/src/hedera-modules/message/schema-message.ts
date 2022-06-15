@@ -1,9 +1,9 @@
 
 import { Schema } from '@entity/schema';
 import { Message } from './message';
-import { IURL, UrlType } from "./url.interface";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { IURL, UrlType } from './url.interface';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 import { MessageBody, SchemaMessageBody } from './message-body.interface';
 
 export class SchemaMessage extends Message {

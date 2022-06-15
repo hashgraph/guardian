@@ -54,9 +54,10 @@ import { CustomLogicConfigComponent } from './policy-configuration/blocks/calcul
 import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 import { ConfirmationDialog } from './policy-viewer/blocks/confirmation-dialog/confirmation-dialog.component';
-import { RevokeBlockComponent } from './policy-viewer/blocks/revoke-block/revoke-block.component';
 import { RevokeConfigComponent } from './policy-configuration/blocks/documents/revoke-config/revoke-config.component';
 import { EventsOverview } from './helpers/events-overview/events-overview';
+import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
+import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
 
 @NgModule({
     declarations: [
@@ -107,8 +108,9 @@ import { EventsOverview } from './helpers/events-overview/events-overview';
         SwitchConfigComponent,
         EventsOverview,
         ConfirmationDialog,
-        RevokeBlockComponent,
-        RevokeConfigComponent
+        RevokeConfigComponent,
+        ButtonConfigComponent,
+        ButtonBlockComponent
     ],
     imports: [
         CommonModule,
@@ -121,6 +123,8 @@ import { EventsOverview } from './helpers/events-overview/events-overview';
         DragDropModule
     ],
     exports: [
+        ButtonBlockComponent,
+        ButtonConfigComponent,
         RevokeConfigComponent,
         PolicyConfigurationComponent,
         DocumentSourceComponent,

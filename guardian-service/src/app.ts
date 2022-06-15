@@ -20,6 +20,7 @@ import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
+import { Environment, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 import { Policy } from '@entity/policy';
 import { MessageBrokerChannel, ApiServer, Logger, ExternalEventChannel } from '@guardian/common';
 import { AggregateVC } from '@entity/aggregateDocuments';
@@ -38,6 +39,9 @@ const PORT = parseInt(process.env.PORT, 10) || 3001;
             IPFS.setChannel(channel);
             new Logger().setChannel(channel);
             new ExternalEventChannel().setChannel(channel);
+
+            TransactionLogger.setLogLevel(TransactionLogLvl.NONE);
+            Environment.setNetwork(process.env.HEDERA_NET)
 
             new Wallet().setChannel(channel);
             new Users().setChannel(channel);

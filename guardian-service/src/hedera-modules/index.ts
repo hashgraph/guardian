@@ -22,5 +22,5 @@ export { PolicyMessage } from './message/policy-message';
 export { UrlType } from './message/url.interface';
 export { TopicMessage } from './message/topic-message';
 export { VPMessage } from './message/vp-message';
-
-
+export { Environment } from './environment';
+export { TransactionLogger, TransactionLogLvl } from './transaction-logger';

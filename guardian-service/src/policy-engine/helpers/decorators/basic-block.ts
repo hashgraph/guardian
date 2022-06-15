@@ -70,6 +70,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
         return class extends basicClass {
             static blockType = o.blockType;
             static about = o.about;
+            static publishExternalEvent = o.publishExternalEvent;
 
             protected oldDataState: any = {};
             protected currentDataState: any = {};
@@ -117,14 +118,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!Array.isArray(this.actions)) {
                     this.actions = [];
                 }
-                this.actions.push([PolicyInputEventType.RunEvent, async (event) => {
-                    const result = await this.runAction(event);
-                    if (o.publishExternalEvent) {
-                        new ExternalEventChannel().publishMessage(ExternalMessageEvents.BLOCK_RUN_EVENTS, { uuid: this.uuid, blockType: this.blockType, blockTag: this.tag, data: event.data, result })
-                    }
-                    return result;
-                }
-                ]);
+                this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
             }
 
@@ -214,9 +208,23 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (parent && (typeof parent['changeStep'] === 'function')) {
                     await parent.changeStep(event.user, event.data, this);
                 }
+                let result: any;
                 if (typeof super.runAction === 'function') {
-                    return await super.runAction(event);
+                    result = await super.runAction(event);
                 }
+                if (this.publishExternalEvent) {
+                    new ExternalEventChannel().publishMessage(
+                        ExternalMessageEvents.BLOCK_RUN_EVENTS,
+                        {
+                            uuid: this.uuid,
+                            blockType: this.blockType,
+                            blockTag: this.tag,
+                            data: event.data,
+                            result: result
+                        }
+                    )
+                }
+                return result;
             }
 
             /**
@@ -259,7 +267,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public updateDataState(user, state: any): boolean {
 
                 this.oldDataState[user.did] = this.currentDataState[user.did];
-                this.currentDataState[user.did] = {state};
+                this.currentDataState[user.did] = { state };
                 return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
                     strict: true
                 })
@@ -277,7 +285,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 })
             }
 
-            public setPolicyId(id:string): void {
+            public setPolicyId(id: string): void {
                 this.policyId = id;
             }
 
@@ -288,7 +296,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.policyInstance = policy;
             }
 
-            public setTopicId(id:string): void {
+            public setTopicId(id: string): void {
                 this.topicId = id;
             }
 
