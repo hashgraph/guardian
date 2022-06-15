@@ -177,7 +177,7 @@ profileAPIModule.__set__('_hedera_modules_1', {
         CreateDID: 'CreateDID'
     }
 });
-profileAPIModule.__set__('logger_helper_1', {
+profileAPIModule.__set__('common_1', {
     Logger: MockLogger
 });
 profileAPIModule.__set__('topicHelper_1', {

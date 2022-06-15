@@ -19,6 +19,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
     commonBlock: true,
+    publishExternalEvent: true,
     about: {
         label: 'Send',
         title: `Add 'Send' Block`,

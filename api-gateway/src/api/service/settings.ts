@@ -3,7 +3,7 @@ import { Guardians } from '@helpers/guardians';
 import { IPFS } from '@helpers/ipfs';
 import { Request, Response, Router } from 'express';
 import { CommonSettings, UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 
 /**
  * Settings route
@@ -33,7 +33,7 @@ settingsAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Requ
     try {
         const guardians = new Guardians();
         const ipfs = new IPFS();
-        const [guardiansSettings, ipfsClientSettings] =  await Promise.all([
+        const [guardiansSettings, ipfsClientSettings] = await Promise.all([
             guardians.getSettings(),
             ipfs.getSettings()
         ]);

@@ -77,7 +77,9 @@ export class SchemaConfigComponent implements OnInit {
 
     ngOnInit() {
         const type = this.route.snapshot.queryParams['type'];
+        const topic = this.route.snapshot.queryParams['topic'];
         this.system = type == 'system';
+        this.currentTopicPolicy = topic && topic != 'all' ? topic : '';
         this.loadProfile()
     }
 
@@ -105,10 +107,13 @@ export class SchemaConfigComponent implements OnInit {
                     this.policies.push(policy);
                 }
             }
+            
+            if (!this.policyNameByTopic[this.currentTopicPolicy]) {
+                this.currentTopicPolicy = undefined;
+            }
 
             this.pageIndex = 0;
             this.pageSize = 100;
-            this.currentTopicPolicy = undefined;
             this.loadSchemas();
         }, (error) => {
             this.loading = false;
@@ -137,6 +142,11 @@ export class SchemaConfigComponent implements OnInit {
 
     onFilter() {
         this.pageIndex = 0;
+        this.router.navigate(['/schemas'], {
+            queryParams: {
+                topic: this.currentTopicPolicy ? this.currentTopicPolicy : 'all'
+            }
+        });
         this.loadSchemas();
     }
 

@@ -17,6 +17,14 @@
 * [Security](getting-started/security.md)
 * [Reference Implementation](getting-started/reference-implementation.md)
 
+## Schema Flow
+
+* [Schema Demo](schema-flow/schema-demo.md)
+
+## Policy Flow
+
+* [Policy Demo](policy-flow/policy-demo.md)
+
 ## Demo Guide
 
 * [Demo Usage Guide](demo-guide/demo-usage-guide.md)
@@ -187,6 +195,10 @@
 ## External APIs
 
 * [Sends Data from External Source](external-apis/sends-data-from-external-source.md)
+
+## External events
+
+* [Listen to external event published by guardian](external-events/external-events.md)
 
 ## FAQs
 

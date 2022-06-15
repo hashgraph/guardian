@@ -2,7 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
-import { Schema, SchemaField } from '@guardian/interfaces';
+import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 
 /**
@@ -67,6 +67,8 @@ export class SchemaFormViewComponent implements OnInit {
                 type: field.type,
                 format: field.format,
                 pattern: field.pattern,
+                unit: field.unit,
+                unitSystem: field.unitSystem,
                 isInvalidType: false
             }
             if (!field.isArray && !field.isRef) {
@@ -135,5 +137,47 @@ export class SchemaFormViewComponent implements OnInit {
             result.push(item.list[i]);
         }
         return result;
+    }
+
+    isTime(item: SchemaField): boolean {
+        return item.type === 'string' && item.format === 'time';
+    }
+
+    isDate(item: SchemaField): boolean {
+        return item.type === 'string' && item.format === 'date';
+    }
+
+    isDateTime(item: SchemaField): boolean {
+        return item.type === 'string' && item.format === 'date-time';
+    }
+
+    isBoolean(item: SchemaField): boolean {
+        return item.type === 'boolean';
+    }
+
+    isIPFS(item: SchemaField): boolean {
+        return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+';
+    }
+
+    isInput(item: SchemaField): boolean {
+        return (
+            (
+                item.type === 'string' ||
+                item.type === 'number' ||
+                item.type === 'integer'
+            ) && (
+                item.format !== 'date' &&
+                item.format !== 'time' &&
+                item.format !== 'date-time'
+            )
+        );
+    }
+
+    isPrefix(item: SchemaField): boolean {
+        return item.unitSystem === UnitSystem.Prefix;
+    }
+
+    isPostfix(item: SchemaField): boolean {
+        return item.unitSystem === UnitSystem.Postfix;
     }
 }

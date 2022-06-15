@@ -22,6 +22,7 @@ export class SchemaDialog {
     topicId: any;
     policies: any[];
     system: boolean = false;
+    valid: boolean = true;
 
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
@@ -52,5 +53,9 @@ export class SchemaDialog {
     onCreate() {
         const schema = this.schemaControl?.getSchema();
         this.dialogRef.close(schema);
+    }
+
+    onChangeForm(schemaControl: SchemaConfigurationComponent) {
+        this.valid = schemaControl.isValid();
     }
 }

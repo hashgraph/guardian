@@ -1,5 +1,5 @@
 {
-    "watch": ["./dist", "../interfaces/dist", "../common/dist", "../logger-helper/dist"],
+    "watch": ["./dist", "../interfaces/dist", "../common/dist"],
     "delay": 2500,
     "ext": "ts, js",
     "exec": "node dist/index.js"

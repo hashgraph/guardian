@@ -3,7 +3,7 @@ import { AuthenticatedRequest } from '@auth/auth.interface';
 import { UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policyEngine';
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 
 export const policyAPI = Router();
 

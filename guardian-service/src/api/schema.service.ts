@@ -13,13 +13,12 @@ import path from 'path';
 import { readJSON } from 'fs-extra';
 import { getMongoRepository, MongoRepository } from 'typeorm';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { Logger } from '@guardian/logger-helper';
 import { MessageAction, MessageServer, MessageType, SchemaMessage, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 
 export const schemaCache = {};
 
@@ -93,7 +92,7 @@ const loadSchema = async function (messageId: string, owner: string) {
         }
         const messageServer = new MessageServer();
         log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
-        const message = await messageServer.getMessage<SchemaMessage>(messageId);
+        const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
         log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
         const schemaToImport: any = {
             uuid: message.uuid,
@@ -640,7 +639,7 @@ export const schemaAPI = async function (
                 const schema = await loadSchema(messageId, null);
                 result.push(schema);
             }
-
+            
             const messageServer = new MessageServer();
             const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
             const anotherSchemas: SchemaMessage[] = [];

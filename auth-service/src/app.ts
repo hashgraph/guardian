@@ -2,8 +2,7 @@ import { createConnection } from 'typeorm';
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/accountService';
 import { WalletService } from '@api/walletService';
-import { Logger } from '@guardian/logger-helper';
-import { ApplicationState, MessageBrokerChannel } from '@guardian/common';
+import { ApplicationState, MessageBrokerChannel, Logger } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([

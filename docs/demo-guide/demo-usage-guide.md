@@ -4,8 +4,9 @@
 
 This folder contains sample files that are referenced in the Demo Usage Guide
 
-1. Sample Schema for iRec Policy (`iRec_Application_Details.zip`)
-2. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
+1. Sample Schema for iRec Policy (`iREC Schema.zip`)
+2. Sample of iREC Policy (`IRec Policy 3.zip`)
+3. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
 
 1.The Guardian reference implementation comes with two predefined users:
 
@@ -24,9 +25,9 @@ There is also a _Custom Role_ which is called _User_. This role can be used to c
 **Note**: Please wait for the Initialization Process to be completed.
 {% endhint %}
 
-3\. You'll now be prompted to configure your Root Authority account. Press the **Generate** button to generate a Hedera Operator ID and an Operator Key and enter the name of your Root Authority. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
+3\. You'll now be prompted to configure your Root Authority account. Enter the name field and then Press the **Generate** button to generate a Hedera Operator ID and an Operator Key. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/DUG\_3.png)
+![](../.gitbook/assets/iREC\_4.1.png)
 
 **NOTE**
 
