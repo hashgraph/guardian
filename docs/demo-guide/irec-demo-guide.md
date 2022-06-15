@@ -18,7 +18,7 @@ This folder contains a sample file that is referenced in the Demo Guide&#x20;
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
 ```
-1650456996.975798214 (new iREC Policy)
+1655245376.366881359 (new iREC Policy)
 ```
 
 ![](../.gitbook/assets/iREC\_1.png)
