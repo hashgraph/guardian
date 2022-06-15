@@ -1,6 +1,6 @@
-# Set Relationships Block
+# setRelationshipsBlock
 
-This Block contains **document source blocks** and **set relationships** for input document from **source blocks** documents (messageId’s). It doesn’t save document to database.
+This Block contains DocumentsSourceAddOn and **set relationships** for input document from DocumentsSourceAddOn documents (messageId’s). It doesn’t save document to database.
 
 ### Properties
 
