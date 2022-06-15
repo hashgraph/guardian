@@ -23,7 +23,7 @@ export abstract class Message {
     public readonly action: MessageAction;
     public readonly type: MessageType;
 
-    protected _responseType: "json" | "raw" | "str";
+    protected _responseType: 'json' | 'raw' | 'str';
     protected _id: string;
     protected _status: MessageStatus;
     protected _revokeMessage: string;
@@ -37,7 +37,7 @@ export abstract class Message {
     constructor(action: MessageAction, type: MessageType) {
         this.action = action;
         this.type = type;
-        this._responseType = "str";
+        this._responseType = 'str';
         this._id = HederaUtils.randomUUID();
         this._status = MessageStatus.ISSUE;
     }

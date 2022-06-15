@@ -1,8 +1,8 @@
 import { VpDocument } from '../vcjs/vp-document';
 import { Message } from './message';
-import { IURL, UrlType } from "./url.interface";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { IURL, UrlType } from './url.interface';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 import { MessageBody, VpMessageBody } from './message-body.interface';
 
 export class VPMessage extends Message {

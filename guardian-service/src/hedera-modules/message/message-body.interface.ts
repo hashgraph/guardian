@@ -1,6 +1,6 @@
-import { MessageStatus } from "./message";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { MessageStatus } from './message';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 
 export interface MessageBody {
     id: string;

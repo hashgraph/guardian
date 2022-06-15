@@ -1,8 +1,8 @@
 import { VcDocument } from './../vcjs/vc-document';
 import { Message } from './message';
-import { IURL, UrlType } from "./url.interface";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { IURL, UrlType } from './url.interface';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 import { MessageBody, VcMessageBody } from './message-body.interface';
 
 export class VCMessage extends Message {

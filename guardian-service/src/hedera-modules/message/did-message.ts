@@ -1,8 +1,8 @@
 import { DIDDocument } from './../vcjs/did-document';
 import { Message } from './message';
-import { IURL } from "./url.interface";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { IURL } from './url.interface';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 import { DidMessageBody, MessageBody } from './message-body.interface';
 
 export class DIDMessage extends Message {

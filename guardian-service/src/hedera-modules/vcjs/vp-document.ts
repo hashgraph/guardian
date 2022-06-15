@@ -1,10 +1,10 @@
 import { Hashing } from '../hashing';
-import { IVP } from "@guardian/interfaces";
-import { VcDocument } from "./vc-document";
-import { Issuer } from "./issuer";
-import { DIDDocument } from "./did-document";
+import { IVP } from '@guardian/interfaces';
+import { VcDocument } from './vc-document';
+import { Issuer } from './issuer';
+import { DIDDocument } from './did-document';
 import { TimestampUtils } from '../timestamp-utils';
-import { Timestamp } from "@hashgraph/sdk";
+import { Timestamp } from '@hashgraph/sdk';
 
 export class VpDocument {
     public static readonly FIRST_CONTEXT_ENTRY = 'https://www.w3.org/2018/credentials/v1';

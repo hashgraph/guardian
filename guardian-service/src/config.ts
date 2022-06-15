@@ -1,7 +1,7 @@
 import moduleAlias from 'module-alias';
 import dotenv from 'dotenv';
 import 'reflect-metadata';
-import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 moduleAlias.addAliases({
     "@api": __dirname + "/api",
