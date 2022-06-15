@@ -47,6 +47,24 @@
             <input type="checkbox" [(ngModel)]="block.viewHistory" [readonly]="readonly">
         </td>
     </tr>
+    <tr class="propRow" *ngIf="block.schema">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Order Field</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.orderField" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow" *ngIf="block.schema">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Order Direction</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.orderDirection" [disabled]="readonly">
+                <mat-option value=""></mat-option>
+                <mat-option value="ASC">ASC</mat-option>
+                <mat-option value="DESC">DESC</mat-option>
+            </mat-select>
+        </td>
+    </tr>
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'filtersGroup')" [attr.collapse]="propHidden.filtersGroup">

@@ -1,4 +1,4 @@
-import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
 import { IAuthUser } from '@auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyComponentsUtils } from '../policy-components-utils';
@@ -10,15 +10,18 @@ import { Message, MessageServer } from '@hedera-modules';
 import { VcDocument } from '@entity/vc-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { DocumentState } from '@entity/document-state';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { VpDocument } from '@entity/vp-document';
 import { DidDocument } from '@entity/did-document';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+
+export const RevokedStatus = 'Revoked';
 
 /**
  * Revoke document action with UI
  */
- @EventBlock({
+ @BasicBlock({
     blockType: 'revokeBlock',
     about: {
         label: 'Revoke Document',
@@ -26,7 +29,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
         post: true,
         get: true,
         children: ChildrenType.None,
-        control: ControlType.UI,
+        control: ControlType.Server,
         input: [
             PolicyInputEventType.RunEvent
         ],
@@ -105,25 +108,16 @@ export class RevokeBlock {
         return vcDocuments.concat(vpDocuments).concat(didDocuments);
     }
 
-    async getData(user: IAuthUser): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const data: any = {
-            id: ref.uuid,
-            blockType: ref.blockType,
-            type: ref.options.type,
-            uiMetaData: ref.options.uiMetaData,
-            user: ref.options.user
-        }
-        return data;
-    }
 
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent]
     })
-    async setData(user: IAuthUser, data: any): Promise<any> {
+    @CatchErrors()
+    async runAction(event: IPolicyEvent<any>): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const uiMetaData = ref.options.uiMetaData;
-        const hederaAccount = await this.users.getHederaAccount(user.did);
+        const data = event.data.data;
+        const hederaAccount = await this.users.getHederaAccount(event.user.did);
         const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey);
         const policyTopics = await PolicyUtils.getPolicyTopics(ref.policyId);
         const policyTopicsMessages = [];
@@ -145,18 +139,20 @@ export class RevokeBlock {
                     policyTopicMessage, 
                     messageServer, 
                     ref, 
-                    data.revokeMessage, 
+                    data.comment, 
                     relatedMessage.parentIds
                 );
             }
         }
         const documents = await this.findDocumentByMessageIds(relatedMessages.map(item => item.id));
         for (const doc of documents) {
-            doc.revokeMessage = data.revokeMessage;
+            doc.option = doc.option || {};
+            doc.option.status = RevokedStatus;
+            doc.comment = data.comment;
         }
         if (uiMetaData && uiMetaData.updatePrevDoc && data.relationships) {
             const prevDocs = await this.findDocumentByMessageIds(data.relationships);
-            const prevDocument = prevDocs[0];
+            const prevDocument = prevDocs[prevDocs.length-1];
             if (prevDocument) {
                 prevDocument.option.status = uiMetaData.prevDocStatus;
                 await getMongoRepository(VcDocument).update(prevDocument.id, prevDocument);
@@ -170,7 +166,7 @@ export class RevokeBlock {
         const state = {
             data: documents
         };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {

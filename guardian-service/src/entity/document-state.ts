@@ -13,4 +13,7 @@ export class DocumentState {
 
     @Column()
     status: string;
+
+    @Column()
+    reason: string;
 }

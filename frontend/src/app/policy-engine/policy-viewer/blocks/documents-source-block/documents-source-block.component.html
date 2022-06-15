@@ -53,6 +53,7 @@
                         <div class="timeline-container">
                             <div *ngFor="let historyElem of element.history" class="timeline-item" [attr.date-is]='historyElem.created'>
                                 <h1>{{historyElem.status}}</h1>
+                                <p>{{historyElem.reason}}</p>
                             </div>
                         </div>
                     </div>

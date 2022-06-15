@@ -69,17 +69,10 @@
     border-radius: 24px !important;
     padding: 8px 20px !important;
     box-sizing: border-box;
+    font-size: 20px;
 }
 
 .content {
-    flex-wrap: nowrap;
     display: flex;
-}
-
-.content-dropdown {
-    flex-wrap: nowrap;
-    display: flex;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    padding: 1px;
+    justify-content: center;
 }

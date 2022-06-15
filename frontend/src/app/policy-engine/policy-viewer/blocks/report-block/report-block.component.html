@@ -116,9 +116,9 @@
                                 
                                 {{item.title}}
                             </div>
-                            <div *ngIf="item.document && item.document.revokeMessage" class="revoke-container">
+                            <div *ngIf="item.document && item.document.comment" class="revoke-container">
                                 <mat-icon class="revoke-icon">warning</mat-icon>
-                                <b>Revoked with reason: "{{item.document.revokeMessage}}"</b>
+                                <b>Revoked with reason: "{{item.document.comment}}"</b>
                             </div>
                             <div class="chain-id">
                                 {{item.description}}

@@ -110,7 +110,7 @@ export class PolicyUtils {
             item.document = row.document;
             item.messageId = row.messageId || item.messageId;
             item.topicId = row.topicId || item.topicId;
-            item.revokeMessage = row.revokeMessage;
+            item.comment = row.comment;
             item.relationships = row.relationships;
             await getMongoRepository(VcDocumentCollection).update(item.id, item);
         } else {
@@ -121,7 +121,8 @@ export class PolicyUtils {
         if (updateStatus) {
             docStatusRepo.save({
                 documentId: item.id,
-                status: item.option.status
+                status: item.option.status,
+                reason: item.comment
             });
         }
         return item;

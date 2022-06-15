@@ -51,7 +51,7 @@ export class VpDocument implements IVPDocument {
     option?: any;
 
     @Column()
-    revokeMessage?: string;
+    comment?: string;
 
     @BeforeInsert()
     setDefaults() {

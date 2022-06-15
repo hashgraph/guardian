@@ -129,7 +129,9 @@ tr.detailed-row {
     color: rgba(0, 0, 0, 0.7);
     border-left: 2px solid rgba(0, 0, 0, 0.3);
 }
-
+.timeline-item p {
+    font-size: 1rem;
+}
 .timeline-item::before {
     content: attr(date-is);
     position: absolute;
