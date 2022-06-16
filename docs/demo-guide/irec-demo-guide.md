@@ -1,15 +1,15 @@
 # iREC Demo UI Guide
 
-This folder contains a sample file that is referenced in the Demo Guide&#x20;
+This folder contains a sample file that is referenced in the Demo Guide
 
-1. New iREC Policy ([iRec Policy 3.zip)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)&#x20;
+1. New iREC Policy ([iRec Policy 3.zip)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 
-1.The Guardian reference implementation comes with two predefined users:&#x20;
+1.The Guardian reference implementation comes with two predefined users:
 
-1. Issuer (Standard Registry)&#x20;
-2. Participant&#x20;
+1. Issuer (Standard Registry)
+2. Participant
 
-2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/). Typically, the way we start the reference implementation demonstration is by logging in as an Issuer. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Issuer user.&#x20;
+2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/). Typically, the way we start the reference implementation demonstration is by logging in as an Issuer. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Issuer user.
 
 3\. You will now be prompted to configure your Issuer account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
@@ -23,13 +23,11 @@ This folder contains a sample file that is referenced in the Demo Guide&#x20;
 
 ![](../.gitbook/assets/iREC\_1.png)
 
-![](<../.gitbook/assets/iREC\_2.png)
-
 Once Policy is imported successfully, click on "Publish" button to publish the policy.
 
-5\. Click on Issuer’s profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select Registrant.&#x20;
+5\. Click on Issuer’s profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select Registrant.
 
-6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click the Open button to the right of the iREC Policy, the Issuer created. This is where the custom user will be able to assign the role that was created by Issuer during the workflow creation process. In our case, we created the custom role of Registrant so the user will need to select the Registrant role from the drop down.&#x20;
+6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click the Open button to the right of the iREC Policy, the Issuer created. This is where the custom user will be able to assign the role that was created by Issuer during the workflow creation process. In our case, we created the custom role of Registrant so the user will need to select the Registrant role from the drop down.
 
 ![](../.gitbook/assets/iREC\_3.png)
 
@@ -37,9 +35,9 @@ After selecting the Registrant role, we will see the form that is based on the i
 
 ![](../.gitbook/assets/iREC\_4.png)
 
-Once Submitted, Registrant waits for the approval of the application by Issuer. &#x20;
+Once Submitted, Registrant waits for the approval of the application by Issuer.
 
-7\. Registrant associates the Token by going to Profile tab and clicking on Associated icon.&#x20;
+7\. Registrant associates the Token by going to Profile tab and clicking on Associated icon.
 
 ![](../.gitbook/assets/iREC\_5.png)
 
@@ -91,11 +89,10 @@ After submitting the data, the Registrant is waiting for approval from the Issue
 
 16\. We can also check Token History by logging back as Issuer.
 
-![](<../.gitbook/assets/iREC\_18.png>)
+![](../.gitbook/assets/iREC\_18.png)
 
-We have the option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.&#x20;
+We have the option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
 
-The Trust Chain view displays essential elements that can be publicly discovered. Elements include token information, Policy information, and all the essential information regarding the Verifiable Credentials that make up the Verifiable Presentation. You will notice "Cards" on the bottom of the screen. Those cards are Verifiable Credentials displayed in chronological order.&#x20;
+The Trust Chain view displays essential elements that can be publicly discovered. Elements include token information, Policy information, and all the essential information regarding the Verifiable Credentials that make up the Verifiable Presentation. You will notice "Cards" on the bottom of the screen. Those cards are Verifiable Credentials displayed in chronological order.
 
 ![](../.gitbook/assets/iREC\_19.png)
-
