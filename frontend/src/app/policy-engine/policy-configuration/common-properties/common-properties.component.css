@@ -162,6 +162,16 @@
     width: 125px;
 }
 
+.subRow-3 .cellName {
+    padding-left: 60px;
+    width: 105px;
+}
+
+.subRow-4 .cellName {
+    padding-left: 80px;
+    width: 85px;
+}
+
 .cellTitle {
     font-weight: 500;
 }

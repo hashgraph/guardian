@@ -4,7 +4,7 @@ import { UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 
 /**
  * Audit route

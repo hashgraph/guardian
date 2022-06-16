@@ -1,7 +1,7 @@
 import { Message } from './message';
-import { IURL, UrlType } from "./url.interface";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { IURL, UrlType } from './url.interface';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 import { MessageBody, TopicMessageBody } from './message-body.interface';
 
 export class TopicMessage extends Message {

@@ -1,7 +1,7 @@
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Request, Response, Router } from 'express';
 import { IPageParameters, UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 
 /**
  * Logger route

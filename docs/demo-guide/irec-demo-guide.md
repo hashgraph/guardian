@@ -2,7 +2,7 @@
 
 This folder contains a sample file that is referenced in the Demo Guide&#x20;
 
-1. New iREC Policy ([iRec Policy 2.zip)](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iRec%20Policy%202.zip)&#x20;
+1. New iREC Policy ([iRec Policy 3.zip)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)&#x20;
 
 1.The Guardian reference implementation comes with two predefined users:&#x20;
 
@@ -13,12 +13,12 @@ This folder contains a sample file that is referenced in the Demo Guide&#x20;
 
 3\. You will now be prompted to configure your Issuer account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](<../.gitbook/assets/Verra\_2 (1).png>)
+![](../.gitbook/assets/iREC\_4.1.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
 ```
-1650456996.975798214 (new iREC Policy)
+1655293847.166673000 (new iREC Policy)
 ```
 
 ![](../.gitbook/assets/iREC\_1.png)

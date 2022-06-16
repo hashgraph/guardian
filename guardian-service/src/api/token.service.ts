@@ -1,13 +1,11 @@
 import { Token } from '@entity/token';
-import { Logger } from '@guardian/logger-helper';
 import { MongoRepository } from 'typeorm';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { IAuthUser } from '@auth/auth.interface';
-import { PrivateKey } from '@hashgraph/sdk';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, IToken } from '@guardian/interfaces';
 
 function getTokenInfo(info: any, token: any) {

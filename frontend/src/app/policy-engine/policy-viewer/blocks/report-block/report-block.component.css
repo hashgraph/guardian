@@ -411,3 +411,13 @@ a.open-vp {
     max-width: 30px;
     max-height: 30px;
 }
+
+.revoke-container {
+    color: red;
+}
+
+.revoke-container .revoke-icon {
+    position: absolute;
+    left: 16px;
+    top: 37px;
+}

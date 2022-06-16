@@ -1,4 +1,4 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
@@ -43,7 +43,7 @@ export class SwitchBlock {
         if (Array.isArray(docs)) {
             const scopes: any[] = [];
             for (let doc of docs) {
-                if (doc.document) {
+                if (doc.document && doc.document.type.includes('VerifiableCredential')) {
                     const element = VcDocument.fromJsonTree(doc.document);
                     const scope = PolicyUtils.getVCScope(element);
                     scopes.push(scope);
@@ -82,6 +82,9 @@ export class SwitchBlock {
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
+     @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 

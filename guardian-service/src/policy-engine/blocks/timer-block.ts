@@ -16,6 +16,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 @BasicBlock({
     blockType: 'timerBlock',
     commonBlock: true,
+    publishExternalEvent: true,
     about: {
         label: 'Timer',
         title: `Add 'Timer' Block`,

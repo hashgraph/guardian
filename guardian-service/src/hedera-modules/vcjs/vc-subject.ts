@@ -1,9 +1,9 @@
-import { ICredentialSubject } from "@guardian/interfaces";
+import { ICredentialSubject } from '@guardian/interfaces';
 
 export class VcSubject {
     public static readonly CREDENTIAL_ID: string = 'id';
     public static readonly CREDENTIAL_TYPE: string = 'type';
-    public static readonly CONTEXT: string = "@context";
+    public static readonly CONTEXT: string = '@context';
 
     protected id: string;
     protected context: string[];

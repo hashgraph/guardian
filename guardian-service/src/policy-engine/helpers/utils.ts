@@ -8,9 +8,11 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { getMongoRepository } from "typeorm";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { IAuthUser } from "@auth/auth.interface";
-import { SchemaEntity, TopicType } from "@guardian/interfaces";
+import { DocumentStatus, ExternalMessageEvents, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { Topic } from "@entity/topic";
 import { TopicHelper } from "@helpers/topicHelper";
+import { DocumentState } from "@entity/document-state";
+import { ExternalEventChannel } from "@guardian/common";
 
 export enum DataTypes {
     MRV = 'mrv',
@@ -85,8 +87,18 @@ export class PolicyUtils {
     }
 
     public static async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
-        let item = await getMongoRepository(VcDocumentCollection).findOne({ hash: row.hash });
+        let item = await getMongoRepository(VcDocumentCollection).findOne({
+            where: {
+                hash: { $eq: row.hash },
+                hederaStatus: {$not: { $eq: DocumentStatus.REVOKE }}
+            }
+        });
+        const docStatusRepo = getMongoRepository(DocumentState);
+        let updateStatus = false;
         if (item) {
+            if (row.option?.status) {
+                updateStatus = item.option?.status !== row.option.status
+            }
             item.owner = row.owner;
             item.assign = row.assign;
             item.option = row.option;
@@ -98,12 +110,22 @@ export class PolicyUtils {
             item.document = row.document;
             item.messageId = row.messageId || item.messageId;
             item.topicId = row.topicId || item.topicId;
+            item.comment = row.comment;
+            item.relationships = row.relationships;
             await getMongoRepository(VcDocumentCollection).update(item.id, item);
-            return item;
         } else {
             item = getMongoRepository(VcDocumentCollection).create(row);
-            return await getMongoRepository(VcDocumentCollection).save(item);
+            updateStatus = !!item.option?.status;
+            await getMongoRepository(VcDocumentCollection).save(item);
         }
+        if (updateStatus) {
+            docStatusRepo.save({
+                documentId: item.id,
+                status: item.option.status,
+                reason: item.comment
+            });
+        }
+        return item;
     }
 
     public static async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
@@ -120,8 +142,7 @@ export class PolicyUtils {
     }
 
     public static async updateVPRecord(row: VpDocumentCollection): Promise<VpDocumentCollection> {
-        const doc = getMongoRepository(VpDocumentCollection).create(row);
-        return await getMongoRepository(VpDocumentCollection).save(doc);
+        return await getMongoRepository(VpDocumentCollection).save(row);
     }
 
     public static async saveVP(row: VpDocumentCollection): Promise<VpDocumentCollection> {
@@ -174,6 +195,7 @@ export class PolicyUtils {
             await client.mint(tokenId, supplyKey, tokenValue, uuid);
             await client.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
         }
+        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid })
         console.log('Mint: End');
     }
 
@@ -250,6 +272,13 @@ export class PolicyUtils {
             throw `Topic does not exist`;
         }
         return topic;
+    }
+
+    public static async getPolicyTopics(policyId: string): Promise<Topic[]> {
+        const topics = await getMongoRepository(Topic).find({
+            policyId: policyId
+        })
+        return topics;
     }
 
     public static getSubjectId(data: any): string {

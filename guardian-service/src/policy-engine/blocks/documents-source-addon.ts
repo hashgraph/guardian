@@ -12,6 +12,7 @@ import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
+import { DocumentState } from '@entity/document-state';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @SourceAddon({
@@ -88,18 +89,29 @@ export class DocumentsSourceAddon {
             Object.assign(filters, globalFilters);
         }
 
+        const filtersWithOrder: any = { where: filters };
+        if (ref.options.orderDirection) {
+            filtersWithOrder.order = {};
+            if (ref.options.orderField) {
+                filtersWithOrder.order[ref.options.orderField] = ref.options.createdOrderDirection;
+            } else {
+                filtersWithOrder.order['createDate'] = ref.options.createdOrderDirection;
+            }
+            
+        }
+
         let data: any[];
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(VcDocumentCollection).find(filters);
+                data = await getMongoRepository(VcDocumentCollection).find(filtersWithOrder);
                 break;
             case 'did-documents':
-                data = await getMongoRepository(DidDocumentCollection).find(filters);
+                data = await getMongoRepository(DidDocumentCollection).find(filtersWithOrder);
                 break;
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(VpDocumentCollection).find(filters);
+                data = await getMongoRepository(VpDocumentCollection).find(filtersWithOrder);
                 break;
             case 'root-authorities':
                 data = await this.users.getAllStandardRegistryAccounts() as IAuthUser[];
@@ -107,7 +119,7 @@ export class DocumentsSourceAddon {
 
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(ApprovalDocumentCollection).find(filters);
+                data = await getMongoRepository(ApprovalDocumentCollection).find(filtersWithOrder);
                 break;
 
             case 'source':
@@ -118,7 +130,24 @@ export class DocumentsSourceAddon {
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
+        const documentState = getMongoRepository(DocumentState);
         for (let i = 0; i < data.length; i++) {
+            if (ref.options.viewHistory) {
+                data[i].history = (await documentState.find({
+                    where: {
+                        documentId: data[i].id
+                    },
+                    order: {
+                        'created': 'DESC'
+                    }
+                })).map(item => {
+                    return {
+                        status: item.status,
+                        created: new Date(item.created).toLocaleString(),
+                        reason: item.reason
+                    }
+                });
+            }
             data[i].__sourceTag__ = ref.tag;
         }
 

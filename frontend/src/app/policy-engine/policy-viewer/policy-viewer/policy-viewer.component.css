@@ -153,6 +153,7 @@ a.go-back-link mat-icon {
     padding-left: 24px;
 }
 
+.table-container .mat-column-schemas,
 .table-container .mat-column-topic,
 .table-container .mat-column-version,
 .table-container .mat-column-description,

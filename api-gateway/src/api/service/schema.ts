@@ -4,7 +4,7 @@ import { ISchema, UserRole, SchemaHelper, SchemaEntity } from '@guardian/interfa
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policyEngine';
 
 export async function parseZipFile(zipFile: any): Promise<any[]> {

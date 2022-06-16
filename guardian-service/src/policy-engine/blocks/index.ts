@@ -23,3 +23,6 @@ export { RequestVcDocumentBlock } from './request-vc-document-block';
 export { SendToGuardianBlock } from './send-to-guardian-block';
 export { SwitchBlock } from './switch-block';
 export { TimerBlock } from './timer-block';
+export { RevokeBlock } from './revoke-block';
+export { SetRelationshipsBlock } from './set-relationships-block';
+export { ButtonBlock } from './button-block';

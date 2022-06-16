@@ -19,12 +19,11 @@ import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
-import { Logger } from '@guardian/logger-helper';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
-import { Policy } from '@entity/policy';
-import { MessageBrokerChannel, ApplicationState } from '@guardian/common';
+import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
+import { Environment, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 
 Promise.all([
     createConnection({
@@ -41,16 +40,21 @@ Promise.all([
             entitiesDir: 'dist/entity'
         }
     }),
-    MessageBrokerChannel.connect("GUARDIANS_SERVICE")
+    MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
     const [db, cn] = values;
-    const channel = new MessageBrokerChannel(cn, "guardians");
+    const channel = new MessageBrokerChannel(cn, 'guardians');
     const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
     state.updateState(ApplicationStates.STARTED);
 
+    TransactionLogger.setLogLevel(TransactionLogLvl.NONE);
+    Environment.setNetwork(process.env.HEDERA_NET)
+
     IPFS.setChannel(channel);
     new Logger().setChannel(channel);
+    new ExternalEventChannel().setChannel(channel);
+
     new Wallet().setChannel(channel);
     new Users().setChannel(channel);
 

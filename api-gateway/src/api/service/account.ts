@@ -3,7 +3,7 @@ import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
 import { UserRole } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 
 /**
  * User account route

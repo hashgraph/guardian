@@ -1,0 +1,19 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow"
+        [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Update previous document status</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.uiMetaData.updatePrevDoc" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow"
+        [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Status value</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.uiMetaData.prevDocStatus" [readonly]="readonly">
+        </td>
+    </tr>
+</table>

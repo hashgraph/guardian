@@ -1,10 +1,9 @@
 import { Guardians } from '@helpers/guardians';
-import { KeyType, Wallet } from '@helpers/wallet';
 import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Request, Response, Router } from 'express';
 import { ITokenInfo, UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/logger-helper';
+import { Logger } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policyEngine';
 import { findAllEntities } from '@helpers/utils';
 

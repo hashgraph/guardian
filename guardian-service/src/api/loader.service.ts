@@ -1,10 +1,9 @@
 import { Schema } from '@entity/schema';
 import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';
-import { Logger } from '@guardian/logger-helper';
 import { DidRootKey } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**

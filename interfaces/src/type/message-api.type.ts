@@ -53,3 +53,10 @@ export enum MessageAPI {
     ACTIVE_SCHEMA = 'ACTIVE_SCHEMA',
     GET_SYSTEM_SCHEMA = 'GET_SYSTEM_SCHEMA'
 }
+
+export enum ExternalMessageEvents {
+    IPFS_ADDED_FILE = "external-events.ipfs_added_file",
+    TOKEN_MINTED = 'external-events.token_minted',
+    ERROR_LOG = 'external-events.error_logs',
+    BLOCK_RUN_EVENTS = 'external-events.block_run_action_event',
+}

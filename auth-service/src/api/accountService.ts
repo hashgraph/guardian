@@ -4,8 +4,7 @@ import { getMongoRepository } from 'typeorm';
 import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
-import { Logger } from '@guardian/logger-helper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import {
     AuthEvents, UserRole,
     IGetUserByTokenMessage,

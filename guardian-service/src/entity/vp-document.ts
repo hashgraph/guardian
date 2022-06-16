@@ -47,6 +47,12 @@ export class VpDocument implements IVPDocument {
     @Column()
     relationships: string[];
 
+    @Column()
+    option?: any;
+
+    @Column()
+    comment?: string;
+
     @BeforeInsert()
     setDefaults() {
         this.status = this.status || DocumentStatus.NEW;

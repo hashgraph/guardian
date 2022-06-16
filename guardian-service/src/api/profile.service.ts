@@ -7,7 +7,6 @@ import {
     SchemaHelper,
     TopicType
 } from '@guardian/interfaces';
-import { Logger } from '@guardian/logger-helper';
 import { VcHelper } from '@helpers/vcHelper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
@@ -26,7 +25,7 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 
 /**

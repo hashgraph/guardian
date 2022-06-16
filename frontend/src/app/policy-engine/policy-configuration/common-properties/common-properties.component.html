@@ -379,7 +379,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Actor</td>
                             <td class="propRowCell remove-cell">
-                                <mat-select [value]="item.actor" (selectionChange)="onSave()"
+                                <mat-select [(ngModel)]="item.actor" (selectionChange)="onSave()"
                                     [disabled]="readonly">
                                     <mat-option value="">Event Initiator</mat-option>
                                     <mat-option value="owner">Document Owner</mat-option>

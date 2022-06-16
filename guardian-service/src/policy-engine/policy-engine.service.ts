@@ -30,16 +30,15 @@ import { PolicyImportExportHelper } from './helpers/policy-import-export-helper'
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { Logger } from '@guardian/logger-helper';
 import { Policy } from '@entity/policy';
-import { getConnection, getMongoRepository, ObjectID } from 'typeorm';
+import { getMongoRepository } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topicHelper';
-import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse, Logger } from '@guardian/common';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
 
@@ -114,6 +113,7 @@ export class PolicyEngineService {
 
     private async createPolicy(data: Policy, owner: string): Promise<Policy> {
         const logger = new Logger();
+        logger.info('Create Policy', ['GUARDIAN_SERVICE']);
         const model = getMongoRepository(Policy).create(data as DeepPartial<Policy>);
         if (!model.config) {
             model.config = {
@@ -151,6 +151,7 @@ export class PolicyEngineService {
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await getMongoRepository(Topic).findOne({ owner: owner, type: TopicType.UserTopic });
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+
             const topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: model.name || TopicType.PolicyTopic,
@@ -160,9 +161,6 @@ export class PolicyEngineService {
                 policyUUID: null
             });
             model.topicId = topic.topicId;
-
-            let id = new ObjectID();
-            id.toString();
 
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);

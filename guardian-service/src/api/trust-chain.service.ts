@@ -6,14 +6,13 @@ import {
     MessageAPI,
     SchemaEntity
 } from '@guardian/interfaces';
-import { Logger } from '@guardian/logger-helper';
 import { MongoRepository } from 'typeorm';
 import {
     VcDocument as HVcDocument,
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
@@ -171,7 +170,7 @@ export const trustChainAPI = async function (
 
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
-                const standardRegistry = await vcDocumentRepository.findOne({
+                const standardRegistries = await vcDocumentRepository.find({
                     where: {
                         type: { $eq: SchemaEntity.STANDARD_REGISTRY },
                         owner: { $eq: issuer }
@@ -189,7 +188,7 @@ export const trustChainAPI = async function (
                         tag: null
                     });
                 }
-                if (standardRegistry) {
+                for (let standardRegistry of standardRegistries) {
                     chain.push({
                         type: 'VC',
                         id: standardRegistry.hash,
