@@ -2,13 +2,13 @@
 
 An “approve\_page” needs a document source to approve a document. Therefore, we are adding a document source below the “approve\_page” by clicking on the “Documents” button in the top navigation bar.
 
-The “approve\_documents\_grid” has the permission for the Root Authority, must be active by default is of data type “approve.”
+The “approve\_documents\_grid” has the permission for the Standard Registry, must be active by default is of data type “approve.”
 
 In contrast to the installer case where we create documents and send them for approval, we have no dependencies on the incoming documents. We take account of this by adding the “save\_new\_approve\_documents” dependency.
 
 Next, we add the required custom UI fields on the approval UI form. Note that since this is a general approval form we do not have to specify a schema or an entity type for the UI.
 
-![](../.gitbook/assets/PW\_25.png)
+![](../.gitbook/assets/PW\_image\_26.png)
 
 Below are the screenshots of the field inputs
 
@@ -25,7 +25,7 @@ Below are the screenshots of the field inputs
 **Programmatically this workflow step looks like this:**
 
 ```
-        // Grid listing VCs of the Installers, which require approval from the RootAuthority.
+        // Grid listing VCs of the Installers, which require approval from the Standard Registry.
         {
           "tag": "approve_documents_grid",
           "defaultActive": true,

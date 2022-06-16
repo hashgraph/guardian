@@ -297,9 +297,9 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (6) (1).png>)
+![](<../.gitbook/assets/image 1.png>)
 
-## 2. Login as a Root Authority
+## 2. Login as a Standard Registry
 
 ### 2.1 Request the list of policies.
 
@@ -473,7 +473,7 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 
 ![](../.gitbook/assets/API\_7.png)
 
-![](<../.gitbook/assets/image (2) (1).png>)
+![](<../.gitbook/assets/image 2.png>)
 
 ## 3. Login as the User
 
@@ -701,7 +701,7 @@ capacity
 
 ![](../.gitbook/assets/Sensor.png)
 
-![](../.gitbook/assets/image.png)
+![](../.gitbook/assets/image 3.png)
 
 ### 3.4 Refresh the Blocks
 
@@ -717,7 +717,7 @@ record in the grid (data[0])
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image (15) (1).png>)
+![](<../.gitbook/assets/image 4.png>)
 
 ### 3.6 Sample MRV Sender Data
 

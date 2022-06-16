@@ -142,18 +142,18 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                 let schema: SchemaCollection = null;
 
                 schema = await getMongoRepository(SchemaCollection).findOne({
-                    entity: SchemaEntity.ROOT_AUTHORITY,
+                    entity: SchemaEntity.STANDARD_REGISTRY,
                     readonly: true,
                     topicId: topic.topicId
                 });
                 if (!schema) {
                     schema = await getMongoRepository(SchemaCollection).findOne({
-                        entity: SchemaEntity.ROOT_AUTHORITY,
+                        entity: SchemaEntity.STANDARD_REGISTRY,
                         system: true,
                         active: true
                     });
                     if (schema) {
-                        logger.info('Publish System Schema (ROOT_AUTHORITY)', ['GUARDIAN_SERVICE']);
+                        logger.info('Publish System Schema (STANDARD_REGISTRY)', ['GUARDIAN_SERVICE']);
                         schema.creator = didMessage.did;
                         schema.owner = didMessage.did;
                         const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);

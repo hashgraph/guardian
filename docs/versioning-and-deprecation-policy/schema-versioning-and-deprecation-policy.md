@@ -25,7 +25,7 @@ Guardian Schemas are versioned using semantic versioning in the major.minor.micr
 * minor: the Schema version contains notable new capabilities and non-breaking changes.&#x20;
 * micro: the Schema release contains non-breaking changes only.&#x20;
 
-Guardian system does not generate versions automatically, it is the responsibility of the Schema authors (Root Authority) to keep track of its policies/versions and correctly reflect changes in the version number.&#x20;
+Guardian system does not generate versions automatically, it is the responsibility of the Schema authors (Standard Registry) to keep track of its policies/versions and correctly reflect changes in the version number.&#x20;
 
 Wherever possible and relevant, Guardian Schema version header contains a reference to the original (paper) document version from the guiding which this schema represents.&#x20;
 

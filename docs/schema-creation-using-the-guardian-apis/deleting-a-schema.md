@@ -4,7 +4,7 @@
 
 {% swagger method="delete" path="" baseUrl="/schema/{schemaID}" summary="Deletes the schema" %}
 {% swagger-description %}
-Deletes the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
+Deletes the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" type="String" name="schemaID" required="true" %}

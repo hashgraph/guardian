@@ -16,7 +16,7 @@ For the approval UI, we then specify what Type it is from the drop-down. In our 
 
 We then finish by giving the UI a Title and Description.
 
-![](../.gitbook/assets/PW\_9.png)
+![](../.gitbook/assets/PW\_image\_9.png)
 
 **Programmatically this workflow step looks like this:**
 
@@ -39,7 +39,7 @@ We then finish by giving the UI a Title and Description.
       "permissions": [
         "INSTALLER"
       ],
-      // Do not pass control to the next block after displaying the message as need to wait for RootAuthority approval.
+      // Do not pass control to the next block after displaying the message as need to wait for Standard Registry approval.
       "stopPropagation": true,
       "defaultActive": true
     },

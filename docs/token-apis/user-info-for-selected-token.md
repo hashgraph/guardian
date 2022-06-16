@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/tokens/{tokenId}/{username}/info" summary="Returns User information" %}
 {% swagger-description %}
-Returns user information for the selected token. Only users with the Root Authority role are allowed to make the request.
+Returns user information for the selected token. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="tokenID" type="String" required="true" %}

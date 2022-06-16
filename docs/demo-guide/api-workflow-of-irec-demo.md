@@ -1,10 +1,10 @@
 # iREC 2 API Demo Guide
 
-## Root Authority
+## Standard Registry
 
 ### Create Root Account
 
-{% swagger method="post" path="" baseUrl="/account/register" summary="Creating Root Authority" %}
+{% swagger method="post" path="" baseUrl="/account/register" summary="Creating Standard Registry" %}
 {% swagger-description %}
 To create a Root Account
 {% endswagger-description %}
@@ -18,7 +18,7 @@ rootPassword
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="role" type="String" required="true" %}
-ROOT_AUTHORITY
+STANDARD_REGISTRY
 {% endswagger-parameter %}
 
 {% swagger-response status="201: Created" description="Successful Operation" %}
@@ -28,18 +28,18 @@ ROOT_AUTHORITY
     "password": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
     "did": null,
     "parent": null,
-    "role": "ROOT_AUTHORITY",
+    "role": "STANDARD_REGISTRY",
     "id": "627d4b99ab3cae7c07025893"
 }
 ```
 {% endswagger-response %}
 {% endswagger %}
 
-### Login as Root Authority
+### Login as Standard Registry
 
 {% swagger method="post" path="" baseUrl="/accounts/login" summary="Login to the Root Account" %}
 {% swagger-description %}
-Login as Root Authority
+Login as Standard Registry
 {% endswagger-description %}
 
 {% swagger-parameter in="body" name="username" type="String" required="true" %}
@@ -55,7 +55,7 @@ Password
 {
   "username": "1tckto80",
     "did": null,
-    "role": "ROOT_AUTHORITY",
+    "role": "STANDARD_REGISTRY",
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjF0Y2t0bzgwIiwiZGlkIjpudWxsLCJyb2xlIjoiUk9PVF9BVVRIT1JJVFkiLCJpYXQiOjE2NTIzNzk5MDR9.xo6WrNhW5uPfpxBICgTHqyip7TFk2GnrUHtMTJ-TKgU"  
 }
 ```
@@ -81,7 +81,7 @@ Generating Root Key
 
 ### Update Root Profile
 
-{% swagger method="put" path="{rootUsername}" baseUrl="/profiles/" summary="Updating Profile of Root Authority" %}
+{% swagger method="put" path="{rootUsername}" baseUrl="/profiles/" summary="Updating Profile of Standard Registry" %}
 {% swagger-description %}
 
 {% endswagger-description %}
@@ -101,7 +101,7 @@ rootKey
 
 ### Get Root Profile
 
-{% swagger method="get" path="" baseUrl="/profiles/{rootUsername}" summary="Getting Root Authority Profile Details" %}
+{% swagger method="get" path="" baseUrl="/profiles/{rootUsername}" summary="Getting Standard Registry Profile Details" %}
 {% swagger-description %}
 
 {% endswagger-description %}
@@ -110,7 +110,7 @@ rootKey
 ```javascript
 {
     "username": "1tckto80",
-    "role": "ROOT_AUTHORITY",
+    "role": "STANDARD_REGISTRY",
     "did": "did:hedera:testnet:F9Nhh3jSvVX6sErMuy95WkEr2fqCuWzZFsoq8YWRQdvD;hedera:testnet:tid=0.0.34751333",
     "parent": null,
     "hederaAccountId": "0.0.34751301",
@@ -177,7 +177,7 @@ rootKey
         "updateDate": "2022-05-12T18:43:09.924Z",
         "hederaStatus": "ISSUE",
         "signature": 0,
-        "type": "ROOT_AUTHORITY",
+        "type": "STANDARD_REGISTRY",
         "option": {},
         "messageId": "1652380995.021714404",
         "topicId": "0.0.34751333"
@@ -14088,17 +14088,17 @@ null
         },
         {
             "id": "628bde8fb51d44b0198a3095",
-            "uuid": "RootAuthority",
+            "uuid": "StandardRegistry",
             "hash": "",
-            "name": "RootAuthority",
-            "entity": "ROOT_AUTHORITY",
+            "name": "StandardRegistry",
+            "entity": "STANDARD_REGISTRY",
             "status": "PUBLISHED",
             "readonly": true,
             "document": {
-                "$id": "#RootAuthority&1.0.0",
-                "$comment": "{ \"term\": \"RootAuthority&1.0.0\", \"@id\": \"undefined#RootAuthority&1.0.0\" }",
-                "title": "RootAuthority",
-                "description": "RootAuthority",
+                "$id": "#StandardRegistry&1.0.0",
+                "$comment": "{ \"term\": \"StandardRegistry&1.0.0\", \"@id\": \"undefined#StandardRegistry&1.0.0\" }",
+                "title": "StandardRegistry",
+                "description": "StandardRegistry",
                 "type": "object",
                 "properties": {
                     "@context": {
@@ -14152,8 +14152,8 @@ null
                     "@vocab": "https://w3id.org/traceability/#undefinedTerm",
                     "id": "@id",
                     "type": "@type",
-                    "RootAuthority&1.0.0": {
-                        "@id": "undefined#RootAuthority&1.0.0",
+                    "StandardRegistry&1.0.0": {
+                        "@id": "undefined#StandardRegistry&1.0.0",
                         "@context": {
                             "date": {
                                 "@id": "https://www.schema.org/text"
@@ -14169,7 +14169,7 @@ null
             "messageId": "1648050485.461249427",
             "documentURL": "https://ipfs.io/ipfs/bafkreibvid2tikh3nv5rblgvqcj6zcskpm5w65iszkofnhqnipdjrfgji4",
             "contextURL": "https://ipfs.io/ipfs/bafkreibzihfnj67xgs74xfv2ap7rallevyce6uj5sg73j3p2cxlm2qx6ru",
-            "iri": "#RootAuthority&1.0.0",
+            "iri": "#StandardRegistry&1.0.0",
             "createDate": "2022-05-23T19:20:47.324Z",
             "category": "SYSTEM"
         },
@@ -18603,7 +18603,7 @@ null
         },
         "policyCreatorDocument": {
             "type": "VC",
-            "title": "RootAuthority",
+            "title": "StandardRegistry",
             "description": "Account Creation",
             "visible": true,
             "tag": "Account Creation",

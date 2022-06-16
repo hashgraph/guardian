@@ -15,7 +15,8 @@ import {
     SchemaCondition,
     SchemaField,
     FieldTypesDictionary,
-    UnitSystem
+    UnitSystem,
+    SchemaEntity
 } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
@@ -71,7 +72,7 @@ export class SchemaConfigurationComponent implements OnInit {
     ) {
 
         this.defaultFieldsMap = {};
-        this.defaultFieldsMap["VC"] = [{
+        this.defaultFieldsMap[SchemaEntity.VC] = [{
             name: 'policyId',
             description: '',
             required: true,
@@ -92,7 +93,7 @@ export class SchemaConfigurationComponent implements OnInit {
             pattern: undefined,
             readOnly: true
         }];
-        this.defaultFieldsMap["MRV"] = [{
+        this.defaultFieldsMap[SchemaEntity.MRV] = [{
             name: 'accountId',
             description: '',
             required: true,
@@ -174,7 +175,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.dataForm.setValue({
                     name: '',
                     description: '',
-                    entity: 'ROOT_AUTHORITY',
+                    entity: SchemaEntity.STANDARD_REGISTRY,
                     fields: {},
                     conditions: {}
                 });
@@ -182,7 +183,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.dataForm.setValue({
                     name: '',
                     description: '',
-                    entity: 'VC',
+                    entity: SchemaEntity.VC,
                     topicId: this.topicId,
                     fields: {},
                     conditions: {}
@@ -192,7 +193,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.fieldsForm = this.fb.group({});
             this.conditionsForm = new FormGroup({});
             if (this.system) {
-                this.defaultFields = new FormControl("ROOT_AUTHORITY", Validators.required);
+                this.defaultFields = new FormControl(SchemaEntity.STANDARD_REGISTRY, Validators.required);
                 this.dataForm = this.fb.group({
                     name: ['', Validators.required],
                     description: [''],
@@ -204,7 +205,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     this.changeForm.emit(this);
                 })
             } else {
-                this.defaultFields = new FormControl("VC", Validators.required);
+                this.defaultFields = new FormControl(SchemaEntity.VC, Validators.required);
                 this.dataForm = this.fb.group({
                     name: ['', Validators.required],
                     description: [''],

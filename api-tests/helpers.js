@@ -10,7 +10,7 @@ async function GenerateTokens() {
     result = await axios.post(
         GetURL('accounts', 'login'),
         JSON.stringify({
-            username: 'RootAuthority',
+            username: 'StandardRegistry',
             password: 'test'
         }),
         {

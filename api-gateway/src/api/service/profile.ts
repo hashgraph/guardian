@@ -36,7 +36,7 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
             }
             vcDocuments = await guardians.getVcDocuments({
                 owner: user.did,
-                type: SchemaEntity.ROOT_AUTHORITY
+                type: SchemaEntity.STANDARD_REGISTRY
             });
             if (vcDocuments && vcDocuments.length) {
                 vcDocument = vcDocuments[vcDocuments.length - 1];
@@ -97,9 +97,9 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
         }
 
         let did: string;
-        if (user.role === UserRole.ROOT_AUTHORITY) {
-            profile.entity = SchemaEntity.ROOT_AUTHORITY;
-            did = await guardians.createRootAuthorityProfile(profile);
+        if (user.role === UserRole.STANDARD_REGISTRY) {
+            profile.entity = SchemaEntity.STANDARD_REGISTRY;
+            did = await guardians.createStandardRegistryProfile(profile);
         } else if (user.role === UserRole.USER) {
             profile.entity = SchemaEntity.USER;
             did = await guardians.createUserProfile(profile);

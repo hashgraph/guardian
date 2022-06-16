@@ -15,7 +15,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -26,10 +26,10 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
-        )).data.find(s => s.entity === 'ROOT_AUTHORITY');
+        )).data.find(s => s.entity === 'STANDARD_REGISTRY');
 
         result = await axios.post(
             GetURL('policies'),
@@ -132,7 +132,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -150,7 +150,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -163,7 +163,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -180,7 +180,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -200,7 +200,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -215,7 +215,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -230,7 +230,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -273,7 +273,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 },
                 responseType: 'arraybuffer'
             }
@@ -290,7 +290,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'binary/octet-stream',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -309,7 +309,7 @@ function Policies() {
             {
                 headers: {
                     'Content-Type': 'binary/octet-stream',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );

@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/schemas/system/{username}" summary="Returns all System Schemas by Username" %}
 {% swagger-description %}
-Return all system schemas by username. Only user with the Root Authority are allowed to make the request.
+Return all system schemas by username. Only user with the Standard Registry are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="username" type="String" required="true" %}

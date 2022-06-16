@@ -13,7 +13,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 interface IHederaForm {
     id: string,
     key: string,
-    rootAuthority: string,
+    standardRegistry: string,
     vc?: any
 }
 
@@ -35,10 +35,10 @@ export class UserProfileComponent implements OnInit {
     tokens?: Token[] | null;
     didDocument?: any;
     vcDocument?: any;
-    rootAuthorities?: IUser[];
+    standardRegistries?: IUser[];
 
     hederaForm = this.fb.group({
-        rootAuthority: ['', Validators.required],
+        standardRegistry: ['', Validators.required],
         id: ['', Validators.required],
         key: ['', Validators.required],
     });
@@ -67,7 +67,7 @@ export class UserProfileComponent implements OnInit {
         private schemaService: SchemaService,
         private fb: FormBuilder,
         public dialog: MatDialog) {
-        this.rootAuthorities = [];
+        this.standardRegistries = [];
         this.hideVC = {
             id: true
         }
@@ -100,7 +100,7 @@ export class UserProfileComponent implements OnInit {
             this.profileService.getProfile(),
             this.profileService.getBalance(),
             this.tokenService.getTokens(),
-            this.auth.getRootAuthorities(),
+            this.auth.getStandardRegistries(),
             this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER)
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
@@ -111,7 +111,7 @@ export class UserProfileComponent implements OnInit {
                     policies: e.policies
                 }
             });
-            this.rootAuthorities = value[3] || [];
+            this.standardRegistries = value[3] || [];
 
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;
@@ -153,7 +153,7 @@ export class UserProfileComponent implements OnInit {
         const profile: any = {
             hederaAccountId: data.id,
             hederaAccountKey: data.key,
-            parent: data.rootAuthority,
+            parent: data.standardRegistry,
         }
         if (vcDocument) {
             profile.vcDocument = vcDocument;
@@ -169,7 +169,7 @@ export class UserProfileComponent implements OnInit {
     randomKey() {
         this.loading = true;
         const value: any = {
-            rootAuthority: this.hederaForm.value.rootAuthority,
+            standardRegistry: this.hederaForm.value.standardRegistry,
         }
         if (this.hederaForm.value.vc) {
             value.vc = this.hederaForm.value.vc;

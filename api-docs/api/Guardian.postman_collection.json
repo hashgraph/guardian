@@ -10,7 +10,7 @@
 			"name": "accounts",
 			"item": [
 				{
-					"name": "Returns a list of users, excluding Root Authority and Auditors.",
+					"name": "Returns a list of users, excluding Standard Registry and Auditors.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -38,7 +38,7 @@
 								"accounts"
 							]
 						},
-						"description": "Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make the request."
+						"description": "Returns all users except those with roles Standard Registry and Auditor. Only users with the Standard Registry role are allowed to make the request."
 					},
 					"response": [
 						{
@@ -535,7 +535,7 @@
 					]
 				},
 				{
-					"name": "Returns all root authorities.",
+					"name": "Returns all Standard Registries.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -555,16 +555,16 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/accounts/root-authorities",
+							"raw": "{{baseUrl}}/accounts/standard-registries",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"accounts",
-								"root-authorities"
+								"standard-registries"
 							]
 						},
-						"description": "Returns all root authorities."
+						"description": "Returns all Standard Registries."
 					},
 					"response": [
 						{
@@ -579,13 +579,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/accounts/root-authorities",
+									"raw": "{{baseUrl}}/accounts/standard-registries",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"accounts",
-										"root-authorities"
+										"standard-registries"
 									]
 								}
 							},
@@ -613,13 +613,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/accounts/root-authorities",
+									"raw": "{{baseUrl}}/accounts/standard-registries",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"accounts",
-										"root-authorities"
+										"standard-registries"
 									]
 								}
 							},
@@ -647,13 +647,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/accounts/root-authorities",
+									"raw": "{{baseUrl}}/accounts/standard-registries",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"accounts",
-										"root-authorities"
+										"standard-registries"
 									]
 								}
 							},
@@ -713,7 +713,7 @@
 								}
 							]
 						},
-						"description": "Returns user account information. For users with the Root Authority role it also returns address book and VC document information."
+						"description": "Returns user account information. For users with the Standard Registry role it also returns address book and VC document information."
 					},
 					"response": [
 						{
@@ -932,7 +932,7 @@
 								}
 							]
 						},
-						"description": "Sets Hedera credentials for the user. For users with the Root Authority role it also creates an address book."
+						"description": "Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book."
 					},
 					"response": [
 						{
@@ -1406,7 +1406,7 @@
 												}
 											]
 										},
-										"description": "Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -1651,7 +1651,7 @@
 												}
 											]
 										},
-										"description": "Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -1916,7 +1916,7 @@
 										}
 									]
 								},
-								"description": "Creates new schema. Only users with the Root Authority role are allowed to make the request."
+								"description": "Creates new schema. Only users with the Standard Registry role are allowed to make the request."
 							},
 							"response": [
 								{
@@ -2431,7 +2431,7 @@
 												}
 											]
 										},
-										"description": "Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Root Authority role are allowed to make the request."
+										"description": "Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -2647,7 +2647,7 @@
 												}
 											]
 										},
-										"description": "Returns schema files for the schemas. Only users with the Root Authority role are allowed to make the request."
+										"description": "Returns schema files for the schemas. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -2876,7 +2876,7 @@
 										}
 									]
 								},
-								"description": "Updates the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request."
+								"description": "Updates the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request."
 							},
 							"response": [
 								{
@@ -3118,7 +3118,7 @@
 										}
 									]
 								},
-								"description": "Deletes the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request."
+								"description": "Deletes the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request."
 							},
 							"response": [
 								{
@@ -3338,7 +3338,7 @@
 										}
 									]
 								},
-								"description": "Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request."
+								"description": "Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request."
 							},
 							"response": [
 								{
@@ -3598,7 +3598,7 @@
 										}
 									]
 								},
-								"description": "Makes the selected scheme active. Other schemes of the same type become inactive. Only users with the Root Authority role are allowed to make the request."
+								"description": "Makes the selected scheme active. Other schemes of the same type become inactive. Only users with the Standard Registry role are allowed to make the request."
 							},
 							"response": [
 								{
@@ -3854,7 +3854,7 @@
 												"file"
 											]
 										},
-										"description": "Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -4055,7 +4055,7 @@
 												"preview"
 											]
 										},
-										"description": "Previews the schema from a zip file. Only users with the Root Authority role are allowed to make the request."
+										"description": "Previews the schema from a zip file. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -4269,7 +4269,7 @@
 												"message"
 											]
 										},
-										"description": "Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -4495,7 +4495,7 @@
 												"preview"
 											]
 										},
-										"description": "Previews the schema from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -4741,7 +4741,7 @@
 												}
 											]
 										},
-										"description": "Creates new system schema. Only users with the Root Authority role are allowed to make the request."
+										"description": "Creates new system schema. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -5000,7 +5000,7 @@
 												}
 											]
 										},
-										"description": "Returns all system schemas by username. Only users with the Root Authority role are allowed to make the request."
+										"description": "Returns all system schemas by username. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -5274,7 +5274,7 @@
 												}
 											]
 										},
-										"description": "Updates the system schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request."
+										"description": "Updates the system schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -5521,7 +5521,7 @@
 												}
 											]
 										},
-										"description": "Deletes the system schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request."
+										"description": "Deletes the system schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -5956,7 +5956,7 @@
 								"schemas"
 							]
 						},
-						"description": "Creates new schema. Only users with the Root Authority role are allowed to make the request."
+						"description": "Creates new schema. Only users with the Standard Registry role are allowed to make the request."
 					},
 					"response": [
 						{
@@ -6618,7 +6618,7 @@
 												}
 											]
 										},
-										"description": "Returns user information for the selected token. Only users with the Root Authority role are allowed to make the request."
+										"description": "Returns user information for the selected token. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -6907,7 +6907,7 @@
 												}
 											]
 										},
-										"description": "Sets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request."
+										"description": "Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -7196,7 +7196,7 @@
 												}
 											]
 										},
-										"description": "Unsets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request."
+										"description": "Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -7485,7 +7485,7 @@
 												}
 											]
 										},
-										"description": "Freezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request."
+										"description": "Freezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -7774,7 +7774,7 @@
 												}
 											]
 										},
-										"description": "Unfreezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request."
+										"description": "Unfreezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -8474,7 +8474,7 @@
 								"tokens"
 							]
 						},
-						"description": "Returns all tokens. For the Root Authority role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role."
+						"description": "Returns all tokens. For the Standard Registry role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role."
 					},
 					"response": [
 						{
@@ -8653,7 +8653,7 @@
 								"tokens"
 							]
 						},
-						"description": "Creates a new token. Only users with the Root Authority role are allowed to make the request."
+						"description": "Creates a new token. Only users with the Standard Registry role are allowed to make the request."
 					},
 					"response": [
 						{
@@ -9830,7 +9830,7 @@
 												}
 											]
 										},
-										"description": "Returns data from the root policy block. Only users with the Root Authority and Installer role are allowed to make the request."
+										"description": "Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -10047,7 +10047,7 @@
 												}
 											]
 										},
-										"description": "Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Root Authority role are allowed to make the request."
+										"description": "Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -10263,7 +10263,7 @@
 												}
 											]
 										},
-										"description": "Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Root Authority role are allowed to make the request."
+										"description": "Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -10479,7 +10479,7 @@
 										}
 									]
 								},
-								"description": "Retrieves policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request."
+								"description": "Retrieves policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request."
 							},
 							"response": [
 								{
@@ -10698,7 +10698,7 @@
 										}
 									]
 								},
-								"description": "Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request."
+								"description": "Updates policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request."
 							},
 							"response": [
 								{
@@ -10954,7 +10954,7 @@
 										}
 									]
 								},
-								"description": "Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request."
+								"description": "Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request."
 							},
 							"response": [
 								{
@@ -11207,7 +11207,7 @@
 										}
 									]
 								},
-								"description": "Requests block ID from a policy by tag. Only users with the Root Authority and Installer roles are allowed to make the request."
+								"description": "Requests block ID from a policy by tag. Only users with the Standard Registry and Installer roles are allowed to make the request."
 							},
 							"response": [
 								{
@@ -11456,7 +11456,7 @@
 												"message"
 											]
 										},
-										"description": "Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -11682,7 +11682,7 @@
 												"preview"
 											]
 										},
-										"description": "Previews the policy from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -11911,7 +11911,7 @@
 												"file"
 											]
 										},
-										"description": "Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -12112,7 +12112,7 @@
 												"preview"
 											]
 										},
-										"description": "Previews the policy from a zip file without loading it into the local DB. Only users with the Root Authority role are allowed to make the request."
+										"description": "Previews the policy from a zip file without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request."
 									},
 									"response": [
 										{
@@ -12322,7 +12322,7 @@
 								}
 							]
 						},
-						"description": "Returns all policies. Only users with the Root Authority and Installer role are allowed to make the request."
+						"description": "Returns all policies. Only users with the Standard Registry and Installer role are allowed to make the request."
 					},
 					"response": [
 						{
@@ -12546,7 +12546,7 @@
 								"policies"
 							]
 						},
-						"description": "Creates a new policy. Only users with the Root Authority role are allowed to make the request."
+						"description": "Creates a new policy. Only users with the Standard Registry role are allowed to make the request."
 					},
 					"response": [
 						{
@@ -12762,7 +12762,7 @@
 								"validate"
 							]
 						},
-						"description": "Validates selected policy. Only users with the Root Authority role are allowed to make the request."
+						"description": "Validates selected policy. Only users with the Standard Registry role are allowed to make the request."
 					},
 					"response": [
 						{
@@ -13230,7 +13230,7 @@
 								"settings"
 							]
 						},
-						"description": "Returns current settings. For users with the Root Authority role only."
+						"description": "Returns current settings. For users with the Standard Registry role only."
 					},
 					"response": [
 						{
@@ -13409,7 +13409,7 @@
 								"settings"
 							]
 						},
-						"description": "Set settings. For users with the Root Authority role only."
+						"description": "Set settings. For users with the Standard Registry role only."
 					},
 					"response": [
 						{
@@ -13629,7 +13629,7 @@
 								"logs"
 							]
 						},
-						"description": "Returns logs. For users with the Root Authority role only."
+						"description": "Returns logs. For users with the Standard Registry role only."
 					},
 					"response": [
 						{
@@ -13849,7 +13849,7 @@
 								}
 							]
 						},
-						"description": "Returns logs attributes. For users with the Root Authority role only."
+						"description": "Returns logs attributes. For users with the Standard Registry role only."
 					},
 					"response": [
 						{

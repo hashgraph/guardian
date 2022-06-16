@@ -67,7 +67,7 @@ export class RegisterComponent implements OnInit {
                     this.auth.setAccessToken(result.accessToken);
                     this.auth.setUsername(d.login);
                     this.authState.updateState(true);
-                    if (result.role == UserRole.ROOT_AUTHORITY) {
+                    if (result.role == UserRole.STANDARD_REGISTRY) {
                         this.router.navigate(['/config']);
                     } else {
                         this.router.navigate(['/']);

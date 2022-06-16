@@ -2,7 +2,7 @@
 
 {% swagger method="post" path="" baseUrl="/schemas/{topicId}" summary="Creates a schema related to the topic (policy)" %}
 {% swagger-description %}
-Creates new schema. Only users with the Root Authority role are allowed to make the request.
+Creates new schema. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="topicId" type="String" required="true" %}

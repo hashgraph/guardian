@@ -10,7 +10,7 @@ import { Logger } from '@guardian/common';
  */
 export const settingsAPI = Router();
 
-settingsAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+settingsAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         const settings = req.body as CommonSettings;
         if (!settings || Object.keys(settings).length === 0) {
@@ -29,7 +29,7 @@ settingsAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Req
     }
 });
 
-settingsAPI.get('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+settingsAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         const guardians = new Guardians();
         const ipfs = new IPFS();

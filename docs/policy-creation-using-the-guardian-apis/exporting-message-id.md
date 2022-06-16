@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/policies/{policyId}/export/message" summary="Return Hedera message ID for the specified published policy" %}
 {% swagger-description %}
-Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Root Authority role are allowed to make the request.
+Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}

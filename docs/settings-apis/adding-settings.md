@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/settings" summary="Set settings." %}
 {% swagger-description %}
-Set settings. For users with the Root Authority role only.
+Set settings. For users with the Standard Registry role only.
 {% endswagger-description %}
 
 {% swagger-parameter in="body" type="String" required="true" name="operatorID" %}

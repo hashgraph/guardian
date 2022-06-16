@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/policies/import/file" summary="Imports new policy from a zip file" %}
 {% swagger-description %}
-Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="body" required="true" %}

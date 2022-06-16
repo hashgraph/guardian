@@ -15,7 +15,7 @@ function Tokens() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -26,7 +26,7 @@ function Tokens() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -42,7 +42,7 @@ function Tokens() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -85,7 +85,7 @@ function Tokens() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -113,7 +113,7 @@ function Tokens() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -141,7 +141,7 @@ function Tokens() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -169,7 +169,7 @@ function Tokens() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );

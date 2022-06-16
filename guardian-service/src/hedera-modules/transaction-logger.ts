@@ -37,7 +37,23 @@ export class TransactionLogger {
         }
     }
 
-    public static transactionLog(operatorAccountId: AccountId, transactionName: string, transaction?: Transaction, metadata?: any): void {
+    public static messageLog(name: string, duration?: number) {
+        try {
+            if (TransactionLogger.logLvl == TransactionLogLvl.DEBUG) {
+                const date = new Date();
+                if (duration) {
+                    console.log(`[MESSAGE, COMPLETION]      ${date.toISOString()}  ${duration / 1000}s \t${name}`);
+                } else {
+                    console.log(`[MESSAGE, SEND]            ${date.toISOString()}  ____ \t${name}`);
+                }
+            }
+        } catch (error) {
+            const date = new Date();
+            console.log(`[MESSAGE, ERROR]           ${date.toISOString()}  ____ \t${name} \t${error.message}`);
+        }
+    }
+
+    public static transactionLog(operatorAccountId: AccountId, transactionName: string, transaction?: Transaction, metadata?: any, duration?: number): void {
         try {
             if (TransactionLogger.logLvl == TransactionLogLvl.DEBUG) {
                 if (transaction) {
@@ -157,14 +173,15 @@ export class TransactionLogger {
                         data += `memo size: ${this.stringSize(t.transactionMemo)}; `;
                     }
                     const date = new Date();
-                    console.log(`${date.toISOString()} \t${operatorAccountId.toString()} \t${transactionName}:\t ${data}`);
+                    console.log(`[TRANSACTION, COMPLETION]  ${date.toISOString()}  ${duration / 1000}s \t${operatorAccountId.toString()} \t${transactionName}\t ${data}`);
                 } else {
-                    // const date = new Date();
-                    // console.log(`${date.toISOString()} \t${transactionName}`);
+                    const date = new Date();
+                    console.log(`[TRANSACTION, CREATE]      ${date.toISOString()}  ____ \t____________ \t${transactionName}`);
                 }
             }
         } catch (error) {
-            console.log(transactionName, error);
+            const date = new Date();
+            console.log(`[TRANSACTION ERROR]        ${date.toISOString()}  ____ \t____________ \t${transactionName} \t${error.message}`);
         }
     }
 }

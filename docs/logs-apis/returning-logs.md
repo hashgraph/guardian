@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/logs" summary="Returns logs." %}
 {% swagger-description %}
-Returns logs. For users with the Root Authority role only.
+Returns logs. For users with the Standard Registry role only.
 {% endswagger-description %}
 
 {% swagger-parameter in="body" type="String" name="type" required="true" %}

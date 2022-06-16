@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/schemas/import/message/preview" summary="Schema preview from IPFS" %}
 {% swagger-description %}
-Previews the schema from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
+Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="body" name="" type="Object" required="true" %}

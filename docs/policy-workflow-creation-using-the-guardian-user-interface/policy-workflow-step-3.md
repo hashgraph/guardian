@@ -14,7 +14,7 @@ Note, that we do not select a “Permission” because anyone should be able to 
 
 Also, note, that this step does not create a new document, so the “Force New Document” is unchecked. And since we want to send the document, the “Stop Propagation” function is also not enabled.
 
-![](../.gitbook/assets/PW\_8.png)
+![](../.gitbook/assets/PW\_image\_8.png)
 
 **Programmatically this workflow step looks like this:**
 

@@ -21,7 +21,7 @@
                         <div class="profile-item-value"> {{profile.topicId}} </div>
                     </div>
                     <div class="profile-item">
-                        <div class="profile-item-name"> Root Authority:</div>
+                        <div class="profile-item-name"> Standard Registry:</div>
                         <div class="profile-item-value"> {{profile.parent}} </div>
                     </div>
                     <div class="profile-item">
@@ -106,9 +106,9 @@
                 <div class="list-item"
                     style="border-bottom: 1px solid #c8c8c8;padding-bottom: 32px;margin-bottom: 46px;">
                     <mat-form-field appearance="outline" floatLabel="always">
-                        <mat-label>Root Authority:</mat-label>
-                        <mat-select formControlName="rootAuthority" placeholder="Choose Root Authority">
-                            <mat-option *ngFor="let user of rootAuthorities" [value]="user.did">
+                        <mat-label>Standard Registry:</mat-label>
+                        <mat-select formControlName="standardRegistry" placeholder="Choose Standard Registry">
+                            <mat-option *ngFor="let user of standardRegistries" [value]="user.did">
                                 <span>{{user.username}}</span>
                             </mat-option>
                         </mat-select>

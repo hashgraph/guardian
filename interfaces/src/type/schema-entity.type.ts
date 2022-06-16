@@ -2,7 +2,7 @@ export enum SchemaEntity {
     NONE = 'NONE',
     VC = 'VC',
     MRV = 'MRV',
-    ROOT_AUTHORITY = 'ROOT_AUTHORITY',
+    STANDARD_REGISTRY = 'STANDARD_REGISTRY',
     USER = 'USER',
     POLICY = 'POLICY',
     MINT_TOKEN = 'MINT_TOKEN',

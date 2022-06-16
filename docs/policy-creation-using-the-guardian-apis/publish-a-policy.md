@@ -4,7 +4,7 @@
 
 {% swagger method="put" path="" baseUrl="/policies/{policyId}/publish" summary="Publishes the policy onto IPFS" %}
 {% swagger-description %}
-Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}
