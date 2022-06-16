@@ -8,7 +8,7 @@ In contrast to the installer case where we create documents and send them for ap
 
 Next, we add the required custom UI fields on the approval UI form. Note that since this is a general approval form we do not have to specify a schema or an entity type for the UI.
 
-![](../.gitbook/assets/PW\_25.png)
+![](../.gitbook/assets/PW\_image\_26.png)
 
 Below are the screenshots of the field inputs
 

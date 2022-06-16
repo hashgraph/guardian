@@ -4,11 +4,11 @@
 
 We can then look at the entire process.
 
-![](../.gitbook/assets/PW\_31.png)
+![](../.gitbook/assets/PW\_image\_33.png)
 
 We can also look at the code that has been created programmatically from the defined workflow by clicking on the “<>” button in the three-button chevron on the right-hand side.
 
-![](../.gitbook/assets/PW\_32.png)
+![](../.gitbook/assets/PW\_image\_34.png)
 
 The full coded version of the policy we just demoed is below (Reminder the coded version of this policy is for Guardian verison 1.0.2):
 

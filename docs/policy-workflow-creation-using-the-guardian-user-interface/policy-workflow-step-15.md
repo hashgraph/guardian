@@ -6,7 +6,7 @@ We click back to the “create\_new\_sensors\_steps” process step and add a �
 
 We then add a tag, type - of course, a verifiable credential, and entity – our inverter sensor. And done. We have completed the steps to add an inverter sensor to a project.
 
-![](../.gitbook/assets/PW\_20.png)
+![](../.gitbook/assets/PW\_image\_21.png)
 
 **Programmatically this workflow step looks like this:**
 

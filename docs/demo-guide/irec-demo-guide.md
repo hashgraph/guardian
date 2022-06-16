@@ -13,7 +13,7 @@ This folder contains a sample file that is referenced in the Demo Guide&#x20;
 
 3\. You will now be prompted to configure your Issuer account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_4.1.png)
+![](../.gitbook/assets/iREC\_0.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
@@ -23,7 +23,7 @@ This folder contains a sample file that is referenced in the Demo Guide&#x20;
 
 ![](../.gitbook/assets/iREC\_1.png)
 
-![](<../.gitbook/assets/iREC\_2.2 (1).png>)
+![](<../.gitbook/assets/iREC\_2.png)
 
 Once Policy is imported successfully, click on "Publish" button to publish the policy.
 
@@ -87,15 +87,15 @@ After submitting the data, the Registrant is waiting for approval from the Issue
 
 15\. We can also check Token Balance in the Tokens tab under Profile.
 
-![](../.gitbook/assets/iREC\_17.2.png)
+![](../.gitbook/assets/iREC\_17.png)
 
 16\. We can also check Token History by logging back as Issuer.
 
-![](<../.gitbook/assets/iREC\_17 (1).png>)
+![](<../.gitbook/assets/iREC\_18.png>)
 
 We have the option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.&#x20;
 
 The Trust Chain view displays essential elements that can be publicly discovered. Elements include token information, Policy information, and all the essential information regarding the Verifiable Credentials that make up the Verifiable Presentation. You will notice "Cards" on the bottom of the screen. Those cards are Verifiable Credentials displayed in chronological order.&#x20;
 
-![](../.gitbook/assets/iREC\_18.png)
+![](../.gitbook/assets/iREC\_19.png)
 

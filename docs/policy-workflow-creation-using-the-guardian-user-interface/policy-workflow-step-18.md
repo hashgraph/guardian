@@ -2,7 +2,7 @@
 
 Next, we add a sequence of policy action steps for the Standard Registry. We do this by first clicking on the top policy field, and then we add a container for all the Standard Registry policy action steps by clicking on the Container button in the top navigation bar.
 
-![](../.gitbook/assets/PW\_23.png)
+![](../.gitbook/assets/PW\_image\_24.png)
 
 **Programmatically this workflow step looks like this:**
 

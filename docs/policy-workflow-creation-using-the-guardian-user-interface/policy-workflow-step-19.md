@@ -4,7 +4,7 @@ After we added the “standard\_registry\_header”, we add another container bl
 
 We then fill in the fields as we did for the installer, except now the permission is for the Standard Registry.
 
-![](../.gitbook/assets/PW\_24.png)
+![](../.gitbook/assets/PW\_image\_25.png)
 
 **Programmatically this workflow step looks like this:**
 

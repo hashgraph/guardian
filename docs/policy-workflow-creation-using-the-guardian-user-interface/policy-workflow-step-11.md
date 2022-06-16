@@ -6,13 +6,13 @@ As before, we set the tag, the permissions, and stop advancing the process until
 
 We then need to select the file schema for the download, MRV. And, then we need to set the target URL where the file is stored. And finally, we select, button title and content.
 
-![](../.gitbook/assets/PW\_16.png)
+![](../.gitbook/assets/PW\_image\_16.png)
 
 We now need to connect the download action to the sensor grid block we defined before.
 
 To do that, we click on the “sensors\_grid” button, and then click on “Bind Block” for Field 3 and select the “download\_config\_btn” action to bind the action to the actual definition of the button.
 
-![](../.gitbook/assets/PW\_17.2.png)
+![](../.gitbook/assets/PW\_image\_17.png)
 
 **Programmatically workflow step 10 and 11 will looks like this:**
 

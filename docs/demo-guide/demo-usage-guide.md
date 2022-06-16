@@ -27,7 +27,7 @@ There is also a _Custom Role_ which is called _User_. This role can be used to c
 
 3\. You'll now be prompted to configure your Standard Registry account. Enter the name field and then Press the **Generate** button to generate a Hedera Operator ID and an Operator Key. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_4.1.png)
+![](../.gitbook/assets/iREC\_0.png)
 
 **NOTE**
 
