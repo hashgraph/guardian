@@ -61,7 +61,7 @@ export class Logger {
     }
 
     public async error(error: string | Error, attr?: string[]): Promise<void> {
-        const message = typeof error === 'string' ? error : error.message;
+        const message = typeof error === 'string' ? error : error.stack;
         await this.write(LogType.ERROR, message, attr);
     }
 
