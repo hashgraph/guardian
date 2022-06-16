@@ -1,8 +1,9 @@
 import { Policy } from "@entity/policy";
-import { EventConfig, PolicyInputEventType, PolicyOutputEventType } from "./interfaces";
+import { UserType } from "@guardian/interfaces";
+import { EventConfig, PolicyInputEventType, PolicyOutputEventType, EventActor } from "./interfaces";
 
 export class PolicyConverterUtils {
-    public static readonly VERSION = '1.1.0';
+    public static readonly VERSION = '1.2.0';
 
     public static PolicyConverter(policy: Policy): Policy {
         if (policy.codeVersion === PolicyConverterUtils.VERSION) {
@@ -24,6 +25,7 @@ export class PolicyConverterUtils {
 
         block = PolicyConverterUtils.v1_0_0(block, parent, index, next, prev);
         block = PolicyConverterUtils.v1_1_0(block, parent, index, next, prev);
+        block = PolicyConverterUtils.v1_2_0(block, parent, index, next, prev);
 
         if (block.children && block.children.length) {
             for (let i = 0; i < block.children.length; i++) {
@@ -98,29 +100,20 @@ export class PolicyConverterUtils {
                 block.uiMetaData &&
                 block.uiMetaData.options
             ) {
-                block.blockType = 'buttonBlock';
-                block.uiMetaData.buttons = [];
                 const options: any[] = block.uiMetaData.options;
                 for (let i = 0; i < options.length; i++) {
                     if (!options[i].tag) {
                         options[i].tag = `Option_${i}`;
                     }
-                    block.uiMetaData.buttons.push({
-                        tag: options[i].tag,
-                        name: options[i].name,
-                        type: 'selector',
-                        filters: [],
-                        field: block.field,
-                        value: options[i].value,
-                        uiClass: options[i].uiClass
-                    });
                     const run: EventConfig = {
                         output: options[i].tag,
                         input: PolicyInputEventType.RunEvent,
                         source: block.tag,
                         target: options[i].bindBlock,
                         disabled: false,
-                        actor: null
+                        actor: (options[i].user === UserType.CURRENT ?
+                            EventActor.EventInitiator :
+                            EventActor.Owner)
                     }
                     block.events.push(run);
                 }
@@ -167,6 +160,40 @@ export class PolicyConverterUtils {
                     actor: null
                 }
                 block.events.push(timer);
+            }
+        }
+        return block;
+    }
+
+    private static v1_2_0(
+        block: any,
+        parent?: any,
+        index?: any,
+        next?: any,
+        prev?: any
+    ): any {
+        if (block.blockType == 'interfaceActionBlock') {
+            if (block.type == 'selector') {
+                if (!block.uiMetaData) {
+                    block.uiMetaData = {};
+                }
+                block.blockType = 'buttonBlock';
+                block.uiMetaData.buttons = [];
+                if (block.uiMetaData.options) {
+                    const options: any[] = block.uiMetaData.options;
+                    for (let i = 0; i < options.length; i++) {
+                        block.uiMetaData.buttons.push({
+                            tag: options[i].tag,
+                            name: options[i].name,
+                            type: 'selector',
+                            filters: [],
+                            field: block.field,
+                            value: options[i].value,
+                            uiClass: options[i].uiClass
+                        });
+                    }
+                    delete block.uiMetaData.options;
+                }
             }
         }
         return block;
