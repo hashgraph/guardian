@@ -107,7 +107,8 @@ export class TransactionLogger {
                         data += 'Non-Fungible Token; ';
                         data += 'payer sigs: 1; ';
                         data += 'total sigs: 1; ';
-                        data += `of NFTs minted: ${t.metadata.length};`
+                        data += `of NFTs minted: ${t.metadata.length};`;
+                        data += `bytes of metadata per NFT: ${t.metadata[0].length};`;
                         data += `memo size: ${this.stringSize(t.transactionMemo)}; `;
                     }
                     if (transactionName == 'TokenWipeTransaction') {
@@ -152,7 +153,7 @@ export class TransactionLogger {
                         const t = transaction as TopicMessageSubmitTransaction;
                         data += 'payer sigs: 1; ';
                         data += 'total sigs: 1; ';
-                        data += `memo size: ${this.stringSize(t.message)}; `;
+                        data += `message size: ${this.stringSize(t.message)}; `;
                         data += `memo size: ${this.stringSize(t.transactionMemo)}; `;
                     }
                     const date = new Date();
