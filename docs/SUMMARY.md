@@ -160,7 +160,7 @@
 * [User Session](account-apis/user-session.md)
 * [User Login](account-apis/user-login.md)
 * [Registering new account](account-apis/registering-new-account.md)
-* [Returns all root-authorities](account-apis/returns-all-root-authorities.md)
+* [Returns all Standard Registries](account-apis/returns-all-root-authorities.md)
 
 ## PROFILE APIS
 

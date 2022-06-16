@@ -31,7 +31,7 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
     try {
         let { username, password, role } = req.body;
         // @deprecated 2022-10-01
-        if(role === 'ROOT_AUTHORITY') {
+        if (role === 'ROOT_AUTHORITY') {
             role = UserRole.STANDARD_REGISTRY;
         }
         res.status(201).json(await users.registerNewUser(username, password, role));
@@ -62,12 +62,25 @@ accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.STANDARD_REGI
     }
 });
 
-
+/**
+ * @deprecated 2022-10-01
+ */
 accountAPI.get('/root-authorities', authorizationHelper, async (req: Request, res: Response) => {
     try {
         const users = new Users();
-        const rootAuthorities = await users.getAllStandardRegistryAccounts();
-        res.json(rootAuthorities);
+        const standardRegistries = await users.getAllStandardRegistryAccounts();
+        res.json(standardRegistries);
+    } catch (error) {
+        console.error(error);
+        res.json('null');
+    }
+});
+
+accountAPI.get('/standard-registries', authorizationHelper, async (req: Request, res: Response) => {
+    try {
+        const users = new Users();
+        const standardRegistries = await users.getAllStandardRegistryAccounts();
+        res.json(standardRegistries);
     } catch (error) {
         console.error(error);
         res.json('null');

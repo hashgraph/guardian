@@ -108,7 +108,7 @@
                     <mat-form-field appearance="outline" floatLabel="always">
                         <mat-label>Standard Registry:</mat-label>
                         <mat-select formControlName="standardRegistry" placeholder="Choose Standard Registry">
-                            <mat-option *ngFor="let user of rootAuthorities" [value]="user.did">
+                            <mat-option *ngFor="let user of standardRegistries" [value]="user.did">
                                 <span>{{user.username}}</span>
                             </mat-option>
                         </mat-select>

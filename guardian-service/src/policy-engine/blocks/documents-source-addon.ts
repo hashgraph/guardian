@@ -85,7 +85,7 @@ export class DocumentsSourceAddon {
         }
 
         Object.assign(filters, dynFilters);
-        if(globalFilters) {
+        if (globalFilters) {
             Object.assign(filters, globalFilters);
         }
 
@@ -97,7 +97,7 @@ export class DocumentsSourceAddon {
             } else {
                 filtersWithOrder.order['createDate'] = ref.options.createdOrderDirection;
             }
-            
+
         }
 
         let data: any[];
@@ -113,19 +113,20 @@ export class DocumentsSourceAddon {
                 filters.policyId = ref.policyId;
                 data = await getMongoRepository(VpDocumentCollection).find(filtersWithOrder);
                 break;
-            case 'root-authorities':
+            case 'standard-registries':
                 data = await this.users.getAllStandardRegistryAccounts() as IAuthUser[];
                 break;
-
             case 'approve':
                 filters.policyId = ref.policyId;
                 data = await getMongoRepository(ApprovalDocumentCollection).find(filtersWithOrder);
                 break;
-
             case 'source':
                 data = [];
                 break;
-
+            // @deprecated 2022-10-01
+            case 'root-authorities':
+                data = await this.users.getAllStandardRegistryAccounts() as IAuthUser[];
+                break;
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
@@ -157,7 +158,15 @@ export class DocumentsSourceAddon {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            const types = ['vc-documents', 'did-documents', 'vp-documents', 'root-authorities', 'approve', 'source'];
+            const types = [
+                'vc-documents', 
+                'did-documents', 
+                'vp-documents', 
+                'root-authorities', 
+                'standard-registries', 
+                'approve', 
+                'source'
+            ];
             if (types.indexOf(ref.options.dataType) == -1) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of ' + types.join(','));
             }
@@ -167,7 +176,7 @@ export class DocumentsSourceAddon {
                     resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                     return;
                 }
-                const schema = await getMongoRepository(SchemaCollection).findOne({ 
+                const schema = await getMongoRepository(SchemaCollection).findOne({
                     iri: ref.options.schema,
                     topicId: ref.topicId
                 });

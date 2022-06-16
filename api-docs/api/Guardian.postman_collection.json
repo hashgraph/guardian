@@ -535,7 +535,7 @@
 					]
 				},
 				{
-					"name": "Returns all root authorities.",
+					"name": "Returns all Standard Registries.",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -555,16 +555,16 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/accounts/root-authorities",
+							"raw": "{{baseUrl}}/accounts/standard-registries",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"accounts",
-								"root-authorities"
+								"standard-registries"
 							]
 						},
-						"description": "Returns all root authorities."
+						"description": "Returns all Standard Registries."
 					},
 					"response": [
 						{
@@ -579,13 +579,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/accounts/root-authorities",
+									"raw": "{{baseUrl}}/accounts/standard-registries",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"accounts",
-										"root-authorities"
+										"standard-registries"
 									]
 								}
 							},
@@ -613,13 +613,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/accounts/root-authorities",
+									"raw": "{{baseUrl}}/accounts/standard-registries",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"accounts",
-										"root-authorities"
+										"standard-registries"
 									]
 								}
 							},
@@ -647,13 +647,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/accounts/root-authorities",
+									"raw": "{{baseUrl}}/accounts/standard-registries",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"accounts",
-										"root-authorities"
+										"standard-registries"
 									]
 								}
 							},

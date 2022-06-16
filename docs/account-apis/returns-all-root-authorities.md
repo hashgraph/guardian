@@ -1,8 +1,8 @@
-# Returns all root-authorities
+# Returns all Standard Registries
 
-{% swagger method="get" path="" baseUrl="/accounts/root-authorities" summary="Returns an array of root authorities for user to select one during registration process" %}
+{% swagger method="get" path="" baseUrl="/accounts/standard-registries" summary="Returns an array of Standard Registries for user to select one during registration process" %}
 {% swagger-description %}
-Returns all root authorities
+Returns all Standard Registries
 {% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}

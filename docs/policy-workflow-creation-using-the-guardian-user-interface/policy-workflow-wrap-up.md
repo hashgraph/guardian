@@ -222,7 +222,7 @@ The full coded version of the policy we just demoed is below (Reminder the coded
                   //  "did-documents".
                   //  "vp-documents".
                   //  "approve".
-                  //  "root-authorities" - list of users with the Standard Registry role.
+                  //  "standard-registries" - list of users with the Standard Registry role.
                   "dataType": "vc-documents",
                   // Custom filters, based on any existing fields.
                   "filters": {
