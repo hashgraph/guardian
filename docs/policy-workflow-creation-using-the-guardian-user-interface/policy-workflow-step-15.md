@@ -31,7 +31,7 @@ We then add a tag, type - of course, a verifiable credential, and entity – our
 
 Lastly, just create a new Container Block to group all components on the page with MRV data.
 
-![](https://i.imgur.com/3Ggu3yV.png)
+![](../.gitbook/assets/PW\_image\_35.png)
 
 **Programmatically this workflow step looks like this:**
 
