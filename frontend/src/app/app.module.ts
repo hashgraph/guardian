@@ -41,6 +41,7 @@ import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-d
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { CommonComponentsModule } from './common-components.module';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { InfoComponent } from './components/info/info/info.component';
 
 @NgModule({
     declarations: [
@@ -63,7 +64,8 @@ import { ConfirmationDialogComponent } from './components/confirmation-dialog/co
         IconPreviewDialog,
         DetailsLogDialog,
         ServiceStatusComponent,
-        ConfirmationDialogComponent
+        ConfirmationDialogComponent,
+        InfoComponent
     ],
     imports: [
         BrowserModule,

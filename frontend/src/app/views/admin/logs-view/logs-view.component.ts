@@ -12,6 +12,7 @@ import { merge, Observable, of } from 'rxjs';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';
 import { DetailsLogDialog } from '../details-log-dialog/details-log-dialog.component';
+import { ActivatedRoute } from '@angular/router';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -51,9 +52,9 @@ export class LogsViewComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private logService: LoggerService,
-        public dialog: MatDialog) {
-
-    }
+        public dialog: MatDialog,
+        private route: ActivatedRoute
+    ) { }
 
     ngOnInit() {
         this.attributes = this.autoCompleteControl.valueChanges
@@ -61,6 +62,14 @@ export class LogsViewComponent implements OnInit {
             startWith([]),
             switchMap(value => this.logService.getAttributes(this.autoCompleteControl.value, this.searchForm?.get("attributes")?.value))
           );
+          this.route.queryParams.subscribe(params => {
+            if (params['attr']) {
+                this.searchForm.patchValue({
+                    attributes: [params['attr']]
+                });
+                this.onApply();
+            }
+          });
       }
 
     ngAfterViewInit() {
