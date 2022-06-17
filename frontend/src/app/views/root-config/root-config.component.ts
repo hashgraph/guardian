@@ -8,6 +8,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { IUser, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { HeaderPropsService } from 'src/app/services/header-props.service';
 
 /**
  * RootAuthority profile settings page.
@@ -44,7 +45,8 @@ export class RootConfigComponent implements OnInit {
         private schemaService: SchemaService,
         private otherService: DemoService,
         private fb: FormBuilder,
-        public dialog: MatDialog) {
+        public dialog: MatDialog,
+        private headerProps: HeaderPropsService) {
 
         this.profile = null;
         this.balance = null;
@@ -85,6 +87,7 @@ export class RootConfigComponent implements OnInit {
             if(!value[2]) {
                 this.errorLoadSchema = true;
                 this.loading = false;
+                this.headerProps.setLoading(false);
                 return;
             }
 
@@ -107,9 +110,11 @@ export class RootConfigComponent implements OnInit {
 
             setTimeout(() => {
                 this.loading = false;
+                this.headerProps.setLoading(false);
             }, 500)
         }, (error) => {
             this.loading = false;
+            this.headerProps.setLoading(false);
             console.error(error);
         });
     }
@@ -125,6 +130,7 @@ export class RootConfigComponent implements OnInit {
                 vcDocument: vcDocument
             }
             this.loading = true;
+            this.headerProps.setLoading(true);
             this.setProgress(true);
             this.profileService.setProfile(data).subscribe(() => {
                 this.setProgress(false);
@@ -132,6 +138,7 @@ export class RootConfigComponent implements OnInit {
             }, (error) => {
                 this.setProgress(false);
                 this.loading = false;
+                this.headerProps.setLoading(false);
                 console.error(error);
             });
         }

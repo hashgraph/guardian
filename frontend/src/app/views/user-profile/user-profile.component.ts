@@ -9,6 +9,7 @@ import { IUser, Token, IToken, SchemaEntity, Schema } from '@guardian/interfaces
 import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaService } from 'src/app/services/schema.service';
+import { HeaderPropsService } from 'src/app/services/header-props.service';
 
 interface IHederaForm {
     id: string,
@@ -66,7 +67,8 @@ export class UserProfileComponent implements OnInit {
         private otherService: DemoService,
         private schemaService: SchemaService,
         private fb: FormBuilder,
-        public dialog: MatDialog) {
+        public dialog: MatDialog,
+        private headerProps: HeaderPropsService) {
         this.rootAuthorities = [];
         this.hideVC = {
             id: true
@@ -134,9 +136,11 @@ export class UserProfileComponent implements OnInit {
 
             setTimeout(() => {
                 this.loading = false;
+                this.headerProps.setLoading(false);
             }, 200)
         }, (error) => {
             this.loading = false;
+            this.headerProps.setLoading(false);
             console.error(error);
         });
     }
@@ -149,6 +153,7 @@ export class UserProfileComponent implements OnInit {
 
     createDID(data: IHederaForm) {
         this.loading = true;
+        this.headerProps.setLoading(true);
         const vcDocument = data.vc;
         const profile: any = {
             hederaAccountId: data.id,
@@ -162,6 +167,7 @@ export class UserProfileComponent implements OnInit {
             this.loadDate();
         }, (error) => {
             this.loading = false;
+            this.headerProps.setLoading(false);
             console.error(error);
         });
     }

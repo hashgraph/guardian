@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { IUser, UserRole } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
+import { HeaderPropsService } from 'src/app/services/header-props.service';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -25,6 +26,7 @@ export class HeaderComponent implements OnInit {
     linksConfig: any = {
         default: null
     };
+    commonLinksDisabled: boolean = false; 
 
     menuIcon: 'expand_more' | 'account_circle' = 'expand_more';
     testUsers$: Observable<any[]>;
@@ -35,7 +37,8 @@ export class HeaderComponent implements OnInit {
         private otherService: DemoService,
         private route: ActivatedRoute,
         private router: Router,
-        public dialog: MatDialog
+        public dialog: MatDialog,
+        private headerProps: HeaderPropsService
     ) {
         this.testUsers$ = this.otherService.getAllUsers();
 
@@ -96,6 +99,7 @@ export class HeaderComponent implements OnInit {
                 this.update();
             }
         })
+        headerProps.isLoading$.subscribe(value => this.commonLinksDisabled = value);
     }
 
     ngOnInit() {
