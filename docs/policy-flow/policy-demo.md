@@ -1,9 +1,5 @@
 # Policy Demo
 
-{% hint style="info" %}
-Step by step flow of Policy documentation is in Progress. Will be released in the upcoming releases.
-{% endhint %}
-
 Once you login as a Standard Registry and finish the setup, click on Policies tab.
 
 ![](<../.gitbook/assets/image (4).png>)
@@ -33,7 +29,7 @@ We have two options to create Policy :&#x20;
 
 1.5 When clicked on Edit, the screen is navigated to Policies configuration tab, which gives an option to add/remove any block from the Policy.
 
-![](<../.gitbook/assets/image (7).png>)
+![](<../.gitbook/assets/image (7) (1).png>)
 
 1.6 Once the Policy is configured, you can go to Policies tab and click on Publish.
 
@@ -59,9 +55,18 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 1655293847.166673000 (new iREC Policy)
 ```
 
-![](<../.gitbook/assets/image (5).png>)
+![](<../.gitbook/assets/image (5) (1).png>)
 
 2.4 If the timestamp entered is correct, we get Policy Import Preview screen. If the imported Policy looks good, click on **Import** button.
 
 ![](<../.gitbook/assets/image (9).png>)
 
+2.5 Once the Policy is imported, if everything looks good, click on Publish button. Policy will be published and it is represented by changing the status as Published.
+
+![](<../.gitbook/assets/image (7).png>)
+
+2.6 There is also an option to Export the Policy. To export the policy click on Export button. Once, you click on Export, you get Export dialog, where we have two exporting options: Copy message Identifier and saving the Policy as file.
+
+![](<../.gitbook/assets/image (5).png>)
+
+When you click on Save to file, Policy is exported as a .zip file.&#x20;

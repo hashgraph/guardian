@@ -1,6 +1,6 @@
 # User Account Information
 
-### RETURNS USER'S ACCOUNT BALANCE
+### RETURNS USER'S ACCOUNT INFORMATION
 
 {% swagger method="get" path="" baseUrl="/profiles/{username}" summary="Returns user account info" %}
 {% swagger-description %}
