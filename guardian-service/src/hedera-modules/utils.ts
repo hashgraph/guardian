@@ -6,7 +6,7 @@ export function timeout(timeoutValue: number) {
         descriptor.value = async function () {
             const timeoutPromise = new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    reject('Transaction timeout exceeded');
+                    reject(new Error('Transaction timeout exceeded'));
                 }, timeoutValue);
             })
             return Promise.race([oldFunc.apply(this, arguments), timeoutPromise]);

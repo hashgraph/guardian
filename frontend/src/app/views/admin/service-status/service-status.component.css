@@ -1,14 +1,13 @@
-.name-column {
-    font-size: xx-large;
-}
-
-.icon-status, .equal-column {
-    font-size: 40px;
-}
-
 .icon-status {
     width: 40px;
     height: 40px;
+    font-size: 40px;
+}
+
+.icon-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .service-status-row, .service-status-row td {
@@ -27,5 +26,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
     height: 60%;
+    font-size: xx-large;
+}
+
+.info-message {
+    text-align: center;
+    font-size: xx-large;
+}
+
+.a, a:visited {
+    color: blue;
 }

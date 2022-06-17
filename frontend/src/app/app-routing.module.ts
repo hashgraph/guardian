@@ -20,7 +20,9 @@ import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { StatusService } from './services/status.service';
+import { InfoComponent } from './components/info/info/info.component';
 
+const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
 class Guard {
     private router: Router;
@@ -44,7 +46,18 @@ class Guard {
         return this.auth.sessions().pipe(
             map((res: IUser | null) => {
                 if (res) {
-                    return res.role == this.role;
+                    if (res.role != this.role) {
+                        this.router.navigate(['/info'], 
+                            { 
+                                skipLocationChange: true, 
+                                queryParams: {
+                                    message: USER_IS_NOT_RA
+                                } 
+                            }
+                        );
+                        return false;
+                    }
+                    return true;
                 } else {
                     return this.router.parseUrl(this.defaultPage);
                 }
@@ -59,7 +72,18 @@ class Guard {
         return this.auth.sessions().pipe(
             map((res: IUser | null) => {
                 if (res) {
-                    return res.role == this.role;
+                    if (res.role != this.role) {
+                        this.router.navigate(['/info'], 
+                            { 
+                                skipLocationChange: true, 
+                                queryParams: {
+                                    message: USER_IS_NOT_RA
+                                } 
+                            }
+                        );
+                        return false;
+                    }
+                    return true;
                 } else {
                     return this.router.parseUrl(this.defaultPage);
                 }
@@ -129,7 +153,7 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent, canActivate: [ServicesStatusGuard] },
-            { path: 'logs', component: LogsViewComponent, canActivate: [ServicesStatusGuard] }
+            { path: 'logs', component: LogsViewComponent }
         ]
     },
     { path: 'status', component: ServiceStatusComponent },
@@ -140,6 +164,7 @@ const routes: Routes = [
     { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },
+    { path: 'info', component: InfoComponent },
     { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
 
