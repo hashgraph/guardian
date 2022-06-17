@@ -25,9 +25,9 @@ There is also a _Custom Role_ which is called _User_. This role can be used to c
 **Note**: Please wait for the Initialization Process to be completed.
 {% endhint %}
 
-3\. You'll now be prompted to configure your Standard Registry account. Enter the name field and then Press the **Generate** button to generate a Hedera Operator ID and an Operator Key. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
+3\. You'll now be prompted to configure your Standard Registry account. Enter all the mandatory fields and then Press the **Generate** button to generate a Hedera Operator ID and an Operator Key. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_0.png)
+![](../.gitbook/assets/iREC\_4.2.png)
 
 **NOTE**
 
@@ -37,7 +37,7 @@ There is a new feature as of version 1.0.2 which allows for the _Importing of Po
 
 ![](../.gitbook/assets/DUG\_4.png)
 
-* `1644847084.945541771` (iRec Application Details)
+* `1644847084.945541771` (iRec Schema)
 * `1644847093.979895804` (Inverter)
 * `1644847107.415192828` (MRV)
 
