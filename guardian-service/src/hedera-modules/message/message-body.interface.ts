@@ -7,6 +7,7 @@ export interface MessageBody {
     status: MessageStatus;
     type: MessageType;
     action: MessageAction;
+    lang: string;
     revokeMessage?: string;
     reason?: string;
     parentIds?: string[];
@@ -68,4 +69,11 @@ export interface VpMessageBody extends MessageBody {
     cid: string;
     url: string;
     relationships: string[];
+}
+
+export interface RegistrationMessageBody extends MessageBody {
+    did: string;
+    topicId: string;
+    lang: string;
+    attributes: { [x: string]: string } | undefined;
 }

@@ -146,7 +146,7 @@ export class PolicyImportExportHelper {
             .setTopicObject(parent)
             .sendMessage(message);
 
-        await topicHelper.link(topicRow, parent, messageStatus.getId());
+        await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
 
         const systemSchemas = new Array(4);
         systemSchemas[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);

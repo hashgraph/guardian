@@ -37,6 +37,7 @@ export class VPMessage extends Message {
             status: null,
             type: this.type,
             action: this.action,
+            lang: this.lang,
             issuer: this.issuer,
             relationships: this.relationships,
             cid: this.getDocumentUrl(UrlType.cid),

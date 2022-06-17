@@ -1,7 +1,7 @@
 import moduleAlias from 'module-alias';
 import dotenv from 'dotenv';
 import 'reflect-metadata';
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 
 moduleAlias.addAliases({
     "@api": __dirname + "/api",
@@ -25,13 +25,29 @@ if(!process.env.OPERATOR_KEY || process.env.OPERATOR_KEY.length<5) {
 }
 
 try {
-    const accountId = AccountId.fromString(process.env.OPERATOR_ID);
+    AccountId.fromString(process.env.OPERATOR_ID);
 } catch (error) {
     throw ('OPERATOR_ID field in .env file: ' + error.message);
 }
 
 try {
-    const accountKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
+    PrivateKey.fromString(process.env.OPERATOR_KEY);
 } catch (error) {
     throw ('OPERATOR_KEY field in .env file: ' + error.message);
+}
+
+try {
+    if(process.env.INITIALIZATION_TOPIC_ID) {
+        TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
+    }
+} catch (error) {
+    throw ('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message);
+}
+
+try {
+    if(process.env.INITIALIZATION_TOPIC_KEY) {
+        PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
+    }
+} catch (error) {
+    throw ('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message);
 }

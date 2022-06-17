@@ -48,6 +48,12 @@
                 <mat-divider></mat-divider>
             </div>
 
+            <div *ngIf="profile.parentTopicId" class="list-item">
+                <h4 mat-line>Initialization topic</h4>
+                <p mat-line class="root-field"> {{profile.parentTopicId}} </p>
+                <mat-divider></mat-divider>
+            </div>
+
         </div>
     </div>
 

@@ -41,6 +41,7 @@ export class TopicMessage extends Message {
             status: null,
             type: this.type,
             action: this.action,
+            lang: this.lang,
             name: this.name,
             description: this.description,
             owner: this.owner,

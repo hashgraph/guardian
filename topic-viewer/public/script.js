@@ -122,6 +122,9 @@ async function findTopic(topicId, root) {
         if (item.message && item.message.type == 'Topic' && item.message.childId) {
             await findTopic(item.message.childId, topicDiv);
         }
+        if (item.message && item.message.type == 'Standard Registry' && item.message.topicId) {
+            await findTopic(item.message.topicId, topicDiv);
+        }
     }
 }
 

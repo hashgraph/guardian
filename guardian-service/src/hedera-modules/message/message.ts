@@ -19,6 +19,7 @@ export abstract class Message {
     public id: string;
     public urls: IURL[];
     public topicId: string | TopicId;
+    public lang: string;
 
     public readonly action: MessageAction;
     public readonly type: MessageType;
@@ -40,6 +41,7 @@ export abstract class Message {
         this._responseType = 'str';
         this._id = HederaUtils.randomUUID();
         this._status = MessageStatus.ISSUE;
+        this.lang = 'en-US';
     }
 
     public abstract toMessageObject(): MessageBody;
@@ -75,7 +77,7 @@ export abstract class Message {
     }
 
     public getTopicId(): string {
-        if(this.topicId) {
+        if (this.topicId) {
             return this.topicId.toString();
         }
         return null
@@ -97,8 +99,8 @@ export abstract class Message {
     public revoke(message: string, parentIds?: string[]): void {
         this._status = MessageStatus.REVOKE;
         this._revokeMessage = message;
-        this._revokeReason = parentIds 
-            ? RevokeReason.ParentRevoked 
+        this._revokeReason = parentIds
+            ? RevokeReason.ParentRevoked
             : RevokeReason.DocumentRevoked;
         this._parentIds = parentIds;
     }
@@ -114,6 +116,7 @@ export abstract class Message {
                 status: this._status,
                 type: this.type,
                 action: this.action,
+                lang: this.lang,
                 revokeMessage: this._revokeMessage,
                 reason: this._revokeReason,
                 parentIds: this._parentIds
@@ -125,5 +128,9 @@ export abstract class Message {
             body.status = this._status;
             return JSON.stringify(body);
         }
+    }
+
+    public setLang(lang: string) {
+        this.lang = lang || 'en-US';
     }
 }

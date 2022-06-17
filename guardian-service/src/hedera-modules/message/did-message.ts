@@ -30,6 +30,7 @@ export class DIDMessage extends Message {
             status: this._status,
             type: this.type,
             action: this.action,
+            lang: this.lang,
             did: this.did,
             cid: this.urls[0].cid,
             url: this.urls[0].url

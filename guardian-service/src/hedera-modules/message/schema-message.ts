@@ -46,6 +46,7 @@ export class SchemaMessage extends Message {
             status: null,
             type: this.type,
             action: this.action,
+            lang: this.lang,
             name: this.name,
             description: this.description,
             entity: this.entity,

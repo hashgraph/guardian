@@ -7,5 +7,6 @@ export enum MessageType {
     InstancePolicy = 'Instance-Policy',
     Schema = 'Schema',
     Topic = 'Topic',
+    StandardRegistry = 'Standard Registry',
     // DynamicTopic = 'Dynamic-Topic',
 }

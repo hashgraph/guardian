@@ -26,6 +26,9 @@ export class Topic {
     key: string;
 
     @Column()
+    parent: string;
+
+    @Column()
     policyId: string;
 
     @Column()

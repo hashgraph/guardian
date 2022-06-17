@@ -17,13 +17,19 @@ import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
 
 export class MessageServer {
+
     private client: HederaSDKHelper;
 
     private submitKey: PrivateKey | string;
     private topicId: TopicId | string;
+    private static lang: string;
 
     constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         this.client = new HederaSDKHelper(operatorId, operatorKey);
+    }
+
+    public static setLang(lang: string) {
+        this.lang = lang;
     }
 
     public messageStartLog(name: string): number {
@@ -85,6 +91,7 @@ export class MessageServer {
         if (!this.topicId) {
             throw 'Topic not set';
         }
+        message.setLang(MessageServer.lang);
         const time = this.messageStartLog('Hedera');
         const buffer = message.toMessage();
         const id = await this.client.submitMessage(this.topicId, buffer, this.submitKey);

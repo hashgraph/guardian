@@ -197,7 +197,7 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
             policyId: null,
             policyUUID: null
         });
-        await topicHelper.link(topic, null, null);
+        await topicHelper.twoWayLink(topic, null, null);
     }
 
     SchemaHelper.updateIRI(schemaObject);
