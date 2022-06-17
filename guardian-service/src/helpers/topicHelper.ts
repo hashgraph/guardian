@@ -52,8 +52,6 @@ export class TopicHelper {
             rationale: rationale
         });
 
-        console.log(message1);
-
         await messageServer
             .setTopicObject(topic)
             .sendMessage(message1);
