@@ -568,10 +568,10 @@ paths:
     get:
       tags:
         - accounts
-      description: Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make the request.
+      description: Returns all users except those with roles Standard Registry and Auditor. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
-      summary: Returns a list of users, excluding Root Authority and Auditors.
+      summary: Returns a list of users, excluding Standard Registry and Auditors.
       responses:
         200:
           description: Successful operation.
@@ -670,12 +670,39 @@ paths:
 
   /accounts/root-authorities:
     get:
+      deprecated: true
       tags:
         - accounts
-      description: Returns all root authorities.
+      description: Returns all Standard Registries.
       security:
       - bearerAuth: []
-      summary: Returns all root authorities.
+      summary: Returns all Standard Registries.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        401:
+          description: Unauthorized.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /accounts/standard-registries:
+    get:
+      tags:
+        - accounts
+      description: Returns all Standard Registries.
+      security:
+      - bearerAuth: []
+      summary: Returns all Standard Registries.
       responses:
         200:
           description: Successful operation.
@@ -731,7 +758,7 @@ paths:
     get:
       tags:
         - profiles
-      description: Returns user account information. For users with the Root Authority role it also returns address book and VC document information.
+      description: Returns user account information. For users with the Standard Registry role it also returns address book and VC document information.
       parameters:
         - in: path
           name: username
@@ -762,7 +789,7 @@ paths:
     put:
       tags:
         - profiles
-      description: Sets Hedera credentials for the user. For users with the Root Authority role it also creates an address book.
+      description: Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.
       parameters:
         - in: path
           name: username
@@ -799,7 +826,7 @@ paths:
       deprecated: true
       tags:
         - schemas
-      description: Creates new schema. Only users with the Root Authority role are allowed to make the request.
+      description: Creates new schema. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Create new schema.
@@ -878,7 +905,7 @@ paths:
     post:
       tags:
         - schemas
-      description: Creates new schema. Only users with the Root Authority role are allowed to make the request.
+      description: Creates new schema. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: topicId
@@ -978,7 +1005,7 @@ paths:
     put:
       tags:
         - schemas
-      description: Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+      description: Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -1023,7 +1050,7 @@ paths:
     put:
       tags:
         - schemas
-      description: Updates the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
+      description: Updates the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -1063,7 +1090,7 @@ paths:
     delete:
       tags:
         - schemas
-      description: Deletes the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
+      description: Deletes the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -1099,7 +1126,7 @@ paths:
       deprecated: true
       tags:
         - schemas
-      description: Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Imports new schema from a zip file.
@@ -1136,7 +1163,7 @@ paths:
       deprecated: true
       tags:
         - schemas
-      description: Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Imports new schema from IPFS.
@@ -1174,7 +1201,7 @@ paths:
     post:
       tags:
         - schemas
-      description: Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: topicId
@@ -1221,7 +1248,7 @@ paths:
     post:
       tags:
         - schemas
-      description: Imports new schema from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: topicId
@@ -1270,7 +1297,7 @@ paths:
     post:
       tags:
         - schemas
-      description: Previews the schema from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Schema preview from IPFS.
@@ -1308,7 +1335,7 @@ paths:
     post:
       tags:
         - schemas
-      description: Previews the schema from a zip file. Only users with the Root Authority role are allowed to make the request.
+      description: Previews the schema from a zip file. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Schema preview from a zip file.
@@ -1344,7 +1371,7 @@ paths:
     post:
       tags:
         - schemas
-      description: Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Root Authority role are allowed to make the request.
+      description: Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: List Hedera message IDs of published schemas.
@@ -1377,7 +1404,7 @@ paths:
     post:
       tags:
         - schemas
-      description: Returns schema files for the schemas. Only users with the Root Authority role are allowed to make the request.
+      description: Returns schema files for the schemas. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Return zip file with schemas.
@@ -1437,7 +1464,7 @@ paths:
     post:
       tags:
         - schemas
-      description: Creates new system schema. Only users with the Root Authority role are allowed to make the request.
+      description: Creates new system schema. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: username
@@ -1471,7 +1498,7 @@ paths:
     get:
       tags:
         - schemas
-      description: Returns all system schemas by username. Only users with the Root Authority role are allowed to make the request.
+      description: Returns all system schemas by username. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Returns all system schemas by username.
@@ -1528,7 +1555,7 @@ paths:
     put:
       tags:
         - schemas
-      description: Updates the system schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
+      description: Updates the system schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -1568,7 +1595,7 @@ paths:
     delete:
       tags:
         - schemas
-      description: Deletes the system schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
+      description: Deletes the system schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -1602,7 +1629,7 @@ paths:
     put:
       tags:
         - schemas
-      description: Makes the selected scheme active. Other schemes of the same type become inactive. Only users with the Root Authority role are allowed to make the request.
+      description: Makes the selected scheme active. Other schemes of the same type become inactive. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: schemaId
@@ -1652,7 +1679,7 @@ paths:
           name: schemaEntity
           schema:
             type: string
-            enum: [ROOT_AUTHORITY, USER, POLICY, MINT_TOKEN, WIPE_TOKEN, MINT_NFTOKEN]
+            enum: [STANDARD_REGISTRY, USER, POLICY, MINT_TOKEN, WIPE_TOKEN, MINT_NFTOKEN]
           required: true
           description: schema type.
       security:
@@ -1679,7 +1706,7 @@ paths:
     get:
       tags:
         - tokens
-      description: Returns all tokens. For the Root Authority role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role.
+      description: Returns all tokens. For the Standard Registry role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role.
       security:
       - bearerAuth: []
       summary: Return a list of tokens.
@@ -1712,7 +1739,7 @@ paths:
     post:
       tags:
         - tokens
-      description: Creates a new token. Only users with the Root Authority role are allowed to make the request.
+      description: Creates a new token. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Creates a new token.
@@ -1760,7 +1787,7 @@ paths:
     get:
       tags:
         - tokens
-      description: Returns user information for the selected token. Only users with the Root Authority role are allowed to make the request.
+      description: Returns user information for the selected token. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       parameters:
@@ -1862,7 +1889,7 @@ paths:
     put:
       tags:
         - tokens
-      description: Sets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request.
+      description: Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
@@ -1907,7 +1934,7 @@ paths:
     put:
       tags:
         - tokens
-      description: Unsets the KYC flag for the user. Only users with the Root Authority role are allowed to make the request.
+      description: Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
@@ -1952,7 +1979,7 @@ paths:
     put:
       tags:
         - tokens
-      description: Freezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request.
+      description: Freezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
@@ -1997,7 +2024,7 @@ paths:
     put:
       tags:
         - tokens
-      description: Unfreezes transfers of the specified token for the user. Only users with the Root Authority role are allowed to make the request.
+      description: Unfreezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: tokenId
@@ -2103,7 +2130,7 @@ paths:
     get:
       tags:
         - policies
-      description: Returns all policies. Only users with the Root Authority and Installer role are allowed to make the request.
+      description: Returns all policies. Only users with the Standard Registry and Installer role are allowed to make the request.
       security:
         - bearerAuth: []
       summary: Return a list of all policies.
@@ -2160,7 +2187,7 @@ paths:
     post:
       tags:
         - policies
-      description: Creates a new policy. Only users with the Root Authority role are allowed to make the request.
+      description: Creates a new policy. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Creates a new policy.
@@ -2189,7 +2216,7 @@ paths:
     get:
       tags:
         - policies
-      description: Retrieves policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+      description: Retrieves policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -2227,7 +2254,7 @@ paths:
     put:
       tags:
         - policies
-      description: Updates policy configuration for the specified policy ID. Only users with the Root Authority role are allowed to make the request.
+      description: Updates policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request.
       summary: Updates policy configuration.
       parameters:
         - in: path
@@ -2267,7 +2294,7 @@ paths:
     put:
       tags:
         - policies
-      description: Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+      description: Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -2310,7 +2337,7 @@ paths:
     post:
       tags:
         - policies
-      description: Validates selected policy. Only users with the Root Authority role are allowed to make the request.
+      description: Validates selected policy. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Validates policy.
@@ -2343,7 +2370,7 @@ paths:
     get:
       tags:
         - policies
-      description: Returns data from the root policy block. Only users with the Root Authority and Installer role are allowed to make the request.
+      description: Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -2455,7 +2482,7 @@ paths:
     get:
       tags:
         - policies
-      description: Requests block ID from a policy by tag. Only users with the Root Authority and Installer roles are allowed to make the request.
+      description: Requests block ID from a policy by tag. Only users with the Standard Registry and Installer roles are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -2497,7 +2524,7 @@ paths:
     get:
       tags:
         - policies
-      description: Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Root Authority role are allowed to make the request.
+      description: Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -2530,7 +2557,7 @@ paths:
     get:
       tags:
         - policies
-      description: Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Root Authority role are allowed to make the request.
+      description: Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.
       parameters:
         - in: path
           name: policyId
@@ -2563,7 +2590,7 @@ paths:
     post:
       tags:
         - policies
-      description: Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Imports new policy from IPFS.
@@ -2601,7 +2628,7 @@ paths:
     post:
       tags:
         - policies
-      description: Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
       security:
       - bearerAuth: []
       summary: Imports new policy from a zip file.
@@ -2637,7 +2664,7 @@ paths:
     post:
       tags:
         - policies
-      description: Previews the policy from IPFS without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
       summary: Policy preview from IPFS.
       security:
       - bearerAuth: []
@@ -2673,7 +2700,7 @@ paths:
     post:
       tags:
         - policies
-      description: Previews the policy from a zip file without loading it into the local DB. Only users with the Root Authority role are allowed to make the request.
+      description: Previews the policy from a zip file without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
       summary: Policy preview from a zip file.
       security:
       - bearerAuth: []
@@ -2833,7 +2860,7 @@ paths:
     get:
       tags:
         - settings
-      description: Returns current settings. For users with the Root Authority role only.
+      description: Returns current settings. For users with the Standard Registry role only.
       security:
       - bearerAuth: []
       summary: Returns current settings.
@@ -2857,7 +2884,7 @@ paths:
     post:
       tags:
         - settings
-      description: Set settings. For users with the Root Authority role only.
+      description: Set settings. For users with the Standard Registry role only.
       security:
       - bearerAuth: []
       requestBody:
@@ -2886,7 +2913,7 @@ paths:
     post:
       tags:
         - logs
-      description: Returns logs. For users with the Root Authority role only.
+      description: Returns logs. For users with the Standard Registry role only.
       security:
       - bearerAuth: []
       requestBody:
@@ -2923,7 +2950,7 @@ paths:
     get:
       tags:
         - logs
-      description: Returns logs attributes. For users with the Root Authority role only.
+      description: Returns logs attributes. For users with the Standard Registry role only.
       parameters:
         - in: query
           name: name

@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
-import { AppRoutingModule, AuditorGuard, UserGuard, RootAuthorityGuard } from './app-routing.module';
+import { AppRoutingModule, AuditorGuard, UserGuard, StandardRegistryGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor, AuthService } from "./services/auth.service";
 import { ProfileService } from "./services/profile.service";
@@ -82,7 +82,7 @@ import { InfoComponent } from './components/info/info/info.component';
     exports: [],
     providers: [
         UserGuard,
-        RootAuthorityGuard,
+        StandardRegistryGuard,
         AuditorGuard,
         AuthService,
         ProfileService,

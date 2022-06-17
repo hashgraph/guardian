@@ -71,8 +71,8 @@ export class AuthService {
         return this.accessTokenSubject.subscribe(next, error, complete);
     }
 
-    public getRootAuthorities(): Observable<IUser[]> {
-        return this.http.get<any>(`${this.url}/root-authorities`);
+    public getStandardRegistries(): Observable<IUser[]> {
+        return this.http.get<any>(`${this.url}/standard-registries`);
     }
 }
 

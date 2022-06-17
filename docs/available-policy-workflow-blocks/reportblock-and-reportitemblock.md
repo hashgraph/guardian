@@ -8,7 +8,7 @@
 | -------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
 | type           | Type of workflow logic                                                            | **report**Block(Can't be changed).              |                                            |
 | tag            | Unique name for the logic block.                                                  | report.                                         |                                            |
-| permissions    | Which entity has rights to interact at this part of the workflow.                 | Root Authority.                                 |                                            |
+| permissions    | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                              |                                            |
 | defaultActive  | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |                                            |
 | dependencies   | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. | <mark style="color:red;">Deprecated</mark> |
 

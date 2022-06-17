@@ -16,7 +16,7 @@ function escapeRegExp(text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
-loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+loggerAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         const filters: any = {};
         const pageParameters: IPageParameters = {};
@@ -55,7 +55,7 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
     }
 });
 
-loggerAPI.get('/attributes', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+loggerAPI.get('/attributes', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         const logger = new Logger();
         if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {

@@ -4,7 +4,7 @@ Next, we need to add another step. To do this we click back to the “create\_ne
 
 Again we add a tag, data type – Hedera to be compliant with the Hedera transaction format, and entity type (Inverter) which indicates the sensor.
 
-![](../.gitbook/assets/PW\_19.png)
+![](../.gitbook/assets/PW\_image\_20.png)
 
 **Programmatically this workflow step looks like this:**
 

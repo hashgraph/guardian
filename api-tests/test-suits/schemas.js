@@ -14,7 +14,7 @@ function Schemas() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -28,7 +28,7 @@ function Schemas() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -92,7 +92,7 @@ function Schemas() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -109,7 +109,7 @@ function Schemas() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                        'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                     }
                 }
             );
@@ -123,7 +123,7 @@ function Schemas() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -146,7 +146,7 @@ function Schemas() {
             GetURL('schemas', schemaId, 'export', 'file'),
             {
                 headers: {
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 },
                 responseType: 'arraybuffer'
             }
@@ -163,7 +163,7 @@ function Schemas() {
             {
                 headers: {
                     'Content-Type': 'binary/octet-stream',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -198,7 +198,7 @@ function Schemas() {
             {
                 headers: {
                     'Content-Type': 'binary/octet-stream',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -213,7 +213,7 @@ function Schemas() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );

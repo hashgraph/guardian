@@ -107,9 +107,9 @@ export class UserGuard extends Guard implements CanActivate {
 @Injectable({
     providedIn: 'root'
 })
-export class RootAuthorityGuard extends Guard implements CanActivate {
+export class StandardRegistryGuard extends Guard implements CanActivate {
     constructor(router: Router, auth: AuthService) {
-        super(router, auth, UserRole.ROOT_AUTHORITY, '/login');
+        super(router, auth, UserRole.STANDARD_REGISTRY, '/login');
     }
 }
 
@@ -145,11 +145,11 @@ const routes: Routes = [
 
     { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
 
-    { path: 'config', component: RootConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
-    { path: 'tokens', component: TokenConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
-    { path: 'schemas', component: SchemaConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
+    { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'schemas', component: SchemaConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     {
-        path: 'admin', component: AdminHeaderComponent, canActivate: [RootAuthorityGuard], canActivateChild: [RootAuthorityGuard],
+        path: 'admin', component: AdminHeaderComponent, canActivate: [StandardRegistryGuard], canActivateChild: [StandardRegistryGuard],
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent, canActivate: [ServicesStatusGuard] },

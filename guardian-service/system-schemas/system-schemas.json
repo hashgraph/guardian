@@ -278,14 +278,14 @@
         }
     },
     {
-        "uuid": "RootAuthority",
-        "name": "RootAuthority",
-        "entity": "ROOT_AUTHORITY",
+        "uuid": "StandardRegistry",
+        "name": "StandardRegistry",
+        "entity": "STANDARD_REGISTRY",
         "document": {
-            "$id": "#RootAuthority&1.0.0",
-            "$comment": "{ \"term\": \"RootAuthority&1.0.0\", \"@id\": \"undefined#RootAuthority&1.0.0\" }",
-            "title": "RootAuthority",
-            "description": "RootAuthority",
+            "$id": "#StandardRegistry&1.0.0",
+            "$comment": "{ \"term\": \"StandardRegistry&1.0.0\", \"@id\": \"undefined#StandardRegistry&1.0.0\" }",
+            "title": "StandardRegistry",
+            "description": "StandardRegistry",
             "type": "object",
             "properties": {
                 "@context": {

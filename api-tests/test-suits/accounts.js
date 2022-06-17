@@ -8,7 +8,7 @@ function Accounts() {
         result = await axios.post(
             GetURL('accounts', 'login'),
             JSON.stringify({
-                username: 'RootAuthority',
+                username: 'StandardRegistry',
                 password: 'test'
             }),
             {
@@ -21,8 +21,8 @@ function Accounts() {
         delete result.data.accessToken;
         delete result.data.did;
         assert.deepEqual(result.data, {
-            username: 'RootAuthority',
-            role: 'ROOT_AUTHORITY'
+            username: 'StandardRegistry',
+            role: 'STANDARD_REGISTRY'
         })
         result = await axios.post(
             GetURL('accounts', 'login'),
@@ -70,7 +70,7 @@ function Accounts() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -95,13 +95,13 @@ function Accounts() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
         delete result.data.did;
         delete result.data.iat;
-        assert.deepEqual(result.data, { username: 'RootAuthority', role: 'ROOT_AUTHORITY' })
+        assert.deepEqual(result.data, { username: 'StandardRegistry', role: 'STANDARD_REGISTRY' })
 
         result = await axios.get(
             GetURL('accounts', 'session'),

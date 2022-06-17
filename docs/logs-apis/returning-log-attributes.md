@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/logs/attributes" summary="Returns logs attributes" %}
 {% swagger-description %}
-Returns logs attributes. For users with the Root Authority role only.
+Returns logs attributes. For users with the Standard Registry role only.
 {% endswagger-description %}
 
 {% swagger-parameter in="query" name="name" type="String" required="true" %}

@@ -28,7 +28,7 @@ export interface IGetAllUserResponse {
     did: string;
 }
 
-export interface IRootAuthorityUserResponse {
+export interface IStandardRegistryUserResponse {
     username: string;
     did: string;
 }

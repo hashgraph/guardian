@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/settings" summary="Returns current settings" %}
 {% swagger-description %}
-Returns current settings. For users with the Root Authority role only
+Returns current settings. For users with the Standard Registry role only
 {% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Success Operation" %}

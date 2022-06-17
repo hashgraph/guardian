@@ -25,7 +25,7 @@ The Guardian Policies are versioned using semantic versioning in the major.minor
 * minor: the Policy version contains notable new capabilities and non-breaking changes.&#x20;
 * micro: the Policy release contains non-breaking changes only.&#x20;
 
-Guardian system does not generate versions automatically, it is the responsibility of the Policy authors (Root Authority) to keep track of its policies/versions and correctly reflect changes in the version number.&#x20;
+Guardian system does not generate versions automatically, it is the responsibility of the Policy authors (Standard Registry) to keep track of its policies/versions and correctly reflect changes in the version number.&#x20;
 
 Wherever possible and relevant, Guardian Policy version header contains a reference to the original (paper) document version from the guiding which this policy represents.&#x20;
 

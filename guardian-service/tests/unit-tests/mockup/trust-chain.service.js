@@ -434,7 +434,7 @@ module.exports.testObject1 = [
             'id': '4cb4a454-74f5-4b30-853d-524e36174614',
             'type': [
                 'VerifiableCredential',
-                'RootAuthority'
+                'StandardRegistry'
             ],
             'credentialSubject': [
                 {
@@ -442,7 +442,7 @@ module.exports.testObject1 = [
                         'https://localhost/schema'
                     ],
                     'id': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
-                    'type': 'RootAuthority',
+                    'type': 'StandardRegistry',
                     'name': '2'
                 }
             ],
@@ -457,8 +457,8 @@ module.exports.testObject1 = [
             }
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
-        'schema': 'RootAuthority',
-        'entity': 'RootAuthority',
+        'schema': 'StandardRegistry',
+        'entity': 'StandardRegistry',
         'label': 'HASH',
         'tag': 'Account Creation'
     }
@@ -897,14 +897,15 @@ module.exports.testObject2 = [
             'id': '4cb4a454-74f5-4b30-853d-524e36174614',
             'type': [
                 'VerifiableCredential',
-                'RootAuthority'
+                'StandardRegistry'
             ],
             'credentialSubject': [
                 {
                     '@context': [
                         'https://localhost/schema'
                     ],
-                    'id': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',                    'type': 'RootAuthority',
+                    'id': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
+                    'type': 'StandardRegistry',
                     'name': '2'
                 }
             ],
@@ -919,8 +920,8 @@ module.exports.testObject2 = [
             }
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
-        'schema': 'RootAuthority',
-        'entity': 'RootAuthority',
+        'schema': 'StandardRegistry',
+        'entity': 'StandardRegistry',
         'label': 'HASH',
         'tag': 'Account Creation'
     }
@@ -1102,7 +1103,7 @@ module.exports.testObject3 = [
             'id': '4cb4a454-74f5-4b30-853d-524e36174614',
             'type': [
                 'VerifiableCredential',
-                'RootAuthority'
+                'StandardRegistry'
             ],
             'credentialSubject': [
                 {
@@ -1110,7 +1111,7 @@ module.exports.testObject3 = [
                         'https://localhost/schema'
                     ],
                     'id': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
-                    'type': 'RootAuthority',
+                    'type': 'StandardRegistry',
                     'name': '2'
                 }
             ],
@@ -1125,8 +1126,8 @@ module.exports.testObject3 = [
             }
         },
         'owner': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
-        'schema': 'RootAuthority',
-        'entity': 'RootAuthority',
+        'schema': 'StandardRegistry',
+        'entity': 'StandardRegistry',
         'label': 'HASH',
         'tag': 'Account Creation'
     }

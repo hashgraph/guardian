@@ -11,7 +11,7 @@ import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.compon
 import { HeaderPropsService } from 'src/app/services/header-props.service';
 
 /**
- * RootAuthority profile settings page.
+ * Standard Registry profile settings page.
  */
 @Component({
     selector: 'app-root-config',
@@ -82,7 +82,7 @@ export class RootConfigComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.schemaService.getSystemSchemasByEntity(SchemaEntity.ROOT_AUTHORITY)
+            this.schemaService.getSystemSchemasByEntity(SchemaEntity.STANDARD_REGISTRY)
         ]).subscribe((value) => {
             if(!value[2]) {
                 this.errorLoadSchema = true;

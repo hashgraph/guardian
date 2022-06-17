@@ -134,8 +134,8 @@ export class Users extends ServiceRequestsBase {
         return await this.request(AuthEvents.GET_ALL_USER_ACCOUNTS);
     }
 
-    public async getAllRootAuthorityAccounts() {
-        return await this.request(AuthEvents.GET_ALL_ROOT_AUTHORITY_ACCOUNTS);
+    public async getAllStandardRegistryAccounts() {
+        return await this.request(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS);
     }
 
     public async getAllUserAccountsDemo() {

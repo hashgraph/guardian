@@ -14,6 +14,7 @@ import { PolicyMessage } from './policy-message';
 import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
+import { TransactionLogger } from '../transaction-logger';
 
 export class MessageServer {
     private client: HederaSDKHelper;
@@ -23,6 +24,16 @@ export class MessageServer {
 
     constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         this.client = new HederaSDKHelper(operatorId, operatorKey);
+    }
+
+    public messageStartLog(name: string): number {
+        TransactionLogger.messageLog(name);
+        return Date.now();
+    }
+
+    public messageEndLog(time: number, name: string): void {
+        const duration = Date.now() - time;
+        TransactionLogger.messageLog(name, duration);
     }
 
     public setTopicObject(topic: { topicId: string, key: string }): MessageServer {
@@ -45,6 +56,7 @@ export class MessageServer {
     }
 
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
+        const time = this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
         const urls = [];
         for (let i = 0; i < buffers.length; i++) {
@@ -52,6 +64,7 @@ export class MessageServer {
             const result = await IPFS.addFile(buffer);
             urls.push(result);
         }
+        this.messageEndLog(time, 'IPFS');
         message.setUrls(urls);
         return message;
     }
@@ -72,8 +85,10 @@ export class MessageServer {
         if (!this.topicId) {
             throw 'Topic not set';
         }
+        const time = this.messageStartLog('Hedera');
         const buffer = message.toMessage();
         const id = await this.client.submitMessage(this.topicId, buffer, this.submitKey);
+        this.messageEndLog(time, 'Hedera');
         message.setId(id);
         message.setTopicId(this.topicId);
         return message;

@@ -4,7 +4,7 @@
 
 {% swagger method="put" path="" baseUrl="/schemas/{schemaId}/active" summary="Publishes the Schema" %}
 {% swagger-description %}
-Makes the selected schema active. Other schemas of the same type become inactive. Only suers with the Root Authority role are allowed to make the request.
+Makes the selected schema active. Other schemas of the same type become inactive. Only suers with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="schemaID" type="String" required="true" %}

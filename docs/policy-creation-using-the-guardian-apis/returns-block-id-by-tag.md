@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/policies/{policyId}/tag/{tag}" summary="Requests block ID from a policy by tag" %}
 {% swagger-description %}
-Requests block ID from a policy by tag. Only users with the Root Authority and Installer roles are allowed to make the request
+Requests block ID from a policy by tag. Only users with the Standard Registry and Installer roles are allowed to make the request
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}

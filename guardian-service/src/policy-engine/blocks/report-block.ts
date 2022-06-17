@@ -209,7 +209,7 @@ export class ReportBlock {
                 if (policyCreator) {
                     const policyCreatorDocument: IReportItem = {
                         type: 'VC',
-                        title: 'RootAuthority',
+                        title: 'StandardRegistry',
                         description: 'Account Creation',
                         visible: true,
                         tag: 'Account Creation',
