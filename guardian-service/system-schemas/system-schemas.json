@@ -320,16 +320,39 @@
                     "type": "string",
                     "readOnly": true
                 },
-                "name": {
-                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "name",
-                    "description": "name",
+                "geography": {
+                    "$comment": "{\"term\": \"geography\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "geography",
+                    "description": "geography",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "law": {
+                    "$comment": "{\"term\": \"law\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "law",
+                    "description": "law",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "tags": {
+                    "$comment": "{\"term\": \"tags\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "tags",
+                    "description": "tags",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "ISIC": {
+                    "$comment": "{\"term\": \"ISIC\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "ISIC",
+                    "description": "ISIC",
                     "type": "string",
                     "readOnly": false
                 }
             },
             "required": [
-                "name"
+                "geography",
+                "law",
+                "tags"
             ],
             "additionalProperties": false
         }

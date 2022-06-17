@@ -38,7 +38,28 @@ export class TopicHelper {
         return topic;
     }
 
-    public async link(topic: Topic, parent: Topic, rationale: string) {
+    public async oneWayLink(topic: Topic, parent: Topic, rationale: string) {
+        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey);
+
+        const message1 = new TopicMessage(MessageAction.CreateTopic);
+        message1.setDocument({
+            name: topic.name,
+            description: topic.description,
+            owner: topic.owner,
+            messageType: topic.type,
+            childId: null,
+            parentId: parent?.topicId,
+            rationale: rationale
+        });
+
+        console.log(message1);
+
+        await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message1);
+    }
+
+    public async twoWayLink(topic: Topic, parent: Topic, rationale: string) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);

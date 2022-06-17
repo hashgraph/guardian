@@ -46,6 +46,7 @@ export class PolicyMessage extends Message {
             status: null,
             type: this.type,
             action: this.action,
+            lang: this.lang,
             uuid: this.uuid,
             name: this.name,
             description: this.description,

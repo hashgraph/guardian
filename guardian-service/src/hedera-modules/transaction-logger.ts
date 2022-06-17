@@ -184,4 +184,14 @@ export class TransactionLogger {
             console.log(`[TRANSACTION ERROR]        ${date.toISOString()}  ____ \t____________ \t${transactionName} \t${error.message}`);
         }
     }
+    public static transactionErrorLog(operatorAccountId: AccountId, transactionName: string, transaction: Transaction, message: string): void {
+        try {
+            const date = new Date();
+            console.log(`[TRANSACTION ERROR]        ${date.toISOString()}  ____ \t${operatorAccountId.toString()} \t${transactionName} \t${message}`);
+        } catch (error) {
+            const date = new Date();
+            console.log(`[TRANSACTION ERROR]        ${date.toISOString()}  ____ \t____________ \t${transactionName} \t${error.message}`);
+        }
+    }
+
 }

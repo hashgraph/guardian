@@ -68,6 +68,7 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
             failed: !!(didDocument && didDocument.status == DidDocumentStatus.FAILED),
             hederaAccountKey: null,
             topicId: topic?.topicId,
+            parentTopicId: topic?.parent,
             didDocument: didDocument,
             vcDocument: vcDocument
         };

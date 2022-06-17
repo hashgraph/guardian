@@ -16,6 +16,7 @@ import {
     HederaSDKHelper,
     MessageAction,
     MessageServer,
+    RegistrationMessage,
     VCMessage
 } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
@@ -27,6 +28,27 @@ import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topicHelper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
+import { Settings } from '@entity/settings';
+
+const getGlobalTopic = async function (): Promise<Topic | null> {
+    try {
+        const topicId = await getMongoRepository(Settings).findOne({
+            name: 'INITIALIZATION_TOPIC_ID'
+        });
+        const topicKey = await getMongoRepository(Settings).findOne({
+            name: 'INITIALIZATION_TOPIC_KEY'
+        });
+        const INITIALIZATION_TOPIC_ID = topicId?.value || process.env.INITIALIZATION_TOPIC_ID;
+        const INITIALIZATION_TOPIC_KEY = topicKey?.value || process.env.INITIALIZATION_TOPIC_KEY;
+        return {
+            topicId: INITIALIZATION_TOPIC_ID,
+            key: INITIALIZATION_TOPIC_KEY
+        } as Topic
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
 
 /**
  * Connect to the message broker methods of working with Address books.
@@ -78,6 +100,10 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             let topic: Topic = null;
             let newTopic = false;
 
+            let globalTopic = await getGlobalTopic();
+
+            const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
+
             if (parent) {
                 topic = await getMongoRepository(Topic).findOne({
                     owner: parent,
@@ -96,12 +122,11 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                     policyId: null,
                     policyUUID: null
                 });
-                await topicHelper.link(topic, null, null);
+                await topicHelper.oneWayLink(topic, globalTopic, null);
                 newTopic = true;
             }
 
-            const messageServer = new MessageServer(hederaAccountId, hederaAccountKey)
-                .setTopicObject(topic);
+            messageServer.setTopicObject(topic);
 
             // ------------------------
             // <-- Publish DID Document
@@ -189,7 +214,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                         readonly: true,
                         topicId: topic.topicId
                     });
-                    if(schema) {
+                    if (schema) {
                         schemaObject = new Schema(schema);
                     }
                 }
@@ -208,7 +233,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
 
                 const vcHelper = new VcHelper();
 
-                let credentialSubject: any = vcDocument || {};
+                let credentialSubject: any = { ...vcDocument } || {};
                 credentialSubject.id = userDID;
                 if (schemaObject) {
                     credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
@@ -245,7 +270,19 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
 
             if (newTopic) {
                 topic.owner = didMessage.did;
+                topic.parent = globalTopic?.topicId;
                 await getMongoRepository(Topic).update(topic.id, topic);
+            }
+
+            if (globalTopic && newTopic) {
+                const attributes = vcDocument ? { ...vcDocument } : {};
+                delete attributes.type;
+                delete attributes['@context'];
+                const regMessage = new RegistrationMessage(MessageAction.Init);
+                regMessage.setDocument(didMessage.did, topic?.topicId, attributes);
+                const result = await messageServer
+                    .setTopicObject(globalTopic)
+                    .sendMessage(regMessage)
             }
 
             return new MessageResponse(userDID);

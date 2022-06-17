@@ -248,7 +248,7 @@ export class PolicyUtils {
                     policyId: ref.policyId,
                     policyUUID: null
                 });
-                await topicHelper.link(topic, rootTopic, null);
+                await topicHelper.twoWayLink(topic, rootTopic, null);
             }
         } else {
             topic = rootTopic;

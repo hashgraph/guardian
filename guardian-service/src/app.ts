@@ -23,7 +23,7 @@ import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import { Environment, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
+import { Environment, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 
 Promise.all([
     createConnection({
@@ -49,7 +49,8 @@ Promise.all([
     state.updateState(ApplicationStates.STARTED);
 
     TransactionLogger.setLogLevel(TransactionLogLvl.NONE);
-    Environment.setNetwork(process.env.HEDERA_NET)
+    Environment.setNetwork(process.env.HEDERA_NET);
+    MessageServer.setLang(process.env.MESSAGE_LANG);
 
     IPFS.setChannel(channel);
     new Logger().setChannel(channel);

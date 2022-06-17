@@ -169,7 +169,7 @@ export class PolicyEngineService {
                 .setTopicObject(parent)
                 .sendMessage(message);
 
-            await topicHelper.link(topic, parent, messageStatus.getId());
+            await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
 
             const systemSchemas = new Array(4);
             systemSchemas[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);
@@ -261,7 +261,7 @@ export class PolicyEngineService {
         model.messageId = result.getId();
         model.instanceTopicId = rootTopic.topicId;
 
-        await topicHelper.link(rootTopic, topic, result.getId());
+        await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 
         const messageId = result.getId();
         const url = result.getUrl();
