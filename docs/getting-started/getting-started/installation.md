@@ -243,7 +243,7 @@ npm run test
 | API\_GATEWAY   | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             |
 | MRV\_SENDER    | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     |
 | TOPIC\_VIEWER  | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) |
-| API\_DOCS      | [http://localhost:3000/api-docs/v1/](ttp://localhost:3000/api-docs/v1/)    |
+| API\_DOCS      | [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/)   |
 
 #### Not in Docker:
 
