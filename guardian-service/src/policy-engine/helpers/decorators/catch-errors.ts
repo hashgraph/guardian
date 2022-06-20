@@ -11,7 +11,7 @@ export function CatchErrors() {
                     try {
                         await target.apply(thisArg, argArray);
                     } catch (error) {
-                        new Logger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
+                        await new Logger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
                         PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {

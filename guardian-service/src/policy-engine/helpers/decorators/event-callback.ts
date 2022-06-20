@@ -12,7 +12,7 @@ export function ActionCallback(config: {
             target.outputActions = [];
         }
         if (config.type) {
-            target.actions.push([config.type, descriptor.value]);
+            target.actions.push([config.type, descriptor.value.bind(target)]);
         }
         if (config.output) {
             if (Array.isArray(config.output)) {

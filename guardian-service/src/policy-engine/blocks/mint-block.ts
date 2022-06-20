@@ -185,14 +185,10 @@ export class MintBlock {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
 
-        try {
-            const root = await this.users.getHederaAccount(ref.policyOwner);
-            const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
-        } catch (error) {
-            throw error;
-        }
+        const root = await this.users.getHederaAccount(ref.policyOwner);
+        const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
