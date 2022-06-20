@@ -18,6 +18,12 @@ Note: This block is used for dropdown. You can add multiple blocks to 1 grid to 
 | onlyOwnDocuments    | When checked, filter out only VCs created by the user                                                  | checked or unchecked                                                 |
 | onlyAssignDocuments | When checked, it filter only VCs assigned to the user                                                  | checked or unchecked                                                 |
 | ViewHistory         | When checked, documents in the Grid will be displayed with status timeline                             | checked or unchecked                                                 |
+| Order Field         | name of the field                                                                                      | Source                                                               |
+| Order Direction     | Ascending or Descending direction of the order                                                         | ASC/DESC                                                             |
+
+{% hint style="info" %}
+Note: If no Order Field is specified, but Order Direction is specified, then Order Field will be automatically filled = createDate and data will be sorted by createDate
+{% endhint %}
 
 ### Filter Properties
 
