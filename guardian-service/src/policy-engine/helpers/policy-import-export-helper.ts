@@ -111,7 +111,7 @@ export class PolicyImportExportHelper {
      */
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
-
+        
         delete policy.id;
         delete policy.messageId;
         delete policy.version;
@@ -157,11 +157,13 @@ export class PolicyImportExportHelper {
         for (let i = 0; i < systemSchemas.length; i++) {
             messageServer.setTopicObject(topicRow);
             const schema = systemSchemas[i];
-            schema.creator = policyOwner;
-            schema.owner = policyOwner;
-            const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-            const newItem = getMongoRepository(SchemaCollection).create(item);
-            await getMongoRepository(SchemaCollection).save(newItem);
+            if(schema) {
+                schema.creator = policyOwner;
+                schema.owner = policyOwner;
+                const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
+                const newItem = getMongoRepository(SchemaCollection).create(item);
+                await getMongoRepository(SchemaCollection).save(newItem);
+            }
         }
 
         // Import Tokens
