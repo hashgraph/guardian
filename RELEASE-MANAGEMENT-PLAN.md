@@ -13,7 +13,10 @@ The Guardian uses semantic versioning for releases in the major.minor.build form
 Guardian version numbers also reflect changes in the API delivered by the release. Detailed description of the API lifecycle management and versioning is available in the [API Versioning and Deprecation Policy](https://docs.hedera.com/guardian/getting-started/api-versioning-and-deprecation-policy).
 
 ### Release process
-The Guardian release process is built around the sprint cycle, where each sprint ends with the codebase in the 'releasable' state. The only difference between the alternating release sprints and non-release sprints is the activities of packaging and uploading artifacts into external repositories.
+The Guardian release process is built around the sprint cycle, where each sprint ends with the codebase in the 'releasable' state. The difference between the alternating release sprints and non-release sprints is in the set of activities forming the release:
+- tagging the codebase with the release tag.
+- release testing.
+- packaging and uploading artifacts into external repositories.
 
 #### Feature development cycle
 An inception-to-release lifecycle of a new enchacement is usually 3 sprints long:
@@ -45,25 +48,30 @@ After the Sprint ended, the Product Owner leads the Sprint Review ceremony on Mo
 - Product Owner delivers a sprint report (with charts and statistics of the sprint)
 - Developers demo completed features, which includes showing unit tests and documentation (where relevant). For features without exposure through a UI developers will demo the successful run of the unit test.
 
-Following the Sprint Review lead developer tags and merges 'Develop' into 'Main'.
-
 On Tuesday the Product Owner holds a 'Retrospective' meeting where developers discuss between themselves successes/failures of the previous sprint and opportunities for improvements.
 
 #### Release flow
 
-Release sprint contain additional activities:
-- Documentation review by the Product Manager
-- Unit tests verification by the lead developer
-- Demo environment sanity tested by lead developer, product team and/or stakeholders
-- Product Manager prepares ChangeLog document
-- Product Manager prepares Release notes
-- Product Manager tags the release and runs release CI pipeline, following which verifies that it completed successfully and all artefacts got uploaded to the correct repositories
-  - Product Manager tags the Develop branch with the new version
-  - Product Manager or Lead developer creates a PR and squash-merges into the update from the Develop into the Main branch
-  - Product Manager tags the Main branch
-  - Produt Manager makes a release in the Main branch
-- Product Owner posts community announcements in the discord and slack channels
+Development release cycle consists of two sprints: development sprint followed by the release sprint. Development sprint is fully dedicated to normal development activities, release sprints contain consist of two stages:
+- a week-long development stage (the same as in the development sprint), which ends with the 'code freeze'
+- a week-long 'stabilization' stage, during which team resources are allocated to testing, bug fixing and documentation. No new development work is performed during this period.
 
+The 'stabilisation' stage of the release sprint starts the following additional activities:
+- Product Manager tags the release and runs release CI pipeline, following which verifies that it completed successfully.
+- Product Manager tags the Develop branch with the new pre-release version.
+- Product Manager or Lead developer creates a PR and squash-merges into the update from the Develop into the Main branch.
+- Product Manager tags the Main branch with the **pre-release**.
+- Product Manager makes a **pre-release** in the Main branch.
+- Product Manager prepares a pre-release ChangeLog document.
+- Product Manager prepares a pre-release Release notes.
+- Product Owner posts community announcements in the discord and slack channels about the availability of the pre-release, to enable members of the community to assess the release impact and prepare for the upgrade.
+
+The entire team, with the help of the wider community, tests the Release for a week, fixing defects, developing additional unit-tests, and improving/fixing documentation. Other activities include:
+- Documentation review by the Product Manager, Product Owner and stakeholders.
+- Unit tests verification by the lead developer.
+- Demo environment sanity tested by lead developer, product team and/or stakeholders.
+
+At the end of the release sprint Product Owner facilitates the discussion with Product Manager and members of the Dev and QA teams on the release go/no-go decisions. Following a positive decision the PM tags the codebase with the release version and makes the release ensuring all release artefacts get uploaded into their distribution repositories.
 
 #### Artifacts list
 
