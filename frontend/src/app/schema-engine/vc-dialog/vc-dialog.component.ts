@@ -1,6 +1,6 @@
 import { Component, Inject, Input } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Schema } from 'interfaces';
+import { Schema } from '@guardian/interfaces';
 
 /**
  * Dialog for display json
@@ -15,7 +15,6 @@ export class VCViewerDialog {
     json: string = "";
     viewDocument!: boolean;
     isVcDocument!: boolean;
-    schemas: any;
     document: any;
     type: any;
     isVpDocument!: boolean;
@@ -27,8 +26,7 @@ export class VCViewerDialog {
             document: any,
             title: string,
             viewDocument?: boolean,
-            type?: 'VC' | 'VP' | 'JSON',
-            schemas?: Schema[],
+            type?: 'VC' | 'VP' | 'JSON'
         }) {
     }
 
@@ -37,8 +35,7 @@ export class VCViewerDialog {
             document,
             title,
             viewDocument,
-            type,
-            schemas
+            type
         } = this.data;
         this.title = title;
         this.json = JSON.stringify((document), null, 4);
@@ -56,7 +53,6 @@ export class VCViewerDialog {
             this.isJsonDocument = true;
         }
         this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
-        this.schemas = schemas;
     }
 
     onClick(): void {

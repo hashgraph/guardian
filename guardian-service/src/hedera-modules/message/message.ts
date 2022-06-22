@@ -10,17 +10,26 @@ export enum MessageStatus {
     REVOKE = 'REVOKE'
 }
 
+export enum RevokeReason {
+    DocumentRevoked = 'Document Revoked',
+    ParentRevoked = 'Parent Revoked'
+}
+
 export abstract class Message {
     public id: string;
     public urls: IURL[];
     public topicId: string | TopicId;
+    public lang: string;
 
     public readonly action: MessageAction;
     public readonly type: MessageType;
 
-    protected _responseType: "json" | "raw" | "str";
+    protected _responseType: 'json' | 'raw' | 'str';
     protected _id: string;
     protected _status: MessageStatus;
+    protected _revokeMessage: string;
+    protected _revokeReason: string;
+    protected _parentIds: string[];
 
     get responseType() {
         return this._responseType;
@@ -29,9 +38,10 @@ export abstract class Message {
     constructor(action: MessageAction, type: MessageType) {
         this.action = action;
         this.type = type;
-        this._responseType = "str";
+        this._responseType = 'str';
         this._id = HederaUtils.randomUUID();
         this._status = MessageStatus.ISSUE;
+        this.lang = 'en-US';
     }
 
     public abstract toMessageObject(): MessageBody;
@@ -62,8 +72,12 @@ export abstract class Message {
         return this.id;
     }
 
+    public getMessageId(): string {
+        return this._id;
+    }
+
     public getTopicId(): string {
-        if(this.topicId) {
+        if (this.topicId) {
             return this.topicId.toString();
         }
         return null
@@ -82,8 +96,17 @@ export abstract class Message {
         return null;
     }
 
-    public revoke(): void {
+    public revoke(message: string, parentIds?: string[]): void {
         this._status = MessageStatus.REVOKE;
+        this._revokeMessage = message;
+        this._revokeReason = parentIds
+            ? RevokeReason.ParentRevoked
+            : RevokeReason.DocumentRevoked;
+        this._parentIds = parentIds;
+    }
+
+    public isRevoked() {
+        return this._status === MessageStatus.REVOKE;
     }
 
     public toMessage(): string {
@@ -92,7 +115,11 @@ export abstract class Message {
                 id: this._id,
                 status: this._status,
                 type: this.type,
-                action: this.action
+                action: this.action,
+                lang: this.lang,
+                revokeMessage: this._revokeMessage,
+                reason: this._revokeReason,
+                parentIds: this._parentIds
             }
             return JSON.stringify(body);
         } else {
@@ -102,9 +129,8 @@ export abstract class Message {
             return JSON.stringify(body);
         }
     }
+
+    public setLang(lang: string) {
+        this.lang = lang || 'en-US';
+    }
 }
-
-
-
-
-

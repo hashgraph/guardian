@@ -4,7 +4,7 @@ Next, we add another container block by clicking on the “Container” button i
 
 This block is to set up sensors by the Installer and, therefore the page of the UI should be BLANK to be able to add data.
 
-![](../.gitbook/assets/PW\_14.png)
+![](../.gitbook/assets/PW\_image\_14.png)
 
 **Programmatically this workflow step looks like this:**
 

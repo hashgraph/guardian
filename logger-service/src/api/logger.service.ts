@@ -1,7 +1,7 @@
 import { MongoRepository } from 'typeorm';
 import { Log } from '@entity/log';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage, LogType, ExternalMessageEvents } from '@guardian/interfaces';
 
 
 export const loggerAPI = async function (
@@ -10,29 +10,34 @@ export const loggerAPI = async function (
 ): Promise<void> {
     /**
      * Add log message
-     * 
+     *
      * @param {Message} [payload] - Log message
-     * 
+     *
      */
     channel.response<ILog, any>(MessageAPI.WRITE_LOG, async (message) => {
         try {
             if (!message) {
                 throw new Error("Log message is empty");
             }
+
             await logRepository.save(message);
+
+            if (message.type === LogType.ERROR) {
+                channel.publish(ExternalMessageEvents.ERROR_LOG, message);
+            }
             return new MessageResponse(true);
         }
-        catch (e) {
-            return new MessageError(e);
+        catch (error) {
+            return new MessageError(error);
         }
     })
 
     /**
      * Get application logs.
-     * 
+     *
      * @param {any} [msg.filters] - logs filter options
      * @param {IPageParameters} [msg.pageParameters] - Page parameters
-     * 
+     *
      * @return {any} - Logs
      */
     channel.response<IGetLogsMessage, IGetLogsResponse>(MessageAPI.GET_LOGS, async (msg) => {
@@ -57,16 +62,16 @@ export const loggerAPI = async function (
                 totalCount
             });
         }
-        catch (e) {
-            return new MessageError(e.toString());
+        catch (error) {
+            return new MessageError(error);
         }
     })
 
     /**
      * Get attributes.
-     * 
+     *
      * @param {any} [payload.name] - Name to filter
-     * 
+     *
      * @return {any} - Attributes
      */
     channel.response<IGetLogAttributesMessage, any>(MessageAPI.GET_ATTRIBUTES, async (msg) => {
@@ -87,8 +92,8 @@ export const loggerAPI = async function (
             attrCursor.close();
             return new MessageResponse(attrObject?.uniqueValues?.sort() || []);
         }
-        catch (e) {
-            return new MessageError<string>(e.toString());
+        catch (error) {
+            return new MessageError<string>(error.toString());
         }
     })
 }

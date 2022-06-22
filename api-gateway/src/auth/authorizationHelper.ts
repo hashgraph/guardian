@@ -17,8 +17,8 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             req.user = await users.getUserByToken(token) as IAuthUser;
             next();
             return;
-        } catch (e) {
-            console.error(e.message);
+        } catch (error) {
+            console.error(error.message);
         }
     }
     res.sendStatus(401);

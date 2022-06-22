@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/policies" summary="Return a list of all policies" %}
 {% swagger-description %}
-Returns all policies. Only users with the Root Authority and Installer role are allowed to make the request
+Returns all policies. Only users with the Standard Registry and Installer role are allowed to make the request
 {% endswagger-description %}
 
 {% swagger-parameter in="query" name="pageIndex" type="Integer" required="true" %}

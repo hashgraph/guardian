@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/schemas/{schemaId}" summary="Updates the schema" %}
 {% swagger-description %}
-Updates the schema with the provided schema ID. Only users with the Root Authority role are allowed to make the request.
+Updates the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="schemaID" type="String" required="true" %}

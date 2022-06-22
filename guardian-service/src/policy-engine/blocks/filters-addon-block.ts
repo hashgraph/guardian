@@ -5,9 +5,21 @@ import { BlockActionError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @DataSourceAddon({
-    blockType: 'filtersAddon'
+    blockType: 'filtersAddon',
+    about: {
+        label: 'Filters Addon',
+        title: `Add 'Filters' Addon`,
+        post: true,
+        get: true,
+        children: ChildrenType.Special,
+        control: ControlType.Special,
+        input: null,
+        output: null,
+        defaultEvent: false
+    }
 })
 export class FiltersAddonBlock {
     private state: { [key: string]: any } = {
@@ -37,7 +49,7 @@ export class FiltersAddonBlock {
             canBeEmpty: ref.options.canBeEmpty
         };
 
-        let data: any[] = await ref.getSources(user);
+        let data: any[] = await ref.getSources(user, null);
 
         if (ref.options.type == 'dropdown') {
             const blockState = this.state[user.did] || {};

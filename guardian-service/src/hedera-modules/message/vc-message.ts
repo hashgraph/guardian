@@ -1,8 +1,8 @@
 import { VcDocument } from './../vcjs/vc-document';
 import { Message } from './message';
-import { IURL, UrlType } from "./url.interface";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { IURL, UrlType } from './url.interface';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 import { MessageBody, VcMessageBody } from './message-body.interface';
 
 export class VCMessage extends Message {
@@ -11,9 +11,14 @@ export class VCMessage extends Message {
     public hash: string;
     public issuer: string;
     public relationships: string[];
+    public documentStatus: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.VCDocument);
+    }
+
+    public setStatus(status: string): void {
+        this.documentStatus = status;
     }
 
     public setDocument(document: VcDocument): void {
@@ -37,10 +42,12 @@ export class VCMessage extends Message {
             status: null,
             type: this.type,
             action: this.action,
+            lang: this.lang,
             issuer: this.issuer,
             relationships: this.relationships,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
+            documentStatus: this.documentStatus
         };
     }
 

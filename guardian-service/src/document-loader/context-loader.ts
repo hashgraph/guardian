@@ -1,6 +1,6 @@
 import { Schema } from '@entity/schema';
 import { getMongoRepository, MongoRepository } from 'typeorm';
-import { ISchema } from 'interfaces';
+import { ISchema } from '@guardian/interfaces';
 import { DocumentLoader, IDocumentFormat } from '@hedera-modules';
 
 /**

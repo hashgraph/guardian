@@ -55,6 +55,14 @@
         <tr class="propRow subRow"
             [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
             <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Condition Tag</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="condition.tag" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow"
+            [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
             <td class="propRowCell cellName">Condition Type</td>
             <td class="propRowCell">
                 <mat-select [(value)]="condition.type" [disabled]="readonly">
@@ -81,21 +89,6 @@
                     <mat-option value="">Current User</mat-option>
                     <mat-option value="owner">Document Owner</mat-option>
                     <mat-option value="issuer">Document Issuer</mat-option>
-                </mat-select>
-            </td>
-        </tr>
-        <tr class="propRow subRow"
-            [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">
-                <mat-icon class="icon-link">
-                    add_link
-                </mat-icon>
-                Target Block
-            </td>
-            <td class="propRowCell">
-                <mat-select [(value)]="condition.target" [disabled]="readonly">
-                    <mat-option *ngFor="let item of all" [value]="item.tag">{{item.tag}}</mat-option>
                 </mat-select>
             </td>
         </tr>

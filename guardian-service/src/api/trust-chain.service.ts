@@ -5,15 +5,14 @@ import {
     IChainItem,
     MessageAPI,
     SchemaEntity
-} from 'interfaces';
-import { Logger } from 'logger-helper';
+} from '@guardian/interfaces';
 import { MongoRepository } from 'typeorm';
 import {
     VcDocument as HVcDocument,
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
@@ -45,7 +44,7 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
 
 /**
  * Connecting to the message broker methods of working with trust chain.
- * 
+ *
  * @param channel - channel
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
@@ -59,7 +58,7 @@ export const trustChainAPI = async function (
 ): Promise<void> {
     /**
      * Search parent by VC or VP Document
-     * 
+     *
      * @param {IChainItem[]} chain - current trust chain
      * @param {VcDocument | VpDocument} vc - Document
      * @param {Object} map - ids map
@@ -121,7 +120,7 @@ export const trustChainAPI = async function (
 
     /**
      * Return Policy Info by Policy Id
-     * 
+     *
      * @param {IChainItem[]} chain - current trust chain
      * @param {string} policyId - policy Id
      */
@@ -138,7 +137,7 @@ export const trustChainAPI = async function (
 
             const policyImported = await vcDocumentRepository.findOne({
                 where: {
-                    type: { $eq: SchemaEntity.POLICY_IMPORTED },
+                    type: { $eq: 'POLICY_IMPORTED' },
                     policyId: { $eq: policyId }
                 }
             });
@@ -171,9 +170,9 @@ export const trustChainAPI = async function (
 
             if (issuer) {
                 const didDocuments = await didDocumentRepository.find({ where: { did: { $eq: issuer } } });
-                const rootAuthority = await vcDocumentRepository.findOne({
+                const standardRegistries = await vcDocumentRepository.find({
                     where: {
-                        type: { $eq: SchemaEntity.ROOT_AUTHORITY },
+                        type: { $eq: SchemaEntity.STANDARD_REGISTRY },
                         owner: { $eq: issuer }
                     }
                 });
@@ -189,15 +188,15 @@ export const trustChainAPI = async function (
                         tag: null
                     });
                 }
-                if (rootAuthority) {
+                for (let standardRegistry of standardRegistries) {
                     chain.push({
                         type: 'VC',
-                        id: rootAuthority.hash,
-                        document: rootAuthority.document,
-                        owner: rootAuthority.owner,
-                        schema: getField(rootAuthority, 'type'),
+                        id: standardRegistry.hash,
+                        document: standardRegistry.document,
+                        owner: standardRegistry.owner,
+                        schema: getField(standardRegistry, 'type'),
                         label: 'HASH',
-                        entity: 'RootAuthority',
+                        entity: 'StandardRegistry',
                         tag: "Account Creation"
                     });
                 }
@@ -207,14 +206,14 @@ export const trustChainAPI = async function (
 
     /**
      * Return trust chain
-     * 
+     *
      * @param {string} payload - hash or uuid
-     * 
+     *
      * @returns {IChainItem[]} - trust chain
      */
     ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg) => {
         try {
-            const hash = msg;
+            const hash = msg.id;
             const chain: IChainItem[] = [];
             let root: VcDocument | VpDocument;
 
@@ -273,9 +272,9 @@ export const trustChainAPI = async function (
             await getPolicyInfo(chain, null);
             return new MessageResponse(chain);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     });
 }

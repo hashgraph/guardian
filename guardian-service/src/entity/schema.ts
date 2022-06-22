@@ -1,4 +1,4 @@
-import { ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus, ModelHelper } from 'interfaces';
+import { ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus, ModelHelper } from '@guardian/interfaces';
 import { AfterLoad, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
@@ -23,9 +23,6 @@ export class Schema implements ISchema {
 
     @Column()
     status: SchemaStatus;
-
-    @Column()
-    readonly: boolean;
 
     @Column()
     document: ISchemaDocument;
@@ -60,6 +57,15 @@ export class Schema implements ISchema {
     @CreateDateColumn()
     createDate: Date;
 
+    @Column()
+    readonly: boolean;
+
+    @Column()
+    system: boolean;
+
+    @Column()
+    active: boolean;
+
     /**
      * Virtual column.
      */
@@ -75,6 +81,8 @@ export class Schema implements ISchema {
         if (this.status == SchemaStatus.DRAFT) {
             this.messageId = null;
         }
+        this.system = this.system || false;
+        this.active = this.active || false;
     }
 
     @AfterLoad()

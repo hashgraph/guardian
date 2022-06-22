@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus, IVPDocument, SchemaEntity } from 'interfaces';
+import { DocumentSignature, DocumentStatus, IVPDocument, SchemaEntity } from '@guardian/interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
@@ -46,6 +46,12 @@ export class VpDocument implements IVPDocument {
 
     @Column()
     relationships: string[];
+
+    @Column()
+    option?: any;
+
+    @Column()
+    comment?: string;
 
     @BeforeInsert()
     setDefaults() {

@@ -1,5 +1,5 @@
-import { MessageBrokerChannel } from "common";
-import { ApplicationStates, CommonSettings, MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from "interfaces";
+import { MessageBrokerChannel } from "@guardian/common";
+import { ApplicationStates, CommonSettings, MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from "@guardian/interfaces";
 import { Singleton } from "./decorators/singleton";
 
 /**
@@ -92,7 +92,7 @@ export class IPFS {
 
     /**
      * Get service status
-     * 
+     *
      * @returns {ApplicationStates} Service state
      */
     public async getStatus(): Promise<ApplicationStates> {

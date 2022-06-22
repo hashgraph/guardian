@@ -20,8 +20,7 @@ import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
 import { settingsAPI } from '@api/service/settings';
 import { loggerAPI } from '@api/service/logger';
-import { Logger } from 'logger-helper';
-import { MessageBrokerChannel } from 'common';
+import { MessageBrokerChannel, Logger } from '@guardian/common';
 
 const PORT = process.env.PORT || 3002;
 

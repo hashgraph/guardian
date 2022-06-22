@@ -1,14 +1,13 @@
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
-import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { MessageAPI, CommonSettings } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 
 /**
  * Connecting to the message broker methods of working with root address book.
- * 
+ *
  * @param channel - channel
  * @param approvalDocumentRepository - table with approve documents
  */
@@ -24,7 +23,7 @@ export const configAPI = async function (
 
     /**
      * Update settings
-     * 
+     *
      */
     ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (msg) => {
         try {
@@ -64,15 +63,15 @@ export const configAPI = async function (
             }
             return new MessageResponse(null);
         }
-        catch (e) {
-            new Logger().error(e.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(e);
+        catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
     });
 
     /**
      * Get settings
-     * 
+     *
      */
     ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg) => {
         try {
@@ -87,9 +86,9 @@ export const configAPI = async function (
                 operatorKey: operatorKey?.value || process.env.OPERATOR_KEY
             });
         }
-        catch (e) {
-            new Logger().error(e.message, ['GUARDIAN_SERVICE']);
-            return new MessageError(e);
+        catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
     });
 }

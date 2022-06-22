@@ -1,5 +1,5 @@
-import { MessageBrokerChannel } from "common";
-import { MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from "interfaces";
+import { MessageBrokerChannel } from "@guardian/common";
+import { MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from "@guardian/interfaces";
 
 /**
  * IPFS service
@@ -26,7 +26,7 @@ export class IPFS {
     /**
      * Return hash of added file
      * @param {ArrayBuffer} file file to upload on IPFS
-     * 
+     *
      * @returns {string} - hash
      */
     public static async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {

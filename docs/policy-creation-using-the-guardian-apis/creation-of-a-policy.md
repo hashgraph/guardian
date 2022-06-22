@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/policies" summary="Creates a new policy" %}
 {% swagger-description %}
-Creates a new policy. Only users with the Root Authority role are allowed to make the request
+Creates a new policy. Only users with the Standard Registry role are allowed to make the request
 {% endswagger-description %}
 
 {% swagger-parameter in="body" type="Object" required="true" %}

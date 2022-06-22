@@ -6,15 +6,16 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { saveAs } from 'file-saver';
-import { ILog } from 'interfaces';
+import { ILog } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { merge, Observable, of } from 'rxjs';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';
 import { DetailsLogDialog } from '../details-log-dialog/details-log-dialog.component';
+import { ActivatedRoute } from '@angular/router';
 
 /**
- * Page for creating, editing, importing and exporting schemes.
+ * Page for creating, editing, importing and exporting schemas.
  */
 @Component({
     selector: 'app-logs-view',
@@ -51,9 +52,9 @@ export class LogsViewComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private logService: LoggerService,
-        public dialog: MatDialog) {
-
-    }
+        public dialog: MatDialog,
+        private route: ActivatedRoute
+    ) { }
 
     ngOnInit() {
         this.attributes = this.autoCompleteControl.valueChanges
@@ -61,6 +62,14 @@ export class LogsViewComponent implements OnInit {
             startWith([]),
             switchMap(value => this.logService.getAttributes(this.autoCompleteControl.value, this.searchForm?.get("attributes")?.value))
           );
+          this.route.queryParams.subscribe(params => {
+            if (params['attr']) {
+                this.searchForm.patchValue({
+                    attributes: [params['attr']]
+                });
+                this.onApply();
+            }
+          });
       }
 
     ngAfterViewInit() {
@@ -85,7 +94,7 @@ export class LogsViewComponent implements OnInit {
                 if (data === null) {
                     return [];
                 }
-                
+
                 this.totalCount = data.totalCount;
                 return data.logs;
             })

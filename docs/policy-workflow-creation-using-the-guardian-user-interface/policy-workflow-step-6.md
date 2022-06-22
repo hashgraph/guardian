@@ -8,7 +8,7 @@ We now proceed in the same way as with the “Send” step from “save\_new\_ap
 
 Note that the data type must be “Hedera” since the document is to be sent as a verifiable credential for permanent storage to Hedera.
 
-![](../.gitbook/assets/PW\_11.png)
+![](../.gitbook/assets/PW\_image\_11.png)
 
 **Programmatically this workflow step looks like this:**
 

@@ -4,7 +4,7 @@
 
 {% swagger method="put" path="" baseUrl="/schemas/{schemaId}/publish" summary="Publishes the schema" %}
 {% swagger-description %}
-Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Root Authority role are allowed to make the request.
+Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="schemaID" type="String" required="true" %}

@@ -2,7 +2,8 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
-import { Schema, Token, SchemaField } from 'interfaces';
+import { Schema, Token, SchemaField } from '@guardian/interfaces';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
 
 @Component({
   selector: 'app-custom-logic-config',
@@ -13,17 +14,14 @@ import { Schema, Token, SchemaField } from 'interfaces';
   ]
 })
 export class CustomLogicConfigComponent implements OnInit {
-
-    @Input('target') target!: BlockNode;
-    @Input('all') all!: BlockNode[];
-    @Input('schemes') schemes!: Schema[];
+    @Input('policy') policy!: PolicyModel;
+    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
-    block!: BlockNode;
+    block!: any;
 
     propHidden: any = {
         outputSchemaGroup: false
@@ -35,11 +33,11 @@ export class CustomLogicConfigComponent implements OnInit {
 
     ngOnInit(): void {
         this.onInit.emit(this);
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
-    load(block: BlockNode) {
-        this.block = block;
+    load(block: PolicyBlockModel) {
+        this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {}
         this.block.expression = this.block.expression || ''
     }
@@ -62,7 +60,7 @@ export class CustomLogicConfigComponent implements OnInit {
 
     onSelectOutput() {
         this.block.inputFields = [];
-        const schema = this.schemes.find(e => e.iri == this.block.outputSchema)
+        const schema = this.schemas.find(e => e.iri == this.block.outputSchema)
         if (schema) {
             for (let i = 0; i < schema.fields.length; i++) {
                 const field = schema.fields[i];

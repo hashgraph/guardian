@@ -13,17 +13,33 @@ import {
     IVPReport,
     SchemaEntity,
     SchemaStatus
-} from 'interfaces';
+} from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Users } from '@helpers/users';
 import { getMongoRepository } from 'typeorm';
 import { VpDocument } from '@entity/vp-document';
 import { VcDocument } from '@entity/vc-document';
 import { Schema } from '@entity/schema';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { PolicyInputEventType } from '@policy-engine/interfaces';
 
 @Report({
     blockType: 'reportBlock',
-    commonBlock: false
+    commonBlock: false,
+    about: {
+        label: 'Report',
+        title: `Add 'Report' Block`,
+        post: true,
+        get: true,
+        children: ChildrenType.Special,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+        ],
+        output: null,
+        defaultEvent: false
+    }
 })
 export class ReportBlock {
     @Inject()
@@ -88,7 +104,6 @@ export class ReportBlock {
                 return {
                     hash: null,
                     uiMetaData: ref.options.uiMetaData,
-                    schemes: null,
                     data: null
                 };
             }
@@ -194,7 +209,7 @@ export class ReportBlock {
                 if (policyCreator) {
                     const policyCreatorDocument: IReportItem = {
                         type: 'VC',
-                        title: 'RootAuthority',
+                        title: 'StandardRegistry',
                         description: 'Account Creation',
                         visible: true,
                         tag: 'Account Creation',
@@ -214,12 +229,9 @@ export class ReportBlock {
 
             await this.reportUserMap(report);
 
-            const schemes = await getMongoRepository(Schema).find({ status: SchemaStatus.PUBLISHED });
-
             return {
                 hash: hash,
                 uiMetaData: ref.options.uiMetaData,
-                schemes: schemes,
                 data: report
             };
         } catch (error) {

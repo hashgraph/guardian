@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CommonSettings } from 'interfaces';
+import { CommonSettings } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 /**

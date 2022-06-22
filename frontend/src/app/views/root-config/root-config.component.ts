@@ -5,12 +5,13 @@ import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { IUser, Schema, SchemaEntity, SchemaHelper } from 'interfaces';
+import { IUser, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { HeaderPropsService } from 'src/app/services/header-props.service';
 
 /**
- * RootAuthority profile settings page.
+ * Standard Registry profile settings page.
  */
 @Component({
     selector: 'app-root-config',
@@ -34,10 +35,9 @@ export class RootConfigComponent implements OnInit {
     progressInterval: any;
 
     vcForm: FormGroup;
-    schema: any;
     hideVC: any;
     formValid: boolean = false;
-    schemas!: Schema[];
+    schema!: Schema;
 
     constructor(
         private auth: AuthService,
@@ -45,7 +45,8 @@ export class RootConfigComponent implements OnInit {
         private schemaService: SchemaService,
         private otherService: DemoService,
         private fb: FormBuilder,
-        public dialog: MatDialog) {
+        public dialog: MatDialog,
+        private headerProps: HeaderPropsService) {
 
         this.profile = null;
         this.balance = null;
@@ -81,20 +82,18 @@ export class RootConfigComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.schemaService.getSchemes()
+            this.schemaService.getSystemSchemasByEntity(SchemaEntity.STANDARD_REGISTRY)
         ]).subscribe((value) => {
             if(!value[2]) {
                 this.errorLoadSchema = true;
                 this.loading = false;
+                this.headerProps.setLoading(false);
                 return;
             }
 
             const profile = value[0];
             const balance = value[1];
-            
-            this.schemas = SchemaHelper.map(value[2]);
-            this.schema = this.schemas
-                .filter(e => e.entity == SchemaEntity.ROOT_AUTHORITY)[0];
+            const schema = value[2];
 
             this.isConfirmed = !!(profile.confirmed);
             this.isFailed = !!(profile.failed);
@@ -105,11 +104,17 @@ export class RootConfigComponent implements OnInit {
                 this.profile = profile;
             }
 
+            if(schema) {
+                this.schema = new Schema(schema);
+            }
+
             setTimeout(() => {
                 this.loading = false;
+                this.headerProps.setLoading(false);
             }, 500)
         }, (error) => {
             this.loading = false;
+            this.headerProps.setLoading(false);
             console.error(error);
         });
     }
@@ -125,6 +130,7 @@ export class RootConfigComponent implements OnInit {
                 vcDocument: vcDocument
             }
             this.loading = true;
+            this.headerProps.setLoading(true);
             this.setProgress(true);
             this.profileService.setProfile(data).subscribe(() => {
                 this.setProgress(false);
@@ -132,6 +138,7 @@ export class RootConfigComponent implements OnInit {
             }, (error) => {
                 this.setProgress(false);
                 this.loading = false;
+                this.headerProps.setLoading(false);
                 console.error(error);
             });
         }
@@ -144,7 +151,6 @@ export class RootConfigComponent implements OnInit {
                 document: document.document,
                 title: title,
                 type: 'VC',
-                schemas: this.schemas,
                 viewDocument: true
             }
         });

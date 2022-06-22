@@ -1,14 +1,12 @@
 import { Token } from '@entity/token';
-import { Logger } from 'logger-helper';
 import { MongoRepository } from 'typeorm';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { IAuthUser } from '@auth/auth.interface';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { MessageAPI, IToken } from 'interfaces';
-import { PrivateKey } from '@hashgraph/sdk';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageAPI, IToken } from '@guardian/interfaces';
 
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
@@ -47,7 +45,7 @@ function getTokenInfo(info: any, token: any) {
 
 /**
  * Connect to the message broker methods of working with tokens.
- * 
+ *
  * @param channel - channel
  * @param tokenRepository - table with tokens
  */
@@ -57,9 +55,9 @@ export const tokenAPI = async function (
 ): Promise<void> {
     /**
      * Create new token
-     * 
+     *
      * @param {IToken} payload - token
-     * 
+     *
      * @returns {IToken[]} - all tokens
      */
     ApiResponse(channel, MessageAPI.SET_TOKEN, async (msg) => {
@@ -94,12 +92,14 @@ export const tokenAPI = async function (
             const root = await users.getHederaAccount(owner);
 
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-            const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
-            const adminKey = enableAdmin ? rootHederaAccountKey : null;
-            const kycKey = enableKYC ? rootHederaAccountKey : null;
-            const freezeKey = enableFreeze ? rootHederaAccountKey : null;
-            const wipeKey = enableWipe ? rootHederaAccountKey : null;
-            const supplyKey = changeSupply ? rootHederaAccountKey : null;
+            const treasury = await client.newAccount();
+            const treasuryId = treasury.id;
+            const treasuryKey = treasury.key;
+            const adminKey = enableAdmin ? treasuryKey : null;
+            const kycKey = enableKYC ? treasuryKey : null;
+            const freezeKey = enableFreeze ? treasuryKey : null;
+            const wipeKey = enableWipe ? treasuryKey : null;
+            const supplyKey = changeSupply ? treasuryKey : null;
             const nft = tokenType == 'non-fungible';
             const _decimals = nft ? 0 : decimals;
             const _initialSupply = nft ? 0 : initialSupply;
@@ -110,10 +110,7 @@ export const tokenAPI = async function (
                 _decimals,
                 _initialSupply,
                 '',
-                {
-                    id: root.hederaAccountId,
-                    key: rootHederaAccountKey
-                },
+                treasury,
                 adminKey,
                 kycKey,
                 freezeKey,
@@ -127,7 +124,7 @@ export const tokenAPI = async function (
                 tokenType,
                 decimals: _decimals,
                 initialSupply: _initialSupply,
-                adminId: root.hederaAccountId,
+                adminId: treasuryId ? treasuryId.toString() : null,
                 adminKey: adminKey ? adminKey.toString() : null,
                 kycKey: kycKey ? kycKey.toString() : null,
                 freezeKey: freezeKey ? freezeKey.toString() : null,
@@ -135,20 +132,13 @@ export const tokenAPI = async function (
                 supplyKey: supplyKey ? supplyKey.toString() : null,
                 owner: root.did
             });
-            await tokenRepository.save(tokenObject);
-            const tokens = await tokenRepository.find({
-                where: {
-                    $or: [
-                        { owner: { $eq: root.did } },
-                        { owner: { $exists: false } }
-                    ]
-                }
-            });
+            const result = await tokenRepository.save(tokenObject);
+            const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     })
 
@@ -183,9 +173,9 @@ export const tokenAPI = async function (
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -221,9 +211,9 @@ export const tokenAPI = async function (
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -260,9 +250,9 @@ export const tokenAPI = async function (
 
             return new MessageResponse(status);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -292,9 +282,9 @@ export const tokenAPI = async function (
 
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
@@ -337,19 +327,19 @@ export const tokenAPI = async function (
             }
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message, 400);
+            return new MessageError(error, 400);
         }
     })
 
     /**
      * Return tokens
-     * 
+     *
      * @param {Object} [payload] - filters
      * @param {string} [payload.tokenId] - token id
      * @param {string} [payload.did] - user did
-     * 
+     *
      * @returns {IToken[]} - tokens
      */
     ApiResponse(channel, MessageAPI.GET_TOKENS, async (msg) => {
@@ -381,9 +371,9 @@ export const tokenAPI = async function (
 
     /**
      * Import tokens
-     * 
+     *
      * @param {IToken[]} payload - tokens
-     * 
+     *
      * @returns {IToken[]} - all tokens
      */
     ApiResponse(channel, MessageAPI.IMPORT_TOKENS, async (msg) => {
@@ -403,9 +393,9 @@ export const tokenAPI = async function (
             const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     })
 }

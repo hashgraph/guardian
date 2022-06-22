@@ -1,12 +1,11 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { Logger } from 'logger-helper';
-import { MessageAPI } from 'interfaces';
+import { MessageAPI } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
-import { MessageBrokerChannel, MessageResponse } from 'common';
-import { IUpdateBlockMessage, IErrorBlockMessage } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
+import { IUpdateBlockMessage, IErrorBlockMessage } from '@guardian/interfaces';
 export class WebSocketsService {
     private wss: WebSocket.Server;
 
@@ -41,9 +40,9 @@ export class WebSocketsService {
                 if (token) {
                     ws.user = await new Users().getUserByToken(token);
                 }
-            } catch (e) {
-                new Logger().error(e.message, ['API_GATEWAY']);
-                console.error(e.message);
+            } catch (error) {
+                new Logger().error(error, ['API_GATEWAY']);
+                console.error(error.message);
             }
         });
     }
@@ -75,7 +74,7 @@ export class WebSocketsService {
                                     type: MessageAPI.GET_STATUS,
                                     data: {
                                         LOGGER_SERVICE: LOGGER_SERVICE,
-                                        GUARDIANS_SERVICE: GUARDIANS_SERVICE,
+                                        GUARDIAN_SERVICE: GUARDIANS_SERVICE,
                                         IPFS_CLIENT: IPFS_CLIENT,
                                         AUTH_SERVICE: AUTH_SERVICE
                                     }
@@ -83,7 +82,7 @@ export class WebSocketsService {
                             ));
                         }
                         catch (error) {
-                            logger.error(error.toString(), ['API_GATEWAY'])
+                            logger.error(error, ['API_GATEWAY'])
                         }
                         break;
                 }
@@ -97,8 +96,8 @@ export class WebSocketsService {
                         type: MessageAPI.UPDATE_STATUS,
                         data: msg
                     }));
-                } catch (e) {
-                    console.error('WS Error', e);
+                } catch (error) {
+                    console.error('WS Error', error);
                 }
             });
             return new MessageResponse({})
@@ -113,8 +112,8 @@ export class WebSocketsService {
                         type: 'update-event',
                         data: msg.uuid
                     }));
-                } catch (e) {
-                    console.error('WS Error', e);
+                } catch (error) {
+                    console.error('WS Error', error);
                 }
             });
             return new MessageResponse({})
@@ -132,9 +131,9 @@ export class WebSocketsService {
                             }
                         }));
                     }
-                } catch (e) {
-                    new Logger().error(e.message, ['API_GATEWAY']);
-                    console.error('WS Error', e);
+                } catch (error) {
+                    new Logger().error(error, ['API_GATEWAY']);
+                    console.error('WS Error', error);
                 }
             });
             return new MessageResponse({})

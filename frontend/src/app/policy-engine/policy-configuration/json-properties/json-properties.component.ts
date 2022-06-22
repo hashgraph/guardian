@@ -1,7 +1,8 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { Schema, Token } from '@guardian/interfaces';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
+import { PolicyBlockModel } from '../../policy-model';
 
 /**
  * Settings for all blocks.
@@ -14,20 +15,16 @@ import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 export class JsonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
-    @Input('block') currentBlock!: BlockNode;
-    @Input('schemes') schemes!: Schema[];
-    @Input('tokens') tokens!: Token[];
-    @Input('all') allBlocks!: BlockNode[];
+    @Input('block') currentBlock!: PolicyBlockModel;
     @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
+
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
         metaData: false,
     };
 
-    block!: BlockNode;
+    block!: PolicyBlockModel;
 
     codeMirrorOptions: any = {
         theme: 'default',
@@ -71,38 +68,24 @@ export class JsonPropertiesComponent implements OnInit {
         item[prop] = !item[prop];
     }
 
-    load(block: BlockNode) {
+    load(block: PolicyBlockModel) {
         this.errors = [];
         this.block = block;
         if (this.block) {
-            const block = { ...this.block } as any;
-            delete block.children;
-            this.code = JSON.stringify(block, null, 2);
+            this.code = JSON.stringify(block.getJSON(), null, 2);
         } else {
             this.code = '';
         }
     }
 
     onClose() {
-        this.errors = [];
-        if (this.block) {
-            const block = { ...this.block } as any;
-            delete block.children;
-            this.code = JSON.stringify(block, null, 2);
-        } else {
-            this.code = '';
-        }
+        this.load(this.block);
     }
 
     onSave() {
         try {
             const block = JSON.parse(this.code);
-            delete block.children;
-            const keys = Object.keys(block);
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-                this.block[key] = block[key];
-            }
+            this.block.rebuild(block)
         } catch (error: any) {
             this.errors = [error.message];
         }

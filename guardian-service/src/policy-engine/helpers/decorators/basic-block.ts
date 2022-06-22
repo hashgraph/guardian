@@ -1,18 +1,19 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
-import { PolicyBlockDependencies, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
+import { EventConfig, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
-import { PolicyRole } from 'interfaces';
-import { Logger } from 'logger-helper';
+import { ExternalMessageEvents, PolicyRole } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IAuthUser } from '../../../auth/auth.interface';
+import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
 import { BlockActionError } from '@policy-engine/errors';
 import { Policy } from '@entity/policy';
-import { PolicyEvent } from '@policy-engine/interfaces/policy-event';
+import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { ExternalEventChannel, Logger } from '@guardian/common';
 
 /**
  * Basic block decorator
@@ -27,7 +28,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 public readonly tag: string | null,
                 public defaultActive: boolean,
                 protected readonly permissions: PolicyRole[],
-                protected readonly dependencies: PolicyBlockDependencies,
                 private readonly _uuid: string,
                 private readonly _parent: IPolicyBlock,
                 private readonly _options: any
@@ -63,13 +63,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             PolicyBlockDefaultOptions(),
             {
                 defaultActive: false,
-                permissions: [],
-                dependencies: []
+                permissions: []
             }
         ) as PolicyBlockFullArgumentList;
 
         return class extends basicClass {
             static blockType = o.blockType;
+            static about = o.about;
+            static publishExternalEvent = o.publishExternalEvent;
 
             protected oldDataState: any = {};
             protected currentDataState: any = {};
@@ -78,6 +79,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public policyId: string;
             public policyOwner: string;
             public policyInstance: any;
+            public topicId: string;
+
+            public sourceLinks: PolicyLink<any>[];
+            public targetLinks: PolicyLink<any>[];
+
+            public actions: any[];
 
             public readonly blockClassName = 'BasicBlock';
 
@@ -86,7 +93,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 defaultActive: boolean,
                 tag: string,
                 permissions: PolicyRole[],
-                dependencies: PolicyBlockDependencies,
                 _parent: IPolicyBlock,
                 _options: any
             ) {
@@ -96,7 +102,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     tag || o.tag,
                     defaultActive || o.defaultActive,
                     permissions || o.permissions,
-                    dependencies || o.dependencies,
                     _uuid,
                     _parent || o._parent,
                     _options
@@ -106,83 +111,131 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
                 }
+
+                this.sourceLinks = [];
+                this.targetLinks = [];
+
+                if (!Array.isArray(this.actions)) {
+                    this.actions = [];
+                }
+                this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
+                this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
+            }
+
+            public get next(): IPolicyBlock {
+                if (this.parent) {
+                    return this.parent.getNextChild(this.uuid);
+                }
+                return undefined;
+            }
+
+            public get events(): EventConfig[] {
+                return this.options.events || [];
+            }
+
+            public async beforeInit(): Promise<void> {
+                if (typeof super.beforeInit === 'function') {
+                    super.beforeInit();
+                }
+            }
+
+            public async afterInit(): Promise<void> {
+                await this.restoreState();
+
+                if (typeof super.afterInit === 'function') {
+                    super.afterInit();
+                }
+            }
+
+            public getChild(uuid: string): IPolicyBlock {
+                if (this.children) {
+                    for (const child of this.children) {
+                        if (child.uuid === uuid) {
+                            return child;
+                        }
+                    }
+                }
+                return undefined;
+            }
+
+            public getChildIndex(uuid: string): number {
+                if (this.children) {
+                    for (let i = 0; i < this.children.length; i++) {
+                        if (this.children[i].uuid === uuid) {
+                            return i;
+                        }
+                    }
+                }
+                return -1;
+            }
+
+            public getNextChild(uuid: string): IPolicyBlock {
+                if (typeof super.getNextChild === 'function') {
+                    return super.getNextChild(uuid);
+                }
+                const index = this.getChildIndex(uuid);
+                if (index !== -1) {
+                    return this.children[index + 1];
+                }
+            }
+
+            public addSourceLink(link: PolicyLink<any>): void {
+                this.sourceLinks.push(link)
+            }
+
+            public addTargetLink(link: PolicyLink<any>): void {
+                this.targetLinks.push(link)
+            }
+
+            public triggerEvents(output: PolicyOutputEventType, user?: IAuthUser, data?: any): void {
+                for (let link of this.sourceLinks) {
+                    if (link.outputType == output) {
+                        link.run(user, data);
+                    }
+                }
+            }
+
+            public triggerEvent(event: any, user?: IAuthUser, data?: any): void {
+                console.error('triggerEvent');
             }
 
             /**
-             * Update internal block state
-             * @param state
-             * @return {boolean} - true if state was changed
+             * @event PolicyEventType.Run
+             * @param {IPolicyEvent} event
              */
-            public updateDataState(user, state: any): boolean {
-                this.oldDataState[user.did] = this.currentDataState[user.did];
-                this.currentDataState[user.did] = state;
-                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
-                    strict: true
-                })
-            }
-
-            public checkDataStateDiffer(user): boolean {
-                // TODO: Remove hardcode appearance
-                return true;
-
-                if (this.blockType === 'policyRolesBlock') {
-                    return true;
+            public async runAction(event: IPolicyEvent<any>): Promise<any> {
+                const parent = this.parent as any;
+                if (parent && (typeof parent['changeStep'] === 'function')) {
+                    await parent.changeStep(event.user, event.data, this);
                 }
-                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
-                    strict: true
-                })
-            }
-
-            public setPolicyId(id): void {
-                this.policyId = id;
-            }
-
-            public setPolicyOwner(did: string) {
-                this.policyOwner = did;
-            }
-            public setPolicyInstance(policy: any) {
-                this.policyInstance = policy;
-            }
-
-            public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-                resultsContainer.registerBlock(this as any as IPolicyBlock);
-                if (resultsContainer.countTags(this.tag) > 1) {
-                    resultsContainer.addBlockError(this.uuid, `Tag ${this.tag} already exist`);
-                }
-                const permission = resultsContainer.permissionsNotExist(this.permissions);
-                if (permission) {
-                    resultsContainer.addBlockError(this.uuid, `Permission ${permission} not exist`);
-                }
-                if (typeof super.validate === 'function') {
-                    await super.validate(resultsContainer)
-                }
-                if (Array.isArray(this.children)) {
-                    for (let child of this.children) {
-                        await child.validate(resultsContainer);
-                    }
-                }
-                return;
-            }
-
-            public async runNext(user: IAuthUser, data: any): Promise<void> {
-                if (this.options.stopPropagation) {
-                    return;
-                }
-                if (this.parent && (typeof this.parent['changeStep'] === 'function')) {
-                    await this.parent.changeStep(user, data, this.parent.children[this.parent.children.indexOf(this as any) + 1]);
-                }
-            }
-
-            public async runTarget(user: IAuthUser, data: any, target: IPolicyBlock): Promise<void> {
-                if (target.parent && (typeof target.parent['changeStep'] === 'function')) {
-                    await target.parent.changeStep(user, data, target);
-                }
-            }
-
-            public async runAction(...args): Promise<any> {
+                let result: any;
                 if (typeof super.runAction === 'function') {
-                    return await super.runAction(...args);
+                    result = await super.runAction(event);
                 }
+                if (this.publishExternalEvent) {
+                    new ExternalEventChannel().publishMessage(
+                        ExternalMessageEvents.BLOCK_RUN_EVENTS,
+                        {
+                            uuid: this.uuid,
+                            blockType: this.blockType,
+                            blockTag: this.tag,
+                            data: event.data,
+                            result: result
+                        }
+                    )
+                }
+                return result;
+            }
+
+            /**
+             * @event PolicyEventType.DependencyEvent
+             * @param {IPolicyEvent} event
+             */
+            public async refreshAction(event: IPolicyEvent<any>): Promise<any> {
+                if (typeof super.refreshAction === 'function') {
+                    return await super.refreshAction(event);
+                }
+                this.updateBlock(event.data, event.user, '');
             }
 
             public async updateBlock(state: any, user: IAuthUser, tag: string) {
@@ -204,7 +257,67 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 } else {
                     PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
                 }
+            }
 
+            /**
+             * Update internal block state
+             * @param state
+             * @return {boolean} - true if state was changed
+             */
+            public updateDataState(user, state: any): boolean {
+
+                this.oldDataState[user.did] = this.currentDataState[user.did];
+                this.currentDataState[user.did] = { state };
+                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
+                    strict: true
+                })
+            }
+
+            public checkDataStateDiffer(user): boolean {
+                // TODO: Remove hardcode appearance
+                return true;
+
+                if (this.blockType === 'policyRolesBlock') {
+                    return true;
+                }
+                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
+                    strict: true
+                })
+            }
+
+            public setPolicyId(id: string): void {
+                this.policyId = id;
+            }
+
+            public setPolicyOwner(did: string) {
+                this.policyOwner = did;
+            }
+            public setPolicyInstance(policy: any) {
+                this.policyInstance = policy;
+            }
+
+            public setTopicId(id: string): void {
+                this.topicId = id;
+            }
+
+            public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+                resultsContainer.registerBlock(this as any as IPolicyBlock);
+                if (resultsContainer.countTags(this.tag) > 1) {
+                    resultsContainer.addBlockError(this.uuid, `Tag ${this.tag} already exist`);
+                }
+                const permission = resultsContainer.permissionsNotExist(this.permissions);
+                if (permission) {
+                    resultsContainer.addBlockError(this.uuid, `Permission ${permission} not exist`);
+                }
+                if (typeof super.validate === 'function') {
+                    await super.validate(resultsContainer)
+                }
+                if (Array.isArray(this.children)) {
+                    for (let child of this.children) {
+                        await child.validate(resultsContainer);
+                    }
+                }
+                return;
             }
 
             public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
@@ -298,9 +411,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (this.tag) {
                     obj.tag = this.tag;
                 }
-                if (this.dependencies && (this.dependencies.length > 0)) {
-                    obj.dependencies = this.dependencies;
-                }
                 if ((this as any).children && ((this as any).children.length > 0)) {
                     obj.children = [];
                     for (let child of (this as any).children) {
@@ -321,36 +431,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-            public start() {
-                for (let dep of this.dependencies) {
-                    PolicyComponentsUtils.RegisterEvent(
-                        this.policyId, dep, 'DependencyEvent', (event: PolicyEvent<any>) => {
-                            this.updateBlock({}, event.user, '');
-                        }
-                    );
-                }
-                if (typeof super.start === 'function') {
-                    super.start();
-                }
-            }
 
-            public callDependencyCallbacks(user: IAuthUser) {
-                PolicyComponentsUtils.TriggerEvent({
-                    type: 'DependencyEvent',
-                    policyId: this.policyId,
-                    target: this.tag,
-                    targetId: this.uuid,
-                    user: user,
-                    data: null
-                });
-            }
-
-            public callParentContainerCallback(user: IAuthUser) {
-                if (this.parent?.blockClassName === 'ContainerBlock') {
-                    this.parent.updateBlock({}, user, '');
-                }
-            }
-            
             protected log(message: string) {
                 this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
             }

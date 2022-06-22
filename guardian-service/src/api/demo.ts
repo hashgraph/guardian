@@ -1,11 +1,10 @@
-import { Logger } from 'logger-helper';
 import { getMongoRepository, MongoRepository } from 'typeorm';
 import { Settings } from '@entity/settings';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { Policy } from '@entity/policy';
-import { MessageBrokerChannel, MessageResponse, MessageError } from 'common';
-import { MessageAPI } from 'interfaces';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageAPI } from '@guardian/interfaces';
 
 export const demoAPI = async function (
     channel: MessageBrokerChannel,
@@ -28,7 +27,7 @@ export const demoAPI = async function (
                 key: treasury.key.toString()
             });
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -50,7 +49,7 @@ export const demoAPI = async function (
             });
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     })

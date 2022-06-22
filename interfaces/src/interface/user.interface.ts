@@ -17,6 +17,7 @@ export interface IUser {
     walletToken?: string;
     did?: string;
     topicId?: string;
+    parentTopicId?: string;
     parent?: string;
     didDocument?: IDidObject;
     vcDocument?: IVCDocument;

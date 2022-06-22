@@ -1,4 +1,4 @@
-import { ApproveStatus, IApprovalDocument, SchemaEntity } from 'interfaces';
+import { ApproveStatus, IApprovalDocument, SchemaEntity } from '@guardian/interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
@@ -35,7 +35,7 @@ export class ApprovalDocument implements IApprovalDocument {
 
     @Column()
     schema: string;
-    
+
     @BeforeInsert()
     setDefaults() {
         this.option = this.option || {};

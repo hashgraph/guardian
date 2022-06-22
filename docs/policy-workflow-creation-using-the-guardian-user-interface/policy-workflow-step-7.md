@@ -6,7 +6,7 @@ Again we need a Send step since we now have to submit the CSD01, the official IR
 
 Note that compared to the previous “Send” step, the Data Type is now a VC since we are submitting the official form as a verifiable credential but not to Hedera. This form is stored on the Guardian for auditors to review in the trust chain.
 
-![](../.gitbook/assets/PW\_12.png)
+![](../.gitbook/assets/PW\_image\_12.png)
 
 **Programmatically this workflow step looks like this:**
 

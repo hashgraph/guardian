@@ -53,6 +53,11 @@ import { TimerConfigComponent } from './policy-configuration/blocks/documents/ti
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
+import { ConfirmationDialog } from './policy-viewer/blocks/confirmation-dialog/confirmation-dialog.component';
+import { RevokeConfigComponent } from './policy-configuration/blocks/documents/revoke-config/revoke-config.component';
+import { EventsOverview } from './helpers/events-overview/events-overview';
+import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
+import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
 
 @NgModule({
     declarations: [
@@ -100,7 +105,12 @@ import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch
         TimerConfigComponent,
         CustomLogicConfigComponent,
         CodeEditorDialogComponent,
-        SwitchConfigComponent
+        SwitchConfigComponent,
+        EventsOverview,
+        ConfirmationDialog,
+        RevokeConfigComponent,
+        ButtonConfigComponent,
+        ButtonBlockComponent
     ],
     imports: [
         CommonModule,
@@ -113,6 +123,9 @@ import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch
         DragDropModule
     ],
     exports: [
+        ButtonBlockComponent,
+        ButtonConfigComponent,
+        RevokeConfigComponent,
         PolicyConfigurationComponent,
         DocumentSourceComponent,
         CommonPropertiesComponent,
@@ -150,7 +163,8 @@ import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
         ReassigningConfigComponent,
-        CronConfigDialog
+        CronConfigDialog,
+        EventsOverview
     ],
     providers: [
         RegisteredBlocks

@@ -1,5 +1,5 @@
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { Component, EventEmitter, Injectable, Input, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Injectable, Input, Output, SimpleChanges } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 import { BehaviorSubject, Observable, of as observableOf } from 'rxjs';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -38,8 +38,10 @@ export class TreeFlatOverview {
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter();
     @Output('reorder') reorder = new EventEmitter();
+    @Output('change') change = new EventEmitter();
+    @Output('init') init = new EventEmitter();
 
-    currentBlock!: BlockNode;
+    currentBlock: any;
     root!: BlockNode;
 
     treeControl: FlatTreeControl<FlatBlockNode>;
@@ -53,14 +55,29 @@ export class TreeFlatOverview {
     validateDrop = false;
     isCollapseAll = true;
 
-    constructor(private registeredBlocks: RegisteredBlocks) {
+    public readonly context: ElementRef;
+
+    constructor(
+        private element: ElementRef,
+        private registeredBlocks: RegisteredBlocks
+    ) {
+        this.context = element;
         this.treeFlattener = new MatTreeFlattener(this.transformer, this._getLevel,
             this._isExpandable, this._getChildren);
         this.treeControl = new FlatTreeControl<FlatBlockNode>(this._getLevel, this._isExpandable);
         this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
         this.treeControl.expansionModel.changed.subscribe(e => {
             this.isCollapseAll = !e.source.selected.length;
+            this.change.emit();
         })
+    }
+
+    ngAfterViewInit(): void {
+        this.init.emit(this);
+    }
+
+    ngOnDestroy(): void {
+        this.init.emit(null);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -118,7 +135,7 @@ export class TreeFlatOverview {
         const visibleNodes = this.visibleNodes();
 
         // deep clone the data source so we can mutate it
-        const changedData: BlockNode[] = JSON.parse(JSON.stringify(this.dataSource.data));
+        const changedData: BlockNode[] = this.dataSource.data;
 
         // recursive find function to find siblings of node
         function findNodeSiblings(arr: Array<BlockNode>, block: BlockNode, compare: any): Array<BlockNode> {
@@ -162,6 +179,7 @@ export class TreeFlatOverview {
         // rebuild tree with mutated data
         // this.rebuildTreeForData(changedData);
         this.reorder.emit(changedData);
+        this.change.emit();
     }
 
     setErrors(errors: any) {
@@ -243,26 +261,23 @@ export class TreeFlatOverview {
     rebuildTreeForData(data: BlockNode[]) {
         this.blocks = data;
         this.root = data[0];
-        this.currentBlock = this.root;
         this.dataSource.data = data;
-
-        for (let index = 0; index < this.treeControl.dataNodes.length; index++) {
-            const p = this.treeControl.dataNodes[index - 1];
-            const e = this.treeControl.dataNodes[index];
-            const n = this.treeControl.dataNodes[index + 1];
-            if (p && e.level == p.level) {
-                e.about.prev = p.about;
-            } else {
-                e.about.prev = null;
-            }
-            e.about.next = !!(n && e.level == n.level);
-        }
-
         this.treeControl.expansionModel.clear();
         this.expansionModel.selected.forEach((id) => {
             const node: any = this.treeControl.dataNodes.find((n) => n.node.id === id);
             this.treeControl.expand(node);
         });
+        if (this.currentBlock) {
+            const node: any = this.treeControl.dataNodes.find((n) => n.node.id === this.currentBlock.id);
+            if (node) {
+                this.currentBlock = node.node;
+            } else {
+                this.currentBlock = this.root;
+            }
+        } else {
+            this.currentBlock = this.root;
+        }
+
     }
 
     getName(node: FlatBlockNode) {
@@ -282,6 +297,7 @@ export class TreeFlatOverview {
         event.stopPropagation();
         this.currentBlock = node.node;
         this.select.emit(this.currentBlock);
+        this.change.emit();
         return false;
     }
 
@@ -289,6 +305,7 @@ export class TreeFlatOverview {
         event.preventDefault();
         event.stopPropagation();
         this.delete.emit(block.node);
+        this.change.emit();
         return false;
     }
 
@@ -314,5 +331,18 @@ export class TreeFlatOverview {
         this.isCollapseAll = true;
         this.treeControl.collapseAll();
         this.expansionModel.clear();
+    }
+
+    public selectItem(block: any) {
+        if (block) {
+            const node: any = this.treeControl.dataNodes.find((n) => n.node.id === block.id);
+            if(node) {
+                this.currentBlock = node.node;
+            } else {
+                this.currentBlock = this.root;
+            }
+        } else {
+            this.currentBlock = this.root;
+        }
     }
 }

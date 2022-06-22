@@ -4,16 +4,16 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import { MongoRepository } from 'typeorm';
 import { Settings } from '../entity/settings';
-import { Logger } from 'logger-helper';
 import {
     MessageAPI,
+    ExternalMessageEvents,
     CommonSettings,
     IGetFileMessage,
     IIpfsSettingsResponse,
     IAddFileMessage,
     IFileResponse
-} from 'interfaces';
-import { MessageBrokerChannel, MessageError, MessageResponse } from 'common';
+} from '@guardian/interfaces';
+import { MessageBrokerChannel, MessageError, MessageResponse, Logger } from '@guardian/common';
 
 
 export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
@@ -41,12 +41,13 @@ export const fileAPI = async function (
             let blob = new Blob([Buffer.from(msg.content, 'base64')]);
             const cid = await client.storeBlob(blob);
             const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
+            channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url });
 
             return new MessageResponse({ cid, url },);
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            return new MessageError(e.message);
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageError(error);
         }
     })
 
@@ -82,9 +83,9 @@ export const fileAPI = async function (
                     return new MessageResponse(fileRes.data)
             }
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            return new MessageResponse({ error: e.message });
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageResponse({ error: error.message });
         }
     })
 
@@ -116,9 +117,9 @@ export const fileAPI = async function (
             client = new NFTStorage({ token: settings.nftApiKey });
             return new MessageResponse({});
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            return new MessageResponse({ error: e.message });
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageResponse({ error: error.message });
         }
     })
 

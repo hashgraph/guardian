@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/policies/validate" summary="Validates policy" %}
 {% swagger-description %}
-Validates selected policy. Only users with the Root Authority role are allowed to make the request
+Validates selected policy. Only users with the Standard Registry role are allowed to make the request
 {% endswagger-description %}
 
 {% swagger-parameter in="body" type="application/jsonn" required="true" %}

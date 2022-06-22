@@ -1,10 +1,10 @@
-# User listing except Root Authority and Auditor
+# User listing except Standard Registry and Auditor
 
 ### DISPLAYING USERS&#x20;
 
-{% swagger method="get" path="" baseUrl="/accounts" summary="Returns a list of users, excluding Root Authority and Auditors" %}
+{% swagger method="get" path="" baseUrl="/accounts" summary="Returns a list of users, excluding Standard Registry and Auditors" %}
 {% swagger-description %}
-Returns all users except those with roles Root Authority and Auditor. Only users with the Root Authority role are allowed to make the request.
+Returns all users except those with roles Standard Registry and Auditor. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}

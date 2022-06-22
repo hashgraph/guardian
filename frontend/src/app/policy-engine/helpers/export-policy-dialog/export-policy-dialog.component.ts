@@ -37,10 +37,12 @@ export class ExportPolicyDialog {
     saveToFile() {
         this.loading = true;
         this.policyEngineService.exportInFile(this.policy.id)
-            .subscribe(result => {
+            .subscribe(fileBuffer => {
                 let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(result);
-                downloadLink.setAttribute('download', `policy_${Date.now()}.zip`);
+                downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
+                    type: 'application/guardian-policy'
+                }));
+                downloadLink.setAttribute('download', `policy_${Date.now()}.policy`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 setTimeout(() => {

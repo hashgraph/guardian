@@ -1,10 +1,9 @@
-import crypto from 'crypto';
 import { Request, Response, Router } from 'express';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/common';
 
 /**
  * User account route
@@ -21,19 +20,23 @@ accountAPI.get('/session', async (req: Request, res: Response) => {
         } else {
             res.sendStatus(401);
         }
-    } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: e.message });
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message });
     }
 });
 
 accountAPI.post('/register', async (req: Request, res: Response) => {
     const users = new Users();
     try {
-        const { username, password, role } = req.body;
+        let { username, password, role } = req.body;
+        // @deprecated 2022-10-01
+        if (role === 'ROOT_AUTHORITY') {
+            role = UserRole.STANDARD_REGISTRY;
+        }
         res.status(201).json(await users.registerNewUser(username, password, role));
-    } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
@@ -42,33 +45,46 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     const users = new Users();
     try {
         const { username, password } = req.body;
-        const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
-
         res.status(200).json(await users.generateNewToken(username, password));
-    } catch (e) {
-         new Logger().error(e.message, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Server error' });
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(error.code).send({ code: error.code, message: error.message });
     }
 });
 
-accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.ROOT_AUTHORITY), async (req: AuthenticatedRequest, res: Response) => {
+accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const users = new Users();
         res.status(200).json(await users.getAllUserAccounts());
-    } catch (e) {
-        new Logger().error(e.message, ['API_GATEWAY']);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Server error' });
     }
 });
 
-
+/**
+ * @deprecated 2022-10-01
+ */
 accountAPI.get('/root-authorities', authorizationHelper, async (req: Request, res: Response) => {
     try {
         const users = new Users();
-        const rootAuthorities = await users.getAllRootAuthorityAccounts();
-        res.json(rootAuthorities);
+        const standardRegistries = await users.getAllStandardRegistryAccounts();
+        res.json(standardRegistries);
     } catch (error) {
         console.error(error);
+        new Logger().error(error.message, ['API_GATEWAY']);
+        res.json('null');
+    }
+});
+
+accountAPI.get('/standard-registries', authorizationHelper, async (req: Request, res: Response) => {
+    try {
+        const users = new Users();
+        const standardRegistries = await users.getAllStandardRegistryAccounts();
+        res.json(standardRegistries);
+    } catch (error) {
+        console.error(error);
+        new Logger().error(error.message, ['API_GATEWAY']);
         res.json('null');
     }
 });

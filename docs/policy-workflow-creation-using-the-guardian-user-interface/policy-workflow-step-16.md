@@ -6,7 +6,7 @@ We configure the “mrv\_grid” UI page in the same way as we did the “sensor
 
 Note that in contrast to the download functionality for Field 2 for the “sensors\_grid” we are now using the link functionality to view the document.
 
-![](../.gitbook/assets/PW\_21.png)
+![](../.gitbook/assets/PW\_image\_22.png)
 
 Below are screenshots of the field inputs
 

@@ -1,4 +1,4 @@
-import { MessageBrokerChannel, BinaryMessageResponse } from "common";
+import { MessageBrokerChannel, BinaryMessageResponse } from "@guardian/common";
 
 export class ServiceError extends Error {
     public code: number;
@@ -39,17 +39,17 @@ export abstract class ServiceRequestsBase {
                 throw response;
             }
             return response.body;
-        } catch (e) {
-            const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
-            err.code = e.code;
+        } catch (error) {
+            const err = new ServiceError(`${this.target} (${entity}) send: ` + error.error);
+            err.code = error.code;
             throw err
         }
     }
     /**
      * Making the request that expect to recieved BinaryMessageResponse
-     * @param entity 
-     * @param params 
-     * @returns 
+     * @param entity
+     * @param params
+     * @returns
      */
     public async rawRequest(entity: string, params?: any): Promise<Buffer> {
         try {
@@ -59,9 +59,9 @@ export abstract class ServiceRequestsBase {
                 throw { error: 'Server is not available' };
             }
             return Buffer.from(response.body, 'base64');
-        } catch (e) {
-            const err = new ServiceError(`${this.target} (${entity}) send: ` + e.error);
-            err.code = e.code;
+        } catch (error) {
+            const err = new ServiceError(`${this.target} (${entity}) send: ` + error.error);
+            err.code = error.code;
             throw err
         }
     }

@@ -1,12 +1,13 @@
 FROM node:16 as frontendBuilder
-WORKDIR /usr/local/interfaces
-COPY ./interfaces/package*.json /usr/local/interfaces/
-COPY ./interfaces/tsconfig.json /usr/local/interfaces/
+WORKDIR /usr/interfaces
+COPY ./interfaces/package*.json ./
+COPY ./interfaces/tsconfig.json ./
+ADD ./interfaces/src ./src/.
 RUN npm install
-ADD ./interfaces/src/ /usr/local/interfaces/src/.
-RUN npm run build
+RUN npm pack
 WORKDIR /usr/local/frontend
 COPY ./frontend/. /usr/local/frontend
+RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
 RUN npm install
 RUN npm run build
 

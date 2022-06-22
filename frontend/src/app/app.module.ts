@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
-import { AppRoutingModule, AuditorGuard, UserGuard, RootAuthorityGuard } from './app-routing.module';
+import { AppRoutingModule, AuditorGuard, UserGuard, StandardRegistryGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor, AuthService } from "./services/auth.service";
 import { ProfileService } from "./services/profile.service";
@@ -41,6 +41,7 @@ import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-d
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { CommonComponentsModule } from './common-components.module';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { InfoComponent } from './components/info/info/info.component';
 
 @NgModule({
     declarations: [
@@ -63,7 +64,8 @@ import { ConfirmationDialogComponent } from './components/confirmation-dialog/co
         IconPreviewDialog,
         DetailsLogDialog,
         ServiceStatusComponent,
-        ConfirmationDialogComponent
+        ConfirmationDialogComponent,
+        InfoComponent
     ],
     imports: [
         BrowserModule,
@@ -80,7 +82,7 @@ import { ConfirmationDialogComponent } from './components/confirmation-dialog/co
     exports: [],
     providers: [
         UserGuard,
-        RootAuthorityGuard,
+        StandardRegistryGuard,
         AuditorGuard,
         AuthService,
         ProfileService,

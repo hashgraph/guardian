@@ -1,4 +1,4 @@
-import { DidDocumentStatus, IDidObject } from 'interfaces';
+import { DidDocumentStatus, IDidObject } from '@guardian/interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()

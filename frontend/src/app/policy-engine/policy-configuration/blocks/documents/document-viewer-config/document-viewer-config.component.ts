@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { Schema, Token } from '@guardian/interfaces';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -14,13 +16,11 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     ]
 })
 export class DocumentSourceComponent implements OnInit {
-    @Input('target') target!: BlockNode;
-    @Input('all') all!: BlockNode[];
-    @Input('schemes') schemes!: Schema[];
+    @Input('policy') policy!: PolicyModel;
+    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
@@ -29,18 +29,19 @@ export class DocumentSourceComponent implements OnInit {
         insertGroup: false
     };
 
-    block!: BlockNode;
+    block!: any;
+    allBlocks!: any[];
 
-    constructor() {
+    constructor(public registeredBlocks: RegisteredBlocks) {
     }
 
     ngOnInit(): void {
         this.onInit.emit(this);
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
     parseField(document: any, fields: any[], prefix?: string) {
@@ -68,8 +69,19 @@ export class DocumentSourceComponent implements OnInit {
         })
     }
 
-    load(block: BlockNode) {
-        this.block = block;
+    load(block: PolicyBlockModel) {
+        if (this.policy?.allBlocks) {
+            this.allBlocks = this.policy.allBlocks.map(item => {
+                return {
+                    name: item.tag,
+                    icon: this.getIcon(item),
+                    value: item.tag
+                }
+            });
+        } else {
+            this.allBlocks = [];
+        }
+        this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.fields = this.block.uiMetaData.fields || [];
     }
@@ -85,5 +97,9 @@ export class DocumentSourceComponent implements OnInit {
         field.dialogClass = "";
         field.dialogType = "";
         field.bindBlock = "";
+    }
+
+    getIcon(block: any) {
+        return this.registeredBlocks.getIcon(block.blockType);
     }
 }

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Subscription } from 'rxjs';
 
@@ -61,7 +61,7 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.auth.setAccessToken(result.accessToken);
             this.auth.setUsername(login);
             this.authState.updateState(true);
-            if (result.role == UserRole.ROOT_AUTHORITY) {
+            if (result.role == UserRole.STANDARD_REGISTRY) {
                 this.router.navigate(['/config']);
             } else {
                 this.router.navigate(['/']);

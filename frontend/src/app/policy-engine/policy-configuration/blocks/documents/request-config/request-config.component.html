@@ -5,7 +5,7 @@
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.schema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -26,15 +26,7 @@
             </mat-select>
         </td>
     </tr>
-
-    <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Stop Propagation</td>
-        <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
-        </td>
-    </tr>
-
+    
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Preset</td>
@@ -138,7 +130,7 @@
         <td class="propRowCell cellName">Preset Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.presetSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
-                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>

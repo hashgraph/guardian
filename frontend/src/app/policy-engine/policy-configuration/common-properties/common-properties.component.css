@@ -63,6 +63,7 @@
     padding-top: 26px;
     background: #3f51b5;
 }
+
 .table-body {
     overflow-y: scroll;
     max-height: 100%;
@@ -76,14 +77,17 @@
     left: 0;
     top: 0;
 }
+
 .header .propHeader {
     background: #3f51b5;
     color: #fff;
     position: relative;
 }
+
 .header .propHeader .propHeaderCell {
     font-weight: 500;
 }
+
 .header .propRowCol {
     background: #3f51b5;
     width: 18px;
@@ -95,6 +99,7 @@
     margin: 0px;
     background: #e5e5e5;
 }
+
 .propHeader {
     background: #e5e5e5;
     color: black;
@@ -102,6 +107,7 @@
     font-weight: 500;
     position: relative;
 }
+
 .properties .propHeader::after,
 .table-body .propHeader::after {
     position: absolute;
@@ -127,24 +133,43 @@
     box-sizing: border-box;
     box-shadow: 0px -1px 0 0 #919191;
 }
+
 .propRow .propRowCell {
     background: #fff;
     position: relative;
 }
+
 .propRow:nth-child(2n) .propRowCell {
     background: #f7f7f7;
 }
+
 .cellName {
     width: 160px;
     padding-left: 5px;
 }
+
+.table-body .cellName {
+    height: 24px;
+}
+
 .subRow .cellName {
     padding-left: 20px;
     width: 145px;
 }
+
 .subRow-2 .cellName {
     padding-left: 40px;
     width: 125px;
+}
+
+.subRow-3 .cellName {
+    padding-left: 60px;
+    width: 105px;
+}
+
+.subRow-4 .cellName {
+    padding-left: 80px;
+    width: 85px;
 }
 
 .cellTitle {
@@ -158,7 +183,8 @@
     cursor: pointer;
     user-select: none;
 }
-.propRowCol  mat-icon {
+
+.propRowCol mat-icon {
     position: absolute;
     left: -1px;
     top: -1px;
@@ -166,10 +192,12 @@
     width: 20px;
     pointer-events: none;
 }
-.propRowCol[collapse="true"]  mat-icon {
+
+.propRowCol[collapse="true"] mat-icon {
     transform: rotate(-90deg);
     top: 2px;
 }
+
 .propRow[collapse="true"] {
     display: none;
 }
@@ -191,6 +219,7 @@
     position: relative;
     width: 24px;
 }
+
 .ui-properties .ui-prop-row-header {
     height: 18px;
     background: #e5e5e5;
@@ -232,6 +261,7 @@
     font-size: 20px;
     pointer-events: none;
 }
+
 .propAdd span {
     pointer-events: none;
 }
@@ -306,7 +336,8 @@ input[readonly][type="checkbox"] {
 }
 
 .readonly-prop {
-    padding-left: 4px;
+    padding-left: 2px;
+    color: rgba(0,0,0,.45);
 }
 
 .remove-prop {
@@ -329,22 +360,27 @@ input[readonly][type="checkbox"] {
     padding-left: 0px !important;
     width: 140px !important;
 }
+
 .lvl[lvl="1"] {
     padding-left: 8px !important;
     width: 132px !important;
 }
+
 .lvl[lvl="2"] {
     padding-left: 16px !important;
     width: 124px !important;
 }
+
 .lvl[lvl="3"] {
     padding-left: 24px !important;
     width: 116px !important;
 }
+
 .lvl[lvl="3"] {
     padding-left: 32px !important;
     width: 108px !important;
 }
+
 .lvl[lvl="4"] {
     padding-left: 40px !important;
     width: 100px !important;
@@ -354,9 +390,90 @@ input[readonly][type="checkbox"] {
 
     color: #6166ff;
 }
+
 .mat-option-link mat-icon {
     margin-right: 2px;
     top: -2px;
     left: -4px;
     position: relative;
+}
+
+.prop-icon {
+    display: inline-block !important;
+    height: 18px !important;
+    width: auto !important;
+    line-height: 18px !important;
+    overflow: hidden !important;
+}
+
+.prop-icon-text {
+    display: inline-block !important;
+    height: 16px !important;
+    width: auto !important;
+    line-height: 16px !important;
+    overflow: hidden !important;
+}
+
+.prop-icon mat-icon {
+    position: relative !important;
+    font-size: 20px !important;
+}
+
+div[disabled="true"] {
+    filter: grayscale(1);
+    opacity: 0.7;
+}
+
+.prop-icon-event {
+    color: #bd9012;
+    width: 20px !important;
+}
+.prop-icon-event[invalid="true"] {
+    color: #f00;
+}
+
+.block-name {
+    padding-left: 32px;
+    position: relative;
+}
+
+.block-icon {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.prop-icon-output-event {
+    display: inline-block !important;
+    height: 18px !important;
+    width: auto !important;
+    line-height: 18px !important;
+    overflow: hidden !important;
+    top: 4px;
+    left: 3px;
+    position: relative;
+}
+
+.prop-icon-input-event {
+    display: inline-block !important;
+    height: 18px !important;
+    width: auto !important;
+    line-height: 18px !important;
+    overflow: hidden !important;
+    top: 3px;
+    left: 1px;
+    position: relative;
+}
+.prop-icon-output-event mat-icon,
+.prop-icon-input-event mat-icon {
+    position: relative !important;
+    font-size: 18px !important;
+    top: 0px;
+}
+
+.custom {
+    height: 14px;
+    line-height: 14px;
+    display: inline-block;
+    min-width: 1px;
 }

@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/schemas/import/file" summary="Imports new schema from a zip file" %}
 {% swagger-description %}
-Imports new schema from a zip file into the local DB. Only users with the Root Authority role are allowed to make the request.
+Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="body" required="true" type=".zip file" %}

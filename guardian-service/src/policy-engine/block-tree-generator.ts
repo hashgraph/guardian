@@ -13,7 +13,8 @@ import {
     PolicyValidationResultsContainer
 } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/common';
+import { PolicyConverterUtils } from './policy-converter-utils';
 
 @Singleton
 export class BlockTreeGenerator {
@@ -33,13 +34,12 @@ export class BlockTreeGenerator {
     }
 
     public async init(): Promise<void> {
-        const policies = await getMongoRepository(Policy).find({status: 'PUBLISH'});
+        const policies = await getMongoRepository(Policy).find({ status: 'PUBLISH' });
         for (let policy of policies) {
             try {
                 await this.generate(policy.id.toString());
-            } catch (e) {
-                new Logger().error(e.toString(), ['GUARDIAN_SERVICE']);
-                console.error(e.message);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
             }
         }
     }
@@ -68,33 +68,20 @@ export class BlockTreeGenerator {
             policyId = PolicyComponentsUtils.GenerateNewUUID();
         }
 
-        const configObject = policy.config as ISerializedBlock;
-
-        async function BuildInstances(block: ISerializedBlock, parent?: IPolicyBlock): Promise<IPolicyBlock> {
-            const {blockType, children, ...params}: ISerializedBlockExtend = block;
-            if (parent) {
-                params._parent = parent;
-            }
-            const blockInstance = PolicyComponentsUtils.ConfigureBlock(policyId.toString(), blockType, params as any, skipRegistration) as any;
-            blockInstance.setPolicyId(policyId.toString())
-            blockInstance.setPolicyOwner(policy.owner);
-            blockInstance.setPolicyInstance(policy);
-            if (children && children.length) {
-                for (let child of children) {
-                    await BuildInstances(child, blockInstance);
-                }
-            }
-            await blockInstance.restoreState();
-            return blockInstance;
-        }
-
         new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
-        const model = await BuildInstances(configObject);
-        if (!skipRegistration) {
-            this.models.set(policy.id.toString(), model as any);
-        }
 
-        return model as IPolicyInterfaceBlock;
+        try {
+            const instancesArray: IPolicyBlock[] = [];
+            const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
+            if (!skipRegistration) {
+                await PolicyComponentsUtils.RegisterBlockTree(instancesArray)
+                this.models.set(policy.id.toString(), model as any);
+            }
+            return model as IPolicyInterfaceBlock;
+        } catch (error) {
+            new Logger().error(`Error build policy ${error}`, ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
+            return null;
+        }
     }
 
     /**

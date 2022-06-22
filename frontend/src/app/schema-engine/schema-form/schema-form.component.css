@@ -5,7 +5,7 @@ form {
 }
 
 .group-label {
-    color: rgba(0,0,0,.6);
+    color: rgba(0, 0, 0, .6);
 }
 
 .group-form {
@@ -34,7 +34,7 @@ form {
 
 .group-label,
 .array-label {
-    color: rgba(0,0,0,.6);
+    color: rgba(0, 0, 0, .6);
     background: #fff;
     top: -10px;
     left: 5px;
@@ -47,7 +47,7 @@ form {
 }
 
 .remove-btn {
-    color:red;
+    color: red;
 }
 
 .add-btn,
@@ -117,11 +117,11 @@ form {
     padding-right: 0;
 }
 
-.form-field-array-item[index='0'][required='true'] > .fields-remove {
+.form-field-array-item[index='0'][required='true']>.fields-remove {
     display: none;
 }
 
-.form-field-array-item[index='0'][required='true'] > .form-field-group > .remove-btn {
+.form-field-array-item[index='0'][required='true']>.form-field-group>.remove-btn {
     display: none;
 }
 
@@ -177,16 +177,16 @@ form {
     margin-right: 20px;
 }
 
-.form-field-array-item > .form-field-group {
+.form-field-array-item>.form-field-group {
     padding-left: 40px;
 }
 
-.schema-form-field-array-group > .form-field-array-item ,
-.form-field-array-item > .schema-form-field-group {
+.schema-form-field-array-group>.form-field-array-item,
+.form-field-array-item>.schema-form-field-group {
     border-left: 2px dashed #c8c8c8;
 }
 
-.form-field-group > .form-field-array-item {
+.form-field-group>.form-field-array-item {
     padding-right: 0;
 }
 
@@ -212,4 +212,21 @@ form {
 
 .ipfs-url ::ng-deep .mat-form-field-infix {
     padding-right: 35px;
+}
+
+.form-field-value {
+    display: flex;
+    flex-direction: row;
+}
+
+
+.form-field-prefix {
+    padding: 22px 14px 1px 1px;
+    font-size: 20px;
+}
+
+
+.form-field-postfix {
+    padding: 22px 1px 1px 14px;
+    font-size: 20px;
 }

@@ -25,7 +25,7 @@ The Guardian Policies are versioned using semantic versioning in the major.minor
 * minor: the Policy version contains notable new capabilities and non-breaking changes.&#x20;
 * micro: the Policy release contains non-breaking changes only.&#x20;
 
-Guardian system does not generate versions automatically, it is the responsibility of the Policy authors (Root Authority) to keep track of its policies/versions and correctly reflect changes in the version number.&#x20;
+Guardian system does not generate versions automatically, it is the responsibility of the Policy authors (Standard Registry) to keep track of its policies/versions and correctly reflect changes in the version number.&#x20;
 
 Wherever possible and relevant, Guardian Policy version header contains a reference to the original (paper) document version from the guiding which this policy represents.&#x20;
 
@@ -57,11 +57,17 @@ The notice is issued via a notice message in the corresponding Hedera Topic, and
 
 A Policy may be discontinued without prior warning if the existing behavior if incorrect or to patch a security vulnerability.&#x20;
 
-### Policy Definition language
+### Policy Definition language (PDL)
 
-For the purposes of backwards compatibility Guardian differentiates between existing policies and the creation of new policies, and implements separate rules accordingly.&#x20;
+For the purposes of backwards compatibility Guardian differentiates between existing policies and the creation of new policies and implements separate rules accordingly.&#x20;
 
-At this time Guardian does not version policy language definition separately from the Guardian, for the purposes over distinguishing the language definitions it is recommended to use Guardian release version numbers.&#x20;
+Guardian Policy documents feature two independent version numbers, one describing the version, in other words ‘iteration’, of the policy itself (as described in the section above), and the other one describing the version of the PDL that this version of the policy is expressed in. Like the former, the latter uses semantic versioning in the major.minor.micro format. Each number incremented sequentially, the difference in numbers between two documents denote the following differences:&#x20;
+
+* major: PDL in documents contains breaking changes, manual conversion on import is required.&#x20;
+* minor: PDL in the newer document contains notable new capabilities and non-breaking changes, the policy will be converted into the new format on import automatically.&#x20;
+* micro: the PDL versions contains non-breaking changes only.&#x20;
+
+Guardian generates PDL versions for Policy document automatically. Each new release of Guardian may or may not bring a new PDL version. However, new PDL versions can only be introduced as part of the new release of Guardian.&#x20;
 
 ### Existing Policies
 

@@ -1,4 +1,4 @@
-import { MessageBrokerChannel } from "common";
+import { MessageBrokerChannel } from "@guardian/common";
 
 export abstract class ServiceRequestsBase {
     protected channel: MessageBrokerChannel;
@@ -35,8 +35,8 @@ export abstract class ServiceRequestsBase {
                 throw response.error;
             }
             return response.body;
-        } catch (e) {
-            throw new Error(`Guardian (${entity}) send: ` + e);
+        } catch (error) {
+            throw new Error(`Guardian (${entity}) send: ` + error);
         }
     }
 }

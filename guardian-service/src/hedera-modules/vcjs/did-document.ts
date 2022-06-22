@@ -1,7 +1,7 @@
-import { PrivateKey, PublicKey, TopicId } from "@hashgraph/sdk";
-import { Environment } from "./../environment";
-import { Hashing } from "./../hashing";
-import { IVerificationMethod, IDidDocument } from "interfaces";
+import { PrivateKey, PublicKey, TopicId } from '@hashgraph/sdk';
+import { Environment } from './../environment';
+import { Hashing } from './../hashing';
+import { IVerificationMethod, IDidDocument } from '@guardian/interfaces';
 
 export class DidRootKey {
     public static DID_ROOT_KEY_NAME = '#did-root-key';
@@ -80,7 +80,7 @@ export class DidRootKey {
         if (!json) {
             throw new Error('JSON Object is empty');
         }
-        
+
         return DidRootKey.fromJsonTree(JSON.parse(json));
     }
 
@@ -359,7 +359,7 @@ export class DIDDocument {
                 result.topicId = topicId;
             }
         }
-        result.network = Environment.getNetwork();
+        result.network = Environment.network;
         result.idString = DidRootKey.publicKeyToIdString(result.publicKey);
         result.did = result.buildDid();
         result.document = DidDocumentBase.createByPrivateKey(result.did, result.privateKey);
@@ -369,10 +369,10 @@ export class DIDDocument {
     public static from(did: string, didRootKey: PublicKey | string): DIDDocument {
         try {
             if (!did) {
-                throw new Error("DID string cannot be null");
+                throw new Error('DID string cannot be null');
             }
             if (!didRootKey) {
-                throw new Error("DID Root Key is empty");
+                throw new Error('DID Root Key is empty');
             }
             const mainParts = did.split(DIDDocument.DID_PARAMETER_SEPARATOR);
             const didParts = mainParts[0].split(DIDDocument.DID_METHOD_SEPARATOR);
@@ -423,8 +423,8 @@ export class DIDDocument {
                 throw new Error('The specified DID does not correspond to the given DID root key');
             }
             return result;
-        } catch (e) {
-            throw new Error('DID string is invalid. ' + e.message);
+        } catch (error) {
+            throw new Error('DID string is invalid. ' + error.message);
         }
     }
 }

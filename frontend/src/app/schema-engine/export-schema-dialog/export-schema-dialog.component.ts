@@ -34,10 +34,12 @@ export class ExportSchemaDialog {
     saveToFile() {
         this.loading = true;
         this.schemaService.exportInFile(this.schema.id)
-            .subscribe((result) => {
+            .subscribe((fileBuffer) => {
                 let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(result);
-                downloadLink.setAttribute('download', `schemes_${Date.now()}.zip`);
+                downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
+                    type: 'application/guardian-schema'
+                }));
+                downloadLink.setAttribute('download', `schemas_${Date.now()}.schema`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 setTimeout(() => {

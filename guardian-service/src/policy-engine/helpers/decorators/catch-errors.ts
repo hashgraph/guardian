@@ -1,19 +1,18 @@
-import { BlockErrorActions } from 'interfaces';
+import { BlockErrorActions } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/common';
 
 export function CatchErrors() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         descriptor.value = new Proxy(target[propertyKey], {
             async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
-                const user = argArray[1];
+                const user = argArray[0];
                 const f = async () => {
                     try {
                         await target.apply(thisArg, argArray);
-                    } catch (e) {
-                        new Logger().error(e.message, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
-                        console.error(e.message);
-                        PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, e.message, user);
+                    } catch (error) {
+                        await new Logger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
+                        PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {
                                 setTimeout(f, parseInt(thisArg.options.errorTimeout, 10));

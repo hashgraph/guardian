@@ -1,7 +1,7 @@
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Request, Response, Router } from 'express';
-import { IPageParameters, UserRole } from 'interfaces';
-import { Logger } from 'logger-helper';
+import { IPageParameters, UserRole } from '@guardian/interfaces';
+import { Logger } from '@guardian/common';
 
 /**
  * Logger route
@@ -16,7 +16,7 @@ function escapeRegExp(text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
-loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+loggerAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         const filters: any = {};
         const pageParameters: IPageParameters = {};
@@ -55,7 +55,7 @@ loggerAPI.post('/', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Reque
     }
 });
 
-loggerAPI.get('/attributes', permissionHelper(UserRole.ROOT_AUTHORITY), async (req: Request, res: Response) => {
+loggerAPI.get('/attributes', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         const logger = new Logger();
         if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {

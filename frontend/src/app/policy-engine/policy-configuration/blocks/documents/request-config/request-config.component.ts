@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { Schema, Token } from '@guardian/interfaces';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
@@ -14,13 +15,11 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     ]
 })
 export class RequestConfigComponent implements OnInit {
-    @Input('target') target!: BlockNode;
-    @Input('all') all!: BlockNode[];
-    @Input('schemes') schemes!: Schema[];
+    @Input('policy') policy!: PolicyModel;
+    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
@@ -30,7 +29,7 @@ export class RequestConfigComponent implements OnInit {
         presetFields: {}
     };
 
-    block!: BlockNode;
+    block!: any;
 
     presetMap: any;
 
@@ -40,20 +39,20 @@ export class RequestConfigComponent implements OnInit {
 
     ngOnInit(): void {
         this.onInit.emit(this);
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
-    load(block: BlockNode) {
-        this.block = block;
+    load(block: PolicyBlockModel) {
+        this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.type = this.block.uiMetaData.type || 'page';
         this.block.presetFields = this.block.presetFields || [];
-        const schema = this.schemes.find(e => e.iri == this.block.schema);
-        const presetSchema = this.schemes.find(e => e.iri == this.block.presetSchema);
+        const schema = this.schemas.find(e => e.iri == this.block.schema);
+        const presetSchema = this.schemas.find(e => e.iri == this.block.presetSchema);
         if (!schema || !presetSchema) {
             this.block.presetFields = [];
         }
@@ -77,8 +76,8 @@ export class RequestConfigComponent implements OnInit {
         this.block.presetFields = [];
         this.presetMap = [];
 
-        const schema = this.schemes.find(e => e.iri == this.block.schema);
-        const presetSchema = this.schemes.find(e => e.iri == this.block.presetSchema);
+        const schema = this.schemas.find(e => e.iri == this.block.schema);
+        const presetSchema = this.schemas.find(e => e.iri == this.block.presetSchema);
         if (schema && presetSchema && schema.fields) {
             for (let i = 0; i < schema.fields.length; i++) {
                 const field = schema.fields[i];
@@ -103,7 +102,7 @@ export class RequestConfigComponent implements OnInit {
                 });
             }
         }
-        
+
         const dMap:any = {};
         for (let i = 0; i < this.presetMap.length; i++) {
             const f = this.presetMap[i];

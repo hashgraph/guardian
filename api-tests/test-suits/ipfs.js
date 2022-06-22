@@ -11,7 +11,7 @@ function Ipfs() {
             {
                 headers: {
                     'Content-Type': 'binary/octet-stream',
-                    'Authorization': `Bearer ${GetToken('RootAuthority')}`,
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );

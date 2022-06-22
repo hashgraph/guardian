@@ -10,6 +10,7 @@ export interface IVCDocument {
     createDate?: Date;
     updateDate?: Date;
     hederaStatus?: DocumentStatus;
+    comment?: string;
     type: string;
     signature?: number;
     policyId: string;

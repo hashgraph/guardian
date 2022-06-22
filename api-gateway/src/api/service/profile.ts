@@ -3,7 +3,7 @@ import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Request, Response, Router } from 'express';
-import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from 'interfaces';
+import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from '@guardian/interfaces';
 
 /**
  * User profile route
@@ -27,11 +27,18 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
 
         let vcDocument: any = null;
         if (user.did) {
-            const vcDocuments = await guardians.getVcDocuments({
+            let vcDocuments = await guardians.getVcDocuments({
                 owner: user.did,
-                type: SchemaEntity.ROOT_AUTHORITY
+                type: SchemaEntity.USER
             });
-            if (vcDocuments) {
+            if (vcDocuments && vcDocuments.length) {
+                vcDocument = vcDocuments[vcDocuments.length - 1];
+            }
+            vcDocuments = await guardians.getVcDocuments({
+                owner: user.did,
+                type: SchemaEntity.STANDARD_REGISTRY
+            });
+            if (vcDocuments && vcDocuments.length) {
                 vcDocument = vcDocuments[vcDocuments.length - 1];
             }
         }
@@ -39,10 +46,10 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
         let topic: any;
         if (user.did || user.parent) {
             const filters = [];
-            if(user.did) {
+            if (user.did) {
                 filters.push(user.did);
             }
-            if(user.parent) {
+            if (user.parent) {
                 filters.push(user.parent);
             }
             topic = await guardians.getTopic({
@@ -61,6 +68,7 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
             failed: !!(didDocument && didDocument.status == DidDocumentStatus.FAILED),
             hederaAccountKey: null,
             topicId: topic?.topicId,
+            parentTopicId: topic?.parent,
             didDocument: didDocument,
             vcDocument: vcDocument
         };
@@ -77,7 +85,7 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
         const wallet = new Wallet();
         const guardians = new Guardians();
 
-        const profile: IUser = req.body;
+        const profile: any = req.body;
         const user = await users.getUser(req.user.username);
 
         if (!profile.hederaAccountId) {
@@ -90,9 +98,11 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
         }
 
         let did: string;
-        if (user.role === UserRole.ROOT_AUTHORITY) {
-            did = await guardians.createRootAuthorityProfile(profile);
+        if (user.role === UserRole.STANDARD_REGISTRY) {
+            profile.entity = SchemaEntity.STANDARD_REGISTRY;
+            did = await guardians.createStandardRegistryProfile(profile);
         } else if (user.role === UserRole.USER) {
+            profile.entity = SchemaEntity.USER;
             did = await guardians.createUserProfile(profile);
         }
 

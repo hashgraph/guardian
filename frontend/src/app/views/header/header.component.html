@@ -4,7 +4,7 @@
 
         <div *ngIf="links" class="nav-bar">
             <nav mat-tab-nav-bar backgroundColor="primary" animationDuration="0ms">
-                <a mat-tab-link *ngFor="let link of links" (click)="rout(link)" [disabled]="link.disabled"
+                <a mat-tab-link *ngFor="let link of links" (click)="rout(link)" [disabled]="link.disabled || commonLinksDisabled"
                     [active]="isActive(link)" [attr.hidden]="isHidden(link)"> {{link.name}} </a>
             </nav>
         </div>
@@ -40,7 +40,7 @@
                 border-radius: 30px;
                 overflow: scroll;">
                 <div class="debug-user">
-                    <button mat-raised-button (click)="authState.doLogin('RootAuthority','test')">Root Authority</button>
+                    <button mat-raised-button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry</button>
                     <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>
                     <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
                     <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>

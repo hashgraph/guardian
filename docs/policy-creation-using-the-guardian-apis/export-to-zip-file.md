@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/policies/{policyId}/export/file" summary="Return policy and its artifacts in a zip file format for the specified policy" %}
 {% swagger-description %}
-Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Root Authority role are allowed to make the request.
+Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}

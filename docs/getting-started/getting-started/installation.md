@@ -56,7 +56,7 @@ npm install
 npm run build
 ```
 
-#### **From the logger-helper folder**
+#### **From the common folder**
 
 Build package
 

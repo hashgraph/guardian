@@ -1,20 +1,17 @@
 {
-  "_moduleAliases": {
-    "@api": "dist/api",
-    "@entity": "dist/entity"
-  },
+  "packageManager": "yarn@3.2.1",
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "@guardian/common": "^2.2.0-prerelease",
+    "@guardian/interfaces": "^2.2.0-prerelease",
     "@web-std/fetch": "3.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "fs-extra": "^10.0.0",
-    "interfaces": "file:../interfaces",
     "module-alias": "^2.2.2",
-    "mongodb": "^4.2.1",
+    "mongodb": "4.2.1",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.41",
-    "common":"file:../common"
+    "typeorm": "^0.2.41"
   },
   "description": "",
   "devDependencies": {
@@ -39,5 +36,6 @@
     "lint": "tslint --project .",
     "start": "node dist/index.js"
   },
-  "version": "2.1.0"
+  "version": "2.2.0-prerelease",
+  "stableVersion": "2.2.0"
 }

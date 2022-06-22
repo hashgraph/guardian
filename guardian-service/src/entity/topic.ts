@@ -1,4 +1,4 @@
-import { TopicType } from 'interfaces';
+import { TopicType } from '@guardian/interfaces';
 import { Column, Entity, ObjectIdColumn } from 'typeorm';
 
 
@@ -24,6 +24,9 @@ export class Topic {
 
     @Column()
     key: string;
+
+    @Column()
+    parent: string;
 
     @Column()
     policyId: string;

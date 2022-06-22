@@ -17,6 +17,14 @@
 * [Security](getting-started/security.md)
 * [Reference Implementation](getting-started/reference-implementation.md)
 
+## Schema Flow
+
+* [Schema Demo](schema-flow/schema-demo.md)
+
+## Policy Flow
+
+* [Policy Demo](policy-flow/policy-demo.md)
+
 ## Demo Guide
 
 * [Demo Usage Guide](demo-guide/demo-usage-guide.md)
@@ -64,6 +72,10 @@
 * [switchBlock](available-policy-workflow-blocks/switchblock.md)
 * [aggregateDocumentBlock](available-policy-workflow-blocks/aggregatedocumentblock.md)
 * [TimerBlock](available-policy-workflow-blocks/timerblock.md)
+* [revokeBlock](available-policy-workflow-blocks/revokeblock.md)
+* [setRelationshipsBlock](available-policy-workflow-blocks/setrelationshipsblock.md)
+* [buttonBlock](available-policy-workflow-blocks/buttonblock.md)
+* [Events](available-policy-workflow-blocks/events.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 
@@ -132,13 +144,23 @@
 * [Importing Zip file containing Schema](schema-creation-using-the-guardian-apis/importing-zip-file-containing-schema.md)
 * [Importing Schema from IPFS](schema-creation-using-the-guardian-apis/importing-schema-from-ipfs.md)
 
+## System Schemas APIs
+
+* [Returns Schema by Type](system-schemas-apis/returns-schema-by-type.md)
+* [Creates New System Schema](system-schemas-apis/creates-new-system-schema.md)
+* [Returns Schema by Username](system-schemas-apis/returns-schema-by-username.md)
+* [Updates the Schema](system-schemas-apis/updates-the-schema.md)
+* [Delete System Schema](system-schemas-apis/delete-system-schema.md)
+* [Publishes the Schema](system-schemas-apis/publishes-the-schema.md)
+* [Schema Type](system-schemas-apis/schema-type.md)
+
 ## ACCOUNT APIS
 
-* [User listing except Root Authority and Auditor](account-apis/user-listing-except-root-authority-and-auditor.md)
+* [User listing except Standard Registry and Auditor](account-apis/user-listing-except-root-authority-and-auditor.md)
 * [User Session](account-apis/user-session.md)
 * [User Login](account-apis/user-login.md)
 * [Registering new account](account-apis/registering-new-account.md)
-* [Returns all root-authorities](account-apis/returns-all-root-authorities.md)
+* [Returns all Standard Registries](account-apis/returns-all-root-authorities.md)
 
 ## PROFILE APIS
 
@@ -176,3 +198,11 @@
 ## External APIs
 
 * [Sends Data from External Source](external-apis/sends-data-from-external-source.md)
+
+## External events
+
+* [Listen to external event published by guardian](external-events/external-events.md)
+
+## FAQs
+
+* [FAQs](faqs/faqs.md)

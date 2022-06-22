@@ -82,22 +82,6 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm run build
    ```
 
-   **From the logger-helper folder**
-
-   Build package
-   ```sh
-   npm install
-   npm run build
-   ```
-
-   **From the interfaces folder**
-
-   Build package
-   ```sh
-   npm install
-   npm run build
-   ```
-
 
   **From the common folder**
 
@@ -107,12 +91,6 @@ To get a local copy up and running, follow these simple example steps. When buil
   npm run build
   ```
 
-   **From the logger-helper folder**
-
-   Build package
-   ```sh
-   npm install
-   npm run build
    ```
 
    **From the Logger service folder**

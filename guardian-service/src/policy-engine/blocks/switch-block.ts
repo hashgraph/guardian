@@ -1,4 +1,4 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IAuthUser } from '@auth/auth.interface';
@@ -6,13 +6,30 @@ import { VcDocument } from '@hedera-modules';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Switch block
  */
 @BasicBlock({
     blockType: 'switchBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Switch',
+        title: `Add 'Switch' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: false
+    }
 })
 export class SwitchBlock {
     @Inject()
@@ -26,7 +43,7 @@ export class SwitchBlock {
         if (Array.isArray(docs)) {
             const scopes: any[] = [];
             for (let doc of docs) {
-                if (doc.document) {
+                if (doc.document && doc.document.type.includes('VerifiableCredential')) {
                     const element = VcDocument.fromJsonTree(doc.document);
                     const scope = PolicyUtils.getVCScope(element);
                     scopes.push(scope);
@@ -61,12 +78,19 @@ export class SwitchBlock {
         return result;
     }
 
-    async runAction(state: any, user: IAuthUser) {
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
+     @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        ref.log(`switch: ${user?.did}`);
+        ref.log(`switch: ${event.user?.did}`);
 
-        const docs: any | any[] = state.data;
+        const docs: any | any[] = event.data.data;
 
         let owner: string = null;
         let issuer: string = null;
@@ -84,10 +108,10 @@ export class SwitchBlock {
         const { conditions, executionFlow } = ref.options;
         for (let i = 0; i < conditions.length; i++) {
             const condition = conditions[i];
-            const type = condition.type;
-            const value = condition.value;
-            const actor = condition.actor;
-            const target = condition.target;
+            const type = condition.type as string;
+            const value = condition.value as string;
+            const actor = condition.actor as string;
+            const tag = condition.tag as PolicyOutputEventType;
 
             let result = false;
             if (type == 'equal') {
@@ -106,7 +130,7 @@ export class SwitchBlock {
                 result = true;
             }
 
-            let curUser: IAuthUser = user;
+            let curUser: IAuthUser = event.user;
             if (actor == 'owner' && owner) {
                 curUser = await this.users.getUserById(owner);
             } else if (actor == 'issuer' && issuer) {
@@ -116,8 +140,8 @@ export class SwitchBlock {
             ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
 
             if (result) {
-                const block = PolicyComponentsUtils.GetBlockByTag(ref.policyId, target) as any;
-                ref.runTarget(curUser, state, block).then();
+                ref.triggerEvents(tag, curUser, event.data);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
                 if (executionFlow == 'firstTrue') {
                     return;
                 }
@@ -136,18 +160,12 @@ export class SwitchBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "conditions" does not set');
             }
 
+            const tagMap = {};
             if (Array.isArray(ref.options.conditions)) {
                 for (let condition of ref.options.conditions) {
                     if (!['equal', 'not_equal', 'unconditional'].find(item => item === condition.type)) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "condition.type" must be one of equal, not_equal, unconditional');
                     }
-                    if (!condition.target && !resultsContainer.isTagExist(condition.target)) {
-                        resultsContainer.addBlockError(ref.uuid, `Tag "${condition.target}" does not exist`);
-                    }
-                    if (condition.target == ref.tag) {
-                        resultsContainer.addBlockError(ref.uuid, `A block cannot redirect to itself`);
-                    }
-
                     if (condition.type == 'equal' || condition.type == 'not_equal') {
                         if (!condition.value) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "condition.value" does not set');
@@ -156,6 +174,15 @@ export class SwitchBlock {
                         }
                     }
 
+                    if (!condition.tag) {
+                        resultsContainer.addBlockError(ref.uuid, `Option "tag" does not set`);
+                    }
+
+                    if (tagMap[condition.tag]) {
+                        resultsContainer.addBlockError(ref.uuid, `Condition Tag ${condition.tag} already exist`);
+                    }
+
+                    tagMap[condition.tag] = true;
                 }
             } else {
                 resultsContainer.addBlockError(ref.uuid, 'Option "conditions" must be an array');

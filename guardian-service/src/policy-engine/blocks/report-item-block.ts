@@ -4,17 +4,29 @@ import { findOptions, getVCIssuer } from '@helpers/utils';
 import { ReportItem } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
-import { IReportItem } from 'interfaces';
+import { IReportItem } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument } from '@entity/vc-document';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
  * Report item block
  */
 @ReportItem({
     blockType: 'reportItemBlock',
-    commonBlock: true
+    commonBlock: true,
+    about: {
+        label: 'Report Item',
+        title: `Add 'Report Item' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Special,
+        input: null,
+        output: null,
+        defaultEvent: false
+    }
 })
 export class ReportItemBlock {
     @Inject()

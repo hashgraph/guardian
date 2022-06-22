@@ -4,7 +4,7 @@
 
 {% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks" summary="Retrieves data for the policy root block" %}
 {% swagger-description %}
-Returns data from the root policy block. Only users with the Root Authority and Installer role are allowed to make the request
+Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyID" type="String" required="true" %}

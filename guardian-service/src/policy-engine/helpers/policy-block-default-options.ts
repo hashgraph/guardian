@@ -9,7 +9,6 @@ export function PolicyBlockDefaultOptions(): PolicyBlockOptionsPartial {
         tag: null,
         defaultActive: false,
         permissions: [],
-        dependencies: [],
         _parent: null
     })
 }

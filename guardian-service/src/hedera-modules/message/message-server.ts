@@ -9,20 +9,38 @@ import { HederaSDKHelper } from '../hedera-sdk-helper';
 import { MessageType } from './message-type';
 import { VCMessage } from './vc-message';
 import { DIDMessage } from './did-message';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/common';
 import { PolicyMessage } from './policy-message';
 import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
+import { TransactionLogger } from '../transaction-logger';
+import { HederaUtils } from './../utils';
 
 export class MessageServer {
+
     private client: HederaSDKHelper;
 
     private submitKey: PrivateKey | string;
     private topicId: TopicId | string;
+    private static lang: string;
 
     constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         this.client = new HederaSDKHelper(operatorId, operatorKey);
+    }
+
+    public static setLang(lang: string) {
+        this.lang = lang;
+    }
+
+    public async messageStartLog(name: string): Promise<string> {
+        const id = HederaUtils.randomUUID();
+        await TransactionLogger.messageLog(id, name);
+        return id;
+    }
+
+    public async messageEndLog(id: string, name: string): Promise<void> {
+        await TransactionLogger.messageLog(id, name);
     }
 
     public setTopicObject(topic: { topicId: string, key: string }): MessageServer {
@@ -37,7 +55,15 @@ export class MessageServer {
         return this;
     }
 
+    public getTopic(): string {
+        if (this.topicId) {
+            return this.topicId.toString();
+        }
+        return undefined;
+    }
+
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
+        const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
         const urls = [];
         for (let i = 0; i < buffers.length; i++) {
@@ -45,6 +71,7 @@ export class MessageServer {
             const result = await IPFS.addFile(buffer);
             urls.push(result);
         }
+        await this.messageEndLog(time, 'IPFS');
         message.setUrls(urls);
         return message;
     }
@@ -65,20 +92,24 @@ export class MessageServer {
         if (!this.topicId) {
             throw 'Topic not set';
         }
+        message.setLang(MessageServer.lang);
+        const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
         const id = await this.client.submitMessage(this.topicId, buffer, this.submitKey);
+        await this.messageEndLog(time, 'Hedera');
         message.setId(id);
         message.setTopicId(this.topicId);
         return message;
     }
 
-    public static fromMessage(message: string): Message {
+    public static fromMessage<T extends Message>(message: string, type?: MessageType): T {
         const json = JSON.parse(message);
-        return this.fromMessageObject(json);
+        return this.fromMessageObject(json, type);
     }
 
-    public static fromMessageObject(json: any): Message {
+    public static fromMessageObject<T extends Message>(json: any, type?: MessageType): T {
         let message: Message;
+        json.type = json.type || type;
         switch (json.type) {
             case MessageType.VCDocument:
                 message = VCMessage.fromMessageObject(json);
@@ -98,7 +129,7 @@ export class MessageServer {
             case MessageType.VPDocument:
                 message = VPMessage.fromMessageObject(json);
                 break;
-            // Default schemes
+            // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
                 break;
@@ -112,31 +143,40 @@ export class MessageServer {
             console.error(`Invalid json: ${json.type}`);
             throw `Invalid json: ${json.type}`;
         }
-        return message;
+        return message as T;
     }
 
 
-    private async getTopicMessage(timeStamp: string): Promise<Message> {
+    private async getTopicMessage<T extends Message>(timeStamp: string, type?: MessageType): Promise<T> {
         const { topicId, message } = await this.client.getTopicMessage(timeStamp);
         new Logger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE']);
-        const result = MessageServer.fromMessage(message);
+        const result = MessageServer.fromMessage<T>(message, type);
         result.setId(timeStamp);
         result.setTopicId(topicId);
         return result;
     }
 
-    private async getTopicMessages(topicId: string | TopicId): Promise<Message[]> {
+    private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
         const topic = topicId.toString();
         const messages = await this.client.getTopicMessages(topic);
         new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
         const result: Message[] = [];
         for (let i = 0; i < messages.length; i++) {
+            const message = messages[i];
             try {
-                const message = messages[i];
                 const item = MessageServer.fromMessage(message.message);
-                item.setId(message.id);
-                item.setTopicId(topic);
-                result.push(item);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setId(message.id);
+                    item.setTopicId(topic);
+                    result.push(item);
+                }
             } catch (error) {
                 continue;
             }
@@ -144,27 +184,22 @@ export class MessageServer {
         return result;
     }
 
-    public async sendMessage<T extends Message>(message: T): Promise<T> {
-        message = await this.sendIPFS(message);
+    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
+        if (sendToIPFS) {
+            message = await this.sendIPFS(message);
+        }
         message = await this.sendHedera(message);
         return message;
     }
 
-    public async getMessage<T extends Message>(id: string): Promise<T> {
-        let message = await this.getTopicMessage(id);
+    public async getMessage<T extends Message>(id: string, type?: MessageType): Promise<T> {
+        let message = await this.getTopicMessage<T>(id, type);
         message = await this.loadIPFS(message);
         return message as T;
     }
 
-
     public async getMessages<T extends Message>(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<T[]> {
-        let messages = await this.getTopicMessages(topicId);
-        if (type) {
-            messages = messages.filter(m => m.type == type);
-        }
-        if (action) {
-            messages = messages.filter(m => m.action == action);
-        }
+        let messages = await this.getTopicMessages(topicId, type, action);
         return messages as T[];
     }
 
@@ -172,10 +207,10 @@ export class MessageServer {
         return await this.loadIPFS<T>(message);
     }
 
-    public async findTopic(messageId:string): Promise<string> {
+    public async findTopic(messageId: string): Promise<string> {
         try {
             console.log(messageId)
-            if(messageId) {
+            if (messageId) {
                 const { topicId, message } = await this.client.getTopicMessage(messageId);
                 console.log(topicId)
                 return topicId;

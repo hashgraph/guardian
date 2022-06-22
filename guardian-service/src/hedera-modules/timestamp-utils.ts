@@ -1,9 +1,9 @@
-import { Timestamp } from "@hashgraph/sdk";
+import { Timestamp } from '@hashgraph/sdk';
 import moment from 'moment';
 
 export class TimestampUtils {
-    public static ISO = "YYYY-MM-DDTHH:mm:ss.SSS[Z]";
-    public static ISO8601 = "YYYY-MM-DDTHH:mm:ss[Z]";
+    public static ISO = 'YYYY-MM-DDTHH:mm:ss.SSS[Z]';
+    public static ISO8601 = 'YYYY-MM-DDTHH:mm:ss[Z]';
 
     public static toJSON(item: Timestamp, format: string = this.ISO): string {
         const d = item.toDate();

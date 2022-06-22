@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/message" summary="Hedera message IDs of published schemas" %}
 {% swagger-description %}
-Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Root Authority role are allowed to make the request.
+Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
