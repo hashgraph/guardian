@@ -15,6 +15,7 @@ import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
+import { HederaUtils } from './../utils';
 
 export class MessageServer {
 
@@ -32,14 +33,14 @@ export class MessageServer {
         this.lang = lang;
     }
 
-    public messageStartLog(name: string): number {
-        TransactionLogger.messageLog(name);
-        return Date.now();
+    public async messageStartLog(name: string): Promise<string> {
+        const id = HederaUtils.randomUUID();
+        await TransactionLogger.messageLog(id, name);
+        return id;
     }
 
-    public messageEndLog(time: number, name: string): void {
-        const duration = Date.now() - time;
-        TransactionLogger.messageLog(name, duration);
+    public async messageEndLog(id: string, name: string): Promise<void> {
+        await TransactionLogger.messageLog(id, name);
     }
 
     public setTopicObject(topic: { topicId: string, key: string }): MessageServer {
@@ -62,7 +63,7 @@ export class MessageServer {
     }
 
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
-        const time = this.messageStartLog('IPFS');
+        const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
         const urls = [];
         for (let i = 0; i < buffers.length; i++) {
@@ -70,7 +71,7 @@ export class MessageServer {
             const result = await IPFS.addFile(buffer);
             urls.push(result);
         }
-        this.messageEndLog(time, 'IPFS');
+        await this.messageEndLog(time, 'IPFS');
         message.setUrls(urls);
         return message;
     }
@@ -92,10 +93,10 @@ export class MessageServer {
             throw 'Topic not set';
         }
         message.setLang(MessageServer.lang);
-        const time = this.messageStartLog('Hedera');
+        const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
         const id = await this.client.submitMessage(this.topicId, buffer, this.submitKey);
-        this.messageEndLog(time, 'Hedera');
+        await this.messageEndLog(time, 'Hedera');
         message.setId(id);
         message.setTopicId(this.topicId);
         return message;

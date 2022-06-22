@@ -12,7 +12,14 @@ export function ActionCallback(config: {
             target.outputActions = [];
         }
         if (config.type) {
-            target.actions.push([config.type, descriptor.value.bind(target)]);
+            target.actions.push([
+                config.type,
+                new Proxy(target[propertyKey], {
+                    async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
+                        descriptor.value.apply(thisArg, argArray);
+                    }
+                })
+            ]);
         }
         if (config.output) {
             if (Array.isArray(config.output)) {
