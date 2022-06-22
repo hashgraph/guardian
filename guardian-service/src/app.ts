@@ -24,6 +24,7 @@ import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
+import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 
 Promise.all([
     createConnection({
@@ -44,16 +45,56 @@ Promise.all([
 ]).then(async values => {
     const [db, cn] = values;
     const channel = new MessageBrokerChannel(cn, 'guardians');
+
+    new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
-    state.updateState(ApplicationStates.STARTED);
+
+    // Check configuration
+    if(!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
+        await new Logger().error('You need to fill OPERATOR_ID field in .env file', ['GUARDIAN_SERVICE']);
+        throw ('You need to fill OPERATOR_ID field in .env file');
+    }
+    if(!process.env.OPERATOR_KEY || process.env.OPERATOR_KEY.length < 5) {
+        await new Logger().error('You need to fill OPERATOR_KEY field in .env file', ['GUARDIAN_SERVICE']);
+        throw ('You need to fill OPERATOR_KEY field in .env file');
+    }
+    try {
+        AccountId.fromString(process.env.OPERATOR_ID);
+    } catch (error) {
+        await new Logger().error('OPERATOR_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+        throw ('OPERATOR_ID field in .env file: ' + error.message);
+    }
+    try {
+        PrivateKey.fromString(process.env.OPERATOR_KEY);
+    } catch (error) {
+        await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+        throw ('OPERATOR_KEY field in .env file: ' + error.message);
+    }
+    try {
+        if(process.env.INITIALIZATION_TOPIC_ID) {
+            TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
+        }
+    } catch (error) {
+        await new Logger().error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+        throw ('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message);
+    }
+    try {
+        if(process.env.INITIALIZATION_TOPIC_KEY) {
+            PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
+        }
+    } catch (error) {
+        await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+        throw ('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message);
+    }
+    /////////////
+    await state.updateState(ApplicationStates.STARTED);
 
     TransactionLogger.setLogLevel(TransactionLogLvl.NONE);
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
 
     IPFS.setChannel(channel);
-    new Logger().setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
 
     new Wallet().setChannel(channel);
@@ -86,8 +127,8 @@ Promise.all([
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await setDefaultSchema();
 
-    new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
+    await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
     console.log('guardian service started');
 
-    state.updateState(ApplicationStates.READY);
+    await state.updateState(ApplicationStates.READY);
 });
