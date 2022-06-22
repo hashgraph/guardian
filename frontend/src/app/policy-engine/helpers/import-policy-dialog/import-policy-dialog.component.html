@@ -1,7 +1,7 @@
 <div class="content">
     <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
         <ng-template [ngSwitchCase]="0">
-            <app-file-drag-n-drop (onFileLoaded)="importFromFile($event)" dropZoneLabel="Import Policy .zip file"></app-file-drag-n-drop>
+            <app-file-drag-n-drop fileExtension="policy" (onFileLoaded)="importFromFile($event)" dropZoneLabel="Import Policy .policy file"></app-file-drag-n-drop>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
             <h1 mat-dialog-title>
@@ -36,7 +36,7 @@
             </button>
         </div>
     </ng-container>
-    
+
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>

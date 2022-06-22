@@ -70,9 +70,9 @@ export class SchemaService {
         return this.http.delete<any[]>(`${this.url}/${id}`);
     }
 
-    public exportInFile(id: string): Observable<Blob> {
+    public exportInFile(id: string): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/${id}/export/file`, {
-            responseType: 'blob'
+            responseType: 'arraybuffer'
         });
     }
 
