@@ -43,26 +43,27 @@ export class Logger {
         }
     }
 
-    private async write(type: LogType, message: string, attr?: string[]) {
+    private async write(type: LogType, message: string, attr?: string[], lvl: number = 1) {
         const logMessage: ILog = {
             message: message,
             type: type,
-            attributes: attr
+            attributes: attr,
+            level: lvl
         }
         await this.request(MessageAPI.WRITE_LOG, logMessage);
     }
 
-    public async info(message: string, attr?: string[]): Promise<void> {
-        await this.write(LogType.INFO, message, attr);
+    public async info(message: string, attr?: string[], lvl: number = 1): Promise<void> {
+        await this.write(LogType.INFO, message, attr, lvl);
     }
 
-    public async warn(message: string, attr?: string[]): Promise<void> {
-        await this.write(LogType.WARN, message, attr);
+    public async warn(message: string, attr?: string[], lvl: number = 1): Promise<void> {
+        await this.write(LogType.WARN, message, attr, lvl);
     }
 
-    public async error(error: string | Error, attr?: string[]): Promise<void> {
+    public async error(error: string | Error, attr?: string[], lvl: number = 1): Promise<void> {
         const message = typeof error === 'string' ? error : error.stack;
-        await this.write(LogType.ERROR, message, attr);
+        await this.write(LogType.ERROR, message, attr, lvl);
     }
 
     public async getLogs(filters?: any, pageParameters?: IPageParameters, sortDirection?: string): Promise<any> {

@@ -90,9 +90,24 @@ Promise.all([
     /////////////
     await state.updateState(ApplicationStates.STARTED);
 
-    TransactionLogger.setLogLevel(TransactionLogLvl.NONE);
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
+    TransactionLogger.setLogLevel(process.env.LOG_LEVEL as TransactionLogLvl);
+    TransactionLogger.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
+        const log = new Logger();
+        const attributes = [
+            ...types,
+            date,
+            duration,
+            name,
+            ...attr
+        ]
+        if (types[1] == 'ERROR') {
+            log.error(name, attributes, 4);
+        } else {
+            log.info(name, attributes, 4);
+        }
+    })
 
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);

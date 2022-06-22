@@ -57,9 +57,6 @@ export class ButtonBlock {
                         if (!button.tag) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "tag" does not set');
                         }
-                        if (!button.name) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "name" does not set');
-                        }
                         if (Array.isArray(button.filters)) {
                             for (const filter of button.filters) { 
                                 if (!filter.type) {

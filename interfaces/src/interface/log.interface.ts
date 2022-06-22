@@ -4,4 +4,5 @@ export interface ILog {
     message?: string;
     type: LogType;
     attributes?: string[];
+    level?: number;
 }
