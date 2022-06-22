@@ -11,8 +11,8 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.1.3",
-    "@guardian/interfaces": "^2.1.3",
+    "@guardian/common": "^2.2.0-prerelease",
+    "@guardian/interfaces": "^2.2.0-prerelease",
     "@hashgraph/sdk": "^2.15.0",
     "@transmute/credentials-context": "^0.7.0-unstable.60",
     "@transmute/did-context": "^0.7.0-unstable.60",
@@ -72,5 +72,6 @@
     "test:network": "mocha tests/network-tests/**/*.test.js",
     "test:stability": "mocha tests/stability.test.js"
   },
-  "version": "2.1.3"
+  "version": "2.2.0-prerelease",
+  "stableVersion": "2.2.0"
 }
