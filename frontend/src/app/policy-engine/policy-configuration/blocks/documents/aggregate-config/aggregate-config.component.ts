@@ -1,6 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, Token } from 'interfaces';
+import { Schema, Token } from '@guardian/interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { MatDialog } from '@angular/material/dialog';
+import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
 
 /**
  * Settings for block of 'aggregateDocument' type.
@@ -14,39 +17,53 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     ]
 })
 export class AggregateConfigComponent implements OnInit {
-    @Input('target') target!: BlockNode;
-    @Input('all') all!: BlockNode[];
-    @Input('schemes') schemes!: Schema[];
+    @Input('policy') policy!: PolicyModel;
+    @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('schemas') schemas!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
     @Output() onInit = new EventEmitter();
 
     propHidden: any = {
         main: false,
+        options: false,
+        expressionsGroup: false,
+        expressions: {},
     };
 
-    block!: BlockNode;
+    block!: any;
+    allTimer!: BlockNode[];
 
-    constructor() {
+    constructor(private dialog: MatDialog) {
     }
 
     ngOnInit(): void {
         this.onInit.emit(this);
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.load(this.target);
+        this.load(this.currentBlock);
     }
 
-    load(block: BlockNode) {
-        this.block = block;
+    load(block: PolicyBlockModel) {
+        this.block = block.properties;
+        this.block.expressions = this.block.expressions || [];
         this.block.uiMetaData = this.block.uiMetaData || {}
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    addExpression() {
+        this.block.expressions.push({
+            name: '',
+            value: '',
+        })
+    }
+
+    onRemoveExpression(i: number) {
+        this.block.expressions.splice(i, 1);
     }
 }

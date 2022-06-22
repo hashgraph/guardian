@@ -1,5 +1,18 @@
 {
-  "dependencies": {
-    "cypress": "^9.5.4"
-  }
+  "name": "guardian",
+  "private": true,
+  "packageManager": "yarn@3.2.1",
+  "workspaces": [
+    "interfaces",
+    "common",
+    "api-docs",
+    "api-gateway",
+    "auth-service",
+    "guardian-service",
+    "ipfs-client",
+    "logger-service",
+    "mrv-sender"
+  ],
+  "version": "2.2.0-prerelease",
+  "stableVersion": "2.2.0"
 }

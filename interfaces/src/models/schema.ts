@@ -1,11 +1,11 @@
 import { ModelHelper } from '../helpers/model-helper';
+import { SchemaHelper } from '../helpers/schema-helper';
+import { SchemaCondition } from '../interface/schema-condition.interface';
 import { ISchemaDocument } from '../interface/schema-document.interface';
+import { SchemaField } from '../interface/schema-field.interface';
 import { ISchema } from '../interface/schema.interface';
 import { SchemaEntity } from '../type/schema-entity.type';
 import { SchemaStatus } from '../type/schema-status.type';
-import { SchemaHelper } from '../helpers/schema-helper';
-import { SchemaField } from '../interface/schema-field.interface';
-import { SchemaCondition } from '../interface/schema-condition.interface';
 
 export class Schema implements ISchema {
     public id: string;
@@ -30,7 +30,8 @@ export class Schema implements ISchema {
     public fields: SchemaField[];
     public conditions: SchemaCondition[];
     public previousVersion: string;
-
+    public active?: boolean;
+    public system?: boolean;
     private userDID: string;
 
     constructor(schema?: ISchema) {
@@ -44,6 +45,8 @@ export class Schema implements ISchema {
             this.entity = schema.entity || SchemaEntity.NONE;
             this.status = schema.status || SchemaStatus.DRAFT;
             this.readonly = schema.readonly || false;
+            this.system = schema.system || false;
+            this.active = schema.active || false;
             this.version = schema.version || "";
             this.creator = schema.creator || "";
             this.owner = schema.owner || "";
@@ -58,7 +61,7 @@ export class Schema implements ISchema {
             if (schema.isCreator) {
                 this.userDID = this.creator;
             }
-            if(schema.document) {
+            if (schema.document) {
                 if (typeof schema.document == 'string') {
                     this.document = JSON.parse(schema.document);
                 } else {
@@ -67,7 +70,7 @@ export class Schema implements ISchema {
             } else {
                 this.document = null;
             }
-            if(schema.context) {
+            if (schema.context) {
                 if (typeof schema.context == 'string') {
                     this.context = JSON.parse(schema.context);
                 } else {
@@ -85,6 +88,8 @@ export class Schema implements ISchema {
             this.entity = SchemaEntity.NONE;
             this.status = SchemaStatus.DRAFT;
             this.readonly = false;
+            this.system = false;
+            this.active = false;
             this.document = null;
             this.context = null;
             this.version = "";
@@ -144,6 +149,8 @@ export class Schema implements ISchema {
         clone.entity = this.entity;
         clone.status = this.status;
         clone.readonly = this.readonly;
+        clone.system = this.system;
+        clone.active = this.active;
         clone.document = this.document;
         clone.context = this.context;
         clone.version = this.version;
@@ -173,7 +180,7 @@ export class Schema implements ISchema {
         this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 
-    public updateRefs(schemes: Schema[]): void {
-        this.document.$defs = SchemaHelper.findRefs(this, schemes);
+    public updateRefs(schemas: Schema[]): void {
+        this.document.$defs = SchemaHelper.findRefs(this, schemas);
     }
 }

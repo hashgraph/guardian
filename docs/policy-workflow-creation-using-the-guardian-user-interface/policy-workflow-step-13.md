@@ -8,7 +8,7 @@ Again we add a tag, set the permissions, make this step active by default since 
 
 Next, we select the UI as a “Dialog” as we have done before from the drop-down. We then add content and title.
 
-![](../.gitbook/assets/PW\_18.png)
+![](../.gitbook/assets/PW\_image\_19.png)
 
 **Programmatically this workflow step looks like this:**
 

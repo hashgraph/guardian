@@ -34,6 +34,7 @@
                 <mat-option value="vc">VC Document</mat-option>
                 <mat-option value="did">DID Document</mat-option>
                 <mat-option value="vp">VP Document</mat-option>
+                <mat-option value="document">Take From Input Document</mat-option>
             </mat-select>
         </td>
     </tr>
@@ -50,11 +51,8 @@
                     </span>
                 </mat-option>
                 <mat-option value="root">Policy Instance</mat-option>
-                <mat-option *ngFor="let topic of topics" 
-                    [value]="topic.name"
-                    [matTooltip]="topic.description" 
-                    matTooltipPosition="above" 
-                    matTooltipClass="guardian-tooltip">
+                <mat-option *ngFor="let topic of policy.policyTopics" [value]="topic.name"
+                    [matTooltip]="topic.description" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
                     {{topic.name}}
                 </mat-option>
             </mat-select>
@@ -86,13 +84,6 @@
         <td class="propRowCell cellName">Force New Document</td>
         <td class="propRowCell">
             <input type="checkbox" [(ngModel)]="block.forceNew" [readonly]="readonly">
-        </td>
-    </tr>
-    <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Stop Propagation</td>
-        <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
         </td>
     </tr>
 

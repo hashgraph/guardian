@@ -7,7 +7,6 @@ import {
     Hbar,
     PrivateKey,
     Status,
-    Timestamp,
     TokenAssociateTransaction,
     TokenCreateTransaction,
     TokenDissociateTransaction,
@@ -23,14 +22,18 @@ import {
     TopicId,
     TopicMessageSubmitTransaction,
     Transaction,
+    TransactionReceipt,
+    TransactionRecord,
     TransactionResponse,
     TransferTransaction
 } from '@hashgraph/sdk';
-import { timeout } from './utils';
-import axios from "axios";
+import { HederaUtils, timeout } from './utils';
+import axios from 'axios';
 import { Environment } from './environment';
+import { TransactionLogger } from './transaction-logger';
 
 export const MAX_FEE = 10;
+export const INITIAL_BALANCE = 30;
 
 /**
  * Contains methods to simplify work with hashgraph sdk
@@ -44,6 +47,18 @@ export class HederaSDKHelper {
         if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
         }
+    }
+
+    private async transactionStartLog(id, transactionName: string): Promise<void> {
+        await TransactionLogger.transactionLog(id, this.client.operatorAccountId, transactionName);
+    }
+
+    private async transactionEndLog(id: string, transactionName: string, transaction?: Transaction, metadata?: any): Promise<void> {
+        await TransactionLogger.transactionLog(id, this.client.operatorAccountId, transactionName, transaction, metadata);
+    }
+
+    private async transactionErrorLog(id: string, transactionName: string, transaction: Transaction, error: Error): Promise<void> {
+        await TransactionLogger.transactionErrorLog(id, this.client.operatorAccountId, transactionName, transaction, error.message);
     }
 
     /**
@@ -73,7 +88,7 @@ export class HederaSDKHelper {
         initialSupply: number,
         tokenMemo: string,
         treasury: {
-            id: AccountId;
+            id: AccountId | string;
             key: PrivateKey;
         },
         adminKey: PrivateKey,
@@ -83,13 +98,13 @@ export class HederaSDKHelper {
         supplyKey: PrivateKey
     ): Promise<string> {
         const client = this.client;
+
         let transaction = new TokenCreateTransaction()
             .setTokenName(name)
             .setTokenSymbol(symbol)
             .setTreasuryAccountId(treasury.id)
             .setDecimals(decimals)
             .setInitialSupply(initialSupply)
-            .setMaxTransactionFee(new Hbar(MAX_FEE))
             .setTokenMemo(tokenMemo);
 
         if (adminKey) {
@@ -113,9 +128,9 @@ export class HederaSDKHelper {
         transaction = transaction.freezeWith(client);
 
         const signTx = await (await transaction.sign(adminKey)).sign(treasury.key);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenCreateTransaction');
         const tokenId = receipt.tokenId;
+
         return tokenId.toString();
     }
 
@@ -174,8 +189,9 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async associate(tokenId: string | TokenId, id: string, key: string) {
+    public async associate(tokenId: string | TokenId, id: string, key: string): Promise<boolean> {
         const client = this.client;
+
         const accountId = AccountId.fromString(id);
         const accountKey = PrivateKey.fromString(key);
         const transaction = new TokenAssociateTransaction()
@@ -183,9 +199,9 @@ export class HederaSDKHelper {
             .setTokenIds([tokenId])
             .freezeWith(client);
         const signTx = await transaction.sign(accountKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenAssociateTransaction');
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -199,8 +215,9 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async dissociate(tokenId: string | TokenId, id: string, key: string) {
+    public async dissociate(tokenId: string | TokenId, id: string, key: string): Promise<boolean> {
         const client = this.client;
+
         const accountId = AccountId.fromString(id);
         const accountKey = PrivateKey.fromString(key);
         const transaction = new TokenDissociateTransaction()
@@ -208,9 +225,9 @@ export class HederaSDKHelper {
             .setTokenIds([tokenId])
             .freezeWith(client);
         const signTx = await transaction.sign(accountKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenDissociateTransaction');
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -224,17 +241,18 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async freeze(tokenId: string | TokenId, accountId: string, freezeKey: string) {
+    public async freeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<boolean> {
         const client = this.client;
+
         const _freezeKey = PrivateKey.fromString(freezeKey);
         const transaction = new TokenFreezeTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
             .freezeWith(client);
         const signTx = await transaction.sign(_freezeKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenFreezeTransaction');
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -248,17 +266,18 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async unfreeze(tokenId: string | TokenId, accountId: string, freezeKey: string) {
+    public async unfreeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<boolean> {
         const client = this.client;
+
         const _freezeKey = PrivateKey.fromString(freezeKey);
         const transaction = new TokenUnfreezeTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
             .freezeWith(client);
         const signTx = await transaction.sign(_freezeKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenUnfreezeTransaction');
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -272,17 +291,18 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async grantKyc(tokenId: string | TokenId, accountId: string, kycKey: string) {
+    public async grantKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<boolean> {
         const client = this.client;
+
         const _kycKey = PrivateKey.fromString(kycKey);
         const transaction = new TokenGrantKycTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
             .freezeWith(client);
         const signTx = await transaction.sign(_kycKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenGrantKycTransaction');
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -296,17 +316,18 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async revokeKyc(tokenId: string | TokenId, accountId: string, kycKey: string) {
+    public async revokeKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<boolean> {
         const client = this.client;
+
         const _kycKey = PrivateKey.fromString(kycKey);
         const transaction = new TokenRevokeKycTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
             .freezeWith(client);
         const signTx = await transaction.sign(_kycKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenRevokeKycTransaction');
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -327,8 +348,9 @@ export class HederaSDKHelper {
         supplyKey: string | PrivateKey,
         amount: number,
         transactionMemo?: string
-    ) {
+    ): Promise<boolean> {
         const client = this.client;
+
         const _supplyKey = PrivateKey.fromString(supplyKey.toString());
         const transaction = new TokenMintTransaction()
             .setTokenId(tokenId)
@@ -336,9 +358,9 @@ export class HederaSDKHelper {
             .setTransactionMemo(transactionMemo)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintTransaction');
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -361,6 +383,7 @@ export class HederaSDKHelper {
         transactionMemo?: string
     ): Promise<number[]> {
         const client = this.client;
+
         const _supplyKey = PrivateKey.fromString(supplyKey.toString());
         const transaction = new TokenMintTransaction()
             .setTokenId(tokenId)
@@ -368,9 +391,9 @@ export class HederaSDKHelper {
             .setTransactionMemo(transactionMemo)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintNFTTransaction');
         const transactionStatus = receipt.status;
+
         if (transactionStatus == Status.Success) {
             return receipt.serials.map(e => e.toNumber())
         } else {
@@ -396,8 +419,9 @@ export class HederaSDKHelper {
         wipeKey: string | PrivateKey,
         amount: number,
         transactionMemo?: string
-    ) {
+    ): Promise<boolean> {
         const client = this.client;
+
         const _wipeKey = PrivateKey.fromString(wipeKey.toString());
         const transaction = new TokenWipeTransaction()
             .setAccountId(targetId)
@@ -406,9 +430,9 @@ export class HederaSDKHelper {
             .setTransactionMemo(transactionMemo)
             .freezeWith(client);
         const signTx = await transaction.sign(_wipeKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenWipeTransaction');
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -432,8 +456,9 @@ export class HederaSDKHelper {
         scoreKey: string | PrivateKey,
         amount: number,
         transactionMemo?: string
-    ) {
+    ): Promise<boolean> {
         const client = this.client;
+
         const _scoreKey = PrivateKey.fromString(scoreKey.toString());
         const transaction = new TransferTransaction()
             .addTokenTransfer(tokenId, scoreId, -amount)
@@ -441,9 +466,9 @@ export class HederaSDKHelper {
             .setTransactionMemo(transactionMemo)
             .freezeWith(client);
         const signTx = await transaction.sign(_scoreKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TransferTransaction', amount);
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -469,6 +494,7 @@ export class HederaSDKHelper {
         transactionMemo?: string
     ): Promise<boolean> {
         const client = this.client;
+
         const _scoreKey = PrivateKey.fromString(scoreKey.toString());
         let transaction = new TransferTransaction()
             .setTransactionMemo(transactionMemo);
@@ -481,9 +507,9 @@ export class HederaSDKHelper {
         }
         transaction = transaction.freezeWith(client);
         const signTx = await transaction.sign(_scoreKey);
-        const txResponse = await signTx.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+        const receipt = await this.executeAndReceipt(client, signTx, 'NFTTransferTransaction', serials);
         const transactionStatus = receipt.status;
+
         return transactionStatus == Status.Success;
     }
 
@@ -495,15 +521,16 @@ export class HederaSDKHelper {
      * @returns {any} - Account Id and Account Private Key
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async newAccount(initialBalance: number): Promise<{ id: AccountId; key: PrivateKey; }> {
+    public async newAccount(): Promise<{ id: AccountId; key: PrivateKey; }> {
         const client = this.client;
+
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
-            .setInitialBalance(new Hbar(initialBalance));
-        const txResponse = await transaction.execute(client);
-        const receipt = await txResponse.getReceipt(client);
+            .setInitialBalance(new Hbar(process.env.INITIAL_BALANCE || INITIAL_BALANCE));
+        const receipt = await this.executeAndReceipt(client, transaction, 'AccountCreateTransaction');
         const newAccountId = receipt.accountId;
+
         return {
             id: newAccountId,
             key: newPrivateKey
@@ -526,7 +553,6 @@ export class HederaSDKHelper {
         const client = this.client;
 
         let transaction: any = new TopicCreateTransaction()
-            .setMaxTransactionFee(new Hbar(MAX_FEE));
 
         if (topicMemo) {
             transaction = transaction.setTopicMemo(topicMemo);
@@ -549,8 +575,9 @@ export class HederaSDKHelper {
             transaction = await transaction.sign(accountKey);
         }
 
-        const dtxId = await transaction.execute(client);
-        const topicId = (await dtxId.getReceipt(client)).topicId;
+        const receipt = await this.executeAndReceipt(client, transaction, 'TopicCreateTransaction');
+        const topicId = receipt.topicId;
+
         return topicId.toString();
     }
 
@@ -569,6 +596,7 @@ export class HederaSDKHelper {
         privateKey?: string | PrivateKey
     ): Promise<string> {
         const client = this.client;
+
         let messageTransaction: Transaction = new TopicMessageSubmitTransaction({
             topicId: topicId,
             message: message,
@@ -581,10 +609,10 @@ export class HederaSDKHelper {
                 messageTransaction = await messageTransaction.sign(privateKey);
             }
         }
-        const result = await messageTransaction.execute(client);
-        const rec = await result.getRecord(client);
+        const rec = await this.executeAndRecord(client, messageTransaction, 'TopicMessageSubmitTransaction');
         const seconds = rec.consensusTimestamp.seconds.toString();
         const nanos = rec.consensusTimestamp.nanos.toString();
+
         return (seconds + '.' + ('000000000' + nanos).slice(-9));
     }
 
@@ -650,4 +678,36 @@ export class HederaSDKHelper {
         return result;
     }
 
+    private async executeAndReceipt(
+        client: Client, transaction: Transaction, type: string, metadata?: any
+    ): Promise<TransactionReceipt> {
+        const id = HederaUtils.randomUUID();
+        try {
+            await this.transactionStartLog(id, type);
+            const result = await transaction.execute(client);
+            const receipt = await result.getReceipt(client);
+            await this.transactionEndLog(id, type, transaction, metadata);
+            return receipt;
+        } catch (error) {
+            await this.transactionErrorLog(id, type, transaction, error);
+            throw error;
+        }
+    }
+
+    private async executeAndRecord(
+        client: Client, transaction: Transaction, type: string, metadata?: any
+    ): Promise<TransactionRecord> {
+        const id = HederaUtils.randomUUID();
+        try {
+            await this.transactionStartLog(id, type);
+            const result = await transaction.execute(client);
+            const record = await result.getRecord(client);
+            await this.transactionEndLog(id, type, transaction, metadata);
+            return record;
+        } catch (error) {
+            await this.transactionErrorLog(id, type, transaction, error);
+            throw error;
+        }
+    }
 }
+

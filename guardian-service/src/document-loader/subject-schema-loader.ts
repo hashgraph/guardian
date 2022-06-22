@@ -1,6 +1,6 @@
 import { Schema } from '@entity/schema';
 import { getMongoRepository, MongoRepository } from 'typeorm';
-import { ISchema } from 'interfaces';
+import { ISchema } from '@guardian/interfaces';
 import { SchemaLoader } from '@hedera-modules';
 
 /**
@@ -31,20 +31,20 @@ export class SubjectSchemaLoader extends SchemaLoader {
     }
 
     public async get(context: string | string[], iri: string, type: string): Promise<any> {
-        let schemes: ISchema[];
+        let schemas: ISchema[];
         if (typeof context == 'string') {
-            schemes = await this.loadSchemaContexts([context]);
+            schemas = await this.loadSchemaContexts([context]);
         } else {
-            schemes = await this.loadSchemaContexts(context);
+            schemas = await this.loadSchemaContexts(context);
         }
 
-        if (!schemes) {
+        if (!schemas) {
             throw new Error('Schema not found');
         }
 
         const _iri = '#' + iri;
-        for (let i = 0; i < schemes.length; i++) {
-            const schema = schemes[i];
+        for (let i = 0; i < schemas.length; i++) {
+            const schema = schemas[i];
             if (schema.iri === _iri) {
                 if (!schema.document) {
                     throw new Error('Document not found');

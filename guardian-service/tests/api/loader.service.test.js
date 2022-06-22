@@ -1,8 +1,19 @@
-require('module-alias/register');
+const moduleAlias = require("module-alias");
+
+moduleAlias.addAliases({
+  "@api": process.cwd() + '/dist' + "/api",
+  "@entity": process.cwd() + '/dist' + "/entity",
+  "@subscribers": process.cwd() + '/dist' + "dist/subscribers",
+  "@helpers": process.cwd() + '/dist' + "/helpers",
+  "@auth": process.cwd() + '/dist' +  "/auth",
+  "@policy-engine": process.cwd() + '/dist' +  "/policy-engine",
+  "@hedera-modules": process.cwd() + '/dist' +  "/hedera-modules/index",
+  "@document-loader": process.cwd() + '/dist' +  "/document-loader"
+});
 const { expect, assert } = require('chai');
 const rewire = require("rewire");
 
-const { ApplicationState } = require("interfaces");
+const { ApplicationState } = require("@guardian/common");
 const { DidDocument } = require("../../dist/entity/did-document");
 const { Schema } = require("../../dist/entity/schema");
 const state = new ApplicationState();
@@ -14,8 +25,8 @@ class MockLogger {
     constructor() {
     }
 
-    setChannel() {}
-    getChannel() {}
+    setChannel() { }
+    getChannel() { }
 
     async info(message) {
         console.log(message)
@@ -30,15 +41,15 @@ class MockLogger {
     }
 }
 
-loaderAPIModule.__set__('logger_helper_1', {
+loaderAPIModule.__set__('common_1', {
     Logger: MockLogger
 });
 
 loaderAPIModule.__set__('_hedera_modules_1', {
     DidRootKey: {
-        create: function() {
+        create: function () {
             return {
-                getController: function() {
+                getController: function () {
                     return 'did';
                 }
             }
@@ -63,7 +74,7 @@ function getMongoRepositoryMock(entity) {
 
         switch (entity.name) {
             case 'DidDocument':
-                Object.assign(instance, {document: {}});
+                Object.assign(instance, { document: {} });
                 return instance;
 
             default:
@@ -72,19 +83,19 @@ function getMongoRepositoryMock(entity) {
     }
 
     return {
-        find: async function(filters) {
+        find: async function (filters) {
             return [responseConstructor()]
         },
-        findOne: async function(filters) {
+        findOne: async function (filters) {
             return responseConstructor()
         },
-        create: function(entity) {
+        create: function (entity) {
             return Object.assign(responseConstructor(), entity);
         },
-        save: async function(obj) {
+        save: async function (obj) {
             return instance;
         },
-        update: async function(obj) {
+        update: async function (obj) {
             return instance;
         }
     }
@@ -99,35 +110,35 @@ const methods = {
     }
 }
 
-const res = {
-    send: function(data) {
-        assert.equal(typeof data.body === 'object', true);
-    }
-}
-
 const channel = {
-    response: function(event, cb) {
-        methods[event] = function() {
-            cb({ payload: { document: {  } } }, res);
+    response: function (event, cb) {
+        methods[event] = async (...args) => {
+            return cb(...args)
         }
     },
     request: function (...args) {
     }
 }
 
-describe('Loader Service API', function() {
-    it('Load DID Document', async function() {
+describe('Loader Service API', function () {
+    it('Load DID Document', async function () {
         await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
-        methods['load-did-document']();
+        const data = await methods['load-did-document']({ did: 'test' });
+        assert.equal(data.code, 200);
+        assert.equal(typeof data.body === 'object', true);
     })
 
-    it('Load Schema Document', async function() {
+    it('Load Schema Document', async function () {
         await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
-        methods['load-schema-document']();
+        const data = await methods['load-schema-document']({});
+        assert.equal(data.code, 200);
+        assert.equal(typeof data.body === 'object', true);
     })
 
-    it('Load Schema Context', async function() {
+    it('Load Schema Context', async function () {
         await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
-        methods['load-schema-context']();
+        const data = await methods['load-schema-context']({});
+        assert.equal(data.code, 200);
+        assert.equal(typeof data.body === 'object', true);
     })
 })

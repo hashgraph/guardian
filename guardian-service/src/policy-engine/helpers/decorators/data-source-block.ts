@@ -1,3 +1,4 @@
+import { IAuthUser } from '@auth/auth.interface';
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
@@ -25,7 +26,9 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const filters: IPolicyBlock[] = [];
 
                 for (let child of this.children) {
-                    if (child.blockClassName === 'SourceAddon') {
+                    if (child.blockClassName === 'DataSourceAddon') {
+                        filters.push(child);
+                    } else if (child.blockClassName === 'SourceAddon') {
                         for (let filter of child.children) {
                             filters.push(filter);
                         }
@@ -41,17 +44,31 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 })
             }
 
-            protected async getSources(...args): Promise<any[]> {
+            protected async getGlobalSources(user: IAuthUser, paginationData: any) {
+                const dynFilters = {};
+                for (let child of this.children) {
+                    if (child.blockClassName === 'DataSourceAddon') {
+                        for (let [key, value] of Object.entries(child.getFilters(user))) {
+                            dynFilters[key] = { $eq: value };
+                        }
+                    }
+                }
+                return await this.getSources(user, dynFilters, paginationData);
+            }
+
+            protected async getSources(user: IAuthUser, globalFilters: any, paginationData: any): Promise<any[]> {
                 let data = [];
                 for (let child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {
-                        data = data.concat(await child.getFromSource(...args))
+                        const childData = await child.getFromSource(user, globalFilters);
+                        for (const item of childData) {
+                            data.push(item);
+                        }
                     }
                 }
-
-                if (args[1]) {
-                    const start = args[1].page * args[1].itemsPerPage;
-                    const end = start + args[1].itemsPerPage;
+                if (paginationData) {
+                    const start = paginationData.page * paginationData.itemsPerPage;
+                    const end = start + paginationData.itemsPerPage;
                     data = data.slice(start, end);
                 }
                 return data;

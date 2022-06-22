@@ -62,12 +62,11 @@ const PORT = process.env.PORT || 3005;
             vcSubject.accountId = hederaAccountId;
 
             document = await vcHelper.createVC(vcSubject, didDocument, did);
-            
-            console.log("created vc");
-            console.log(document);
-        } catch (e) {
-            console.error(e);
-            res.status(500).json(e);
+
+            console.log("created vc", document);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json(error);
             return;
         }
 
@@ -77,12 +76,12 @@ const PORT = process.env.PORT || 3005;
             policyTag: policyTag
         }
         try {
-            console.error('start post');
+            console.log('start post');
             const resp = await axios.post(url, body);
-            console.error('end post');
-        } catch (e) {
-            console.error(e);
-            res.status(500).json(e);
+            console.log('end post', resp);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json(error);
             return;
         }
 

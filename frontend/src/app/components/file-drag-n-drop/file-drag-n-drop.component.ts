@@ -11,6 +11,7 @@ export class FileDragNDropComponent implements OnInit {
 
   @Output() onFileLoaded: EventEmitter<any> = new EventEmitter();
   @Input() dropZoneLabel: string = "";
+  @Input() fileExtension: string = 'zip';
 
   constructor(
     private toastr: ToastrService
@@ -30,7 +31,7 @@ export class FileDragNDropComponent implements OnInit {
             this.onFileLoaded.emit(file);
           });
         } else {
-          this.toastr.error("Only files in '.zip' format are accepted", "File import error", { positionClass: 'toast-bottom-right' });
+          this.toastr.error(`Only files in '.${this.fileExtension}' format are accepted`, "File import error", { positionClass: 'toast-bottom-right' });
         }
     }
   }
@@ -38,7 +39,7 @@ export class FileDragNDropComponent implements OnInit {
   public importFromFile() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.zip';
+    input.accept = `.${this.fileExtension}`;
     input.click();
     input.onchange = (e: any) => {
       const file = e.target.files[0];
@@ -48,7 +49,7 @@ export class FileDragNDropComponent implements OnInit {
 
   private isFileAllowed(fileName: string) {
     let isFileAllowed = false;
-    const allowedFiles = ['.zip'];
+    const allowedFiles = [`.${this.fileExtension}`];
     const regex = /(?:\.([^.]+))?$/;
     const extension = regex.exec(fileName);
     if (extension) {

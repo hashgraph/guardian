@@ -1,10 +1,10 @@
 import { Guardians } from '@helpers/guardians';
 import { Response, Router } from 'express';
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import { Users } from '@helpers/users';
-import { Logger } from 'logger-helper';
+import { Logger } from '@guardian/common';
 
 /**
  * Audit route
@@ -17,7 +17,7 @@ trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: Authenti
         const vp = await guardians.getVpDocuments();
         res.status(200).json(vp);
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -45,7 +45,7 @@ trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: Aut
 
         res.status(200).json({ chain, userMap });
     } catch (error) {
-        new Logger().error(error.message, ['API_GATEWAY']);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });

@@ -2,9 +2,21 @@ import { SourceAddon, StateField } from '@policy-engine/helpers/decorators';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @SourceAddon({
-    blockType: 'paginationAddon'
+    blockType: 'paginationAddon',
+    about: {
+        label: 'Pagination',
+        title: `Add 'Pagination' Addon`,
+        post: true,
+        get: true,
+        children: ChildrenType.None,
+        control: ControlType.Special,
+        input: null,
+        output: null,
+        defaultEvent: false
+    }
 })
 export class PaginationAddon {
 
@@ -26,7 +38,7 @@ export class PaginationAddon {
             }
         }
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const totalCount = (await (ref.parent as IPolicySourceBlock).getSources(user)).length;
+        const totalCount = (await (ref.parent as IPolicySourceBlock).getGlobalSources(user, null)).length;
 
         if (this.state[user.did].size !== totalCount) {
             this.state[user.did].size = totalCount;

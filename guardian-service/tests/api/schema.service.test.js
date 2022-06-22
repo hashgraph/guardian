@@ -1,9 +1,19 @@
-require('module-alias/register');
+const moduleAlias = require("module-alias");
+moduleAlias.addAliases({
+  "@api": process.cwd() + '/dist' + "/api",
+  "@entity": process.cwd() + '/dist' +  "/entity",
+  "@subscribers": process.cwd() + '/dist' +  "dist/subscribers",
+  "@helpers": process.cwd() + '/dist' +  "/helpers",
+  "@auth": process.cwd() + '/dist' +  "/auth",
+  "@policy-engine": process.cwd() + '/dist' +  "/policy-engine",
+  "@hedera-modules": process.cwd() + '/dist' +  "/hedera-modules/index",
+  "@document-loader": process.cwd() + '/dist' +  "/document-loader"
+});
 const rewire = require("rewire");
 
 const schemaAPIModule = rewire("../../dist/api/schema.service");
 const topicHelperModule = rewire("../../dist/helpers/topicHelper.js")
-const { ApplicationState } = require("interfaces");
+const { ApplicationState } = require("@guardian/common");
 const state = new ApplicationState();
 state.updateState('READY');
 
@@ -13,8 +23,8 @@ class MockLogger {
         console.log('Mock Logger');
     }
 
-    setChannel() {}
-    getChannel() {}
+    setChannel() { }
+    getChannel() { }
 
     async info(message) {
         console.log(message)
@@ -49,7 +59,7 @@ class TopicHelperMock {
     }
 }
 
-function  getMongoRepositoryMock(entity) {
+function getMongoRepositoryMock(entity) {
     console.log('name', entity.name);
 
     const instance = new entity;
@@ -75,16 +85,16 @@ function  getMongoRepositoryMock(entity) {
     }
 
     return {
-        find: async function(filters) {
+        find: async function (filters) {
             return [responseConstructor()]
         },
-        findOne: async function(filters) {
+        findOne: async function (filters) {
             return responseConstructor()
         },
-        create: function(entity) {
+        create: function (entity) {
             return Object.assign(responseConstructor(), entity);
         },
-        save: async function(obj) {
+        save: async function (obj) {
             console.log(obj);
             return obj;
         }
@@ -97,16 +107,10 @@ const methods = {
     }
 }
 
-const res = {
-    send: function(data) {
-        console.log(data);
-    }
-}
-
 const channel = {
-    response: function(event, cb) {
-        methods[event] = function() {
-            cb({ payload: { document: {  } } }, res);
+    response: function (event, cb) {
+        methods[event] = async (...args) => {
+            return cb(...args)
         }
     },
     request: function (...args) {
@@ -115,17 +119,17 @@ const channel = {
 }
 
 const schemaRepository = {
-    find: async function() {
+    find: async function () {
         return ['schema']
     }
 }
 
-describe('Schema Service API', function() {
-    before(async function() {
+describe('Schema Service API', function () {
+    before(async function () {
         schemaAPIModule.__set__('users_1', {
             Users: MockUsers,
         });
-        schemaAPIModule.__set__('logger_helper_1', {
+        schemaAPIModule.__set__('common_1', {
             Logger: MockLogger
         });
         schemaAPIModule.__set__('typeorm_1', {

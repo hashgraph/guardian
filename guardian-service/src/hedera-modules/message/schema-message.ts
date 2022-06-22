@@ -1,9 +1,9 @@
 
 import { Schema } from '@entity/schema';
 import { Message } from './message';
-import { IURL, UrlType } from "./url.interface";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { IURL, UrlType } from './url.interface';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 import { MessageBody, SchemaMessageBody } from './message-body.interface';
 
 export class SchemaMessage extends Message {
@@ -46,6 +46,7 @@ export class SchemaMessage extends Message {
             status: null,
             type: this.type,
             action: this.action,
+            lang: this.lang,
             name: this.name,
             description: this.description,
             entity: this.entity,
@@ -60,16 +61,17 @@ export class SchemaMessage extends Message {
     }
 
     public async toDocuments(): Promise<ArrayBuffer[]> {
-        if (this.action !== MessageAction.PublishSchema) {
-            return [];
+        if (this.action == MessageAction.PublishSchema ||
+            this.action == MessageAction.PublishSystemSchema) {
+            const result = new Array(this.documents.length);
+            for (let i = 0; i < this.documents.length; i++) {
+                const json = JSON.stringify(this.documents[i]);
+                const buffer = Buffer.from(json);
+                result[i] = buffer;
+            }
+            return result;
         }
-        const result = new Array(this.documents.length);
-        for (let i = 0; i < this.documents.length; i++) {
-            const json = JSON.stringify(this.documents[i]);
-            const buffer = Buffer.from(json);
-            result[i] = buffer;
-        }
-        return result;
+        return [];
     }
 
     public loadDocuments(documents: string[]): SchemaMessage {

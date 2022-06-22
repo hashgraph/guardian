@@ -1,6 +1,8 @@
-import { PolicyRole } from 'interfaces';
+import { PolicyRole } from '@guardian/interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { PolicyInputEventType, PolicyOutputEventType } from './interfaces/policy-event-type';
+import { EventConfig, IPolicyEvent } from './interfaces';
 
 export interface IPolicyRoles {
     [policyId: string]: string;
@@ -11,7 +13,6 @@ export interface ISerializedBlock {
     defaultActive: boolean;
     tag?: string;
     permissions: string[];
-    dependencies?: string[];
     uuid?: string;
     children?: ISerializedBlock[];
 }
@@ -33,24 +34,42 @@ export interface IPolicyBlock {
     policyId: string;
     policyOwner: string;
     policyInstance: any;
-    changeStep?: (user: IAuthUser, data: any, target: IPolicyBlock) => Promise<void>;
-    checkDataStateDiffer?: (user) => boolean
+    topicId: string;
+
+    readonly actions: any[];
+    readonly outputActions: any[];
+    readonly events: EventConfig[];
+
+    readonly next: IPolicyBlock;
+
+
+    setPolicyId(id: string): void;
+
+    setPolicyOwner(did: string): void;
+
+    setPolicyInstance(policy: any): void;
+
+    setTopicId(id: string): void;
+
+    getChild(uuid: string): IPolicyBlock;
+
+    getChildIndex(uuid: string): number;
+
+    getNextChild(uuid: string): IPolicyBlock;
+
+    checkDataStateDiffer?: (user: IAuthUser) => boolean
 
     serialize(): ISerializedBlock;
 
     updateBlock(state: any, user: IAuthUser, tag?: string): any;
 
-    hasPermission(role: PolicyRole | null, user: IAuthUser | null);
+    hasPermission(role: PolicyRole | null, user: IAuthUser | null): any;
 
     registerChild(child: IPolicyBlock): void;
 
-    destroy();
+    destroy(): void;
 
-    validate(resultsContainer: PolicyValidationResultsContainer);
-
-    runNext(user: IAuthUser, data: any);
-
-    runTarget(user: IAuthUser, data: any, target: AnyBlockType)
+    validate(resultsContainer: PolicyValidationResultsContainer): void;
 
     isChildActive(child: AnyBlockType, user: IAuthUser): boolean;
 
@@ -61,6 +80,22 @@ export interface IPolicyBlock {
     error(message: string): void;
 
     warn(message: string): void;
+
+    triggerEvents(eventType: PolicyOutputEventType, user?: IAuthUser, data?: any): void;
+
+    triggerEvent(event: any, user?: IAuthUser, data?: any): void;
+
+    saveState(): Promise<void>;
+
+    beforeInit(): Promise<void>;
+
+    afterInit(): Promise<void>;
+
+    addSourceLink(link: any): void;
+
+    addTargetLink(link: any): void;
+
+    runAction(event: IPolicyEvent<any>): Promise<any>;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {
@@ -69,18 +104,34 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
     setData(user: IAuthUser | null, data: any): Promise<any>;
 
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+
+    updateDataState(user: IAuthUser, data: any): boolean;
 }
 
 export interface IPolicyContainerBlock extends IPolicyBlock {
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+
+    changeStep(user: IAuthUser, data: any, target: IPolicyBlock): Promise<void>;
+
+    isLast(target: IPolicyBlock): boolean;
+
+    isCyclic(): boolean;
+
+    getLast(): IPolicyBlock;
+
+    getFirst(): IPolicyBlock;
 }
 
 export interface IPolicySourceBlock extends IPolicyBlock {
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
 
+    getChildFiltersAddons(): IPolicyBlock[];
+
     getFiltersAddons(): IPolicyBlock[];
 
-    getSources(user: IAuthUser, sliceData?: any): Promise<any[]>
+    getSources(user: IAuthUser, globalFilters: any, paginationData: any): Promise<any[]>;
+
+    getGlobalSources(user: IAuthUser, paginationData: any): Promise<any[]>;
 
     getCommonAddons(): IPolicyBlock[];
 }
@@ -92,9 +143,9 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
 
     getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
 
-    getSources(user: IAuthUser): any;
+    getSources(user: IAuthUser, globalFilters: any): any;
 
-    getFromSource(user: IAuthUser): any;
+    getFromSource(user: IAuthUser, globalFilters: any): any;
 
     getFilters(user: IAuthUser): { [key: string]: string };
 

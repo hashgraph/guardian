@@ -1,5 +1,5 @@
-import {BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn} from 'typeorm';
-import { ModelHelper } from 'interfaces';
+import { ModelHelper } from '@guardian/interfaces';
+import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
 
 /**
  * Policy collection
@@ -50,7 +50,7 @@ export class Policy {
 
     @Column()
     topicId: string;
-    
+
     @Column()
     instanceTopicId: string;
 
@@ -58,10 +58,13 @@ export class Policy {
         unique: true
     })
     policyTag: string;
-    
+
     @Column()
     messageId: string;
-    
+
+    @Column()
+    codeVersion: string;
+
     @CreateDateColumn()
     createDate: Date;
 
@@ -70,5 +73,6 @@ export class Policy {
         this.status = this.status || 'DRAFT';
         this.registeredUsers = {};
         this.uuid = this.uuid || ModelHelper.randomUUID();
+        this.codeVersion = this.codeVersion || '1.0.0';
     }
 }

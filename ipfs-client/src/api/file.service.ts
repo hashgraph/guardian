@@ -1,11 +1,19 @@
-import { CommonSettings, MessageAPI } from 'interfaces';
 import { NFTStorage } from 'nft.storage';
 import Blob from 'cross-blob';
-import axios, { ResponseType } from 'axios';
+import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import { MongoRepository } from 'typeorm';
 import { Settings } from '../entity/settings';
-import { Logger } from 'logger-helper';
+import {
+    MessageAPI,
+    ExternalMessageEvents,
+    CommonSettings,
+    IGetFileMessage,
+    IIpfsSettingsResponse,
+    IAddFileMessage,
+    IFileResponse
+} from '@guardian/interfaces';
+import { MessageBrokerChannel, MessageError, MessageResponse, Logger } from '@guardian/common';
 
 
 export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
@@ -17,7 +25,7 @@ export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
  * @param node - IPFS client
  */
 export const fileAPI = async function (
-    channel: any,
+    channel: MessageBrokerChannel,
     client: NFTStorage,
     settingsRepository: MongoRepository<Settings>
 ): Promise<void> {
@@ -28,24 +36,18 @@ export const fileAPI = async function (
      *
      * @returns {string} - hash of added file
      */
-    channel.response(MessageAPI.IPFS_ADD_FILE, async (msg, res) => {
+    channel.response<IAddFileMessage, IFileResponse>(MessageAPI.IPFS_ADD_FILE, async (msg) => {
         try {
-            let blob = new Blob([msg.payload]);
+            let blob = new Blob([Buffer.from(msg.content, 'base64')]);
             const cid = await client.storeBlob(blob);
             const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
-            const response = {
-                body: { cid, url },
-                error: null
-            }
-            res.send(response, 'json');
+            channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url });
+
+            return new MessageResponse({ cid, url },);
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            const response = {
-                body: null,
-                error: e.message
-            }
-            res.send(response, 'json');
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageError(error);
         }
     })
 
@@ -57,53 +59,51 @@ export const fileAPI = async function (
      *
      * @return {any} - File
      */
-    channel.response(MessageAPI.IPFS_GET_FILE, async (msg, res) => {
+    channel.response<IGetFileMessage, any>(MessageAPI.IPFS_GET_FILE, async (msg) => {
         try {
-            axiosRetry(axios, { retries: 3,
+            axiosRetry(axios, {
+                retries: 3,
                 shouldResetTimeout: true,
                 retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error)
                     || error.code === 'ECONNABORTED',
                 retryDelay: (retryCount) => 10000
             });
 
-            if (!msg.payload || !msg.payload.cid || !msg.payload.responseType) {
+            if (!msg || !msg.cid || !msg.responseType) {
                 throw 'Invalid cid';
             }
 
-            const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.payload.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
-            switch (msg.payload.responseType) {
+            const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
+            switch (msg.responseType) {
                 case 'str':
-                    res.send({ body: Buffer.from(fileRes.data, 'binary').toString() });
-                    return;
+                    return new MessageResponse(Buffer.from(fileRes.data, 'binary').toString());
                 case 'json':
-                    res.send({ body: Buffer.from(fileRes.data, 'binary').toJSON() });
-                    return;
+                    return new MessageResponse(Buffer.from(fileRes.data, 'binary').toJSON());
                 default:
-                    res.send({ body: fileRes.data })
-                    return;
+                    return new MessageResponse(fileRes.data)
             }
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            res.send({ error: e.message });
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageResponse({ error: error.message });
         }
     })
 
     /**
      * Update settings.
      *
-     * @param {CommonSettings} [payload] - Settings
+     * @param {CommonSettings} [msg] - Settings
      *
      */
-     channel.response(MessageAPI.UPDATE_SETTINGS, async (msg, res) => {
+    channel.response<CommonSettings, any>(MessageAPI.UPDATE_SETTINGS, async (settings) => {
         try {
-            const settings = msg.payload as CommonSettings;
             const oldNftApiKey = await settingsRepository.findOne({
                 name: 'NFT_API_KEY'
             });
             if (oldNftApiKey) {
                 await settingsRepository.update({
-                    name: 'NFT_API_KEY' }, {
+                    name: 'NFT_API_KEY'
+                }, {
                     value: settings.nftApiKey
                 });
             }
@@ -115,11 +115,11 @@ export const fileAPI = async function (
             }
 
             client = new NFTStorage({ token: settings.nftApiKey });
-            res.send({});
+            return new MessageResponse({});
         }
-        catch (e) {
-            new Logger().error(e.toString(), ['IPFS_CLIENT']);
-            res.send({ error: e.message });
+        catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageResponse({ error: error.message });
         }
     })
 
@@ -128,12 +128,12 @@ export const fileAPI = async function (
      *
      * @return {any} - settings
      */
-     channel.response(MessageAPI.GET_SETTINGS, async (msg, res) => {
+    channel.response<any, IIpfsSettingsResponse>(MessageAPI.GET_SETTINGS, async (_) => {
         const nftApiKey = await settingsRepository.findOne({
             name: "NFT_API_KEY"
         });
-        res.send({body: {
+        return new MessageResponse({
             nftApiKey: nftApiKey?.value || process.env.NFT_API_KEY
-        }});
+        });
     })
 }

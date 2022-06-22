@@ -1,6 +1,6 @@
 import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISession, IUser } from 'interfaces';
+import { ISession, IUser } from '@guardian/interfaces';
 import { Observable, of, Subject, Subscription } from 'rxjs';
 import { API_BASE_URL } from './api';
 
@@ -71,8 +71,8 @@ export class AuthService {
         return this.accessTokenSubject.subscribe(next, error, complete);
     }
 
-    public getRootAuthorities(): Observable<IUser[]> {
-        return this.http.get<any>(`${this.url}/root-authorities`);
+    public getStandardRegistries(): Observable<IUser[]> {
+        return this.http.get<any>(`${this.url}/standard-registries`);
     }
 }
 

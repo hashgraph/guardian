@@ -1,10 +1,45 @@
-
-<div class="status-container">
-    <div *ngFor="let service of servicesStates" [ngSwitch]="service.state" class="service-status-container">
-        <b>{{service.serviceName}}</b> - 
-        <mat-icon *ngSwitchCase="'READY'" class="icon-status ready-status">check</mat-icon>
-        <mat-spinner [diameter]="35" *ngSwitchCase="'INITIALIZING'"></mat-spinner>
-        <mat-spinner [diameter]="35" *ngSwitchCase="'STARTED'"></mat-spinner>
-        <mat-icon *ngSwitchCase="'STOPPED'" class="icon-status stopped-status">close</mat-icon>
-    </div>
+<div class="service-status-container">
+    <ng-template #info let-loadingServices="getLoadingServices()" let-stoppedServices="getStoppedServices()">
+        <h1 class="info-message" *ngIf="loadingServices.length">
+            {{ getServiceNames(loadingServices) }}
+            is (are) initializing
+            <br/>
+            Please wait...
+        </h1>
+        <h1 class="info-message" *ngIf="stoppedServices.length">
+            There are some problems with services...
+        </h1>
+        <h1 class="info-message" *ngIf="!stoppedServices.length && !loadingServices.length">
+            All services are running
+        </h1>
+    </ng-template>
+    <ng-container *ngTemplateOutlet="info; context: this"></ng-container>
+    <table class="status-table">
+        <tr *ngFor="let service of servicesStates" [ngSwitch]="service.state" class="service-status-row">
+            <td class="">
+                <b>{{ service.serviceName }}</b>
+            </td>
+            <td class="">-</td>
+            <td class="">
+                <div *ngSwitchCase="'READY'" class="icon-row">
+                    <mat-icon class="icon-status ready-status">check</mat-icon>
+                    <span>(Ready)</span>
+                </div>
+                <div *ngSwitchCase="'INITIALIZING'" class="icon-row">
+                    <mat-spinner [diameter]="35" *ngSwitchCase="'INITIALIZING'"></mat-spinner>
+                    <span>(Initializing)</span>
+                </div>
+                <div *ngSwitchCase="'STARTED'" class="icon-row">
+                    <mat-spinner [diameter]="35" *ngSwitchCase="'STARTED'"></mat-spinner>
+                    <span>(Started)</span>
+                </div>
+                <div *ngSwitchCase="'STOPPED'" class="icon-row">
+                    <mat-icon *ngSwitchCase="'STOPPED'" class="icon-status stopped-status">close</mat-icon>
+                    <span>
+                        (Stopped, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View Logs</a>)
+                    </span>
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>

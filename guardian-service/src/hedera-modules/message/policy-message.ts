@@ -1,8 +1,8 @@
 import { Policy } from '@entity/policy';
 import { Message } from './message';
-import { IURL, UrlType } from "./url.interface";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { IURL, UrlType } from './url.interface';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 import { MessageBody, PolicyMessageBody } from './message-body.interface';
 
 export class PolicyMessage extends Message {
@@ -19,7 +19,7 @@ export class PolicyMessage extends Message {
 
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
-        this._responseType = "raw";
+        this._responseType = 'raw';
         this.urls = [];
     }
 
@@ -46,6 +46,7 @@ export class PolicyMessage extends Message {
             status: null,
             type: this.type,
             action: this.action,
+            lang: this.lang,
             uuid: this.uuid,
             name: this.name,
             description: this.description,

@@ -3,11 +3,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
-import { DocumentDialogBlock } from '../document-dialog-block/document-dialog-block.component';
 import { forkJoin } from 'rxjs';
-import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, SchemaHelper } from 'interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -15,7 +13,14 @@ import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.compon
 @Component({
     selector: 'documents-source-block',
     templateUrl: './documents-source-block.component.html',
-    styleUrls: ['./documents-source-block.component.css']
+    styleUrls: ['./documents-source-block.component.css'],
+    animations: [
+        trigger('statusExpand', [
+          state('collapsed', style({height: '0px', minHeight: '0'})),
+          state('expanded', style({height: '*'})),
+          transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ]
 })
 export class DocumentsSourceBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -33,15 +38,14 @@ export class DocumentsSourceBlockComponent implements OnInit {
     children: any[] | null;
     insert: any;
     addons: any;
-    schemas!: Schema[];
     fieldMap!: { [x: string]: any[] };
     commonAddons: any[];
     paginationAddon: any;
+    statusDetailed: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private policyHelper: PolicyHelper,
-        private schemaService: SchemaService,
         private dialog: MatDialog
     ) {
         this.fields = [];
@@ -80,12 +84,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }, 500);
         } else {
             forkJoin([
-                this.policyEngineService.getBlockData(this.id, this.policyId),
-                this.schemaService.getSchemes()
+                this.policyEngineService.getBlockData(this.id, this.policyId)
             ]).subscribe((value) => {
                 const data: any = value[0];
-                const schemes = value[1];
-                this.schemas = SchemaHelper.map(schemes);
                 this.setData(data).then(() => {
                     setTimeout(() => {
                         this.loading = false;
@@ -121,6 +122,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
             this.children = data.children;
             this.columns = this.fields.map(f => f.index);
+            this.columns.unshift('history');
             this.documents = data.data || [];
             this.isActive = true;
             this.insert = data.insert;
@@ -179,7 +181,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     document: document,
                     title: field.dialogContent,
                     type: 'VC',
-                    schemas: this.schemas,
                     viewDocument: true
                 }
             });

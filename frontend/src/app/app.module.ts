@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
-import { AppRoutingModule, AuditorGuard, UserGuard, RootAuthorityGuard } from './app-routing.module';
+import { AppRoutingModule, AuditorGuard, UserGuard, StandardRegistryGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthInterceptor, AuthService } from "./services/auth.service";
 import { ProfileService } from "./services/profile.service";
@@ -39,6 +39,9 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview-dialog.component';
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
+import { CommonComponentsModule } from './common-components.module';
+import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { InfoComponent } from './components/info/info/info.component';
 
 @NgModule({
     declarations: [
@@ -60,11 +63,14 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
         AdminHeaderComponent,
         IconPreviewDialog,
         DetailsLogDialog,
-        ServiceStatusComponent
+        ServiceStatusComponent,
+        ConfirmationDialogComponent,
+        InfoComponent
     ],
     imports: [
         BrowserModule,
         CommonModule,
+        CommonComponentsModule,
         MaterialModule,
         AppRoutingModule,
         BrowserAnimationsModule,
@@ -76,7 +82,7 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
     exports: [],
     providers: [
         UserGuard,
-        RootAuthorityGuard,
+        StandardRegistryGuard,
         AuditorGuard,
         AuthService,
         ProfileService,

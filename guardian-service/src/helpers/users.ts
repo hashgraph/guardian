@@ -1,6 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { Request } from 'express';
-import { AuthEvents, UserRole } from 'interfaces';
+import { AuthEvents, UserRole } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
 import { IAuthUser } from '@auth/auth.interface';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -134,8 +134,8 @@ export class Users extends ServiceRequestsBase {
         return await this.request(AuthEvents.GET_ALL_USER_ACCOUNTS);
     }
 
-    public async getAllRootAuthorityAccounts() {
-        return await this.request(AuthEvents.GET_ALL_ROOT_AUTHORITY_ACCOUNTS);
+    public async getAllStandardRegistryAccounts() {
+        return await this.request(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS);
     }
 
     public async getAllUserAccountsDemo() {
@@ -164,6 +164,3 @@ export class Users extends ServiceRequestsBase {
         }
     }
 }
-
-
-

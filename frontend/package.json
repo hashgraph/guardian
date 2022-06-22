@@ -15,15 +15,11 @@
     "@angular/router": "~12.1.1",
     "@ctrl/ngx-codemirror": "^5.1.1",
     "@enonic/global-polyfill": "^1.0.0",
-    "@transmute/credentials-context": "^0.7.0-unstable.5",
-    "@transmute/did-context": "^0.7.0-unstable.5",
-    "@transmute/ed25519-signature-2018": "^0.7.0-unstable.5",
-    "@transmute/security-context": "^0.7.0-unstable.5",
-    "@transmute/vc.js": "^0.7.0-unstable.5",
     "codemirror": "^5.65.0",
+    "cronstrue": "^2.4.0",
     "crypto-browserify": "^3.12.0",
     "file-saver": "^2.0.5",
-    "interfaces": "file:../interfaces",
+    "@guardian/interfaces": "file:../interfaces",
     "js-yaml": "^4.1.0",
     "moment": "^2.29.1",
     "ngx-file-drop": "^12.0.0",
@@ -54,11 +50,12 @@
   "name": "guardian",
   "private": true,
   "scripts": {
+    "dev:docker": "ng serve --host 0.0.0.0 --disable-host-check --proxy-config ./proxy.docker.json",
     "build": "ng build",
     "ng": "ng",
     "start": "ng serve --proxy-config ./proxy.conf.json",
     "test": "ng test",
     "watch": "ng build --watch --configuration development --output-path ../www-data"
   },
-  "version": "2.0.0"
+  "version": "2.2.0-prerelease"
 }

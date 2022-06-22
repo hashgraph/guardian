@@ -8,7 +8,7 @@ First, we give this new action the name we want.
 
 We then set the “Default Active” and add “Installer” as permission.
 
-As a next step, we set the “Schema” field through a drop-down based on pre-configured schemas for the document relevant for this policy action request – in our case we select “IRec-Application-Details” as the required data schema for the request.&#x20;
+As a next step, we set the “Schema” field through a drop-down based on pre-configured schemas for the document relevant for this policy action request – in our case we select “IRec-Application-Details” as the required data schema for the request.
 
 Note - the creation of schemas is a prerequisite to policy creation.
 
@@ -16,7 +16,7 @@ We then set the Id Type using the drop-down, and select “Owner” as the type 
 
 Next, we select the “Type” drop-down in the UI box and select “PAGE” indicating that the UI used for this request will be a full UI window. This will open up the Title and Description fields which we will fill in next.
 
-![](../.gitbook/assets/PW\_7.png)
+![](../.gitbook/assets/PW\_image\_6.png)
 
 **Programmatically this workflow step looks like this:**
 

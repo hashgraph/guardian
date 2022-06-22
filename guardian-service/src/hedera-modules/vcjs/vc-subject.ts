@@ -1,9 +1,9 @@
-import { ICredentialSubject } from "interfaces";
+import { ICredentialSubject } from '@guardian/interfaces';
 
 export class VcSubject {
     public static readonly CREDENTIAL_ID: string = 'id';
     public static readonly CREDENTIAL_TYPE: string = 'type';
-    public static readonly CONTEXT: string = "@context";
+    public static readonly CONTEXT: string = '@context';
 
     protected id: string;
     protected context: string[];
@@ -79,7 +79,12 @@ export class VcSubject {
         if (this.type) {
             json[VcSubject.CREDENTIAL_TYPE] = this.type;
         }
-        
+
+        return json;
+    }
+
+    public getFields(): any {
+        const json = Object.assign({}, this.document);
         return json;
     }
 
@@ -88,8 +93,8 @@ export class VcSubject {
         try {
             const root = JSON.parse(json);
             result = VcSubject.fromJsonTree(root);
-        } catch (e) {
-            throw new Error('Given JSON string is not a valid VcSubject ' + e.message);
+        } catch (error) {
+            throw new Error('Given JSON string is not a valid VcSubject ' + error.message);
         }
         return result;
     }

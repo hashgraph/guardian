@@ -1,4 +1,5 @@
 {
+  "packageManager": "yarn@3.2.1",
   "_moduleAliases": {
     "@api": "dist/api",
     "@helpers": "dist/helpers",
@@ -7,14 +8,13 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
+    "@guardian/common": "^2.2.0-prerelease",
+    "@guardian/interfaces": "^2.2.0-prerelease",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
-    "fastmq": "^1.3.8",
-    "interfaces": "file:../interfaces",
     "jszip": "^3.7.1",
     "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13",
-    "logger-helper": "file:../logger-helper",
     "ws": "^8.2.1"
   },
   "description": "",
@@ -43,10 +43,12 @@
   "scripts": {
     "build": "tsc",
     "debug": "nodemon dist/index.js",
+    "dev:docker": "npm run build && nodemon .",
     "dev": "tsc -w",
     "lint": "tslint --project .",
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
   },
-  "version": "2.0.0"
+  "version": "2.2.0-prerelease",
+  "stableVersion": "2.2.0"
 }

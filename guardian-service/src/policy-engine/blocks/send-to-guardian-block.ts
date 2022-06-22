@@ -1,6 +1,6 @@
 import { BlockActionError } from '@policy-engine/errors';
-import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, TopicType } from 'interfaces';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { DocumentSignature, DocumentStatus, TopicType } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -13,10 +13,29 @@ import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } fr
 import { getMongoRepository } from 'typeorm';
 import { ApprovalDocument } from '@entity/approval-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
-    commonBlock: true
+    commonBlock: true,
+    publishExternalEvent: true,
+    about: {
+        label: 'Send',
+        title: `Add 'Send' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true
+    }
 })
 export class SendToGuardianBlock {
     @Inject()
@@ -103,14 +122,25 @@ export class SendToGuardianBlock {
     }
 
     async sendToDatabase(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
-        const { documentType } = ref.options;
+        let { documentType } = ref.options;
+        if (documentType === 'document')  {
+            const doc = document?.document;
+            if (doc && doc.verificationMethod) {
+                documentType = 'did';
+            } else if (doc.type && doc.type.includes('VerifiablePresentation')) {
+                documentType = 'vp';
+            } else if (doc.type && doc.type.includes('VerifiableCredential')) {
+                documentType = 'vc';
+            }
+        }
+
         switch (documentType) {
             case 'vc': {
                 const vc = HVcDocument.fromJsonTree(document.document);
                 const doc: any = {
                     policyId: ref.policyId,
                     tag: ref.tag,
-                    type: ref.options.entityType,
+                    type: ref.options.entityType || document.type,
                     hash: vc.toCredentialHash(),
                     document: vc.toJsonTree(),
                     owner: document.owner,
@@ -122,6 +152,7 @@ export class SendToGuardianBlock {
                     messageId: document.messageId || null,
                     topicId: document.topicId || null,
                     relationships: document.relationships || [],
+                    comment: document.comment
                 };
                 return await PolicyUtils.updateVCRecord(doc);
             }
@@ -140,11 +171,11 @@ export class SendToGuardianBlock {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const user = await this.users.getHederaAccount(document.owner);
-            
+
             let topicOwner = user;
-            if(ref.options.topicOwner == 'user') {
+            if (ref.options.topicOwner == 'user') {
                 topicOwner = await this.users.getHederaAccount(currentUser.did);
-            } else if(ref.options.topicOwner == 'issuer') {
+            } else if (ref.options.topicOwner == 'issuer') {
                 topicOwner = await this.users.getHederaAccount(document.document.issuer);
             } else {
                 topicOwner = user;
@@ -156,6 +187,7 @@ export class SendToGuardianBlock {
             const topic = await PolicyUtils.getTopic(ref.options.topic, root, topicOwner, ref);
             const vc = HVcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
+            vcMessage.setStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setDocument(vc);
             vcMessage.setRelationships(document.relationships);
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey);
@@ -171,18 +203,16 @@ export class SendToGuardianBlock {
         }
     }
 
-    async documentSender(state: any, user: IAuthUser): Promise<any> {
+    async documentSender(document: any, user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        let document = state.data;
         document.policyId = ref.policyId;
         document.tag = ref.tag;
-        document.type = ref.options.entityType;
+        document.type = ref.options.entityType || document.type;
 
         if (ref.options.forceNew) {
             document = { ...document };
             document.id = undefined;
-            state.data = document;
         }
         if (ref.options.options) {
             document.option = document.option || {};
@@ -195,21 +225,40 @@ export class SendToGuardianBlock {
         ref.log(`Send Document: ${JSON.stringify(document)}`);
 
         if (ref.options.dataType) {
-            return await this.sendByType(document, user, ref);
+            document = await this.sendByType(document, user, ref);
         } else {
-            return await this.send(document, user, ref);
+            document = await this.send(document, user, ref);
         }
+
+        return document;
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
-    async runAction(state: any, user: IAuthUser) {
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
-        state.data = await this.documentSender(state, user);
-        await ref.runNext(user, state);
-        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
-        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
-        // ref.updateBlock(state, user, '');
+
+        const docs: any | any[] = event.data.data;
+        if (Array.isArray(docs)) {
+            const newDocs = [];
+            for (let doc of docs) {
+                const newDoc = await this.documentSender(doc, event.user);
+                newDocs.push(newDoc);
+            }
+            event.data.data = newDocs;
+        } else {
+            event.data.data = await this.documentSender(docs, event.user);
+        }
+
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
     }
 
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
@@ -222,7 +271,7 @@ export class SendToGuardianBlock {
             }
 
             if (ref.options.dataSource == 'database') {
-                if (!['vc', 'did', 'vp'].find(item => item === ref.options.documentType)) {
+                if (!['vc', 'did', 'vp', 'document'].find(item => item === ref.options.documentType)) {
                     resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of vc, did, vp');
                 }
             }
@@ -234,6 +283,9 @@ export class SendToGuardianBlock {
                         resultsContainer.addBlockError(ref.uuid, `Topic "${ref.options.topic}" does not exist`);
                     }
                 }
+            }
+            if (!ref.options.dataSource && !ref.options.dataType) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "dataSource" must be one of database, hedera');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

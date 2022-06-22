@@ -1,6 +1,6 @@
 import { Injectable, NgModule } from '@angular/core';
 import { CanActivate, Router, RouterModule, Routes } from '@angular/router';
-import { ISession, IUser, UserRole } from 'interfaces';
+import { ISession, IUser, UserRole } from '@guardian/interfaces';
 import { of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { PolicyConfigurationComponent } from './policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
@@ -20,131 +20,157 @@ import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { StatusService } from './services/status.service';
+import { InfoComponent } from './components/info/info/info.component';
 
+const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
 class Guard {
-  private router: Router;
-  private auth: AuthService;
-  private role: UserRole;
-  private defaultPage: string;
+    private router: Router;
+    private auth: AuthService;
+    private role: UserRole;
+    private defaultPage: string;
 
-  constructor(
-    router: Router,
-    auth: AuthService,
-    role: UserRole,
-    defaultPage: string
-  ) {
-    this.router = router;
-    this.auth = auth
-    this.role = role;
-    this.defaultPage = defaultPage
-  }
+    constructor(
+        router: Router,
+        auth: AuthService,
+        role: UserRole,
+        defaultPage: string
+    ) {
+        this.router = router;
+        this.auth = auth
+        this.role = role;
+        this.defaultPage = defaultPage
+    }
 
-  canActivate() {
-    return this.auth.sessions().pipe(
-      map((res: IUser | null) => {
-        if (res) {
-          return res.role == this.role;
-        } else {
-          return this.router.parseUrl(this.defaultPage);
-        }
-      }),
-      catchError(() => {
-        return of(this.router.parseUrl(this.defaultPage));
-      })
-    )
-  }
+    canActivate() {
+        return this.auth.sessions().pipe(
+            map((res: IUser | null) => {
+                if (res) {
+                    if (res.role != this.role) {
+                        this.router.navigate(['/info'], 
+                            { 
+                                skipLocationChange: true, 
+                                queryParams: {
+                                    message: USER_IS_NOT_RA
+                                } 
+                            }
+                        );
+                        return false;
+                    }
+                    return true;
+                } else {
+                    return this.router.parseUrl(this.defaultPage);
+                }
+            }),
+            catchError(() => {
+                return of(this.router.parseUrl(this.defaultPage));
+            })
+        )
+    }
 
-  canActivateChild() {
-    return this.auth.sessions().pipe(
-      map((res: IUser | null) => {
-        if (res) {
-          return res.role == this.role;
-        } else {
-          return this.router.parseUrl(this.defaultPage);
-        }
-      }),
-      catchError(() => {
-        return of(this.router.parseUrl(this.defaultPage));
-      })
-    )
-  }
+    canActivateChild() {
+        return this.auth.sessions().pipe(
+            map((res: IUser | null) => {
+                if (res) {
+                    if (res.role != this.role) {
+                        this.router.navigate(['/info'], 
+                            { 
+                                skipLocationChange: true, 
+                                queryParams: {
+                                    message: USER_IS_NOT_RA
+                                } 
+                            }
+                        );
+                        return false;
+                    }
+                    return true;
+                } else {
+                    return this.router.parseUrl(this.defaultPage);
+                }
+            }),
+            catchError(() => {
+                return of(this.router.parseUrl(this.defaultPage));
+            })
+        )
+    }
 }
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class UserGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: AuthService) {
-    super(router, auth, UserRole.USER, '/login');
-  }
+    constructor(router: Router, auth: AuthService) {
+        super(router, auth, UserRole.USER, '/login');
+    }
 }
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
-export class RootAuthorityGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: AuthService) {
-    super(router, auth, UserRole.ROOT_AUTHORITY, '/login');
-  }
+export class StandardRegistryGuard extends Guard implements CanActivate {
+    constructor(router: Router, auth: AuthService) {
+        super(router, auth, UserRole.STANDARD_REGISTRY, '/login');
+    }
 }
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class AuditorGuard extends Guard implements CanActivate {
-  constructor(router: Router, auth: AuthService) {
-    super(router, auth, UserRole.AUDITOR, '/login');
-  }
+    constructor(router: Router, auth: AuthService) {
+        super(router, auth, UserRole.AUDITOR, '/login');
+    }
 }
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class ServicesStatusGuard implements CanActivate {
-  constructor(
-    private router: Router,
-    private status: StatusService
-  ) {
-  }
+    constructor(
+        private router: Router,
+        private status: StatusService
+    ) {
+    }
 
-  canActivate() {
-    return this.status.IsServicesReady().pipe(
-      map(item => item || this.router.parseUrl('/status'))
-    );
-  }
+    canActivate() {
+        return this.status.IsServicesReady().pipe(
+            map(item => item || this.router.parseUrl('/status'))
+        );
+    }
 }
 
 const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+    { path: 'login', component: LoginComponent },
+    { path: 'register', component: RegisterComponent },
 
-  { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
+    { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
 
-  { path: 'config', component: RootConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
-  { path: 'tokens', component: TokenConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
-  { path: 'schemes', component: SchemaConfigComponent, canActivate: [RootAuthorityGuard, ServicesStatusGuard] },
-  { path: 'admin', component: AdminHeaderComponent, canActivate: [RootAuthorityGuard], canActivateChild: [RootAuthorityGuard],
-    children: [
-      { path: 'status', component: ServiceStatusComponent },
-      { path: 'settings', component: SettingsViewComponent, canActivate: [ServicesStatusGuard]},
-      { path: 'logs', component: LogsViewComponent, canActivate: [ServicesStatusGuard]}
-    ]
-  },
-  { path: 'status', component: ServiceStatusComponent },
-  { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
-  { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
+    { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'schemas', component: SchemaConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    {
+        path: 'admin', component: AdminHeaderComponent, canActivate: [StandardRegistryGuard], canActivateChild: [StandardRegistryGuard],
+        children: [
+            { path: 'status', component: ServiceStatusComponent },
+            { path: 'settings', component: SettingsViewComponent, canActivate: [ServicesStatusGuard] },
+            { path: 'logs', component: LogsViewComponent }
+        ]
+    },
+    { path: 'status', component: ServiceStatusComponent },
+    { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
+    { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
 
-  { path: 'policy-viewer', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
-  { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
+    { path: 'policy-viewer', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
+    { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
 
-  { path: '', component: HomeComponent },
-  { path: '**', redirectTo: '', pathMatch: 'full' },
+    { path: '', component: HomeComponent },
+    { path: 'info', component: InfoComponent },
+    { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { useHash: false })],
-  exports: [RouterModule]
+    imports: [RouterModule.forRoot(routes, { useHash: false })],
+    exports: [RouterModule]
 })
 export class AppRoutingModule {
 }

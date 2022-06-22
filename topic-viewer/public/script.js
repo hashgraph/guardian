@@ -122,6 +122,9 @@ async function findTopic(topicId, root) {
         if (item.message && item.message.type == 'Topic' && item.message.childId) {
             await findTopic(item.message.childId, topicDiv);
         }
+        if (item.message && item.message.type == 'Standard Registry' && item.message.topicId) {
+            await findTopic(item.message.topicId, topicDiv);
+        }
     }
 }
 
@@ -140,7 +143,7 @@ async function findParentMessages(message, root, messageMap) {
             return;
         }
         if (message.message.messageType == "USER_TOPIC") {
-            await findMessageByIndex(message.topicId, 2, root, messageMap);
+            await findMessageByIndex(message.topicId, 3, root, messageMap);
             await findMessageByIndex(message.topicId, 1, root, messageMap);
             return;
         }
@@ -224,7 +227,7 @@ function renderTopic(container, topicId) {
 
 function renderMessage(container, id, message, topicId) {
     const topicMessageDiv = document.createElement("div");
-    topicMessageDiv.className = `topic-message type-${message.type}`;
+    topicMessageDiv.className = `topic-message type-${message.type} action-${message.action}`;
     container.append(topicMessageDiv);
 
     const messageNameDiv = document.createElement("div");
@@ -356,6 +359,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isValid(value, type)) {
             setValueType(value, type);
             render(value, type);
+        }
+    });
+
+    const collapseAll = document.getElementById("collapseAll");
+    const expandAll = document.getElementById("expandAll");
+
+    collapseAll.addEventListener('click', event => {
+        event.preventDefault();  
+        const items = document.querySelectorAll('.topic');
+        for (let i = 0; i < items.length; i++) {
+            const element = items[i];
+            element.classList.remove('max');
+            element.classList.add('min');
+        }
+    });
+
+    expandAll.addEventListener('click', event => {
+        event.preventDefault();  
+        const items = document.querySelectorAll('.topic');
+        for (let i = 0; i < items.length; i++) {
+            const element = items[i];
+            element.classList.remove('min');
+            element.classList.add('max');
         }
     });
 })

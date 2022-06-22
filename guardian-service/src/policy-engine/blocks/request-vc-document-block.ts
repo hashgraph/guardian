@@ -2,24 +2,41 @@ import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { DidDocumentStatus, Schema, TopicType } from 'interfaces';
+import { DidDocumentStatus, TopicType, Schema } from '@guardian/interfaces';
 import { IAuthUser } from '@auth/auth.interface';
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { StateField } from '@policy-engine/helpers/decorators';
+import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
 import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Topic } from '@entity/topic';
 import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
     commonBlock: false,
+    about: {
+        label: 'Request',
+        title: `Add 'Request' Block`,
+        post: true,
+        get: true,
+        children: ChildrenType.Special,
+        control: ControlType.UI,
+        input: [
+            PolicyInputEventType.RunEvent,
+            PolicyInputEventType.RefreshEvent,
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true
+    }
 })
 export class RequestVcDocumentBlock {
     @StateField()
@@ -33,6 +50,9 @@ export class RequestVcDocumentBlock {
     constructor() {
     }
 
+    @ActionCallback({
+        output: PolicyOutputEventType.RefreshEvent
+    })
     async changeActive(user: IAuthUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
@@ -43,9 +63,9 @@ export class RequestVcDocumentBlock {
             blockState = this.state[user.did];
         }
         blockState.active = active;
+
         ref.updateBlock(blockState, user);
-        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
-        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
     getActive(user: IAuthUser) {
@@ -68,7 +88,8 @@ export class RequestVcDocumentBlock {
 
         if (!this.schema) {
             const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema
+                iri: ref.options.schema,
+                topicId: ref.topicId
             });
             this.schema = schema ? new Schema(schema) : null;
         }
@@ -91,6 +112,9 @@ export class RequestVcDocumentBlock {
         };
     }
 
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     async setData(user: IAuthUser, _data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`setData`);
@@ -123,7 +147,7 @@ export class RequestVcDocumentBlock {
                 credentialSubject.id = id;
             }
 
-            if (typeof(documentRef) === 'string') {
+            if (typeof (documentRef) === 'string') {
                 credentialSubject.ref = documentRef;
             }
             else if (documentRef) {
@@ -147,12 +171,14 @@ export class RequestVcDocumentBlock {
                 relationships: null
             };
 
-            if (typeof(documentRef) === 'object' && documentRef && documentRef.messageId) {
+            if (typeof (documentRef) === 'object' && documentRef && documentRef.messageId) {
                 item.relationships = [documentRef.messageId];
             }
             await this.changeActive(user, true);
 
-            await ref.runNext(user, { data: item });
+            const state = { data: item };
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
         } catch (error) {
             ref.error(`setData: ${error.message}`);
             await this.changeActive(user, true);
@@ -220,13 +246,19 @@ export class RequestVcDocumentBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.schema });
+            const schema = await getMongoRepository(SchemaCollection).findOne({ 
+                iri: ref.options.schema,
+                topicId: ref.topicId
+            });
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;
             }
             if (ref.options.presetSchema) {
-                const presetSchema = await getMongoRepository(SchemaCollection).findOne({ iri: ref.options.presetSchema });
+                const presetSchema = await getMongoRepository(SchemaCollection).findOne({ 
+                    iri: ref.options.presetSchema,
+                    topicId: ref.topicId
+                });
                 if (!presetSchema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
                     return;

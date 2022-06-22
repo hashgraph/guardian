@@ -1,12 +1,16 @@
-import { MessageStatus } from "./message";
-import { MessageAction } from "./message-action";
-import { MessageType } from "./message-type";
+import { MessageStatus } from './message';
+import { MessageAction } from './message-action';
+import { MessageType } from './message-type';
 
 export interface MessageBody {
     id: string;
     status: MessageStatus;
     type: MessageType;
     action: MessageAction;
+    lang: string;
+    revokeMessage?: string;
+    reason?: string;
+    parentIds?: string[];
 }
 
 export interface DidMessageBody extends MessageBody {
@@ -57,6 +61,7 @@ export interface VcMessageBody extends MessageBody {
     cid: string;
     url: string;
     relationships: string[];
+    documentStatus: string;
 }
 
 export interface VpMessageBody extends MessageBody {
@@ -64,4 +69,11 @@ export interface VpMessageBody extends MessageBody {
     cid: string;
     url: string;
     relationships: string[];
+}
+
+export interface RegistrationMessageBody extends MessageBody {
+    did: string;
+    topicId: string;
+    lang: string;
+    attributes: { [x: string]: string } | undefined;
 }

@@ -31,11 +31,11 @@ export class Issuer {
 
     public static fromJsonTree(root: any): Issuer {
         if (!root) {
-            throw new Error("JSON Object is empty");
+            throw new Error('JSON Object is empty');
         }
 
         let id: string, name: string;
-        if (typeof root == "string") {
+        if (typeof root == 'string') {
             id = root;
         } else {
             id = root[Issuer.ID];
@@ -52,8 +52,8 @@ export class Issuer {
         try {
             const root = JSON.parse(json);
             return this.fromJsonTree(root);
-        } catch (e) {
-            throw new Error('Given JSON string is not a valid Issuer ' + e.message);
+        } catch (error) {
+            throw new Error('Given JSON string is not a valid Issuer ' + error.message);
         }
     }
 }

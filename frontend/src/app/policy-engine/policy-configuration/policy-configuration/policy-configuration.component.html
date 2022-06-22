@@ -2,10 +2,10 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    <div class="not-exist" *ngIf="!policy">
+    <div class="not-exist" *ngIf="!policyModel.valid">
         Policy doesn't exist
     </div>
-    <div class="render" *ngIf="policy" [attr.readonly]="readonly">
+    <div class="render" *ngIf="policyModel.valid" [attr.readonly]="readonly">
         <div class="main">
             <div class="main-body">
                 <div class="top-toolbar">
@@ -29,53 +29,9 @@
                         <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                     </div>
 
-                    <div class="delimiter"></div>
-
                     <div class="btn-new-block btn-status-edit" (click)="setVersion()" title="Publish Policy">
                         <mat-icon>public</mat-icon>
                         <span>Publish</span>
-                    </div>
-
-                    <div class="delimiter"></div>
-
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="mainMenu">
-                        <mat-icon>home</mat-icon>
-                        <span>Main</span>
-                        <div class="expand-group">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </div>
-                    </div>
-
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="vcMenu">
-                        <mat-icon>description</mat-icon>
-                        <span>Verifiable Credential</span>
-                        <div class="expand-group">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </div>
-                    </div>
-
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="tokensMenu">
-                        <mat-icon>paid</mat-icon>
-                        <span>Tokens</span>
-                        <div class="expand-group">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </div>
-                    </div>
-
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="calculateMenu">
-                        <mat-icon>calculate</mat-icon>
-                        <span>Calculate</span>
-                        <div class="expand-group">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </div>
-                    </div>
-
-                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="reportMenu">
-                        <mat-icon>addchart</mat-icon>
-                        <span>Report</span>
-                        <div class="expand-group">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </div>
                     </div>
 
                     <div class="delimiter"></div>
@@ -85,9 +41,96 @@
                         <mat-icon>login</mat-icon>
                         <span>Open</span>
                     </div>
+
+                    <div *ngIf="!readonly" [attr.storage-active]="policyStorage.isUndo"
+                        class="btn-new-block btn-status-edit" (click)="undoPolicy()" title="Undo">
+                        <mat-icon>undo</mat-icon>
+                        <span>Undo</span>
+                    </div>
+
+                    <div *ngIf="!readonly" [attr.storage-active]="policyStorage.isRedo"
+                        class="btn-new-block btn-status-edit" (click)="redoPolicy()" title="Redo">
+                        <mat-icon>redo</mat-icon>
+                        <span>Redo</span>
+                    </div>
+
+                    <div *ngIf="!readonly && currentView === 'blocks'"
+                        class="btn-new-block btn-status-all copy-blocks-mode" (click)="copyBlocksMode=!copyBlocksMode"
+                        title="Save Policy" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}">
+                        <mat-icon>content_copy</mat-icon>
+                        <span>Copy Blocks</span>
+                    </div>
+
+                    <div class="delimiter"></div>
+
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="mainMenu"
+                        *ngIf="groupBlocks.Main.length">
+                        <mat-icon>home</mat-icon>
+                        <span>Main</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="vcMenu"
+                        *ngIf="groupBlocks.Documents.length">
+                        <mat-icon>description</mat-icon>
+                        <span>Verifiable Credential</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="tokensMenu"
+                        *ngIf="groupBlocks.Tokens.length">
+                        <mat-icon>paid</mat-icon>
+                        <span>Tokens</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="calculateMenu"
+                        *ngIf="groupBlocks.Calculate.length">
+                        <mat-icon>calculate</mat-icon>
+                        <span>Calculate</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <div class="btn-group btn-status-edit" [matMenuTriggerFor]="reportMenu"
+                        *ngIf="groupBlocks.Report.length">
+                        <mat-icon>addchart</mat-icon>
+                        <span>Report</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <ng-container *ngFor="let item of groupBlocks.unGroupedBlocks">
+                        <div class="btn-new-block btn-status-edit" (click)="onAdd(item.type)" [title]="item.title">
+                            <mat-icon>{{item.icon}}</mat-icon>
+                            <span>{{item.name}}</span>
+                        </div>
+                    </ng-container>
                 </div>
 
                 <div class="view-menu">
+                    <div class="btn-view-menu event-visible" style="color: #bd9012" [matMenuTriggerFor]="eventMenu"
+                        [attr.active]="currentView == 'blocks'">
+                        <mat-icon *ngIf="eventVisible =='All'" title="Show All Events">flash_on</mat-icon>
+                        <div *ngIf="eventVisible =='Action'"
+                            style="width:20px;height:9px;border-bottom:2px solid #bd9012;margin: 0px 2px 11px 1px">
+                        </div>
+                        <div *ngIf="eventVisible =='Refresh'"
+                            style="width:20px;height:9px;border-bottom:2px dashed #bd9012;margin: 0px 2px 11px 1px">
+                        </div>
+                        <mat-icon *ngIf="eventVisible =='None'" title="Hide Events">flash_off</mat-icon>
+                    </div>
+
+                    <div class="btn-view-menu-sep "></div>
+
                     <div class="btn-view-menu" (click)="onView('blocks')" title="Blocks"
                         [attr.active]="currentView == 'blocks'">
                         <mat-icon>view_agenda</mat-icon>
@@ -104,16 +147,24 @@
 
                 <div class="tree-container code-container-{{currentView}}">
                     <div *ngIf="currentView !== 'blocks'" class="textarea-code">
-                        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"></ngx-codemirror>
+                        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
+                        </ngx-codemirror>
                     </div>
                     <div *ngIf="currentView !== 'blocks' && errors && errors.length" class="json-errors">
                         <div *ngFor="let item of errors" class="errors-property">
                             <span></span>{{item}}
                         </div>
                     </div>
-                    <tree-flat-overview *ngIf="currentView == 'blocks'" [blocks]="blocks" [errors]="errorsMap"
-                        (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)">
-                    </tree-flat-overview>
+                    <div *ngIf="currentView == 'blocks'">
+                        <events-overview #eventOverview [policy]="policyModel" [selected]="currentBlock"
+                            [context]="treeOverview" [active]="eventVisible" (init)="onInitViewer($event)">
+                        </events-overview>
+                        <tree-flat-overview #treeOverview [blocks]="policyModel.dataSource" [errors]="errorsMap"
+                            (delete)="onDelete($event)" (select)="onSelect($event)"
+                            (reorder)="onReorder($event)" (change)="onTreeChange($event)"
+                            (init)="onInitTree($event)">
+                        </tree-flat-overview>
+                    </div>
                 </div>
             </div>
         </div>
@@ -128,17 +179,21 @@
                 </div>
                 <div class="group-body" style="margin-bottom: 24px;">
                     <ng-container *ngIf="policyTab=='Description'">
-                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Main'"></policy-properties>
+                        <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Main'">
+                        </policy-properties>
                     </ng-container>
                     <ng-container *ngIf="policyTab=='Roles'">
-                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Role'"></policy-properties>
+                        <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Role'">
+                        </policy-properties>
                     </ng-container>
                     <ng-container *ngIf="policyTab=='Topics'">
-                        <policy-properties [policy]="policy" [readonly]="readonly" [type]="'Topics'"></policy-properties>
+                        <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Topics'">
+                        </policy-properties>
                     </ng-container>
                 </div>
                 <div class="group-tab">
-                    <div class="group-tab-item" [attr.active]="policyTab=='Description'" (click)="policyTab='Description'">
+                    <div class="group-tab-item" [attr.active]="policyTab=='Description'"
+                        (click)="policyTab='Description'">
                         Description
                     </div>
                     <div class="group-tab-item" [attr.active]="policyTab=='Roles'" (click)="policyTab='Roles'">
@@ -165,14 +220,17 @@
                     </div>
                     <div class="common-properties">
                         <ng-container *ngIf="propTab=='Properties'">
-                            <common-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.policyTopics">
+                            <common-properties [policy]="policyModel" [block]="currentBlock" [schemas]="schemas"
+                                [readonly]="readonly" [tokens]="tokens" type="Common">
                             </common-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='JSON'">
-                            <json-properties [block]="currentBlock" [schemes]="schemes" [all]="allBlocks"
-                                [readonly]="readonly" [tokens]="tokens" [roles]="policy.policyRoles" [topics]="policy.policyTopics">
-                            </json-properties>
+                            <json-properties [block]="currentBlock" [readonly]="readonly"></json-properties>
+                        </ng-container>
+                        <ng-container *ngIf="propTab=='Events'">
+                            <common-properties [policy]="policyModel" [block]="currentBlock" [schemas]="schemas"
+                                [readonly]="readonly" [tokens]="tokens" type="Events">
+                            </common-properties>
                         </ng-container>
                     </div>
                 </div>
@@ -183,6 +241,9 @@
                     <div class="group-tab-item" [attr.active]="propTab=='JSON'" (click)="propTab='JSON'">
                         JSON
                     </div>
+                    <div class="group-tab-item" [attr.active]="propTab=='Events'" (click)="propTab='Events'">
+                        Events
+                    </div>
                 </div>
             </div>
         </div>
@@ -190,41 +251,88 @@
 </div>
 
 <mat-menu #mainMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Main" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of groupBlocks.Main">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>
 
 <mat-menu #vcMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Documents" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of groupBlocks.Documents">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>
 
 <mat-menu #tokensMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Tokens" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of groupBlocks.Tokens">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>
 
 <mat-menu #calculateMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Calculate" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
-    </div>
+    <ng-container *ngFor="let item of groupBlocks.Calculate">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
 </mat-menu>
 
 <mat-menu #reportMenu="matMenu">
-    <div *ngFor="let item of registeredBlocks.groups.Report" class="btn-new-block-menu btn-status-edit"
-        (click)="onAdd(item.type)" [title]="item.title">
-        <mat-icon>{{item.icon}}</mat-icon>
-        <span>{{item.name}}</span>
+    <ng-container *ngFor="let item of groupBlocks.Report">
+        <div *ngIf="item.type" class="btn-new-block-menu btn-status-edit" (click)="onAdd(item.type)"
+            [title]="item.title">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.name}}</span>
+        </div>
+        <div *ngIf="!item.type" class="block-group-header">
+            <span>{{item.name}}</span>
+        </div>
+    </ng-container>
+</mat-menu>
+
+<mat-menu #eventMenu="matMenu">
+    <div class="btn-new-block-menu btn-status-edit" (click)="onShowEvent('All')" title="Show All Events">
+        <mat-icon style="color: #bd9012">flash_on</mat-icon>
+        <span>Show All Events</span>
+    </div>
+
+    <div class="btn-new-block-menu btn-status-edit" (click)="onShowEvent('Action')" title="Show Action Events">
+        <div style="width:20px;height:11px;border-bottom:2px solid #bd9012;margin: 0px 2px 11px 2px"></div>
+        <span>Show Action Events</span>
+    </div>
+
+    <div class="btn-new-block-menu btn-status-edit" (click)="onShowEvent('Refresh')" title="Show Refresh Events">
+        <div style="width:20px;height:11px;border-bottom:2px dashed #bd9012;margin: 0px 2px 11px 2px"></div>
+        <span>Show Refresh Events</span>
+    </div>
+
+    <div class="btn-new-block-menu btn-status-edit" (click)="onShowEvent('None')" title="Hide All Events">
+        <mat-icon style="color: #bd9012">flash_off</mat-icon>
+        <span>Hide All Events</span>
     </div>
 </mat-menu>

@@ -1,4 +1,4 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsUtils } from '../policy-components-utils';
@@ -7,10 +7,28 @@ import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 @BasicBlock({
     blockType: 'reassigningBlock',
-    commonBlock: false
+    commonBlock: false,
+    about: {
+        label: 'Reassigning',
+        title: `Add 'Reassigning' Block`,
+        post: false,
+        get: false,
+        children: ChildrenType.None,
+        control: ControlType.Server,
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent
+        ],
+        defaultEvent: true
+    }
 })
 export class ReassigningBlock {
     @Inject()
@@ -36,7 +54,7 @@ export class ReassigningBlock {
         } else {
             root = await this.users.getHederaAccount(user.did);
         }
-        
+
         let owner: IAuthUser;
         if (ref.options.actor == 'owner') {
             owner = await this.users.getUserById(document.owner);
@@ -64,15 +82,21 @@ export class ReassigningBlock {
         return { item, owner };
     }
 
+    /**
+     * @event PolicyEventType.Run
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+    })
     @CatchErrors()
-    async runAction(state: any, user: IAuthUser) {
+    async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const { item, owner } = await this.documentReassigning(state, user);
-        state.data = item;
+        const { item, owner } = await this.documentReassigning(event.data, event.user);
+        event.data.data = item;
         ref.log(`Reassigning Document: ${JSON.stringify(item)}`);
-        await ref.runNext(owner, state);
-        PolicyComponentsUtils.CallDependencyCallbacks(ref.tag, ref.policyId, user);
-        PolicyComponentsUtils.CallParentContainerCallback(ref, user);
-        // ref.updateBlock(state, user, '');
+
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, owner, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, event.data);
     }
 }

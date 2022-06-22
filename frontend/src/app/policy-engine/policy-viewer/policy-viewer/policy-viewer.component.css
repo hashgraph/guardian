@@ -153,6 +153,7 @@ a.go-back-link mat-icon {
     padding-left: 24px;
 }
 
+.table-container .mat-column-schemas,
 .table-container .mat-column-topic,
 .table-container .mat-column-version,
 .table-container .mat-column-description,
@@ -191,10 +192,12 @@ a.go-back-link mat-icon {
     position: relative;
     z-index: 0;
 }
+.table-container[role='STANDARD_REGISTRY'],
 .table-container[role='ROOT_AUTHORITY'] {
     max-height: calc(100vh - var(--header-height) - 170px);
 }
 
+.actions-container[role='STANDARD_REGISTRY'],
 .actions-container[role='ROOT_AUTHORITY'] {
     display: block;
 }

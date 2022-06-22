@@ -1,10 +1,10 @@
-import { Timestamp } from "@hashgraph/sdk";
-import { Hashing } from "./../hashing";
-import { TimestampUtils } from "./../timestamp-utils";
-import { IVC } from "interfaces";
-import { DIDDocument } from "./did-document";
-import { Issuer } from "./issuer";
-import { VcSubject } from "./vc-subject";
+import { Timestamp } from '@hashgraph/sdk';
+import { Hashing } from '../hashing';
+import { TimestampUtils } from '../timestamp-utils';
+import { IVC } from '@guardian/interfaces';
+import { DIDDocument } from './did-document';
+import { Issuer } from './issuer';
+import { VcSubject } from './vc-subject';
 
 export class VcDocument {
     public static readonly CONTEXT = '@context';
@@ -122,8 +122,8 @@ export class VcDocument {
         try {
             const root = JSON.parse(json);
             result = VcDocument.fromJsonTree(root);
-        } catch (e) {
-            throw new Error('Given JSON string is not a valid VcDocument ' + e.message);
+        } catch (error) {
+            throw new Error('Given JSON string is not a valid VcDocument ' + error.message);
         }
         return result;
     }

@@ -8,11 +8,11 @@ Note that for the approve option we are binding the action to the “update\_app
 
 Note that for the reject option we are binding the action to the “installer\_rejected” action we previously defined.
 
-![](../.gitbook/assets/PW\_26.png)
+![](<../.gitbook/assets/PW\_image\_27.png>)
 
 Next, we return to the “approve\_documents\_grid” step and add the “approve\_documents\_btn” action as a binding block to Field 4 since Field 4 captures the approval or rejection of the document. Note, the choice of block for Field 4 makes sense now, because the bound action is a block itself.
 
-![](../.gitbook/assets/PW\_26.1.png)
+![](../.gitbook/assets/PW\_image\_28.png)
 
 **Programmatically this workflow step looks like this:**
 

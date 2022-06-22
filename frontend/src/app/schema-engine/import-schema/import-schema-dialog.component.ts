@@ -1,11 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ImportType, Schema, SchemaHelper } from 'interfaces';
+import { ImportType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 /**
- * Dialog allowing you to select a file and load schemes.
+ * Dialog allowing you to select a file and load schemas.
  */
 @Component({
     selector: 'import-schema-dialog',
@@ -59,13 +59,13 @@ export class ImportSchemaDialog {
         this.dialogRef.close({
           type: 'message',
           data: messageId,
-          schemes: result
+          schemas: result
         });
       }, error => {
         this.loading = false;
       });
   }
-  
+
   importFromFile(file: any) {
     const reader = new FileReader()
     reader.readAsArrayBuffer(file);
@@ -77,7 +77,7 @@ export class ImportSchemaDialog {
         this.dialogRef.close({
           type: 'file',
           data: arrayBuffer,
-          schemes: result
+          schemas: result
         });
       }, (e) => {
         this.loading = false;

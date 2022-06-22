@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 16.x ]
+        node-version: [16.x]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -18,7 +18,7 @@ jobs:
           npm install
           npm run build
           popd
-          pushd logger-helper
+          pushd common
           npm install
           npm run build
           popd
@@ -38,10 +38,6 @@ jobs:
           npm install
           npm run build
           popd
-          pushd message-broker
-          npm install
-          npm run build
-          popd
           pushd api-gateway
           npm install
           npm run build
@@ -53,7 +49,7 @@ jobs:
           pushd interfaces
           npm run lint
           popd
-          pushd logger-helper
+          pushd common
           npm run lint
           popd
           pushd logger-service

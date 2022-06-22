@@ -16,6 +16,7 @@ import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.compon
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag-n-drop.component';
+import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 
 @NgModule({
     declarations: [
@@ -29,7 +30,8 @@ import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag
         VCViewerDialog,
         SchemaViewDialog,
         ExportSchemaDialog,
-        FileDragNDropComponent
+        FileDragNDropComponent,
+        SchemaFieldConfigurationComponent
     ],
     imports: [
         CommonModule,
@@ -51,8 +53,8 @@ import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag
         SetVersionDialog,
         VCViewerDialog,
         ExportSchemaDialog,
-        FileDragNDropComponent
+        FileDragNDropComponent,
+        SchemaFieldConfigurationComponent
     ]
 })
-export class SchemaEngineModule {
-}
+export class SchemaEngineModule { }

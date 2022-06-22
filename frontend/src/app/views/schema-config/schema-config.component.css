@@ -27,7 +27,7 @@ a {
     text-decoration: underline;
 }
 
-.schemes-table {
+.schemas-table {
     width: 100%;
 }
 
@@ -38,7 +38,7 @@ a {
 
 .actions {
     display: grid;
-    grid-template-columns: auto 290px;
+    grid-template-columns: 300px auto 290px;
     padding: 14px 14px 14px 14px;
     border-bottom: 1px solid #eee;
     margin: 0;
@@ -157,48 +157,49 @@ a {
     cursor: not-allowed;
 }
 
-.schemes-table .mat-column-policy {
+.schemas-table .mat-column-policy {
     padding-left: 20px;
 }
 
-.schemes-table .mat-column-uuid,
-.schemes-table .mat-column-type,
-.schemes-table .mat-column-version,
-.schemes-table .mat-column-entity {
+.schemas-table .mat-column-uuid,
+.schemas-table .mat-column-type,
+.schemas-table .mat-column-version,
+.schemas-table .mat-column-entity {
     padding-left: 10px;
 }
 
-.schemes-table .mat-column-version,
-.schemes-table .mat-column-entity {
+.schemas-table .mat-column-version,
+.schemas-table .mat-column-entity {
     width: 75px;
     max-width: 75px;
 }
 
-.schemes-table .mat-column-topic {
+.schemas-table .mat-column-topic {
     width: 135px;
     max-width: 135px;
     padding-left: 10px;
 }
 
-.schemes-table .mat-column-selected {
+.schemas-table .mat-column-selected {
     width: 22px;
     border-right: 1px solid #dddddd;
     padding-left: 15px;
 }
 
-.schemes-table .mat-column-status {
+.schemas-table .mat-column-status {
     width: 125px;
     border-left: 1px solid #dddddd;
     padding-left: 10px;
 }
 
-.schemes-table .mat-column-operation {
+.schemas-table .mat-column-activeOperation,
+.schemas-table .mat-column-operation {
     width: 135px;
     border-left: 1px solid #dddddd;
     padding-left: 10px;
 }
 
-.schemes-table .mat-column-document {
+.schemas-table .mat-column-document {
     width: 15px;
     max-width: 15px;
     padding-left: 10px;
@@ -207,19 +208,20 @@ a {
     margin-right: 1px;
 }
 
-.schemes-table .mat-column-edit {
+.schemas-table .mat-column-edit {
     width: 25px;
     max-width: 25px;
     padding-left: 10px;
 }
 
-.schemes-table .mat-column-delete {
+.schemas-table .mat-column-deleteSystem,
+.schemas-table .mat-column-delete {
     width: 25px;
     max-width: 25px;
     padding-left: 10px;
 }
 
-.schemes-table .mat-column-export {
+.schemas-table .mat-column-export {
     width: 25px;
     max-width: 25px;
     border-left: 1px solid #dddddd;
@@ -233,4 +235,23 @@ a {
     transform: translate(-50%, -50%);
     font-size: 20px;
     color: darkgrey;
+}
+
+.schemas-table[system="true"] .mat-column-entity {
+    width: 250px;
+    max-width: 250px;
+}
+
+.schemas-table .mat-column-active {
+    width: 225px;
+    max-width: 225px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.schemas-table .mat-column-editSystem {
+    width: 25px;
+    max-width: 25px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
 }

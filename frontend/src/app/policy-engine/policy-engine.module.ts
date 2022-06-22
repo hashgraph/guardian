@@ -45,11 +45,19 @@ import { CalculateMathConfigComponent } from './policy-configuration/blocks/calc
 import { JsonPropertiesComponent } from './policy-configuration/json-properties/json-properties.component';
 import { ReportBlockComponent } from './policy-viewer/blocks/report-block/report-block.component';
 import { ReportItemConfigComponent } from './policy-configuration/blocks/report/report-item-config/report-item-config.component';
-import {
-    PaginationAddonBlockComponent
-} from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
-import { Dragonglass } from './helpers/dragonglass/dragonglass.component';
+import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
 import { ReassigningConfigComponent } from './policy-configuration/blocks/documents/reassigning-config/reassigning-config.component';
+import { CommonComponentsModule } from '../common-components.module';
+import { CronConfigDialog } from './helpers/cron-config-dialog/cron-config-dialog.component';
+import { TimerConfigComponent } from './policy-configuration/blocks/documents/timer-config/timer-config.component';
+import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
+import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
+import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
+import { ConfirmationDialog } from './policy-viewer/blocks/confirmation-dialog/confirmation-dialog.component';
+import { RevokeConfigComponent } from './policy-configuration/blocks/documents/revoke-config/revoke-config.component';
+import { EventsOverview } from './helpers/events-overview/events-overview';
+import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
+import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
 
 @NgModule({
     declarations: [
@@ -92,12 +100,22 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
         JsonPropertiesComponent,
         ReportBlockComponent,
         ReportItemConfigComponent,
-        Dragonglass,
-        ReassigningConfigComponent
+        ReassigningConfigComponent,
+        CronConfigDialog,
+        TimerConfigComponent,
+        CustomLogicConfigComponent,
+        CodeEditorDialogComponent,
+        SwitchConfigComponent,
+        EventsOverview,
+        ConfirmationDialog,
+        RevokeConfigComponent,
+        ButtonConfigComponent,
+        ButtonBlockComponent
     ],
     imports: [
         CommonModule,
         FormsModule,
+        CommonComponentsModule,
         CodemirrorModule,
         MaterialModule,
         SchemaEngineModule,
@@ -105,6 +123,9 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
         DragDropModule
     ],
     exports: [
+        ButtonBlockComponent,
+        ButtonConfigComponent,
+        RevokeConfigComponent,
         PolicyConfigurationComponent,
         DocumentSourceComponent,
         CommonPropertiesComponent,
@@ -141,12 +162,12 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
         CalculateConfigComponent,
         CalculateMathConfigComponent,
         JsonPropertiesComponent,
-        Dragonglass,
-        ReassigningConfigComponent
+        ReassigningConfigComponent,
+        CronConfigDialog,
+        EventsOverview
     ],
     providers: [
         RegisteredBlocks
     ]
 })
-export class PolicyEngineModule {
-}
+export class PolicyEngineModule { }

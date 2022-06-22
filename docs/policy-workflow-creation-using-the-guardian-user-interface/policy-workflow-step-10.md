@@ -14,7 +14,7 @@ Lastly, we add custom fields to the form.
 
 \[When Field 2 is shown]: Note, that when we choose the Type button, we can now determine the Action this button will perform. In our case, it opens a Dialog Box. The Dialog Content is VC since we are again dealing with Verifiable Credentials in this form.
 
-![](../.gitbook/assets/PW\_15.png)
+![](../.gitbook/assets/PW\_image\_15.png)
 
 Below are screenshots of the UI field inputs
 

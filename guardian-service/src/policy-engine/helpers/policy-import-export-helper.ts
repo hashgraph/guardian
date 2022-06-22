@@ -11,14 +11,20 @@ import { getMongoRepository } from 'typeorm';
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
-import { ModelHelper, SchemaHelper, SchemaStatus, TopicType } from 'interfaces';
+import { SchemaEntity, TopicType } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
-import { importSchemaByFiles } from '@api/schema.service';
+import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
 import { TopicHelper } from '@helpers/topicHelper';
+import { PrivateKey } from '@hashgraph/sdk';
+import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
+import { PolicyUtils } from './utils';
+import { Schema as SchemaCollection } from '@entity/schema';
 
 export class PolicyImportExportHelper {
+    static policyFileName = 'policy.json';
+
     /**
      * Generate Zip File
      * @param policy policy to pack
@@ -27,52 +33,44 @@ export class PolicyImportExportHelper {
      */
     static async generateZipFile(policy: Policy): Promise<JSZip> {
         const policyObject = { ...policy };
+        const topicId = policyObject.topicId;
+
         delete policyObject.id;
         delete policyObject.messageId;
         delete policyObject.registeredUsers;
         delete policyObject.status;
+        delete policyObject.topicId;
+
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
-        const schemesIds = findAllEntities(policyObject.config, SchemaFields);
 
         const tokens = await getMongoRepository(Token).find({ where: { tokenId: { $in: tokenIds } } });
-        const rootSchemes = await getMongoRepository(Schema).find({
-            where: { iri: { $in: schemesIds } }
-        });
-        const defs: any[] = rootSchemes.map(s => s.document.$defs);
-        const map: any = {};
-        for (let i = 0; i < rootSchemes.length; i++) {
-            const id = rootSchemes[i].iri;
-            map[id] = id;
-        }
-        for (let i = 0; i < defs.length; i++) {
-            if (defs[i]) {
-                const ids = Object.keys(defs[i]);
-                for (let j = 0; j < ids.length; j++) {
-                    const id = ids[j];
-                    map[id] = id;
-                }
-            }
-        }
-        const allSchemesIds = Object.keys(map);
-        const schemes = await getMongoRepository(Schema).find({
-            where: { iri: { $in: allSchemesIds } }
+        const schemas = await getMongoRepository(Schema).find({
+            topicId: topicId,
+            readonly: false
         });
 
         const zip = new JSZip();
         zip.folder('tokens')
         for (let token of tokens) {
+            delete token.adminId;
+            delete token.owner;
+            token.adminKey = token.adminKey ? "..." : null;
+            token.kycKey = token.kycKey ? "..." : null;
+            token.wipeKey = token.wipeKey ? "..." : null;
+            token.supplyKey = token.supplyKey ? "..." : null;
+            token.freezeKey = token.freezeKey ? "..." : null;
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
         }
-        zip.folder('schemes')
-        for (let schema of schemes) {
+        zip.folder('schemas')
+        for (let schema of schemas) {
             const item = { ...schema };
             delete item.id;
             delete item.status;
             delete item.readonly;
-            zip.file(`schemes/${schema.iri}.json`, JSON.stringify(schema));
+            zip.file(`schemas/${schema.iri}.json`, JSON.stringify(schema));
         }
 
-        zip.file(`policy.json`, JSON.stringify(policyObject));
+        zip.file(this.policyFileName, JSON.stringify(policyObject));
         return zip;
     }
 
@@ -84,22 +82,24 @@ export class PolicyImportExportHelper {
     static async parseZipFile(zipFile: any): Promise<any> {
         const zip = new JSZip();
         const content = await zip.loadAsync(zipFile);
-        let policyString = await content.files['policy.json'].async('string');
+        if (!content.files[this.policyFileName] || content.files[this.policyFileName].dir) {
+            throw 'Zip file is not a policy';
+        }
+        let policyString = await content.files[this.policyFileName].async('string');
         const tokensStringArray = await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)
             .filter(file => /^tokens\/.+/.test(file[0]))
             .map(file => file[1].async('string')));
 
-        const schemesStringArray = await Promise.all(Object.entries(content.files)
+        const schemasStringArray = await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)
-            .filter(file => /^schemes\/.+/.test(file[0]))
+            .filter(file => /^schem[a,e]s\/.+/.test(file[0]))
             .map(file => file[1].async('string')));
 
         const policy = JSON.parse(policyString);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
-        const schemes = schemesStringArray.map(item => JSON.parse(item));
-
-        return { policy, tokens, schemes };
+        const schemas = schemasStringArray.map(item => JSON.parse(item));
+        return { policy, tokens, schemas };
     }
 
     /**
@@ -110,8 +110,8 @@ export class PolicyImportExportHelper {
      * @returns Policies by owner
      */
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
-        const { policy, tokens, schemes } = policyToImport;
-
+        const { policy, tokens, schemas } = policyToImport;
+        
         delete policy.id;
         delete policy.messageId;
         delete policy.version;
@@ -122,7 +122,6 @@ export class PolicyImportExportHelper {
         policy.creator = policyOwner;
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
-
 
         const users = new Users();
         const root = await users.getHederaAccount(policyOwner);
@@ -147,27 +146,43 @@ export class PolicyImportExportHelper {
             .setTopicObject(parent)
             .sendMessage(message);
 
-        await topicHelper.link(topicRow, parent, messageStatus.getId());
+        await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
+
+        const systemSchemas = new Array(4);
+        systemSchemas[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);
+        systemSchemas[1] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN);
+        systemSchemas[2] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN);
+        systemSchemas[3] = await PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN);
+
+        for (let i = 0; i < systemSchemas.length; i++) {
+            messageServer.setTopicObject(topicRow);
+            const schema = systemSchemas[i];
+            if(schema) {
+                schema.creator = policyOwner;
+                schema.owner = policyOwner;
+                const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
+                const newItem = getMongoRepository(SchemaCollection).create(item);
+                await getMongoRepository(SchemaCollection).save(newItem);
+            }
+        }
 
         // Import Tokens
         if (tokens) {
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+            const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = getMongoRepository(Token);
             for (const token of tokens) {
-                const treasury = await client.newAccount(2);
-                const treasuryId = treasury.id;
-                const treasuryKey = treasury.key;
                 const tokenName = token.tokenName;
                 const tokenSymbol = token.tokenSymbol;
                 const tokenType = token.tokenType;
                 const nft = tokenType == 'non-fungible';
                 const decimals = nft ? 0 : token.decimals;
                 const initialSupply = nft ? 0 : token.initialSupply;
-                const adminKey = token.adminKey ? treasuryKey : null;
-                const kycKey = token.kycKey ? treasuryKey : null;
-                const freezeKey = token.freezeKey ? treasuryKey : null;
-                const wipeKey = token.wipeKey ? treasuryKey : null;
-                const supplyKey = token.supplyKey ? treasuryKey : null;
+                const adminKey = token.adminKey ? rootHederaAccountKey : null;
+                const kycKey = token.kycKey ? rootHederaAccountKey : null;
+                const freezeKey = token.freezeKey ? rootHederaAccountKey : null;
+                const wipeKey = token.wipeKey ? rootHederaAccountKey : null;
+                const supplyKey = token.supplyKey ? rootHederaAccountKey : null;
                 const tokenId = await client.newToken(
                     tokenName,
                     tokenSymbol,
@@ -175,7 +190,10 @@ export class PolicyImportExportHelper {
                     decimals,
                     initialSupply,
                     '',
-                    treasury,
+                    {
+                        id: root.hederaAccountId,
+                        key: rootHederaAccountKey
+                    },
                     adminKey,
                     kycKey,
                     freezeKey,
@@ -189,7 +207,7 @@ export class PolicyImportExportHelper {
                     tokenType,
                     decimals: decimals,
                     initialSupply: initialSupply,
-                    adminId: treasuryId ? treasuryId.toString() : null,
+                    adminId: root.hederaAccountId,
                     adminKey: adminKey ? adminKey.toString() : null,
                     kycKey: kycKey ? kycKey.toString() : null,
                     freezeKey: freezeKey ? freezeKey.toString() : null,
@@ -202,11 +220,11 @@ export class PolicyImportExportHelper {
             }
         }
 
-        // Import Schemes
-        const schemesMap = await importSchemaByFiles(policyOwner, schemes, topicRow.topicId);
+        // Import Schemas
+        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId);
 
         // Replace id
-        await this.replaceConfig(policy, schemesMap);
+        await this.replaceConfig(policy, schemasMap);
 
         // Save
         const model = getMongoRepository(Policy).create(policy as Policy);
@@ -219,25 +237,19 @@ export class PolicyImportExportHelper {
         return result;
     }
 
-    static async replaceConfig(policy: Policy, schemesMap: any) {
+    static async replaceConfig(policy: Policy, schemasMap: any) {
         if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
 
-        for (let index = 0; index < schemesMap.length; index++) {
-            const item = schemesMap[index];
+        for (let index = 0; index < schemasMap.length; index++) {
+            const item = schemasMap[index];
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
         }
 
         // compatibility with older versions
-        replaceAllEntities(policy.config, ['blockType'], 'interfaceDocumentsSource', 'interfaceDocumentsSourceBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'requestVcDocument', 'requestVcDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'sendToGuardian', 'sendToGuardianBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'interfaceAction', 'interfaceActionBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'mintDocument', 'mintDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'aggregateDocument', 'aggregateDocumentBlock');
-        replaceAllEntities(policy.config, ['blockType'], 'wipeDocument', 'retirementDocumentBlock');
-
+        policy = PolicyConverterUtils.PolicyConverter(policy);
+        policy.codeVersion = PolicyConverterUtils.VERSION;
         regenerateIds(policy.config);
     }
 }

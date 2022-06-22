@@ -11,7 +11,7 @@
             </mat-select>
         </td>
     </tr>
-    
+
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
             <mat-icon>expand_more</mat-icon>
@@ -98,18 +98,6 @@
                 <td class="propRowCell cellName">UI Class</td>
                 <td class="propRowCell">
                     <input [(ngModel)]="option.uiClass" [readonly]="readonly">
-                </td>
-            </tr>
-
-            <tr class="propRow subRow-2"
-                [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">User</td>
-                <td class="propRowCell">
-                    <mat-select [(value)]="option.user" [disabled]="readonly">
-                        <mat-option value="owner">Owner</mat-option>
-                        <mat-option value="current">Current</mat-option>
-                    </mat-select>
                 </td>
             </tr>
         </ng-container>

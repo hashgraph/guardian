@@ -15,10 +15,10 @@
             New Version
         </div>
         <div class="g-dialog-actions">
-            <div *ngIf="!scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(schemaControl?.valid && started)">
+            <div *ngIf="!scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(valid && started)">
                 Create
             </div>
-            <div *ngIf="scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(schemaControl?.valid && started)">
+            <div *ngIf="scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(valid && started)">
                 Save
             </div>
         </div>
@@ -27,10 +27,13 @@
         <div style="padding: 50px 70px 30px 70px;">
             <app-schema-configuration #document
                 [value]="scheme" 
-                [schemes-map]="schemesMap" 
+                [schemas-map]="schemasMap" 
                 [type]="type"
                 [policies]="policies"
-                [topicId]="topicId">
+                [topicId]="topicId"
+                [system]="system"
+                (change-form)="onChangeForm($event)"
+            >
             </app-schema-configuration>
         </div>
     </div>
