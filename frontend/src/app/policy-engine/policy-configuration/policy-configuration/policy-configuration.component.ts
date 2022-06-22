@@ -446,6 +446,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         const json = this.policyModel.getJSON();
         const object = {
+            topicId: this.policyModel.topicId,
             policyRoles: json?.policyRoles,
             policyTopics: json?.policyTopics,
             config: json?.config
