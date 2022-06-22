@@ -8,26 +8,25 @@ import {
     externalAPI,
     ipfsAPI
 } from '@api/service';
-import {Guardians} from '@helpers/guardians';
+import { Guardians } from '@helpers/guardians';
 import express from 'express';
-import FastMQ from 'fastmq';
-import {createServer} from 'http';
-import {authorizationHelper} from '@auth/authorizationHelper';
+import { createServer } from 'http';
+import { authorizationHelper } from '@auth/authorizationHelper';
 import { IPFS } from '@helpers/ipfs';
-import {policyAPI} from '@api/service/policy';
-import {PolicyEngine} from '@helpers/policyEngine';
-import {WebSocketsService} from '@api/service/websockets';
+import { policyAPI } from '@api/service/policy';
+import { PolicyEngine } from '@helpers/policyEngine';
+import { WebSocketsService } from '@api/service/websockets';
 import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
 import { settingsAPI } from '@api/service/settings';
 import { loggerAPI } from '@api/service/logger';
-import { Logger } from 'logger-helper';
+import { MessageBrokerChannel, Logger } from '@guardian/common';
 
 const PORT = process.env.PORT || 3002;
 
 Promise.all([
-    FastMQ.Client.connect(process.env.SERVICE_CHANNEL, 7500, process.env.MQ_ADDRESS)
-]).then(async ([channel]) => {
+    MessageBrokerChannel.connect("API_GATEWAY"),
+]).then(async ([cn]) => {
     const app = express();
     app.use(express.json());
     app.use(express.raw({
@@ -35,7 +34,7 @@ Promise.all([
         limit: '4096kb',
         type: 'binary/octet-stream'
     }));
-
+    const channel = new MessageBrokerChannel(cn, 'guardian')
     new Logger().setChannel(channel);
     new Guardians().setChannel(channel);
     new IPFS().setChannel(channel);
@@ -44,7 +43,7 @@ Promise.all([
     new Wallet().setChannel(channel);
 
     const server = createServer(app);
-    new WebSocketsService(server, channel);
+    new WebSocketsService(server, new MessageBrokerChannel(cn, 'api-gateway'));
 
     ////////////////////////////////////////
 

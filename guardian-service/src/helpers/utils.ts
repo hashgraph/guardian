@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { IVC, IVCDocument } from 'interfaces';
+import { IVC, IVCDocument } from '@guardian/interfaces';
 
 export const SchemaFields = [
     'schema',
@@ -95,7 +95,11 @@ export function findOptions(document: any, field: any) {
         value = document;
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
-            value = value[key];
+            if (Array.isArray(value[key])) {
+                value = value[key].join(',');
+            } else {
+                value = value[key];
+            }
         }
     }
     return value;

@@ -1,0 +1,24 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Output Schema</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr class="propRow" >
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Expression</td>
+        <td class="propRowCell">
+            <input type="text" [(ngModel)]="block.expression" [readonly]="true" (click)="editExpression($event)">
+        </td>
+    </tr>
+</table>

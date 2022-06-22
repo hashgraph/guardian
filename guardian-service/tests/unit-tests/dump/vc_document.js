@@ -13,7 +13,7 @@ module.exports.vc_document = [{
         'id': '4cb4a454-74f5-4b30-853d-524e36174614',
         'type': [
             'VerifiableCredential',
-            'RootAuthority'
+            'StandardRegistry'
         ],
         'credentialSubject': [
             {
@@ -21,7 +21,7 @@ module.exports.vc_document = [{
                     'https://localhost/schema'
                 ],
                 'id': 'did:hedera:testnet:x719ZpApzxdFA23aUFsDLVjyNHPMeMcYpAcYBmW8nVn;hedera:testnet:fid=0.0.2859201',
-                'type': 'RootAuthority',
+                'type': 'StandardRegistry',
                 'name': '2'
             }
         ],
@@ -35,7 +35,7 @@ module.exports.vc_document = [{
             'jws': 'eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..r9CsVgVkY448yyxrXPQ5VlY9Ey9-6FrH9lhd26_dwsn6dak0nVEUuGeCUQqkjt7iaAAOqbKU6Aqw1i7bR-UJCA'
         }
     },
-    'type': 'ROOT_AUTHORITY',
+    'type': 'STANDARD_REGISTRY',
     'signature': 1,
     'status': 'ISSUE',
     'createDate': {

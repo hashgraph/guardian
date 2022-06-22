@@ -1,4 +1,4 @@
-import { IToken } from 'interfaces';
+import { IToken } from '@guardian/interfaces';
 import { Column, Entity, ObjectIdColumn } from 'typeorm';
 
 @Entity()
@@ -16,7 +16,7 @@ export class Token implements IToken {
 
     @Column()
     tokenSymbol: string;
-    
+
     @Column()
     tokenType: string;
 

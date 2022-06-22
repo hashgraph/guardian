@@ -13,6 +13,8 @@ export interface SchemaField {
     readOnly: boolean;
     fields?: SchemaField[];
     conditions?: SchemaCondition[];
+    unit?: string,
+    unitSystem?: string,
     context?: {
         type: string;
         context: string;

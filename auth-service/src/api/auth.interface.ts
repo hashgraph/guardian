@@ -1,4 +1,4 @@
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 
 export interface IAuthUser {
     username: string;

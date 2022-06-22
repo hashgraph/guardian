@@ -1,5 +1,5 @@
 import {BeforeInsert, Column, Entity, ObjectIdColumn} from 'typeorm';
-import {IUser, UserRole} from 'interfaces';
+import {IUser, UserRole} from '@guardian/interfaces';
 
 /**
  * User collection

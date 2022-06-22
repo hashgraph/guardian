@@ -1,5 +1,15 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
     <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Input Documents</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.inputDocuments" [disabled]="readonly">
+                <mat-option value="aggregate">Aggregate</mat-option>
+                <mat-option value="separate">Separate</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow">
         <td class="propRowCol" (click)="onHide(propHidden, 'inputSchemaGroup')"
             [attr.collapse]="propHidden.inputSchemaGroup">
             <mat-icon>
@@ -9,7 +19,7 @@
         <td class="propRowCell cellName">Input Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.inputSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
-                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -46,7 +56,7 @@
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
-                <mat-option *ngFor="let schema of schemes" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -54,7 +64,7 @@
             </mat-select>
         </td>
     </tr>
-    <ng-container *ngIf="block.outputFields">
+    <ng-container *ngIf="block.outputSchema">
         <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName cellTitle">Description</td>

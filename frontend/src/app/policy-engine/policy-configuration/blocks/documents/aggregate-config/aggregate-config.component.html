@@ -1,31 +1,90 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Stop Propagation</td>
-        <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.stopPropagation" [readonly]="readonly">
-        </td>
-    </tr>
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
+        <td class="propRowCol" (click)="onHide(propHidden, 'options')" [attr.collapse]="propHidden.options">
+            <mat-icon>
+                expand_more
+            </mat-icon>
         </td>
-        <td class="propHeaderCell cellName">UI</td>
+        <td class="propHeaderCell cellName">Options</td>
         <td class="propHeaderCell"></td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+    <tr class="propRow" [attr.collapse]="propHidden.options">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Rule</td>
+        <td class="propRowCell cellName">Aggregate Type</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.rule" [readonly]="readonly">
+            <mat-select [(value)]="block.aggregateType" [disabled]="readonly">
+                <mat-option value="period">Period</mat-option>
+                <mat-option value="cumulative">Cumulative Dimension</mat-option>
+            </mat-select>
         </td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Threshold</td>
-        <td class="propRowCell">
-            <input [(ngModel)]="block.threshold" [readonly]="readonly">
-        </td>
-    </tr>
+    <ng-container *ngIf="block.aggregateType == 'period'">
+        <tr class="propRow" [attr.collapse]="propHidden.options">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Empty Data</td>
+            <td class="propRowCell">
+                <input type="checkbox" [(ngModel)]="block.emptyData" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+
+    <ng-container *ngIf="block.aggregateType == 'cumulative'">
+        <tr class="propHeader">
+            <td class="propRowCol" (click)="onHide(propHidden, 'expressionsGroup')"
+                [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propHeaderCell cellName">Expressions</td>
+            <td class="propHeaderCell">
+                <div class="propAdd" (click)="addExpression()">
+                    <mat-icon>add</mat-icon>
+                    <span>Add Expression</span>
+                </div>
+            </td>
+        </tr>
+        <ng-container *ngFor="let expression of block.expressions; let i=index">
+            <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
+                <td class="propRowCol" (click)="onHide(propHidden.expressions, i)"
+                    [attr.collapse]="propHidden.expressions[i]">
+                    <mat-icon>
+                        expand_more
+                    </mat-icon>
+                </td>
+                <td class="propRowCell cellName">Expression {{i}}</td>
+                <td class="propRowCell">
+                    <span>{{expression.name}} = {{expression.value}}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveExpression(i)">
+                        <mat-icon>delete</mat-icon>
+                    </span>
+                </td>
+            </tr>
+            <tr class="propRow subRow"
+                [attr.collapse]="propHidden.options || propHidden.expressionsGroup || propHidden.expressions[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Variable Name</td>
+                <td class="propRowCell">
+                    <input [(ngModel)]="expression.name" [readonly]="readonly">
+                </td>
+            </tr>
+            <tr class="propRow subRow"
+                [attr.collapse]="propHidden.options || propHidden.expressionsGroup || propHidden.expressions[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Variable Value</td>
+                <td class="propRowCell">
+                    <input [(ngModel)]="expression.value" [readonly]="readonly">
+                </td>
+            </tr>
+        </ng-container>
+
+        <tr class="propRow" [attr.collapse]="propHidden.main" [attr.collapse]="propHidden.options">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Condition</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="block.condition" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
 </table>

@@ -2,7 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { Schema, SchemaCondition, SchemaField } from 'interfaces';
+import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -185,6 +185,8 @@ export class SchemaFormComponent implements OnInit {
             format: field.format,
             pattern: field.pattern,
             conditions: field.conditions,
+            unit: field.unit,
+            unitSystem: field.unitSystem,
             hide: false
         }
 
@@ -415,15 +417,11 @@ export class SchemaFormComponent implements OnInit {
             });
     }
 
-    GetInvalidMessageByFieldType(type: string, isArray: boolean = false): string {
-        if (!type) {
-            return "";
-        }
-
-        const messages = isArray
+    GetInvalidMessageByFieldType(item: SchemaField): string {
+        const type = item.format || item.type;
+        const messages = item.isArray
             ? ErrorArrayMessageByFieldType
             : ErrorFieldMessageByFieldType;
-
         switch (type) {
             case 'email':
                 return messages.Email;
@@ -444,7 +442,9 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    GetPlaceholderByFieldType(type: string, pattern: string = ""): string {
+    GetPlaceholderByFieldType(item: SchemaField): string {
+        const type = item.format || item.type;
+        const pattern = item.pattern;
         switch (type) {
             case 'email':
                 return PlaceholderByFieldType.Email;
@@ -527,5 +527,47 @@ export class SchemaFormComponent implements OnInit {
         this.destroy.emit();
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+    }
+
+    isTime(item: SchemaField): boolean {
+        return item.type === 'string' && item.format === 'time';
+    }
+
+    isDate(item: SchemaField): boolean {
+        return item.type === 'string' && item.format === 'date';
+    }
+
+    isDateTime(item: SchemaField): boolean {
+        return item.type === 'string' && item.format === 'date-time';
+    }
+
+    isBoolean(item: SchemaField): boolean {
+        return item.type === 'boolean';
+    }
+
+    isIPFS(item: SchemaField): boolean {
+        return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+';
+    }
+
+    isInput(item: SchemaField): boolean {
+        return (
+            (
+                item.type === 'string' ||
+                item.type === 'number' ||
+                item.type === 'integer'
+            ) && (
+                item.format !== 'date' &&
+                item.format !== 'time' &&
+                item.format !== 'date-time'
+            )
+        );
+    }
+
+    isPrefix(item: SchemaField): boolean {
+        return item.unitSystem === UnitSystem.Prefix;
+    }
+
+    isPostfix(item: SchemaField): boolean {
+        return item.unitSystem === UnitSystem.Postfix;
     }
 }

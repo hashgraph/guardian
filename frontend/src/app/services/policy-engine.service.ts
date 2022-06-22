@@ -115,9 +115,9 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}/parents`);
     }
 
-    public exportInFile(policyId: string): Observable<any> {
+    public exportInFile(policyId: string): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/${policyId}/export/file`, {
-            responseType: 'blob'
+            responseType: 'arraybuffer'
         });
     }
 
@@ -147,6 +147,10 @@ export class PolicyEngineService {
                 'Content-Type': 'binary/octet-stream'
             }
         });
+    }
+
+    public blockAbout(): Observable<any> {
+        return this.http.get<any>(`${this.url}/blocks/about`);
     }
 
     private getBaseUrl() {

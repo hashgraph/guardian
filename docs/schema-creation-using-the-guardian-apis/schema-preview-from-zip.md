@@ -4,7 +4,7 @@
 
 {% swagger method="post" path="" baseUrl="/schemas/import/file/preview" summary="Schema preview from a zip file" %}
 {% swagger-description %}
-Previews the schema from a zip file. Only users with the Root Authority role are allowed to make the request.
+Previews the schema from a zip file. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="body" name="" type="" required="true" %}

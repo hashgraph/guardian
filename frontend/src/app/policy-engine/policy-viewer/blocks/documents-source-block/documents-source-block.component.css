@@ -104,3 +104,80 @@
     display: inline-block;
     text-overflow: ellipsis;
 }
+
+tr.detailed-row {
+    height: 0;
+}
+
+.expanded-detail {
+    max-width: unset !important;
+}
+
+.table-row td {
+    border-bottom-width: 0;
+}
+
+.timeline-container {
+    max-width: 1024px;
+    width: 90%;
+    margin: 0 auto;
+}
+  
+.timeline-item {
+    padding: 3em 2em 2em;
+    position: relative;
+    color: rgba(0, 0, 0, 0.7);
+    border-left: 2px solid rgba(0, 0, 0, 0.3);
+}
+.timeline-item p {
+    font-size: 1rem;
+}
+.timeline-item::before {
+    content: attr(date-is);
+    position: absolute;
+    left: 2em;
+    font-weight: bold;
+    top: 1em;
+    display: block;
+    font-family: "Roboto", sans-serif;
+    font-weight: 700;
+    font-size: 0.785rem;
+}
+
+.timeline-item::after {
+    width: 10px;
+    height: 10px;
+    display: block;
+    top: 1em;
+    position: absolute;
+    left: -7px;
+    border-radius: 10px;
+    content: "";
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    background: white;
+}
+
+.timeline-item:last-child {
+    border-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0)) 1 100%;
+}
+
+.has-history-row {
+    cursor: pointer;
+}
+
+.mat-column-history {
+    width: 30px;
+}
+
+tr.revoked td {
+    position: relative;
+}
+
+tr.revoked td:not(.mat-column-history):before {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    border-bottom: 2px solid rgb(105, 105, 105);
+    width: 100%;
+}

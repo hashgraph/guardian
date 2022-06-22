@@ -1,0 +1,96 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'options')" [attr.collapse]="propHidden.options">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Options</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.options">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Execution Flow</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.executionFlow" [disabled]="readonly">
+                <mat-option value="firstTrue">First True</mat-option>
+                <mat-option value="allTrue">All True</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'conditionsGroup')"
+            [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Conditions</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addCondition()">
+                <mat-icon>add</mat-icon>
+                <span>Add Condition</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let condition of block.conditions; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.conditions, i)"
+                [attr.collapse]="propHidden.conditions[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">Condition {{i}}</td>
+            <td class="propRowCell">
+                <span *ngIf="condition.type=='equal'">If ({{condition.value}})</span>
+                <span *ngIf="condition.type=='not_equal'">If Not({{condition.value}})</span>
+                <span *ngIf="condition.type=='unconditional'">Unconditional</span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveCondition(i)">
+                    <mat-icon>delete</mat-icon>
+                </span>
+            </td>
+        </tr>
+        <tr class="propRow subRow"
+            [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Condition Tag</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="condition.tag" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow"
+            [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Condition Type</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="condition.type" [disabled]="readonly">
+                    <mat-option value="equal">Equal</mat-option>
+                    <mat-option value="not_equal">Not Equal</mat-option>
+                    <mat-option value="unconditional">Unconditional</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" *ngIf="condition.type!='unconditional'"
+            [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Condition</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="condition.value" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow"
+            [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Actor</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="condition.actor" [disabled]="readonly">
+                    <mat-option value="">Current User</mat-option>
+                    <mat-option value="owner">Document Owner</mat-option>
+                    <mat-option value="issuer">Document Issuer</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+    </ng-container>
+</table>

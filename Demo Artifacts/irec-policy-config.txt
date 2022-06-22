@@ -411,7 +411,7 @@
     },
     {
       "id": "9afff85d-2d4a-4874-9a1d-e9c5ec35e923",
-      "tag": "root_authority_header",
+      "tag": "standard_registry_header",
       "blockType": "interfaceContainerBlock",
       "defaultActive": true,
       "children": [

@@ -1,3 +1,4 @@
+import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import {Column, Entity, ObjectIdColumn} from 'typeorm';
 
 /**
@@ -9,8 +10,50 @@ export class AggregateVC {
     id: string;
 
     @Column()
+    owner: string;
+
+    @Column()
+    assign: string;
+
+    @Column()
+    hash: string;
+
+    @Column()
     document: any;
 
     @Column()
-    owner: string;
+    hederaStatus: DocumentStatus;
+
+    @Column()
+    signature: DocumentSignature;
+
+    @Column()
+    processingStatus: string;
+
+    @Column()
+    type: string;
+
+    @Column()
+    policyId: string;
+
+    @Column()
+    blockId: string;
+
+    @Column()
+    tag: string;
+
+    @Column()
+    option: any;
+
+    @Column()
+    schema: string;
+
+    @Column()
+    messageId: string;
+
+    @Column()
+    topicId: string;
+
+    @Column()
+    relationships: string[];
 }

@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
-import { UserRole } from 'interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
 
 const checkPasswords: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
@@ -67,7 +67,7 @@ export class RegisterComponent implements OnInit {
                     this.auth.setAccessToken(result.accessToken);
                     this.auth.setUsername(d.login);
                     this.authState.updateState(true);
-                    if (result.role == UserRole.ROOT_AUTHORITY) {
+                    if (result.role == UserRole.STANDARD_REGISTRY) {
                         this.router.navigate(['/config']);
                     } else {
                         this.router.navigate(['/']);

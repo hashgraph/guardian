@@ -4,7 +4,7 @@
 
 {% swagger method="put" path="" baseUrl="/profiles/{username}" summary="Sets Hedera credentials for the user" %}
 {% swagger-description %}
-Sets Hedera credentials for the user. For users with the Root Authority role it also creates an address book
+Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="username" type="String" required="true" %}

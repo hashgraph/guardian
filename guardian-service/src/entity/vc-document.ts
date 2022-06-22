@@ -1,4 +1,4 @@
-import {DocumentSignature, DocumentStatus, IVCDocument, SchemaEntity} from 'interfaces';
+import {DocumentSignature, DocumentStatus, IVCDocument, SchemaEntity} from '@guardian/interfaces';
 import {BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn} from 'typeorm';
 
 @Entity()
@@ -58,6 +58,18 @@ export class VcDocument implements IVCDocument {
     
     @Column()
     relationships: string[];
+
+    @Column()
+    messageId: string;
+
+    @Column()
+    topicId: string;
+
+    @Column()
+    relationships: string[];
+
+    @Column()
+    comment?: string;
 
     @BeforeInsert()
     setDefaults() {

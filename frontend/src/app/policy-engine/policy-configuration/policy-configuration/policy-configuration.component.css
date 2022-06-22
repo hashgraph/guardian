@@ -1,5 +1,3 @@
-
-
 .content {
     width: 100%;
     height: 100%;
@@ -26,6 +24,7 @@
 .render {
     position: relative;
     flex: 1;
+    min-width: 1400px;
 }
 
 .main {
@@ -65,7 +64,7 @@
     padding-left: 40px;
 }
 
-.example-tree div[role=group] > .mat-tree-node {
+.example-tree div[role=group]>.mat-tree-node {
     padding-left: 40px;
 }
 
@@ -242,7 +241,7 @@
     user-select: none;
 }
 
-.group[col-group="true"] .group-col mat-icon{
+.group[col-group="true"] .group-col mat-icon {
     transform: rotate(-90deg);
 }
 
@@ -278,7 +277,6 @@
 .btn-new-block {
     display: flex;
     overflow: hidden;
-    min-width: 45px;
     height: 52px;
     flex-direction: column;
     border: 1px solid transparent;
@@ -295,6 +293,14 @@
     border-radius: 6px;
     background: rgb(252 252 252);
     border: 1px solid rgb(220 220 220);
+}
+
+.btn-group {
+    min-width: 52px;
+}
+
+.btn-new-block {
+    min-width: 60px;
 }
 
 .btn-group:hover,
@@ -341,6 +347,7 @@
     border-bottom-right-radius: 6px;
     border-left: 1px solid rgb(220 220 220);
 }
+
 .btn-group .expand-group mat-icon {
     position: absolute;
     top: 14px;
@@ -365,7 +372,7 @@
     color: #b9b9b9;
 }
 
-.btn-new-block > .error-count {
+.btn-new-block>.error-count {
     position: absolute;
     top: 0;
     color: white;
@@ -461,7 +468,7 @@ input[readonly] {
     overflow: scroll;
 }
 
-.code-container-yaml, 
+.code-container-yaml,
 .code-container-json {
     overflow: hidden;
 }
@@ -469,12 +476,12 @@ input[readonly] {
 .view-menu {
     position: absolute;
     top: 90px;
-    right: 8px;
+    right: 12px;
     background: #fff;
     border: 1px solid;
     display: flex;
     height: 28px;
-    width: 90px;
+    width: 121px;
     overflow: hidden;
     z-index: 9;
 }
@@ -487,6 +494,15 @@ input[readonly] {
     cursor: pointer;
     margin: 1px;
     color: #3f51b5;
+}
+
+.btn-view-menu-sep {
+    height: 20px;
+    width: 2px;
+    background: #3f51b5;
+    box-sizing: border-box;
+    padding-left: 1px;
+    margin-top: 4px;
 }
 
 .btn-view-menu:hover {
@@ -523,7 +539,7 @@ input[readonly] {
     color: darkgrey;
 }
 
-.btn-status-edit[readonly="true"] > .error-count {
+.btn-status-edit[readonly="true"]>.error-count {
     display: none;
 }
 
@@ -570,4 +586,60 @@ input[readonly] {
     padding: 10px;
     background: #fff;
     border-top: 1px solid #c9c9c9;
+}
+
+.block-group-header {
+    font-size: 12px;
+    color: #999;
+    height: 15px;
+    line-height: 16px;
+    overflow: hidden;
+    padding: 0px 8px;
+    position: relative;
+}
+
+.block-group-header span {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    padding: 0px 2px 0px 2px;
+    margin: 0px 2px 0px 2px;
+}
+
+.block-group-header::after {
+    display: block;
+    position: absolute;
+    content: '';
+    border-top: 1px solid #999;
+    height: 2px;
+    top: 8px;
+    left: 6px;
+    right: 6px;
+    z-index: 0;
+}
+
+.copy-blocks-mode:active {
+    background-color: #d1d1d1;
+}
+
+.copy-blocks-mode:hover {
+    background-color: #ffffff;
+}
+
+.copy-blocks-mode-active {
+    background-color: #d1d1d1;
+}
+
+.copy-blocks-mode-active:active {
+    background-color: #ffffff;
+}
+
+.copy-blocks-mode-active:hover {
+    background-color: #d1d1d1;
+}
+
+*[storage-active="false"] {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.6;
 }
