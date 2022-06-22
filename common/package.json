@@ -1,7 +1,7 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/interfaces": "^2.1.3",
+    "@guardian/interfaces": "^2.2.0",
     "nats": "^2.6.1",
     "reflect-metadata": "^0.1.13",
     "zlib": "^1.0.5"
@@ -27,5 +27,5 @@
     "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "2.1.3"
+  "version": "2.2.0"
 }
