@@ -336,9 +336,13 @@ export class TreeFlatOverview {
     public selectItem(block: any) {
         if (block) {
             const node: any = this.treeControl.dataNodes.find((n) => n.node.id === block.id);
-            this.currentBlock = node.node;
+            if(node) {
+                this.currentBlock = node.node;
+            } else {
+                this.currentBlock = this.root;
+            }
         } else {
-            this.currentBlock = undefined;
+            this.currentBlock = this.root;
         }
     }
 }

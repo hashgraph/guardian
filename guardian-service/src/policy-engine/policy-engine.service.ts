@@ -232,6 +232,9 @@ export class PolicyEngineService {
     }
 
     private async publishPolicy(model: Policy, owner: string, version: string): Promise<Policy> {
+        const logger = new Logger();
+        logger.info('Publish Policy', ['GUARDIAN_SERVICE']);
+
         const root = await this.users.getHederaAccount(owner);
         const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
@@ -296,6 +299,8 @@ export class PolicyEngineService {
             policyId: `${model.id}`
         });
         await getMongoRepository(VcDocumentCollection).save(doc);
+
+        logger.info('Published Policy', ['GUARDIAN_SERVICE']);
 
         return await getMongoRepository(Policy).save(model);
     }
