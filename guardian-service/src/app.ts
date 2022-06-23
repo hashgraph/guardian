@@ -143,7 +143,6 @@ Promise.all([
     await setDefaultSchema();
 
     await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
-    console.log('guardian service started');
 
     await state.updateState(ApplicationStates.READY);
 });

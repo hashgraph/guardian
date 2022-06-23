@@ -26,7 +26,6 @@ demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
         res.json(demoUsers);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        console.error(error);
         res.status(500).send({ code: 500, message: error.message });
     }
 });
@@ -38,7 +37,6 @@ demoAPI.get('/randomKey', async (req: Request, res: Response) => {
         res.status(200).json(demoKey);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        console.error(error);
         res.status(500).json({ code: 500, message: error.message });
     }
 });

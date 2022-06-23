@@ -1,6 +1,7 @@
 import {Response} from 'express';
 import {AuthenticatedRequest, IAuthUser} from './auth.interface';
 import { Users } from '@helpers/users';
+import { Logger } from '@guardian/common';
 
 /**
  * Authorization middleware
@@ -18,7 +19,7 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             next();
             return;
         } catch (error) {
-            console.error(error.message);
+            new Logger().error(error.message, ['API_GATEWAY']);
         }
     }
     res.sendStatus(401);

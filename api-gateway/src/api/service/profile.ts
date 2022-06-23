@@ -4,6 +4,7 @@ import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Request, Response, Router } from 'express';
 import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from '@guardian/interfaces';
+import { Logger } from '@guardian/common';
 
 /**
  * User profile route
@@ -74,7 +75,7 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
         };
         res.json(result);
     } catch (error) {
-        console.error(error);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code, message: error.message });
     }
 });
@@ -116,7 +117,7 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
 
         res.status(200).json(null);
     } catch (error) {
-        console.error(error);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
 });
@@ -127,7 +128,7 @@ profileAPI.get('/:username/balance', async (req: Request, res: Response) => {
         const balance = await guardians.getUserBalance(req.params.username);
         res.json(balance);
     } catch (error) {
-        console.error(error);
+        new Logger().error(error, ['API_GATEWAY']);
         res.json('null');
     }
 });

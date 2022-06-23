@@ -50,7 +50,7 @@ loggerAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Re
         const logsObj = await logger.getLogs(filters, pageParameters, req.body.sortDirection);
         return res.send(logsObj);
     } catch (error) {
-        console.error(error);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });
@@ -64,7 +64,7 @@ loggerAPI.get('/attributes', permissionHelper(UserRole.STANDARD_REGISTRY), async
         const attributes = await logger.getAttributes(escapeRegExp(req.query.name), req.query.existingAttributes as string[]);
         return res.send(attributes);
     } catch (error) {
-        console.error(error);
+        new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
     }
 });

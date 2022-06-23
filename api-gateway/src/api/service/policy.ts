@@ -96,7 +96,6 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
         const result = await engineService.savePolicy(model, req.user, req.params.policyId);
         res.json(result);
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error' });
     }
@@ -117,7 +116,6 @@ policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => 
     try {
         res.send(await engineService.validatePolicy(req.body, req.user));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message });
     }
@@ -128,7 +126,6 @@ policyAPI.get('/:policyId/blocks', async (req: AuthenticatedRequest, res: Respon
     try {
         res.send(await engineService.getPolicyBlocks(req.user, req.params.policyId));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -139,7 +136,6 @@ policyAPI.get('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res: 
     try {
         res.send(await engineService.getBlockData(req.user, req.params.policyId, req.params.uuid));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -150,7 +146,6 @@ policyAPI.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res:
     try {
         res.send(await engineService.setBlockData(req.user, req.params.policyId, req.params.uuid, req.body));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -161,7 +156,6 @@ policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: 
     try {
         res.send(await engineService.getBlockByTagName(req.user, req.params.policyId, req.params.tagName));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -172,7 +166,6 @@ policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedReques
     try {
         res.send(await engineService.getBlockParents(req.user, req.params.policyId, req.params.uuid));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -187,7 +180,6 @@ policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: R
         res.setHeader('Content-type', 'application/zip');
         res.send(policyFile);
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message });
     }
@@ -198,7 +190,6 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
     try {
         res.send(await engineService.exportMessage(req.user, req.params.policyId));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -210,7 +201,6 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
         const policies = await engineService.importMessage(req.user, req.body.messageId);
         res.status(201).send(policies);
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -222,7 +212,6 @@ policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) 
         const policies = await engineService.importFile(req.user, req.body);
         res.status(201).send(policies);
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -233,7 +222,6 @@ policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res:
     try {
         res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -244,7 +232,6 @@ policyAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Re
     try {
         res.send(await engineService.importFilePreview(req.user, req.body));
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
@@ -255,9 +242,7 @@ policyAPI.get('/blocks/about', async (req: AuthenticatedRequest, res: Response) 
     try {
         res.send(await engineService.blockAbout());
     } catch (error) {
-        console.error(error);
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
 });
-
