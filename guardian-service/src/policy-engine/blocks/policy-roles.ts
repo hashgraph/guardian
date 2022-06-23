@@ -49,7 +49,7 @@ export class PolicyRolesBlock {
         const result = await policyRepository.save(currentPolicy);
         await Promise.all([
             PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, {username, role, did}, ref.tag),
-            PolicyComponentsUtils.UpdateUserInfoFn({username, role, did})
+            PolicyComponentsUtils.UpdateUserInfoFn({username, role, did}, currentPolicy)
         ]);
 
 

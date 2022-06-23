@@ -115,12 +115,18 @@ export class PolicyEngineService {
         });
     }
 
-    private async updateUserInfo(user: IAuthUser) {
+    private async updateUserInfo(user: IAuthUser, policy: Policy) {
         if (!user || !user.did) {
             return;
         }
 
-        await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {user});
+        const userRole = policy.registeredUsers[user.did];
+
+        await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
+            policyId: policy.id.toString(),
+            user,
+            userRole
+        });
     }
 
     private async createPolicy(data: Policy, owner: string): Promise<Policy> {

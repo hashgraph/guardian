@@ -78,19 +78,17 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loading = true;
-        this.route.queryParams.subscribe(queryParams => {
-            this.loadPolicy();
-        });
+        this.subscription.add(
+            this.route.queryParams.subscribe(queryParams => {
+                this.loadPolicy();
+            })
+        );
 
         this.subscription.add(
             this.policyEngineService.subscribeUserInfo((message => {
-                console.log('update user info', message, this.policyId);
-                this.policyEngineService.policy(this.policyId).subscribe(policyInfo => {
-                    this.policyInfo.userRoles = policyInfo.userRoles;
-                    console.log(policyInfo);
-                })
+                this.policyInfo.userRoles = [message.userRole];
             }))
-        )
+        );
     }
 
     ngOnDestroy() {

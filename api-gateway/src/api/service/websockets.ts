@@ -144,9 +144,7 @@ export class WebSocketsService {
                     if (client.user.did === msg.user.did) {
                         client.send(JSON.stringify({
                             type: 'update-user-info-event',
-                            data: {
-                                user: msg.user
-                            }
+                            data: msg
                         }));
                     }
                 } catch (error) {
