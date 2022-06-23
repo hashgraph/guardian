@@ -54,15 +54,18 @@ export class Logger {
     }
 
     public async info(message: string, attr?: string[], lvl: number = 1): Promise<void> {
+        console.info(`${new Date().toISOString()} [${attr.join(',')}]:`, message);
         await this.write(LogType.INFO, message, attr, lvl);
     }
 
     public async warn(message: string, attr?: string[], lvl: number = 1): Promise<void> {
+        console.warn(`${new Date().toISOString()} [${attr.join(',')}]:`, message);
         await this.write(LogType.WARN, message, attr, lvl);
     }
 
     public async error(error: string | Error, attr?: string[], lvl: number = 1): Promise<void> {
         const message = typeof error === 'string' ? error : error.stack;
+        console.error(`${new Date().toISOString()} [${attr.join(',')}]:`, message);
         await this.write(LogType.ERROR, message, attr, lvl);
     }
 
