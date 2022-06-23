@@ -171,11 +171,7 @@ export class PolicyEngineService {
 
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
 
-            const systemSchemas = new Array(4);
-            systemSchemas[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);
-            systemSchemas[1] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN);
-            systemSchemas[2] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN);
-            systemSchemas[3] = await PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN);
+            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
             for (let i = 0; i < systemSchemas.length; i++) {
                 logger.info('Create Policy: Publish System Schema', ['GUARDIAN_SERVICE']);
@@ -677,7 +673,7 @@ export class PolicyEngineService {
                 }
 
                 if (!message.document) {
-                    throw new Error('file in body is empty');
+                    throw new Error('File in body is empty');
                 }
 
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);

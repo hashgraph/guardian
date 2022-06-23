@@ -103,6 +103,20 @@ export class PolicyImportExportHelper {
     }
 
     /**
+     * Get system schemas
+     *
+     * @returns Array of schemas
+     */
+    static getSystemSchemas(): Promise<Schema[]> {
+        return Promise.all([
+            PolicyUtils.getSystemSchema(SchemaEntity.POLICY),
+            PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN),
+            PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
+            PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN)
+        ]);
+    }
+
+    /**
      * Import policy
      * @param policyToImport Policy json
      * @param policyOwner Policy owner
@@ -111,7 +125,7 @@ export class PolicyImportExportHelper {
      */
     static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
-        
+
         delete policy.id;
         delete policy.messageId;
         delete policy.version;
@@ -148,11 +162,7 @@ export class PolicyImportExportHelper {
 
         await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
 
-        const systemSchemas = new Array(4);
-        systemSchemas[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);
-        systemSchemas[1] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN);
-        systemSchemas[2] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN);
-        systemSchemas[3] = await PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN);
+        const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
         for (let i = 0; i < systemSchemas.length; i++) {
             messageServer.setTopicObject(topicRow);
