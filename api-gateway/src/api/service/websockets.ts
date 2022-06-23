@@ -42,7 +42,6 @@ export class WebSocketsService {
                 }
             } catch (error) {
                 new Logger().error(error, ['API_GATEWAY']);
-                console.error(error.message);
             }
         });
     }
@@ -97,7 +96,7 @@ export class WebSocketsService {
                         data: msg
                     }));
                 } catch (error) {
-                    console.error('WS Error', error);
+                    new Logger().error(error, ['API_GATEWAY', 'websocket']);
                 }
             });
             return new MessageResponse({})
@@ -113,7 +112,7 @@ export class WebSocketsService {
                         data: msg.uuid
                     }));
                 } catch (error) {
-                    console.error('WS Error', error);
+                    new Logger().error(error, ['API_GATEWAY', 'websocket']);
                 }
             });
             return new MessageResponse({})
@@ -133,7 +132,6 @@ export class WebSocketsService {
                     }
                 } catch (error) {
                     new Logger().error(error, ['API_GATEWAY']);
-                    console.error('WS Error', error);
                 }
             });
             return new MessageResponse({})

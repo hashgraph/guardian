@@ -49,5 +49,4 @@ Promise.all([
 
     state.updateState(ApplicationStates.READY);
     new Logger().info('ipfs-client service started', ['IPFS_CLIENT']);
-    console.log('ipfs-client service started');
 })

@@ -390,7 +390,6 @@ export class PolicyEngineService {
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                console.error(error);
                 return new MessageError(error);
             }
         });
@@ -475,7 +474,6 @@ export class PolicyEngineService {
                 return new MessageResponse(await block.getData(userFull, block.uuid));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                console.error(error);
                 return new MessageError(error);
             }
         });
