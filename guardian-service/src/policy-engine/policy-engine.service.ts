@@ -53,13 +53,17 @@ export class PolicyEngineService {
         this.channel = channel;
         this.policyGenerator = new BlockTreeGenerator();
 
-        PolicyComponentsUtils.BlockUpdateFn = (...args: any[]) => {
-            this.stateChangeCb.apply(this, args);
+        PolicyComponentsUtils.BlockUpdateFn = async (...args: any[]) => {
+            await this.stateChangeCb.apply(this, args);
         };
 
-        PolicyComponentsUtils.BlockErrorFn = (...args: any[]) => {
-            this.blockErrorCb.apply(this, args);
+        PolicyComponentsUtils.BlockErrorFn = async (...args: any[]) => {
+            await this.blockErrorCb.apply(this, args);
         };
+
+        PolicyComponentsUtils.UpdateUserInfoFn = async (...args: any[]) => {
+            await this.updateUserInfo.apply(this, args);
+        }
     }
 
     /**
@@ -108,6 +112,20 @@ export class PolicyEngineService {
             blockType,
             message,
             user
+        });
+    }
+
+    private async updateUserInfo(user: IAuthUser, policy: Policy) {
+        if (!user || !user.did) {
+            return;
+        }
+
+        const userRole = policy.registeredUsers[user.did];
+
+        await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
+            policyId: policy.id.toString(),
+            user,
+            userRole
         });
     }
 
