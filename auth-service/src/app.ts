@@ -34,5 +34,4 @@ Promise.all([
 
     state.updateState(ApplicationStates.READY);
     new Logger().info('auth service started', ['AUTH_SERVICE']);
-    console.log('auth service started');
 });

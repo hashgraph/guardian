@@ -71,7 +71,6 @@ accountAPI.get('/root-authorities', authorizationHelper, async (req: Request, re
         const standardRegistries = await users.getAllStandardRegistryAccounts();
         res.json(standardRegistries);
     } catch (error) {
-        console.error(error);
         new Logger().error(error.message, ['API_GATEWAY']);
         res.json('null');
     }
@@ -83,7 +82,6 @@ accountAPI.get('/standard-registries', authorizationHelper, async (req: Request,
         const standardRegistries = await users.getAllStandardRegistryAccounts();
         res.json(standardRegistries);
     } catch (error) {
-        console.error(error);
         new Logger().error(error.message, ['API_GATEWAY']);
         res.json('null');
     }
