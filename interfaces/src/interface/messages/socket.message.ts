@@ -10,3 +10,9 @@ export interface IErrorBlockMessage {
     blockType: string;
     message: any;
 }
+
+export interface IUpdateUserInfoMessage {
+    user: {
+        did: string
+    };
+}

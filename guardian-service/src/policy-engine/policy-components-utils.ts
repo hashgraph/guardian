@@ -24,8 +24,9 @@ import { EventActor } from './interfaces/policy-event-type';
 export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallback<any>>>
 
 export class PolicyComponentsUtils {
-    public static BlockUpdateFn: (uuid: string, state: any, user: IAuthUser, tag?: string) => void;
-    public static BlockErrorFn: (blockType: string, message: any, user: IAuthUser) => void;
+    public static BlockUpdateFn: (uuid: string, state: any, user: IAuthUser, tag?: string) => Promise<void>;
+    public static BlockErrorFn: (blockType: string, message: any, user: IAuthUser) => Promise<void>;
+    public static UpdateUserInfoFn: (user: IAuthUser) => Promise<void>;
 
     private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
     private static BlockByUUIDMap: PolicyBlockMap = new Map();
@@ -170,7 +171,7 @@ export class PolicyComponentsUtils {
         blockInstance.setPolicyOwner(policy.owner);
         blockInstance.setPolicyInstance(policy);
         blockInstance.setTopicId(policy.topicId);
-        
+
         allInstances.push(blockInstance);
 
         if (children && children.length) {

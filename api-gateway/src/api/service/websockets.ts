@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { MessageAPI } from '@guardian/interfaces';
+import { IUpdateUserInfoMessage, MessageAPI } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
 import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
@@ -135,6 +135,25 @@ export class WebSocketsService {
                 }
             });
             return new MessageResponse({})
-        })
+        });
+
+        this.channel.response<IUpdateUserInfoMessage, any>('update-user-info', async (msg) => {
+            console.log('update-user-info');
+            this.wss.clients.forEach((client: any) => {
+                try {
+                    if (client.user.did === msg.user.did) {
+                        client.send(JSON.stringify({
+                            type: 'update-user-info-event',
+                            data: {
+                                user: msg.user
+                            }
+                        }));
+                    }
+                } catch (error) {
+                    new Logger().error(error, ['API_GATEWAY']);
+                }
+            });
+            return new MessageResponse({});
+        });
     }
 }
