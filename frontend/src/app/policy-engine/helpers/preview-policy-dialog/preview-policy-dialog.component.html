@@ -50,7 +50,7 @@
 
                 <div class="field">
                     <div class="field-name">Creator</div>
-                    <div class="field-value">{{policy.owner}}</div>
+                    <div class="field-value" [title]="policy.owner">{{policy.owner}}</div>
                 </div>
 
                 <div class="delimiter"></div>
@@ -64,7 +64,7 @@
 
                 <div *ngIf="schemas" class="field-last">
                     <div class="field-name">Schemas Overview</div>
-                    <div class="field-value">{{schemas}}</div>
+                    <div class="field-long-value">{{schemas}}</div>
                 </div>
 
                 <div *ngIf="tokens" class="delimiter"></div>
