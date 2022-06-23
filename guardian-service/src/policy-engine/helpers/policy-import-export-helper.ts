@@ -107,13 +107,21 @@ export class PolicyImportExportHelper {
      *
      * @returns Array of schemas
      */
-    static getSystemSchemas(): Promise<Schema[]> {
-        return Promise.all([
+    static async getSystemSchemas(): Promise<Schema[]> {
+         const schemas = await Promise.all([
             PolicyUtils.getSystemSchema(SchemaEntity.POLICY),
             PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN),
             PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
             PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN)
         ]);
+
+         for (let schema of schemas) {
+             if (!schema) {
+                 throw new Error('One of system schemas is not exist');
+             }
+         }
+
+        return schemas;
     }
 
     /**
