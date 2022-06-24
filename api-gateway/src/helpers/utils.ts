@@ -10,7 +10,7 @@ export function findAllEntities(obj: {[key:string]: any}, name: string): string[
         }
 
         if (o.hasOwnProperty('children')) {
-            for (let child of o['children']) {
+            for (const child of o.children) {
                 finder(child);
             }
         }
@@ -18,8 +18,8 @@ export function findAllEntities(obj: {[key:string]: any}, name: string): string[
     finder(obj);
 
     const map = {};
-    for (let index = 0; index < result.length; index++) {
-        map[result[index]] = result[index];
+    for (const r of result) {
+        map[r] = r;
     }
     return Object.values(map);
 }
@@ -31,12 +31,12 @@ export function replaceAllEntities(
     newValue: string
 ): void {
     function finder(o: {[key:string]: any}): void {
-        if(o.hasOwnProperty(name) && o[name] == oldValue) {
+        if(o.hasOwnProperty(name) && o[name] === oldValue) {
             o[name] = newValue;
         }
 
         if (o.hasOwnProperty('children')) {
-            for (let child of o['children']) {
+            for (const child of o.children) {
                 finder(child);
             }
         }
