@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { IUser, UserRole } from '@guardian/interfaces';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
@@ -34,6 +34,7 @@ export class HeaderComponent implements OnInit {
     testUsers$: Observable<any[]>;
     balance: string;
     balanceType: string;
+    ws!: any;
 
     constructor(
         public authState: AuthStateService,
@@ -112,24 +113,7 @@ export class HeaderComponent implements OnInit {
     ngOnInit() {
         this.activeLink = "";
         this.update();
-    }
-
-    async update() {
-        if (this.activeLink == this.router.url) {
-            return;
-        }
-        this.activeLink = this.router.url;
-        this.activeLinkRoot = this.router.url.split('?')[0];
-        this.auth.sessions().subscribe((user: IUser | null) => {
-            const isLogin = !!user;
-            const role = user ? user.role : null;
-            const username = user ? user.username : null;
-            this.setStatus(isLogin, role, username);
-            this.authState.updateState(isLogin);
-        }, () => {
-            this.setStatus(false, null, null);
-        });
-        this.webSocketService.profileSubscribe((event) => {
+        this.ws = this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
                 if (event.data && event.data.balance) {
                     this.balance = `${event.data.balance.toFixed(3)} ${event.data.unit}`;
@@ -166,6 +150,30 @@ export class HeaderComponent implements OnInit {
         }, () => {
             this.balance = 'N\\A';
             this.balanceType = '';
+        });
+    }
+
+    ngOnDestroy(): void {
+        if (this.ws) {
+            this.ws.unsubscribe();
+            this.ws = null;
+        }
+    }
+
+    async update() {
+        if (this.activeLink == this.router.url) {
+            return;
+        }
+        this.activeLink = this.router.url;
+        this.activeLinkRoot = this.router.url.split('?')[0];
+        this.auth.sessions().subscribe((user: IUser | null) => {
+            const isLogin = !!user;
+            const role = user ? user.role : null;
+            const username = user ? user.username : null;
+            this.setStatus(isLogin, role, username);
+            this.authState.updateState(isLogin);
+        }, () => {
+            this.setStatus(false, null, null);
         });
     }
 
