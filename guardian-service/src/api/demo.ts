@@ -21,12 +21,12 @@ export const demoAPI = async function (
             });
             const OPERATOR_ID = operatorId?.value || process.env.OPERATOR_ID;
             const OPERATOR_KEY = operatorKey?.value || process.env.OPERATOR_KEY;
-            let initialBalance = null;
+            let initialBalance: number = null;
             try {
                 if (role === 'STANDARD_REGISTRY') {
-                    initialBalance = parseInt(process.env.INITIAL_STANDARD_REGISTRY_BALANCE);
+                    initialBalance = parseInt(process.env.INITIAL_STANDARD_REGISTRY_BALANCE, 10);
                 } else {
-                    initialBalance = parseInt(process.env.INITIAL_BALANCE);
+                    initialBalance = parseInt(process.env.INITIAL_BALANCE, 10);
                 }
             } catch (error) {
                 initialBalance = null;
