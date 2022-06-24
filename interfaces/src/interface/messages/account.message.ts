@@ -57,3 +57,7 @@ export interface IGetUsersByIdMessage {
 export interface IGetUsersByIRoleMessage {
     role: UserRole;
 }
+
+export interface IGetUsersByAccountMessage {
+    account: string;
+}

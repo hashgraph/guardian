@@ -42,6 +42,7 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { CommonComponentsModule } from './common-components.module';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 import { InfoComponent } from './components/info/info/info.component';
+import { WebSocketService } from './services/web-socket.service';
 
 @NgModule({
     declarations: [
@@ -89,6 +90,7 @@ import { InfoComponent } from './components/info/info/info.component';
         TokenService,
         SchemaService,
         AuditService,
+        WebSocketService,
         PolicyEngineService,
         PolicyHelper,
         IPFSService,

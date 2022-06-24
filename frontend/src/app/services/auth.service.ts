@@ -74,6 +74,10 @@ export class AuthService {
     public getStandardRegistries(): Observable<IUser[]> {
         return this.http.get<any>(`${this.url}/standard-registries`);
     }
+
+    public balance(): Observable<any> {
+        return this.http.get<any>(`${this.url}/balance`);
+    }
 }
 
 @Injectable()

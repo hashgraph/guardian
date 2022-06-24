@@ -4,6 +4,7 @@ import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper
 import { UserRole } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { Logger } from '@guardian/common';
+import { Guardians } from '@helpers/guardians';
 
 /**
  * User account route
@@ -83,6 +84,35 @@ accountAPI.get('/standard-registries', authorizationHelper, async (req: Request,
         res.json(standardRegistries);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
+        res.json('null');
+    }
+});
+
+accountAPI.get('/balance', async (req: Request, res: Response) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const users = new Users();
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            try {
+                const user = await users.getUserByToken(token) as any;
+                if (user) {
+                    const guardians = new Guardians();
+                    const balance = await guardians.getBalance(user.username);
+                    res.json(balance);
+                    return;
+                } else {
+                    res.json('null');
+                    return;
+                }
+            } catch (error) {
+                res.json('null');
+                return;
+            }
+        }
+        res.json('null');
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
         res.json('null');
     }
 });

@@ -3,7 +3,7 @@ import { approveAPI } from '@api/approve.service';
 import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
 import { loaderAPI } from '@api/loader.service';
-import { profileAPI } from '@api/profile.service';
+import { profileAPI, updateUserBalance } from '@api/profile.service';
 import { schemaAPI, setDefaultSchema } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
@@ -23,7 +23,7 @@ import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import { Environment, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
+import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 
 Promise.all([
@@ -51,11 +51,11 @@ Promise.all([
     state.setChannel(channel);
 
     // Check configuration
-    if(!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
+    if (!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
         await new Logger().error('You need to fill OPERATOR_ID field in .env file', ['GUARDIAN_SERVICE']);
         throw ('You need to fill OPERATOR_ID field in .env file');
     }
-    if(!process.env.OPERATOR_KEY || process.env.OPERATOR_KEY.length < 5) {
+    if (!process.env.OPERATOR_KEY || process.env.OPERATOR_KEY.length < 5) {
         await new Logger().error('You need to fill OPERATOR_KEY field in .env file', ['GUARDIAN_SERVICE']);
         throw ('You need to fill OPERATOR_KEY field in .env file');
     }
@@ -72,7 +72,7 @@ Promise.all([
         throw ('OPERATOR_KEY field in .env file: ' + error.message);
     }
     try {
-        if(process.env.INITIALIZATION_TOPIC_ID) {
+        if (process.env.INITIALIZATION_TOPIC_ID) {
             TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
         }
     } catch (error) {
@@ -80,7 +80,7 @@ Promise.all([
         throw ('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message);
     }
     try {
-        if(process.env.INITIALIZATION_TOPIC_KEY) {
+        if (process.env.INITIALIZATION_TOPIC_KEY) {
             PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
         }
     } catch (error) {
@@ -107,7 +107,8 @@ Promise.all([
         } else {
             log.info(name, attributes, 4);
         }
-    })
+    });
+    HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
 
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);

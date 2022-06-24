@@ -191,6 +191,10 @@ export class Guardians extends ServiceRequestsBase {
         return await this.request(MessageAPI.GET_USER_BALANCE, { username });
     }
 
+    public async getBalance(username: string): Promise<any> {
+        return await this.request(MessageAPI.GET_BALANCE, { username });
+    }
+
     /**
      * Generate Demo Key
      *

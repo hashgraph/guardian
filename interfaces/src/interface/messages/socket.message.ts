@@ -16,3 +16,12 @@ export interface IUpdateUserInfoMessage {
         did: string
     };
 }
+
+export interface IUpdateUserBalanceMessage {
+    balance: number,
+    utin: string,
+    user: {
+        username: string,
+        did: string
+    };
+}

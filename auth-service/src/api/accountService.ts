@@ -20,7 +20,8 @@ import {
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
     IUser,
-    IStandardRegistryUserResponse
+    IStandardRegistryUserResponse,
+    IGetUsersByAccountMessage
 } from '@guardian/interfaces';
 
 export class AccountService {
@@ -157,6 +158,17 @@ export class AccountService {
 
             try {
                 return new MessageResponse(await getMongoRepository(User).findOne({ did }));
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<IGetUsersByAccountMessage, IUser>(AuthEvents.GET_USER_BY_ACCOUNT, async (msg) => {
+            const { account } = msg;
+
+            try {
+                return new MessageResponse(await getMongoRepository(User).findOne({ hederaAccountId: account }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
