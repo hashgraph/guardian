@@ -23,7 +23,6 @@ export class WebSocketService {
     private profileSubject: Subject<{ type: string, data: any }>;
 
     constructor(private auth: AuthService, private toastr: ToastrService) {
-        console.log('WebSocketService')
         this.policySubject = new Subject();
         this.statusSubject = new Subject();
         this.profileSubject = new Subject();
@@ -122,7 +121,6 @@ export class WebSocketService {
         try {
             if (this.socket) {
                 const message = JSON.stringify({ type, data });
-                console.log(message);
                 this.socket.next(message);
             }
         } catch (error: any) {
