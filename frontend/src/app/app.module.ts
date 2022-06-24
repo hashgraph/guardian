@@ -42,6 +42,7 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { CommonComponentsModule } from './common-components.module';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 import { InfoComponent } from './components/info/info/info.component';
+import { MessageTranslationService } from './services/message-translation-service/message-translation-service';
 
 @NgModule({
     declarations: [
@@ -95,6 +96,7 @@ import { InfoComponent } from './components/info/info/info.component';
         SettingsService,
         LoggerService,
         DemoService,
+        MessageTranslationService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

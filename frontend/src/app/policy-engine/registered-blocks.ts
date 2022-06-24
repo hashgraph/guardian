@@ -33,6 +33,7 @@ import { PolicyBlockModel } from "./policy-model";
 import { RevokeConfigComponent } from "./policy-configuration/blocks/documents/revoke-config/revoke-config.component";
 import { ButtonConfigComponent } from "./policy-configuration/blocks/main/button-config/button-config.component";
 import { ButtonBlockComponent } from "./policy-viewer/blocks/button-block/button-block.component";
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -678,19 +679,12 @@ export class RegisteredBlocks {
 
     public newBlock(type: BlockType): BlockNode {
         return {
-            id: this.generateUUIDv4(),
+            id: GenerateUUIDv4(),
             tag: '',
             blockType: type,
             defaultActive: !!this.factories[type],
             children: [],
             permissions: []
         };
-    }
-
-    public generateUUIDv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
     }
 }

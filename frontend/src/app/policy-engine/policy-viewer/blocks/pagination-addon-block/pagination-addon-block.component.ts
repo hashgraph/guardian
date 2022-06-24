@@ -67,7 +67,6 @@ export class PaginationAddonBlockComponent implements OnInit {
     }
 
     onChange(data: any) {
-        console.log(data);
         this.size = data.length;
         this.itemsPerPage = data.pageSize;
         this.page = data.pageIndex;
