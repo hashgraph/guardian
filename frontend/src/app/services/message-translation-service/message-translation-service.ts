@@ -22,12 +22,27 @@ export class MessageTranslationService {
         }
     }
 
+    private getOperatorIdFromMessage(message: string): string {
+        const operatorId = /^.+(\d+\.\d+\.\d+)@\d+\.\d+.+/.exec(message);
+        if (!operatorId) {
+            return '';
+        }
+        return operatorId[1];
+
+    }
+
     public translateMessage(message: string): { wasTranslated: boolean, text: string } {
         for (let [re, key] of this.regExpMap.entries()) {
             if (re.test(message)) {
+                let text = this.messagesMap.get(key);
+                const operatorId = this.getOperatorIdFromMessage(message)
+                if (operatorId) {
+                    text += ` (OPERATOR_ID: ${operatorId})`;
+                }
+
                 return {
                     wasTranslated: true,
-                    text: this.messagesMap.get(key)
+                    text
                 };
             }
         }
