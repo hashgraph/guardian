@@ -19,7 +19,7 @@ export interface IUpdateUserInfoMessage {
 
 export interface IUpdateUserBalanceMessage {
     balance: number,
-    utin: string,
+    unit: string,
     user: {
         username: string,
         did: string

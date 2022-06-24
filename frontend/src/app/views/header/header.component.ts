@@ -132,7 +132,7 @@ export class HeaderComponent implements OnInit {
         this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
                 if (event.data && event.data.balance) {
-                    this.balance = `${event.data.balance.toFixed(3)} ${event.data.utin}`;
+                    this.balance = `${event.data.balance.toFixed(3)} ${event.data.unit}`;
                     if (event.data.balance > 100) {
                         this.balanceType = 'normal';
                     } else if (event.data.balance > 20) {
@@ -151,7 +151,7 @@ export class HeaderComponent implements OnInit {
         });
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
-                this.balance = `${balance.balance.toFixed(3)} ${balance.utin}`;
+                this.balance = `${balance.balance.toFixed(3)} ${balance.unit}`;
                 if (balance.balance > 100) {
                     this.balanceType = 'normal';
                 } else if (balance.balance > 20) {

@@ -57,7 +57,7 @@ export const updateUserBalance = function (channel: MessageBrokerChannel) {
             const user: any = users.getUserByAccount(client.operatorAccountId.toString());
             await channel.request(['api-gateway', 'update-user-balance'].join('.'), {
                 balance: balance,
-                utin: 'Hbar',
+                unit: 'Hbar',
                 user: user ? {
                     username: user.username,
                     did: user.did
@@ -96,7 +96,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
             return new MessageResponse({
                 balance: balance,
-                utin: 'Hbar',
+                unit: 'Hbar',
                 user: user ? {
                     username: user.username,
                     did: user.did
