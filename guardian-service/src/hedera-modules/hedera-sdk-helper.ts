@@ -523,19 +523,26 @@ export class HederaSDKHelper {
      * @returns {any} - Account Id and Account Private Key
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async newAccount(): Promise<{ id: AccountId; key: PrivateKey; }> {
+    public async newAccount(initialBalance: number): Promise<{ id: AccountId; key: PrivateKey; }> {
         const client = this.client;
 
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
-            .setInitialBalance(new Hbar(process.env.INITIAL_BALANCE || INITIAL_BALANCE));
+            .setInitialBalance(new Hbar(initialBalance || INITIAL_BALANCE));
         const receipt = await this.executeAndReceipt(client, transaction, 'AccountCreateTransaction');
         const newAccountId = receipt.accountId;
 
         return {
             id: newAccountId,
             key: newPrivateKey
+        };
+    }
+
+    public newTreasury(accountId: string | AccountId, privateKey: string | PrivateKey) {
+        return {
+            id: typeof accountId === 'string' ? AccountId.fromString(accountId) : accountId,
+            key: typeof privateKey === 'string' ? PrivateKey.fromString(privateKey) : privateKey
         };
     }
 

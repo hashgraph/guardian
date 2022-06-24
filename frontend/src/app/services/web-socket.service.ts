@@ -142,7 +142,7 @@ export class WebSocketService {
             const event = JSON.parse(message);
             switch (event.type) {
                 case 'PROFILE_BALANCE':
-                    this.policySubject.next(event);
+                    this.profileSubject.next(event);
                     break;
 
                 default:

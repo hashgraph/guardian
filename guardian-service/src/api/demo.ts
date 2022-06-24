@@ -12,6 +12,7 @@ export const demoAPI = async function (
 ): Promise<void> {
     ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY, async (msg) => {
         try {
+            const role = msg?.role;
             const operatorId = await settingsRepository.findOne({
                 name: 'OPERATOR_ID'
             });
@@ -20,8 +21,18 @@ export const demoAPI = async function (
             });
             const OPERATOR_ID = operatorId?.value || process.env.OPERATOR_ID;
             const OPERATOR_KEY = operatorKey?.value || process.env.OPERATOR_KEY;
+            let initialBalance = null;
+            try {
+                if (role === 'STANDARD_REGISTRY') {
+                    initialBalance = parseInt(process.env.INITIAL_STANDARD_REGISTRY_BALANCE);
+                } else {
+                    initialBalance = parseInt(process.env.INITIAL_BALANCE);
+                }
+            } catch (error) {
+                initialBalance = null;
+            }
             const client = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY);
-            const treasury = await client.newAccount();
+            const treasury = await client.newAccount(initialBalance);
             return new MessageResponse({
                 id: treasury.id.toString(),
                 key: treasury.key.toString()
