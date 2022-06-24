@@ -615,6 +615,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /accounts/balance:
+    get:
+      tags:
+        - accounts
+      description: Requests current Hedera account balance.
+      security:
+      - bearerAuth: []
+      summary: Returns user's Hedera account balance.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: number
+                  unit:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                      did:
+                        type: string
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /accounts/register:
     post:

@@ -2,10 +2,12 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { IUser, UserRole } from '@guardian/interfaces';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
+import { ProfileService } from 'src/app/services/profile.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -26,20 +28,27 @@ export class HeaderComponent implements OnInit {
     linksConfig: any = {
         default: null
     };
-    commonLinksDisabled: boolean = false; 
+    commonLinksDisabled: boolean = false;
 
     menuIcon: 'expand_more' | 'account_circle' = 'expand_more';
     testUsers$: Observable<any[]>;
+    balance: string;
+    balanceType: string;
+    ws!: any;
+    authSubscription!: any;
 
     constructor(
         public authState: AuthStateService,
-        private auth: AuthService,
-        private otherService: DemoService,
-        private route: ActivatedRoute,
-        private router: Router,
+        public auth: AuthService,
+        public otherService: DemoService,
+        public router: Router,
         public dialog: MatDialog,
-        private headerProps: HeaderPropsService
+        public profileService: ProfileService,
+        public webSocketService: WebSocketService,
+        public headerProps: HeaderPropsService
     ) {
+        this.balance = 'N\\A';
+        this.balanceType = '';
         this.testUsers$ = this.otherService.getAllUsers();
 
         this.linksConfig[UserRole.USER] = [{
@@ -105,6 +114,63 @@ export class HeaderComponent implements OnInit {
     ngOnInit() {
         this.activeLink = "";
         this.update();
+        this.ws = this.webSocketService.profileSubscribe((event) => {
+            if (event.type === 'PROFILE_BALANCE') {
+                if (event.data && event.data.balance) {
+                    this.balance = `${event.data.balance.toFixed(3)} ${event.data.unit}`;
+                    if (event.data.balance > 100) {
+                        this.balanceType = 'normal';
+                    } else if (event.data.balance > 20) {
+                        this.balanceType = 'warn';
+                    } else {
+                        this.balanceType = 'error';
+                    }
+                } else {
+                    this.balance = 'N\\A';
+                    this.balanceType = '';
+                }
+            }
+        }, () => {
+            this.balance = 'N\\A';
+            this.balanceType = '';
+        });
+
+        this.getBallance();
+        this.authSubscription = this.auth.subscribe(() => {
+            this.getBallance();
+        })
+    }
+
+    ngOnDestroy(): void {
+        if (this.ws) {
+            this.ws.unsubscribe();
+            this.ws = null;
+        }
+        if (this.authSubscription) {
+            this.authSubscription.unsubscribe();
+            this.authSubscription = null;
+        }
+    }
+
+    getBallance() {
+        this.auth.balance().subscribe((balance: any) => {
+            if (balance && balance.balance) {
+                this.balance = `${balance.balance.toFixed(3)} ${balance.unit}`;
+                if (balance.balance > 100) {
+                    this.balanceType = 'normal';
+                } else if (balance.balance > 20) {
+                    this.balanceType = 'warn';
+                } else {
+                    this.balanceType = 'error';
+                }
+            } else {
+                this.balance = 'N\\A';
+                this.balanceType = '';
+            }
+        }, () => {
+            this.balance = 'N\\A';
+            this.balanceType = '';
+        });
     }
 
     async update() {

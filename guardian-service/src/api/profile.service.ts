@@ -49,6 +49,25 @@ const getGlobalTopic = async function (): Promise<Topic | null> {
         return null;
     }
 }
+export const updateUserBalance = function (channel: MessageBrokerChannel) {
+    return async function (client: any) {
+        try {
+            const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
+            const users = new Users();
+            const user: any = await users.getUserByAccount(client.operatorAccountId.toString());
+            await channel.request(['api-gateway', 'update-user-balance'].join('.'), {
+                balance: balance,
+                unit: 'Hbar',
+                user: user ? {
+                    username: user.username,
+                    did: user.did
+                } : null
+            });
+        } catch (error) {
+            await new Logger().info(error.message, ['GUARDIAN_SERVICE', 'TransactionResponse']);
+        }
+    }
+}
 
 /**
  * Connect to the message broker methods of working with Address books.
@@ -57,6 +76,40 @@ const getGlobalTopic = async function (): Promise<Topic | null> {
  *
  */
 export const profileAPI = async function (channel: MessageBrokerChannel) {
+    ApiResponse(channel, MessageAPI.GET_BALANCE, async (msg) => {
+        try {
+            const { username } = msg;
+            const wallet = new Wallet();
+            const users = new Users();
+            const user = await users.getUser(username);
+
+            if (!user) {
+                return new MessageResponse(null);
+            }
+
+            if (!user.hederaAccountId) {
+                return new MessageResponse(null);
+            }
+
+            const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
+            const client = HederaSDKHelper.client(user.hederaAccountId, key);
+            const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
+            return new MessageResponse({
+                balance: balance,
+                unit: 'Hbar',
+                user: user ? {
+                    username: user.username,
+                    did: user.did
+                } : null
+            });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            return new MessageError(error, 500);
+        }
+    })
+
+
     ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg) => {
         try {
             const { username } = msg;

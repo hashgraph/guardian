@@ -37,7 +37,7 @@
 }
 
 .user-name {
-    padding: 3px 56px 0px 35px;
+    padding: 3px 56px 0px 160px;
     position: relative;
     height: 48px;
     font-size: 20px;
@@ -154,4 +154,38 @@ a[hidden="true"] {
 
 .current-user-last {
     border: unset;
+}
+
+.user-balance {
+    position: absolute;
+    left: 145px;
+    top: 4px;
+    transform: translate(-100%, 0);
+    background: #fff;
+    border-radius: 20px;
+    padding: 0px 14px;
+    box-sizing: border-box;
+    height: 40px;
+    line-height: 36px;
+    color: #818181;
+    border: 2px solid #aeaeae;
+    box-shadow: inset 0px 0px 6px 0px #aeaeae;
+}
+
+.user-balance[balance-type='error'] {
+    color: #d80000;
+    border: 2px solid #db0000;
+    box-shadow: inset 0px 0px 6px 0px #db0000;
+}
+
+.user-balance[balance-type='warn'] {
+    color: #c8b100;
+    border: 2px solid #c8bc00;
+    box-shadow: inset 0px 0px 6px 0px #c8bc00;  
+}
+
+.user-balance[balance-type='normal'] {
+    color: #0f8300;
+    border: 2px solid #14ae00;
+    box-shadow: inset 0px 0px 6px 0px #14ae00;
 }
