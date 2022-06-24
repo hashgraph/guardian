@@ -1,20 +1,30 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-info',
-  templateUrl: './info.component.html',
-  styleUrls: ['./info.component.css']
+    selector: 'app-info',
+    templateUrl: './info.component.html',
+    styleUrls: ['./info.component.css']
 })
-export class InfoComponent implements OnInit {
+export class InfoComponent implements OnInit, OnDestroy {
 
-  message: string = "";
+    private subscription = new Subscription();
 
-  constructor(private route: ActivatedRoute) { }
+    public message: string = '';
 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.message = params['message'];
-    });
-  }
+    constructor(private route: ActivatedRoute) {
+    }
+
+    ngOnInit(): void {
+        this.subscription.add(
+            this.route.queryParams.subscribe(params => {
+                this.message = params['message'];
+            })
+        );
+    }
+
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
+    }
 }

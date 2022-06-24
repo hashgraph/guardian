@@ -58,7 +58,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             'description',
             'roles',
             'topic',
-	    'schemas',
+	        'schemas',
             'version',
             'status',
             'operation',
