@@ -157,6 +157,7 @@
 ## ACCOUNT APIS
 
 * [User listing except Standard Registry and Auditor](account-apis/user-listing-except-root-authority-and-auditor.md)
+* [User Balance](account-apis/user-balance.md)
 * [User Session](account-apis/user-session.md)
 * [User Login](account-apis/user-login.md)
 * [Registering new account](account-apis/registering-new-account.md)
