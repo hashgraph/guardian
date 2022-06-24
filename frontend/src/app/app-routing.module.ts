@@ -47,12 +47,12 @@ class Guard {
             map((res: IUser | null) => {
                 if (res) {
                     if (res.role != this.role) {
-                        this.router.navigate(['/info'], 
-                            { 
-                                skipLocationChange: true, 
+                        this.router.navigate(['/info'],
+                            {
+                                skipLocationChange: true,
                                 queryParams: {
                                     message: USER_IS_NOT_RA
-                                } 
+                                }
                             }
                         );
                         return false;
@@ -73,12 +73,12 @@ class Guard {
             map((res: IUser | null) => {
                 if (res) {
                     if (res.role != this.role) {
-                        this.router.navigate(['/info'], 
-                            { 
-                                skipLocationChange: true, 
+                        this.router.navigate(['/info'],
+                            {
+                                skipLocationChange: true,
                                 queryParams: {
                                     message: USER_IS_NOT_RA
-                                } 
+                                }
                             }
                         );
                         return false;

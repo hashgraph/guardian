@@ -11,7 +11,10 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./confirmation-dialog.component.css']
 })
 export class ConfirmationDialog {
-    value: FormControl = new FormControl('');
+    value: FormControl = new FormControl(
+        '',
+        Validators.required
+        );
     title: string = "";
     description: string = "";
 
@@ -31,6 +34,9 @@ export class ConfirmationDialog {
     }
 
     onSubmit() {
+        if (this.value.invalid) {
+            return;
+        }
         this.dialogRef.close(this.value.value);
     }
 }

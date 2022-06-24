@@ -7,7 +7,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 
 /**
- * Document Butons with UI
+ * Document Buttons with UI
  */
 @EventBlock({
     blockType: 'buttonBlock',
@@ -58,7 +58,7 @@ export class ButtonBlock {
                             resultsContainer.addBlockError(ref.uuid, 'Option "tag" does not set');
                         }
                         if (Array.isArray(button.filters)) {
-                            for (const filter of button.filters) { 
+                            for (const filter of button.filters) {
                                 if (!filter.type) {
                                     resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
                                 }

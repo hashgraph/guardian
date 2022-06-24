@@ -3,11 +3,11 @@
     <div>{{this.description}}</div>
     <div>
         <mat-form-field appearance="outline">
-            <input matInput type="text" [formControl]="value">
+            <textarea matInput rows="4" [formControl]="value"></textarea>
         </mat-form-field>
     </div>
     <div mat-dialog-actions>
-        <button mat-raised-button color="primary" (click)="onSubmit()">Ok</button>
+        <button mat-raised-button color="primary" [disabled]="value.invalid" (click)="onSubmit()">Ok</button>
         <button mat-button type="button" (click)="onNoClick()">Cancel</button>
     </div>
 </div>

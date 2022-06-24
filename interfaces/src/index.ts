@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+export { GenerateUUIDv4 } from './helpers/generateUUIDv4';
 export { BlockErrorActions } from './type/block-error-actions';
 export { AuthEvents } from './type/auth-events';
 export { ApproveStatus } from './type/approve-status.type';
