@@ -35,6 +35,7 @@ export class HeaderComponent implements OnInit {
     balance: string;
     balanceType: string;
     ws!: any;
+    authSubscription!: any;
 
     constructor(
         public authState: AuthStateService,
@@ -133,6 +134,25 @@ export class HeaderComponent implements OnInit {
             this.balance = 'N\\A';
             this.balanceType = '';
         });
+
+        this.getBallance();
+        this.authSubscription = this.auth.subscribe(() => {
+            this.getBallance();
+        })
+    }
+
+    ngOnDestroy(): void {
+        if (this.ws) {
+            this.ws.unsubscribe();
+            this.ws = null;
+        }
+        if (this.authSubscription) {
+            this.authSubscription.unsubscribe();
+            this.authSubscription = null;
+        }
+    }
+
+    getBallance() {
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
                 this.balance = `${balance.balance.toFixed(3)} ${balance.unit}`;
@@ -151,13 +171,6 @@ export class HeaderComponent implements OnInit {
             this.balance = 'N\\A';
             this.balanceType = '';
         });
-    }
-
-    ngOnDestroy(): void {
-        if (this.ws) {
-            this.ws.unsubscribe();
-            this.ws = null;
-        }
     }
 
     async update() {
