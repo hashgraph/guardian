@@ -43,7 +43,8 @@ Promise.all([
     new Wallet().setChannel(channel);
 
     const server = createServer(app);
-    new WebSocketsService(server, new MessageBrokerChannel(cn, 'api-gateway'));
+    const wsService = new WebSocketsService(server, new MessageBrokerChannel(cn, 'api-gateway'));
+    wsService.init();
 
     ////////////////////////////////////////
 

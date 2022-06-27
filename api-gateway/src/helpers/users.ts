@@ -1,8 +1,7 @@
 import {Singleton} from '@helpers/decorators/singleton';
-import {Request} from 'express';
 import { ApplicationStates, AuthEvents, MessageAPI, UserRole } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
-import { IAuthUser } from '@auth/auth.interface';
+import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 
 /**
  * Users setvice
@@ -11,7 +10,7 @@ import { IAuthUser } from '@auth/auth.interface';
 export class Users extends ServiceRequestsBase {
     public target: string = 'auth-service'
 
-    private async _getUser(target: IAuthUser | Request): Promise<IAuthUser> {
+    private async _getUser(target: IAuthUser | AuthenticatedRequest): Promise<IAuthUser> {
         let user: IAuthUser;
         if (!target) {
             return null;
@@ -19,10 +18,10 @@ export class Users extends ServiceRequestsBase {
         if (!!(target as IAuthUser).username) {
             user = target as IAuthUser;
         } else {
-            if (!target['user'] || !target['user'].username) {
+            if (!(target as AuthenticatedRequest).user || !(target as AuthenticatedRequest).user.username) {
                 return null;
             }
-            user = await this.request(AuthEvents.GET_USER, {username: target['user'].username});
+            user = await this.request(AuthEvents.GET_USER, {username: (target as AuthenticatedRequest).user.username});
         }
         return user;
     }
@@ -38,13 +37,13 @@ export class Users extends ServiceRequestsBase {
      * @param req
      * @param role
      */
-    public async permission(req: Request, role: UserRole | UserRole[]): Promise<boolean>;
+    public async permission(req: AuthenticatedRequest, role: UserRole | UserRole[]): Promise<boolean>;
     /**
      * User permission
      * @param target
      * @param role
      */
-    public async permission(target: IAuthUser | Request, role: UserRole | UserRole[]): Promise<boolean> {
+    public async permission(target: IAuthUser | AuthenticatedRequest, role: UserRole | UserRole[]): Promise<boolean> {
         const user = await this._getUser(target);
         if (!user) {
             return false;
@@ -52,7 +51,7 @@ export class Users extends ServiceRequestsBase {
         if (Array.isArray(role)) {
             return role.indexOf(user.role) !== -1;
         } else {
-            return user.role == role;
+            return user.role === role;
         }
     }
 
@@ -60,7 +59,7 @@ export class Users extends ServiceRequestsBase {
      * Return current user
      * @param req
      */
-    public async currentUser(req: Request): Promise<IAuthUser> {
+    public async currentUser(req: AuthenticatedRequest): Promise<IAuthUser> {
         return await this._getUser(req);
     }
 
@@ -101,8 +100,8 @@ export class Users extends ServiceRequestsBase {
      * @param req
      * @param item
      */
-    public async updateCurrentUser(req: Request, item: any) {
-        return await this.request(AuthEvents.UPDATE_USER, {username: req['user'].username, item});
+    public async updateCurrentUser(req: AuthenticatedRequest, item: any) {
+        return await this.request(AuthEvents.UPDATE_USER, {username: req.user.username, item});
     }
 
     /**

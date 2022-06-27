@@ -10,8 +10,7 @@ import {
     IUser,
     IVCDocument,
     IVPDocument,
-    MessageAPI,
-    TopicType
+    MessageAPI
 } from '@guardian/interfaces';
 import { ServiceRequestsBase } from './serviceRequestsBase';
 
@@ -238,7 +237,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemas
      */
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        const { schemas, count } = await this.request(MessageAPI.GET_SCHEMAS, { uuid: uuid });
+        const { schemas } = await this.request(MessageAPI.GET_SCHEMAS, { uuid: uuid });
         return schemas;
     }
 
