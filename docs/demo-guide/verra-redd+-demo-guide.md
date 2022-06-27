@@ -81,16 +81,16 @@ After selecting the Project Proponent role, we will see the New Project button. 
 
 15\. Now, you log out and login to VVB. You will be able to view the Verifiable Credential by selecting View Document button. Once, you are ready to verify the monitoring report details, you can click on Verify button.
 
-![](../.gitbook/assets/Verra\_15.png)
+![](../.gitbook/assets/verra\_new\_14.png)
 
 16\. Once, Monitoring report is verified, you log out as VVB and login as Verra. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
 
-![](../.gitbook/assets/Verra\_16.png)
+![](../.gitbook/assets/verra\_new\_15.png)
 
 17\. Once, Minting process is completed, navigate to the Token History tab, where you have an option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
 
-![](../.gitbook/assets/Verra\_17.png)
+![](../.gitbook/assets/verra\_new\_16.png)
 
 The Trust Chain view displays essential elements that can be publicly discovered. Elements include token information, Policy information, and all the essential information regarding the Verifiable Credentials that make up the Verifiable Presentation. You will notice "Cards" on the bottom of the screen. Those cards are Verifiable Credentials displayed in chronological order.
 
-![](../.gitbook/assets/Verra\_18.png)
+![](../.gitbook/assets/verra\_new\_17.png)
