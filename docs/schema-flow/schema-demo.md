@@ -27,6 +27,30 @@ After clicking on the New button, you will be asked to enter Schema details such
 
 ![](<../.gitbook/assets/image (4).png>)
 
+In addition to the basic Schema details we also have an option to add Field and Condition to each field.
+
+![](<../.gitbook/assets/image (14).png>)
+
+There are different types of Field Types:
+
+* Number
+* Integer
+* String
+* Boolean
+* Date
+* Time
+* DateTime
+* Duration
+* URL
+* Email
+* Image
+*   Units of Measure
+
+    * Prefix
+    * Postfix
+
+    Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
+
 Once the above details are added, click on the Create button.
 
 ![](<../.gitbook/assets/image (15).png>)
@@ -83,7 +107,7 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 1644847084.945541771 (iREC 3 Policy)
 ```
 
-![](<../.gitbook/assets/image (14).png>)
+![](<../.gitbook/assets/image (14) (1).png>)
 
 Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.&#x20;
 
