@@ -1,4 +1,4 @@
-import { permissionHelper } from '@auth/authorizationHelper';
+import { permissionHelper } from '@auth/authorization-helper';
 import { Request, Response, Router } from 'express';
 import { IPageParameters, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';

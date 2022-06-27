@@ -11,7 +11,7 @@ import {
 import { Guardians } from '@helpers/guardians';
 import express from 'express';
 import { createServer } from 'http';
-import { authorizationHelper } from '@auth/authorizationHelper';
+import { authorizationHelper } from '@auth/authorization-helper';
 import { IPFS } from '@helpers/ipfs';
 import { policyAPI } from '@api/service/policy';
 import { PolicyEngine } from '@helpers/policy-engine';

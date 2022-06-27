@@ -2,7 +2,7 @@ import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
 import { ISchema, UserRole, SchemaHelper, SchemaEntity } from '@guardian/interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
-import { permissionHelper } from '@auth/authorizationHelper';
+import { permissionHelper } from '@auth/authorization-helper';
 import JSZip from "jszip";
 import { Logger } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
