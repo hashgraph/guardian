@@ -1,7 +1,7 @@
 import { Guardians } from '@helpers/guardians';
 import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
-import { Request, Response, Router } from 'express';
+import { Response, Router } from 'express';
 import { ITokenInfo, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policyEngine';
@@ -24,17 +24,14 @@ async function setTokensPolicies(tokens: any[], user: IAuthUser) {
     } else {
         result = await engineService.getPolicies({ filters: { status: 'PUBLISH' } });
     }
-    const { policies, count } = result;
+    const { policies } = result;
 
-    for (let i = 0; i < tokens.length; i++) {
+    for (const token of tokens) {
         const tokenPolicies = [];
-        const token = tokens[i];
-        for (let j = 0; j < policies.length; j++) {
-            const policyObject = policies[j];
+        for (const policyObject of policies) {
             const tokenIds = findAllEntities(policyObject.config, 'tokenId');
             if (tokenIds.includes(token.tokenId)) {
                 tokenPolicies.push(`${policyObject.name} (${policyObject.version || "DRAFT"})`);
-                continue;
             }
         }
         token.policies = tokenPolicies;

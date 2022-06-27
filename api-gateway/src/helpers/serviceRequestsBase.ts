@@ -1,4 +1,4 @@
-import { MessageBrokerChannel, BinaryMessageResponse } from "@guardian/common";
+import { MessageBrokerChannel } from "@guardian/common";
 
 export class ServiceError extends Error {
     public code: number;

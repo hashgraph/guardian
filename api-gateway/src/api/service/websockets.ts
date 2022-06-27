@@ -25,7 +25,11 @@ export class WebSocketsService {
         private server: Server,
         private channel: MessageBrokerChannel
     ) {
-        this.wss = new WebSocket.Server({ server });
+
+    }
+
+    public init(): void {
+        this.wss = new WebSocket.Server({ server: this.server });
         this.registerHeartbeatAnswers();
         this.registerAuthorisation();
         this.registerMessageHandler();
@@ -177,18 +181,18 @@ export class WebSocketsService {
                 } else {
                     const event = parseMessage(message);
                     let type: string;
-                    let data: any;
+                    let _data: any;
                     if (typeof event === 'string') {
                         type = event;
-                        data = null;
+                        _data = null;
                     } else {
                         type = event.type;
-                        data = event.data;
+                        _data = event.data;
                     }
                     switch (type) {
                         case 'SET_ACCESS_TOKEN':
                         case 'UPDATE_PROFILE':
-                            const token = data;
+                            const token = _data;
                             if (token) {
                                 ws.user = await new Users().getUserByToken(token);
                             } else {
