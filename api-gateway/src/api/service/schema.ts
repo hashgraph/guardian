@@ -5,8 +5,13 @@ import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorizationHelper';
 import JSZip from "jszip";
 import { Logger } from '@guardian/common';
-import { PolicyEngine } from '@helpers/policyEngine';
+import { PolicyEngine } from '@helpers/policy-engine';
 
+/**
+ * Parse zip archive
+ * @param {any} zipFile
+ * @returns {Promise<any[]>}
+ */
 export async function parseZipFile(zipFile: any): Promise<any[]> {
     const zip = new JSZip();
     const content = await zip.loadAsync(zipFile);
@@ -17,6 +22,11 @@ export async function parseZipFile(zipFile: any): Promise<any[]> {
     return schemas;
 }
 
+/**
+ * Generate zip archive
+ * @param {ISchema[]} schemas
+ * @returns {@Promise<JSZip>>}
+ */
 export async function generateZipFile(schemas: ISchema[]): Promise<JSZip> {
     const zip = new JSZip();
     for (const schema of schemas) {
@@ -25,6 +35,13 @@ export async function generateZipFile(schemas: ISchema[]): Promise<JSZip> {
     return zip;
 }
 
+/**
+ * Create new schema
+ * @param {ISchema} newSchema
+ * @param {string} owner
+ * @param {string} topicId
+ * @returns {Promise<ISchema[]>}
+ */
 export async function createSchema(newSchema: ISchema, owner: string, topicId?: string): Promise<ISchema[]> {
     const guardians = new Guardians();
     if (newSchema.id) {
@@ -52,6 +69,12 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
     return schemas;
 }
 
+/**
+ * Update schema
+ * @param {ISchema} newSchema
+ * @param {string} owner
+ * @returns {Promise<ISchema[]>}
+ */
 export async function updateSchema(newSchema: ISchema, owner: string): Promise<ISchema[]> {
     const guardians = new Guardians();
     const schema = await guardians.getSchemaById(newSchema.id);
@@ -67,6 +90,11 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
     return schemas;
 }
 
+/**
+ * Convert schemas to old format
+ * @param {ISchema | ISchema[]} schemas
+ * @returns {ISchema | ISchema[]}
+ */
 function toOld<T extends ISchema | ISchema[]>(schemas: T): T {
     if (schemas) {
         if (Array.isArray(schemas)) {
@@ -93,7 +121,12 @@ function toOld<T extends ISchema | ISchema[]>(schemas: T): T {
     return schemas;
 }
 
-function fromOld(schema: any): any {
+/**
+ * Convert schema from old format
+ * @param {ISchema} schema
+ * @returns {ISchema}
+ */
+function fromOld(schema: ISchema): ISchema {
     if (schema && typeof schema.document === 'string') {
         schema.document = JSON.parse(schema.document);
     }
@@ -142,7 +175,8 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
-        let pageIndex: any, pageSize: any;
+        let pageIndex: any;
+        let pageSize: any;
         if (req.query && req.query.pageIndex && req.query.pageSize) {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
@@ -175,7 +209,8 @@ schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
         const user = req.user;
         const topicId = req.params.topicId as string;
         const guardians = new Guardians();
-        let pageIndex: any, pageSize: any;
+        let pageIndex: any;
+        let pageSize: any;
         if (req.query && req.query.pageIndex && req.query.pageSize) {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
@@ -503,7 +538,8 @@ schemaAPI.get('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY),
         const user = req.user;
         const guardians = new Guardians();
         const owner = user.username;
-        let pageIndex: any, pageSize: any;
+        let pageIndex: any;
+        let pageSize: any;
         if (req.query && req.query.pageIndex && req.query.pageSize) {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;

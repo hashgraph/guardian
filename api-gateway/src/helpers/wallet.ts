@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
+import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { WalletEvents, IWalletAccount } from '@guardian/interfaces';
 
 export enum KeyType {
@@ -12,6 +12,9 @@ export enum KeyType {
  */
 @Singleton
 export class Wallet extends ServiceRequestsBase {
+    /**
+     * Messages target
+     */
     public target: string = 'auth-service'
 
     /**

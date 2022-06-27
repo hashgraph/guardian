@@ -70,8 +70,8 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
             hederaAccountKey: null,
             topicId: topic?.topicId,
             parentTopicId: topic?.parent,
-            didDocument: didDocument,
-            vcDocument: vcDocument
+            didDocument,
+            vcDocument
         };
         res.json(result);
     } catch (error) {
@@ -108,7 +108,7 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
         }
 
         await users.updateCurrentUser(req, {
-            did: did,
+            did,
             parent: profile.parent,
             hederaAccountId: profile.hederaAccountId
         });

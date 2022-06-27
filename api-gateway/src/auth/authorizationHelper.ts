@@ -25,8 +25,12 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
     res.sendStatus(401);
 }
 
+/**
+ * Calculate user permissions
+ * @param roles
+ */
 export function permissionHelper(...roles: string[]) {
-    return async function (req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
+    return async (req: AuthenticatedRequest, res: Response, next: Function): Promise<void> => {
         if (req.user) {
             if(req.user.role) {
                 if(roles.indexOf(req.user.role) !== -1) {
