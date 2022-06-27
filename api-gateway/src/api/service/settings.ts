@@ -1,4 +1,4 @@
-import { permissionHelper } from '@auth/authorizationHelper';
+import { permissionHelper } from '@auth/authorization-helper';
 import { Guardians } from '@helpers/guardians';
 import { IPFS } from '@helpers/ipfs';
 import { Request, Response, Router } from 'express';
