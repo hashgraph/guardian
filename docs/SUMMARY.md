@@ -31,7 +31,7 @@
 * [Demo Using APIs](demo-guide/demo-using-apis.md)
 * [Verra Redd+ Demo Guide](demo-guide/verra-redd+-demo-guide.md)
 * [iREC Demo UI Guide](demo-guide/irec-demo-guide.md)
-* [iREC 2 API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
+* [iREC API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
 
 ## Versioning and Deprecation Policy
 
