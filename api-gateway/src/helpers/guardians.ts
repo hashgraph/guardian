@@ -12,7 +12,7 @@ import {
     IVPDocument,
     MessageAPI
 } from '@guardian/interfaces';
-import { ServiceRequestsBase } from './serviceRequestsBase';
+import { ServiceRequestsBase } from './service-requests-base';
 
 type IFilter = any;
 
@@ -21,6 +21,9 @@ type IFilter = any;
  */
 @Singleton
 export class Guardians extends ServiceRequestsBase {
+    /**
+     * Messages target
+     */
     public target: string = 'guardians';
 
     /**
@@ -28,15 +31,15 @@ export class Guardians extends ServiceRequestsBase {
      *
      */
     public async updateSettings(settings: CommonSettings): Promise<void> {
-        await this.request(MessageAPI.UPDATE_SETTINGS, settings);
+        await this.request<void>(MessageAPI.UPDATE_SETTINGS, settings);
     }
 
     /**
      * Get settings
      *
      */
-    public async getSettings(): Promise<any> {
-        return await this.request(MessageAPI.GET_SETTINGS);
+    public async getSettings(): Promise<CommonSettings> {
+        return await this.request<CommonSettings>(MessageAPI.GET_SETTINGS);
     }
 
     /**
@@ -45,10 +48,10 @@ export class Guardians extends ServiceRequestsBase {
      * @param {Object} params - filters
      * @param {string} params.did - DID
      *
-     * @returns {IDidDocument[]} - DID Documents
+     * @returns {IDidObject[]} - DID Documents
      */
     public async getDidDocuments(params: IFilter): Promise<IDidObject[]> {
-        return await this.request(MessageAPI.GET_DID_DOCUMENTS, params);
+        return await this.request<IDidObject[]>(MessageAPI.GET_DID_DOCUMENTS, params);
     }
 
     /**
@@ -65,18 +68,18 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {IVCDocument[]} - VC Documents
      */
     public async getVcDocuments(params: IFilter): Promise<IVCDocument[]> {
-        return await this.request(MessageAPI.GET_VC_DOCUMENTS, params);
+        return await this.request<IVCDocument[]>(MessageAPI.GET_VC_DOCUMENTS, params);
     }
 
     /**
      * Return VP Documents
      *
-     * @param {Object} [payload] - filters
+     * @param {Object} [params] - filters
      *
      * @returns {IVPDocument[]} - VP Documents
      */
     public async getVpDocuments(params?: IFilter): Promise<IVPDocument[]> {
-        return await this.request(MessageAPI.GET_VP_DOCUMENTS, params);
+        return await this.request<IVPDocument[]>(MessageAPI.GET_VP_DOCUMENTS, params);
     }
 
     /**
@@ -89,7 +92,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {IToken[]} - tokens
      */
     public async getTokens(params?: IFilter): Promise<IToken[]> {
-        return await this.request(MessageAPI.GET_TOKENS, params);
+        return await this.request<IToken[]>(MessageAPI.GET_TOKENS, params);
     }
 
     /**
@@ -100,7 +103,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {IChainItem[]} - trust chain
      */
     public async getChain(id: string): Promise<IChainItem[]> {
-        return await this.request(MessageAPI.GET_CHAIN, { id });
+        return await this.request<IChainItem[]>(MessageAPI.GET_CHAIN, { id });
     }
 
     /**
@@ -111,87 +114,148 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {IToken[]} - all tokens
      */
     public async setToken(item: IToken | any): Promise<IToken[]> {
-        return await this.request(MessageAPI.SET_TOKEN, item);
+        return await this.request<IToken[]>(MessageAPI.SET_TOKEN, item);
     }
 
+    /**
+     * Freeze token
+     * @param tokenId
+     * @param username
+     * @param owner
+     * @returns {Promise<ITokenInfo>}
+     */
     public async freezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
-        return await this.request(MessageAPI.FREEZE_TOKEN, {
-            tokenId: tokenId,
-            username: username,
-            owner: owner,
+        return await this.request<ITokenInfo>(MessageAPI.FREEZE_TOKEN, {
+            tokenId,
+            username,
+            owner,
             freeze: true,
         });
     }
 
+    /**
+     * Unfreeze token
+     * @param tokenId
+     * @param username
+     * @param owner
+     */
     public async unfreezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
-        return await this.request(MessageAPI.FREEZE_TOKEN, {
-            tokenId: tokenId,
-            username: username,
-            owner: owner,
+        return await this.request<ITokenInfo>(MessageAPI.FREEZE_TOKEN, {
+            tokenId,
+            username,
+            owner,
             freeze: false,
         });
     }
 
+    /**
+     * Grant KYC
+     * @param tokenId
+     * @param username
+     * @param owner
+     */
     public async grantKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
-        return await this.request(MessageAPI.KYC_TOKEN, {
-            tokenId: tokenId,
-            username: username,
-            owner: owner,
+        return await this.request<ITokenInfo>(MessageAPI.KYC_TOKEN, {
+            tokenId,
+            username,
+            owner,
             grant: true,
         });
     }
 
+    /**
+     * Revoke KYC
+     * @param tokenId
+     * @param username
+     * @param owner
+     */
     public async revokeKycToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
-        return await this.request(MessageAPI.KYC_TOKEN, {
-            tokenId: tokenId,
-            username: username,
-            owner: owner,
+        return await this.request<ITokenInfo>(MessageAPI.KYC_TOKEN, {
+            tokenId,
+            username,
+            owner,
             grant: false,
         });
     }
 
+    /**
+     * Associate token
+     * @param tokenId
+     * @param did
+     */
     public async associateToken(tokenId: string, did: string): Promise<ITokenInfo> {
-        return await this.request(MessageAPI.ASSOCIATE_TOKEN, {
-            tokenId: tokenId,
-            did: did,
+        return await this.request<ITokenInfo>(MessageAPI.ASSOCIATE_TOKEN, {
+            tokenId,
+            did,
             associate: true,
         });
     }
 
+    /**
+     * Dissociate token
+     * @param tokenId
+     * @param did
+     */
     public async dissociateToken(tokenId: string, did: string): Promise<ITokenInfo> {
-        return await this.request(MessageAPI.ASSOCIATE_TOKEN, {
-            tokenId: tokenId,
-            did: did,
+        return await this.request<ITokenInfo>(MessageAPI.ASSOCIATE_TOKEN, {
+            tokenId,
+            did,
             associate: false,
         });
     }
 
+    /**
+     * Get token info
+     * @param tokenId
+     * @param username
+     * @param owner
+     */
     public async getInfoToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
-        return await this.request(MessageAPI.GET_INFO_TOKEN, {
-            tokenId: tokenId,
-            username: username,
-            owner: owner
+        return await this.request<ITokenInfo>(MessageAPI.GET_INFO_TOKEN, {
+            tokenId,
+            username,
+            owner
         });
     }
 
+    /**
+     * Get associated tokens
+     * @param did
+     */
     public async getAssociatedTokens(did: string): Promise<ITokenInfo[]> {
-        return await this.request(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
+        return await this.request<ITokenInfo[]>(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
     }
 
+    /**
+     * Create standard registry
+     * @param profile
+     */
     public async createStandardRegistryProfile(profile: IUser): Promise<string> {
-        return await this.request(MessageAPI.CREATE_USER_PROFILE, profile);
+        return await this.request<string>(MessageAPI.CREATE_USER_PROFILE, profile);
     }
 
+    /**
+     * Create user
+     * @param profile
+     */
     public async createUserProfile(profile: IUser): Promise<string> {
-        return await this.request(MessageAPI.CREATE_USER_PROFILE, profile);
+        return await this.request<string>(MessageAPI.CREATE_USER_PROFILE, profile);
     }
 
+    /**
+     * Get user balance
+     * @param username
+     */
     public async getUserBalance(username: string): Promise<string> {
-        return await this.request(MessageAPI.GET_USER_BALANCE, { username });
+        return await this.request<string>(MessageAPI.GET_USER_BALANCE, { username });
     }
 
-    public async getBalance(username: string): Promise<any> {
-        return await this.request(MessageAPI.GET_BALANCE, { username });
+    /**
+     * Get balance
+     * @param username
+     */
+    public async getBalance(username: string): Promise<string> {
+        return await this.request<string>(MessageAPI.GET_BALANCE, { username });
     }
 
     /**
@@ -212,20 +276,26 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async getSchemasByOwner(
+    public async getSchemasByOwner<T extends {
+        /**
+         * Schemas array
+         */
+        schemas: ISchema[],
+        /**
+         * Total count
+         */
+        count: number
+    }>(
         did: string,
         topicId?: string,
         pageIndex?: any,
         pageSize?: any
-    ): Promise<{
-        schemas: ISchema[],
-        count: number
-    }> {
-        return await this.request(MessageAPI.GET_SCHEMAS, {
+    ): Promise<T> {
+        return await this.request<T>(MessageAPI.GET_SCHEMAS, {
             owner: did,
-            topicId: topicId,
-            pageIndex: pageIndex,
-            pageSize: pageSize
+            topicId,
+            pageIndex,
+            pageSize
         });
     }
 
@@ -237,7 +307,12 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemas
      */
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        const { schemas } = await this.request(MessageAPI.GET_SCHEMAS, { uuid: uuid });
+        const { schemas } = await this.request<{
+            /**
+             * Schemas array
+             */
+            schemas: ISchema[]
+        }>(MessageAPI.GET_SCHEMAS, { uuid });
         return schemas;
     }
 
@@ -249,7 +324,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema} - schema
      */
     public async getSchemaByType(type: string): Promise<ISchema> {
-        return await this.request(MessageAPI.GET_SCHEMA, { type: type });
+        return await this.request<ISchema>(MessageAPI.GET_SCHEMA, { type });
     }
 
     /**
@@ -260,7 +335,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema} - schema
      */
     public async getSchemaById(id: string): Promise<ISchema> {
-        return await this.request(MessageAPI.GET_SCHEMA, { id: id });
+        return await this.request<ISchema>(MessageAPI.GET_SCHEMA, { id });
     }
 
     /**
@@ -273,7 +348,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {any[]} - Schema Document
      */
     public async importSchemasByMessages(messageIds: string[], owner: string, topicId: string): Promise<any[]> {
-        return await this.request(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, { messageIds, owner, topicId });
+        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, { messageIds, owner, topicId });
     }
 
     /**
@@ -286,7 +361,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {any[]} - Schema Document
      */
     public async importSchemasByFile(files: ISchema[], owner: string, topicId: string): Promise<any[]> {
-        return await this.request(MessageAPI.IMPORT_SCHEMAS_BY_FILE, { files, owner, topicId });
+        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_FILE, { files, owner, topicId });
     }
 
     /**
@@ -297,7 +372,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {any} Schema preview
      */
     public async previewSchemasByMessages(messageIds: string[]): Promise<ISchema[]> {
-        return await this.request(MessageAPI.PREVIEW_SCHEMA, { messageIds });
+        return await this.request<ISchema[]>(MessageAPI.PREVIEW_SCHEMA, { messageIds });
     }
 
     /**
@@ -319,7 +394,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemas
      */
     public async createSchema(item: ISchema | any): Promise<ISchema[]> {
-        return await this.request(MessageAPI.CREATE_SCHEMA, item);
+        return await this.request<ISchema[]>(MessageAPI.CREATE_SCHEMA, item);
     }
 
     /**
@@ -330,7 +405,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemas
      */
     public async updateSchema(item: ISchema | any): Promise<ISchema[]> {
-        return await this.request(MessageAPI.UPDATE_SCHEMA, item);
+        return await this.request<ISchema[]>(MessageAPI.UPDATE_SCHEMA, item);
     }
 
     /**
@@ -341,7 +416,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemas
      */
     public async deleteSchema(id: string): Promise<ISchema[]> {
-        return await this.request(MessageAPI.DELETE_SCHEMA, { id });
+        return await this.request<ISchema[]>(MessageAPI.DELETE_SCHEMA, { id });
     }
 
     /**
@@ -354,7 +429,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema} - message
      */
     public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
-        return await this.request(MessageAPI.PUBLISH_SCHEMA, { id, version, owner });
+        return await this.request<ISchema>(MessageAPI.PUBLISH_SCHEMA, { id, version, owner });
     }
 
     /**
@@ -365,12 +440,15 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {any[]} - Exported schemas
      */
     public async exportSchemas(ids: string[]): Promise<ISchema[]> {
-        return await this.request(MessageAPI.EXPORT_SCHEMAS, ids);
+        return await this.request<ISchema[]>(MessageAPI.EXPORT_SCHEMAS, ids);
     }
 
-
+    /**
+     * Get topic
+     * @param filter
+     */
     public async getTopic(filter: any): Promise<any> {
-        return await this.request(MessageAPI.GET_TOPIC, filter);
+        return await this.request<any>(MessageAPI.GET_TOPIC, filter);
     }
 
     /**
@@ -380,7 +458,7 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async getStatus(): Promise<ApplicationStates> {
         try {
-            return await this.request(MessageAPI.GET_STATUS);
+            return await this.request<ApplicationStates>(MessageAPI.GET_STATUS);
         }
         catch {
             return ApplicationStates.STOPPED;
@@ -395,7 +473,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {any[]} - Policies and user roles
      */
     public async getUserRoles(did: string): Promise<string[]> {
-        return await this.request(MessageAPI.GET_USER_ROLES, { did });
+        return await this.request<string[]>(MessageAPI.GET_USER_ROLES, { did });
     }
 
     /**
@@ -406,29 +484,35 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemas
      */
     public async createSystemSchema(item: ISchema | any): Promise<ISchema> {
-        return await this.request(MessageAPI.CREATE_SYSTEM_SCHEMA, item);
+        return await this.request<ISchema>(MessageAPI.CREATE_SYSTEM_SCHEMA, item);
     }
 
     /**
      * Return schemas
-     * @param {string} username
+     * @param {string} owner
      * @param {string} [pageIndex]
      * @param {string} [pageSize]
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async getSystemSchemas(
-        username: string,
+    public async getSystemSchemas<T extends {
+        /**
+         * Schemas array
+         */
+        schemas: ISchema[],
+        /**
+         * Total count
+         */
+        count: number
+    }>(
+        owner: string,
         pageIndex?: any,
         pageSize?: any
-    ): Promise<{
-        schemas: ISchema[],
-        count: number
-    }> {
-        return await this.request(MessageAPI.GET_SYSTEM_SCHEMAS, {
-            owner: username,
-            pageIndex: pageIndex,
-            pageSize: pageSize
+    ): Promise<T> {
+        return await this.request<T>(MessageAPI.GET_SYSTEM_SCHEMAS, {
+            owner,
+            pageIndex,
+            pageSize
         });
     }
 
@@ -440,7 +524,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema} - message
      */
     public async activeSchema(id: string): Promise<ISchema> {
-        return await this.request(MessageAPI.ACTIVE_SCHEMA, { id });
+        return await this.request<ISchema>(MessageAPI.ACTIVE_SCHEMA, { id });
     }
 
     /**
@@ -451,6 +535,6 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema} - schema
      */
     public async getSchemaByEntity(entity: string): Promise<ISchema> {
-        return await this.request(MessageAPI.GET_SYSTEM_SCHEMA, { entity: entity });
+        return await this.request<ISchema>(MessageAPI.GET_SYSTEM_SCHEMA, { entity });
     }
 }

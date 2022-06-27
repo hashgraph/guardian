@@ -7,7 +7,15 @@ import { Singleton } from "./decorators/singleton";
  */
 @Singleton
 export class IPFS {
+    /**
+     * Message broker channel
+     * @private
+     */
     private channel: MessageBrokerChannel;
+    /**
+     * Messages target
+     * @private
+     */
     private readonly target: string = 'ipfs-client';
 
     /**

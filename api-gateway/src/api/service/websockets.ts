@@ -1,13 +1,16 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI } from '@guardian/interfaces';
+import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI, IUpdateBlockMessage, IErrorBlockMessage } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
 import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
-import { IUpdateBlockMessage, IErrorBlockMessage } from '@guardian/interfaces';
 
-const parseMessage = function (message: any) {
+/**
+ * Parse any message to string format
+ * @param message
+ */
+export function parseMessage(message: any) {
     try {
         if (typeof message === 'string') {
             return JSON.parse(message);
@@ -18,18 +21,27 @@ const parseMessage = function (message: any) {
     }
 }
 
+/**
+ * WebSocket service class
+ */
 export class WebSocketsService {
-    private wss: WebSocket.Server;
+    /**
+     * WebSocket server
+     * @private
+     */
+    private readonly wss: WebSocket.Server;
 
     constructor(
-        private server: Server,
-        private channel: MessageBrokerChannel
+        private readonly server: Server,
+        private readonly channel: MessageBrokerChannel
     ) {
-
+        this.wss = new WebSocket.Server({ server: this.server });
     }
 
+    /**
+     * Register all listeners
+     */
     public init(): void {
-        this.wss = new WebSocket.Server({ server: this.server });
         this.registerHeartbeatAnswers();
         this.registerAuthorisation();
         this.registerMessageHandler();
@@ -37,6 +49,10 @@ export class WebSocketsService {
         this.registerGlobalMessageHandler();
     }
 
+    /**
+     * Register heartbeat listener
+     * @private
+     */
     private registerHeartbeatAnswers(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
             ws.on('message', (data: Buffer) => {
@@ -44,11 +60,18 @@ export class WebSocketsService {
                     case 'ping':
                         ws.send('pong');
                         break;
+
+                    default:
+                        return;
                 }
             });
         });
     }
 
+    /**
+     * Register authorisation listener
+     * @private
+     */
     private registerAuthorisation(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
             try {
@@ -63,6 +86,10 @@ export class WebSocketsService {
         });
     }
 
+    /**
+     * Register service status handler
+     * @private
+     */
     private registerServiceStatusHandler(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
             ws.on('message', async (data: Buffer) => {
@@ -75,7 +102,7 @@ export class WebSocketsService {
                         try {
                             const [
                                 LOGGER_SERVICE,
-                                GUARDIANS_SERVICE,
+                                GUARDIAN_SERVICE,
                                 IPFS_CLIENT,
                                 AUTH_SERVICE
                             ] = await Promise.all([
@@ -89,10 +116,10 @@ export class WebSocketsService {
                                 {
                                     type: MessageAPI.GET_STATUS,
                                     data: {
-                                        LOGGER_SERVICE: LOGGER_SERVICE,
-                                        GUARDIAN_SERVICE: GUARDIANS_SERVICE,
-                                        IPFS_CLIENT: IPFS_CLIENT,
-                                        AUTH_SERVICE: AUTH_SERVICE
+                                        LOGGER_SERVICE,
+                                        GUARDIAN_SERVICE,
+                                        IPFS_CLIENT,
+                                        AUTH_SERVICE
                                     }
                                 }
                             ));
@@ -101,6 +128,9 @@ export class WebSocketsService {
                             logger.error(error, ['API_GATEWAY'])
                         }
                         break;
+
+                    default:
+                        return;
                 }
             });
         });
@@ -120,6 +150,10 @@ export class WebSocketsService {
         });
     }
 
+    /**
+     * Register messages handler
+     * @private
+     */
     private registerMessageHandler(): void {
         this.channel.response<IUpdateBlockMessage, any>('update-block', async (msg) => {
             this.wss.clients.forEach((client: any) => {
@@ -172,6 +206,10 @@ export class WebSocketsService {
         });
     }
 
+    /**
+     * Register global messages handler
+     * @private
+     */
     private registerGlobalMessageHandler(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
             ws.on('message', async (data: Buffer) => {

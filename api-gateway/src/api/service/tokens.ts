@@ -4,7 +4,7 @@ import { permissionHelper } from '@auth/authorizationHelper';
 import { Response, Router } from 'express';
 import { ITokenInfo, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { PolicyEngine } from '@helpers/policyEngine';
+import { PolicyEngine } from '@helpers/policy-engine';
 import { findAllEntities } from '@helpers/utils';
 
 /**
@@ -12,6 +12,11 @@ import { findAllEntities } from '@helpers/utils';
  */
 export const tokenAPI = Router();
 
+/**
+ * Connect policies to tokens
+ * @param tokens
+ * @param user
+ */
 async function setTokensPolicies(tokens: any[], user: IAuthUser) {
     if (!tokens) {
         return;

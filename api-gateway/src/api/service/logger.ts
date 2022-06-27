@@ -8,7 +8,12 @@ import { Logger } from '@guardian/common';
  */
 export const loggerAPI = Router();
 
-function escapeRegExp(text) {
+/**
+ * Add escape characters
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeRegExp(text: string): string {
     if (!text) {
         return "";
     }
@@ -61,7 +66,7 @@ loggerAPI.get('/attributes', permissionHelper(UserRole.STANDARD_REGISTRY), async
         if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {
             req.query.existingAttributes = [req.query.existingAttributes as string];
         }
-        const attributes = await logger.getAttributes(escapeRegExp(req.query.name), req.query.existingAttributes as string[]);
+        const attributes = await logger.getAttributes(escapeRegExp(req.query.name as string), req.query.existingAttributes as string[]);
         return res.send(attributes);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

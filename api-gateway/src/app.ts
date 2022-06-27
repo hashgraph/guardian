@@ -14,7 +14,7 @@ import { createServer } from 'http';
 import { authorizationHelper } from '@auth/authorizationHelper';
 import { IPFS } from '@helpers/ipfs';
 import { policyAPI } from '@api/service/policy';
-import { PolicyEngine } from '@helpers/policyEngine';
+import { PolicyEngine } from '@helpers/policy-engine';
 import { WebSocketsService } from '@api/service/websockets';
 import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';

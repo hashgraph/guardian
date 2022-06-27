@@ -1,6 +1,6 @@
 import {Singleton} from '@helpers/decorators/singleton';
 import { ApplicationStates, AuthEvents, MessageAPI, UserRole } from '@guardian/interfaces';
-import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
+import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
 
 /**
@@ -8,8 +8,16 @@ import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
  */
 @Singleton
 export class Users extends ServiceRequestsBase {
+    /**
+     * Messages target
+     */
     public target: string = 'auth-service'
 
+    /**
+     * Get full user info
+     * @param target
+     * @private
+     */
     private async _getUser(target: IAuthUser | AuthenticatedRequest): Promise<IAuthUser> {
         let user: IAuthUser;
         if (!target) {
@@ -26,18 +34,6 @@ export class Users extends ServiceRequestsBase {
         return user;
     }
 
-    /**
-     * User permission
-     * @param user
-     * @param role
-     */
-    public async permission(user: IAuthUser, role: UserRole | UserRole[]): Promise<boolean>;
-    /**
-     * User permission
-     * @param req
-     * @param role
-     */
-    public async permission(req: AuthenticatedRequest, role: UserRole | UserRole[]): Promise<boolean>;
     /**
      * User permission
      * @param target
@@ -112,26 +108,50 @@ export class Users extends ServiceRequestsBase {
         return await this.request(AuthEvents.SAVE_USER, user);
     }
 
+    /**
+     * Get user by token
+     * @param token
+     */
     public async getUserByToken(token: string) {
         return await this.request(AuthEvents.GET_USER_BY_TOKEN, {token});
     }
 
+    /**
+     * Register new user
+     * @param username
+     * @param password
+     * @param role
+     */
     public async registerNewUser(username: string, password: string, role: string) {
         return await this.request(AuthEvents.REGISTER_NEW_USER, { username, password, role });
     }
 
+    /**
+     * Register new token
+     * @param username
+     * @param password
+     */
     public async generateNewToken(username: string, password: string) {
         return await this.request(AuthEvents.GENERATE_NEW_TOKEN, { username, password });
     }
 
+    /**
+     * Get all user accounts
+     */
     public async getAllUserAccounts() {
         return await this.request(AuthEvents.GET_ALL_USER_ACCOUNTS);
     }
 
+    /**
+     * Get all user accounts demo
+     */
     public async getAllUserAccountsDemo() {
         return await this.request(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO);
     }
 
+    /**
+     * Get all standard registries
+     */
     public async getAllStandardRegistryAccounts() {
         return await this.request(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS);
     }
