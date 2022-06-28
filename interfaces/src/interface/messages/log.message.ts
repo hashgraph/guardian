@@ -1,5 +1,5 @@
-import { ILog } from "../log.interface";
-import { IPageParameters } from "../page-parameters.interface"
+import { ILog } from '../log.interface';
+import { IPageParameters } from '../page-parameters.interface'
 
 /**
  * Get logs message interface

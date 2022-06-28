@@ -1,5 +1,5 @@
-import { UserRole } from "../../type/user-role.type";
-import { IUser } from "../user.interface";
+import { UserRole } from '../../type/user-role.type';
+import { IUser } from '../user.interface';
 
 /**
  * Get user message interface

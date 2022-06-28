@@ -1,4 +1,4 @@
-import { SchemaCondition } from "..";
+import { SchemaCondition } from '..';
 
 /**
  * Schema field
