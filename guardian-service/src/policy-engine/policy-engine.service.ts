@@ -53,13 +53,17 @@ export class PolicyEngineService {
         this.channel = channel;
         this.policyGenerator = new BlockTreeGenerator();
 
-        PolicyComponentsUtils.BlockUpdateFn = (...args: any[]) => {
-            this.stateChangeCb.apply(this, args);
+        PolicyComponentsUtils.BlockUpdateFn = async (...args: any[]) => {
+            await this.stateChangeCb.apply(this, args);
         };
 
-        PolicyComponentsUtils.BlockErrorFn = (...args: any[]) => {
-            this.blockErrorCb.apply(this, args);
+        PolicyComponentsUtils.BlockErrorFn = async (...args: any[]) => {
+            await this.blockErrorCb.apply(this, args);
         };
+
+        PolicyComponentsUtils.UpdateUserInfoFn = async (...args: any[]) => {
+            await this.updateUserInfo.apply(this, args);
+        }
     }
 
     /**
@@ -108,6 +112,20 @@ export class PolicyEngineService {
             blockType,
             message,
             user
+        });
+    }
+
+    private async updateUserInfo(user: IAuthUser, policy: Policy) {
+        if (!user || !user.did) {
+            return;
+        }
+
+        const userRole = policy.registeredUsers[user.did];
+
+        await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
+            policyId: policy.id.toString(),
+            user,
+            userRole
         });
     }
 
@@ -171,11 +189,7 @@ export class PolicyEngineService {
 
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
 
-            const systemSchemas = new Array(4);
-            systemSchemas[0] = await PolicyUtils.getSystemSchema(SchemaEntity.POLICY);
-            systemSchemas[1] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN);
-            systemSchemas[2] = await PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN);
-            systemSchemas[3] = await PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN);
+            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
             for (let i = 0; i < systemSchemas.length; i++) {
                 logger.info('Create Policy: Publish System Schema', ['GUARDIAN_SERVICE']);
@@ -394,7 +408,6 @@ export class PolicyEngineService {
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                console.error(error);
                 return new MessageError(error);
             }
         });
@@ -479,7 +492,6 @@ export class PolicyEngineService {
                 return new MessageResponse(await block.getData(userFull, block.uuid));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                console.error(error);
                 return new MessageError(error);
             }
         });
@@ -677,7 +689,7 @@ export class PolicyEngineService {
                 }
 
                 if (!message.document) {
-                    throw new Error('file in body is empty');
+                    throw new Error('File in body is empty');
                 }
 
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);

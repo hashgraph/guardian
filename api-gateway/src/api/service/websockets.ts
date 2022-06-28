@@ -1,11 +1,23 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { MessageAPI } from '@guardian/interfaces';
+import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
 import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
 import { IUpdateBlockMessage, IErrorBlockMessage } from '@guardian/interfaces';
+
+const parseMessage = function (message: any) {
+    try {
+        if (typeof message === 'string') {
+            return JSON.parse(message);
+        }
+        return message;
+    } catch (error) {
+        return message;
+    }
+}
+
 export class WebSocketsService {
     private wss: WebSocket.Server;
 
@@ -18,6 +30,7 @@ export class WebSocketsService {
         this.registerAuthorisation();
         this.registerMessageHandler();
         this.registerServiceStatusHandler();
+        this.registerGlobalMessageHandler();
     }
 
     private registerHeartbeatAnswers(): void {
@@ -42,7 +55,6 @@ export class WebSocketsService {
                 }
             } catch (error) {
                 new Logger().error(error, ['API_GATEWAY']);
-                console.error(error.message);
             }
         });
     }
@@ -97,7 +109,7 @@ export class WebSocketsService {
                         data: msg
                     }));
                 } catch (error) {
-                    console.error('WS Error', error);
+                    new Logger().error(error, ['API_GATEWAY', 'websocket']);
                 }
             });
             return new MessageResponse({})
@@ -113,7 +125,7 @@ export class WebSocketsService {
                         data: msg.uuid
                     }));
                 } catch (error) {
-                    console.error('WS Error', error);
+                    new Logger().error(error, ['API_GATEWAY', 'websocket']);
                 }
             });
             return new MessageResponse({})
@@ -133,10 +145,81 @@ export class WebSocketsService {
                     }
                 } catch (error) {
                     new Logger().error(error, ['API_GATEWAY']);
-                    console.error('WS Error', error);
                 }
             });
             return new MessageResponse({})
-        })
+        });
+
+        this.channel.response<IUpdateUserInfoMessage, any>('update-user-info', async (msg) => {
+            console.log('update-user-info');
+            this.wss.clients.forEach((client: any) => {
+                try {
+                    if (client.user.did === msg.user.did) {
+                        client.send(JSON.stringify({
+                            type: 'update-user-info-event',
+                            data: msg
+                        }));
+                    }
+                } catch (error) {
+                    new Logger().error(error, ['API_GATEWAY']);
+                }
+            });
+            return new MessageResponse({});
+        });
+    }
+
+    private registerGlobalMessageHandler(): void {
+        this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
+            ws.on('message', async (data: Buffer) => {
+                const message = data.toString();
+                if (message === 'ping') {
+                    ws.send('pong');
+                } else {
+                    const event = parseMessage(message);
+                    let type: string;
+                    let data: any;
+                    if (typeof event === 'string') {
+                        type = event;
+                        data = null;
+                    } else {
+                        type = event.type;
+                        data = event.data;
+                    }
+                    switch (type) {
+                        case 'SET_ACCESS_TOKEN':
+                        case 'UPDATE_PROFILE':
+                            const token = data;
+                            if (token) {
+                                ws.user = await new Users().getUserByToken(token);
+                            } else {
+                                ws.user = null;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+        });
+
+        this.channel.response<IUpdateUserBalanceMessage, any>('update-user-balance', async (msg) => {
+            this.wss.clients.forEach((client: any) => {
+                try {
+                    if (
+                        client.user &&
+                        msg.user &&
+                        client.user.username === msg.user.username
+                    ) {
+                        client.send(JSON.stringify({
+                            type: 'PROFILE_BALANCE',
+                            data: msg
+                        }));
+                    }
+                } catch (error) {
+                    new Logger().error(error, ['API_GATEWAY']);
+                }
+            });
+            return new MessageResponse({});
+        });
     }
 }

@@ -1,10 +1,4 @@
-export const generateUUIDv4 = function () {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 export class PolicyRoleModel {
     private readonly policy: PolicyModel;
@@ -18,7 +12,7 @@ export class PolicyRoleModel {
     constructor(name: string, policy: PolicyModel) {
         this._changed = false;
         this.policy = policy;
-        this.id = generateUUIDv4();
+        this.id = GenerateUUIDv4();
         this._name = name;
     }
 
@@ -74,7 +68,7 @@ export class PolicyTopicModel {
         this._changed = false;
 
         this.policy = policy;
-        this.id = topic.id || generateUUIDv4();
+        this.id = topic.id || GenerateUUIDv4();
 
         this._name = topic.name;
         this._description = topic.description;
@@ -135,13 +129,12 @@ export class PolicyTopicModel {
     }
 
     public getJSON(): any {
-        const json = {
+        return {
             type: this.type,
             name: this.name,
             description: this.description,
             static: this.static
-        }
-        return json;
+        };
     }
 
     public checkChange() {
@@ -171,7 +164,7 @@ export class PolicyEventModel {
         this._changed = false;
 
         this.block = block;
-        this.id = event.id || generateUUIDv4();
+        this.id = event.id || GenerateUUIDv4();
 
         this._actor = event.actor || "";
         this._disabled = !!event.disabled;
@@ -334,7 +327,7 @@ export class PolicyBlockModel {
 
         this.policy = policy;
 
-        this.id = block.id || generateUUIDv4();
+        this.id = block.id || GenerateUUIDv4();
         this.blockType = block.blockType;
 
         block.tag = block.tag || "";
@@ -470,7 +463,7 @@ export class PolicyBlockModel {
     }
 
     private _copyChild(block: any) {
-        block.id = generateUUIDv4();
+        block.id = GenerateUUIDv4();
         const children = block.children;
         delete block.children;
         delete block.events;
@@ -608,7 +601,7 @@ export class PolicyModel {
         this.valid = true;
 
         this.id = policy.id;
-        this.uuid = policy.uuid || generateUUIDv4();
+        this.uuid = policy.uuid || GenerateUUIDv4();
         this.codeVersion = policy.codeVersion;
         this.creator = policy.creator;
         this.owner = policy.owner;

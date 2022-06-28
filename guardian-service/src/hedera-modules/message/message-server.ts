@@ -135,12 +135,10 @@ export class MessageServer {
                 break;
             default:
                 new Logger().error(`Invalid format message: ${json.type}`, ['GUARDIAN_SERVICE']);
-                console.error(`Invalid format message: ${json.type}`);
-                throw `Invalid format message: ${json.type}`;
+                throw `Invalid format message: ${json.type || 'UNKNOWN TYPE'}`;
         }
         if (!message.validate()) {
-            new Logger().error(`Invalid json: ${json.type}`, ['GUARDIAN_SERVICE']);
-            console.error(`Invalid json: ${json.type}`);
+            new Logger().error(`Invalid json: ${json.type || 'UNKNOWN TYPE'}`, ['GUARDIAN_SERVICE']);
             throw `Invalid json: ${json.type}`;
         }
         return message as T;
