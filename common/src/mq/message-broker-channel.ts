@@ -22,7 +22,7 @@ export class MessageBrokerChannel {
     public async response<TData, TResponse>(eventType: string, handleFunc: (data: TData) => Promise<IMessageResponse<TResponse>>) {
         const target = this.getTarget(eventType);
         console.log('MQ subscribed: %s', target);
-        const sub = this.channel.subscribe(target);
+        const sub = this.channel.subscribe(target, { queue: process.env.SERVICE_CHANNEL });
         const fn = async (sub: Subscription) => {
             for await (const m of sub) {
                 let responseMessage: IMessageResponse<TResponse>;
