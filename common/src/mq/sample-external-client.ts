@@ -6,7 +6,7 @@ import { connect, JSONCodec } from "nats";
  */
 (async () => {
 
-    const nc = await connect({ servers: "localhost:4222" });
+    const nc = await connect({ servers: "localhost:4222", timeout: 1200 * 1000 });
 
     const c = JSONCodec();
 
