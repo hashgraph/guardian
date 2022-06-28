@@ -7,7 +7,7 @@ import {
     SchemaStatus,
     TopicType,
     SchemaHelper,
-    ModelHelper,
+    ModelHelper, GenerateUUIDv4,
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
@@ -240,7 +240,7 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
     const uuidMap: Map<string, string> = new Map();
     for (let i = 0; i < files.length; i++) {
         const file = files[i] as ISchema;
-        const newUUID = ModelHelper.randomUUID();
+        const newUUID = GenerateUUIDv4();
         const uuid = file.iri ? file.iri.substring(1) : null;
         if (uuid) {
             uuidMap.set(uuid, newUUID);
@@ -639,7 +639,7 @@ export const schemaAPI = async function (
                 const schema = await loadSchema(messageId, null);
                 result.push(schema);
             }
-            
+
             const messageServer = new MessageServer();
             const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
             const anotherSchemas: SchemaMessage[] = [];

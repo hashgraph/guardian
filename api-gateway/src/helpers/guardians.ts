@@ -14,6 +14,9 @@ import {
 } from '@guardian/interfaces';
 import { ServiceRequestsBase } from './service-requests-base';
 
+/**
+ * Filters type
+ */
 type IFilter = any;
 
 /**

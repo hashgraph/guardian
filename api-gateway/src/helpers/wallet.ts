@@ -2,6 +2,9 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { WalletEvents, IWalletAccount } from '@guardian/interfaces';
 
+/**
+ * Key types
+ */
 export enum KeyType {
     ID = 'ID',
     KEY = 'KEY'

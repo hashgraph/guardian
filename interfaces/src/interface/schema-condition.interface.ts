@@ -1,10 +1,28 @@
-import { ISchemaDocument, SchemaField } from "..";
+import { SchemaField } from "..";
 
+/**
+ * Schema condition
+ */
 export interface SchemaCondition {
+    /**
+     * 'if' condition
+     */
     ifCondition: {
-        field: SchemaField,
-        fieldValue: string
-    },
-    thenFields: SchemaField[],
-    elseFields: SchemaField[]
+        /**
+         * Schema field
+         */
+        field: SchemaField;
+        /**
+         * field value
+         */
+        fieldValue: string;
+    };
+    /**
+     * 'then' fields
+     */
+    thenFields: SchemaField[];
+    /**
+     * 'else' fields
+     */
+    elseFields: SchemaField[];
 }

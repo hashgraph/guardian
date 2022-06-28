@@ -1,4 +1,12 @@
-import { ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus, ModelHelper } from '@guardian/interfaces';
+import {
+    ISchema,
+    ISchemaDocument,
+    SchemaCategory,
+    SchemaEntity,
+    SchemaStatus,
+    ModelHelper,
+    GenerateUUIDv4
+} from '@guardian/interfaces';
 import { AfterLoad, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, Index, ObjectIdColumn } from 'typeorm';
 
 @Entity()
@@ -76,7 +84,7 @@ export class Schema implements ISchema {
         this.entity = this.entity || SchemaEntity.NONE;
         this.status = this.status || SchemaStatus.DRAFT;
         this.readonly = !!this.readonly;
-        this.uuid = this.uuid || ModelHelper.randomUUID();
+        this.uuid = this.uuid || GenerateUUIDv4();
         this.iri = this.iri || `${this.uuid}`;
         if (this.status == SchemaStatus.DRAFT) {
             this.messageId = null;

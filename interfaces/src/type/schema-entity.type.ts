@@ -1,3 +1,6 @@
+/**
+ * Schema entity
+ */
 export enum SchemaEntity {
     NONE = 'NONE',
     VC = 'VC',

@@ -1,3 +1,6 @@
+/**
+ * Auth events
+ */
 export enum AuthEvents {
     GET_USER_BY_TOKEN = 'GET_USER_BY_TOKEN',
     REGISTER_NEW_USER = 'REGISTER_NEW_USER',

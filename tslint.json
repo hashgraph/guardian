@@ -4,6 +4,7 @@
         "max-line-length": {
             "options": [360]
         },
+        "quotemark": [true, "single"],
         "new-parens": true,
         "no-unsafe-any": false,
         "static-this": true,
@@ -15,7 +16,7 @@
         "prefer-readonly": true,
         "binary-expression-operand-order": true,
         "class-name": true,
-        "completed-docs": true,
+        "completed-docs": [true, "classes", "functions", "enums", "interfaces", "methods", "properties", "types"],
         "file-name-casing": [true, "kebab-case"],
         "no-arg": true,
         "no-any": false,
@@ -48,9 +49,5 @@
         "no-string-throw": true,
         "no-angle-bracket-type-assertion": true
     },
-    "jsRules": {
-        "max-line-length": {
-            "options": [120]
-        }
-    }
+    "jsRules": true
 }

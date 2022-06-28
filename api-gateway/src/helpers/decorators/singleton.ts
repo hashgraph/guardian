@@ -1,5 +1,8 @@
 const SINGLETON_KEY = Symbol();
 
+/**
+ * Singleton class type
+ */
 type Singleton<T extends new (...args: any[]) => any> = T & {
     /**
      * Symbol property that keep class instance

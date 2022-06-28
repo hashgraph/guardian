@@ -6,39 +6,124 @@ import { SchemaField } from '../interface/schema-field.interface';
 import { ISchema } from '../interface/schema.interface';
 import { SchemaEntity } from '../type/schema-entity.type';
 import { SchemaStatus } from '../type/schema-status.type';
+import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4';
 
+/**
+ * Schema class
+ */
 export class Schema implements ISchema {
+    /**
+     * ID
+     */
     public id: string;
+    /**
+     * UUID
+     */
     public uuid?: string;
+    /**
+     * Hash
+     */
     public hash?: string;
+    /**
+     * Name
+     */
     public name?: string;
+    /**
+     * Description
+     */
     public description?: string;
+    /**
+     * Entity
+     */
     public entity?: SchemaEntity;
+    /**
+     * Status
+     */
     public status?: SchemaStatus;
+    /**
+     * Readonly
+     */
     public readonly?: boolean;
+    /**
+     * Schema document instance
+     */
     public document?: ISchemaDocument;
+    /**
+     * Context
+     */
     public context?: any;
+    /**
+     * Version
+     */
     public version?: string;
+    /**
+     * Creator
+     */
     public creator?: string;
+    /**
+     * Owner
+     */
     public owner?: string;
+    /**
+     * Topic ID
+     */
     public topicId?: string;
+    /**
+     * Message ID
+     */
     public messageId?: string;
+    /**
+     * Document URL
+     */
     public documentURL?: string;
+    /**
+     * Context URL
+     */
     public contextURL?: string;
+    /**
+     * IRI
+     */
     public iri?: string;
+    /**
+     * Type
+     */
     public type?: string;
+    /**
+     * Fields
+     */
     public fields: SchemaField[];
+    /**
+     * Conditions
+     */
     public conditions: SchemaCondition[];
+    /**
+     * Previous version
+     */
     public previousVersion: string;
+    /**
+     * Active
+     */
     public active?: boolean;
+    /**
+     * System
+     */
     public system?: boolean;
+    /**
+     * User DID
+     * @private
+     */
     private userDID: string;
 
+    /**
+     * Schema constructor
+     * @param schema
+     * @constructor
+     */
     constructor(schema?: ISchema) {
         this.userDID = null;
         if (schema) {
             this.id = schema.id || undefined;
-            this.uuid = schema.uuid || ModelHelper.randomUUID();
+            this.uuid = schema.uuid || GenerateUUIDv4();
             this.hash = schema.hash || "";
             this.name = schema.name || "";
             this.description = schema.description || "";
@@ -62,7 +147,7 @@ export class Schema implements ISchema {
                 this.userDID = this.creator;
             }
             if (schema.document) {
-                if (typeof schema.document == 'string') {
+                if (typeof schema.document === 'string') {
                     this.document = JSON.parse(schema.document);
                 } else {
                     this.document = schema.document;
@@ -81,7 +166,7 @@ export class Schema implements ISchema {
             }
         } else {
             this.id = undefined;
-            this.uuid = ModelHelper.randomUUID();
+            this.uuid = GenerateUUIDv4();
             this.hash = "";
             this.name = "";
             this.description = "";
@@ -106,6 +191,10 @@ export class Schema implements ISchema {
         }
     }
 
+    /**
+     * Parse document
+     * @private
+     */
     private parseDocument(): void {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
         const { previousVersion } = SchemaHelper.parseComment(this.document.$comment);
@@ -114,18 +203,32 @@ export class Schema implements ISchema {
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields);
     }
 
+    /**
+     * Set user
+     * @param userDID
+     */
     public setUser(userDID: string): void {
         this.userDID = userDID;
     }
 
+    /**
+     * Is owner
+     */
     public get isOwner(): boolean {
-        return this.owner && this.owner == this.userDID;
+        return this.owner && this.owner === this.userDID;
     }
 
+    /**
+     * Is creator
+     */
     public get isCreator(): boolean {
         return this.creator && this.creator == this.userDID;
     }
 
+    /**
+     * Set version
+     * @param version
+     */
     public setVersion(version: string): void {
         let currentVersion = this.version;
         if (!ModelHelper.checkVersionFormat(version)) {
@@ -139,6 +242,9 @@ export class Schema implements ISchema {
         }
     }
 
+    /**
+     * Clone
+     */
     public clone(): Schema {
         const clone = new Schema();
         clone.id = this.id;
@@ -169,6 +275,11 @@ export class Schema implements ISchema {
         return clone;
     }
 
+    /**
+     * Update
+     * @param fields
+     * @param conditions
+     */
     public update(fields?: SchemaField[], conditions?: SchemaCondition[]): void {
         if (fields) {
             this.fields = fields;
@@ -180,6 +291,10 @@ export class Schema implements ISchema {
         this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 
+    /**
+     * Update refs
+     * @param schemas
+     */
     public updateRefs(schemas: Schema[]): void {
         this.document.$defs = SchemaHelper.findRefs(this, schemas);
     }

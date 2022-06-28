@@ -1,4 +1,4 @@
-import { ModelHelper } from '@guardian/interfaces';
+import { GenerateUUIDv4, ModelHelper } from '@guardian/interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
 
 /**
@@ -72,7 +72,7 @@ export class Policy {
     setDefaults() {
         this.status = this.status || 'DRAFT';
         this.registeredUsers = {};
-        this.uuid = this.uuid || ModelHelper.randomUUID();
+        this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
     }
 }

@@ -1,3 +1,6 @@
+/**
+ * Message api
+ */
 export enum MessageAPI {
     GET_DID_DOCUMENTS = 'get-did-documents',
     GET_VC_DOCUMENTS = 'get-vc-documents',
