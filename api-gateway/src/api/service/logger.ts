@@ -15,7 +15,7 @@ export const loggerAPI = Router();
  */
 function escapeRegExp(text: string): string {
     if (!text) {
-        return "";
+        return '';
     }
 
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');

@@ -1,6 +1,6 @@
-import { Request } from "express";
-import WebSocket from "ws";
-import { UserRole } from "@guardian/interfaces";
+import { Request } from 'express';
+import WebSocket from 'ws';
+import { UserRole } from '@guardian/interfaces';
 
 /**
  * Authenticated user interface

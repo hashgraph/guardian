@@ -36,7 +36,7 @@ async function setTokensPolicies(tokens: any[], user: IAuthUser) {
         for (const policyObject of policies) {
             const tokenIds = findAllEntities(policyObject.config, 'tokenId');
             if (tokenIds.includes(token.tokenId)) {
-                tokenPolicies.push(`${policyObject.name} (${policyObject.version || "DRAFT"})`);
+                tokenPolicies.push(`${policyObject.name} (${policyObject.version || 'DRAFT'})`);
             }
         }
         token.policies = tokenPolicies;

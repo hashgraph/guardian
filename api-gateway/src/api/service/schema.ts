@@ -3,7 +3,7 @@ import { Request, Response, Router } from 'express';
 import { ISchema, UserRole, SchemaHelper, SchemaEntity } from '@guardian/interfaces';
 import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper } from '@auth/authorization-helper';
-import JSZip from "jszip";
+import JSZip from 'jszip';
 import { Logger } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 
@@ -54,7 +54,7 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
         }
         newSchema.version = schema.version;
     } else {
-        newSchema.version = "";
+        newSchema.version = '';
     }
     delete newSchema.id;
     delete newSchema.status;
@@ -428,7 +428,7 @@ schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.STANDARD_REGIS
 schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         if (!req.params.schemaId) {
-            throw new Error("No schemas to export");
+            throw new Error('No schemas to export');
         }
         const guardians = new Guardians();
         const id = req.params.schemaId as string;
@@ -454,7 +454,7 @@ schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.STANDARD_RE
 schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.params.schemaId) {
-            throw new Error("No schemas to export");
+            throw new Error('No schemas to export');
         }
         const guardians = new Guardians();
         const id = req.params.schemaId as string;

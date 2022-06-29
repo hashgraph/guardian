@@ -25,7 +25,7 @@ import { MessageBrokerChannel, Logger } from '@guardian/common';
 const PORT = process.env.PORT || 3002;
 
 Promise.all([
-    MessageBrokerChannel.connect("API_GATEWAY"),
+    MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([cn]) => {
     const app = express();
     app.use(express.json());

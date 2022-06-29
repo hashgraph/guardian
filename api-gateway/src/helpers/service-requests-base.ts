@@ -1,4 +1,4 @@
-import { MessageBrokerChannel } from "@guardian/common";
+import { MessageBrokerChannel } from '@guardian/common';
 
 /**
  * Service error class
