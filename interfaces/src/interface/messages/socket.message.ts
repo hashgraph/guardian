@@ -10,3 +10,18 @@ export interface IErrorBlockMessage {
     blockType: string;
     message: any;
 }
+
+export interface IUpdateUserInfoMessage {
+    user: {
+        did: string
+    };
+}
+
+export interface IUpdateUserBalanceMessage {
+    balance: number,
+    unit: string,
+    user: {
+        username: string,
+        did: string
+    };
+}

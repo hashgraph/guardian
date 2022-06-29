@@ -33,7 +33,19 @@ demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
 demoAPI.get('/randomKey', async (req: Request, res: Response) => {
     try {
         const guardians = new Guardians();
-        const demoKey = await guardians.generateDemoKey();
+        let role = null;
+        try {
+            const authHeader = req?.headers?.authorization;
+            if (authHeader) {
+                const users = new Users();
+                const token = authHeader.split(' ')[1];
+                const user = await users.getUserByToken(token) as any;
+                role = user?.role;
+            }
+        } catch (error) {
+            role = null;
+        }
+        const demoKey = await guardians.generateDemoKey(role);
         res.status(200).json(demoKey);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

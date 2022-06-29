@@ -5,6 +5,7 @@ import {
     AccountInfoQuery,
     Client,
     Hbar,
+    HbarUnit,
     PrivateKey,
     Status,
     TokenAssociateTransaction,
@@ -41,6 +42,7 @@ export const INITIAL_BALANCE = 30;
 export class HederaSDKHelper {
     private readonly client: Client;
     public static readonly MAX_TIMEOUT: number = 120000;
+    private static fn: Function = null;
 
     constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         this.client = Environment.createClient();
@@ -521,19 +523,26 @@ export class HederaSDKHelper {
      * @returns {any} - Account Id and Account Private Key
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
-    public async newAccount(): Promise<{ id: AccountId; key: PrivateKey; }> {
+    public async newAccount(initialBalance: number): Promise<{ id: AccountId; key: PrivateKey; }> {
         const client = this.client;
 
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
-            .setInitialBalance(new Hbar(process.env.INITIAL_BALANCE || INITIAL_BALANCE));
+            .setInitialBalance(new Hbar(initialBalance || INITIAL_BALANCE));
         const receipt = await this.executeAndReceipt(client, transaction, 'AccountCreateTransaction');
         const newAccountId = receipt.accountId;
 
         return {
             id: newAccountId,
             key: newPrivateKey
+        };
+    }
+
+    public newTreasury(accountId: string | AccountId, privateKey: string | PrivateKey) {
+        return {
+            id: typeof accountId === 'string' ? AccountId.fromString(accountId) : accountId,
+            key: typeof privateKey === 'string' ? PrivateKey.fromString(privateKey) : privateKey
         };
     }
 
@@ -687,6 +696,7 @@ export class HederaSDKHelper {
             const result = await transaction.execute(client);
             const receipt = await result.getReceipt(client);
             await this.transactionEndLog(id, type, transaction, metadata);
+            HederaSDKHelper.transactionResponse(client);
             return receipt;
         } catch (error) {
             await this.transactionErrorLog(id, type, transaction, error);
@@ -703,11 +713,48 @@ export class HederaSDKHelper {
             const result = await transaction.execute(client);
             const record = await result.getRecord(client);
             await this.transactionEndLog(id, type, transaction, metadata);
+            HederaSDKHelper.transactionResponse(client);
             return record;
         } catch (error) {
             await this.transactionErrorLog(id, type, transaction, error);
             throw error;
         }
+    }
+
+    public static setTransactionResponseCallback(fn: Function) {
+        HederaSDKHelper.fn = fn;
+    }
+
+    private static transactionResponse(client: Client) {
+        if (HederaSDKHelper.fn) {
+            HederaSDKHelper.fn(client);
+        }
+    }
+
+    public static client(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
+        const client = Environment.createClient();
+        if (operatorId && operatorKey) {
+            client.setOperator(operatorId, operatorKey);
+        }
+        return client;
+    }
+
+    /**
+     * Get balance account (AccountBalanceQuery)
+     * 
+     * @param {string | AccountId} accountId - Account Id
+     * 
+     * @returns {string} - balance
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public static async balance(client: Client, accountId: string | AccountId): Promise<number> {
+        const query = new AccountBalanceQuery()
+            .setAccountId(accountId);
+        const accountBalance = await query.execute(client);
+        if (accountBalance && accountBalance.hbars) {
+            return accountBalance.hbars.to(HbarUnit.Hbar).toNumber();
+        }
+        return NaN;
     }
 }
 

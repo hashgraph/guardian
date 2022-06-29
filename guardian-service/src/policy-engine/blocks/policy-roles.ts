@@ -5,6 +5,7 @@ import { Policy } from '@entity/policy';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
+import { UserRole } from '@guardian/interfaces';
 
 @EventBlock({
     blockType: 'policyRolesBlock',
@@ -43,8 +44,14 @@ export class PolicyRolesBlock {
         }
         currentPolicy.registeredUsers[user.did] = document.role;
 
+        const {username, role, did} = user;
+
         const result = await policyRepository.save(currentPolicy);
-        PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
+        await Promise.all([
+            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, {username, role, did}, ref.tag),
+            PolicyComponentsUtils.UpdateUserInfoFn({username, role, did}, currentPolicy)
+        ]);
+
 
         return result;
     }

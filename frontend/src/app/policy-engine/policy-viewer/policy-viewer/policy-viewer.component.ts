@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser, UserRole } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -22,7 +22,7 @@ import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview
     templateUrl: './policy-viewer.component.html',
     styleUrls: ['./policy-viewer.component.css']
 })
-export class PolicyViewerComponent implements OnInit {
+export class PolicyViewerComponent implements OnInit, OnDestroy {
     policyId!: string;
     policy: any | null;
     policyInfo: any | null;
@@ -35,6 +35,8 @@ export class PolicyViewerComponent implements OnInit {
     pageIndex: number;
     pageSize: number;
     policyCount: any;
+
+    private subscription = new Subscription();
 
     constructor(
         private profileService: ProfileService,
@@ -56,7 +58,7 @@ export class PolicyViewerComponent implements OnInit {
             'description',
             'roles',
             'topic',
-	    'schemas',
+	        'schemas',
             'version',
             'status',
             'operation',
@@ -76,9 +78,21 @@ export class PolicyViewerComponent implements OnInit {
 
     ngOnInit() {
         this.loading = true;
-        this.route.queryParams.subscribe(queryParams => {
-            this.loadPolicy();
-        });
+        this.subscription.add(
+            this.route.queryParams.subscribe(queryParams => {
+                this.loadPolicy();
+            })
+        );
+
+        this.subscription.add(
+            this.policyEngineService.subscribeUserInfo((message => {
+                this.policyInfo.userRoles = [message.userRole];
+            }))
+        );
+    }
+
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
     }
 
     loadPolicy() {

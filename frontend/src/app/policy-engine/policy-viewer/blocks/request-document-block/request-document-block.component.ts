@@ -5,6 +5,7 @@ import { IUser } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
+import { global } from '@angular/compiler/src/util';
 
 /**
  * Component for display block of 'requestVcDocument' types.

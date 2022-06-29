@@ -15,6 +15,7 @@ export class PolicyEngineService {
 
     private socket: any;
     private blockUpdateSubject: Subject<unknown>;
+    private userInfoUpdateSubject: Subject<unknown>;
     private wsSubjectConfig: WebSocketSubjectConfig<string>;
     private socketSubscription: Subscription | null = null;
     private heartbeatTimeout: any = null;
@@ -31,6 +32,7 @@ export class PolicyEngineService {
         private toastr: ToastrService
     ) {
         this.blockUpdateSubject = new Subject();
+        this.userInfoUpdateSubject = new Subject();
         this.socketSubscription = null;
         this.wsSubjectConfig = {
             url: this.getUrl(null),
@@ -60,6 +62,14 @@ export class PolicyEngineService {
         complete?: (() => void)
     ): Subscription {
         return this.blockUpdateSubject.subscribe(next, error, complete);
+    }
+
+    public subscribeUserInfo(
+        next?: ((id: any) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.userInfoUpdateSubject.subscribe(next, error, complete);
     }
 
     public all(): Observable<any[]> {
@@ -223,13 +233,16 @@ export class PolicyEngineService {
                 if (event.type === 'update-event') {
                     this.blockUpdateSubject.next(event.data);
                 }
-                if (JSON.parse(m).type === 'error-event') {
+                if (event.type === 'error-event') {
                     this.toastr.error(event.data.message, event.data.blockType, {
                         timeOut: 10000,
                         closeButton: true,
                         positionClass: 'toast-bottom-right',
                         enableHtml: true
                     });
+                }
+                if (event.type === 'update-user-info-event') {
+                    this.userInfoUpdateSubject.next(event.data);
                 }
             },
             (error: Event) => {

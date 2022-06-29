@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 
@@ -10,7 +10,7 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
     templateUrl: './container-block.component.html',
     styleUrls: ['./container-block.component.css']
 })
-export class ContainerBlockComponent implements OnInit {
+export class ContainerBlockComponent implements OnInit, OnDestroy {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
