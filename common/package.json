@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "lint": "tslint --project .",
+      "lint": "tslint --config ../tslint.json --project .",
     "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
