@@ -1,4 +1,4 @@
-import { IToken, ITokenInfo } from "..";
+import { IToken, ITokenInfo } from '..';
 
 /**
  * Token class

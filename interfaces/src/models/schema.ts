@@ -124,22 +124,22 @@ export class Schema implements ISchema {
         if (schema) {
             this.id = schema.id || undefined;
             this.uuid = schema.uuid || GenerateUUIDv4();
-            this.hash = schema.hash || "";
-            this.name = schema.name || "";
-            this.description = schema.description || "";
+            this.hash = schema.hash || '';
+            this.name = schema.name || '';
+            this.description = schema.description || '';
             this.entity = schema.entity || SchemaEntity.NONE;
             this.status = schema.status || SchemaStatus.DRAFT;
             this.readonly = schema.readonly || false;
             this.system = schema.system || false;
             this.active = schema.active || false;
-            this.version = schema.version || "";
-            this.creator = schema.creator || "";
-            this.owner = schema.owner || "";
-            this.topicId = schema.topicId || "";
-            this.messageId = schema.messageId || "";
-            this.documentURL = schema.documentURL || "";
-            this.contextURL = schema.contextURL || "";
-            this.iri = schema.iri || "";
+            this.version = schema.version || '';
+            this.creator = schema.creator || '';
+            this.owner = schema.owner || '';
+            this.topicId = schema.topicId || '';
+            this.messageId = schema.messageId || '';
+            this.documentURL = schema.documentURL || '';
+            this.contextURL = schema.contextURL || '';
+            this.iri = schema.iri || '';
             if (schema.isOwner) {
                 this.userDID = this.owner;
             }
@@ -156,7 +156,7 @@ export class Schema implements ISchema {
                 this.document = null;
             }
             if (schema.context) {
-                if (typeof schema.context == 'string') {
+                if (typeof schema.context === 'string') {
                     this.context = JSON.parse(schema.context);
                 } else {
                     this.context = schema.context;
@@ -167,9 +167,9 @@ export class Schema implements ISchema {
         } else {
             this.id = undefined;
             this.uuid = GenerateUUIDv4();
-            this.hash = "";
-            this.name = "";
-            this.description = "";
+            this.hash = '';
+            this.name = '';
+            this.description = '';
             this.entity = SchemaEntity.NONE;
             this.status = SchemaStatus.DRAFT;
             this.readonly = false;
@@ -177,14 +177,14 @@ export class Schema implements ISchema {
             this.active = false;
             this.document = null;
             this.context = null;
-            this.version = "";
-            this.creator = "";
-            this.owner = "";
-            this.topicId = "";
-            this.messageId = "";
-            this.documentURL = "";
-            this.contextURL = "";
-            this.iri = "";
+            this.version = '';
+            this.creator = '';
+            this.owner = '';
+            this.topicId = '';
+            this.messageId = '';
+            this.documentURL = '';
+            this.contextURL = '';
+            this.iri = '';
         }
         if (this.document) {
             this.parseDocument();
@@ -222,7 +222,7 @@ export class Schema implements ISchema {
      * Is creator
      */
     public get isCreator(): boolean {
-        return this.creator && this.creator == this.userDID;
+        return this.creator && this.creator === this.userDID;
     }
 
     /**
@@ -230,15 +230,15 @@ export class Schema implements ISchema {
      * @param version
      */
     public setVersion(version: string): void {
-        let currentVersion = this.version;
+        const currentVersion = this.version;
         if (!ModelHelper.checkVersionFormat(version)) {
-            throw new Error("Invalid version format");
+            throw new Error('Invalid version format');
         }
         if (ModelHelper.versionCompare(version, currentVersion) > 0) {
             this.version = version;
             this.previousVersion = currentVersion;
         } else {
-            throw new Error("Version must be greater than " + currentVersion);
+            throw new Error('Version must be greater than ' + currentVersion);
         }
     }
 
