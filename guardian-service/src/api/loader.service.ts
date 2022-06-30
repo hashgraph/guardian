@@ -13,7 +13,7 @@ import { MessageAPI } from '@guardian/interfaces';
  * @param didDocumentLoader - DID Documents Loader
  * @param schemaDocumentLoader - Schema Documents Loader
  */
-export const loaderAPI = async function (
+export async function loaderAPI(
     channel: MessageBrokerChannel,
     didDocumentRepository: MongoRepository<DidDocument>,
     schemaRepository: MongoRepository<Schema>

@@ -1,7 +1,6 @@
-import {Response} from 'express';
-import {AuthenticatedRequest, IAuthUser} from './auth.interface';
+import { Response } from 'express';
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/common';
+import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 
 /**
  * Authorization middleware

@@ -3,13 +3,16 @@ import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
-import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vcHelper';
 import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IAuthUser } from '@guardian/common';
 
+/**
+ * Reassigning block
+ */
 @BasicBlock({
     blockType: 'reassigningBlock',
     commonBlock: false,
@@ -31,15 +34,32 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class ReassigningBlock {
+    /**
+     * Wallet helper
+     * @private
+     */
     @Inject()
     private wallet: Wallet;
 
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
     private users: Users;
 
+    /**
+     * VC helper
+     * @private
+     */
     @Inject()
     private vcHelper: VcHelper;
 
+    /**
+     * Document reassigning
+     * @param state
+     * @param user
+     */
     async documentReassigning(state, user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
@@ -47,18 +67,18 @@ export class ReassigningBlock {
         const vcDocument = document.document;
 
         let root: any;
-        if (ref.options.issuer == 'owner') {
+        if (ref.options.issuer === 'owner') {
             root = await this.users.getHederaAccount(document.owner);
-        } else if (ref.options.issuer == 'policyOwner') {
+        } else if (ref.options.issuer === 'policyOwner') {
             root = await this.users.getHederaAccount(ref.policyOwner);
         } else {
             root = await this.users.getHederaAccount(user.did);
         }
 
         let owner: IAuthUser;
-        if (ref.options.actor == 'owner') {
+        if (ref.options.actor === 'owner') {
             owner = await this.users.getUserById(document.owner);
-        } else if (ref.options.actor == 'issuer') {
+        } else if (ref.options.actor === 'issuer') {
             owner = await this.users.getUserById(root.did);
         } else {
             owner = user;
@@ -83,6 +103,7 @@ export class ReassigningBlock {
     }
 
     /**
+     * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */

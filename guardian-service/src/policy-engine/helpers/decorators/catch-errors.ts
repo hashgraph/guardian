@@ -2,9 +2,14 @@ import { BlockErrorActions } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { Logger } from '@guardian/common';
 
+/**
+ * Catch errors decorator
+ * @constructor
+ */
 export function CatchErrors() {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        descriptor.value = new Proxy(target[propertyKey], {
+    // tslint:disable-next-line:only-arrow-functions
+    return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        descriptor.value = new Proxy(_target[propertyKey], {
             async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
                 const user = argArray[0];
                 const f = async () => {

@@ -8,10 +8,9 @@ import {
 } from '@helpers/utils';
 import JSZip from 'jszip';
 import { getMongoRepository } from 'typeorm';
-import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
-import { SchemaEntity, TopicType } from '@guardian/interfaces';
+import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';

@@ -33,7 +33,7 @@ export async function setDefaultSchema() {
     try {
         fileContent = await readJSON(fileConfig);
     } catch (error) {
-        throw ('you need to create a file \'system-schemas.json\'');
+        throw new Error('you need to create a file \'system-schemas.json\'');
     }
 
     const map: any = {};
@@ -42,23 +42,23 @@ export async function setDefaultSchema() {
     }
 
     if (!map.hasOwnProperty(SchemaEntity.MINT_NFTOKEN)) {
-        throw (`You need to fill ${SchemaEntity.MINT_NFTOKEN} field in system-schemas.json file`);
+        throw new Error(`You need to fill ${SchemaEntity.MINT_NFTOKEN} field in system-schemas.json file`);
     }
 
     if (!map.hasOwnProperty(SchemaEntity.MINT_TOKEN)) {
-        throw (`You need to fill ${SchemaEntity.MINT_TOKEN} field in system-schemas.json file`);
+        throw new Error(`You need to fill ${SchemaEntity.MINT_TOKEN} field in system-schemas.json file`);
     }
 
     if (!map.hasOwnProperty(SchemaEntity.POLICY)) {
-        throw (`You need to fill ${SchemaEntity.POLICY} field in system-schemas.json file`);
+        throw new Error(`You need to fill ${SchemaEntity.POLICY} field in system-schemas.json file`);
     }
 
     if (!map.hasOwnProperty(SchemaEntity.STANDARD_REGISTRY)) {
-        throw (`You need to fill ${SchemaEntity.STANDARD_REGISTRY} field in system-schemas.json file`);
+        throw new Error(`You need to fill ${SchemaEntity.STANDARD_REGISTRY} field in system-schemas.json file`);
     }
 
     if (!map.hasOwnProperty(SchemaEntity.WIPE_TOKEN)) {
-        throw (`You need to fill ${SchemaEntity.WIPE_TOKEN} field in system-schemas.json file`);
+        throw new Error(`You need to fill ${SchemaEntity.WIPE_TOKEN} field in system-schemas.json file`);
     }
 
     const fn = async (schema: any) => {
@@ -84,7 +84,12 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.WIPE_TOKEN]);
 }
 
-const loadSchema = async function (messageId: string, owner: string) {
+/**
+ * Load schema
+ * @param messageId
+ * @param owner
+ */
+async function loadSchema(messageId: string, owner: string) {
     const log = new Logger();
     try {
         if (schemaCache[messageId]) {
@@ -108,9 +113,9 @@ const loadSchema = async function (messageId: string, owner: string) {
             context: message.getContext(),
             version: message.version,
             creator: message.owner,
-            owner: owner,
+            owner,
             topicId: message.getTopicId(),
-            messageId: messageId,
+            messageId,
             documentURL: message.getDocumentUrl(UrlType.url),
             contextURL: message.getContextUrl(UrlType.url),
             iri: null
@@ -125,10 +130,14 @@ const loadSchema = async function (messageId: string, owner: string) {
     }
 }
 
-const getDefs = function (schema: ISchema) {
+/**
+ * Get defs
+ * @param schema
+ */
+function getDefs(schema: ISchema) {
     try {
         let document: any = schema.document;
-        if (typeof document == "string") {
+        if (typeof document === 'string') {
             document = JSON.parse(document);
         }
         if (!document.$defs) {
@@ -140,10 +149,21 @@ const getDefs = function (schema: ISchema) {
     }
 }
 
-const onlyUnique = function (value: any, index: any, self: any): boolean {
+/**
+ * Only unique
+ * @param value
+ * @param index
+ * @param self
+ */
+function onlyUnique(value: any, index: any, self: any): boolean {
     return self.indexOf(value) === index;
 }
 
+/**
+ * Increment schema version
+ * @param iri
+ * @param owner
+ */
 export async function incrementSchemaVersion(iri: string, owner: string): Promise<SchemaCollection> {
     if (!owner || !iri) {
         throw new Error(`Invalid increment schema version parameter`);
@@ -155,19 +175,18 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
         throw new Error(`Schema not found: ${iri} for owner ${owner}`);
     }
 
-    if (schema.status == SchemaStatus.PUBLISHED) {
+    if (schema.status === SchemaStatus.PUBLISHED) {
         return schema;
     }
 
-    const { version, previousVersion } = SchemaHelper.getVersion(schema);
+    const { previousVersion } = SchemaHelper.getVersion(schema);
     let newVersion = '1.0.0';
     if (previousVersion) {
         const schemas = await getMongoRepository(SchemaCollection).find({ uuid: schema.uuid });
         const versions = [];
-        for (let i = 0; i < schemas.length; i++) {
-            const element = schemas[i];
-            const { version, previousVersion } = SchemaHelper.getVersion(element);
-            versions.push(version, previousVersion);
+        for (const element of schemas) {
+            const elementVersions = SchemaHelper.getVersion(element);
+            versions.push(elementVersions.version, elementVersions.previousVersion);
         }
         newVersion = SchemaHelper.incrementVersion(previousVersion, versions);
     }
@@ -176,6 +195,11 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
     return schema;
 }
 
+/**
+ * Create schema
+ * @param newSchema
+ * @param owner
+ */
 async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCollection> {
     const users = new Users();
     const root = await users.getHederaAccount(owner);
@@ -193,7 +217,7 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
             type: TopicType.SchemaTopic,
             name: TopicType.SchemaTopic,
             description: TopicType.SchemaTopic,
-            owner: owner,
+            owner,
             policyId: null,
             policyUUID: null
         });
@@ -236,10 +260,15 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
     return await getMongoRepository(SchemaCollection).save(schemaObject);
 }
 
+/**
+ * Import schema by files
+ * @param owner
+ * @param files
+ * @param topicId
+ */
 export async function importSchemaByFiles(owner: string, files: ISchema[], topicId: string) {
     const uuidMap: Map<string, string> = new Map();
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i] as ISchema;
+    for (const file of files) {
         const newUUID = GenerateUUIDv4();
         const uuid = file.iri ? file.iri.substring(1) : null;
         if (uuid) {
@@ -249,8 +278,7 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
         file.iri = '#' + newUUID;
     }
 
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+    for (const file of files) {
         file.document = replaceValueRecursive(file.document, uuidMap);
         file.context = replaceValueRecursive(file.context, uuidMap);
         file.messageId = null;
@@ -273,6 +301,13 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
     return schemasMap;
 }
 
+/**
+ * Publish schema
+ * @param item
+ * @param version
+ * @param messageServer
+ * @param type
+ */
 export async function publishSchema(
     item: SchemaCollection,
     version: string,
@@ -306,6 +341,12 @@ export async function publishSchema(
     return item;
 }
 
+/**
+ * Publish system schema
+ * @param item
+ * @param messageServer
+ * @param type
+ */
 export async function publishSystemSchema(
     item: SchemaCollection,
     messageServer: MessageServer,
@@ -321,6 +362,12 @@ export async function publishSystemSchema(
     return await publishSchema(item, '1.0.0', messageServer, type);
 }
 
+/**
+ * Find and publish schema
+ * @param id
+ * @param version
+ * @param owner
+ */
 export async function findAndPublishSchema(id: string, version: string, owner: string): Promise<SchemaCollection> {
     let item = await getMongoRepository(SchemaCollection).findOne(id);
 
@@ -328,7 +375,7 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
         throw new Error(`Schema not found: ${id}`);
     }
 
-    if (item.creator != owner) {
+    if (item.creator !== owner) {
         throw new Error('Invalid owner');
     }
 
@@ -336,7 +383,7 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
         throw new Error('Invalid topicId');
     }
 
-    if (item.status == SchemaStatus.PUBLISHED) {
+    if (item.status === SchemaStatus.PUBLISHED) {
         throw new Error('Invalid status');
     }
 
@@ -359,7 +406,7 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
  * @param channel - channel
  * @param schemaRepository - table with schemas
  */
-export const schemaAPI = async function (
+export async function schemaAPI(
     channel: MessageBrokerChannel,
     schemaRepository: MongoRepository<SchemaCollection>
 ): Promise<void> {
@@ -576,8 +623,7 @@ export const schemaAPI = async function (
             }
 
             const files: ISchema[] = [];
-            for (let i = 0; i < messageIds.length; i++) {
-                const messageId = messageIds[i];
+            for (const messageId of messageIds) {
                 const newSchema = await loadSchema(messageId, null);
                 files.push(newSchema);
             }
@@ -629,13 +675,17 @@ export const schemaAPI = async function (
             if (!msg) {
                 return new MessageError('Invalid preview schema parameters');
             }
-            const { messageIds } = msg as { messageIds: string[] };
+            const { messageIds } = msg as {
+                /**
+                 * Message ids
+                 */
+                messageIds: string[];
+            };
             if (!messageIds) {
                 return new MessageError('Invalid preview schema parameters');
             }
             const result = [];
-            for (let i = 0; i < messageIds.length; i++) {
-                const messageId = messageIds[i];
+            for (const messageId of messageIds) {
                 const schema = await loadSchema(messageId, null);
                 result.push(schema);
             }
@@ -643,25 +693,22 @@ export const schemaAPI = async function (
             const messageServer = new MessageServer();
             const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
             const anotherSchemas: SchemaMessage[] = [];
-            for (let i = 0; i < uniqueTopics.length; i++) {
-                const topicId = uniqueTopics[i];
+            for (const topicId of uniqueTopics) {
                 const anotherVersions = await messageServer.getMessages<SchemaMessage>(
                     topicId, MessageType.Schema, MessageAction.PublishSchema
                 );
-                for (let j = 0; j < anotherVersions.length; j++) {
-                    anotherSchemas.push(anotherVersions[j]);
+                for (const ver of anotherVersions) {
+                    anotherSchemas.push(ver);
                 }
             }
-            for (let i = 0; i < result.length; i++) {
-                const schema = result[i];
+            for (const schema of result) {
                 if (!schema.version) {
                     continue;
                 }
 
                 const newVersions = [];
                 const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
-                for (let j = 0; j < topicMessages.length; j++) {
-                    const topicMessage = topicMessages[j];
+                for (const topicMessage of topicMessages) {
                     if (topicMessage.version &&
                         ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
                         newVersions.push({
@@ -696,8 +743,7 @@ export const schemaAPI = async function (
             const schemas = await schemaRepository.findByIds(ids);
             const map: any = {};
             const relationships: ISchema[] = [];
-            for (let index = 0; index < schemas.length; index++) {
-                const schema = schemas[index];
+            for (const schema of schemas) {
                 if (!map[schema.iri]) {
                     map[schema.iri] = schema;
                     relationships.push(schema);
@@ -705,8 +751,7 @@ export const schemaAPI = async function (
                     const defs = await schemaRepository.find({
                         where: { iri: { $in: keys } }
                     });
-                    for (let j = 0; j < defs.length; j++) {
-                        const element = defs[j];
+                    for (const element of defs) {
                         if (!map[element.iri]) {
                             map[element.iri] = element;
                             relationships.push(element);
@@ -723,7 +768,16 @@ export const schemaAPI = async function (
 
     ApiResponse(channel, MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg) => {
         try {
-            const { owner, iri } = msg as { owner: string, iri: string };
+            const { owner, iri } = msg as {
+                /**
+                 * Owner
+                 */
+                owner: string,
+                /**
+                 * IRI
+                 */
+                iri: string
+            };
             const schema = await incrementSchemaVersion(iri, owner);
             return new MessageResponse(schema);
         } catch (error) {
@@ -795,7 +849,6 @@ export const schemaAPI = async function (
         }
     });
 
-
     /**
      * Delete a schema.
      *
@@ -813,7 +866,7 @@ export const schemaAPI = async function (
                         entity: item.entity
                     });
                     for (const schema of schemas) {
-                        schema.active = schema.id.toString() == item.id.toString();
+                        schema.active = schema.id.toString() === item.id.toString();
                     }
                     await schemaRepository.save(schemas);
                 }

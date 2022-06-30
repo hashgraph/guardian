@@ -1,17 +1,15 @@
 import {
-    PolicyBlockConstructorParams,
     PolicyBlockFullArgumentList,
     PolicyBlockMap,
     PolicyTagMap,
-    IPolicyEvent,
+    EventActor,
     PolicyLink,
     PolicyInputEventType,
     EventCallback,
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
-import { PolicyRole } from '@guardian/interfaces';
-import { IAuthUser } from '@auth/auth.interface';
-import { GenerateUUIDv4 } from './helpers/uuidv4';
+import { PolicyRole, GenerateUUIDv4 } from '@guardian/interfaces';
+import { IAuthUser } from '@guardian/common';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
@@ -19,7 +17,6 @@ import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
 import { GetBlockAbout } from '@policy-engine/blocks';
-import { EventActor } from './interfaces/policy-event-type';
 
 export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallback<any>>>
 

@@ -6,8 +6,10 @@ export class PolicyOtherError extends Error {
         super(message);
     }
 
+    /**
+     * Error object getter
+     */
     public get errorObject() {
-        console.error(this.message);
         return {
             type: 'policyOtherError',
             code: this.code,

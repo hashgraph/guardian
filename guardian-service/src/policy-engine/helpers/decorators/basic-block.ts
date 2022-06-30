@@ -5,21 +5,20 @@ import { ExternalMessageEvents, PolicyRole } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
-import { BlockActionError } from '@policy-engine/errors';
 import { Policy } from '@entity/policy';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { ExternalEventChannel, Logger } from '@guardian/common';
+import { IAuthUser, ExternalEventChannel, Logger } from '@guardian/common';
 
 /**
  * Basic block decorator
  * @param options
  */
 export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
+    // tslint:disable-next-line:only-arrow-functions
     return function (constructor: new (...args: any) => any): any {
         const basicClass = class extends constructor {
             constructor(
@@ -35,26 +34,38 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 super();
             }
 
+            /**
+             * Block children
+             * @private
+             */
             private _children: IPolicyBlock[] = [];
 
+            /**
+             * Block children getter
+             */
             public get children(): IPolicyBlock[] {
                 return this._children
             }
 
+            /**
+             * Block UUID getter
+             */
             public get uuid(): string {
                 return this._uuid
             }
 
+            /**
+             * Block options getter
+             */
             public get options(): any {
                 return this._options;
             }
 
+            /**
+             * Block parent getter
+             */
             public get parent(): IPolicyBlock {
                 return this._parent
-            }
-
-            public rules() {
-
             }
         }
 
@@ -68,24 +79,69 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
         ) as PolicyBlockFullArgumentList;
 
         return class extends basicClass {
+            /**
+             * Block type
+             */
             static blockType = o.blockType;
+            /**
+             * Block about
+             */
             static about = o.about;
+            /**
+             * Publish external event
+             */
             static publishExternalEvent = o.publishExternalEvent;
 
+            /**
+             * Old data state
+             * @protected
+             */
             protected oldDataState: any = {};
+            /**
+             * Current data state
+             * @protected
+             */
             protected currentDataState: any = {};
+            /**
+             * Logger instance
+             * @protected
+             */
             protected logger: Logger;
 
+            /**
+             * Policy id
+             */
             public policyId: string;
+            /**
+             * Policy owner
+             */
             public policyOwner: string;
+            /**
+             * Policy instance
+             */
             public policyInstance: any;
+            /**
+             * Topic id
+             */
             public topicId: string;
 
+            /**
+             * Source links
+             */
             public sourceLinks: PolicyLink<any>[];
+            /**
+             * Target links
+             */
             public targetLinks: PolicyLink<any>[];
 
+            /**
+             * Actions
+             */
             public actions: any[];
 
+            /**
+             * Block class name
+             */
             public readonly blockClassName = 'BasicBlock';
 
             constructor(
@@ -122,6 +178,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
             }
 
+            /**
+             * Next block in chain
+             */
             public get next(): IPolicyBlock {
                 if (this.parent) {
                     return this.parent.getNextChild(this.uuid);
@@ -129,16 +188,25 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return undefined;
             }
 
+            /**
+             * Block events getter
+             */
             public get events(): EventConfig[] {
                 return this.options.events || [];
             }
 
+            /**
+             * Before init callback
+             */
             public async beforeInit(): Promise<void> {
                 if (typeof super.beforeInit === 'function') {
                     super.beforeInit();
                 }
             }
 
+            /**
+             * After init callback
+             */
             public async afterInit(): Promise<void> {
                 await this.restoreState();
 
@@ -147,6 +215,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
+            /**
+             * Get child by UUID
+             * @param uuid
+             */
             public getChild(uuid: string): IPolicyBlock {
                 if (this.children) {
                     for (const child of this.children) {
@@ -158,6 +230,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return undefined;
             }
 
+            /**
+             * Get child index
+             * @param uuid
+             */
             public getChildIndex(uuid: string): number {
                 if (this.children) {
                     for (let i = 0; i < this.children.length; i++) {
@@ -169,6 +245,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return -1;
             }
 
+            /**
+             * Get next child
+             * @param uuid
+             */
             public getNextChild(uuid: string): IPolicyBlock {
                 if (typeof super.getNextChild === 'function') {
                     return super.getNextChild(uuid);
@@ -179,33 +259,54 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
+            /**
+             * Add source link
+             * @param link
+             */
             public addSourceLink(link: PolicyLink<any>): void {
                 this.sourceLinks.push(link)
             }
 
+            /**
+             * Add target link
+             * @param link
+             */
             public addTargetLink(link: PolicyLink<any>): void {
                 this.targetLinks.push(link)
             }
 
+            /**
+             * Trigger events
+             * @param output
+             * @param user
+             * @param data
+             */
             public triggerEvents(output: PolicyOutputEventType, user?: IAuthUser, data?: any): void {
-                for (let link of this.sourceLinks) {
-                    if (link.outputType == output) {
+                for (const link of this.sourceLinks) {
+                    if (link.outputType === output) {
                         link.run(user, data);
                     }
                 }
             }
 
+            /**
+             * Trigger event
+             * @param event
+             * @param user
+             * @param data
+             */
             public triggerEvent(event: any, user?: IAuthUser, data?: any): void {
                 console.error('triggerEvent');
             }
 
             /**
+             * Run block action
              * @event PolicyEventType.Run
              * @param {IPolicyEvent} event
              */
             public async runAction(event: IPolicyEvent<any>): Promise<any> {
                 const parent = this.parent as any;
-                if (parent && (typeof parent['changeStep'] === 'function')) {
+                if (parent && (typeof parent.changeStep === 'function')) {
                     await parent.changeStep(event.user, event.data, this);
                 }
                 let result: any;
@@ -220,7 +321,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                             blockType: this.blockType,
                             blockTag: this.tag,
                             data: event.data,
-                            result: result
+                            result
                         }
                     )
                 }
@@ -228,6 +329,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Refresh action
              * @event PolicyEventType.DependencyEvent
              * @param {IPolicyEvent} event
              */
@@ -238,12 +340,18 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.updateBlock(event.data, event.user, '');
             }
 
+            /**
+             * Update block
+             * @param state
+             * @param user
+             * @param tag
+             */
             public async updateBlock(state: any, user: IAuthUser, tag: string) {
                 await this.saveState();
                 if (!this.options.followUser) {
                     const policy = await getMongoRepository(Policy).findOne(this.policyId);
 
-                    for (let [did, role] of Object.entries(policy.registeredUsers)) {
+                    for (const [did, role] of Object.entries(policy.registeredUsers)) {
                         if (this.permissions.includes(role)) {
                             PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
                         } else if (this.permissions.includes('ANY_ROLE')) {
@@ -273,6 +381,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 })
             }
 
+            /**
+             * Check if data state was changed
+             * @param user
+             */
             public checkDataStateDiffer(user): boolean {
                 // TODO: Remove hardcode appearance
                 return true;
@@ -285,21 +397,42 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 })
             }
 
+            /**
+             * Set policy id
+             * @param id
+             */
             public setPolicyId(id: string): void {
                 this.policyId = id;
             }
 
+            /**
+             * Set policy owner
+             * @param did
+             */
             public setPolicyOwner(did: string) {
                 this.policyOwner = did;
             }
+
+            /**
+             * Set policy instance
+             * @param policy
+             */
             public setPolicyInstance(policy: any) {
                 this.policyInstance = policy;
             }
 
+            /**
+             * Set topic id
+             * @param id
+             */
             public setTopicId(id: string): void {
                 this.topicId = id;
             }
 
+            /**
+             * Validate block options
+             * @param resultsContainer
+             */
             public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
                 resultsContainer.registerBlock(this as any as IPolicyBlock);
                 if (resultsContainer.countTags(this.tag) > 1) {
@@ -313,13 +446,18 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     await super.validate(resultsContainer)
                 }
                 if (Array.isArray(this.children)) {
-                    for (let child of this.children) {
+                    for (const child of this.children) {
                         await child.validate(resultsContainer);
                     }
                 }
                 return;
             }
 
+            /**
+             * Is block child active
+             * @param child
+             * @param user
+             */
             public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
                 if (typeof super.isChildActive === 'function') {
                     return super.isChildActive(child, user);
@@ -327,6 +465,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return true;
             }
 
+            /**
+             * Is block active
+             * @param user
+             */
             isActive(user: IAuthUser): boolean {
                 if (!this.parent) {
                     return true;
@@ -334,6 +476,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return this.parent.isChildActive(this as any, user);
             }
 
+            /**
+             * Save block state
+             */
             public async saveState(): Promise<void> {
                 const stateFields = PolicyComponentsUtils.GetStateFields(this);
                 if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
@@ -356,6 +501,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
+            /**
+             * Restore block state
+             */
             public async restoreState(): Promise<void> {
                 const stateEntity = await getMongoRepository(BlockState).findOne({
                     policyId: this.policyId,
@@ -367,15 +515,24 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
 
 
-                for (let [key, value] of Object.entries(JSON.parse(stateEntity.blockState))) {
+                for (const [key, value] of Object.entries(JSON.parse(stateEntity.blockState))) {
                     this[key] = value;
                 }
             }
 
+            /**
+             * Register block child
+             * @param child
+             */
             public registerChild(child: IPolicyBlock): void {
                 this.children.push(child);
             }
 
+            /**
+             * Check user permission
+             * @param role
+             * @param user
+             */
             public hasPermission(role: PolicyRole | null, user: IAuthUser | null): boolean {
                 let hasAccess = false;
                 if (this.permissions.includes('NO_ROLE')) {
@@ -398,6 +555,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return hasAccess;
             }
 
+            /**
+             * Serialize block config
+             * @param withUUID
+             */
             public serialize(withUUID: boolean = false): ISerializedBlock {
                 const obj: ISerializedBlock = {
                     defaultActive: this.defaultActive,
@@ -421,6 +582,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 return obj;
             }
 
+            /**
+             * Block destructor
+             */
             public destroy() {
                 if (typeof super.destroy === 'function') {
                     super.destroy();
@@ -431,15 +595,29 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
             }
 
-
+            /**
+             * Write log message
+             * @param message
+             * @protected
+             */
             protected log(message: string) {
                 this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
             }
 
+            /**
+             * Write error message
+             * @param message
+             * @protected
+             */
             protected error(message: string) {
                 this.logger.error(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
             }
 
+            /**
+             * Write warn message
+             * @param message
+             * @protected
+             */
             protected warn(message: string) {
                 this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
             }

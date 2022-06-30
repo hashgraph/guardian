@@ -1,10 +1,9 @@
-import { DocumentSignature, Schema, SchemaHelper } from '@guardian/interfaces';
+import { Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
-import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vcHelper';
@@ -37,35 +36,44 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class CalculateContainerBlock {
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
     private users: Users;
 
+    /**
+     * Calculate data
+     * @param documents
+     * @param ref
+     * @private
+     */
     private async calculate(documents: any | any[], ref: IPolicyCalculateBlock): Promise<VcDocumentCollection> {
         const fields = ref.options.inputFields;
         let scope = {};
         if (fields) {
             if (Array.isArray(documents)) {
-                for (let field of fields) {
+                for (const field of fields) {
                     const value = [];
-                    for (let json of documents) {
+                    for (const json of documents) {
                         value.push(json[field.name]);
                     }
                     scope[field.value] = value;
                 }
             } else {
-                for (let field of fields) {
+                for (const field of fields) {
                     scope[field.value] = documents[field.name];
                 }
             }
         }
         const addons = ref.getAddons();
-        for (let i = 0; i < addons.length; i++) {
-            const addon = addons[i];
+        for (const addon of addons) {
             scope = await addon.run(scope);
         }
-        let newJson: any = {};
+        const newJson: any = {};
         if (ref.options.outputFields) {
-            for (let field of ref.options.outputFields) {
+            for (const field of ref.options.outputFields) {
                 if (scope[field.value]) {
                     newJson[field.name] = scope[field.value];
                 }
@@ -74,6 +82,12 @@ export class CalculateContainerBlock {
         return newJson;
     }
 
+    /**
+     * Process data
+     * @param documents
+     * @param ref
+     * @private
+     */
     private async process(documents: any | any[], ref: IPolicyCalculateBlock): Promise<any> {
         const isArray = Array.isArray(documents);
         if (!documents || (isArray && !documents.length)) {
@@ -88,7 +102,7 @@ export class CalculateContainerBlock {
         if (isArray) {
             vcs = [];
             json = [];
-            for (let doc of documents) {
+            for (const doc of documents) {
                 const vc = VcDocument.fromJsonTree(doc.document);
                 vcs.push(vc);
                 json.push(vc.getCredentialSubject(0).toJsonTree());
@@ -110,7 +124,7 @@ export class CalculateContainerBlock {
         const newJson = await this.calculate(json, ref);
 
         // <-- new vc
-        const outputSchema = await getMongoRepository(SchemaCollection).findOne({ 
+        const outputSchema = await getMongoRepository(SchemaCollection).findOne({
             iri: ref.options.outputSchema,
             topicId: ref.topicId
         });
@@ -130,7 +144,7 @@ export class CalculateContainerBlock {
         const item = {
             hash: newVC.toCredentialHash(),
             document: newVC.toJsonTree(),
-            owner: owner,
+            owner,
             schema: outputSchema.iri,
             type: outputSchema.iri,
             policyId: ref.policyId,
@@ -145,6 +159,9 @@ export class CalculateContainerBlock {
     }
 
     /**
+     * Run action callback
+     */
+    /**
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -155,10 +172,10 @@ export class CalculateContainerBlock {
     public async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
-        if (ref.options.inputDocuments == 'separate') {
+        if (ref.options.inputDocuments === 'separate') {
             if (Array.isArray(event.data.data)) {
                 const result = [];
-                for (let doc of event.data.data) {
+                for (const doc of event.data.data) {
                     const newVC = await this.process(doc, ref);
                     result.push(newVC)
                 }
@@ -174,6 +191,10 @@ export class CalculateContainerBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         try {
@@ -215,22 +236,19 @@ export class CalculateContainerBlock {
 
             let variables: any = {};
             if (ref.options.inputFields) {
-                for (let i = 0; i < ref.options.inputFields.length; i++) {
-                    const field = ref.options.inputFields[i];
+                for (const field of ref.options.inputFields) {
                     variables[field.value] = field.name;
                 }
             }
 
             const addons = ref.getAddons();
-            for (let i = 0; i < addons.length; i++) {
-                const addon = addons[i];
+            for (const addon of addons) {
                 variables = await addon.getVariables(variables);
             }
 
             const map = {};
             if (ref.options.outputFields) {
-                for (let i = 0; i < ref.options.outputFields.length; i++) {
-                    const field = ref.options.outputFields[i];
+                for (const field of ref.options.outputFields) {
                     if (!field.value) {
                         continue;
                     }
@@ -243,8 +261,7 @@ export class CalculateContainerBlock {
             }
 
             const schema = new Schema(outputSchema);
-            for (let i = 0; i < schema.fields.length; i++) {
-                const field = schema.fields[i];
+            for (const field of schema.fields) {
                 if (field.required && !map[field.name]) {
                     resultsContainer.addBlockError(ref.uuid, `${field.description} is required`);
                     return

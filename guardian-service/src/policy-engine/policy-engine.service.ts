@@ -33,7 +33,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { Policy } from '@entity/policy';
 import { getMongoRepository } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
-import { IAuthUser } from '@auth/auth.interface';
+import { IAuthUser } from '@guardian/common';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';

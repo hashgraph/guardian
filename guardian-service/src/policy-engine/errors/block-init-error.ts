@@ -8,6 +8,9 @@ export class BlockInitError extends Error implements BlockError {
         super(message);
     }
 
+    /**
+     * Error object getter
+     */
     public get errorObject() {
         return {
             type: 'blockInitError',

@@ -12,7 +12,7 @@ import {
     ISerializedErrors,
     PolicyValidationResultsContainer
 } from '@policy-engine/policy-validation-results-container';
-import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { PolicyConverterUtils } from './policy-converter-utils';
 

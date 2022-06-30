@@ -1,7 +1,7 @@
 import {Singleton} from '@helpers/decorators/singleton';
 import { ApplicationStates, AuthEvents, MessageAPI, UserRole } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
-import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
+import { AuthenticatedRequest, IAuthUser } from '@guardian/common';
 
 /**
  * Users setvice

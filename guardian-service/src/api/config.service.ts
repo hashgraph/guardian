@@ -11,7 +11,7 @@ import { MessageAPI, CommonSettings } from '@guardian/interfaces';
  * @param channel - channel
  * @param approvalDocumentRepository - table with approve documents
  */
-export const configAPI = async function (
+export async function configAPI(
     channel: MessageBrokerChannel,
     settingsRepository: MongoRepository<Settings>,
     topicRepository: MongoRepository<Topic>,
@@ -71,7 +71,6 @@ export const configAPI = async function (
 
     /**
      * Get settings
-     *
      */
     ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg) => {
         try {

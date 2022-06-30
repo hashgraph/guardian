@@ -6,6 +6,9 @@ export class BlockActionError extends Error {
         super(message);
     }
 
+    /**
+     * Error object getter
+     */
     public get errorObject() {
         console.error(this.message);
         return {

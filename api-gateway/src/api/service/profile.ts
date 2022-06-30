@@ -1,10 +1,15 @@
-import { AuthenticatedRequest } from '@auth/auth.interface';
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Request, Response, Router } from 'express';
-import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/common';
+import {
+    DidDocumentStatus,
+    IUser,
+    SchemaEntity,
+    TopicType,
+    UserRole
+} from '@guardian/interfaces';
+import { AuthenticatedRequest, Logger } from '@guardian/common';
 
 /**
  * User profile route

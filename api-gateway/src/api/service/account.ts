@@ -1,10 +1,9 @@
 import { Request, Response, Router } from 'express';
-import { AuthenticatedRequest } from '@auth/auth.interface';
 import { permissionHelper, authorizationHelper } from '@auth/authorization-helper';
-import { UserRole } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/common';
+import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
+import { UserRole } from '@guardian/interfaces';
 
 /**
  * User account route

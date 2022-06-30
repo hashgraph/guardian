@@ -1,13 +1,13 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IAuthUser } from '@auth/auth.interface';
 import { VcDocument } from '@hedera-modules';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IAuthUser } from '@guardian/common';
 
 /**
  * Switch block
@@ -32,9 +32,18 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class SwitchBlock {
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
     private users: Users;
 
+    /**
+     * Get scope
+     * @param docs
+     * @private
+     */
     private getScope(docs: any | any[]): any {
         let result: any = {};
         if (!docs) {
@@ -42,7 +51,7 @@ export class SwitchBlock {
         }
         if (Array.isArray(docs)) {
             const scopes: any[] = [];
-            for (let doc of docs) {
+            for (const doc of docs) {
                 if (doc.document && doc.document.type.includes('VerifiableCredential')) {
                     const element = VcDocument.fromJsonTree(doc.document);
                     const scope = PolicyUtils.getVCScope(element);
@@ -61,17 +70,22 @@ export class SwitchBlock {
         return result;
     }
 
+    /**
+     * Aggregate scope
+     * @param scopes
+     * @private
+     */
     private aggregateScope(scopes: any[]): any {
         const result: any = {};
         if (!scopes || !scopes.length) {
             return null;
         }
         const keys = Object.keys(scopes[0]);
-        for (let key of keys) {
+        for (const key of keys) {
             result[key] = [];
         }
-        for (let scope of scopes) {
-            for (let key of keys) {
+        for (const scope of scopes) {
+            for (const key of keys) {
                 result[key].push(scope[key]);
             }
         }
@@ -79,6 +93,7 @@ export class SwitchBlock {
     }
 
     /**
+     * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -106,34 +121,33 @@ export class SwitchBlock {
         const scope = this.getScope(docs);
 
         const { conditions, executionFlow } = ref.options;
-        for (let i = 0; i < conditions.length; i++) {
-            const condition = conditions[i];
+        for (const condition of conditions) {
             const type = condition.type as string;
             const value = condition.value as string;
             const actor = condition.actor as string;
             const tag = condition.tag as PolicyOutputEventType;
 
             let result = false;
-            if (type == 'equal') {
+            if (type === 'equal') {
                 if (scope) {
                     result = PolicyUtils.evaluate(value, scope);
                 } else {
                     result = false;
                 }
-            } else if (type == 'not_equal') {
+            } else if (type === 'not_equal') {
                 if (scope) {
                     result = !PolicyUtils.evaluate(value, scope);
                 } else {
                     result = false;
                 }
-            } else if (type == 'unconditional') {
+            } else if (type === 'unconditional') {
                 result = true;
             }
 
             let curUser: IAuthUser = event.user;
-            if (actor == 'owner' && owner) {
+            if (actor === 'owner' && owner) {
                 curUser = await this.users.getUserById(owner);
-            } else if (actor == 'issuer' && issuer) {
+            } else if (actor === 'issuer' && issuer) {
                 curUser = await this.users.getUserById(issuer);
             }
 
@@ -142,13 +156,17 @@ export class SwitchBlock {
             if (result) {
                 ref.triggerEvents(tag, curUser, event.data);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
-                if (executionFlow == 'firstTrue') {
+                if (executionFlow === 'firstTrue') {
                     return;
                 }
             }
         }
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
@@ -162,11 +180,11 @@ export class SwitchBlock {
 
             const tagMap = {};
             if (Array.isArray(ref.options.conditions)) {
-                for (let condition of ref.options.conditions) {
+                for (const condition of ref.options.conditions) {
                     if (!['equal', 'not_equal', 'unconditional'].find(item => item === condition.type)) {
                         resultsContainer.addBlockError(ref.uuid, 'Option "condition.type" must be one of equal, not_equal, unconditional');
                     }
-                    if (condition.type == 'equal' || condition.type == 'not_equal') {
+                    if (condition.type === 'equal' || condition.type === 'not_equal') {
                         if (!condition.value) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "condition.value" does not set');
                         } else {
@@ -187,7 +205,6 @@ export class SwitchBlock {
             } else {
                 resultsContainer.addBlockError(ref.uuid, 'Option "conditions" must be an array');
             }
-
 
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

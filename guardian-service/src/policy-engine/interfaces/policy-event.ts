@@ -1,4 +1,4 @@
-import { IAuthUser } from "@auth/auth.interface";
+import { IAuthUser } from "@guardian/common";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { EventActor, PolicyInputEventType, PolicyOutputEventType } from "./policy-event-type";
 

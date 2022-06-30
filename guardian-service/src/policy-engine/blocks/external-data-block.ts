@@ -32,7 +32,11 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class ExternalDataBlock {
-    
+
+    /**
+     * Receive external data callback
+     * @param data
+     */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
@@ -59,7 +63,7 @@ export class ExternalDataBlock {
             owner: data.owner,
             document: vc.toJsonTree(),
             status: DocumentStatus.NEW,
-            signature: signature,
+            signature,
             policyId: ref.policyId,
             type: ref.options.entityType,
             schema: ref.options.schema
@@ -69,6 +73,10 @@ export class ExternalDataBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, state);
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
@@ -78,7 +86,7 @@ export class ExternalDataBlock {
                     return;
                 }
 
-                const schema = await getMongoRepository(SchemaCollection).findOne({ 
+                const schema = await getMongoRepository(SchemaCollection).findOne({
                     iri: ref.options.schema,
                     topicId: ref.topicId
                 });

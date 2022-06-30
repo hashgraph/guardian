@@ -1,6 +1,5 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { getMongoRepository } from 'typeorm';
@@ -12,7 +11,11 @@ import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IAuthUser } from '@guardian/common';
 
+/**
+ * Custom logic block
+ */
 @BasicBlock({
     blockType: 'customLogicBlock',
     commonBlock: true,
@@ -34,14 +37,22 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class CustomLogicBlock {
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
+    /**
+     * After init callback
+     */
     public afterInit() {
         console.log('Custom logic block');
     }
 
     /**
+     * Action callback
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -61,6 +72,11 @@ export class CustomLogicBlock {
         }
     }
 
+    /**
+     * Execute logic
+     * @param state
+     * @param user
+     */
     execute(state: any, user: IAuthUser): Promise<any> {
         return new Promise((resolve, reject) => {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
@@ -95,10 +111,9 @@ export class CustomLogicBlock {
                             }
                         );
 
-
                         return {
                             hash: newVC.toCredentialHash(),
-                            owner: owner,
+                            owner,
                             document: newVC.toJsonTree(),
                             schema: outputSchema.iri,
                             type: outputSchema.iri,
@@ -112,7 +127,7 @@ export class CustomLogicBlock {
 
                     if (Array.isArray(result)) {
                         const items = [];
-                        for (let r of result) {
+                        for (const r of result) {
                             items.push(await processing(r))
                         }
                         resolve(items);

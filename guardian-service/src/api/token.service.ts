@@ -4,10 +4,14 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { IAuthUser } from '@auth/auth.interface';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, IToken } from '@guardian/interfaces';
 
+/**
+ * Get token info
+ * @param info
+ * @param token
+ */
 function getTokenInfo(info: any, token: any) {
     const tokenId = token.tokenId;
     const result: any = {
@@ -37,7 +41,7 @@ function getTokenInfo(info: any, token: any) {
                 ).toFixed(result.decimals)
             }
         } catch (error) {
-            result.balance = "N/A";
+            result.balance = 'N/A';
         }
     }
     return result;
@@ -49,7 +53,7 @@ function getTokenInfo(info: any, token: any) {
  * @param channel - channel
  * @param tokenRepository - table with tokens
  */
-export const tokenAPI = async function (
+export async function tokenAPI(
     channel: MessageBrokerChannel,
     tokenRepository: MongoRepository<Token>
 ): Promise<void> {
@@ -63,7 +67,7 @@ export const tokenAPI = async function (
     ApiResponse(channel, MessageAPI.SET_TOKEN, async (msg) => {
         try {
             if (!msg) {
-                throw 'Invalid Params';
+                throw new Error('Invalid Params');
             }
 
             const {
@@ -81,11 +85,11 @@ export const tokenAPI = async function (
             const owner = msg.owner;
 
             if (!tokenName) {
-                throw 'Invalid Token Name';
+                throw new Error('Invalid Token Name');
             }
 
             if (!tokenSymbol) {
-                throw 'Invalid Token Symbol';
+                throw new Error('Invalid Token Symbol');
             }
 
             const users = new Users();
@@ -100,7 +104,7 @@ export const tokenAPI = async function (
             const freezeKey = enableFreeze ? treasuryKey : null;
             const wipeKey = enableWipe ? treasuryKey : null;
             const supplyKey = changeSupply ? treasuryKey : null;
-            const nft = tokenType == 'non-fungible';
+            const nft = tokenType === 'non-fungible';
             const _decimals = nft ? 0 : decimals;
             const _initialSupply = nft ? 0 : initialSupply;
             const tokenId = await client.newToken(
@@ -136,9 +140,8 @@ export const tokenAPI = async function (
             const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            return new MessageError(error.message);
         }
     })
 
@@ -148,16 +151,16 @@ export const tokenAPI = async function (
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
-                throw 'Token not found';
+                throw new Error('Token not found');
             }
 
             const users = new Users();
             const user = await users.getUser(username);
             if (!user) {
-                throw 'User not found';
+                throw new Error('User not found');
             }
             if (!user.hederaAccountId) {
-                throw 'User is not linked to an Hedera Account';
+                throw new Error('User is not linked to an Hedera Account');
             }
 
             const root = await users.getHederaAccount(owner);
@@ -173,12 +176,10 @@ export const tokenAPI = async function (
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error, 400);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            return new MessageError(error.message, 400);
         }
     })
-
 
     ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg) => {
         try {
@@ -186,16 +187,16 @@ export const tokenAPI = async function (
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
-                throw 'Token not found';
+                throw new Error('Token not found');
             }
 
             const users = new Users();
             const user = await users.getUser(username);
             if (!user) {
-                throw 'User not found';
+                throw new Error('User not found');
             }
             if (!user.hederaAccountId) {
-                throw 'User is not linked to an Hedera Account';
+                throw new Error('User is not linked to an Hedera Account');
             }
 
             const root = await users.getHederaAccount(owner);
@@ -211,9 +212,8 @@ export const tokenAPI = async function (
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error, 400);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            return new MessageError(error.message, 400);
         }
     })
 
@@ -223,7 +223,7 @@ export const tokenAPI = async function (
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
-                throw 'Token not found';
+                throw new Error('Token not found');
             }
 
             const wallet = new Wallet();
@@ -233,11 +233,11 @@ export const tokenAPI = async function (
             const userDID = user.did;
             const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
             if (!user) {
-                throw 'User not found';
+                throw new Error('User not found');
             }
 
             if (!user.hederaAccountId) {
-                throw 'User is not linked to an Hedera Account';
+                throw new Error('User is not linked to an Hedera Account');
             }
 
             const client = new HederaSDKHelper(userID, userKey);
@@ -250,9 +250,8 @@ export const tokenAPI = async function (
 
             return new MessageResponse(status);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error, 400);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            return new MessageError(error.message, 400);
         }
     })
 
@@ -263,12 +262,12 @@ export const tokenAPI = async function (
             const users = new Users();
             const user = await users.getUser(username);
             if (!user) {
-                throw 'User not found';
+                throw new Error('User not found');
             }
 
             const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
             if (!token) {
-                throw 'Token not found';
+                throw new Error('Token not found');
             }
 
             if (!user.hederaAccountId) {
@@ -282,9 +281,8 @@ export const tokenAPI = async function (
 
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error, 400);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            return new MessageError(error.message, 400);
         }
     })
 
@@ -299,7 +297,7 @@ export const tokenAPI = async function (
             const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
 
             if (!user) {
-                throw 'User not found';
+                throw new Error('User not found');
             }
 
             if (!user.hederaAccountId) {
@@ -322,14 +320,13 @@ export const tokenAPI = async function (
             );
 
             const result: any[] = [];
-            for (let i = 0; i < tokens.length; i++) {
-                result.push(getTokenInfo(info, tokens[i]));
+            for (const token of tokens) {
+                result.push(getTokenInfo(info, token));
             }
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error, 400);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            return new MessageError(error.message, 400);
         }
     })
 
@@ -345,15 +342,15 @@ export const tokenAPI = async function (
     ApiResponse(channel, MessageAPI.GET_TOKENS, async (msg) => {
         if (msg) {
             if (msg.tokenId) {
-                const reqObj: any = { where: {} };
-                reqObj.where['tokenId'] = { $eq: msg.tokenId }
+                const reqObj: any = { where: {} as unknown };
+                reqObj.where.tokenId = { $eq: msg.tokenId }
                 const tokens: IToken[] = await tokenRepository.find(reqObj);
                 return new MessageResponse(tokens);
 
             }
             if (msg.ids) {
-                const reqObj: any = { where: {} };
-                reqObj.where['tokenId'] = { $in: msg.ids }
+                const reqObj: any = { where: {} as unknown };
+                reqObj.where.tokenId = { $in: msg.ids }
                 const tokens: IToken[] = await tokenRepository.find(reqObj);
                 return new MessageResponse(tokens);
 
@@ -384,18 +381,17 @@ export const tokenAPI = async function (
             }
             const existingTokens = await tokenRepository.find();
             const existingTokensMap = {};
-            for (let i = 0; i < existingTokens.length; i++) {
-                existingTokensMap[existingTokens[i].tokenId] = true;
+            for (const existingToken of existingTokens) {
+                existingTokensMap[existingToken.tokenId] = true;
             }
             items = items.filter((token: any) => !existingTokensMap[token.tokenId]);
             const tokenObject = tokenRepository.create(items);
-            const result = await tokenRepository.save(tokenObject);
+            await tokenRepository.save(tokenObject);
             const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            return new MessageError(error.message);
         }
     })
 }

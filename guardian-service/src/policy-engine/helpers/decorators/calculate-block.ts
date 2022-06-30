@@ -7,16 +7,24 @@ import { IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
  * @param options
  */
 export function CalculateBlock(options: Partial<PolicyBlockDecoratorOptions>) {
+    // tslint:disable-next-line:only-arrow-functions
     return function (constructor: new (...args: any) => any): any {
         const basicClass = BasicBlock(options)(constructor);
 
         return class extends basicClass {
 
+            /**
+             * Block class name
+             */
             public readonly blockClassName = 'CalculateBlock';
 
+            /**
+             * Get block addons
+             * @protected
+             */
             protected getAddons(): IPolicyCalculateAddon[] {
                 const addons: IPolicyCalculateAddon[] = [];
-                for (let child of this.children) {
+                for (const child of this.children) {
                     if (child.blockClassName === 'CalculateAddon') {
                         addons.push(child);
                     }

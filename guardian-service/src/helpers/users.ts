@@ -2,9 +2,9 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { Request } from 'express';
 import { AuthEvents, UserRole } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/serviceRequestsBase';
-import { IAuthUser } from '@auth/auth.interface';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Inject } from '@helpers/decorators/inject';
+import { IAuthUser } from '@guardian/common';
 
 /**
  * Users setvice

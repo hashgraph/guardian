@@ -1,5 +1,5 @@
 import { PolicyRole } from '@guardian/interfaces';
-import { IAuthUser } from '@auth/auth.interface';
+import { IAuthUser } from '@guardian/common';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyInputEventType, PolicyOutputEventType } from './interfaces/policy-event-type';
 import { EventConfig, IPolicyEvent } from './interfaces';
@@ -35,6 +35,7 @@ export interface IPolicyBlock {
     policyOwner: string;
     policyInstance: any;
     topicId: string;
+    about?: string;
 
     readonly actions: any[];
     readonly outputActions: any[];

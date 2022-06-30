@@ -7,12 +7,11 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { getMongoRepository } from "typeorm";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
-import { IAuthUser } from "@auth/auth.interface";
 import { DocumentStatus, ExternalMessageEvents, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { Topic } from "@entity/topic";
 import { TopicHelper } from "@helpers/topicHelper";
 import { DocumentState } from "@entity/document-state";
-import { ExternalEventChannel } from "@guardian/common";
+import { ExternalEventChannel, IAuthUser } from "@guardian/common";
 
 export enum DataTypes {
     MRV = 'mrv',

@@ -1,9 +1,12 @@
 import { SourceAddon, StateField } from '@policy-engine/helpers/decorators';
-import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IAuthUser } from '@guardian/common';
 
+/**
+ * Pagination addon
+ */
 @SourceAddon({
     blockType: 'paginationAddon',
     about: {
@@ -20,6 +23,10 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 })
 export class PaginationAddon {
 
+    /**
+     * Block state field
+     * @private
+     */
     @StateField()
     private state;
 
@@ -29,6 +36,10 @@ export class PaginationAddon {
         }
     }
 
+    /**
+     * Get pagination state
+     * @param user
+     */
     public async getState(user: IAuthUser):Promise<any> {
         if (!this.state[user.did]) {
             this.state[user.did] = {
@@ -47,10 +58,19 @@ export class PaginationAddon {
         return this.state[user.did]
     }
 
+    /**
+     * Get block data
+     * @param user
+     */
     public async getData(user: IAuthUser): Promise<any> {
         return this.getState(user);
     }
 
+    /**
+     * Set block data
+     * @param user
+     * @param data
+     */
     public async setData(user: IAuthUser, data: any): Promise<void> {
         const oldState = this.state;
         oldState[user.did] = data;
