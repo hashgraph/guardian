@@ -4,7 +4,7 @@ import { ld as vcjs } from '@transmute/vc.js';
 import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { PrivateKey } from '@hashgraph/sdk';
 import { check, CheckResult } from '@transmute/jsonld-schema';
-import { ICredentialSubject, IVC } from '@guardian/interfaces';
+import { GenerateUUIDv4, ICredentialSubject, IVC } from '@guardian/interfaces';
 import { VcDocument } from './vc-document';
 import { VpDocument } from './vp-document';
 import { HederaUtils } from './../utils';
@@ -276,7 +276,7 @@ export class VCJS {
         schema?: string
     ): Promise<VcDocument> {
         const document = DidRootKey.createByPrivateKey(did, key);
-        const id = HederaUtils.randomUUID();
+        const id = GenerateUUIDv4();
         const suite = await this.createSuite(document);
         const vcSubject = VcSubject.create(subject, schema);
         for (let i = 0; i < this.schemaContext.length; i++) {
@@ -309,7 +309,7 @@ export class VCJS {
         vcs: VcDocument[],
         uuid?: string,
     ): Promise<VpDocument> {
-        uuid = uuid || HederaUtils.randomUUID();
+        uuid = uuid || GenerateUUIDv4();
         const document = DidRootKey.createByPrivateKey(did, key);
         const suite = await this.createSuite(document);
         let vp = new VpDocument();

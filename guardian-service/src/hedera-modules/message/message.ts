@@ -4,6 +4,7 @@ import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { MessageBody } from './message-body.interface';
 import { HederaUtils } from './../utils';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 export enum MessageStatus {
     ISSUE = 'ISSUE',
@@ -39,7 +40,7 @@ export abstract class Message {
         this.action = action;
         this.type = type;
         this._responseType = 'str';
-        this._id = HederaUtils.randomUUID();
+        this._id = GenerateUUIDv4();
         this._status = MessageStatus.ISSUE;
         this.lang = 'en-US';
     }

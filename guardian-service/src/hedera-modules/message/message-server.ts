@@ -16,6 +16,7 @@ import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
 import { HederaUtils } from './../utils';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 export class MessageServer {
 
@@ -34,7 +35,7 @@ export class MessageServer {
     }
 
     public async messageStartLog(name: string): Promise<string> {
-        const id = HederaUtils.randomUUID();
+        const id = GenerateUUIDv4();
         await TransactionLogger.messageLog(id, name);
         return id;
     }

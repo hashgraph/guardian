@@ -32,6 +32,7 @@ import { HederaUtils, timeout } from './utils';
 import axios from 'axios';
 import { Environment } from './environment';
 import { TransactionLogger } from './transaction-logger';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 export const MAX_FEE = 10;
 export const INITIAL_BALANCE = 30;
@@ -690,7 +691,7 @@ export class HederaSDKHelper {
     private async executeAndReceipt(
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionReceipt> {
-        const id = HederaUtils.randomUUID();
+        const id = GenerateUUIDv4();
         try {
             await this.transactionStartLog(id, type);
             const result = await transaction.execute(client);
@@ -707,7 +708,7 @@ export class HederaSDKHelper {
     private async executeAndRecord(
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionRecord> {
-        const id = HederaUtils.randomUUID();
+        const id = GenerateUUIDv4();
         try {
             await this.transactionStartLog(id, type);
             const result = await transaction.execute(client);
