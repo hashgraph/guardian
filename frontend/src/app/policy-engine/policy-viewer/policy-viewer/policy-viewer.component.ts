@@ -12,6 +12,7 @@ import { ExportPolicyDialog } from '../../helpers/export-policy-dialog/export-po
 import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
 import { ImportPolicyDialog } from '../../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview-policy-dialog.component';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
  * Component for choosing a policy and
@@ -41,6 +42,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
+        private wsService: WebSocketService,
         private tokenService: TokenService,
         private route: ActivatedRoute,
         private router: Router,
@@ -85,7 +87,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         );
 
         this.subscription.add(
-            this.policyEngineService.subscribeUserInfo((message => {
+            this.wsService.subscribeUserInfo((message => {
                 this.policyInfo.userRoles = [message.userRole];
             }))
         );

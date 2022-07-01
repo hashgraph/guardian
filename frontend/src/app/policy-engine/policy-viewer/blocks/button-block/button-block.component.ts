@@ -2,6 +2,7 @@ import { AfterContentChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDete
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
 
 /**
@@ -28,6 +29,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
 
   constructor(
     private policyEngineService: PolicyEngineService,
+    private wsService: WebSocketService,
     private policyHelper: PolicyHelper,
     public dialog: MatDialog,
     private cdref: ChangeDetectorRef
@@ -46,7 +48,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
 
   ngOnInit(): void {
     if (!this.static) {
-      this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
+      this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
     }
     this.loadData();
   }
