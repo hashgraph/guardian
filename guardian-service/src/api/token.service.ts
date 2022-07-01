@@ -136,7 +136,7 @@ export async function tokenAPI(
                 supplyKey: supplyKey ? supplyKey.toString() : null,
                 owner: root.did
             });
-            const result = await tokenRepository.save(tokenObject);
+            await tokenRepository.save(tokenObject);
             const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {

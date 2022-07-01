@@ -340,7 +340,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
                 delete attributes['@context'];
                 const regMessage = new RegistrationMessage(MessageAction.Init);
                 regMessage.setDocument(didMessage.did, topic?.topicId, attributes);
-                const result = await messageServer
+                await messageServer
                     .setTopicObject(globalTopic)
                     .sendMessage(regMessage)
             }

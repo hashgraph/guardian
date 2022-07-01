@@ -154,7 +154,7 @@ export class Schema implements ISchema {
         this.readonly = !!this.readonly;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.iri = this.iri || `${this.uuid}`;
-        if (this.status == SchemaStatus.DRAFT) {
+        if (this.status === SchemaStatus.DRAFT) {
             this.messageId = null;
         }
         this.system = this.system || false;

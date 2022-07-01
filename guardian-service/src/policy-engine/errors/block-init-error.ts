@@ -4,7 +4,7 @@ import { BlockError } from '@policy-engine/interfaces';
  * Error fires when block init
  */
 export class BlockInitError extends Error implements BlockError {
-    constructor(message: string, private blockType, private uuid) {
+    constructor(message: string, private readonly blockType, private readonly uuid) {
         super(message);
     }
 

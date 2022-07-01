@@ -1,5 +1,5 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
-import { EventConfig, PolicyBlockMap, PolicyTagMap } from '@policy-engine/interfaces';
+import { EventConfig } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
 import { ExternalMessageEvents, PolicyRole } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
@@ -38,7 +38,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block children
              * @private
              */
-            private _children: IPolicyBlock[] = [];
+            private readonly _children: IPolicyBlock[] = [];
 
             /**
              * Block children getter
@@ -514,7 +514,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return;
                 }
 
-
                 for (const [key, value] of Object.entries(JSON.parse(stateEntity.blockState))) {
                     this[key] = value;
                 }
@@ -574,7 +573,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
                 if ((this as any).children && ((this as any).children.length > 0)) {
                     obj.children = [];
-                    for (let child of (this as any).children) {
+                    for (const child of (this as any).children) {
                         obj.children.push(child.serialize(withUUID));
                     }
                 }
@@ -590,7 +589,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     super.destroy();
                 }
 
-                for (let child of (this as any).children) {
+                for (const child of (this as any).children) {
                     child.destroy();
                 }
             }

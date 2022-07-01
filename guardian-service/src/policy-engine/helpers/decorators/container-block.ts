@@ -70,9 +70,9 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
                         return undefined;
                     })
-                })
+                });
 
-                const changed = (this as any).updateDataState(user, result);
+                (this as any).updateDataState(user, result);
                 return result;
             }
 

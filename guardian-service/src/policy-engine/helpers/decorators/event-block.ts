@@ -23,7 +23,6 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param args
              */
             async getData(...args) {
-                const [user] = args;
                 if (typeof super.getData === 'function') {
                     return await super.getData(...args);
                 }

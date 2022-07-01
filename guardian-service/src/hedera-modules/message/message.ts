@@ -3,35 +3,88 @@ import { IURL, UrlType } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { MessageBody } from './message-body.interface';
-import { HederaUtils } from './../utils';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
+/**
+ * Message status
+ */
 export enum MessageStatus {
     ISSUE = 'ISSUE',
     REVOKE = 'REVOKE'
 }
 
+/**
+ * Revoke message
+ */
 export enum RevokeReason {
     DocumentRevoked = 'Document Revoked',
     ParentRevoked = 'Parent Revoked'
 }
 
+/**
+ * Message
+ */
 export abstract class Message {
+    /**
+     * Id
+     */
     public id: string;
+    /**
+     * URLs
+     */
     public urls: IURL[];
+    /**
+     * Topic ID
+     */
     public topicId: string | TopicId;
+    /**
+     * Language
+     */
     public lang: string;
 
+    /**
+     * Message action
+     */
     public readonly action: MessageAction;
+    /**
+     * Message type
+     */
     public readonly type: MessageType;
 
+    /**
+     * Response type
+     * @protected
+     */
     protected _responseType: 'json' | 'raw' | 'str';
+    /**
+     * _id
+     * @protected
+     */
     protected _id: string;
+    /**
+     * Message status
+     * @protected
+     */
     protected _status: MessageStatus;
+    /**
+     * Revoke message
+     * @protected
+     */
     protected _revokeMessage: string;
+    /**
+     * Revoke reason
+     * @protected
+     */
     protected _revokeReason: string;
+    /**
+     * Parent ids
+     * @protected
+     */
     protected _parentIds: string[];
 
+    /**
+     * Response type
+     */
     get responseType() {
         return this._responseType;
     }
@@ -45,38 +98,77 @@ export abstract class Message {
         this.lang = 'en-US';
     }
 
+    /**
+     * To message object
+     */
     public abstract toMessageObject(): MessageBody;
+
+    /**
+     * To document
+     */
     public abstract toDocuments(): Promise<ArrayBuffer[]>;
+
+    /**
+     * Load documents
+     * @param documents
+     */
     public abstract loadDocuments(documents: any[]): Message;
 
+    /**
+     * Set URLs
+     * @param url
+     */
     public setUrls(url: IURL[]): void {
         this.urls = url;
     }
 
+    /**
+     * Get URLs
+     */
     public getUrls(): IURL[] {
         return this.urls;
     }
 
+    /**
+     * Set id
+     * @param id
+     */
     public setId(id: string): void {
         this.id = id;
     }
 
+    /**
+     * Set topic id
+     * @param topicId
+     */
     public setTopicId(topicId: string | TopicId): void {
         this.topicId = topicId;
     }
 
+    /**
+     * Get URL
+     */
     public getUrl(): any {
         return this.urls;
     }
 
+    /**
+     * Get ID
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * Get message id
+     */
     public getMessageId(): string {
         return this._id;
     }
 
+    /**
+     * Get topic ID
+     */
     public getTopicId(): string {
         if (this.topicId) {
             return this.topicId.toString();
@@ -84,8 +176,16 @@ export abstract class Message {
         return null
     }
 
+    /**
+     * Validate
+     */
     public abstract validate(): boolean;
 
+    /**
+     * Get URL value
+     * @param index
+     * @param type
+     */
     public getUrlValue(index: number, type: UrlType): string | null {
         if (this.urls && this.urls[index]) {
             if (type === UrlType.cid) {
@@ -97,6 +197,11 @@ export abstract class Message {
         return null;
     }
 
+    /**
+     * Revoke
+     * @param message
+     * @param parentIds
+     */
     public revoke(message: string, parentIds?: string[]): void {
         this._status = MessageStatus.REVOKE;
         this._revokeMessage = message;
@@ -106,12 +211,18 @@ export abstract class Message {
         this._parentIds = parentIds;
     }
 
+    /**
+     * Is revoked
+     */
     public isRevoked() {
         return this._status === MessageStatus.REVOKE;
     }
 
+    /**
+     * To message
+     */
     public toMessage(): string {
-        if (this._status == MessageStatus.REVOKE) {
+        if (this._status === MessageStatus.REVOKE) {
             const body: MessageBody = {
                 id: this._id,
                 status: this._status,
@@ -131,6 +242,10 @@ export abstract class Message {
         }
     }
 
+    /**
+     * Set language
+     * @param lang
+     */
     public setLang(lang: string) {
         this.lang = lang || 'en-US';
     }

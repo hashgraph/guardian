@@ -52,7 +52,7 @@ export function CalculateAddon(options: Partial<PolicyBlockDecoratorOptions>) {
             public parse(formula: string): boolean {
                 return (function (_formula: string) {
                     try {
-                        const tree = this.parse(_formula);
+                        this.parse(_formula);
                         return true;
                     } catch (error) {
                         return false;

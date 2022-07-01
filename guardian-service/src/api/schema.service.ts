@@ -824,7 +824,7 @@ export async function schemaAPI(
                 return new MessageError('Invalid load schema parameter');
             }
 
-            const { owner, pageIndex, pageSize } = msg;
+            const { pageIndex, pageSize } = msg;
             const filter: any = {
                 where: {
                     system: true

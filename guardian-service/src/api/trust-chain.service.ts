@@ -8,7 +8,6 @@ import {
 } from '@guardian/interfaces';
 import { MongoRepository } from 'typeorm';
 import {
-    VcDocument as HVcDocument,
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
@@ -49,7 +48,7 @@ function getIssuer(vcDocument: VcDocument | VpDocument): string {
  */
 function checkPolicy(vcDocument: VcDocument, policyId: string) {
     if (vcDocument) {
-        if (!vcDocument.policyId || vcDocument.policyId == policyId) {
+        if (!vcDocument.policyId || vcDocument.policyId === policyId) {
             return true;
         }
     }

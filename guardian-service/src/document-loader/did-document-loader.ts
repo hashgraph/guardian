@@ -7,10 +7,18 @@ import { getMongoRepository } from 'typeorm';
  * Used for signatures validation.
  */
 export class DIDDocumentLoader extends DocumentLoader {
+    /**
+     * Has context
+     * @param iri
+     */
     public async has(iri: string): Promise<boolean> {
         return iri.startsWith('did:hedera:');
     }
 
+    /**
+     * Get formatted document
+     * @param iri
+     */
     public async get(iri: string): Promise<IDocumentFormat> {
         return {
             documentUrl: iri,
@@ -18,9 +26,13 @@ export class DIDDocumentLoader extends DocumentLoader {
         };
     }
 
+    /**
+     * Get document
+     * @param iri
+     */
     public async getDocument(iri: string): Promise<any> {
         const did = DidRootKey.create(iri).getController();
-        const didDocuments = await getMongoRepository(DidDocument).findOne({ did: did });
+        const didDocuments = await getMongoRepository(DidDocument).findOne({ did });
         if (didDocuments) {
             return didDocuments.document;
         }

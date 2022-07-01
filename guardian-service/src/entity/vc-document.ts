@@ -1,5 +1,5 @@
-import {DocumentSignature, DocumentStatus, IVCDocument, SchemaEntity} from '@guardian/interfaces';
-import {BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn} from 'typeorm';
+import { DocumentSignature, DocumentStatus, IVCDocument } from '@guardian/interfaces';
+import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
 /**
  * VC documents collection

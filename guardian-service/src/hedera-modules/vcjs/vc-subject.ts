@@ -1,37 +1,79 @@
 import { ICredentialSubject } from '@guardian/interfaces';
 
+/**
+ * VC subject
+ */
 export class VcSubject {
+    /**
+     * Credential ID
+     */
     public static readonly CREDENTIAL_ID: string = 'id';
+    /**
+     * Credential type
+     */
     public static readonly CREDENTIAL_TYPE: string = 'type';
+    /**
+     * Context
+     */
     public static readonly CONTEXT: string = '@context';
 
+    /**
+     * ID
+     * @protected
+     */
     protected id: string;
+    /**
+     * Context
+     * @protected
+     */
     protected context: string[];
+    /**
+     * Type
+     * @protected
+     */
     protected type: string;
+    /**
+     * Document
+     * @protected
+     */
     protected document: any;
 
     constructor() {
         this.context = [];
     }
 
+    /**
+     * Get ID
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * Set ID
+     * @param id
+     */
     public setId(id: string): void {
         this.id = id;
     }
 
+    /**
+     * Get type
+     */
     public getType(): string {
         return this.type;
     }
 
+    /**
+     * Get field
+     * @param name
+     */
     public getField<T>(name: string): T {
         try {
             const f = name.split('.');
             let result = this.document;
-            for (let i = 0; i < f.length; i++) {
-                result = result[f[i]];
+            for (const it of f) {
+                result = result[it];
             }
             return result;
         } catch (error) {
@@ -47,8 +89,7 @@ export class VcSubject {
     public addContext(context: string | string[]): void {
         if (context) {
             if (Array.isArray(context)) {
-                for (let index = 0; index < context.length; index++) {
-                    const element = context[index];
+                for (const element of context) {
                     this._addContext(element);
                 }
             } else {
@@ -57,16 +98,27 @@ export class VcSubject {
         }
     }
 
+    /**
+     * Add context
+     * @param context
+     * @private
+     */
     private _addContext(context: string): void {
         if (this.context.indexOf(context) == -1) {
             this.context.push(context)
         }
     }
 
+    /**
+     * To JSON
+     */
     public toJson(): string {
         return JSON.stringify(this.toJsonTree());
     }
 
+    /**
+     * To JSON tree
+     */
     public toJsonTree(): ICredentialSubject {
         const json = Object.assign({}, this.document);
 
@@ -83,11 +135,17 @@ export class VcSubject {
         return json;
     }
 
+    /**
+     * Get fields
+     */
     public getFields(): any {
-        const json = Object.assign({}, this.document);
-        return json;
+        return Object.assign({}, this.document);
     }
 
+    /**
+     * From JSON
+     * @param json
+     */
     public static fromJson(json: string): VcSubject {
         let result: VcSubject;
         try {
@@ -99,10 +157,19 @@ export class VcSubject {
         return result;
     }
 
+    /**
+     * From JSON tree
+     * @param json
+     */
     public static fromJsonTree(json: ICredentialSubject): VcSubject {
-        return this.create(json);
+        return VcSubject.create(json);
     }
 
+    /**
+     * Create
+     * @param subject
+     * @param schema
+     */
     public static create(subject: any, schema?: string): VcSubject {
         if (!subject) {
             throw new Error('Subject is empty');

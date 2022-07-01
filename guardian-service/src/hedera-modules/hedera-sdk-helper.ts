@@ -25,7 +25,6 @@ import {
     Transaction,
     TransactionReceipt,
     TransactionRecord,
-    TransactionResponse,
     TransferTransaction
 } from '@hashgraph/sdk';
 import { HederaUtils, timeout } from './utils';
@@ -66,7 +65,7 @@ export class HederaSDKHelper {
 
     /**
      * Create new token (TokenCreateTransaction)
-     * 
+     *
      * @param {string} name - Token name
      * @param {string} symbol - Token symbol
      * @param {boolean} nft - Fungible or NonFungible Token
@@ -74,12 +73,12 @@ export class HederaSDKHelper {
      * @param {number} initialSupply - Initial Supply
      * @param {string} tokenMemo - Memo field
      * @param {any} treasury - treasury account
-     * @param {PrivateKey} [adminKey] - set admin key 
-     * @param {PrivateKey} [kycKey] - set kyc key 
-     * @param {PrivateKey} [freezeKey] - set freeze key 
-     * @param {PrivateKey} [wipeKey] - set wipe key 
-     * @param {PrivateKey} [supplyKey] - set supply key 
-     * 
+     * @param {PrivateKey} [adminKey] - set admin key
+     * @param {PrivateKey} [kycKey] - set kyc key
+     * @param {PrivateKey} [freezeKey] - set freeze key
+     * @param {PrivateKey} [wipeKey] - set wipe key
+     * @param {PrivateKey} [supplyKey] - set supply key
+     *
      * @returns {string} - Token id
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -139,9 +138,9 @@ export class HederaSDKHelper {
 
     /**
      * Get balance account (AccountBalanceQuery)
-     * 
+     *
      * @param {string | AccountId} accountId - Account Id
-     * 
+     *
      * @returns {string} - balance
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -155,9 +154,9 @@ export class HederaSDKHelper {
 
     /**
      * Get associate tokens and balance (AccountInfoQuery)
-     * 
+     *
      * @param {string | AccountId} accountId - Account Id
-     * 
+     *
      * @returns {any} - associate tokens and balance
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -184,11 +183,11 @@ export class HederaSDKHelper {
 
     /**
      * Associate tokens with account (TokenAssociateTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string} id - Account Id
      * @param {string} key - Account Private Id
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -210,11 +209,11 @@ export class HederaSDKHelper {
 
     /**
      * Dissociate tokens with account (TokenDissociateTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string} id - Account Id
      * @param {string} key - Account Private Id
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -236,11 +235,11 @@ export class HederaSDKHelper {
 
     /**
      * Freezes transfers of the specified token for the account (TokenFreezeTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string} accountId - Account Id
      * @param {string} freezeKey - Token freeze key
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -261,11 +260,11 @@ export class HederaSDKHelper {
 
     /**
      * Unfreezes transfers of the specified token for the account (TokenUnfreezeTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string} accountId - Account Id
      * @param {string} freezeKey - Token freeze key
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -286,11 +285,11 @@ export class HederaSDKHelper {
 
     /**
      * Grants KYC to the account for the given token (TokenGrantKycTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string} accountId - Account Id
      * @param {string} kycKey - Token KYC key
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -311,11 +310,11 @@ export class HederaSDKHelper {
 
     /**
      * Revokes the KYC to the account for the given token (TokenRevokeKycTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string} accountId - Account Id
      * @param {string} kycKey - Token KYC key
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -337,12 +336,12 @@ export class HederaSDKHelper {
 
     /**
      * Minting fungible token allows you to increase the total supply of the token (TokenMintTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string | PrivateKey} supplyKey - Token Supply key
      * @param {number} amount - amount
      * @param {string} [transactionMemo] - Memo field
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -368,14 +367,14 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Minting a non-fungible token creates an NFT with 
+     * Minting a non-fungible token creates an NFT with
      * its unique metadata for the class of NFTs defined by the token ID (TokenMintTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string | PrivateKey} supplyKey - Token Supply key
      * @param {Uint8Array[]} data - token data
      * @param {string} [transactionMemo] - Memo field
-     * 
+     *
      * @returns {number[]} - serials
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -406,13 +405,13 @@ export class HederaSDKHelper {
 
     /**
      * Wipes the provided amount of fungible tokens from the specified account (TokenWipeTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string | AccountId} targetId - Target Account Id
      * @param {string | PrivateKey} wipeKey - Token Wipe key
      * @param {number} amount - amount
      * @param {string} [transactionMemo] - Memo field
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -441,14 +440,14 @@ export class HederaSDKHelper {
 
     /**
      * Transfer tokens from some accounts to other accounts (TransferTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string | AccountId} targetId - Target Account Id
      * @param {string | AccountId} scoreId - Treasury Account Id
      * @param {string | PrivateKey} scoreKey - Token Score key
      * @param {number} amount - amount
      * @param {string} [transactionMemo] - Memo field
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -477,14 +476,14 @@ export class HederaSDKHelper {
 
     /**
      * Transfer non-fungible token from some accounts to other accounts (TransferTransaction)
-     * 
+     *
      * @param {string | TokenId} tokenId - Token Id
      * @param {string | AccountId} targetId - Target Account Id
      * @param {string | AccountId} scoreId - Treasury Account Id
      * @param {string | PrivateKey} scoreKey - Token Score key
      * @param {number[]} serials - serials
      * @param {string} [transactionMemo] - Memo field
-     * 
+     *
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -518,9 +517,9 @@ export class HederaSDKHelper {
 
     /**
      * Create new Account (AccountCreateTransaction)
-     * 
+     *
      * @param {number} initialBalance - Initial Balance
-     * 
+     *
      * @returns {any} - Account Id and Account Private Key
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -549,9 +548,9 @@ export class HederaSDKHelper {
 
     /**
      * Create new Topic (TopicCreateTransaction)
-     * 
+     *
      * @param {PrivateKey | string} [key] - Topic Admin Key
-     * 
+     *
      * @returns {string} - Topic Id
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -593,10 +592,10 @@ export class HederaSDKHelper {
 
     /**
      * Submit message to the topic (TopicMessageSubmitTransaction)
-     * 
+     *
      * @param topicId Topic identifier
      * @param message Message to publish
-     * 
+     *
      * @returns Message timestamp
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -742,9 +741,9 @@ export class HederaSDKHelper {
 
     /**
      * Get balance account (AccountBalanceQuery)
-     * 
+     *
      * @param {string | AccountId} accountId - Account Id
-     * 
+     *
      * @returns {string} - balance
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -758,4 +757,3 @@ export class HederaSDKHelper {
         return NaN;
     }
 }
-

@@ -2,7 +2,7 @@
  * Error fires in block runtime
  */
 export class BlockActionError extends Error {
-    constructor(message: string, private blockType, private uuid) {
+    constructor(message: string, private readonly blockType, private readonly uuid) {
         super(message);
     }
 
@@ -10,7 +10,6 @@ export class BlockActionError extends Error {
      * Error object getter
      */
     public get errorObject() {
-        console.error(this.message);
         return {
             type: 'blockActionError',
             code: 500,

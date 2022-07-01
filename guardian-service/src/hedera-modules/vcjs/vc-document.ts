@@ -6,24 +6,85 @@ import { DIDDocument } from './did-document';
 import { Issuer } from './issuer';
 import { VcSubject } from './vc-subject';
 
+/**
+ * VC document
+ */
 export class VcDocument {
+    /**
+     * Context
+     */
     public static readonly CONTEXT = '@context';
+    /**
+     * First context entry
+     */
     public static readonly FIRST_CONTEXT_ENTRY = 'https://www.w3.org/2018/credentials/v1';
+    /**
+     * ID
+     */
     public static readonly ID = 'id';
+    /**
+     * Credential subject
+     */
     public static readonly CREDENTIAL_SUBJECT = 'credentialSubject';
+    /**
+     * Type
+     */
     public static readonly TYPE = 'type';
+    /**
+     * Verifiable credential
+     */
     public static readonly VERIFIABLE_CREDENTIAL_TYPE = 'VerifiableCredential';
+    /**
+     * Issuer
+     */
     public static readonly ISSUER = 'issuer';
+    /**
+     * Issuer date
+     */
     public static readonly ISSUANCE_DATE = 'issuanceDate';
+    /**
+     * Credential status
+     */
     public static readonly CREDENTIAL_STATUS = 'credentialStatus';
+    /**
+     * Proof
+     */
     public static readonly PROOF = 'proof';
 
+    /**
+     * ID
+     * @protected
+     */
     protected id: string;
+    /**
+     * Type
+     * @protected
+     */
     protected type: string[];
+    /**
+     * Issuer
+     * @protected
+     */
     protected issuer: Issuer;
+    /**
+     * Issuance date
+     * @protected
+     */
     protected issuanceDate: Timestamp;
+    /**
+     * Subject
+     * @protected
+     */
     protected subject: VcSubject[];
+    /**
+     * Context
+     * @protected
+     */
     protected context: string[];
+    /**
+     * Proof
+     * @protected
+     */
     protected proof: any;
 
     constructor() {
@@ -32,26 +93,45 @@ export class VcDocument {
         this.type = [VcDocument.VERIFIABLE_CREDENTIAL_TYPE];
     }
 
+    /**
+     * Get context
+     */
     public getContext(): string[] {
         return this.context;
     }
 
+    /**
+     * Set ID
+     * @param id
+     */
     public setId(id: string): void {
         this.id = id;
     }
 
+    /**
+     * Get ID
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * Get type
+     */
     public getType(): string[] {
         return this.type;
     }
 
+    /**
+     * Get issuer
+     */
     public getIssuer(): Issuer {
         return this.issuer;
     }
 
+    /**
+     * Get issuer DID
+     */
     public getIssuerDid(): string {
         if (this.issuer) {
             return this.issuer.getId();
@@ -59,6 +139,10 @@ export class VcDocument {
         return null;
     }
 
+    /**
+     * Set issuer
+     * @param issuer
+     */
     public setIssuer(issuer: string | Issuer | DIDDocument): void {
         if (typeof issuer === 'string') {
             this.issuer = new Issuer(issuer);
@@ -69,54 +153,96 @@ export class VcDocument {
         }
     }
 
+    /**
+     * Get issuance date
+     */
     public getIssuanceDate(): Timestamp {
         return this.issuanceDate;
     }
 
+    /**
+     * Set issuance date
+     * @param issuanceDate
+     */
     public setIssuanceDate(issuanceDate: Timestamp): void {
         this.issuanceDate = issuanceDate;
     }
 
+    /**
+     * Add context
+     * @param context
+     */
     public addContext(context: string): void {
-        if (this.context.indexOf(context) == -1) {
+        if (this.context.indexOf(context) === -1) {
             this.context.push(context);
         }
     }
 
+    /**
+     * Add type
+     * @param type
+     */
     public addType(type: string): void {
-        if (this.type.indexOf(type) == -1) {
+        if (this.type.indexOf(type) === -1) {
             this.type.push(type);
         }
     }
 
+    /**
+     * Get credential subject
+     * @param index
+     */
     public getCredentialSubject(index: number = 0): VcSubject {
         return this.subject[index];
     }
 
+    /**
+     * Get credential subject
+     */
     public getCredentialSubjects(): VcSubject[] {
         return this.subject;
     }
 
+    /**
+     * Get proof
+     */
     public getProof(): any {
         return this.proof;
     }
 
+    /**
+     * Set proof
+     * @param proof
+     */
     public setProof(proof: any): void {
         this.proof = proof;
     }
 
+    /**
+     * Get subject type
+     */
     public getSubjectType(): string {
         return this.getCredentialSubject(0)?.getType();
     }
 
+    /**
+     * Length
+     */
     public get length(): number {
         return this.subject.length;
     }
 
+    /**
+     * to JSON
+     */
     public toJson(): string {
         return JSON.stringify(this.toJsonTree());
     }
 
+    /**
+     * From JSON
+     * @param json
+     */
     public static fromJson(json: string): VcDocument {
         let result: VcDocument;
         try {
@@ -128,22 +254,28 @@ export class VcDocument {
         return result;
     }
 
+    /**
+     * To JSON tree
+     */
     public toJsonTree(): IVC {
         const rootObject: any = {};
 
-        if (this.id)
+        if (this.id) {
             rootObject[VcDocument.ID] = this.id;
-        if (this.type)
+        }
+        if (this.type) {
             rootObject[VcDocument.TYPE] = this.type;
-        if (this.issuer)
+        }
+        if (this.issuer) {
             rootObject[VcDocument.ISSUER] = this.issuer.toJsonTree();
-        if (this.issuanceDate)
+        }
+        if (this.issuanceDate) {
             rootObject[VcDocument.ISSUANCE_DATE] = TimestampUtils.toJSON(this.issuanceDate);
+        }
 
         const context = [];
         if (this.context) {
-            for (let index = 0; index < this.context.length; index++) {
-                const element = this.context[index];
+            for (const element of this.context) {
                 context.push(element);
             }
         }
@@ -151,8 +283,7 @@ export class VcDocument {
 
         const credentialSubject = [];
         if (this.subject) {
-            for (let index = 0; index < this.subject.length; index++) {
-                const element = this.subject[index];
+            for (const element of this.subject) {
                 credentialSubject.push(element.toJsonTree());
             }
         }
@@ -165,7 +296,10 @@ export class VcDocument {
         return rootObject;
     }
 
-
+    /**
+     * From JSON tree
+     * @param json
+     */
     public static fromJsonTree(json: IVC): VcDocument {
         if (!json) {
             throw new Error('JSON Object is empty');
@@ -173,20 +307,23 @@ export class VcDocument {
 
         const result = new VcDocument();
 
-        if (json[VcDocument.ID])
+        if (json[VcDocument.ID]) {
             result.id = json[VcDocument.ID];
-        if (json[VcDocument.TYPE])
+        }
+        if (json[VcDocument.TYPE]) {
             result.type = json[VcDocument.TYPE];
-        if (json[VcDocument.ISSUER])
+        }
+        if (json[VcDocument.ISSUER]) {
             result.issuer = Issuer.fromJsonTree(json[VcDocument.ISSUER]);
-        if (json[VcDocument.ISSUANCE_DATE])
+        }
+        if (json[VcDocument.ISSUANCE_DATE]) {
             result.issuanceDate = TimestampUtils.fromJson(json[VcDocument.ISSUANCE_DATE]);
+        }
 
         const jsonCredentialSubject = json[VcDocument.CREDENTIAL_SUBJECT];
         if (jsonCredentialSubject) {
             if (Array.isArray(jsonCredentialSubject)) {
-                for (let i = 0; i < jsonCredentialSubject.length; i++) {
-                    const item = jsonCredentialSubject[i];
+                for (const item of jsonCredentialSubject) {
                     const subject = VcSubject.fromJsonTree(item);
                     result.addCredentialSubject(subject);
                 }
@@ -198,8 +335,7 @@ export class VcDocument {
         const context = json[VcDocument.CONTEXT];
         if (context) {
             if (Array.isArray(context)) {
-                for (let i = 0; i < context.length; i++) {
-                    const item = context[i];
+                for (const item of context) {
                     result.addContext(item);
                 }
             } else {
@@ -209,12 +345,16 @@ export class VcDocument {
             result.context = context.slice();
         }
 
-        if (json[VcDocument.PROOF])
+        if (json[VcDocument.PROOF]) {
             result.proof = json[VcDocument.PROOF];
+        }
 
         return result;
     }
 
+    /**
+     * To credential hash
+     */
     public toCredentialHash(): string {
         const map = {};
         map[VcDocument.ID] = this.id;
@@ -226,24 +366,39 @@ export class VcDocument {
         return Hashing.base58.encode(hash);
     }
 
+    /**
+     * Add credential subject
+     * @param subject
+     */
     public addCredentialSubject(subject: VcSubject): void {
         if (subject) {
             this.subject.push(subject);
         }
     }
 
+    /**
+     * Add credential subjects
+     * @param subjects
+     */
     public addCredentialSubjects(subjects: VcSubject[]): void {
         if (subjects) {
-            for (let index = 0; index < subjects.length; index++) {
-                this.subject.push(subjects[index]);
+            for (const subject of subjects) {
+                this.subject.push(subject);
             }
         }
     }
 
+    /**
+     * Get document
+     */
     public getDocument(): IVC {
         return this.toJsonTree();
     }
 
+    /**
+     * Proof from JSON
+     * @param json
+     */
     public proofFromJson(json: any): void {
         this.setProof(json[VcDocument.PROOF]);
     }

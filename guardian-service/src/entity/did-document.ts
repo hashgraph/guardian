@@ -1,6 +1,9 @@
 import { DidDocumentStatus, IDidObject } from '@guardian/interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
+/**
+ * DID document
+ */
 @Entity()
 export class DidDocument implements IDidObject {
     /**

@@ -1,3 +1,6 @@
+/**
+ * Input event type
+ */
 export enum PolicyInputEventType {
     TimerEvent = 'TimerEvent',
     StartTimerEvent = 'StartTimerEvent',
@@ -7,6 +10,9 @@ export enum PolicyInputEventType {
     ReleaseEvent = 'ReleaseEvent'
 }
 
+/**
+ * Output event type
+ */
 export enum PolicyOutputEventType {
     TimerEvent = 'TimerEvent',
     RunEvent = 'RunEvent',
@@ -14,6 +20,9 @@ export enum PolicyOutputEventType {
     DropdownEvent = 'DropdownEvent',
 }
 
+/**
+ * Event actor
+ */
 export enum EventActor {
     Owner = 'owner',
     Issuer = 'issuer',

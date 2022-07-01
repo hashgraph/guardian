@@ -23,7 +23,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block filters
              * @private
              */
-            private filters: { [key: string]: { [key: string]: string } } = {};
+            private readonly filters: { [key: string]: { [key: string]: string } } = {};
 
             /**
              * Get block filters

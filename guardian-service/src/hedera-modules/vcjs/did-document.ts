@@ -1,55 +1,116 @@
 import { PrivateKey, PublicKey, TopicId } from '@hashgraph/sdk';
-import { Environment } from './../environment';
-import { Hashing } from './../hashing';
+import { Environment } from '../environment';
+import { Hashing } from '../hashing';
 import { IVerificationMethod, IDidDocument } from '@guardian/interfaces';
 
+/**
+ * DID roor key
+ */
 export class DidRootKey {
+    /**
+     * DID root key name
+     */
     public static DID_ROOT_KEY_NAME = '#did-root-key';
+    /**
+     * DID root key type
+     */
     public static DID_ROOT_KEY_TYPE = 'Ed25519VerificationKey2018';
 
+    /**
+     * ID
+     * @private
+     */
     private id: string;
+    /**
+     * Type
+     * @private
+     */
     private type: string;
+    /**
+     * Controller
+     * @private
+     */
     private controller: string;
+    /**
+     * Public key base58
+     * @private
+     */
     private publicKeyBase58: string;
+    /**
+     * Private key base58
+     * @private
+     */
     private privateKeyBase58: string;
+    /**
+     * Private key
+     * @private
+     */
     private privateKey: PrivateKey;
+    /**
+     * Public key
+     * @private
+     */
     private publicKey: PublicKey;
 
-    constructor() {
-    }
-
+    /**
+     * Get method
+     */
     public getMethod(): string {
         return DidRootKey.DID_ROOT_KEY_NAME;
     }
 
+    /**
+     * Get ID
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * Get type
+     */
     public getType(): string {
         return this.type;
     }
 
+    /**
+     * Get controller
+     */
     public getController(): string {
         return this.controller;
     }
 
+    /**
+     * Get public key base58
+     */
     public getPublicKeyBase58(): string {
         return this.publicKeyBase58;
     }
 
+    /**
+     * Get private key base58
+     */
     public getPrivateKeyBase58(): string {
         return this.privateKeyBase58;
     }
 
+    /**
+     * Get private key
+     */
     public getPrivateKey(): PrivateKey {
         return this.privateKey;
     }
 
+    /**
+     * Get public key
+     */
     public getPublicKey(): PublicKey {
         return this.publicKey;
     }
 
+    /**
+     * To JSON tree
+     */
     public toJsonTree(): any {
         const result: any = {};
         result.id = this.id;
@@ -59,10 +120,17 @@ export class DidRootKey {
         return result;
     }
 
+    /**
+     * To JSON
+     */
     public toJson(): string {
         return JSON.stringify(this.toJsonTree());
     }
 
+    /**
+     * From JSON tree
+     * @param json
+     */
     public static fromJsonTree(json: any): DidRootKey {
         if (!json) {
             throw new Error('JSON Object is empty');
@@ -76,6 +144,10 @@ export class DidRootKey {
         return result;
     }
 
+    /**
+     * From JSON
+     * @param json
+     */
     public static fromJson(json: string): DidRootKey {
         if (!json) {
             throw new Error('JSON Object is empty');
@@ -84,10 +156,18 @@ export class DidRootKey {
         return DidRootKey.fromJsonTree(JSON.parse(json));
     }
 
+    /**
+     * Public key to ID string
+     * @param didRootKey
+     */
     public static publicKeyToIdString(didRootKey: PublicKey): string {
         return Hashing.base58.encode(Hashing.sha256.digest(didRootKey.toBytes()));
     }
 
+    /**
+     * Create
+     * @param did
+     */
     public static create(did: string): DidRootKey {
         if (!did) {
             throw new Error('DID cannot be ' + did);
@@ -103,6 +183,11 @@ export class DidRootKey {
         return result;
     }
 
+    /**
+     * Create public key
+     * @param did
+     * @param key
+     */
     public static createByPublicKey(did: string, key: PublicKey | string): DidRootKey {
         if (!did) {
             throw new Error('DID cannot be ' + did);
@@ -110,7 +195,7 @@ export class DidRootKey {
         if (!key) {
             throw new Error('DID root key cannot be ' + key);
         }
-        const publicKey = (typeof key == 'string') ? PublicKey.fromString(key) : key;
+        const publicKey = (typeof key === 'string') ? PublicKey.fromString(key) : key;
         const result = new DidRootKey();
         result.privateKey = null;
         result.publicKey = publicKey;
@@ -122,6 +207,11 @@ export class DidRootKey {
         return result;
     }
 
+    /**
+     * Create by private key
+     * @param did
+     * @param key
+     */
     public static createByPrivateKey(did: string, key: PrivateKey | string): DidRootKey {
         if (!did) {
             throw new Error('DID cannot be ' + did);
@@ -129,7 +219,7 @@ export class DidRootKey {
         if (!key) {
             throw new Error('DID root key cannot be ' + key);
         }
-        const privateKey = (typeof key == 'string') ? PrivateKey.fromString(key) : key;
+        const privateKey = (typeof key === 'string') ? PrivateKey.fromString(key) : key;
         const publicKey = privateKey.publicKey;
         const result = new DidRootKey();
         result.privateKey = privateKey;
@@ -147,6 +237,9 @@ export class DidRootKey {
         return result;
     }
 
+    /**
+     * Get verification method
+     */
     public getVerificationMethod(): IVerificationMethod {
         const result: any = {};
         result.id = this.id;
@@ -156,6 +249,9 @@ export class DidRootKey {
         return result;
     }
 
+    /**
+     * Get private verification method
+     */
     public getPrivateVerificationMethod(): IVerificationMethod {
         const result: any = {};
         result.id = this.id;
@@ -167,17 +263,53 @@ export class DidRootKey {
     }
 }
 
+/**
+ * Did document base
+ */
 export class DidDocumentBase {
+    /**
+     * DID document context
+     */
     public static readonly DID_DOCUMENT_CONTEXT = 'https://www.w3.org/ns/did/v1';
+    /**
+     * DID document transmute context
+     */
     public static readonly DID_DOCUMENT_TRANSMUTE_CONTEXT = 'https://ns.did.ai/transmute/v1';
+    /**
+     * Context
+     */
     public static readonly CONTEXT: string = '@context';
+    /**
+     * ID
+     */
     public static readonly ID: string = 'id';
+    /**
+     * Verification method
+     */
     public static readonly VERIFICATION_METHOD: string = 'verificationMethod';
+    /**
+     * Authentication
+     */
     public static readonly AUTHENTICATION: string = 'authentication';
+    /**
+     * Assertion method
+     */
     public static readonly ASSERTION_METHOD: string = 'assertionMethod';
 
+    /**
+     * DID
+     * @private
+     */
     private did: string;
+    /**
+     * Context
+     * @private
+     */
     private context: string[];
+    /**
+     * DID root key
+     * @private
+     */
     private didRootKey: DidRootKey;
 
     constructor() {
@@ -187,6 +319,9 @@ export class DidDocumentBase {
         ];
     }
 
+    /**
+     * Get did document
+     */
     public getDidDocument(): IDidDocument {
         const rootObject: any = {};
         rootObject[DidDocumentBase.CONTEXT] = [
@@ -204,6 +339,9 @@ export class DidDocumentBase {
         return rootObject;
     }
 
+    /**
+     * Get private DID document
+     */
     public getPrivateDidDocument(): IDidDocument {
         const rootObject: any = {};
         rootObject[DidDocumentBase.CONTEXT] = [
@@ -221,14 +359,25 @@ export class DidDocumentBase {
         return rootObject;
     }
 
+    /**
+     * Get context
+     */
     public getContext(): string[] {
         return this.context;
     }
 
+    /**
+     * Get ID
+     */
     public getId(): string {
         return this.did;
     }
 
+    /**
+     * Create by private key
+     * @param did
+     * @param didRootKey
+     */
     public static createByPrivateKey(did: string, didRootKey: PrivateKey): DidDocumentBase {
         const result = new DidDocumentBase();
         result.did = did;
@@ -236,6 +385,11 @@ export class DidDocumentBase {
         return result;
     }
 
+    /**
+     * Create by public key
+     * @param did
+     * @param didRootKey
+     */
     public static createByPublicKey(did: string, didRootKey: PublicKey): DidDocumentBase {
         const result = new DidDocumentBase();
         result.did = did;
@@ -244,74 +398,156 @@ export class DidDocumentBase {
     }
 }
 
+/**
+ * DID document
+ */
 export class DIDDocument {
+    /**
+     * DID prefix
+     */
     public static readonly DID_PREFIX = 'did';
+    /**
+     * DID method separator
+     */
     public static readonly DID_METHOD_SEPARATOR = ':';
+    /**
+     * DID parameter separator
+     */
     public static readonly DID_PARAMETER_SEPARATOR = ';';
+    /**
+     * DID parameter value separator
+     */
     public static readonly DID_PARAMETER_VALUE_SEPARATOR = '=';
+    /**
+     * DID topic id
+     */
     public static readonly DID_TOPIC_ID = 'tid';
+    /**
+     * Hedera HCS
+     */
     public static readonly HEDERA_HCS = 'hedera';
 
+    /**
+     * Private key
+     * @private
+     */
     private privateKey: PrivateKey;
+    /**
+     * Public key
+     * @private
+     */
     private publicKey: PublicKey;
+    /**
+     * Topic ID
+     * @private
+     */
     private topicId: TopicId;
+    /**
+     * Network
+     * @private
+     */
     private network: string;
+    /**
+     * ID string
+     * @private
+     */
     private idString: string;
+    /**
+     * DID
+     * @private
+     */
     private did: string;
+    /**
+     * Document
+     * @private
+     */
     private document: DidDocumentBase;
 
-    private constructor() {
-
-    }
-
+    /**
+     * Get network
+     */
     public getNetwork(): string {
         return this.network;
     }
 
+    /**
+     * Get method
+     */
     public getMethod(): string {
         return DIDDocument.HEDERA_HCS;
     }
 
+    /**
+     * To string
+     */
     public toString(): string {
         return this.did;
     }
 
+    /**
+     * Get DID topic ID
+     */
     public getDidTopicId(): TopicId {
         return this.topicId;
     }
 
+    /**
+     * Get ID string
+     */
     public getIdString(): string {
         return this.idString;
     }
 
+    /**
+     * Get DID
+     */
     public getDid(): string {
         return this.did;
     }
 
+    /**
+     * Get document
+     */
     public getDocument(): any {
         return this.document.getDidDocument();
     }
 
+    /**
+     * Get private key
+     */
     public getPrivateKey(): PrivateKey {
         return this.privateKey;
     }
 
+    /**
+     * Get public key
+     */
     public getPublicKey(): PublicKey {
         return this.publicKey;
     }
 
+    /**
+     * Get private key string
+     */
     public getPrivateKeyString(): string {
         if (this.privateKey) {
             return this.privateKey.toString();
         }
     }
 
+    /**
+     * Get public key string
+     */
     public getPublicKeyString(): string {
         if (this.publicKey) {
             return this.publicKey.toString();
         }
     }
 
+    /**
+     * Build DID
+     * @private
+     */
     private buildDid(): string {
         const methodNetwork =
             DIDDocument.HEDERA_HCS +
@@ -337,6 +573,11 @@ export class DIDDocument {
         return ret;
     }
 
+    /**
+     * Create
+     * @param privateKey
+     * @param topicId
+     */
     public static create(privateKey: string | PrivateKey | null, topicId: string | TopicId | null): DIDDocument {
         const result = new DIDDocument();
         result.privateKey = null;
@@ -366,6 +607,11 @@ export class DIDDocument {
         return result;
     }
 
+    /**
+     * From
+     * @param did
+     * @param didRootKey
+     */
     public static from(did: string, didRootKey: PublicKey | string): DIDDocument {
         try {
             if (!did) {
@@ -392,8 +638,6 @@ export class DIDDocument {
             for (let i = 1; i < mainParts.length; i++) {
                 const extractParameters = mainParts[i];
                 const paramParts = extractParameters.split(DIDDocument.DID_METHOD_SEPARATOR);
-                const method = paramParts[0];
-                const network = paramParts[1];
                 const param = paramParts[2];
                 const value = param.split(DIDDocument.DID_PARAMETER_VALUE_SEPARATOR);
                 paramMap[value[0]] = value[1];

@@ -15,8 +15,17 @@ import { DocumentLoader } from '../document-loader/document-loader';
 import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader';
 import { DidRootKey } from './did-document';
 
+/**
+ * Suite interface
+ */
 export interface ISuite {
+    /**
+     * Issuer
+     */
     issuer: string;
+    /**
+     * Suite
+     */
     suite: Ed25519Signature2018;
 }
 
@@ -24,10 +33,30 @@ export interface ISuite {
  * Connecting VCJS library
  */
 export class VCJS {
+    /**
+     * Document loaders
+     * @private
+     */
     private documentLoaders: DocumentLoader[];
+    /**
+     * Schema loaders
+     * @private
+     */
     private schemaLoaders: SchemaLoader[];
+    /**
+     * Schema context
+     * @private
+     */
     private schemaContext: string[];
+    /**
+     * Loader
+     * @private
+     */
     private loader: DocumentLoaderFunction;
+    /**
+     * Schema loader
+     * @private
+     */
     private schemaLoader: SchemaLoaderFunction;
 
     constructor() {
@@ -94,7 +123,7 @@ export class VCJS {
     public async createSuite(document: DidRootKey): Promise<Ed25519Signature2018> {
         const verificationMethod = document.getPrivateVerificationMethod();
         const key = await Ed25519VerificationKey2018.from(verificationMethod);
-        return new Ed25519Signature2018({ key: key });
+        return new Ed25519Signature2018({ key });
     }
 
     /**
@@ -114,8 +143,8 @@ export class VCJS {
         const vc = vcDocument.getDocument();
         const verifiableCredential = await vcjs.createVerifiableCredential({
             credential: vc,
-            suite: suite,
-            documentLoader: documentLoader,
+            suite,
+            documentLoader,
         });
         vcDocument.proofFromJson(verifiableCredential);
         return vcDocument;
@@ -133,14 +162,13 @@ export class VCJS {
         const result = await vcjs.verifyVerifiableCredential({
             credential: json,
             suite: new Ed25519Signature2018(),
-            documentLoader: documentLoader,
+            documentLoader,
         });
         if (result.verified) {
             return true;
         } else {
             if (result.results) {
-                for (let i = 0; i < result.results.length; i++) {
-                    const element = result.results[i];
+                for (const element of result.results) {
                     if (!element.verified && element.error && element.error.message) {
                         throw new Error(element.error.message);
                     }
@@ -168,13 +196,12 @@ export class VCJS {
         const verifiablePresentation = await vcjs.createVerifiablePresentation({
             presentation: vp,
             challenge: '123',
-            suite: suite,
-            documentLoader: documentLoader,
+            suite,
+            documentLoader,
         });
         vpDocument.proofFromJson(verifiablePresentation);
         return vpDocument;
     }
-
 
     /**
      * Verify Schema
@@ -236,7 +263,6 @@ export class VCJS {
         return await this.verify(vc, this.loader);
     }
 
-
     /**
      * Delete system fields from schema defs
      *
@@ -249,8 +275,8 @@ export class VCJS {
         }
 
         const defsKeys = Object.keys(defsObj);
-        for (let i = 0; i < defsKeys.length; i++) {
-            const nestedSchema = defsObj[defsKeys[i]];
+        for (const key of defsKeys) {
+            const nestedSchema = defsObj[key];
             const required = nestedSchema.required;
             if (!required || required.length === 0) {
                 continue;
@@ -279,8 +305,7 @@ export class VCJS {
         const id = GenerateUUIDv4();
         const suite = await this.createSuite(document);
         const vcSubject = VcSubject.create(subject, schema);
-        for (let i = 0; i < this.schemaContext.length; i++) {
-            const element = this.schemaContext[i];
+        for (const element of this.schemaContext) {
             vcSubject.addContext(element);
         }
 
