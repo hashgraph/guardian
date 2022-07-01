@@ -15,7 +15,12 @@
 * [License](getting-started/license.md)
 * [Contact](getting-started/contact.md)
 * [Security](getting-started/security.md)
-* [Reference Implementation](getting-started/reference-implementation.md)
+
+## Guardian Architecture
+
+* [Reference Architecture](guardian-architecture/reference-architecture.md)
+* [Architecture 2](guardian-architecture/architecture-2.md)
+* [Schema Architecture](guardian-architecture/schema-architecture.md)
 
 ## Schema Flow
 
