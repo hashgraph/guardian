@@ -1,7 +1,7 @@
 import { createConnection } from 'typeorm';
 import { fixtures } from '@helpers/fixtures';
-import { AccountService } from '@api/accountService';
-import { WalletService } from '@api/walletService';
+import { AccountService } from '@api/account-service';
+import { WalletService } from '@api/wallet-service';
 import { ApplicationState, MessageBrokerChannel, Logger } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 
@@ -29,8 +29,8 @@ Promise.all([
     await fixtures();
 
     new Logger().setChannel(channel);
-    new AccountService(channel);
-    new WalletService(channel);
+    new AccountService(channel).registerListeners();
+    new WalletService(channel).registerListeners();
 
     state.updateState(ApplicationStates.READY);
     new Logger().info('auth service started', ['AUTH_SERVICE']);
