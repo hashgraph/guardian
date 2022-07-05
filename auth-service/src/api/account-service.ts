@@ -24,13 +24,19 @@ import {
     IGetUsersByAccountMessage
 } from '@guardian/interfaces';
 
+/**
+ * Account service
+ */
 export class AccountService {
     constructor(
-        private channel: MessageBrokerChannel
+        private readonly channel: MessageBrokerChannel
     ) {
-        this.registerListeners();
+        // this.registerListeners();
     }
 
+    /**
+     * Register listeners
+     */
     registerListeners(): void {
         this.channel.response<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN, async (msg) => {
             const { token } = msg;
@@ -57,9 +63,9 @@ export class AccountService {
                 }
 
                 const user = userRepository.create({
-                    username: username,
+                    username,
                     password: passwordDigest,
-                    role: role,
+                    role,
                     parent: null,
                     did: null
                 });
@@ -87,7 +93,7 @@ export class AccountService {
                         username: user.username,
                         did: user.did,
                         role: user.role,
-                        accessToken: accessToken
+                        accessToken
                     })
                 } else {
                     return new MessageError('Unauthorized request', 401);
@@ -125,7 +131,6 @@ export class AccountService {
                 return new MessageError(error);
             }
         });
-
 
         this.channel.response<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (_) => {
             try {

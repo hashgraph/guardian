@@ -1,12 +1,14 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { UserRole } from '@guardian/interfaces';
+import { IAuthUser } from '@guardian/common';
 
+/**
+ * Policy roles block
+ */
 @EventBlock({
     blockType: 'policyRolesBlock',
     commonBlock: false,
@@ -26,6 +28,10 @@ import { UserRole } from '@guardian/interfaces';
     }
 })
 export class PolicyRolesBlock {
+    /**
+     * Get block data
+     * @param user
+     */
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         return {
@@ -34,6 +40,11 @@ export class PolicyRolesBlock {
         }
     }
 
+    /**
+     * Set block data
+     * @param user
+     * @param document
+     */
     async setData(user: IAuthUser, document: any): Promise<any> {
         const policyRepository = getMongoRepository(Policy);
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -51,7 +62,6 @@ export class PolicyRolesBlock {
             PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, {username, role, did}, ref.tag),
             PolicyComponentsUtils.UpdateUserInfoFn({username, role, did}, currentPolicy)
         ]);
-
 
         return result;
     }

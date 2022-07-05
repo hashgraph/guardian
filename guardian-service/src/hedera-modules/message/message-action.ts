@@ -1,4 +1,6 @@
-
+/**
+ * Message action
+ */
 export enum MessageAction {
     CreateDID = 'create-did-document',
     CreateVC = 'create-vc-document',

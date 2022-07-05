@@ -1,6 +1,14 @@
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 
+/**
+ * Transform block state
+ * @param rules
+ * @param state
+ * @param updateSource
+ * @param updateTarget
+ * @constructor
+ */
 export function TransformState(rules: any, state: any, updateSource: string, updateTarget: string): any {
     if (!rules) {
         return state;

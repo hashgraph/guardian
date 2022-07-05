@@ -1,10 +1,9 @@
 import { Request, Response, Router } from 'express';
-import { AuthenticatedRequest } from '@auth/auth.interface';
-import { permissionHelper, authorizationHelper } from '@auth/authorizationHelper';
-import { UserRole } from '@guardian/interfaces';
+import { permissionHelper, authorizationHelper } from '@auth/authorization-helper';
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/common';
+import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
+import { UserRole } from '@guardian/interfaces';
 
 /**
  * User account route
@@ -14,7 +13,7 @@ export const accountAPI = Router();
 accountAPI.get('/session', async (req: Request, res: Response) => {
     const users = new Users();
     try {
-        let authHeader = req.headers.authorization;
+        const authHeader = req.headers.authorization;
         if (authHeader) {
             const token = authHeader.split(' ')[1];
             res.status(200).json(await users.getUserByToken(token));
@@ -30,7 +29,8 @@ accountAPI.get('/session', async (req: Request, res: Response) => {
 accountAPI.post('/register', async (req: Request, res: Response) => {
     const users = new Users();
     try {
-        let { username, password, role } = req.body;
+        const { username, password } = req.body;
+        let { role } = req.body;
         // @deprecated 2022-10-01
         if (role === 'ROOT_AUTHORITY') {
             role = UserRole.STANDARD_REGISTRY;
@@ -53,7 +53,7 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.STANDARD_REGISTRY),async (req: AuthenticatedRequest, res: Response) => {
     try {
         const users = new Users();
         res.status(200).json(await users.getAllUserAccounts());

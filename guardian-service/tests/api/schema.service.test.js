@@ -12,7 +12,6 @@ moduleAlias.addAliases({
 const rewire = require("rewire");
 
 const schemaAPIModule = rewire("../../dist/api/schema.service");
-const topicHelperModule = rewire("../../dist/helpers/topicHelper.js")
 const { ApplicationState } = require("@guardian/common");
 const state = new ApplicationState();
 state.updateState('READY');
@@ -50,12 +49,6 @@ class MockUsers {
             hederaAccountKey: '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc',
             did: 'did:hedera:testnet:Eyxtt46P5NGRoAJ1KdNaR6BP4PEbwDSDXpDncAApGpB3;hedera:testnet:fid=0.0.34052923',
         }
-    }
-}
-
-class TopicHelperMock {
-    constructor(...args) {
-        console.log('TopicHelper', args)
     }
 }
 

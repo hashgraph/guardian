@@ -5,8 +5,6 @@ import { MessageBrokerChannel, ApplicationState, Logger } from '@guardian/common
 import { fileAPI } from './api/file.service';
 import { Settings } from './entity/settings';
 
-const PORT = process.env.PORT || 3006;
-
 Promise.all([
     createConnection({
         type: 'mongodb',
@@ -22,7 +20,7 @@ Promise.all([
             entitiesDir: 'dist/entity'
         }
     }),
-    MessageBrokerChannel.connect("IPFS_CLIENT")
+    MessageBrokerChannel.connect('IPFS_CLIENT')
 ]).then(async values => {
     const [db, cn] = values;
     const state = new ApplicationState('IPFS_CLIENT');
@@ -34,14 +32,14 @@ Promise.all([
     // Check configuration
     if (!process.env.NFT_API_KEY || process.env.NFT_API_KEY.length < 20) {
         await new Logger().error('You need to fill NFT_API_KEY field in .env file', ['IPFS_CLIENT']);
-        throw ('You need to fill NFT_API_KEY field in .env file');
+        throw new Error('You need to fill NFT_API_KEY field in .env file');
     }
     ///////////////
 
     state.updateState(ApplicationStates.STARTED);
     const settingsRepository = db.getMongoRepository(Settings);
     const nftApiKey = await settingsRepository.findOne({
-        name: "NFT_API_KEY"
+        name: 'NFT_API_KEY'
     });
 
     state.updateState(ApplicationStates.INITIALIZING);

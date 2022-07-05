@@ -3,26 +3,29 @@ import {
     findAllEntities,
     regenerateIds,
     replaceAllEntities,
-    replaceValueRecursive,
     SchemaFields
 } from '@helpers/utils';
 import JSZip from 'jszip';
 import { getMongoRepository } from 'typeorm';
-import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
-import { SchemaEntity, TopicType } from '@guardian/interfaces';
+import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
-import { TopicHelper } from '@helpers/topicHelper';
+import { TopicHelper } from '@helpers/topic-helper';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { PolicyUtils } from './utils';
-import { Schema as SchemaCollection } from '@entity/schema';
 
+/**
+ * Policy import export helper
+ */
 export class PolicyImportExportHelper {
+    /**
+     * Policy filename
+     */
     static policyFileName = 'policy.json';
 
     /**
@@ -45,24 +48,24 @@ export class PolicyImportExportHelper {
 
         const tokens = await getMongoRepository(Token).find({ where: { tokenId: { $in: tokenIds } } });
         const schemas = await getMongoRepository(Schema).find({
-            topicId: topicId,
+            topicId,
             readonly: false
         });
 
         const zip = new JSZip();
         zip.folder('tokens')
-        for (let token of tokens) {
+        for (const token of tokens) {
             delete token.adminId;
             delete token.owner;
-            token.adminKey = token.adminKey ? "..." : null;
-            token.kycKey = token.kycKey ? "..." : null;
-            token.wipeKey = token.wipeKey ? "..." : null;
-            token.supplyKey = token.supplyKey ? "..." : null;
-            token.freezeKey = token.freezeKey ? "..." : null;
+            token.adminKey = token.adminKey ? '...' : null;
+            token.kycKey = token.kycKey ? '...' : null;
+            token.wipeKey = token.wipeKey ? '...' : null;
+            token.supplyKey = token.supplyKey ? '...' : null;
+            token.freezeKey = token.freezeKey ? '...' : null;
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
         }
         zip.folder('schemas')
-        for (let schema of schemas) {
+        for (const schema of schemas) {
             const item = { ...schema };
             delete item.id;
             delete item.status;
@@ -70,7 +73,7 @@ export class PolicyImportExportHelper {
             zip.file(`schemas/${schema.iri}.json`, JSON.stringify(schema));
         }
 
-        zip.file(this.policyFileName, JSON.stringify(policyObject));
+        zip.file(PolicyImportExportHelper.policyFileName, JSON.stringify(policyObject));
         return zip;
     }
 
@@ -82,10 +85,10 @@ export class PolicyImportExportHelper {
     static async parseZipFile(zipFile: any): Promise<any> {
         const zip = new JSZip();
         const content = await zip.loadAsync(zipFile);
-        if (!content.files[this.policyFileName] || content.files[this.policyFileName].dir) {
-            throw 'Zip file is not a policy';
+        if (!content.files[PolicyImportExportHelper.policyFileName] || content.files[PolicyImportExportHelper.policyFileName].dir) {
+            throw new Error('Zip file is not a policy');
         }
-        let policyString = await content.files[this.policyFileName].async('string');
+        const policyString = await content.files[PolicyImportExportHelper.policyFileName].async('string');
         const tokensStringArray = await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)
             .filter(file => /^tokens\/.+/.test(file[0]))
@@ -115,7 +118,7 @@ export class PolicyImportExportHelper {
             PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN)
         ]);
 
-         for (let schema of schemas) {
+         for (const schema of schemas) {
              if (!schema) {
                  throw new Error('One of system schemas is not exist');
              }
@@ -172,15 +175,14 @@ export class PolicyImportExportHelper {
 
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
-        for (let i = 0; i < systemSchemas.length; i++) {
+        for (const schema of systemSchemas) {
             messageServer.setTopicObject(topicRow);
-            const schema = systemSchemas[i];
             if(schema) {
                 schema.creator = policyOwner;
                 schema.owner = policyOwner;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                const newItem = getMongoRepository(SchemaCollection).create(item);
-                await getMongoRepository(SchemaCollection).save(newItem);
+                const newItem = getMongoRepository(Schema).create(item);
+                await getMongoRepository(Schema).save(newItem);
             }
         }
 
@@ -193,7 +195,7 @@ export class PolicyImportExportHelper {
                 const tokenName = token.tokenName;
                 const tokenSymbol = token.tokenSymbol;
                 const tokenType = token.tokenType;
-                const nft = tokenType == 'non-fungible';
+                const nft = tokenType === 'non-fungible';
                 const decimals = nft ? 0 : token.decimals;
                 const initialSupply = nft ? 0 : token.initialSupply;
                 const adminKey = token.adminKey ? rootHederaAccountKey : null;
@@ -223,8 +225,8 @@ export class PolicyImportExportHelper {
                     tokenName,
                     tokenSymbol,
                     tokenType,
-                    decimals: decimals,
-                    initialSupply: initialSupply,
+                    decimals,
+                    initialSupply,
                     adminId: root.hederaAccountId,
                     adminKey: adminKey ? adminKey.toString() : null,
                     kycKey: kycKey ? kycKey.toString() : null,
@@ -242,7 +244,7 @@ export class PolicyImportExportHelper {
         const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId);
 
         // Replace id
-        await this.replaceConfig(policy, schemasMap);
+        await PolicyImportExportHelper.replaceConfig(policy, schemasMap);
 
         // Save
         const model = getMongoRepository(Policy).create(policy as Policy);
@@ -255,13 +257,17 @@ export class PolicyImportExportHelper {
         return result;
     }
 
+    /**
+     * Replace config
+     * @param policy
+     * @param schemasMap
+     */
     static async replaceConfig(policy: Policy, schemasMap: any) {
         if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
 
-        for (let index = 0; index < schemasMap.length; index++) {
-            const item = schemasMap[index];
+        for (const item of schemasMap) {
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
         }
 

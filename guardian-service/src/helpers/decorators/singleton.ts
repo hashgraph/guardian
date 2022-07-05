@@ -1,6 +1,12 @@
 const SINGLETON_KEY = Symbol();
 
+/**
+ * Singleton type
+ */
 type Singleton<T extends new (...args: any[]) => any> = T & {
+    /**
+     * Singleton symbol
+     */
     [SINGLETON_KEY]: T extends new (...args: any[]) => infer I ? I : never
 };
 

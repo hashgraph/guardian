@@ -1,17 +1,15 @@
 import {
-    PolicyBlockConstructorParams,
     PolicyBlockFullArgumentList,
     PolicyBlockMap,
     PolicyTagMap,
-    IPolicyEvent,
+    EventActor,
     PolicyLink,
     PolicyInputEventType,
     EventCallback,
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
-import { PolicyRole } from '@guardian/interfaces';
-import { IAuthUser } from '@auth/auth.interface';
-import { GenerateUUIDv4 } from './helpers/uuidv4';
+import { PolicyRole, GenerateUUIDv4 } from '@guardian/interfaces';
+import { IAuthUser } from '@guardian/common';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
@@ -19,24 +17,68 @@ import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
 import { GetBlockAbout } from '@policy-engine/blocks';
-import { EventActor } from './interfaces/policy-event-type';
 
+/**
+ * Policy action map type
+ */
 export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallback<any>>>
 
+/**
+ * Policy component utils
+ */
 export class PolicyComponentsUtils {
+    /**
+     * Block update function
+     */
     public static BlockUpdateFn: (uuid: string, state: any, user: IAuthUser, tag?: string) => Promise<void>;
+    /**
+     * Block error function
+     */
     public static BlockErrorFn: (blockType: string, message: any, user: IAuthUser) => Promise<void>;
+    /**
+     * Update user info function
+     */
     public static UpdateUserInfoFn: (user: IAuthUser, policy: Policy) => Promise<void>;
 
-    private static ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
-    private static BlockByUUIDMap: PolicyBlockMap = new Map();
-    private static BlockUUIDByTagMap: Map<string, PolicyTagMap> = new Map();
-    private static PolicyAction: Map<string, PolicyActionMap> = new Map();
+    /**
+     * External data blocks map
+     * @private
+     */
+    private static readonly ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
+    /**
+     * UUID -> block map
+     * @private
+     */
+    private static readonly BlockByUUIDMap: PolicyBlockMap = new Map();
+    /**
+     * Block tag -> UUID map
+     * @private
+     */
+    private static readonly BlockUUIDByTagMap: Map<string, PolicyTagMap> = new Map();
+    /**
+     * Policy actions map
+     * @private
+     */
+    private static readonly PolicyAction: Map<string, PolicyActionMap> = new Map();
 
+    /**
+     * Log events
+     * @param text
+     * @private
+     */
     private static logEvents(text: string) {
-        // console.error(text);
+        if (process.env.EVENTS_LOG) {
+            console.info('EVENTS_LOG:', text);
+        }
     }
 
+    /**
+     * Register action
+     * @param target
+     * @param eventType
+     * @param fn
+     * @constructor
+     */
     public static RegisterAction(target: any, eventType: PolicyInputEventType, fn: EventCallback<any>): void {
         const policyId = target.policyId;
         const targetId = target.uuid;
@@ -60,6 +102,15 @@ export class PolicyComponentsUtils {
         targetMap.set(eventType, fn);
     }
 
+    /**
+     * Create link
+     * @param source
+     * @param output
+     * @param target
+     * @param input
+     * @param actor
+     * @constructor
+     */
     public static CreateLink<T>(
         source: IPolicyBlock,
         output: PolicyOutputEventType,
@@ -83,6 +134,15 @@ export class PolicyComponentsUtils {
         return null;
     }
 
+    /**
+     * Register link
+     * @param source
+     * @param output
+     * @param target
+     * @param input
+     * @param actor
+     * @constructor
+     */
     public static RegisterLink(
         source: IPolicyBlock,
         output: PolicyOutputEventType,
@@ -124,11 +184,11 @@ export class PolicyComponentsUtils {
     private static RegisterComponent(policyId: string, component: IPolicyBlock): void {
         PolicyComponentsUtils.BlockByUUIDMap.set(component.uuid, component);
         let tagMap: PolicyTagMap;
-        if (!this.BlockUUIDByTagMap.has(policyId)) {
+        if (!PolicyComponentsUtils.BlockUUIDByTagMap.has(policyId)) {
             tagMap = new Map();
-            this.BlockUUIDByTagMap.set(policyId, tagMap);
+            PolicyComponentsUtils.BlockUUIDByTagMap.set(policyId, tagMap);
         } else {
-            tagMap = this.BlockUUIDByTagMap.get(policyId);
+            tagMap = PolicyComponentsUtils.BlockUUIDByTagMap.get(policyId);
         }
         if (component.tag) {
             if (tagMap.has(component.tag)) {
@@ -141,6 +201,15 @@ export class PolicyComponentsUtils {
         }
     }
 
+    /**
+     * Build block instance
+     * @param policy
+     * @param policyId
+     * @param block
+     * @param parent
+     * @param allInstances
+     * @constructor
+     */
     public static BuildInstance(
         policy: Policy,
         policyId: string,
@@ -175,7 +244,7 @@ export class PolicyComponentsUtils {
         allInstances.push(blockInstance);
 
         if (children && children.length) {
-            for (let child of children) {
+            for (const child of children) {
                 PolicyComponentsUtils.BuildInstance(
                     policy, policyId, child, blockInstance, allInstances
                 );
@@ -185,6 +254,13 @@ export class PolicyComponentsUtils {
         return blockInstance;
     }
 
+    /**
+     * Build block instances tree
+     * @param policy
+     * @param policyId
+     * @param allInstances
+     * @constructor
+     */
     public static BuildBlockTree(
         policy: Policy,
         policyId: string,
@@ -199,24 +275,35 @@ export class PolicyComponentsUtils {
         return model as any;
     }
 
+    /**
+     * Register block instances tree
+     * @param allInstances
+     * @constructor
+     */
     public static async RegisterBlockTree(allInstances: IPolicyBlock[]) {
-        for (let instance of allInstances) {
+        for (const instance of allInstances) {
             PolicyComponentsUtils.RegisterComponent(instance.policyId, instance);
 
-            for (let event of instance.actions) {
+            for (const event of instance.actions) {
                 PolicyComponentsUtils.RegisterAction(instance, event[0], event[1]);
             }
 
             await instance.beforeInit();
         }
 
-        for (let instance of allInstances) {
+        for (const instance of allInstances) {
             await instance.afterInit();
             await PolicyComponentsUtils.RegisterDefaultEvent(instance);
             await PolicyComponentsUtils.RegisterCustomEvent(instance);
         }
     }
 
+    /**
+     * Register default events
+     * @param instance
+     * @constructor
+     * @private
+     */
     private static async RegisterDefaultEvent(instance: IPolicyBlock) {
         if (!instance.options.stopPropagation) {
             PolicyComponentsUtils.RegisterLink(
@@ -242,13 +329,19 @@ export class PolicyComponentsUtils {
         }
     }
 
+    /**
+     * Register custom events
+     * @param instance
+     * @constructor
+     * @private
+     */
     private static async RegisterCustomEvent(instance: IPolicyBlock) {
-        for (let event of instance.events) {
+        for (const event of instance.events) {
             if (!event.disabled) {
-                if (event.source == instance.tag) {
+                if (event.source === instance.tag) {
                     const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
                     PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input, event.actor);
-                } else if (event.target == instance.tag) {
+                } else if (event.target === instance.tag) {
                     const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
                     PolicyComponentsUtils.RegisterLink(source, event.output, instance, event.input, event.actor);
                 } else {
@@ -265,7 +358,7 @@ export class PolicyComponentsUtils {
      * @param data
      */
     public static async ReceiveExternalData(data: any): Promise<void> {
-        for (let block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
+        for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
             const policy = await getMongoRepository(Policy).findOne({ policyTag: data.policyTag });
             if (policy.id.toString() === (block as any).policyId) {
                 await (block as any).receiveData(data);
@@ -306,7 +399,7 @@ export class PolicyComponentsUtils {
      * @param tag
      */
     public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
-        return PolicyComponentsUtils.BlockByUUIDMap.get(this.BlockUUIDByTagMap.get(policyId).get(tag));
+        return PolicyComponentsUtils.BlockByUUIDMap.get(PolicyComponentsUtils.BlockUUIDByTagMap.get(policyId).get(tag));
     }
 
     /**
@@ -333,6 +426,9 @@ export class PolicyComponentsUtils {
         return obj.options;
     }
 
+    /**
+     * Get block about
+     */
     public static GetBlockAbout(): any {
         return GetBlockAbout();
     }

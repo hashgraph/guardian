@@ -1,19 +1,21 @@
-import { Token } from "@entity/token";
-import { HederaSDKHelper, HederaUtils, VcDocument } from "@hedera-modules";
+import { Token } from '@entity/token';
+import { HederaSDKHelper, HederaUtils, VcDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { getMongoRepository } from "typeorm";
-import { AnyBlockType } from "@policy-engine/policy-engine.interface";
-import { IAuthUser } from "@auth/auth.interface";
+import { getMongoRepository } from 'typeorm';
+import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DocumentStatus, ExternalMessageEvents, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { Topic } from "@entity/topic";
-import { TopicHelper } from "@helpers/topicHelper";
-import { DocumentState } from "@entity/document-state";
-import { ExternalEventChannel } from "@guardian/common";
+import { Topic } from '@entity/topic';
+import { TopicHelper } from '@helpers/topic-helper';
+import { DocumentState } from '@entity/document-state';
+import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 
+/**
+ * Data types
+ */
 export enum DataTypes {
     MRV = 'mrv',
     REPORT = 'report',
@@ -21,7 +23,14 @@ export enum DataTypes {
     RETIREMENT = 'retirement'
 }
 
+/**
+ * Policy engine utils
+ */
 export class PolicyUtils {
+    /**
+     * Variables
+     * @param formula
+     */
     public static variables(formula: string): string[] {
         const variables = [];
         try {
@@ -36,24 +45,38 @@ export class PolicyUtils {
         }
     }
 
+    /**
+     * Evaluate
+     * @param formula
+     * @param scope
+     */
     public static evaluate(formula: string, scope: any) {
-        return (function (formula: string, scope: any) {
+        // tslint:disable-next-line:only-arrow-functions
+        return (function (_formula: string, _scope: any) {
             try {
-                return this.evaluate(formula, scope);
+                return PolicyUtils.evaluate(_formula, _scope);
             } catch (error) {
                 return 'Incorrect formula';
             }
         }).call(mathjs, formula, scope);
     }
 
+    /**
+     * Get VC scope
+     * @param item
+     */
     public static getVCScope(item: VcDocument) {
         return item.getCredentialSubject(0).getFields();
     }
 
+    /**
+     * Aggregate
+     * @param rule
+     * @param vcs
+     */
     public static aggregate(rule: string, vcs: VcDocument[]): number {
         let amount = 0;
-        for (let i = 0; i < vcs.length; i++) {
-            const element = vcs[i];
+        for (const element of vcs) {
             const scope = PolicyUtils.getVCScope(element);
             const value = parseFloat(PolicyUtils.evaluate(rule, scope));
             amount += value;
@@ -61,6 +84,11 @@ export class PolicyUtils {
         return amount;
     }
 
+    /**
+     * Token amount
+     * @param token
+     * @param amount
+     */
     public static tokenAmount(token: Token, amount: number): [number, string] {
         const decimals = parseFloat(token.decimals) || 0;
         const _decimals = Math.pow(10, decimals);
@@ -69,15 +97,25 @@ export class PolicyUtils {
         return [tokenValue, tokenAmount];
     }
 
+    /**
+     * Split chunk
+     * @param array
+     * @param chunk
+     */
     public static splitChunk(array: any[], chunk: number) {
         const res = [];
-        let i: number, j: number;
+        let i: number;
+        let j: number;
         for (i = 0, j = array.length; i < j; i += chunk) {
             res.push(array.slice(i, i + chunk));
         }
         return res;
     }
 
+    /**
+     * Get array
+     * @param data
+     */
     public static getArray<T>(data: T | T[]): T[] {
         if (Array.isArray(data)) {
             return data as T[];
@@ -86,6 +124,10 @@ export class PolicyUtils {
         }
     }
 
+    /**
+     * Update VC record
+     * @param row
+     */
     public static async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
         let item = await getMongoRepository(VcDocumentCollection).findOne({
             where: {
@@ -128,6 +170,10 @@ export class PolicyUtils {
         return item;
     }
 
+    /**
+     * Update did record
+     * @param row
+     */
     public static async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
         let item = await getMongoRepository(DidDocumentCollection).findOne({ did: row.did });
         if (item) {
@@ -141,15 +187,31 @@ export class PolicyUtils {
         }
     }
 
+    /**
+     * Update VP record
+     * @param row
+     */
     public static async updateVPRecord(row: VpDocumentCollection): Promise<VpDocumentCollection> {
         return await getMongoRepository(VpDocumentCollection).save(row);
     }
 
+    /**
+     * Save VP
+     * @param row
+     */
     public static async saveVP(row: VpDocumentCollection): Promise<VpDocumentCollection> {
         const doc = getMongoRepository(VpDocumentCollection).create(row);
         return await getMongoRepository(VpDocumentCollection).save(doc);
     }
 
+    /**
+     * Mint
+     * @param token
+     * @param tokenValue
+     * @param root
+     * @param user
+     * @param uuid
+     */
     public static async mint(token: Token, tokenValue: number, root: any, user: IAuthUser, uuid: string): Promise<void> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
 
@@ -158,7 +220,7 @@ export class PolicyUtils {
         const supplyKey = token.supplyKey;
         const adminId = token.adminId;
         const adminKey = token.adminKey;
-        if (token.tokenType == 'non-fungible') {
+        if (token.tokenType === 'non-fungible') {
             const metaData: any = HederaUtils.decode(uuid);
             const data = new Array(Math.floor(tokenValue));
             data.fill(metaData);
@@ -168,13 +230,13 @@ export class PolicyUtils {
                 const element = dataChunk[i];
                 try {
                     const newSerials = await client.mintNFT(tokenId, supplyKey, element, uuid);
-                    for (let j = 0; j < newSerials.length; j++) {
-                        serials.push(newSerials[j])
+                    for (const serial of newSerials) {
+                        serials.push(serial)
                     }
                 } catch (error) {
                     console.log(`Mint: Mint Error (${error.message})`);
                 }
-                if (i % 100 == 0) {
+                if (i % 100 === 0) {
                     console.log(`Mint: Minting (${i}/${dataChunk.length})`);
                 }
             }
@@ -187,7 +249,7 @@ export class PolicyUtils {
                 } catch (error) {
                     console.log(`Mint: Transfer Error (${error.message})`);
                 }
-                if (i % 100 == 0) {
+                if (i % 100 === 0) {
                     console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
                 }
             }
@@ -199,20 +261,33 @@ export class PolicyUtils {
         console.log('Mint: End');
     }
 
+    /**
+     * Wipe
+     * @param token
+     * @param tokenValue
+     * @param root
+     * @param user
+     * @param uuid
+     */
     public static async wipe(token: Token, tokenValue: number, root: any, user: IAuthUser, uuid: string): Promise<void> {
         const tokenId = token.tokenId;
         const wipeKey = token.wipeKey;
-        const adminId = token.adminId;
-        const adminKey = token.adminKey;
 
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-        if (token.tokenType == 'non-fungible') {
-            throw 'unsupported operation';
+        if (token.tokenType === 'non-fungible') {
+            throw Error('unsupported operation');
         } else {
             await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
         }
     }
 
+    /**
+     * Get topic
+     * @param topicName
+     * @param root
+     * @param user
+     * @param ref
+     */
     public static async getTopic(topicName: string, root: any, user: any, ref: AnyBlockType): Promise<Topic> {
         const rootTopic = await getMongoRepository(Topic).findOne({
             policyId: ref.policyId,
@@ -223,9 +298,9 @@ export class PolicyUtils {
         if (topicName && topicName !== 'root') {
 
             const policyTopics = ref.policyInstance.policyTopics || [];
-            const config = policyTopics.find(e => e.name == topicName);
+            const config = policyTopics.find(e => e.name === topicName);
             if (!config) {
-                throw `Topic "${topicName}" does not exist`;
+                throw new Error(`Topic "${topicName}" does not exist`);
             }
 
             const topicOwner = config.static ? root.did : user.did;
@@ -257,10 +332,15 @@ export class PolicyUtils {
         return topic;
     }
 
+    /**
+     * Get topic by id
+     * @param topicId
+     * @param ref
+     */
     public static async getTopicById(topicId: string, ref: AnyBlockType): Promise<Topic> {
         let topic = await getMongoRepository(Topic).findOne({
             policyId: ref.policyId,
-            topicId: topicId
+            topicId
         });
         if (!topic) {
             topic = await getMongoRepository(Topic).findOne({
@@ -269,18 +349,25 @@ export class PolicyUtils {
             });
         }
         if (!topic) {
-            throw `Topic does not exist`;
+            throw new Error(`Topic does not exist`);
         }
         return topic;
     }
 
+    /**
+     * Get policy topics
+     * @param policyId
+     */
     public static async getPolicyTopics(policyId: string): Promise<Topic[]> {
-        const topics = await getMongoRepository(Topic).find({
-            policyId: policyId
-        })
-        return topics;
+        return await getMongoRepository(Topic).find({
+            policyId
+        });
     }
 
+    /**
+     * Get subject id
+     * @param data
+     */
     public static getSubjectId(data: any): string {
         try {
             if (data) {
@@ -296,21 +383,28 @@ export class PolicyUtils {
         return null;
     }
 
+    /**
+     * Get schema
+     * @param topicId
+     * @param entity
+     */
     public static async getSchema(topicId: string, entity: SchemaEntity): Promise<SchemaCollection> {
-        const policySchema = await getMongoRepository(SchemaCollection).findOne({
-            entity: entity,
+        return await getMongoRepository(SchemaCollection).findOne({
+            entity,
             readonly: true,
-            topicId: topicId
+            topicId
         });
-        return policySchema;
     }
 
+    /**
+     * Get system schema
+     * @param entity
+     */
     public static async getSystemSchema(entity: SchemaEntity): Promise<SchemaCollection> {
-        const policySchema = await getMongoRepository(SchemaCollection).findOne({
-            entity: entity,
+        return await getMongoRepository(SchemaCollection).findOne({
+            entity,
             system: true,
             active: true
         });
-        return policySchema;
     }
 }

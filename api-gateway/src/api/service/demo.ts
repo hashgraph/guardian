@@ -14,8 +14,7 @@ demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
     try {
         const demoUsers: any = await users.getAllUserAccountsDemo();
 
-        for (let i = 0; i < demoUsers.length; i++) {
-            const element = demoUsers[i];
+        for (const element of demoUsers) {
             if (element.did) {
                 element.policyRoles = await guardians.getUserRoles(element.did);
             } else {

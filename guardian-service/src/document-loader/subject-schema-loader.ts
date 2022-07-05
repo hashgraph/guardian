@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { getMongoRepository, MongoRepository } from 'typeorm';
+import { getMongoRepository } from 'typeorm';
 import { ISchema } from '@guardian/interfaces';
 import { SchemaLoader } from '@hedera-modules';
 
@@ -13,13 +13,18 @@ export class SubjectSchemaLoader extends SchemaLoader {
         super();
     }
 
+    /**
+     * Has context
+     * @param context
+     * @param iri
+     * @param type
+     */
     public async has(context: string | string[], iri: string, type: string): Promise<boolean> {
         if (type !== 'subject') {
             return false;
         }
         if (Array.isArray(context)) {
-            for (let i = 0; i < context.length; i++) {
-                const element = context[i];
+            for (const element of context) {
                 if (element.startsWith(this.context)) {
                     return true;
                 }
@@ -30,9 +35,15 @@ export class SubjectSchemaLoader extends SchemaLoader {
         return false;
     }
 
+    /**
+     * Get document
+     * @param context
+     * @param iri
+     * @param type
+     */
     public async get(context: string | string[], iri: string, type: string): Promise<any> {
         let schemas: ISchema[];
-        if (typeof context == 'string') {
+        if (typeof context === 'string') {
             schemas = await this.loadSchemaContexts([context]);
         } else {
             schemas = await this.loadSchemaContexts(context);
@@ -43,20 +54,23 @@ export class SubjectSchemaLoader extends SchemaLoader {
         }
 
         const _iri = '#' + iri;
-        for (let i = 0; i < schemas.length; i++) {
-            const schema = schemas[i];
+        for (const schema of schemas) {
             if (schema.iri === _iri) {
                 if (!schema.document) {
                     throw new Error('Document not found');
                 }
-                const document = schema.document;
-                return document;
+                return schema.document;
             }
         }
 
         throw new Error('IRI Schema not found');
     }
 
+    /**
+     * Load schema contexts
+     * @param context
+     * @private
+     */
     private async loadSchemaContexts(context: string[]): Promise<ISchema[]> {
         try {
             if (!context) {

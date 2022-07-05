@@ -6,7 +6,12 @@ import { Policy } from '@entity/policy';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
-export const demoAPI = async function (
+/**
+ * Demo API
+ * @param channel
+ * @param settingsRepository
+ */
+export async function demoAPI(
     channel: MessageBrokerChannel,
     settingsRepository: MongoRepository<Settings>
 ): Promise<void> {

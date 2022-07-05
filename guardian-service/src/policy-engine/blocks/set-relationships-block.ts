@@ -27,14 +27,17 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class SetRelationshipsBlock {
-    
+    /**
+     * Run block action
+     * @param event
+     */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent]
     })
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        let data: any[] = await ref.getSources(event.user);
-        let relationships = [];
+        const data: any[] = await ref.getSources(event.user);
+        const relationships = [];
         for (const doc of data) {
             if (doc.messageId && !relationships.includes(doc.messageId)) {
                 relationships.push(doc.messageId);

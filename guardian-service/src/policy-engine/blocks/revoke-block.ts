@@ -1,5 +1,4 @@
 import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
-import { IAuthUser } from '@auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { getMongoRepository } from 'typeorm';
@@ -44,14 +43,26 @@ export const RevokedStatus = 'Revoked';
     commonBlock: false,
 })
 export class RevokeBlock {
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
+    /**
+     * Send to hedera
+     * @param message
+     * @param messageServer
+     * @param ref
+     * @param revokeMessage
+     * @param parentId
+     */
     async sendToHedera(
-        message: Message, 
-        messageServer: MessageServer, 
-        ref: AnyBlockType, 
-        revokeMessage: string, 
+        message: Message,
+        messageServer: MessageServer,
+        ref: AnyBlockType,
+        revokeMessage: string,
         parentId?: string[]
     ) {
         const topic = await PolicyUtils.getTopicById(message.topicId.toString(), ref);
@@ -61,9 +72,16 @@ export class RevokeBlock {
             .sendMessage(message, false);
     }
 
+    /**
+     * Find related message Ids
+     * @param topicMessage
+     * @param topicMessages
+     * @param relatedMessageIds
+     * @param parentId
+     */
     async findRelatedMessageIds(
-        topicMessage: any, 
-        topicMessages: any[], 
+        topicMessage: any,
+        topicMessages: any[],
         relatedMessageIds: any[]= [],
         parentId?: string
     ): Promise<any[]> {
@@ -75,9 +93,9 @@ export class RevokeBlock {
         );
         for (const relatedMessage of relatedMessages) {
             await this.findRelatedMessageIds(
-                relatedMessage, 
-                topicMessages, 
-                relatedMessageIds, 
+                relatedMessage,
+                topicMessages,
+                relatedMessageIds,
                 topicMessage.id
             );
         }
@@ -93,13 +111,17 @@ export class RevokeBlock {
         return relatedMessageIds;
     }
 
+    /**
+     * Find document by message ids
+     * @param messageIds
+     */
     async findDocumentByMessageIds(messageIds: string[]): Promise<any[]> {
         const filters: any = {
             where: {
                 messageId: { $in: messageIds }
             },
             order: {
-                messageId: "ASC"
+                messageId: 'ASC'
             }
         };
         const vcDocuments: any[] = await getMongoRepository(VcDocument).find(filters);
@@ -108,7 +130,10 @@ export class RevokeBlock {
         return vcDocuments.concat(vpDocuments).concat(didDocuments);
     }
 
-
+    /**
+     * Run block action
+     * @param event
+     */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent]
     })
@@ -130,16 +155,16 @@ export class RevokeBlock {
             .map(item => item.getMessageId());
         const messagesToFind = policyTopicsMessages
             .filter(item => !revokedMessagesIds.includes(item.getMessageId()));
-        const topicMessage = policyTopicsMessages.find(item => item.id == data.messageId);
+        const topicMessage = policyTopicsMessages.find(item => item.id === data.messageId);
         const relatedMessages = await this.findRelatedMessageIds(topicMessage, messagesToFind);
         for (const policyTopicMessage of policyTopicsMessages) {
             const relatedMessage = relatedMessages.find(item=> item.id === policyTopicMessage.id);
             if (relatedMessage) {
                 await this.sendToHedera(
-                    policyTopicMessage, 
-                    messageServer, 
-                    ref, 
-                    data.comment, 
+                    policyTopicMessage,
+                    messageServer,
+                    ref,
+                    data.comment,
                     relatedMessage.parentIds
                 );
             }
@@ -169,6 +194,10 @@ export class RevokeBlock {
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {

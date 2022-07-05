@@ -3,13 +3,19 @@ import { WalletAccount } from '@entity/wallet-account';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { WalletEvents, IGetKeyMessage, ISetKeyMessage } from '@guardian/interfaces';
 
+/**
+ * Wallet service
+ */
 export class WalletService {
     constructor(
-        private channel: MessageBrokerChannel,
+        private readonly channel: MessageBrokerChannel,
     ) {
-        this.registerListeners();
+        // this.registerListeners();
     }
 
+    /**
+     * Register listeners
+     */
     registerListeners(): void {
         this.channel.response<IGetKeyMessage, WalletAccount>(WalletEvents.GET_KEY, async (msg) => {
             const { token, type, key } = msg;
@@ -27,7 +33,7 @@ export class WalletService {
 
             try {
                 const walletAcc = getMongoRepository(WalletAccount).create({
-                    token: token,
+                    token,
                     type: type + '|' + key,
                     key: value
                 });

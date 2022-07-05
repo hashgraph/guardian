@@ -1,77 +1,83 @@
+/**
+ * Field types dictionary
+ */
 export class FieldTypesDictionary {
+    /**
+     * Form field types
+     */
     public static readonly FieldTypes = [
         {
-            name: "Number",
+            name: 'Number',
             type: 'number',
             format: undefined,
             pattern: undefined,
             isRef: false
         },
         {
-            name: "Integer",
+            name: 'Integer',
             type: 'integer',
             format: undefined,
             pattern: undefined,
             isRef: false
         },
         {
-            name: "String",
+            name: 'String',
             type: 'string',
             format: undefined,
             pattern: undefined,
             isRef: false
         },
         {
-            name: "Boolean",
+            name: 'Boolean',
             type: 'boolean',
             format: undefined,
             pattern: undefined,
             isRef: false
         },
         {
-            name: "Date",
+            name: 'Date',
             type: 'string',
             format: 'date',
             pattern: undefined,
             isRef: false
         },
         {
-            name: "Time",
+            name: 'Time',
             type: 'string',
             format: 'time',
             pattern: undefined,
             isRef: false
         },
         {
-            name: "DateTime",
+            name: 'DateTime',
             type: 'string',
             format: 'date-time',
             pattern: undefined,
             isRef: false
         },
         {
-            name: "Duration",
+            name: 'Duration',
             type: 'string',
             format: 'duration',
             pattern: undefined,
             isRef: false
         },
         {
-            name: "URL",
+            name: 'URL',
             type: 'string',
             format: 'url',
             pattern: undefined,
             isRef: false
         },
         {
-            name: "Email",
+            name: 'Email',
             type: 'string',
             format: 'email',
             pattern: undefined,
             isRef: false
         },
         {
-            name: "Image",
+            name: 'Image',
             type: 'string',
             format: undefined,
             pattern: '^((https):\/\/)?ipfs.io\/ipfs\/.+',
@@ -79,5 +85,8 @@ export class FieldTypesDictionary {
         }
     ];
 
+    /**
+     * Measure types
+     */
     public static readonly MeasureFieldTypes = []
 }

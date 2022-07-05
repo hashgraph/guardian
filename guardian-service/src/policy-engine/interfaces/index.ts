@@ -33,4 +33,4 @@ export {
     EventConfig
 } from './event-config';
 
-export { EventActor } from "./policy-event-type";
+export { EventActor } from './policy-event-type';

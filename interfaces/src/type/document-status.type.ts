@@ -1,3 +1,6 @@
+/**
+ * Document status
+ */
 export enum DocumentStatus {
     NEW = 'NEW',
     ISSUE = 'ISSUE',

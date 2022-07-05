@@ -1,10 +1,10 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { IAuthUser } from '@auth/auth.interface';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { PolicyInputEventType } from '@policy-engine/interfaces';
+import { IAuthUser } from '@guardian/common';
 
 /**
  * Document Buttons with UI
@@ -27,6 +27,10 @@ import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/inte
     }
 })
 export class ButtonBlock {
+    /**
+     * Get block data
+     * @param user
+     */
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const data: any = {
@@ -39,13 +43,30 @@ export class ButtonBlock {
         return data;
     }
 
-    async setData(user: IAuthUser, blockData: {document: any, tag: any}): Promise<any> {
+    /**
+     * Set block data
+     * @param user
+     * @param blockData
+     */
+    async setData(user: IAuthUser, blockData: {
+        /**
+         * Document
+         */
+        document: any,
+        /**
+         * Tag
+         */
+        tag: any
+    }): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
-        let state: any = { data: blockData.document };
-        ref.triggerEvents(blockData.tag, user, state);
+        ref.triggerEvents(blockData.tag, user, { data: blockData.document });
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {

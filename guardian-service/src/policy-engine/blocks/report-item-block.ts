@@ -29,9 +29,17 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class ReportItemBlock {
+    /**
+     * Users helper
+     */
     @Inject()
     public users: Users;
 
+    /**
+     * Run logic
+     * @param resultFields
+     * @param variables
+     */
     public async run(resultFields: IReportItem[], variables: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
         const icon = ref.options.icon;
@@ -41,22 +49,21 @@ export class ReportItemBlock {
         const iconType = ref.options.iconType;
         const item: IReportItem = {
             type: 'VC',
-            icon: icon,
-            title: title,
-            description: description,
-            visible: visible,
+            icon,
+            title,
+            description,
+            visible,
             tag: null,
             issuer: null,
             username: null,
             document: null,
-            iconType: iconType
+            iconType
         }
         resultFields.push(item);
 
         const filtersToVc = {};
         if (ref.options.filters) {
-            for (let index = 0; index < ref.options.filters.length; index++) {
-                const filter = ref.options.filters[index];
+            for (const filter of ref.options.filters) {
                 let expr: any;
                 if (filter.typeValue === 'value') {
                     expr = filter.value;
@@ -96,8 +103,7 @@ export class ReportItemBlock {
             item.document = vcDocument;
 
             if (ref.options.variables) {
-                for (let index = 0; index < ref.options.variables.length; index++) {
-                    const variable = ref.options.variables[index];
+                for (const variable of ref.options.variables) {
                     variables[variable.name] = findOptions(vcDocument, variable.value);
                 }
             }
@@ -106,8 +112,7 @@ export class ReportItemBlock {
         const items = ref.getItems();
         if (items.length > 0) {
             const documents: IReportItem[] = [];
-            for (let i = 0; i < items.length; i++) {
-                const element = items[i];
+            for (const element of items) {
                 await element.run(documents, variables);
             }
             item.documents = documents;

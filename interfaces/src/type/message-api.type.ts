@@ -1,3 +1,6 @@
+/**
+ * Message api
+ */
 export enum MessageAPI {
     GET_DID_DOCUMENTS = 'get-did-documents',
     GET_VC_DOCUMENTS = 'get-vc-documents',
@@ -55,8 +58,11 @@ export enum MessageAPI {
     GET_BALANCE='GET_BALANCE'
 }
 
+/**
+ * External message api events
+ */
 export enum ExternalMessageEvents {
-    IPFS_ADDED_FILE = "external-events.ipfs_added_file",
+    IPFS_ADDED_FILE = 'external-events.ipfs_added_file',
     TOKEN_MINTED = 'external-events.token_minted',
     ERROR_LOG = 'external-events.error_logs',
     BLOCK_RUN_EVENTS = 'external-events.block_run_action_event',

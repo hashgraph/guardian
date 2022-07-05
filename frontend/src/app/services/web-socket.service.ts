@@ -3,6 +3,7 @@ import { Observable, of, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
 
 /**
  *  WebSocket service.
@@ -18,13 +19,16 @@ export class WebSocketService {
     private heartbeatTimeout: any = null;
     private reconnectInterval: number = 5000;  /// pause between connections
     private reconnectAttempts: number = 10;  /// number of connection attempts
-    private policySubject: Subject<{ type: string, data: any }>;
-    private statusSubject: Subject<{ type: string, data: any }>;
+    private servicesReady: Subject<boolean>;
     private profileSubject: Subject<{ type: string, data: any }>;
+    private blockUpdateSubject: Subject<any>;
+    private userInfoUpdateSubject: Subject<any>;
+    private serviesStates: any = [];
 
     constructor(private auth: AuthService, private toastr: ToastrService) {
-        this.policySubject = new Subject();
-        this.statusSubject = new Subject();
+        this.blockUpdateSubject = new Subject();
+        this.userInfoUpdateSubject = new Subject();
+        this.servicesReady = new Subject();
         this.profileSubject = new Subject();
 
         this.socketSubscription = null;
@@ -84,8 +88,8 @@ export class WebSocketService {
         if (this.heartbeatTimeout) {
             clearTimeout(this.heartbeatTimeout);
         }
-
-        this.wsSubjectConfig.url = this.getUrl();
+        const accessToken = this.auth.getAccessToken();
+        this.wsSubjectConfig.url = this.getUrl(accessToken);
         this.socket = webSocket(this.wsSubjectConfig);
         this.socketSubscription = this.socket.subscribe(
             (m: any) => {
@@ -97,11 +101,13 @@ export class WebSocketService {
                 }
             });
         this.heartbeat();
+        this.send(MessageAPI.GET_STATUS, null);
         this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
     }
 
     private heartbeat() {
         this.socket.next('ping');
+        this.send(MessageAPI.GET_STATUS, null);
         this.heartbeatTimeout = setTimeout(
             this.heartbeat.bind(this), WebSocketService.HEARTBEAT_DELAY
         );
@@ -144,7 +150,30 @@ export class WebSocketService {
                 case 'PROFILE_BALANCE':
                     this.profileSubject.next(event);
                     break;
-
+                case MessageAPI.GET_STATUS:
+                case MessageAPI.UPDATE_STATUS:
+                    this.updateStatus(event.data);
+                    this.servicesReady.next(
+                        !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
+                    );
+                    break;
+                case 'update-event': {
+                    this.blockUpdateSubject.next(event.data);
+                    break;
+                }
+                case 'error-event': {
+                    this.toastr.error(event.data.message, event.data.blockType, {
+                        timeOut: 10000,
+                        closeButton: true,
+                        positionClass: 'toast-bottom-right',
+                        enableHtml: true
+                    });
+                    break;
+                }
+                case 'update-user-info-event': {
+                    this.userInfoUpdateSubject.next(event.data);
+                    break;
+                }
                 default:
                     break;
             }
@@ -167,24 +196,32 @@ export class WebSocketService {
         return `${url.replace(/^http/, 'ws')}`;
     }
 
-    private getUrl() {
-        return `${this.getBaseUrl()}/ws/`;
+    private getUrl(accessToken: string | null = null) {
+        return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
     }
 
-    public policySubscribe(
-        next?: ((event: { type: string, data: any }) => void),
+    public blockSubscribe(
+        next?: ((id: any) => void),
         error?: ((error: any) => void),
         complete?: (() => void)
     ): Subscription {
-        return this.policySubject.subscribe(next, error, complete);
+        return this.blockUpdateSubject.subscribe(next, error, complete);
+    }
+
+    public subscribeUserInfo(
+        next?: ((id: any) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.userInfoUpdateSubject.subscribe(next, error, complete);
     }
 
     public statusSubscribe(
-        next?: ((event: { type: string, data: any }) => void),
+        next?: ((event: boolean) => void),
         error?: ((error: any) => void),
         complete?: (() => void)
     ): Subscription {
-        return this.statusSubject.subscribe(next, error, complete);
+        return this.servicesReady.subscribe(next, error, complete);
     }
 
     public profileSubscribe(
@@ -209,5 +246,33 @@ export class WebSocketService {
 
     public sendMessage(type: string, data: any = null) {
         this.send(type, data);
+    }
+
+    private updateStatus(serviceStatus: any) {
+        if (!serviceStatus || !Object.keys(serviceStatus).length) {
+            return;
+        }
+        const serviceNames = Object.keys(serviceStatus);
+        for (let i = 0; i < serviceNames.length; i++) {
+            const serviceName = serviceNames[i];
+            const existsService = this.serviesStates.find((item: any) => item.serviceName === serviceName);
+            if (!existsService) {
+                this.serviesStates.push({
+                    serviceName,
+                    state: serviceStatus[serviceName]
+                });
+                continue;
+            }
+            existsService.state = serviceStatus[serviceName]
+        }
+    }
+
+    public IsServicesReady() {
+        this.send(MessageAPI.GET_STATUS, null);
+        return this.servicesReady;
+    }
+
+    public getServicesStatesArray(): any[] {
+        return this.serviesStates;
     }
 }

@@ -2,12 +2,14 @@
  * Other policy error
  */
 export class PolicyOtherError extends Error {
-    constructor(message: string, private policyId, private code: number = 500) {
+    constructor(message: string, private readonly policyId, private readonly code: number = 500) {
         super(message);
     }
 
+    /**
+     * Error object getter
+     */
     public get errorObject() {
-        console.error(this.message);
         return {
             type: 'policyOtherError',
             code: this.code,

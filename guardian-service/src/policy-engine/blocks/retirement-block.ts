@@ -2,20 +2,19 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcDocument, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
+import { VcHelper } from '@helpers/vc-helper';
 import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IAuthUser } from '@guardian/common';
 
 /**
  * Retirement block
@@ -41,9 +40,21 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class RetirementBlock {
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
+    /**
+     * Create wipe VC
+     * @param root
+     * @param token
+     * @param data
+     * @param ref
+     * @private
+     */
     private async createWipeVC(root: any, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.getSchema(ref.topicId, SchemaEntity.WIPE_TOKEN);
@@ -61,6 +72,13 @@ export class RetirementBlock {
         return wipeVC;
     }
 
+    /**
+     * Create VP
+     * @param root
+     * @param uuid
+     * @param vcs
+     * @private
+     */
     private async createVP(root: any, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
         const vp = await vcHelper.createVP(
@@ -72,6 +90,18 @@ export class RetirementBlock {
         return vp;
     }
 
+    /**
+     * Retirement processing
+     * @param token
+     * @param document
+     * @param vsMessages
+     * @param topicId
+     * @param rule
+     * @param root
+     * @param user
+     * @param ref
+     * @private
+     */
     private async retirementProcessing(
         token: TokenCollection,
         document: VcDocument[],
@@ -82,7 +112,7 @@ export class RetirementBlock {
         user: IAuthUser,
         ref: AnyBlockType
     ): Promise<any> {
-        const uuid = HederaUtils.randomUUID();
+        const uuid = GenerateUUIDv4();
         const amount = PolicyUtils.aggregate(rule, document);
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const wipeVC = await this.createWipeVC(root, token, tokenAmount, ref);
@@ -139,6 +169,7 @@ export class RetirementBlock {
     }
 
     /**
+     * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -162,8 +193,7 @@ export class RetirementBlock {
         const vcs: VcDocument[] = [];
         const vsMessages: string[] = [];
         let topicId: string;
-        for (let i = 0; i < docs.length; i++) {
-            const element = docs[i];
+        for (const element of docs) {
             if (element.signature === DocumentSignature.INVALID) {
                 throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
             }
@@ -183,7 +213,7 @@ export class RetirementBlock {
 
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
-            const doc = await this.retirementProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
+            await this.retirementProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
 
             ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
@@ -192,6 +222,10 @@ export class RetirementBlock {
         }
     }
 
+    /**
+     * Validate block actions
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {

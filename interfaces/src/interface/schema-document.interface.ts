@@ -1,3 +1,6 @@
+/**
+ * Schema data types
+ */
 export enum SchemaDataTypes {
     string = 'string',
     number = 'number',
@@ -8,6 +11,9 @@ export enum SchemaDataTypes {
     array = 'array',
 }
 
+/**
+ * Schema data formats
+ */
 export enum SchemaDataFormat {
     date = 'date',
     time = 'time',
@@ -21,27 +27,84 @@ export enum SchemaDataFormat {
     uuid = 'uuid'
 }
 
+/**
+ * Schema document interface
+ */
 export interface ISchemaDocument {
+    /**
+     * ID
+     */
     $id?: string;
+    /**
+     * Comment
+     */
     $comment?: string;
+    /**
+     * Title
+     */
     title?: string;
+    /**
+     * Description
+     */
     description?: string;
+    /**
+     * Type
+     */
     type?: SchemaDataTypes;
+    /**
+     * Format
+     */
     format?: SchemaDataFormat;
+    /**
+     * Pattern
+     */
     pattern?: string;
+    /**
+     * Is readonly
+     */
     readOnly?: boolean;
-    unit?: string,
-    unitSystem?: string,
+    /**
+     * Unit
+     */
+    unit?: string;
+    /**
+     * Unit system
+     */
+    unitSystem?: string;
+    /**
+     * Properties
+     */
     properties?: {
         [x: string]: ISchemaDocument;
     }
+    /**
+     * Required fields
+     */
     required?: string[];
+    /**
+     * Additional properties
+     */
     additionalProperties?: boolean;
+    /**
+     * Definitions
+     */
     $defs?: {
         [x: string]: ISchemaDocument;
     }
+    /**
+     * Reference
+     */
     $ref?: string;
+    /**
+     * Document items
+     */
     items?: ISchemaDocument;
+    /**
+     * OneOf
+     */
     oneOf?: ISchemaDocument[];
+    /**
+     * AllOf
+     */
     allOf?: any[];
 }

@@ -4,14 +4,12 @@ import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/d
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
- * Aggregate block
+ * Timer block
  */
 @BasicBlock({
     blockType: 'timerBlock',
@@ -38,31 +36,56 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class TimerBlock {
+    /**
+     * Block state
+     * @private
+     */
     @StateField()
-    private state: { [key: string]: boolean } = {};
+    private readonly state: { [key: string]: boolean } = {};
 
-    @Inject()
-    private users: Users;
-
+    /**
+     * Tick count
+     * @private
+     */
     private tickCount: number;
+    /**
+     * Interval
+     * @private
+     */
     private interval: number;
+    /**
+     * Cron job
+     * @private
+     */
     private job: CronJob;
+    /**
+     * End time
+     * @private
+     */
     private endTime: number;
 
-    public beforeInit(): void {
-    }
-
+    /**
+     * After init callback
+     */
     afterInit() {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         this.startCron(ref);
     }
 
+    /**
+     * Block destructor
+     */
     destroy() {
         if (this.job) {
             this.job.stop();
         }
     }
 
+    /**
+     * Start cron
+     * @param ref
+     * @private
+     */
     private startCron(ref: AnyBlockType) {
         try {
             let sd = moment(ref.options.startDate).utc();
@@ -72,7 +95,7 @@ export class TimerBlock {
 
             this.endTime = Infinity;
             if (ref.options.endDate) {
-                let ed = moment(ref.options.endDate).utc();
+                const ed = moment(ref.options.endDate).utc();
                 if (ed.isValid()) {
                     this.endTime = ed.toDate().getTime();
                 }
@@ -111,14 +134,16 @@ export class TimerBlock {
                     this.interval = ref.options.periodInterval;
                     break;
                 }
+                default:
+                    throw new Error('Bad period')
             }
             ref.log(`start scheduler: ${mask}, ${ref.options.startDate}, ${ref.options.endDate}, ${ref.options.periodInterval}`);
             if (this.interval > 1) {
                 this.tickCount = 0;
                 this.job = new CronJob(mask, () => {
-                    const now = new Date();
-                    if (now.getTime() > this.endTime) {
-                        ref.log(`stop scheduler: ${now.getTime()}, ${this.endTime}`);
+                    const _now = new Date();
+                    if (_now.getTime() > this.endTime) {
+                        ref.log(`stop scheduler: ${_now.getTime()}, ${this.endTime}`);
                         this.job.stop();
                         return;
                     }
@@ -132,9 +157,9 @@ export class TimerBlock {
                 }, null, false, 'UTC');
             } else {
                 this.job = new CronJob(mask, () => {
-                    const now = new Date();
-                    if (now.getTime() > this.endTime) {
-                        ref.log(`stop scheduler: ${now.getTime()}, ${this.endTime}`);
+                    const _now = new Date();
+                    if (_now.getTime() > this.endTime) {
+                        ref.log(`stop scheduler: ${_now.getTime()}, ${this.endTime}`);
                         this.job.stop();
                         return;
                     }
@@ -144,10 +169,15 @@ export class TimerBlock {
             this.job.start();
         } catch (error) {
             ref.log(`start scheduler fail ${error.message}`);
-            throw `start scheduler fail ${error.message}`;
+            throw new Error(`start scheduler fail ${error.message}`);
         }
     }
 
+    /**
+     * Tick cron
+     * @param ref
+     * @private
+     */
     @ActionCallback({
         output: PolicyOutputEventType.TimerEvent
     })
@@ -156,7 +186,7 @@ export class TimerBlock {
 
         const users = Object.keys(this.state);
         const map = [];
-        for (let did of users) {
+        for (const did of users) {
             if (this.state[did] === true) {
                 map.push(did);
             }
@@ -166,6 +196,7 @@ export class TimerBlock {
     }
 
     /**
+     * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -186,6 +217,7 @@ export class TimerBlock {
     }
 
     /**
+     * Start action callback
      * @event PolicyEventType.StartTimerEvent
      * @param {IPolicyEvent} event
      */
@@ -203,6 +235,7 @@ export class TimerBlock {
     }
 
     /**
+     * Stop action callback
      * @event PolicyEventType.StopTimerEvent
      * @param {IPolicyEvent} event
      */
@@ -219,6 +252,10 @@ export class TimerBlock {
         await ref.saveState();
     }
 
+    /**
+     * Validate block data
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {

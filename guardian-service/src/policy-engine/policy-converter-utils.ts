@@ -1,10 +1,21 @@
-import { Policy } from "@entity/policy";
-import { UserType } from "@guardian/interfaces";
-import { EventConfig, PolicyInputEventType, PolicyOutputEventType, EventActor } from "./interfaces";
+import { Policy } from '@entity/policy';
+import { UserType } from '@guardian/interfaces';
+import { EventConfig, PolicyInputEventType, PolicyOutputEventType, EventActor } from './interfaces';
 
+/**
+ * Policy converter utils
+ */
 export class PolicyConverterUtils {
+    /**
+     * Base version
+     */
     public static readonly VERSION = '1.2.0';
 
+    /**
+     * Policy converter
+     * @param policy
+     * @constructor
+     */
     public static PolicyConverter(policy: Policy): Policy {
         if (policy.codeVersion === PolicyConverterUtils.VERSION) {
             return policy;
@@ -15,6 +26,16 @@ export class PolicyConverterUtils {
         return policy;
     }
 
+    /**
+     * Block converter
+     * @param block
+     * @param parent
+     * @param index
+     * @param next
+     * @param prev
+     * @constructor
+     * @private
+     */
     private static BlockConverter(
         block: any,
         parent?: any,
@@ -37,6 +58,15 @@ export class PolicyConverterUtils {
         return block;
     }
 
+    /**
+     * Create 1.0.0 version
+     * @param block
+     * @param parent
+     * @param index
+     * @param next
+     * @param prev
+     * @private
+     */
     private static v1_0_0(
         block: any,
         parent?: any,
@@ -66,10 +96,21 @@ export class PolicyConverterUtils {
             case 'wipeDocument':
                 block.blockType = 'retirementDocumentBlock';
                 break;
+            default:
+                return block;
         }
         return block;
     }
 
+    /**
+     * Create 1.1.0 version
+     * @param block
+     * @param parent
+     * @param index
+     * @param next
+     * @param prev
+     * @private
+     */
     private static v1_1_0(
         block: any,
         parent?: any,
@@ -80,7 +121,7 @@ export class PolicyConverterUtils {
         if (!block.events) {
             block.events = [];
             if (block.dependencies && block.dependencies.length) {
-                for (let dep of block.dependencies) {
+                for (const dep of block.dependencies) {
                     const refresh: EventConfig = {
                         output: PolicyOutputEventType.RefreshEvent,
                         input: PolicyInputEventType.RefreshEvent,
@@ -95,8 +136,8 @@ export class PolicyConverterUtils {
             // if(block.followUser) {
             // }
         }
-        if (block.blockType == 'interfaceActionBlock') {
-            if (block.type == 'selector' &&
+        if (block.blockType === 'interfaceActionBlock') {
+            if (block.type === 'selector' &&
                 block.uiMetaData &&
                 block.uiMetaData.options
             ) {
@@ -118,7 +159,7 @@ export class PolicyConverterUtils {
                     block.events.push(run);
                 }
             }
-            if (block.type == 'dropdown') {
+            if (block.type === 'dropdown') {
                 const run: EventConfig = {
                     output: PolicyOutputEventType.DropdownEvent,
                     input: PolicyInputEventType.RunEvent,
@@ -130,7 +171,7 @@ export class PolicyConverterUtils {
                 block.events.push(run);
             }
         }
-        if (block.blockType == 'switchBlock') {
+        if (block.blockType === 'switchBlock') {
             if (block.conditions) {
                 const conditions: any[] = block.conditions;
                 for (let i = 0; i < conditions.length; i++) {
@@ -149,7 +190,7 @@ export class PolicyConverterUtils {
                 }
             }
         }
-        if (block.blockType == 'aggregateDocumentBlock') {
+        if (block.blockType === 'aggregateDocumentBlock') {
             if (block.timer) {
                 const timer: EventConfig = {
                     output: PolicyOutputEventType.TimerEvent,
@@ -165,6 +206,15 @@ export class PolicyConverterUtils {
         return block;
     }
 
+    /**
+     * Create 1.2.0 version
+     * @param block
+     * @param parent
+     * @param index
+     * @param next
+     * @param prev
+     * @private
+     */
     private static v1_2_0(
         block: any,
         parent?: any,
@@ -172,8 +222,8 @@ export class PolicyConverterUtils {
         next?: any,
         prev?: any
     ): any {
-        if (block.blockType == 'interfaceActionBlock') {
-            if (block.type == 'selector') {
+        if (block.blockType === 'interfaceActionBlock') {
+            if (block.type === 'selector') {
                 if (!block.uiMetaData) {
                     block.uiMetaData = {};
                 }
@@ -181,15 +231,15 @@ export class PolicyConverterUtils {
                 block.uiMetaData.buttons = [];
                 if (block.uiMetaData.options) {
                     const options: any[] = block.uiMetaData.options;
-                    for (let i = 0; i < options.length; i++) {
+                    for (const option of options) {
                         block.uiMetaData.buttons.push({
-                            tag: options[i].tag,
-                            name: options[i].name,
+                            tag: option.tag,
+                            name: option.name,
                             type: 'selector',
                             filters: [],
                             field: block.field,
-                            value: options[i].value,
-                            uiClass: options[i].uiClass
+                            value: option.value,
+                            uiClass: option.uiClass
                         });
                     }
                     delete block.uiMetaData.options;

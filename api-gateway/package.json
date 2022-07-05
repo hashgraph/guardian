@@ -45,7 +45,7 @@
     "debug": "nodemon dist/index.js",
     "dev:docker": "npm run build && nodemon .",
     "dev": "tsc -w",
-    "lint": "tslint --project .",
+    "lint": "tslint --config ../tslint.json --project .",
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
   },

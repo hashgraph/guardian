@@ -6,23 +6,81 @@ import { DIDDocument } from './did-document';
 import { TimestampUtils } from '../timestamp-utils';
 import { Timestamp } from '@hashgraph/sdk';
 
+/**
+ * VP document
+ */
 export class VpDocument {
+    /**
+     * First context entry
+     */
     public static readonly FIRST_CONTEXT_ENTRY = 'https://www.w3.org/2018/credentials/v1';
+    /**
+     * VP type
+     */
     public static readonly VERIFIABLE_PRESENTATION_TYPE = 'VerifiablePresentation';
+    /**
+     * VC
+     */
     public static readonly VERIFIABLE_CREDENTIAL = 'verifiableCredential';
+    /**
+     * Context
+     */
     public static readonly CONTEXT = '@context';
+    /**
+     * ID
+     */
     public static readonly ID = 'id';
+    /**
+     * Type
+     */
     public static readonly TYPE = 'type';
+    /**
+     * Proof
+     */
     public static readonly PROOF = 'proof';
+    /**
+     * Issuer
+     */
     public static readonly ISSUER = 'issuer';
+    /**
+     * Issuance date
+     */
     public static readonly ISSUANCE_DATE = 'issuanceDate';
 
+    /**
+     * ID
+     * @protected
+     */
     protected id: string;
+    /**
+     * Context
+     * @protected
+     */
     protected context: string[];
+    /**
+     * Type
+     * @protected
+     */
     protected type: string[];
+    /**
+     * Credentials
+     * @protected
+     */
     protected credentials: VcDocument[];
+    /**
+     * Proof
+     * @protected
+     */
     protected proof: any;
+    /**
+     * Issuer
+     * @protected
+     */
     protected issuer: Issuer;
+    /**
+     * Issuance date
+     * @protected
+     */
     protected issuanceDate: Timestamp;
 
     constructor() {
@@ -31,18 +89,31 @@ export class VpDocument {
         this.context = [VpDocument.FIRST_CONTEXT_ENTRY];
     }
 
+    /**
+     * Get id
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * Set ID
+     * @param id
+     */
     public setId(id: string): void {
         this.id = id;
     }
 
+    /**
+     * Get issuer
+     */
     public getIssuer(): Issuer {
         return this.issuer;
     }
 
+    /**
+     * Get issuer DID
+     */
     public getIssuerDid(): string {
         if (this.issuer) {
             return this.issuer.getId();
@@ -50,6 +121,10 @@ export class VpDocument {
         return null;
     }
 
+    /**
+     * Set issuer
+     * @param issuer
+     */
     public setIssuer(issuer: string | Issuer | DIDDocument): void {
         if (typeof issuer === 'string') {
             this.issuer = new Issuer(issuer);
@@ -60,75 +135,123 @@ export class VpDocument {
         }
     }
 
+    /**
+     * Get context
+     */
     public getContext(): string[] {
         return this.context;
     }
 
+    /**
+     * Add context
+     * @param context
+     */
     public addContext(context: string): void {
         this.context.push(context);
     }
 
+    /**
+     * Get type
+     */
     public getType(): string[] {
         return this.type;
     }
 
+    /**
+     * Add type
+     * @param type
+     */
     public addType(type: string): void {
         this.type.push(type);
     }
 
+    /**
+     * Get proof
+     */
     public getProof(): any {
         return this.proof;
     }
 
+    /**
+     * Set proof
+     * @param proof
+     */
     public setProof(proof: any): void {
         this.proof = proof;
     }
 
+    /**
+     * Get verifiable credential
+     * @param index
+     */
     public getVerifiableCredential(index: number = 0): VcDocument {
         return this.credentials[index];
     }
 
+    /**
+     * Get verifiable credentoals
+     */
     public getVerifiableCredentials(): VcDocument[] {
         return this.credentials;
     }
 
+    /**
+     * Length
+     */
     public get length(): number {
         return this.credentials.length;
     }
 
+    /**
+     * Add verifiable credential
+     * @param vc
+     */
     public addVerifiableCredential(vc: VcDocument): void {
         if (vc) {
             this.credentials.push(vc);
         }
     }
 
+    /**
+     * Add verifiable credentials
+     * @param vcs
+     */
     public addVerifiableCredentials(vcs: VcDocument[]): void {
         if (vcs) {
-            for (let index = 0; index < vcs.length; index++) {
-                this.credentials.push(vcs[index]);
+            for (const vc of vcs) {
+                this.addVerifiableCredential(vc);
             }
         }
     }
 
+    /**
+     * To JSON
+     */
     public toJson(): string {
         return JSON.stringify(this.toJsonTree());
     }
 
+    /**
+     * To JSON tree
+     */
     public toJsonTree(): IVP {
         const rootObject: any = {};
-        if (this.id)
+        if (this.id) {
             rootObject[VpDocument.ID] = this.id;
-        if (this.type)
+        }
+        if (this.type) {
             rootObject[VpDocument.TYPE] = this.type;
-        if (this.issuer)
+        }
+        if (this.issuer) {
             rootObject[VpDocument.ISSUER] = this.issuer.toJsonTree();
-        if (this.issuanceDate)
+        }
+        if (this.issuanceDate) {
             rootObject[VpDocument.ISSUANCE_DATE] = TimestampUtils.toJSON(this.issuanceDate);
+        }
 
         const context = [];
         if (this.context) {
-            for (let index = 0; index < this.context.length; index++) {
-                const element = this.context[index];
+            for (const element of this.context) {
                 context.push(element);
             }
         }
@@ -136,8 +259,7 @@ export class VpDocument {
 
         const verifiableCredential = [];
         if (this.credentials) {
-            for (let index = 0; index < this.credentials.length; index++) {
-                const element = this.credentials[index];
+            for (const element of this.credentials) {
                 verifiableCredential.push(element.toJsonTree());
             }
         }
@@ -150,11 +272,15 @@ export class VpDocument {
         return rootObject;
     }
 
+    /**
+     * From JSON
+     * @param json
+     */
     public static fromJson(json: string): VpDocument {
         let result: VpDocument;
         try {
             const root = JSON.parse(json);
-            result = this.fromJsonTree(root);
+            result = VpDocument.fromJsonTree(root);
 
         } catch (error) {
             throw new Error('Given JSON string is not a valid VpDocument ' + error.message);
@@ -162,26 +288,33 @@ export class VpDocument {
         return result;
     }
 
+    /**
+     * From JSON tree
+     * @param json
+     */
     public static fromJsonTree(json: IVP): VpDocument {
         if (!json) {
             throw new Error('JSON Object is empty');
         }
 
         const result = new VpDocument();
-        if (json[VpDocument.ID])
+        if (json[VpDocument.ID]) {
             result.id = json[VpDocument.ID];
-        if (json[VpDocument.TYPE])
+        }
+        if (json[VpDocument.TYPE]) {
             result.type = json[VpDocument.TYPE];
-        if (json[VpDocument.ISSUER])
+        }
+        if (json[VpDocument.ISSUER]) {
             result.issuer = Issuer.fromJsonTree(json[VcDocument.ISSUER]);
-        if (json[VpDocument.ISSUANCE_DATE])
+        }
+        if (json[VpDocument.ISSUANCE_DATE]) {
             result.issuanceDate = TimestampUtils.fromJson(json[VcDocument.ISSUANCE_DATE]);
+        }
 
         const jsonVerifiableCredential = json[VpDocument.VERIFIABLE_CREDENTIAL];
         if (jsonVerifiableCredential) {
             if (Array.isArray(jsonVerifiableCredential)) {
-                for (let i = 0; i < jsonVerifiableCredential.length; i++) {
-                    const item = jsonVerifiableCredential[i];
+                for (const item of jsonVerifiableCredential) {
                     const credential = VcDocument.fromJsonTree(item);
                     result.addVerifiableCredential(credential);
                 }
@@ -193,8 +326,7 @@ export class VpDocument {
         const context = json[VcDocument.CONTEXT];
         if (context) {
             if (Array.isArray(context)) {
-                for (let i = 0; i < context.length; i++) {
-                    const item = context[i];
+                for (const item of context) {
                     result.addContext(item);
                 }
             } else {
@@ -209,6 +341,9 @@ export class VpDocument {
         return result;
     }
 
+    /**
+     * To credential hash
+     */
     public toCredentialHash(): string {
         const map = {};
         map[VpDocument.ID] = this.id;
@@ -221,11 +356,17 @@ export class VpDocument {
         return Hashing.base58.encode(hash);
     }
 
+    /**
+     * Proof from JSON
+     * @param json
+     */
     public proofFromJson(json: any): void {
         this.setProof(json[VpDocument.PROOF]);
     }
 
-
+    /**
+     * Get document
+     */
     public getDocument(): IVP {
         return this.toJsonTree();
     }

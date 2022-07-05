@@ -1,4 +1,4 @@
-import { permissionHelper } from '@auth/authorizationHelper';
+import { permissionHelper } from '@auth/authorization-helper';
 import { Guardians } from '@helpers/guardians';
 import { IPFS } from '@helpers/ipfs';
 import { Request, Response, Router } from 'express';
@@ -14,7 +14,7 @@ settingsAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: 
     try {
         const settings = req.body as CommonSettings;
         if (!settings || Object.keys(settings).length === 0) {
-            throw new Error("Invalid settings");
+            throw new Error('Invalid settings');
         }
         const guardians = new Guardians();
         const ipfs = new IPFS();

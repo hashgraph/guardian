@@ -1,4 +1,3 @@
-import { IAuthUser } from '@auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
 import { getVCField } from '@helpers/utils';
 import { Report } from '@policy-engine/helpers/decorators';
@@ -12,17 +11,19 @@ import {
     IVCReport,
     IVPReport,
     SchemaEntity,
-    SchemaStatus
 } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Users } from '@helpers/users';
 import { getMongoRepository } from 'typeorm';
 import { VpDocument } from '@entity/vp-document';
 import { VcDocument } from '@entity/vc-document';
-import { Schema } from '@entity/schema';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
+import { IAuthUser } from '@guardian/common';
 
+/**
+ * Report block
+ */
 @Report({
     blockType: 'reportBlock',
     commonBlock: false,
@@ -42,12 +43,25 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
     }
 })
 export class ReportBlock {
+    /**
+     * Users helper
+     */
     @Inject()
     public users: Users;
-    private state: { [key: string]: any } = {
+
+    /**
+     * Block state
+     * @private
+     */
+    private readonly state: { [key: string]: any } = {
         lastValue: null
     };
 
+    /**
+     * Get username
+     * @param did
+     * @param map
+     */
     async getUserName(did: string, map: any): Promise<string> {
         if (!did) {
             return null;
@@ -65,17 +79,25 @@ export class ReportBlock {
         }
     }
 
+    /**
+     * Item user map
+     * @param documents
+     * @param map
+     */
     async itemUserMap(documents: IReportItem[], map) {
         if (!documents) {
             return;
         }
-        for (let i = 0; i < documents.length; i++) {
-            const element = documents[i];
+        for (const element of documents) {
             element.username = await this.getUserName(element.username, map);
             await this.itemUserMap(element.documents, map);
         }
     }
 
+    /**
+     * Report user map
+     * @param report
+     */
     async reportUserMap(report: IReport) {
         const map: any = {};
         if (report.vpDocument) {
@@ -96,6 +118,11 @@ export class ReportBlock {
         await this.itemUserMap(report.documents, map);
     }
 
+    /**
+     * Get block data
+     * @param user
+     * @param uuid
+     */
     async getData(user: IAuthUser, uuid: string): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
@@ -122,7 +149,7 @@ export class ReportBlock {
                 mintDocument: null,
                 policyDocument: null,
                 policyCreatorDocument: null,
-                documents: documents
+                documents
             }
 
             const vp = await getMongoRepository(VpDocument).findOne({ hash, policyId: ref.policyId });
@@ -222,15 +249,14 @@ export class ReportBlock {
             }
 
             const reportItems = ref.getItems();
-            for (let i = 0; i < reportItems.length; i++) {
-                const reportItem = reportItems[i];
+            for (const reportItem of reportItems) {
                 await reportItem.run(documents, variables);
             }
 
             await this.reportUserMap(report);
 
             return {
-                hash: hash,
+                hash,
                 uiMetaData: ref.options.uiMetaData,
                 data: report
             };
@@ -239,6 +265,11 @@ export class ReportBlock {
         }
     }
 
+    /**
+     * Set block data
+     * @param user
+     * @param data
+     */
     async setData(user: IAuthUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {

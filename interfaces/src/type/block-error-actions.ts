@@ -1,3 +1,6 @@
+/**
+ * Block error actions
+ */
 export enum BlockErrorActions {
     NO_ACTION = 'no-action',
     RETRY = 'retry',

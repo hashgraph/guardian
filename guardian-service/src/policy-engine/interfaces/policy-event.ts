@@ -1,31 +1,95 @@
-import { IAuthUser } from "@auth/auth.interface";
-import { AnyBlockType } from "@policy-engine/policy-engine.interface";
-import { EventActor, PolicyInputEventType, PolicyOutputEventType } from "./policy-event-type";
+import { IAuthUser } from '@guardian/common';
+import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type';
 
+/**
+ * Event callback type
+ */
 export type EventCallback<T> = (event: IPolicyEvent<T>) => void;
 
+/**
+ * Policy event
+ */
 export interface IPolicyEvent<T> {
-    type: PolicyInputEventType; // Event Type;
+    /**
+     * Event type
+     */
+    type: PolicyInputEventType;
+    /**
+     * Input event type
+     */
     inputType: PolicyInputEventType;
+    /**
+     * Output event type
+     */
     outputType: PolicyOutputEventType;
-    policyId: string; // Policy Id;
-    source: string; // Block Tag;
-    sourceId: string; // Block Id;
-    target?: string; // Block Tag;
-    targetId?: string; // Block Id;
+    /**
+     * Policy id
+     */
+    policyId: string;
+    /**
+     * Block tag
+     */
+    source: string;
+    /**
+     * Block id
+     */
+    sourceId: string;
+    /**
+     * Block tag
+     */
+    target?: string;
+    /**
+     * Block id
+     */
+    targetId?: string;
+    /**
+     * User
+     */
     user?: IAuthUser;
+    /**
+     * Data
+     */
     data?: T;
 }
 
+/**
+ * Policy link class
+ */
 export class PolicyLink<T> {
+    /**
+     * Event type
+     */
     public readonly type: PolicyInputEventType;
+    /**
+     * Input event type
+     */
     public readonly inputType: PolicyInputEventType;
+    /**
+     * Output event type
+     */
     public readonly outputType: PolicyOutputEventType;
+    /**
+     * Policy id
+     */
     public readonly policyId: string;
+    /**
+     * Source block
+     */
     public readonly source: AnyBlockType;
+    /**
+     * Target block
+     */
     public readonly target: AnyBlockType;
+    /**
+     * Event actor
+     */
     public readonly actor: EventActor;
 
+    /**
+     * Event callback
+     * @private
+     */
     private readonly callback?: EventCallback<T>;
 
     constructor(
@@ -46,10 +110,15 @@ export class PolicyLink<T> {
         this.callback = fn;
     }
 
+    /**
+     * Run event action
+     * @param user
+     * @param data
+     */
     public run(user?: IAuthUser, data?: T): void {
-        if (this.actor == EventActor.Owner) {
+        if (this.actor === EventActor.Owner) {
             user = this.createUser(this.getOwner(data));
-        } else if (this.actor == EventActor.Issuer) {
+        } else if (this.actor === EventActor.Issuer) {
             user = this.createUser(this.getIssuer(data));
         }
         this.callback.call(this.target, {
@@ -61,13 +130,17 @@ export class PolicyLink<T> {
             sourceId: this.source.uuid,
             target: this.target.tag,
             targetId: this.target.uuid,
-            user: user,
-            data: data
+            user,
+            data
         })
     }
 
+    /**
+     * Get owner
+     * @param data
+     * @private
+     */
     private getOwner(data: any): string {
-        console.log('getOwner', data);
         if (!data) {
             return null;
         }
@@ -77,8 +150,12 @@ export class PolicyLink<T> {
         return data ? data.owner : null;
     }
 
+    /**
+     * Get issuer
+     * @param data
+     * @private
+     */
     private getIssuer(data: any): string {
-        console.log('getIssuer', data);
         if (!data) {
             return null;
         }
@@ -94,8 +171,12 @@ export class PolicyLink<T> {
         return null;
     }
 
+    /**
+     * Create user
+     * @param did
+     * @private
+     */
     private createUser(did: string): IAuthUser {
-        console.log('createUser', did)
         if (did) {
             return { did } as IAuthUser;
         }

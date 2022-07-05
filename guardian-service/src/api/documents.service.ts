@@ -1,7 +1,7 @@
 import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcHelper } from '@helpers/vc-helper';
 import {
     DidDocumentStatus,
     DocumentSignature,
@@ -24,13 +24,13 @@ import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/c
  * @param vpDocumentRepository - table with VP Documents
  * @param vc - verification methods VC and VP Documents
  */
-export const documentsAPI = async function (
+export async function documentsAPI(
     channel: MessageBrokerChannel,
     didDocumentRepository: MongoRepository<DidDocument>,
     vcDocumentRepository: MongoRepository<VcDocument>,
     vpDocumentRepository: MongoRepository<VpDocument>,
 ): Promise<void> {
-    const getDIDOperation = function (operation: DidDocumentStatus) {
+    const getDIDOperation = (operation: DidDocumentStatus) => {
         switch (operation) {
             case DidDocumentStatus.CREATE:
                 return DidDocumentStatus.CREATE;
@@ -38,20 +38,14 @@ export const documentsAPI = async function (
                 return DidDocumentStatus.DELETE;
             case DidDocumentStatus.UPDATE:
                 return DidDocumentStatus.UPDATE;
-            case DidDocumentStatus.CREATE:
-                return DidDocumentStatus.CREATE;
-            case DidDocumentStatus.DELETE:
-                return DidDocumentStatus.DELETE;
             case DidDocumentStatus.FAILED:
                 return DidDocumentStatus.FAILED;
-            case DidDocumentStatus.UPDATE:
-                return DidDocumentStatus.UPDATE;
             default:
                 return DidDocumentStatus.NEW;
         }
     }
 
-    const getVCOperation = function (operation: DocumentStatus) {
+    const getVCOperation = (operation: DocumentStatus) => {
         switch (operation) {
             case DocumentStatus.ISSUE:
                 return DocumentStatus.ISSUE;
@@ -98,13 +92,13 @@ export const documentsAPI = async function (
     ApiResponse(channel, MessageAPI.GET_VC_DOCUMENTS, async (msg) => {
         try {
             if (msg) {
-                const reqObj: any = { where: {} };
+                const reqObj: any = { where: {} as unknown };
                 const { owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg;
                 if (owner) {
-                    reqObj.where['owner'] = { $eq: owner }
+                    reqObj.where.owner = { $eq: owner }
                 }
                 if (assign) {
-                    reqObj.where['assign'] = { $eq: assign }
+                    reqObj.where.assign = { $eq: assign }
                 }
                 if (issuer) {
                     reqObj.where['document.issuer'] = { $eq: issuer }
@@ -113,13 +107,13 @@ export const documentsAPI = async function (
                     reqObj.where['document.id'] = { $eq: id }
                 }
                 if (hash) {
-                    reqObj.where['hash'] = { $eq: hash }
+                    reqObj.where.hash = { $eq: hash }
                 }
                 if (policyId) {
-                    reqObj.where['policyId'] = { $eq: policyId }
+                    reqObj.where.policyId = { $eq: policyId }
                 }
                 if (schema) {
-                    reqObj.where['schema'] = { $eq: schema }
+                    reqObj.where.schema = { $eq: schema }
                 }
                 if (typeof reqObj.where !== 'object') {
                     reqObj.where = {};
@@ -150,7 +144,7 @@ export const documentsAPI = async function (
         if (msg.did && msg.operation) {
             const did = msg.did;
             const operation = msg.operation;
-            const item = await didDocumentRepository.findOne({ did: did });
+            const item = await didDocumentRepository.findOne({ did });
             if (item) {
                 item.status = getDIDOperation(operation);
                 const result: IDidObject = await didDocumentRepository.save(item);
@@ -179,7 +173,7 @@ export const documentsAPI = async function (
 
         const hash = msg.hash;
         if (hash) {
-            result = await vcDocumentRepository.findOne({ hash: hash });
+            result = await vcDocumentRepository.findOne({ hash });
         }
 
         if (result) {

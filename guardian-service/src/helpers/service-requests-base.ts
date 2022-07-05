@@ -1,7 +1,18 @@
-import { MessageBrokerChannel } from "@guardian/common";
+import { MessageBrokerChannel } from '@guardian/common';
 
+/**
+ * Service request base class
+ */
 export abstract class ServiceRequestsBase {
+    /**
+     * Message broker channel
+     * @private
+     */
     protected channel: MessageBrokerChannel;
+    /**
+     * Message broker target
+     * @private
+     */
     abstract readonly target: string;
 
     /**
@@ -29,10 +40,10 @@ export abstract class ServiceRequestsBase {
         try {
             const response = await this.channel.request<any, T>(`${this.target}.${entity}`, params);
             if (!response) {
-                throw 'Server is not available';
+                throw new Error('Server is not available');
             }
             if (response.error) {
-                throw response.error;
+                throw new Error(response.error);
             }
             return response.body;
         } catch (error) {
