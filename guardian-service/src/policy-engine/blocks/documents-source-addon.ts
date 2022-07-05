@@ -38,7 +38,7 @@ export class DocumentsSourceAddon {
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Get data from source

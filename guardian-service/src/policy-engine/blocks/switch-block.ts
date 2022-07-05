@@ -37,7 +37,7 @@ export class SwitchBlock {
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Get scope
@@ -188,7 +188,7 @@ export class SwitchBlock {
                         if (!condition.value) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "condition.value" does not set');
                         } else {
-                            const vars = PolicyUtils.variables(condition.value);
+                            PolicyUtils.variables(condition.value);
                         }
                     }
 

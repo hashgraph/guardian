@@ -43,14 +43,14 @@ export class InterfaceDocumentActionBlock {
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Wallet helper
      * @private
      */
     @Inject()
-    private wallet: Wallet;
+    private readonly wallet: Wallet;
 
     /**
      * Get block data

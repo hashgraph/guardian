@@ -104,7 +104,7 @@ export class VcSubject {
      * @private
      */
     private _addContext(context: string): void {
-        if (this.context.indexOf(context) == -1) {
+        if (this.context.indexOf(context) === -1) {
             this.context.push(context)
         }
     }

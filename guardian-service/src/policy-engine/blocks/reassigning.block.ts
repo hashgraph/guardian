@@ -1,10 +1,9 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
-import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -35,25 +34,18 @@ import { IAuthUser } from '@guardian/common';
 })
 export class ReassigningBlock {
     /**
-     * Wallet helper
-     * @private
-     */
-    @Inject()
-    private wallet: Wallet;
-
-    /**
      * Users helper
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * VC helper
      * @private
      */
     @Inject()
-    private vcHelper: VcHelper;
+    private readonly vcHelper: VcHelper;
 
     /**
      * Document reassigning

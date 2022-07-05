@@ -4,8 +4,6 @@ import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/d
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -43,14 +41,7 @@ export class TimerBlock {
      * @private
      */
     @StateField()
-    private state: { [key: string]: boolean } = {};
-
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private users: Users;
+    private readonly state: { [key: string]: boolean } = {};
 
     /**
      * Tick count

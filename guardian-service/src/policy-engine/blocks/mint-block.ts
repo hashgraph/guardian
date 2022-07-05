@@ -6,10 +6,9 @@ import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VpDocument, HederaUtils, HederaSDKHelper, VCMessage, MessageAction, MessageServer, VPMessage } from '@hedera-modules';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage } from '@hedera-modules';
+import { VcHelper } from '@helpers/vc-helper';
 import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
@@ -47,7 +46,7 @@ export class MintBlock {
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Create mint VC
@@ -217,7 +216,7 @@ export class MintBlock {
         }
 
         const root = await this.users.getHederaAccount(ref.policyOwner);
-        const doc = await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
+        await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
         ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
     }

@@ -53,7 +53,7 @@ export class ReportBlock {
      * Block state
      * @private
      */
-    private state: { [key: string]: any } = {
+    private readonly state: { [key: string]: any } = {
         lastValue: null
     };
 

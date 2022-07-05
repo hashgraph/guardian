@@ -27,7 +27,10 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class SetRelationshipsBlock {
-
+    /**
+     * Run block action
+     * @param event
+     */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent]
     })

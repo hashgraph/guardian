@@ -305,7 +305,7 @@ export class DidDocumentBase {
      * Context
      * @private
      */
-    private context: string[];
+    private readonly context: string[];
     /**
      * DID root key
      * @private

@@ -3,7 +3,7 @@ import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { VcDocument } from '@hedera-modules';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcHelper } from '@helpers/vc-helper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';

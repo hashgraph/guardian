@@ -15,8 +15,8 @@ export class VcHelper extends VCJS {
         const defaultDocumentLoader = new DefaultDocumentLoader();
         const schemaDocumentLoader = new ContextDocumentLoader('https://ipfs.io/ipfs/');
         const didDocumentLoader = new DIDDocumentLoader();
-        const vcSchemaObjectLoader = new VCSchemaLoader("https://ipfs.io/ipfs/");
-        const subjectSchemaObjectLoader = new SubjectSchemaLoader("https://ipfs.io/ipfs/");
+        const vcSchemaObjectLoader = new VCSchemaLoader('https://ipfs.io/ipfs/');
+        const subjectSchemaObjectLoader = new SubjectSchemaLoader('https://ipfs.io/ipfs/');
 
         this.addDocumentLoader(defaultDocumentLoader);
         this.addDocumentLoader(schemaDocumentLoader);

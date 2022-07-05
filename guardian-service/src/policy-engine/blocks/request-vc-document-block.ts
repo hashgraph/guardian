@@ -6,8 +6,8 @@ import { DidDocumentStatus, GenerateUUIDv4, Schema } from '@guardian/interfaces'
 import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
-import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from '@hedera-modules';
-import { VcHelper } from '@helpers/vcHelper';
+import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
+import { VcHelper } from '@helpers/vc-helper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
@@ -46,14 +46,14 @@ export class RequestVcDocumentBlock {
      * Block state
      */
     @StateField()
-    state: { [key: string]: any } = { active: true };
+    public readonly state: { [key: string]: any } = { active: true };
 
     /**
      * Wallet helper
      * @private
      */
     @Inject()
-    private wallet: Wallet;
+    private readonly wallet: Wallet;
 
     /**
      * Schema

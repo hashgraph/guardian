@@ -1,4 +1,4 @@
-import {VcHelper} from '@helpers/vcHelper';
+import {VcHelper} from '@helpers/vc-helper';
 import {Users} from '../users';
 import {Wallet} from '../wallet';
 

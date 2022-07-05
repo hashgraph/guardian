@@ -1,7 +1,7 @@
 import { DidDocument } from '@entity/did-document';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcHelper } from '@helpers/vc-helper';
 import {
     DidDocumentStatus,
     DocumentSignature,

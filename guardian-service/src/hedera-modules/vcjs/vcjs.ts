@@ -3,11 +3,10 @@ import addFormats from 'ajv-formats';
 import { ld as vcjs } from '@transmute/vc.js';
 import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { PrivateKey } from '@hashgraph/sdk';
-import { check, CheckResult } from '@transmute/jsonld-schema';
+import { CheckResult } from '@transmute/jsonld-schema';
 import { GenerateUUIDv4, ICredentialSubject, IVC } from '@guardian/interfaces';
 import { VcDocument } from './vc-document';
 import { VpDocument } from './vp-document';
-import { HederaUtils } from './../utils';
 import { VcSubject } from './vc-subject';
 import { TimestampUtils } from '../timestamp-utils';
 import { DocumentLoaderFunction } from '../document-loader/document-loader-function';
@@ -37,17 +36,17 @@ export class VCJS {
      * Document loaders
      * @private
      */
-    private documentLoaders: DocumentLoader[];
+    private readonly documentLoaders: DocumentLoader[];
     /**
      * Schema loaders
      * @private
      */
-    private schemaLoaders: SchemaLoader[];
+    private readonly schemaLoaders: SchemaLoader[];
     /**
      * Schema context
      * @private
      */
-    private schemaContext: string[];
+    private readonly schemaContext: string[];
     /**
      * Loader
      * @private

@@ -1,9 +1,8 @@
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, TopicType } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
-import { Wallet } from '@helpers/wallet';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
@@ -42,18 +41,11 @@ import { IAuthUser } from '@guardian/common';
 })
 export class SendToGuardianBlock {
     /**
-     * Wallet helper
-     * @private
-     */
-    @Inject()
-    private wallet: Wallet;
-
-    /**
      * Users helper
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Send by type
@@ -317,7 +309,7 @@ export class SendToGuardianBlock {
             if (ref.options.dataSource === 'hedera') {
                 if (ref.options.topic && ref.options.topic !== 'root') {
                     const policyTopics = ref.policyInstance.policyTopics || [];
-                    const config = policyTopics.find(e => e.name == ref.options.topic);
+                    const config = policyTopics.find(e => e.name === ref.options.topic);
                     if (!config) {
                         resultsContainer.addBlockError(ref.uuid, `Topic "${ref.options.topic}" does not exist`);
                     }

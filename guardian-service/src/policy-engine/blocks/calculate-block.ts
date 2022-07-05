@@ -6,7 +6,7 @@ import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument } from '@hedera-modules';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcHelper } from '@helpers/vc-helper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
@@ -15,6 +15,9 @@ import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
+/**
+ * Calculate block
+ */
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
     commonBlock: true,
@@ -41,7 +44,7 @@ export class CalculateContainerBlock {
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Calculate data

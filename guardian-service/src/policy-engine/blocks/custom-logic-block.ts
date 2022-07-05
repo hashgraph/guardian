@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcHelper } from '@helpers/vc-helper';
 import { SchemaHelper } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';

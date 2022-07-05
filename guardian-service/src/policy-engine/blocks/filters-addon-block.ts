@@ -29,7 +29,7 @@ export class FiltersAddonBlock {
      * Block state
      * @private
      */
-    private state: { [key: string]: any } = {
+    private readonly state: { [key: string]: any } = {
         lastData: null,
         lastValue: null
     };

@@ -15,7 +15,6 @@ import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
-import { HederaUtils } from '../utils';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**
@@ -27,7 +26,7 @@ export class MessageServer {
      * Client
      * @private
      */
-    private client: HederaSDKHelper;
+    private readonly client: HederaSDKHelper;
 
     /**
      * Submit key
@@ -301,7 +300,7 @@ export class MessageServer {
      * @param action
      */
     public async getMessages<T extends Message>(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<T[]> {
-        let messages = await this.getTopicMessages(topicId, type, action);
+        const messages = await this.getTopicMessages(topicId, type, action);
         return messages as T[];
     }
 
@@ -320,7 +319,7 @@ export class MessageServer {
     public async findTopic(messageId: string): Promise<string> {
         try {
             if (messageId) {
-                const { topicId, message } = await this.client.getTopicMessage(messageId);
+                const { topicId } = await this.client.getTopicMessage(messageId);
                 return topicId;
             }
             return null;

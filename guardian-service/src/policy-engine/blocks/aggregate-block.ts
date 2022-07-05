@@ -44,7 +44,7 @@ export class AggregateBlock {
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Tick cron
@@ -55,7 +55,7 @@ export class AggregateBlock {
         type: PolicyInputEventType.TimerEvent,
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickCron(event: IPolicyEvent<string[]>) {
+    public async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (ref.options.aggregateType !== 'period') {
             return;

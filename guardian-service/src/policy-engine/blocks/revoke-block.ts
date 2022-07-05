@@ -48,7 +48,7 @@ export class RevokeBlock {
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Send to hedera

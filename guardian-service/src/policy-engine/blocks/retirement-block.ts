@@ -6,8 +6,8 @@ import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, HederaUtils, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcDocument, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
+import { VcHelper } from '@helpers/vc-helper';
 import { getMongoRepository } from 'typeorm';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -45,7 +45,7 @@ export class RetirementBlock {
      * @private
      */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
      * Create wipe VC
@@ -213,7 +213,7 @@ export class RetirementBlock {
 
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
-            const doc = await this.retirementProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
+            await this.retirementProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
 
             ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);

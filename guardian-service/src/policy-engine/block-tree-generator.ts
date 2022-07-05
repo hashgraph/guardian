@@ -2,9 +2,7 @@ import { Policy } from '@entity/policy';
 import { getConnection, getMongoRepository } from 'typeorm';
 import {
     IPolicyBlock,
-    IPolicyInterfaceBlock,
-    ISerializedBlock,
-    ISerializedBlockExtend
+    IPolicyInterfaceBlock
 } from './policy-engine.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { Singleton } from '@helpers/decorators/singleton';
@@ -14,14 +12,17 @@ import {
 } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { PolicyConverterUtils } from './policy-converter-utils';
 
+/**
+ * Block tree generator
+ */
 @Singleton
 export class BlockTreeGenerator {
-    private models: Map<string, IPolicyBlock> = new Map();
-
-    constructor() {
-    }
+    /**
+     * Policy models map
+     * @private
+     */
+    private readonly models: Map<string, IPolicyBlock> = new Map();
 
     /**
      * Return policy config from db
@@ -33,9 +34,12 @@ export class BlockTreeGenerator {
         return await policyRepository.findOne(id);
     }
 
+    /**
+     * Initialization
+     */
     public async init(): Promise<void> {
         const policies = await getMongoRepository(Policy).find({ status: 'PUBLISH' });
-        for (let policy of policies) {
+        for (const policy of policies) {
             try {
                 await this.generate(policy.id.toString());
             } catch (error) {
@@ -45,21 +49,15 @@ export class BlockTreeGenerator {
     }
 
     /**
-     * Generate policy instance from db
-     * @param id
-     * @param skipRegistration
-     */
-    public async generate(id: string, skipRegistration?: boolean): Promise<IPolicyBlock>;
-
-    /**
      * Generate policy instance from config
-     * @param config
+     * @param policy
      * @param skipRegistration
      */
-    public async generate(policy: Policy, skipRegistration?: boolean): Promise<IPolicyBlock>;
+    public async generate(policy: Policy| string, skipRegistration?: boolean): Promise<IPolicyBlock>;
 
     public async generate(arg: any, skipRegistration?: boolean): Promise<IPolicyBlock> {
-        let policy, policyId;
+        let policy;
+        let policyId;
         if (typeof arg === 'string') {
             policy = await BlockTreeGenerator.getPolicyFromDb(arg);
             policyId = arg;
@@ -85,17 +83,11 @@ export class BlockTreeGenerator {
     }
 
     /**
-     * Validate policy by id
-     * @param id - policyId
-     */
-    public async validate(id: string): Promise<ISerializedErrors>
-
-    /**
      * Validate policy by config
-     * @param config
      * @private
+     * @param policy
      */
-    public async validate(policy: Policy): Promise<ISerializedErrors>;
+    public async validate(policy: Policy | string): Promise<ISerializedErrors>;
 
     public async validate(arg: any) {
         const resultsContainer = new PolicyValidationResultsContainer();
@@ -117,15 +109,23 @@ export class BlockTreeGenerator {
         return resultsContainer.getSerializedErrors();
     }
 
+    /**
+     * Regenerate IDs
+     * @param block
+     */
     public regenerateIds(block: any) {
         block.id = GenerateUUIDv4();
         if (Array.isArray(block.children)) {
-            for (let child of block.children) {
+            for (const child of block.children) {
                 this.regenerateIds(child);
             }
         }
     }
 
+    /**
+     * Get root
+     * @param policyId
+     */
     public getRoot(policyId: any): IPolicyInterfaceBlock {
         const model = this.models.get(policyId) as IPolicyInterfaceBlock;
         if (!model) {
@@ -134,12 +134,18 @@ export class BlockTreeGenerator {
         return model;
     }
 
+    /**
+     * Tag finder
+     * @param instance
+     * @param resultsContainer
+     * @private
+     */
     private async tagFinder(instance: any, resultsContainer: PolicyValidationResultsContainer) {
         if (instance.tag) {
             resultsContainer.addTag(instance.tag);
         }
         if (Array.isArray(instance.children)) {
-            for (let child of instance.children) {
+            for (const child of instance.children) {
                 this.tagFinder(child, resultsContainer);
             }
         }

@@ -70,6 +70,7 @@ export class InterfaceStepBlock {
     }
 
     /**
+     * Release child
      * @event PolicyEventType.ReleaseEvent
      * @param {IPolicyEvent} event
      */

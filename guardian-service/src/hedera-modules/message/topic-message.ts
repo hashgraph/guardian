@@ -1,5 +1,5 @@
 import { Message } from './message';
-import { IURL, UrlType } from './url.interface';
+import { IURL } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { TopicMessageBody } from './message-body.interface';

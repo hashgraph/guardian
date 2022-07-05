@@ -17,7 +17,7 @@ import { MessageAction, MessageServer, MessageType, SchemaMessage, UrlType } fro
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
-import { TopicHelper } from '@helpers/topicHelper';
+import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 
 export const schemaCache = {};

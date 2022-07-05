@@ -3,7 +3,7 @@ import { Message } from './message';
 import { IURL } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
-import { DidMessageBody, MessageBody } from './message-body.interface';
+import { DidMessageBody } from './message-body.interface';
 
 /**
  * DID message

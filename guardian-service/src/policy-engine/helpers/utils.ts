@@ -9,7 +9,7 @@ import { getMongoRepository } from 'typeorm';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DocumentStatus, ExternalMessageEvents, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { Topic } from '@entity/topic';
-import { TopicHelper } from '@helpers/topicHelper';
+import { TopicHelper } from '@helpers/topic-helper';
 import { DocumentState } from '@entity/document-state';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 
