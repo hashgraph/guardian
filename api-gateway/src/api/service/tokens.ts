@@ -46,7 +46,7 @@ tokenAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Aut
     try {
         const guardians = new Guardians();
         const user = req.user;
-        
+
         if (!user.did) {
             res.status(500).json({ code: 500, message: 'User not registered' });
             return;
