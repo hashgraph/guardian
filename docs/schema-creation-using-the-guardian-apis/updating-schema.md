@@ -2,17 +2,13 @@
 
 ### UPDATING SCHEMA BASED ON SCHEMA ID
 
-{% swagger method="get" path="" baseUrl="/schemas/{schemaId}" summary="Updates the schema" %}
+{% swagger method="put" path="" baseUrl="/schemas" summary="Updates the schema" %}
 {% swagger-description %}
-Updates the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
+Updates the schema matching the id in the request body. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
-
 {% swagger-parameter in="body" type="schema" required="true" %}
-Object that contains a valid schema
+Object that contains a valid schema including the id of the schema that is to be update
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Succesful Operation" %}
