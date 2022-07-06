@@ -95,13 +95,13 @@ export class DocumentValidatorBlock {
             }
         }
 
-        if (ref.options.checkOwnDocuments) {
+        if (ref.options.checkOwnerDocument) {
             if (document.owner !== event?.user?.did) {
                 return false;
             }
         }
 
-        if (ref.options.checkAssignDocuments) {
+        if (ref.options.checkAssignDocument) {
             if (document.assign !== event?.user?.did) {
                 return false;
             }
