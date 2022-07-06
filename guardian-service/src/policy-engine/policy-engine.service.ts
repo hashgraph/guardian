@@ -651,14 +651,14 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg) => {
             try {
-                const { zip, user } = msg;
+                const { zip, user, versionOfTopicId } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
-                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
+                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -718,7 +718,7 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
             try {
-                const { messageId, user } = msg;
+                const { messageId, user, versionOfTopicId } = msg;
                 const userFull = await this.users.getUser(user.username);
                 if (!messageId) {
                     throw new Error('Policy ID in body is empty');
@@ -737,7 +737,7 @@ export class PolicyEngineService {
                 }
 
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
-                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did);
+                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {
