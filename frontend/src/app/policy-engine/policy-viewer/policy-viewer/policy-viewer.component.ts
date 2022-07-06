@@ -294,17 +294,20 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     private getDistinctPolicy(): any[] {
-        const policyNameByTopic: any = {};
-        const policies: any[] = [];
+        const policyByTopic: any = {};
         if (this.policies) {
             for (let i = 0; i < this.policies.length; i++) {
                 const policy = this.policies[i];
-                if (policy.topicId && !policyNameByTopic.hasOwnProperty(policy.topicId)) {
-                    policyNameByTopic[policy.topicId] = policy.name;
-                    policies.push(policy);
+                if (policy.topicId) {
+                    if (!policyByTopic.hasOwnProperty(policy.topicId)) {
+                        policyByTopic[policy.topicId] = policy;
+                    } else if (policyByTopic[policy.topicId].createDate > policy.createDate) {
+                        policyByTopic[policy.topicId] = policy;
+                    }
                 }
             }
         }
-        return policies;
+        return Object.values(policyByTopic)
+            .sort((a: any, b: any) => a.createDate > b.createDate ? -1 : (b.createDate > a.createDate ? 1 : 0));
     }
 }
