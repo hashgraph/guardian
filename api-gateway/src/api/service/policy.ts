@@ -197,8 +197,9 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
 
 policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     try {
-        const policies = await engineService.importMessage(req.user, req.body.messageId);
+        const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId);
         res.status(201).send(policies);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
@@ -208,8 +209,9 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
 
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     try {
-        const policies = await engineService.importFile(req.user, req.body);
+        const policies = await engineService.importFile(req.user, req.body, versionOfTopicId);
         res.status(201).send(policies);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

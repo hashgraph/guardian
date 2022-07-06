@@ -79,12 +79,14 @@ export class PolicyEngineService {
         return this.http.get(`${this.url}/${policyId}/export/message`);
     }
 
-    public importByMessage(messageId: string): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
+    public importByMessage(messageId: string, versionOfTopicId?: string): Observable<any[]> {
+        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
+        return this.http.post<any[]>(`${this.url}/import/message${query}`, { messageId });
     }
 
-    public importByFile(policyFile: any): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/import/file`, policyFile, {
+    public importByFile(policyFile: any, versionOfTopicId?: string): Observable<any[]> {
+        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
+        return this.http.post<any[]>(`${this.url}/import/file${query}`, policyFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
             }
