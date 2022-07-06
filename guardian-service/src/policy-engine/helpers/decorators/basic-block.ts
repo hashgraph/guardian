@@ -8,12 +8,11 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IAuthUser } from '@auth/auth.interface';
 import { getMongoRepository } from 'typeorm';
 import { BlockState } from '@entity/block-state';
-import deepEqual from 'deep-equal';
-import { BlockActionError } from '@policy-engine/errors';
 import { Policy } from '@entity/policy';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { ExternalEventChannel, Logger } from '@guardian/common';
+import deepEqual from 'deep-equal';
 
 /**
  * Basic block decorator
@@ -58,19 +57,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
         }
 
-        const o = Object.assign(
-            options,
-            PolicyBlockDefaultOptions(),
-            {
-                defaultActive: false,
-                permissions: []
-            }
-        ) as PolicyBlockFullArgumentList;
+        const defaultOptions = Object.assign(options, PolicyBlockDefaultOptions()) as PolicyBlockFullArgumentList;
 
         return class extends basicClass {
-            static blockType = o.blockType;
-            static about = o.about;
-            static publishExternalEvent = o.publishExternalEvent;
+            static blockType = defaultOptions.blockType;
+            static about = defaultOptions.about;
+            static publishExternalEvent = defaultOptions.publishExternalEvent;
 
             protected oldDataState: any = {};
             protected currentDataState: any = {};
@@ -90,21 +82,20 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             constructor(
                 _uuid: string,
-                defaultActive: boolean,
-                tag: string,
-                permissions: PolicyRole[],
+                _defaultActive: boolean,
+                _tag: string,
+                _permissions: PolicyRole[],
                 _parent: IPolicyBlock,
                 _options: any
             ) {
+                const tag = _tag || defaultOptions.tag;
+                const permissions = _permissions || defaultOptions.permissions;
+                const parent = _parent || defaultOptions._parent;
+                const active = _defaultActive || defaultOptions.defaultActive || !parent;
+
                 super(
-                    o.blockType,
-                    o.commonBlock,
-                    tag || o.tag,
-                    defaultActive || o.defaultActive,
-                    permissions || o.permissions,
-                    _uuid,
-                    _parent || o._parent,
-                    _options
+                    defaultOptions.blockType, defaultOptions.commonBlock,
+                    tag, active, permissions, _uuid, parent, _options
                 );
                 this.logger = new Logger();
 

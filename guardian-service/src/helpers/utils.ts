@@ -98,9 +98,6 @@ export function findOptions(document: any, field: any) {
             value = value[key];
         }
     }
-    if (Array.isArray(value)) {
-        value = value.join(',');
-    }
     return value;
 }
 

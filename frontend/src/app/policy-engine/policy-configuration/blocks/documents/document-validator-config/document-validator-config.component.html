@@ -1,0 +1,99 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Document Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.documentType" [disabled]="readonly">
+                <mat-option value="vc-document">VC Document</mat-option>
+                <mat-option value="vp-document">VP Document</mat-option>
+                <mat-option value="related-vc-document">Related VC Document</mat-option>
+                <mat-option value="related-vp-document">Related VP Document</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Check Schema</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.schema" [disabled]="readonly">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Check Own Document</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.checkOwnDocuments" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Check Assign Document</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.checkAssignDocuments" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'conditionsGroup')"
+            [attr.collapse]="propHidden.conditionsGroup">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Conditions</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addCondition()">
+                <mat-icon>add</mat-icon>
+                <span>Add Condition</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let condition of block.conditions; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.conditions, i)"
+                [attr.collapse]="propHidden.conditions[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">Condition {{i}}</td>
+            <td class="propRowCell">
+                <span *ngIf="condition.field && condition.type && condition.value">
+                    {{condition.field}} {{condition.type}} {{condition.value}}
+                </span>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Type</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="condition.type" [disabled]="readonly">
+                    <mat-option value="equal">Equal</mat-option>
+                    <mat-option value="not_equal">Not Equal</mat-option>
+                    <mat-option value="in">In</mat-option>
+                    <mat-option value="not_in">Not In</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Field</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="condition.field" [readonly]="readonly">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Value</td>
+            <td class="propRowCell">
+                <input [(ngModel)]="condition.value" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+</table>

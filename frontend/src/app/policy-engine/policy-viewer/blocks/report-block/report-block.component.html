@@ -93,11 +93,11 @@
 
                 <div *ngIf="vpDocument" class="vp-signature">
                     <div class="vp-field-label">Verified Signature:</div>
-                    <div class="vp-field-value">{{vpDocument.document.document.proof.jws}}</div>
+                    <div class="vp-field-value" style="max-width: 70vw;overflow-wrap: break-word;">{{vpDocument.document.document.proof.jws}}</div>
                 </div>
                 <div *ngIf="vcDocument" class="vp-signature">
                     <div class="vp-field-label">Verified Signature:</div>
-                    <div class="vp-field-value">{{vcDocument.document.document.proof.jws}}</div>
+                    <div class="vp-field-value" style="max-width: 70vw;overflow-wrap: break-word;">{{vcDocument.document.document.proof.jws}}</div>
                 </div>
             </div>
 
@@ -148,6 +148,7 @@
                     <mat-icon>chevron_right</mat-icon>
                 </div>
             </div>
+            <div style="height: 24px;"></div>
         </div>
 
     </div>

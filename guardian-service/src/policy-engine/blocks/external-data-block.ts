@@ -9,6 +9,9 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { IAuthUser } from '@auth/auth.interface';
+import { BlockActionError } from '@policy-engine/errors';
 
 /**
  * External data block
@@ -32,6 +35,38 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class ExternalDataBlock {
+    protected getValidators(): IPolicyValidatorBlock[] {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const validators: IPolicyValidatorBlock[] = [];
+        for (let child of ref.children) {
+            if (child.blockClassName === 'ValidatorBlock') {
+                validators.push(child as IPolicyValidatorBlock);
+            }
+        }
+        return validators;
+    }
+
+    protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
+        const validators = this.getValidators();
+        for (const validator of validators) {
+            const valid = await validator.run({
+                type: null,
+                inputType: null,
+                outputType: null,
+                policyId: null,
+                source: null,
+                sourceId: null,
+                target: null,
+                targetId: null,
+                user: user,
+                data: state
+            });
+            if (!valid) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
@@ -65,6 +100,12 @@ export class ExternalDataBlock {
             schema: ref.options.schema
         };
         const state = { data: doc };
+
+        const valid = await this.validateDocuments(null, state);
+        if (!valid) {
+            throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
+        }
+
         ref.triggerEvents(PolicyOutputEventType.RunEvent, null, state);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, state);
     }
