@@ -153,7 +153,7 @@ export class PolicyImportExportHelper {
 
         const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        const topicRow = versionOfTopicId 
+        const topicRow = versionOfTopicId
             ? await getMongoRepository(Topic).findOne({ topicId: versionOfTopicId })
             : await topicHelper.create({
                 type: TopicType.PolicyTopic,
