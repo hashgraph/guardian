@@ -1,0 +1,25 @@
+<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Token</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.tokenId" [disabled]="readonly">
+                <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{token.tokenName}}</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Action</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.action" [disabled]="readonly">
+                <mat-option value="associate">Associate</mat-option>
+                <mat-option value="dissociate">Dissociate</mat-option>
+                <mat-option value="freeze">Freeze</mat-option>
+                <mat-option value="unfreeze">Unfreeze</mat-option>
+                <mat-option value="grantKyc">Grant Kyc</mat-option>
+                <mat-option value="revokeKyc">Revoke Kyc</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+</table>

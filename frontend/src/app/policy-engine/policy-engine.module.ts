@@ -58,6 +58,7 @@ import { RevokeConfigComponent } from './policy-configuration/blocks/documents/r
 import { EventsOverview } from './helpers/events-overview/events-overview';
 import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
 import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
+import { TokenActionConfigComponent } from './policy-configuration/blocks/tokens/token-action-config/token-action-config.component';
 
 @NgModule({
     declarations: [
@@ -110,7 +111,8 @@ import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button
         ConfirmationDialog,
         RevokeConfigComponent,
         ButtonConfigComponent,
-        ButtonBlockComponent
+        ButtonBlockComponent,
+        TokenActionConfigComponent
     ],
     imports: [
         CommonModule,
@@ -164,7 +166,8 @@ import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button
         JsonPropertiesComponent,
         ReassigningConfigComponent,
         CronConfigDialog,
-        EventsOverview
+        EventsOverview,
+        TokenActionConfigComponent
     ],
     providers: [
         RegisteredBlocks

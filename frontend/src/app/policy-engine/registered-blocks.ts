@@ -34,6 +34,7 @@ import { RevokeConfigComponent } from "./policy-configuration/blocks/documents/r
 import { ButtonConfigComponent } from "./policy-configuration/blocks/main/button-config/button-config.component";
 import { ButtonBlockComponent } from "./policy-viewer/blocks/button-block/button-block.component";
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { TokenActionConfigComponent } from "./policy-configuration/blocks/tokens/token-action-config/token-action-config.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -61,7 +62,8 @@ export enum BlockType {
     Switch = 'switchBlock',
     RevokeBlock = 'revokeBlock',
     SetRelationshipsBlock = 'setRelationshipsBlock',
-    ButtonBlock = 'buttonBlock'
+    ButtonBlock = 'buttonBlock',
+    TokenActionBlock = 'tokenActionBlock',
 }
 
 export enum BlockGroup {
@@ -274,7 +276,8 @@ export class RegisteredBlocks {
             { type: BlockType.Report },
             { type: BlockType.RevokeBlock },
             { type: BlockType.SetRelationshipsBlock },
-            { type: BlockType.ButtonBlock }
+            { type: BlockType.ButtonBlock },
+            { type: BlockType.TokenActionBlock },
         ];
 
         // Main, UI Components
@@ -536,6 +539,14 @@ export class RegisteredBlocks {
             header: BlockHeaders.ServerBlocks,
             factory: null,
             property: MintConfigComponent,
+        });
+        this.registerBlock({
+            type: BlockType.TokenActionBlock,
+            icon: 'generating_tokens',
+            group: BlockGroup.Tokens,
+            header: BlockHeaders.ServerBlocks,
+            factory: null,
+            property: TokenActionConfigComponent,
         });
 
         // Calculate, Server Blocks

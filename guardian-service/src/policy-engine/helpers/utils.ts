@@ -23,6 +23,17 @@ export enum DataTypes {
     RETIREMENT = 'retirement'
 }
 
+export interface IHederaAccount {
+    /**
+     * Account id
+     */
+    hederaAccountId: string;
+    /**
+     * Account key
+     */
+    hederaAccountKey: string;
+}
+
 /**
  * Policy engine utils
  */
@@ -132,7 +143,7 @@ export class PolicyUtils {
         let item = await getMongoRepository(VcDocumentCollection).findOne({
             where: {
                 hash: { $eq: row.hash },
-                hederaStatus: {$not: { $eq: DocumentStatus.REVOKE }}
+                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
             }
         });
         const docStatusRepo = getMongoRepository(DocumentState);
@@ -406,5 +417,71 @@ export class PolicyUtils {
             system: true,
             active: true
         });
+    }
+
+    /**
+     * associate
+     * @param topicId
+     * @param userID
+     * @param userKey
+     */
+    public static async associate(token: Token, user: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(user.hederaAccountId, user.hederaAccountKey);
+        return await client.associate(token.tokenId, user.hederaAccountId, user.hederaAccountKey);
+    }
+
+    /**
+     * dissociate
+     * @param topicId
+     * @param userID
+     * @param userKey
+     */
+    public static async dissociate(token: Token, user: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(user.hederaAccountId, user.hederaAccountKey);
+        return await client.dissociate(token.tokenId, user.hederaAccountId, user.hederaAccountKey);
+    }
+
+    /**
+     * freeze
+     * @param topicId
+     * @param userID
+     * @param userKey
+     */
+    public static async freeze(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        return await client.freeze(token.tokenId, user.hederaAccountId, token.freezeKey);
+    }
+
+    /**
+     * unfreeze
+     * @param topicId
+     * @param userID
+     * @param userKey
+     */
+    public static async unfreeze(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        return await client.unfreeze(token.tokenId, user.hederaAccountId, token.freezeKey);
+    }
+
+    /**
+     * grantKyc
+     * @param topicId
+     * @param userID
+     * @param userKey
+     */
+    public static async grantKyc(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        return await client.grantKyc(token.tokenId, user.hederaAccountId, token.kycKey);
+    }
+
+    /**
+     * revokeKyc
+     * @param topicId
+     * @param userID
+     * @param userKey
+     */
+    public static async revokeKyc(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        return await client.revokeKyc(token.tokenId, user.hederaAccountId, token.kycKey);
     }
 }

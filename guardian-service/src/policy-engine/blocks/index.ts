@@ -26,3 +26,4 @@ export { TimerBlock } from './timer-block';
 export { RevokeBlock } from './revoke-block';
 export { SetRelationshipsBlock } from './set-relationships-block';
 export { ButtonBlock } from './button-block';
+export { TokenActionBlock } from './token-action-block';
