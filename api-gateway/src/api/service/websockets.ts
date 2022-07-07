@@ -134,7 +134,7 @@ export class WebSocketsService {
         this.channel.response<IErrorBlockMessage, any>('block-error', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 try {
-                    if (client.user.did === msg.user.did) {
+                    if (client.user && msg.user && client.user.did === msg.user.did) {
                         client.send(JSON.stringify({
                             type: 'error-event',
                             data: {
@@ -154,7 +154,7 @@ export class WebSocketsService {
             console.log('update-user-info');
             this.wss.clients.forEach((client: any) => {
                 try {
-                    if (client.user.did === msg.user.did) {
+                    if (client.user && msg.user && client.user.did === msg.user.did) {
                         client.send(JSON.stringify({
                             type: 'update-user-info-event',
                             data: msg
@@ -205,11 +205,7 @@ export class WebSocketsService {
         this.channel.response<IUpdateUserBalanceMessage, any>('update-user-balance', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 try {
-                    if (
-                        client.user &&
-                        msg.user &&
-                        client.user.username === msg.user.username
-                    ) {
+                    if (client.user && msg.user && client.user.username === msg.user.username) {
                         client.send(JSON.stringify({
                             type: 'PROFILE_BALANCE',
                             data: msg
