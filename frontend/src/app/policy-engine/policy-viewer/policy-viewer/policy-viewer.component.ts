@@ -258,11 +258,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     importPolicyDetails(result: any) {
         const { type, data, policy } = result;
+        const distinctPolicies = this.getDistinctPolicy();
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             data: {
-                policy: policy
+                policy: policy,
+                policies: distinctPolicies
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
@@ -272,15 +274,16 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     return;
                 }
 
+                let versionOfTopicId = result.versionOfTopicId || null;
                 this.loading = true;
                 if (type == 'message') {
-                    this.policyEngineService.importByMessage(data).subscribe((policies) => {
+                    this.policyEngineService.importByMessage(data, versionOfTopicId).subscribe((policies) => {
                         this.loadAllPolicy();
                     }, (e) => {
                         this.loading = false;
                     });
                 } else if (type == 'file') {
-                    this.policyEngineService.importByFile(data).subscribe((policies) => {
+                    this.policyEngineService.importByFile(data, versionOfTopicId).subscribe((policies) => {
                         this.loadAllPolicy();
                     }, (e) => {
                         this.loading = false;
@@ -288,5 +291,23 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 }
             }
         });
+    }
+
+    private getDistinctPolicy(): any[] {
+        const policyByTopic: any = {};
+        if (this.policies) {
+            for (let i = 0; i < this.policies.length; i++) {
+                const policy = this.policies[i];
+                if (policy.topicId) {
+                    if (!policyByTopic.hasOwnProperty(policy.topicId)) {
+                        policyByTopic[policy.topicId] = policy;
+                    } else if (policyByTopic[policy.topicId].createDate > policy.createDate) {
+                        policyByTopic[policy.topicId] = policy;
+                    }
+                }
+            }
+        }
+        return Object.values(policyByTopic)
+            .sort((a: any, b: any) => a.createDate > b.createDate ? -1 : (b.createDate > a.createDate ? 1 : 0));
     }
 }

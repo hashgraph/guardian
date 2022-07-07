@@ -134,7 +134,7 @@ export class PolicyImportExportHelper {
      *
      * @returns Policies by owner
      */
-    static async importPolicy(policyToImport: any, policyOwner: string): Promise<Policy> {
+    static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId?: any): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
 
         delete policy.id;
@@ -153,14 +153,16 @@ export class PolicyImportExportHelper {
 
         const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        const topicRow = await topicHelper.create({
-            type: TopicType.PolicyTopic,
-            name: policy.name || TopicType.PolicyTopic,
-            description: policy.topicDescription || TopicType.PolicyTopic,
-            owner: policyOwner,
-            policyId: null,
-            policyUUID: null
-        });
+        const topicRow = versionOfTopicId
+            ? await getMongoRepository(Topic).findOne({ topicId: versionOfTopicId })
+            : await topicHelper.create({
+                type: TopicType.PolicyTopic,
+                name: policy.name || TopicType.PolicyTopic,
+                description: policy.topicDescription || TopicType.PolicyTopic,
+                owner: policyOwner,
+                policyId: null,
+                policyUUID: null
+            });
 
         policy.topicId = topicRow.topicId;
 

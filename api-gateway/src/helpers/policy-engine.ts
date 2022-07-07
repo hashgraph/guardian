@@ -150,8 +150,8 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user
      * @param zip
      */
-    public async importFile(user, zip) {
-        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE, { zip, user });
+    public async importFile(user, zip, versionOfTopicId?) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE, { zip, user, versionOfTopicId });
     }
 
     /**
@@ -159,8 +159,8 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user
      * @param messageId
      */
-    public async importMessage(user, messageId) {
-        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user });
+    public async importMessage(user, messageId, versionOfTopicId?) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user, versionOfTopicId });
     }
 
     /**
