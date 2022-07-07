@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
-import { policyId } from "../../../fixtures/policy.json";
+
+import { policyId, policyUuid } from "../../../fixtures/policy.json";
 
 context('Policies', () => {
     const authorization = Cypress.env('authorization');
@@ -13,9 +14,12 @@ context('Policies', () => {
         }};
       cy.request(url)
           .should((response) => {
+          let blockId = response.body.blocks.at(-1).id
           expect(response.status).to.eq(200)
           expect(response.body).to.not.be.oneOf([null, ""])
-          expect(response.body.id).to.equal(policyId)
+          //Wrong check. Response.body.id - is block id, not policy id.
+          //expect(response.body.id).to.equal(policyId)
+          cy.writeFile('cypress/fixtures/blockId.json', { policyId: policyId, policyUuid: policyUuid, blockId: blockId})
           })
     })
 })
