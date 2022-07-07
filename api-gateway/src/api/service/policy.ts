@@ -157,7 +157,7 @@ policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: 
         res.send(await engineService.getBlockByTagName(req.user, req.params.policyId, req.params.tagName));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+        res.status(error.code || 500).send({ code: error.code || 500, message: error.message });
     }
 });
 

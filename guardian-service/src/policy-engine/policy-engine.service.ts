@@ -521,13 +521,12 @@ export class PolicyEngineService {
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.BLOCK_BY_TAG, async (msg) => {
+            const { tag, policyId } = msg;
             try {
-                const { user, tag, policyId } = msg;
-                const userFull = await this.users.getUser(user.username);
                 const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
                 return new MessageResponse({ id: block.uuid });
             } catch (error) {
-                return new MessageError(error);
+                return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
             }
         });
 
