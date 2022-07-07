@@ -5,7 +5,7 @@ context('Accounts', () => {
 
     // TODO:
     // Negative scenario to get accounts as non RootAuthority
-    it('get all users as a RootAuthority', () => {
+    it('get all users as a StandardRegistry', () => {
         const options = {
           method: 'GET',
           url: Cypress.env('api_server') + 'accounts/',

@@ -5,7 +5,7 @@ context('Accounts', () => {
 
       // TODO:
       // Do sessions as a user
-      it('get session as a RootAuthority', () => {
+      it('get session as a StandardRegistry', () => {
         const options = {
           method: 'GET',
           url: (Cypress.env('api_server') + 'accounts/session'),
@@ -17,7 +17,7 @@ context('Accounts', () => {
           .should((response) => {
             expect(response.status).to.eq(200)
             expect(response.body).to.have.property('id')
-            expect(response.body).to.have.property('username', 'RootAuthority')
+            expect(response.body).to.have.property('username', 'StandardRegistry')
             expect(response.body).to.have.property('password')
             expect(response.body).to.have.property('did')
             expect(response.body).to.have.property('walletToken')
