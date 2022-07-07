@@ -114,6 +114,7 @@ export class UserProfileComponent implements OnInit {
                 }
             });
             this.standardRegistries = value[3] || [];
+            this.standardRegistries = this.standardRegistries.filter(sr => !!sr.did);
 
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;

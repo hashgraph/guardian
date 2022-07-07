@@ -13,7 +13,7 @@ To display System / Policy Schemas in the GUI, we have added a toggle in the Sch
 
 Whenever an account is created, System Schemas are generated automatically.
 
-![](<../.gitbook/assets/image (13).png>)
+![](<../.gitbook/assets/image (13) (1).png>)
 
 {% hint style="info" %}
 Note: By default System Schemas cannot be edited / deleted.

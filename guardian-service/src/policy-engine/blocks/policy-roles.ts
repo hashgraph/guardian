@@ -35,23 +35,14 @@ export class PolicyRolesBlock {
     }
 
     async setData(user: IAuthUser, document: any): Promise<any> {
-        const policyRepository = getMongoRepository(Policy);
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const currentPolicy = await policyRepository.findOne(ref.policyId);
+        const { username, role, did } = user;
+        const result = await PolicyComponentsUtils.SetUserRole(ref.policyId, user, document.role);
 
-        if (typeof currentPolicy.registeredUsers !== 'object') {
-            currentPolicy.registeredUsers = {};
-        }
-        currentPolicy.registeredUsers[user.did] = document.role;
-
-        const {username, role, did} = user;
-
-        const result = await policyRepository.save(currentPolicy);
         await Promise.all([
-            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, {username, role, did}, ref.tag),
-            PolicyComponentsUtils.UpdateUserInfoFn({username, role, did}, currentPolicy)
+            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, { username, role, did }, ref.tag),
+            PolicyComponentsUtils.UpdateUserInfoFn({ username, role, did }, result)
         ]);
-
 
         return result;
     }

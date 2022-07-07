@@ -336,4 +336,72 @@ export class PolicyComponentsUtils {
     public static GetBlockAbout(): any {
         return GetBlockAbout();
     }
+
+
+    public static CheckPermission(block: AnyBlockType, user: IAuthUser, userRole: PolicyRole): boolean {
+        if (block) {
+            return (block.isActive(user) && PolicyComponentsUtils.IfHasPermission(block.uuid, userRole, user));
+        } else {
+            return false;
+        }
+    }
+
+    public static CheckPermissionTree(block: AnyBlockType, user: IAuthUser, userRole: PolicyRole): boolean {
+        if (PolicyComponentsUtils.CheckPermission(block, user, userRole)) {
+            if (block.parent) {
+                return PolicyComponentsUtils.CheckPermissionTree(block.parent, user, userRole);
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public static async GetUserRole(policyId: string, user: IAuthUser): Promise<PolicyRole> {
+        const currentPolicy = await getMongoRepository(Policy).findOne(policyId);
+
+        if (user && currentPolicy && typeof currentPolicy.registeredUsers === 'object') {
+            return currentPolicy.registeredUsers[user.did];
+        }
+
+        return null;
+    }
+
+    public static async SetUserRole(policyId: string, user: IAuthUser, role: PolicyRole): Promise<Policy> {
+        const currentPolicy = await getMongoRepository(Policy).findOne(policyId);
+
+        if (typeof currentPolicy.registeredUsers !== 'object') {
+            currentPolicy.registeredUsers = {};
+        }
+
+        currentPolicy.registeredUsers[user?.did] = role;
+
+        const result = await getMongoRepository(Policy).save(currentPolicy);
+
+        return result;
+    }
+
+    public static GetUserRoleList(policy: Policy, did: string): PolicyRole[] {
+        const userRoles: string[] = [];
+        if (policy && did) {
+            if (policy.owner === did) {
+                userRoles.push('Administrator');
+            }
+            if (policy.registeredUsers && policy.registeredUsers[did]) {
+                userRoles.push(policy.registeredUsers[did]);
+            }
+        }
+        if (!userRoles.length) {
+            userRoles.push('The user does not have a role');
+        }
+        return userRoles;
+    }
+
+    public static GetUserRoleByPolicy(policy: Policy, user: IAuthUser): PolicyRole {
+        if (user && policy && typeof policy.registeredUsers === 'object') {
+            return policy.registeredUsers[user.did];
+        }
+        return null;
+    }
 }
