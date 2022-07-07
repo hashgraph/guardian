@@ -53,7 +53,7 @@ export class ReportItemBlock {
         }
         resultFields.push(item);
 
-        const filtersToVc = {};
+        const filtersToVc:any = {};
         if (ref.options.filters) {
             for (let index = 0; index < ref.options.filters.length; index++) {
                 const filter = ref.options.filters[index];
@@ -65,19 +65,28 @@ export class ReportItemBlock {
                 }
                 switch (filter.type) {
                     case 'equal':
-                        expr = {$eq: expr};
+                        expr = { $eq: expr };
                         break;
 
                     case 'not_equal':
-                        expr = {$ne: expr};
+                        expr = { $ne: expr };
                         break;
 
                     case 'in':
-                        expr = {$in: expr.split(',')};
+                        if (Array.isArray(expr)) {
+                            expr = { $in: expr };
+                        } else if (expr) {
+                            expr = { $in: [expr] };
+                        }
                         break;
 
                     case 'not_in':
-                        expr = {$nin: expr.split(',')};
+                        if (Array.isArray(expr)) {
+                            expr = { $in: expr };
+                        } else if (expr) {
+                            expr = { $in: [expr] };
+                        }
+                        expr = { $nin: expr };
                         break;
 
                     default:
@@ -86,6 +95,7 @@ export class ReportItemBlock {
                 filtersToVc[filter.field] = expr;
             }
         }
+        filtersToVc.policyId = { $eq: ref.policyId };
 
         const vcDocument = await getMongoRepository(VcDocument).findOne(filtersToVc);
 

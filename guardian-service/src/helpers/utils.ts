@@ -95,16 +95,11 @@ export function findOptions(document: any, field: any) {
         value = document;
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
-            if (Array.isArray(value[key])) {
-                value = value[key].join(',');
-            } else {
-                value = value[key];
-            }
+            value = value[key];
         }
     }
     return value;
 }
-
 
 export function replaceValueRecursive(document: any, replaceMap: Map<string, string>): any {
     let str: string;

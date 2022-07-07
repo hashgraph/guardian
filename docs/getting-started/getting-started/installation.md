@@ -233,6 +233,23 @@ cd message-broker
 npm run test
 ```
 
+### .env Parameters&#x20;
+
+| Parameter                   | Purpose                                                                                                  | Example                                                                                          |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| MQ\_ADDRESS                 | Web Socket Address                                                                                       | localhost                                                                                        |
+| SERVICE\_CHANNEL            | Version of the Guardian                                                                                  | guardian.1                                                                                       |
+| DB\_HOST                    | Hostname of the Database                                                                                 | localhost                                                                                        |
+| DB\_DATABASE                | Database Name                                                                                            | guardian\_db                                                                                     |
+| MAX\__TRANSACTION\_FEE_     | Maximum Transaction Fees Value                                                                           | 10                                                                                               |
+| INITIAL\_BALANCE            | Initial Balance Value                                                                                    | 500                                                                                              |
+| OPERATOR\_ID                | Operator ID of Hedera Testnet                                                                            | 0.0.29676495                                                                                     |
+| OPERATOR\_KEY               | Operator Key of Hedera Testnet                                                                           | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
+| HEDERA\_NET                 | Hedera Network name                                                                                      | testnet                                                                                          |
+| INITIALIZATION\__TOPIC\_ID_ | ID of the topic where the Initialisation message is posted every time a new Standard Registry is created | 0.0.46022543                                                                                     |
+| MESSAGE\_LANG               | Language of the message text of all messages                                                             | en-US                                                                                            |
+| LOG\_LEVEL                  | level of the Logs                                                                                        | 2                                                                                                |
+
 ### Summary of URLs and Ports
 
 #### Using Docker:
@@ -254,3 +271,4 @@ npm run test
 | MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
 | TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
 | API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
+

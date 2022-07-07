@@ -13,7 +13,7 @@ To display System / Policy Schemas in the GUI, we have added a toggle in the Sch
 
 Whenever an account is created, System Schemas are generated automatically.
 
-![](<../.gitbook/assets/image (13).png>)
+![](<../.gitbook/assets/image (13) (1).png>)
 
 {% hint style="info" %}
 Note: By default System Schemas cannot be edited / deleted.
@@ -26,6 +26,30 @@ To create a new System Schemas, click on the **New** button at the top right cor
 After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Entity : Standard\_Registry / User, Schema Description and any other required fields.
 
 ![](<../.gitbook/assets/image (4).png>)
+
+In addition to the basic Schema details we also have an option to add Field and Condition to each field.
+
+![](<../.gitbook/assets/image (14).png>)
+
+There are different types of Field Types:
+
+* Number
+* Integer
+* String
+* Boolean
+* Date
+* Time
+* DateTime
+* Duration
+* URL
+* Email
+* Image
+*   Units of Measure
+
+    * Prefix
+    * Postfix
+
+    Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
 
 Once the above details are added, click on the Create button.
 
@@ -83,7 +107,7 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 1644847084.945541771 (iREC 3 Policy)
 ```
 
-![](<../.gitbook/assets/image (14).png>)
+![](<../.gitbook/assets/image (14) (1).png>)
 
 Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.&#x20;
 

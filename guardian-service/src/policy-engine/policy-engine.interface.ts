@@ -96,6 +96,8 @@ export interface IPolicyBlock {
     addTargetLink(link: any): void;
 
     runAction(event: IPolicyEvent<any>): Promise<any>;
+
+    updateDataState(user: IAuthUser, state: any): boolean;
 }
 
 export interface IPolicyInterfaceBlock extends IPolicyBlock {
@@ -187,6 +189,10 @@ export interface IPolicyRequestBlock extends IPolicyBlock {
     getSources(user: IAuthUser): Promise<any[]>
 }
 
+export interface IPolicyValidatorBlock extends IPolicyBlock {
+    run(event: IPolicyEvent<any>): Promise<any>;
+}
+
 export type AnyBlockType =
     IPolicyBlock
     | IPolicyInterfaceBlock
@@ -195,4 +201,5 @@ export type AnyBlockType =
     | IPolicyAddonBlock
     | IPolicyCalculateBlock
     | IPolicyCalculateAddon
-    | IPolicyRequestBlock;
+    | IPolicyRequestBlock
+    | IPolicyValidatorBlock;

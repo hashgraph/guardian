@@ -12,10 +12,11 @@ import { VcHelper } from '@helpers/vcHelper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
@@ -48,6 +49,39 @@ export class RequestVcDocumentBlock {
     private schema: Schema | null;
 
     constructor() {
+    }
+
+    protected getValidators(): IPolicyValidatorBlock[] {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const validators: IPolicyValidatorBlock[] = [];
+        for (let child of ref.children) {
+            if (child.blockClassName === 'ValidatorBlock') {
+                validators.push(child as IPolicyValidatorBlock);
+            }
+        }
+        return validators;
+    }
+
+    protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
+        const validators = this.getValidators();
+        for (const validator of validators) {
+            const valid = await validator.run({
+                type: null,
+                inputType: null,
+                outputType: null,
+                policyId: null,
+                source: null,
+                sourceId: null,
+                target: null,
+                targetId: null,
+                user: user,
+                data: state
+            });
+            if (!valid) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @ActionCallback({
@@ -112,6 +146,39 @@ export class RequestVcDocumentBlock {
         };
     }
 
+    async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
+        if (refId) {
+            let id: string = null;
+            let documentRef: any = null;
+            if (typeof (refId) === 'string') {
+                documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                    where: {
+                        'policyId': { $eq: policyId },
+                        'document.credentialSubject.id': { $eq: id }
+                    }
+                });
+                id = refId;
+                return documentRef;
+            } else if (typeof (refId) === 'object') {
+                if (refId.id) {
+                    documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
+                } else {
+                    documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                        where: {
+                            'policyId': { $eq: policyId },
+                            'document.credentialSubject.id': { $eq: id }
+                        }
+                    });
+                }
+                id = PolicyUtils.getSubjectId(documentRef);
+                return documentRef;
+            }
+        } else {
+            return null;
+        }
+        return null;
+    }
+
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
@@ -135,7 +202,7 @@ export class RequestVcDocumentBlock {
             const userHederaKey = await this.wallet.getKey(user.walletToken, KeyType.KEY, user.did);
 
             const document = _data.document;
-            const documentRef = _data.ref;
+            const documentRef = await this.getRelationships(ref.policyId, _data.ref);
 
             const credentialSubject = document;
             const schema = ref.options.schema;
@@ -143,14 +210,12 @@ export class RequestVcDocumentBlock {
 
             const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
             const VCHelper = new VcHelper();
+
             if (id) {
                 credentialSubject.id = id;
             }
 
-            if (typeof (documentRef) === 'string') {
-                credentialSubject.ref = documentRef;
-            }
-            else if (documentRef) {
+            if (documentRef) {
                 credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
             }
 
@@ -171,12 +236,18 @@ export class RequestVcDocumentBlock {
                 relationships: null
             };
 
-            if (typeof (documentRef) === 'object' && documentRef && documentRef.messageId) {
+            if (documentRef) {
                 item.relationships = [documentRef.messageId];
             }
-            await this.changeActive(user, true);
 
             const state = { data: item };
+
+            const valid = await this.validateDocuments(user, state);
+            if (!valid) {
+                throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
+            }
+
+            await this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
         } catch (error) {
@@ -246,7 +317,7 @@ export class RequestVcDocumentBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schema = await getMongoRepository(SchemaCollection).findOne({ 
+            const schema = await getMongoRepository(SchemaCollection).findOne({
                 iri: ref.options.schema,
                 topicId: ref.topicId
             });
@@ -255,7 +326,7 @@ export class RequestVcDocumentBlock {
                 return;
             }
             if (ref.options.presetSchema) {
-                const presetSchema = await getMongoRepository(SchemaCollection).findOne({ 
+                const presetSchema = await getMongoRepository(SchemaCollection).findOne({
                     iri: ref.options.presetSchema,
                     topicId: ref.topicId
                 });

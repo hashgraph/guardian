@@ -180,4 +180,9 @@ tr.revoked td:not(.mat-column-history):before {
     left: 0;
     border-bottom: 2px solid rgb(105, 105, 105);
     width: 100%;
+    transform: translate(0px, -4px);
+}
+
+tr.revoked td:not(.mat-column-history) {
+    opacity: 0.7;
 }

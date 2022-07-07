@@ -31,7 +31,7 @@
 * [Demo Using APIs](demo-guide/demo-using-apis.md)
 * [Verra Redd+ Demo Guide](demo-guide/verra-redd+-demo-guide.md)
 * [iREC Demo UI Guide](demo-guide/irec-demo-guide.md)
-* [iREC 2 API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
+* [iREC API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
 
 ## Versioning and Deprecation Policy
 
@@ -75,6 +75,7 @@
 * [revokeBlock](available-policy-workflow-blocks/revokeblock.md)
 * [setRelationshipsBlock](available-policy-workflow-blocks/setrelationshipsblock.md)
 * [buttonBlock](available-policy-workflow-blocks/buttonblock.md)
+* [documentValidatorBlock](available-policy-workflow-blocks/documentvalidatorblock.md)
 * [Events](available-policy-workflow-blocks/events.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
@@ -157,6 +158,7 @@
 ## ACCOUNT APIS
 
 * [User listing except Standard Registry and Auditor](account-apis/user-listing-except-root-authority-and-auditor.md)
+* [User Balance](account-apis/user-balance.md)
 * [User Session](account-apis/user-session.md)
 * [User Login](account-apis/user-login.md)
 * [Registering new account](account-apis/registering-new-account.md)
