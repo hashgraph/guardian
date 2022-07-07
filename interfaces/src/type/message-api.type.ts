@@ -55,7 +55,7 @@ export enum MessageAPI {
     GET_SYSTEM_SCHEMAS = 'GET_SYSTEM_SCHEMAS',
     ACTIVE_SCHEMA = 'ACTIVE_SCHEMA',
     GET_SYSTEM_SCHEMA = 'GET_SYSTEM_SCHEMA',
-    GET_BALANCE='GET_BALANCE'
+    GET_BALANCE = 'GET_BALANCE'
 }
 
 /**
@@ -66,4 +66,6 @@ export enum ExternalMessageEvents {
     TOKEN_MINTED = 'external-events.token_minted',
     ERROR_LOG = 'external-events.error_logs',
     BLOCK_RUN_EVENTS = 'external-events.block_run_action_event',
+    IPFS_BEFORE_UPLOAD_CONTENT = 'external-events.ipfs_before_upload_content',
+    IPFS_AFTER_READ_CONTENT = 'external-events.ipfs_after_read_content'
 }

@@ -6,6 +6,6 @@ const PORT = process.env.PORT || 3006;
     app.use(express.static('public'));
     app.use(express.json());
     app.listen(PORT, () => {
-        console.log('Sender started at port', PORT);
+        console.log('Topic Viewer started at port', PORT);
     })
 })();
