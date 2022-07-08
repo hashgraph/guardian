@@ -3,10 +3,10 @@ const spaw = require('child_process').spawn;
 const fs = require('fs');
 
 (async () => {
+    await execSync(`yarn`, { stdio: 'inherit', shell: true });
     const buildAndWatch = async (folder, skipWatch = false) => {
         const log = (message) => console.log(`${folder}: ${message}`);
 
-        await execSync(`yarn --cwd ${folder}`, { stdio: 'inherit', shell: true });
 
         if (skipWatch) {
             log('skip watch project')
@@ -19,7 +19,7 @@ const fs = require('fs');
 
         await new Promise((resolve) => {
             log('Watching changes...');
-            const child = spaw('yarn', ['dev', '--cwd', folder], { shell: true });
+            const child = spaw('yarn', ['--cwd', folder, 'dev'], { shell: true });
 
             child.stdout.on('data', log);
             child.stderr.on('data', log);
