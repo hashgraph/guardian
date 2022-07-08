@@ -35,6 +35,7 @@ import { ButtonConfigComponent } from "./policy-configuration/blocks/main/button
 import { ButtonBlockComponent } from "./policy-viewer/blocks/button-block/button-block.component";
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { TokenActionConfigComponent } from "./policy-configuration/blocks/tokens/token-action-config/token-action-config.component";
+import { DocumentValidatorConfigComponent } from "./policy-configuration/blocks/documents/document-validator-config/document-validator-config.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -64,6 +65,7 @@ export enum BlockType {
     SetRelationshipsBlock = 'setRelationshipsBlock',
     ButtonBlock = 'buttonBlock',
     TokenActionBlock = 'tokenActionBlock',
+    DocumentValidatorBlock = 'documentValidatorBlock'
 }
 
 export enum BlockGroup {
@@ -278,6 +280,7 @@ export class RegisteredBlocks {
             { type: BlockType.SetRelationshipsBlock },
             { type: BlockType.ButtonBlock },
             { type: BlockType.TokenActionBlock },
+            { type: BlockType.DocumentValidatorBlock }
         ];
 
         // Main, UI Components
@@ -404,7 +407,7 @@ export class RegisteredBlocks {
             allowedChildren: [{
                 type: BlockType.FiltersAddon,
                 group: BlockGroup.UnGrouped
-            },{
+            }, {
                 type: BlockType.DocumentsSourceAddon,
                 group: BlockGroup.UnGrouped
             }, {
@@ -421,6 +424,9 @@ export class RegisteredBlocks {
             property: RequestConfigComponent,
             allowedChildren: [{
                 type: BlockType.DocumentsSourceAddon,
+                group: BlockGroup.UnGrouped
+            }, {
+                type: BlockType.DocumentValidatorBlock,
                 group: BlockGroup.UnGrouped
             }]
         });
@@ -441,6 +447,10 @@ export class RegisteredBlocks {
             header: BlockHeaders.ServerBlocks,
             factory: null,
             property: ExternalDataConfigComponent,
+            allowedChildren: [{
+                type: BlockType.DocumentValidatorBlock,
+                group: BlockGroup.UnGrouped
+            }]
         });
         this.registerBlock({
             type: BlockType.AggregateDocument,
@@ -473,12 +483,10 @@ export class RegisteredBlocks {
             header: BlockHeaders.ServerBlocks,
             factory: null,
             property: null,
-            allowedChildren: [
-                {
-                    type: BlockType.DocumentsSourceAddon,
-                    group: BlockGroup.UnGrouped
-                }
-            ]
+            allowedChildren: [{
+                type: BlockType.DocumentsSourceAddon,
+                group: BlockGroup.UnGrouped
+            }]
         });
 
         // Documents, Addons
@@ -521,6 +529,14 @@ export class RegisteredBlocks {
             header: BlockHeaders.Addons,
             factory: null,
             property: TimerConfigComponent,
+        });
+        this.registerBlock({
+            type: BlockType.DocumentValidatorBlock,
+            icon: 'task_alt',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.Addons,
+            factory: null,
+            property: DocumentValidatorConfigComponent
         });
 
         // Tokens, Server Blocks

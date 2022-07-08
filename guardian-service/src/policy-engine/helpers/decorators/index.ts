@@ -10,3 +10,4 @@ export { CalculateBlock } from './calculate-block';
 export { Report } from './report-block';
 export { ReportItem } from './report-item-block';
 export { ActionCallback } from './event-callback';
+export { ValidatorBlock } from './validator-block';

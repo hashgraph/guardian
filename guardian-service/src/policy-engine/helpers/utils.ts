@@ -23,6 +23,9 @@ export enum DataTypes {
     RETIREMENT = 'retirement'
 }
 
+/**
+ * Hedera Account interface
+ */
 export interface IHederaAccount {
     /**
      * Account id
@@ -121,6 +124,26 @@ export class PolicyUtils {
             res.push(array.slice(i, i + chunk));
         }
         return res;
+    }
+
+    /**
+     * Get Object Value
+     * @param data
+     * @param field
+     */
+    public static getObjectValue<T>(data: any, field: string): T {
+        if (field) {
+            const keys = field.split('.');
+            let result = data;
+            for (const key of keys) {
+                if (!result) {
+                    return null;
+                }
+                result = result[key];
+            }
+            return result;
+        }
+        return null;
     }
 
     /**
@@ -381,7 +404,7 @@ export class PolicyUtils {
      */
     public static getSubjectId(data: any): string {
         try {
-            if (data) {
+            if (data && data.document) {
                 if (Array.isArray(data.document.credentialSubject)) {
                     return data.document.credentialSubject[0].id;
                 } else {
@@ -417,6 +440,123 @@ export class PolicyUtils {
             system: true,
             active: true
         });
+    }
+
+    /**
+     * Get Document Type
+     * @param document
+     */
+    public static getDocumentType(document: any): string {
+        if (document && document.document && document.document.type) {
+            const type = document.document.type;
+            if (Array.isArray(type)) {
+                if (type.indexOf('VerifiableCredential') > -1) {
+                    return 'VerifiableCredential';
+                }
+                if (type.indexOf('VerifiablePresentation') > -1) {
+                    return 'VerifiablePresentation';
+                }
+            } else {
+                if (type === 'VerifiableCredential') {
+                    return 'VerifiableCredential';
+                }
+                if (type === 'VerifiablePresentation') {
+                    return 'VerifiablePresentation';
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Check Document Schema
+     * @param document
+     * @param schema
+     */
+    public static checkDocumentSchema(document: any, schema: SchemaCollection): boolean {
+        const iri = schema.iri;
+        const context = schema.contextURL;
+        if (document && document.document) {
+            if (Array.isArray(document.document.credentialSubject)) {
+                return (
+                    document.document.credentialSubject[0]['@context'].indexOf(context) &&
+                    document.document.credentialSubject[0].type === iri
+                );
+            } else {
+                return (
+                    document.document.credentialSubject['@context'].indexOf(context) &&
+                    document.document.credentialSubject.type === iri
+                );
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check Document Field
+     * @param document
+     * @param filter
+     */
+    public static checkDocumentField(document: any, filter: any): boolean {
+        if (document) {
+            const value = PolicyUtils.getObjectValue(document, filter.field);
+            switch (filter.type) {
+                case 'equal':
+                    return filter.value === value;
+                case 'not_equal':
+                    return filter.value !== value;
+                case 'in':
+                    if (Array.isArray(value)) {
+                        return value.indexOf(filter.value) > -1;
+                    }
+                    return false;
+                case 'not_in':
+                    if (Array.isArray(value)) {
+                        return value.indexOf(filter.value) === -1;
+                    }
+                    return false;
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check Document Ref
+     * @param document
+     */
+    public static getDocumentRef(document: any) {
+        let item: any = null;
+        if (document && document.document) {
+            if (document.document.credentialSubject) {
+                const credentialSubject = document.document.credentialSubject;
+                if (Array.isArray(credentialSubject)) {
+                    item = credentialSubject[0];
+                } else {
+                    item = credentialSubject;
+                }
+            } else if (document.document.verifiableCredential) {
+                let vc: any = null;
+                const verifiableCredential = document.document.verifiableCredential;
+                if (Array.isArray(verifiableCredential)) {
+                    vc = verifiableCredential[0];
+                } else {
+                    vc = verifiableCredential;
+                }
+                const credentialSubject = vc.credentialSubject;
+                if (Array.isArray(credentialSubject)) {
+                    item = credentialSubject[0];
+                } else {
+                    item = credentialSubject;
+                }
+            }
+        }
+        if (item) {
+            return item.ref;
+        } else {
+            return null;
+        }
     }
 
     /**

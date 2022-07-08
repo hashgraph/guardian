@@ -1,6 +1,6 @@
 import { CalculateAddon } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 

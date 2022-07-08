@@ -69,29 +69,21 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
         }
 
-        const o = Object.assign(
-            options,
-            PolicyBlockDefaultOptions(),
-            {
-                defaultActive: false,
-                permissions: []
-            }
-        ) as PolicyBlockFullArgumentList;
+        const defaultOptions = Object.assign(options, PolicyBlockDefaultOptions()) as PolicyBlockFullArgumentList;
 
         return class extends basicClass {
             /**
              * Block type
              */
-            static blockType = o.blockType;
+            static blockType = defaultOptions.blockType;
             /**
              * Block about
              */
-            static about = o.about;
+            static about = defaultOptions.about;
             /**
              * Publish external event
              */
-            static publishExternalEvent = o.publishExternalEvent;
-
+            static publishExternalEvent = defaultOptions.publishExternalEvent;
             /**
              * Old data state
              * @protected
@@ -107,7 +99,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected logger: Logger;
-
             /**
              * Policy id
              */
@@ -124,7 +115,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Topic id
              */
             public topicId: string;
-
             /**
              * Source links
              */
@@ -133,12 +123,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Target links
              */
             public targetLinks: PolicyLink<any>[];
-
             /**
              * Actions
              */
             public actions: any[];
-
             /**
              * Block class name
              */
@@ -146,21 +134,20 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             constructor(
                 _uuid: string,
-                defaultActive: boolean,
-                tag: string,
-                permissions: PolicyRole[],
+                _defaultActive: boolean,
+                _tag: string,
+                _permissions: PolicyRole[],
                 _parent: IPolicyBlock,
                 _options: any
             ) {
+                const tag = _tag || defaultOptions.tag;
+                const permissions = _permissions || defaultOptions.permissions;
+                const parent = _parent || defaultOptions._parent;
+                const active = _defaultActive || defaultOptions.defaultActive || !parent;
+
                 super(
-                    o.blockType,
-                    o.commonBlock,
-                    tag || o.tag,
-                    defaultActive || o.defaultActive,
-                    permissions || o.permissions,
-                    _uuid,
-                    _parent || o._parent,
-                    _options
+                    defaultOptions.blockType, defaultOptions.commonBlock,
+                    tag, active, permissions, _uuid, parent, _options
                 );
                 this.logger = new Logger();
 

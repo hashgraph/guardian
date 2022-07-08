@@ -1,6 +1,6 @@
 import { ActionCallback, ContainerBlock, StateField } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';

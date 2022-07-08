@@ -294,6 +294,13 @@ export interface IPolicyBlock {
      * @param event
      */
     runAction(event: IPolicyEvent<any>): Promise<any>;
+
+    /**
+     * Update State
+     * @param user
+     * @param state
+     */
+    updateDataState(user: IAuthUser, state: any): boolean;
 }
 
 /**
@@ -564,6 +571,17 @@ export interface IPolicyRequestBlock extends IPolicyBlock {
 }
 
 /**
+ * Policy Validator block interface
+ */
+export interface IPolicyValidatorBlock extends IPolicyBlock {
+    /**
+     * Run block logic
+     * @param event
+     */
+    run(event: IPolicyEvent<any>): Promise<boolean>;
+}
+
+/**
  * Any block type
  */
 export type AnyBlockType =
@@ -574,4 +592,5 @@ export type AnyBlockType =
     | IPolicyAddonBlock
     | IPolicyCalculateBlock
     | IPolicyCalculateAddon
-    | IPolicyRequestBlock;
+    | IPolicyRequestBlock
+    | IPolicyValidatorBlock;

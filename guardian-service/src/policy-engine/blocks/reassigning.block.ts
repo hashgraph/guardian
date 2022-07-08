@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vc-helper';

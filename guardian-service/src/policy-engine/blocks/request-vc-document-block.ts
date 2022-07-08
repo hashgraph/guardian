@@ -1,21 +1,22 @@
 import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { BlockActionError } from '@policy-engine/errors';
-import { PolicyComponentsUtils } from '../policy-components-utils';
 import { DidDocumentStatus, GenerateUUIDv4, Schema } from '@guardian/interfaces';
-import { EventBlock } from '../helpers/decorators/event-block';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { BlockActionError } from '@policy-engine/errors';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
+import { IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
 import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
+import { IAuthUser } from '@guardian/common';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 
 /**
  * Request VC document block
@@ -60,6 +61,47 @@ export class RequestVcDocumentBlock {
      * @private
      */
     private schema: Schema | null;
+
+    /**
+     * Get Validators
+     */
+    protected getValidators(): IPolicyValidatorBlock[] {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const validators: IPolicyValidatorBlock[] = [];
+        for (const child of ref.children) {
+            if (child.blockClassName === 'ValidatorBlock') {
+                validators.push(child as IPolicyValidatorBlock);
+            }
+        }
+        return validators;
+    }
+
+    /**
+     * Validate Documents
+     * @param user
+     * @param state
+     */
+    protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
+        const validators = this.getValidators();
+        for (const validator of validators) {
+            const valid = await validator.run({
+                type: null,
+                inputType: null,
+                outputType: null,
+                policyId: null,
+                source: null,
+                sourceId: null,
+                target: null,
+                targetId: null,
+                user,
+                data: state
+            });
+            if (!valid) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * Change active
@@ -137,6 +179,44 @@ export class RequestVcDocumentBlock {
     }
 
     /**
+     * Get Relationships
+     * @param policyId
+     * @param refId
+     */
+    async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
+        if (refId) {
+            let id: string = null;
+            let documentRef: any = null;
+            if (typeof (refId) === 'string') {
+                documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                    where: {
+                        'policyId': { $eq: policyId },
+                        'document.credentialSubject.id': { $eq: id }
+                    }
+                });
+                id = refId;
+                return documentRef;
+            } else if (typeof (refId) === 'object') {
+                if (refId.id) {
+                    documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
+                } else {
+                    documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                        where: {
+                            'policyId': { $eq: policyId },
+                            'document.credentialSubject.id': { $eq: id }
+                        }
+                    });
+                }
+                id = PolicyUtils.getSubjectId(documentRef);
+                return documentRef;
+            }
+        } else {
+            return null;
+        }
+        return null;
+    }
+
+    /**
      * Set block data
      * @param user
      * @param _data
@@ -164,7 +244,7 @@ export class RequestVcDocumentBlock {
             const userHederaKey = await this.wallet.getKey(user.walletToken, KeyType.KEY, user.did);
 
             const document = _data.document;
-            const documentRef = _data.ref;
+            const documentRef = await this.getRelationships(ref.policyId, _data.ref);
 
             const credentialSubject = document;
             const schema = ref.options.schema;
@@ -172,14 +252,12 @@ export class RequestVcDocumentBlock {
 
             const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
             const VCHelper = new VcHelper();
+
             if (id) {
                 credentialSubject.id = id;
             }
 
-            if (typeof (documentRef) === 'string') {
-                credentialSubject.ref = documentRef;
-            }
-            else if (documentRef) {
+            if (documentRef) {
                 credentialSubject.ref = PolicyUtils.getSubjectId(documentRef);
             }
 
@@ -200,12 +278,18 @@ export class RequestVcDocumentBlock {
                 relationships: null
             };
 
-            if (typeof (documentRef) === 'object' && documentRef && documentRef.messageId) {
+            if (documentRef) {
                 item.relationships = [documentRef.messageId];
             }
-            await this.changeActive(user, true);
 
             const state = { data: item };
+
+            const valid = await this.validateDocuments(user, state);
+            if (!valid) {
+                throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
+            }
+
+            await this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
         } catch (error) {

@@ -1,7 +1,5 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { getMongoRepository } from 'typeorm';
-import { Policy } from '@entity/policy';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IAuthUser } from '@guardian/common';
@@ -46,21 +44,13 @@ export class PolicyRolesBlock {
      * @param document
      */
     async setData(user: IAuthUser, document: any): Promise<any> {
-        const policyRepository = getMongoRepository(Policy);
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const currentPolicy = await policyRepository.findOne(ref.policyId);
+        const { username, role, did } = user;
+        const result = await PolicyComponentsUtils.SetUserRole(ref.policyId, user, document.role);
 
-        if (typeof currentPolicy.registeredUsers !== 'object') {
-            currentPolicy.registeredUsers = {};
-        }
-        currentPolicy.registeredUsers[user.did] = document.role;
-
-        const {username, role, did} = user;
-
-        const result = await policyRepository.save(currentPolicy);
         await Promise.all([
-            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, {username, role, did}, ref.tag),
-            PolicyComponentsUtils.UpdateUserInfoFn({username, role, did}, currentPolicy)
+            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, { username, role, did }, ref.tag),
+            PolicyComponentsUtils.UpdateUserInfoFn({ username, role, did }, result)
         ]);
 
         return result;

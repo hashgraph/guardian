@@ -27,3 +27,4 @@ export { RevokeBlock } from './revoke-block';
 export { SetRelationshipsBlock } from './set-relationships-block';
 export { ButtonBlock } from './button-block';
 export { TokenActionBlock } from './token-action-block';
+export { DocumentValidatorBlock } from './document-validator-block';

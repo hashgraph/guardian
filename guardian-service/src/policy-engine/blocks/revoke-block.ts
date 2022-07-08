@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { getMongoRepository } from 'typeorm';
 import { Users } from '@helpers/users';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';

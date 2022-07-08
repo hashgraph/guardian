@@ -4,7 +4,7 @@ import { Users } from '@helpers/users';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';

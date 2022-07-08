@@ -2,7 +2,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { findOptions, getVCIssuer } from '@helpers/utils';
 import { ReportItem } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
 import { IReportItem } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
@@ -61,7 +61,7 @@ export class ReportItemBlock {
         }
         resultFields.push(item);
 
-        const filtersToVc = {};
+        const filtersToVc:any = {};
         if (ref.options.filters) {
             for (const filter of ref.options.filters) {
                 let expr: any;
@@ -72,19 +72,28 @@ export class ReportItemBlock {
                 }
                 switch (filter.type) {
                     case 'equal':
-                        expr = {$eq: expr};
+                        expr = { $eq: expr };
                         break;
 
                     case 'not_equal':
-                        expr = {$ne: expr};
+                        expr = { $ne: expr };
                         break;
 
                     case 'in':
-                        expr = {$in: expr.split(',')};
+                        if (Array.isArray(expr)) {
+                            expr = { $in: expr };
+                        } else if (expr) {
+                            expr = { $in: [expr] };
+                        }
                         break;
 
                     case 'not_in':
-                        expr = {$nin: expr.split(',')};
+                        if (Array.isArray(expr)) {
+                            expr = { $in: expr };
+                        } else if (expr) {
+                            expr = { $in: [expr] };
+                        }
+                        expr = { $nin: expr };
                         break;
 
                     default:
@@ -93,6 +102,7 @@ export class ReportItemBlock {
                 filtersToVc[filter.field] = expr;
             }
         }
+        filtersToVc.policyId = { $eq: ref.policyId };
 
         const vcDocument = await getMongoRepository(VcDocument).findOne(filtersToVc);
 

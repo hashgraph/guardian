@@ -1,7 +1,7 @@
 import { ContainerBlock } from '@policy-engine/helpers/decorators/container-block';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IAuthUser } from '@guardian/common';
 
 /**
