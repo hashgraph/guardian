@@ -44,7 +44,7 @@ export class Guardians extends ServiceRequestsBase {
     public async getSettings(): Promise<CommonSettings> {
         return await this.request<CommonSettings>(MessageAPI.GET_SETTINGS);
     }
-    
+
     /**
      * Get environment name
      */
