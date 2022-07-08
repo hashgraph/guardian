@@ -2940,13 +2940,6 @@ paths:
       description: Set settings. For users with the Standard Registry role only.
       security:
       - bearerAuth: []
-      requestBody:
-        description: Settings.
-        required: true
-        content:
-          application/json:
-              schema:
-                $ref: '#/components/schemas/CommonSettings'
       summary: Set settings.
       responses:
         200:
@@ -2955,6 +2948,28 @@ paths:
           description: Unauthorized.
         403:
           description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonSettings'
+  /settings/environment:
+    get:
+      tags:
+        - settings
+      description: Returns current environment name.
+      security:
+      - bearerAuth: []
+      summary: Returns current environment name.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'testnet'
         500:
           description: Internal server error.
           content:
