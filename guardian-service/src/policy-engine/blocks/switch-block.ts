@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';

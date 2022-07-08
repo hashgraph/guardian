@@ -8,19 +8,21 @@ import {
     Schema
 } from '@guardian/interfaces';
 import {
-    replaceAllEntities,
-    SchemaFields
-} from '@helpers/utils';
+    IAuthUser,
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    BinaryMessageResponse,
+    Logger
+} from '@guardian/common';
 import {
     MessageAction,
     MessageServer,
     MessageType,
     PolicyMessage
 } from '@hedera-modules'
-import {
-    IPolicyBlock,
-    IPolicyInterfaceBlock
-} from './policy-engine.interface';
+import { replaceAllEntities, SchemaFields } from '@helpers/utils';
+import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema } from '@api/schema.service';
@@ -35,7 +37,6 @@ import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
-import { IAuthUser, MessageBrokerChannel, MessageResponse, MessageError, BinaryMessageResponse, Logger } from '@guardian/common';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
 
@@ -89,8 +90,7 @@ export class PolicyEngineService {
         }
 
         const block = PolicyComponentsUtils.GetBlockByUUID(uuid) as IPolicyInterfaceBlock;
-        const policy = await getMongoRepository(Policy).findOne(block.policyId)
-        const role = policy.registeredUsers[user.did];
+        const role = await PolicyComponentsUtils.GetUserRole(block.policyId, user);
 
         let changed = true;
 
@@ -145,7 +145,7 @@ export class PolicyEngineService {
             return;
         }
 
-        const userRole = policy.registeredUsers[user.did];
+        const userRole = PolicyComponentsUtils.GetUserRoleByPolicy(policy, user);
 
         await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
             policyId: policy.id.toString(),
@@ -379,23 +379,17 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.GET_POLICY, async (msg) => {
             const { filters, userDid } = msg;
-            const data: any = await getMongoRepository(Policy).findOne(filters);
-            if (data) {
-                if (userDid) {
-                    data.userRoles = [];
-                    if (data.owner === userDid) {
-                        data.userRoles.push('Administrator');
-                    }
-                    if (data.registeredUsers && data.registeredUsers[userDid]) {
-                        data.userRoles.push(data.registeredUsers[userDid]);
-                    }
-                    if (!data.userRoles.length) {
-                        data.userRoles.push('The user does not have a role');
-                    }
-                }
-                delete data.registeredUsers;
+            const policy = await getMongoRepository(Policy).findOne(filters);
+
+            const result: any = policy;
+            const userRoles: string[] = PolicyComponentsUtils.GetUserRoleList(policy, userDid);
+
+            if (policy) {
+                result.userRoles = userRoles;
+                delete result.registeredUsers;
             }
-            return new MessageResponse(data);
+
+            return new MessageResponse(result);
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.GET_POLICIES, async (msg) => {
@@ -410,21 +404,9 @@ export class PolicyEngineService {
                     filter.skip = _pageIndex * _pageSize;
                 }
                 const [policies, count] = await getMongoRepository(Policy).findAndCount(filter);
-                if (userDid) {
-                    policies.forEach((policy: any) => {
-                        policy.userRoles = [];
-                        if (policy.owner === userDid) {
-                            policy.userRoles.push('Administrator');
-                        }
-                        if (policy.registeredUsers && policy.registeredUsers[userDid]) {
-                            policy.userRoles.push(policy.registeredUsers[userDid]);
-                        }
-                        if (!policy.userRoles.length) {
-                            policy.userRoles.push('The user does not have a role');
-                        }
-                    });
-                }
-                policies.forEach(policy => {
+
+                policies.forEach((policy: any) => {
+                    policy.userRoles = PolicyComponentsUtils.GetUserRoleList(policy, userDid);
                     delete policy.registeredUsers;
                 });
 
@@ -534,10 +516,16 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_BLOCKS, async (msg) => {
             try {
-                const block = this.policyGenerator.getRoot(msg.policyId);
-                const user = msg.user;
+                const { user, policyId } = msg;
                 const userFull = await this.users.getUser(user.username);
-                return new MessageResponse(await block.getData(userFull, block.uuid));
+                const block = this.policyGenerator.getRoot(policyId);
+                const currentRole = await PolicyComponentsUtils.GetUserRole(policyId, user);
+                if (PolicyComponentsUtils.CheckPermissionTree(block, user, currentRole)) {
+                    const data = await block.getData(userFull, block.uuid);
+                    return new MessageResponse(data);
+                } else {
+                    return new MessageResponse(null);
+                }
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -546,10 +534,16 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_DATA, async (msg) => {
             try {
-                const { user, blockId } = msg;
+                const { user, blockId, policyId } = msg;
                 const userFull = await this.users.getUser(user.username);
-                const data = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).getData(userFull, blockId, null)
-                return new MessageResponse(data);
+                const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
+                const currentRole = await PolicyComponentsUtils.GetUserRole(policyId, user);
+                if (PolicyComponentsUtils.CheckPermissionTree(block, user, currentRole)) {
+                    const data = await block.getData(userFull, blockId, null);
+                    return new MessageResponse(data);
+                } else {
+                    return new MessageResponse(null);
+                }
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -558,10 +552,16 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.SET_BLOCK_DATA, async (msg) => {
             try {
-                const { user, blockId, data } = msg;
+                const { user, blockId, policyId, data } = msg;
                 const userFull = await this.users.getUser(user.username);
-                const result = await (PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock).setData(userFull, data)
-                return new MessageResponse(result);
+                const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
+                const currentRole = await PolicyComponentsUtils.GetUserRole(policyId, user);
+                if (PolicyComponentsUtils.CheckPermissionTree(block, user, currentRole)) {
+                    const result = await block.setData(userFull, data);
+                    return new MessageResponse(result);
+                } else {
+                    return new MessageError(new Error('Permission denied'));
+                }
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -574,14 +574,14 @@ export class PolicyEngineService {
                 const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
                 return new MessageResponse({ id: block.uuid });
             } catch (error) {
-                return new MessageError(error);
+                return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
             }
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg) => {
             try {
                 const { blockId } = msg;
-                const block = PolicyComponentsUtils.GetBlockByUUID(blockId) as IPolicyInterfaceBlock;
+                const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
                 let tmpBlock: IPolicyBlock = block;
                 const parents = [block.uuid];
                 while (tmpBlock.parent) {

@@ -1,6 +1,6 @@
 import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock, IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';

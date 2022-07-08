@@ -2,8 +2,6 @@ import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { IAuthUser } from '@guardian/common';
-import { getMongoRepository } from 'typeorm';
-import { Policy } from '@entity/policy';
 import { IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 
 /**
@@ -46,33 +44,27 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
 
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
-                const currentPolicy = await getMongoRepository(Policy).findOne(ref.policyId);
-                const currentRole = (typeof currentPolicy.registeredUsers === 'object') ? currentPolicy.registeredUsers[user.did] : null;
-
-                const result = Object.assign(data, {
-                    id: this.uuid,
-                    blockType: this.blockType,
-                    blocks: this.children.map(child => {
-                        const returnValue = {
+                const currentRole = await PolicyComponentsUtils.GetUserRole(ref.policyId, user);
+                const children = ref.children.map(child => {
+                    if (child.defaultActive && PolicyComponentsUtils.CheckPermission(child, user, currentRole)) {
+                        return {
                             uiMetaData: child.options.uiMetaData,
                             content: child.blockType,
                             blockType: child.blockType,
                             id: child.uuid,
-                        };
-
-                        if (!child.isActive(user) || !child.defaultActive) {
-                            return undefined;
                         }
-
-                        if (PolicyComponentsUtils.IfHasPermission(child.uuid, currentRole, user)) {
-                            return returnValue;
-                        }
-
+                    } else {
                         return undefined;
-                    })
+                    }
                 });
 
-                (this as any).updateDataState(user, result);
+                const result = Object.assign(data, {
+                    id: ref.uuid,
+                    blockType: ref.blockType,
+                    blocks: children
+                })
+
+                ref.updateDataState(user, result);
                 return result;
             }
 

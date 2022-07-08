@@ -1,6 +1,5 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
-import { PolicyComponentsUtils } from '../policy-components-utils';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
@@ -15,6 +14,7 @@ import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { IAuthUser } from '@guardian/common';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 
 /**
  * Document action clock with UI

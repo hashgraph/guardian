@@ -2,7 +2,7 @@ import { DataSourceAddon } from '@policy-engine/helpers/decorators/data-source-a
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { BlockActionError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IAuthUser } from '@guardian/common';

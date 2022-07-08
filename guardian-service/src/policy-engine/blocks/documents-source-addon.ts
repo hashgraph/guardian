@@ -3,7 +3,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { Users } from '@helpers/users';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';

@@ -2,7 +2,7 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregate-documents';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { Users } from '@helpers/users';

@@ -1,7 +1,7 @@
 import { Inject } from '@helpers/decorators/inject';
 import { getVCField } from '@helpers/utils';
 import { Report } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
 import {
     IPolicyReport,
