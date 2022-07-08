@@ -135,11 +135,13 @@ export class DocumentValidatorBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
+    @CatchErrors()
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
-        if (!ref.run(event)) {
+        const valid = await ref.run(event);
+        if (!valid) {
             throw new BlockActionError(`Invalid document`, ref.blockType, ref.uuid);
         }
 
