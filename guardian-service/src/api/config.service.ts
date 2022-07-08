@@ -4,6 +4,7 @@ import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
+import { Environment } from '@hedera-modules';
 
 /**
  * Connecting to the message broker methods of working with root address book.
@@ -90,4 +91,8 @@ export async function configAPI(
             return new MessageError(error);
         }
     });
+
+    ApiResponse(channel, MessageAPI.GET_ENVIRONMENT, async (msg) => {
+        return new MessageResponse(Environment.network);
+    })
 }

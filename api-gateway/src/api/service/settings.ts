@@ -46,3 +46,14 @@ settingsAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: R
         res.status(500).json({ code: 500, message: error.message });
     }
 });
+
+settingsAPI.get('/environment', async (req: Request, res: Response) => {
+    try {
+        const guardians = new Guardians();
+        const environment = await guardians.getEnvironment();
+        res.send(environment);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+})
