@@ -5,12 +5,14 @@
     "express": "^4.17.1",
     "nats": "^2.6.1",
     "reflect-metadata": "^0.1.13",
+    "winston": "^3.8.1",
     "ws": "^8.2.1",
     "zlib": "^1.0.5"
   },
   "description": "Common package share cross all services",
   "devDependencies": {
     "@types/node": "^17.0.13",
+    "@types/winston": "^2.4.4",
     "mocha-junit-reporter": "^2.0.2",
     "tslint": "^6.1.3",
     "typescript": "^4.5.5"
