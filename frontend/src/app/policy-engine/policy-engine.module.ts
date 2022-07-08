@@ -59,6 +59,7 @@ import { EventsOverview } from './helpers/events-overview/events-overview';
 import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
 import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
 import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/documents/document-validator-config/document-validator-config.component';
+import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-before-dialog.component';
 
 @NgModule({
     declarations: [
@@ -112,7 +113,8 @@ import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/
         RevokeConfigComponent,
         ButtonConfigComponent,
         ButtonBlockComponent,
-        DocumentValidatorConfigComponent
+        DocumentValidatorConfigComponent,
+        SaveBeforeDialogComponent
     ],
     imports: [
         CommonModule,
