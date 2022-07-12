@@ -1,5 +1,5 @@
 import { Token } from '@entity/token';
-import { HederaSDKHelper, HederaUtils, VcDocument } from '@hedera-modules';
+import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
@@ -12,7 +12,6 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { DocumentState } from '@entity/document-state';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
-import { VcDocument as HVcDocument } from '@hedera-modules';
 
 /**
  * Data types
@@ -196,7 +195,7 @@ export class PolicyUtils {
         }
 
         const item = {
-            policyId: policyId,
+            policyId,
             tag: tag || oldDoc.tag || null,
             type: type || oldDoc.type || null,
             hash: newVc.toCredentialHash(),

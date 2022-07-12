@@ -134,7 +134,7 @@ export class RetirementBlock {
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
-            
+
         await PolicyUtils.updateVCRecord(
             PolicyUtils.createVCRecord(
                 ref.policyId,

@@ -1,4 +1,4 @@
-import { ISchema, ISchemaDocument, SchemaCondition, SchemaField, UnitSystem } from '..';
+import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '..';
 import { SchemaDataTypes } from '../interface/schema-document.interface';
 import { Schema } from '../models/schema';
 import { ModelHelper } from './model-helper';
@@ -7,6 +7,13 @@ import { ModelHelper } from './model-helper';
  * Schema helper class
  */
 export class SchemaHelper {
+    /**
+     * Parse Field
+     * @param name
+     * @param property
+     * @param required
+     * @param url
+     */
     public static parseField(name: string, property: any, required: boolean, url: string): SchemaField {
         const field: SchemaField = {
             name: null,
@@ -60,9 +67,15 @@ export class SchemaHelper {
         return field;
     }
 
+    /**
+     * Build Field
+     * @param field
+     * @param name
+     * @param contextURL
+     */
     public static buildField(field: SchemaField, name: string, contextURL: string): any {
         let item: any;
-        let property: any = {};
+        const property: any = {};
 
         property.title = field.title || name;
         property.description = field.description || name;
@@ -213,7 +226,7 @@ export class SchemaHelper {
 
         const properties = Object.keys(document.properties);
         for (const name of properties) {
-            let property = document.properties[name];
+            const property = document.properties[name];
             if (property.readOnly) {
                 continue;
             }

@@ -92,7 +92,7 @@ export class ReassigningBlock {
             },
             document
         );
-        
+
         return { item, owner };
     }
 
