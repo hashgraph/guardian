@@ -147,36 +147,44 @@ export class RequestVcDocumentBlock {
     }
 
     async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
-        if (refId) {
-            let id: string = null;
-            let documentRef: any = null;
-            if (typeof (refId) === 'string') {
-                documentRef = await getMongoRepository(VcDocumentCollection).findOne({
-                    where: {
-                        'policyId': { $eq: policyId },
-                        'document.credentialSubject.id': { $eq: id }
-                    }
-                });
-                id = refId;
-                return documentRef;
-            } else if (typeof (refId) === 'object') {
-                if (refId.id) {
-                    documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
-                } else {
+        try {
+            if (refId) {
+                let documentRef: any = null;
+                if (typeof (refId) === 'string') {
                     documentRef = await getMongoRepository(VcDocumentCollection).findOne({
                         where: {
                             'policyId': { $eq: policyId },
-                            'document.credentialSubject.id': { $eq: id }
+                            'document.credentialSubject.id': { $eq: refId }
                         }
                     });
+                } else if (typeof (refId) === 'object') {
+                    if (refId.id) {
+                        documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
+                        if (documentRef && documentRef.policyId !== policyId) {
+                            documentRef = null;
+                        }
+                    } else {
+                        const id = PolicyUtils.getSubjectId(documentRef);
+                        documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                            where: {
+                                'policyId': { $eq: policyId },
+                                'document.credentialSubject.id': { $eq: id }
+                            }
+                        });
+                    }
                 }
-                id = PolicyUtils.getSubjectId(documentRef);
+                if(!documentRef) {
+                    throw new Error('Invalid relationships');
+                }
                 return documentRef;
+            } else {
+                return null;
             }
-        } else {
-            return null;
+        } catch (error) {
+            const ref = PolicyComponentsUtils.GetBlockRef(this);
+            ref.error(error.message);
+            throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
         }
-        return null;
     }
 
     @ActionCallback({
