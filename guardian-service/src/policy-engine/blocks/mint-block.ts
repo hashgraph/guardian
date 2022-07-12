@@ -137,25 +137,32 @@ export class MintBlock {
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
-        await PolicyUtils.updateVCRecord({
-            hash: mintVC.toCredentialHash(),
-            owner: user.did,
-            document: mintVC.toJsonTree(),
-            type: DataTypes.MINT,
-            policyId: ref.policyId,
-            tag: ref.tag,
-            schema: `#${mintVC.getSubjectType()}`,
-            messageId: vcMessageResult.getId(),
-            topicId: vcMessageResult.getTopicId(),
-            relationships: vsMessages
-        } as any);
+
+        await PolicyUtils.updateVCRecord(
+            PolicyUtils.createVCRecord(
+                ref.policyId,
+                ref.tag,
+                DataTypes.MINT,
+                mintVC,
+                {
+                    owner: user.did,
+                    schema: `#${mintVC.getSubjectType()}`,
+                    messageId: vcMessageResult.getId(),
+                    topicId: vcMessageResult.getTopicId(),
+                    relationships: vsMessages
+                }
+            )
+        );
+
         vsMessages.push(vcMessageResult.getId());
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(vsMessages);
+
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);
+
         await PolicyUtils.saveVP({
             hash: vp.toCredentialHash(),
             document: vp.toJsonTree(),

@@ -188,23 +188,15 @@ export class AggregateBlock {
     async saveDocuments(ref: AnyBlockType, doc: any): Promise<void> {
         const vc = VcDocument.fromJsonTree(doc.document);
         const repository = getMongoRepository(AggregateVC);
-        const newVC = repository.create({
-            policyId: ref.policyId,
-            blockId: ref.uuid,
-            tag: doc.tag,
-            type: doc.type,
-            owner: doc.owner,
-            assign: doc.assign,
-            option: doc.option,
-            schema: doc.schema,
-            hederaStatus: doc.hederaStatus || DocumentStatus.NEW,
-            signature: doc.signature || DocumentSignature.NEW,
-            messageId: doc.messageId || null,
-            topicId: doc.topicId || null,
-            relationships: doc.relationships || [],
-            hash: vc.toCredentialHash(),
-            document: vc.toJsonTree()
-        });
+
+        const item = PolicyUtils.createVCRecord(
+            ref.policyId,
+            null,
+            null,
+            vc,
+            doc
+        );
+        const newVC = repository.create(item);
         await repository.save(newVC);
     }
 

@@ -123,6 +123,12 @@ export class VcDocument implements IVCDocument {
     comment?: string;
 
     /**
+     * Hedera Accounts
+     */
+    @Column()
+    accounts?: any
+
+    /**
      * Document defaults
      */
     @BeforeInsert()

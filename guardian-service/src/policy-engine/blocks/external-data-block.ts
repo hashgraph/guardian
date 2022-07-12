@@ -12,6 +12,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * External data block
@@ -99,18 +100,22 @@ export class ExternalDataBlock {
             verify = false;
         }
 
-        const signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
         const vc = VcDocument.fromJsonTree(data.document);
-        const doc = {
-            hash: vc.toCredentialHash(),
-            owner: data.owner,
-            document: vc.toJsonTree(),
-            status: DocumentStatus.NEW,
-            signature,
-            policyId: ref.policyId,
-            type: ref.options.entityType,
-            schema: ref.options.schema
-        };
+        const doc = PolicyUtils.createVCRecord(
+            ref.policyId,
+            ref.tag,
+            ref.options.entityType,
+            vc,
+            {
+                owner: data.owner,
+                hederaStatus: DocumentStatus.NEW,
+                signature: (verify ?
+                    DocumentSignature.VERIFIED :
+                    DocumentSignature.INVALID),
+                schema: ref.options.schema
+            }
+        );
+
         const state = { data: doc };
 
         const valid = await this.validateDocuments(null, state);

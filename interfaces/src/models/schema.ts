@@ -2,11 +2,11 @@ import { ModelHelper } from '../helpers/model-helper';
 import { SchemaHelper } from '../helpers/schema-helper';
 import { SchemaCondition } from '../interface/schema-condition.interface';
 import { ISchemaDocument } from '../interface/schema-document.interface';
-import { SchemaField } from '../interface/schema-field.interface';
 import { ISchema } from '../interface/schema.interface';
 import { SchemaEntity } from '../type/schema-entity.type';
 import { SchemaStatus } from '../type/schema-status.type';
 import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4';
+import { SchemaField } from '../interface/schema-field.interface';
 
 /**
  * Schema class
@@ -197,7 +197,7 @@ export class Schema implements ISchema {
      */
     private parseDocument(): void {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
-        const { previousVersion } = SchemaHelper.parseComment(this.document.$comment);
+        const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
         this.previousVersion = previousVersion;
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields);
@@ -297,5 +297,38 @@ export class Schema implements ISchema {
      */
     public updateRefs(schemas: Schema[]): void {
         this.document.$defs = SchemaHelper.findRefs(this, schemas);
+    }
+
+    /**
+     * Search Fields
+     * @param filter
+     */
+    public searchFields(filter: (field: SchemaField) => boolean): SchemaField[] {
+        const result: SchemaField[] = [];
+        if (this.fields) {
+            this._searchFields(this.fields, filter, result, '');
+        }
+        return result;
+    }
+
+    /**
+     * Search Fields
+     * @param filter
+     */
+    private _searchFields(
+        fields: SchemaField[],
+        filter: (field: SchemaField) => boolean,
+        result: SchemaField[],
+        path: string
+    ): void {
+        for (const f of fields) {
+            f.path = path + f.name;
+            if (filter(f)) {
+                result.push(f);
+                if (f.fields) {
+                    this._searchFields(f.fields, filter, result, f.path + '.');
+                }
+            }
+        }
     }
 }

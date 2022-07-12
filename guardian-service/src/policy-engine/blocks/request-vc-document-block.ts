@@ -131,7 +131,7 @@ export class RequestVcDocumentBlock {
      * @param user
      */
     getActive(user: IAuthUser) {
-        let blockState;
+        let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
             this.state[user.did] = blockState;
@@ -145,6 +145,24 @@ export class RequestVcDocumentBlock {
     }
 
     /**
+     * Get Schema
+     */
+    async getSchema(): Promise<Schema> {
+        if (!this.schema) {
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+            const schema = await getMongoRepository(SchemaCollection).findOne({
+                iri: ref.options.schema,
+                topicId: ref.topicId
+            });
+            this.schema = schema ? new Schema(schema) : null;
+            if (!this.schema) {
+                throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
+            }
+        }
+        return this.schema;
+    }
+
+    /**
      * Get block data
      * @param user
      */
@@ -152,23 +170,13 @@ export class RequestVcDocumentBlock {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
-        if (!this.schema) {
-            const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema,
-                topicId: ref.topicId
-            });
-            this.schema = schema ? new Schema(schema) : null;
-        }
-        if (!this.schema) {
-            throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
-        }
-
+        const schema = await this.getSchema();
         const sources = await ref.getSources(user);
 
         return {
             id: ref.uuid,
             blockType: ref.blockType,
-            schema: this.schema,
+            schema,
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
@@ -247,8 +255,10 @@ export class RequestVcDocumentBlock {
             const documentRef = await this.getRelationships(ref.policyId, _data.ref);
 
             const credentialSubject = document;
-            const schema = ref.options.schema;
+            const schemaIRI = ref.options.schema;
             const idType = ref.options.idType;
+
+            const schema = await this.getSchema();
 
             const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
             const VCHelper = new VcHelper();
@@ -269,18 +279,20 @@ export class RequestVcDocumentBlock {
             }
 
             const vc = await VCHelper.createVC(user.did, userHederaKey, credentialSubject);
-            const item = {
-                hash: vc.toCredentialHash(),
-                owner: user.did,
-                document: vc.toJsonTree(),
-                schema,
-                type: schema,
-                relationships: null
-            };
-
-            if (documentRef) {
-                item.relationships = [documentRef.messageId];
-            }
+            const accounts = PolicyUtils.getHederaAccounts(vc, userHederaAccount, schema);
+            const item = PolicyUtils.createVCRecord(
+                ref.policyId,
+                ref.tag,
+                null,
+                vc,
+                {
+                    type: schemaIRI,
+                    owner: user.did,
+                    schema: schemaIRI,
+                    accounts
+                },
+                documentRef
+            )
 
             const state = { data: item };
 

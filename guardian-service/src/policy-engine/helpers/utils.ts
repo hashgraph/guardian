@@ -7,11 +7,12 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { getMongoRepository } from 'typeorm';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { DocumentStatus, ExternalMessageEvents, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, ExternalMessageEvents, Schema, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { DocumentState } from '@entity/document-state';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
+import { VcDocument as HVcDocument } from '@hedera-modules';
 
 /**
  * Data types
@@ -156,6 +157,76 @@ export class PolicyUtils {
         } else {
             return [data];
         }
+    }
+
+    /**
+     * Get Hedera Accounts
+     * @param vc
+     * @param defaultAccount
+     * @param schema
+     */
+    public static getHederaAccounts(vc: HVcDocument, defaultAccount: string, schema: Schema): any {
+        const result: any = {};
+        const fields = schema.searchFields((f) => f.customType === 'hederaAccount');
+        for (const field of fields) {
+            result[field.path] = vc.getField(field.path);
+        }
+        result.default = defaultAccount;
+        return result;
+    }
+
+    /**
+     * Create VC record
+     * @param policyId
+     * @param tag
+     * @param type
+     * @param newVc
+     * @param oldDoc
+     */
+    public static createVCRecord(
+        policyId: string,
+        tag: string,
+        type: string,
+        newVc: HVcDocument,
+        oldDoc: any = null,
+        refDoc: any = null
+    ): VcDocumentCollection {
+        if (!oldDoc) {
+            oldDoc = {};
+        }
+
+        const item = {
+            policyId: policyId,
+            tag: tag || oldDoc.tag || null,
+            type: type || oldDoc.type || null,
+            hash: newVc.toCredentialHash(),
+            document: newVc.toJsonTree(),
+            owner: oldDoc.owner || null,
+            assign: oldDoc.assign || null,
+            option: oldDoc.option || null,
+            schema: oldDoc.schema || null,
+            hederaStatus: oldDoc.hederaStatus || DocumentStatus.NEW,
+            signature: oldDoc.signature || DocumentSignature.NEW,
+            messageId: oldDoc.messageId || null,
+            topicId: oldDoc.topicId || null,
+            relationships: oldDoc.relationships || null,
+            comment: oldDoc.comment || null,
+            accounts: oldDoc.accounts || null,
+        };
+
+        if (item.relationships && item.relationships.length) {
+            item.relationships = null;
+        }
+
+        if (refDoc && refDoc.messageId) {
+            item.relationships = [refDoc.messageId];
+        }
+
+        if (refDoc && refDoc.accounts) {
+            item.accounts = Object.assign({}, refDoc.accounts, item.accounts);
+        }
+
+        return item as VcDocumentCollection;
     }
 
     /**

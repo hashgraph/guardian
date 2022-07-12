@@ -26,7 +26,8 @@ enum PlaceholderByFieldType {
     Number = "123",
     URL = "example.com",
     String = "Please enter text here",
-    IPFS = 'ipfs.io/ipfs/example-hash'
+    IPFS = 'ipfs.io/ipfs/example-hash',
+    HederaAccount= '0.0.1'
 }
 
 enum ErrorFieldMessageByFieldType {
@@ -175,18 +176,7 @@ export class SchemaFormComponent implements OnInit {
 
     private createFieldControl(field: SchemaField): any {
         const item: any = {
-            name: field.name,
-            description: field.description,
-            required: field.required,
-            isArray: field.isArray,
-            isRef: field.isRef,
-            context: field.context,
-            type: field.type,
-            format: field.format,
-            pattern: field.pattern,
-            conditions: field.conditions,
-            unit: field.unit,
-            unitSystem: field.unitSystem,
+            ...field,
             hide: false
         }
 
@@ -445,6 +435,15 @@ export class SchemaFormComponent implements OnInit {
     GetPlaceholderByFieldType(item: SchemaField): string {
         const type = item.format || item.type;
         const pattern = item.pattern;
+        const customType = item.customType;
+        if(customType) {
+            switch (customType) {
+                case 'hederaAccount':
+                    return PlaceholderByFieldType.HederaAccount;
+                default:
+                    return "";
+            }
+        }
         switch (type) {
             case 'email':
                 return PlaceholderByFieldType.Email;

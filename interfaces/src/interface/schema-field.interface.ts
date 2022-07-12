@@ -15,7 +15,7 @@ export interface SchemaField {
     /**
      * Description
      */
-    description?: string;
+    description: string;
     /**
      * Is required
      */
@@ -35,15 +35,27 @@ export interface SchemaField {
     /**
      * Format
      */
-    format?: string;
+    format: string;
     /**
      * Pattern
      */
-    pattern?: string;
+    pattern: string;
     /**
      * Is readonly
      */
     readOnly: boolean;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Unit system
+     */
+    unitSystem: string;
+    /**
+     * Custom Type
+     */
+    customType: string;
     /**
      * Fields
      */
@@ -52,14 +64,6 @@ export interface SchemaField {
      * Conditions
      */
     conditions?: SchemaCondition[];
-    /**
-     * Unit
-     */
-    unit?: string;
-    /**
-     * Unit system
-     */
-    unitSystem?: string;
     /**
      * Context
      */
@@ -71,6 +75,10 @@ export interface SchemaField {
         /**
          * Context
          */
-        context: string;
+        context: string | string[];
     };
+    /**
+     * Full field path
+     */
+    path?: string;
 }

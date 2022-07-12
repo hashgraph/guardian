@@ -134,17 +134,21 @@ export class RetirementBlock {
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
-        await PolicyUtils.updateVCRecord({
-            hash: wipeVC.toCredentialHash(),
-            owner: user.did,
-            document: wipeVC.toJsonTree(),
-            type: DataTypes.RETIREMENT,
-            policyId: ref.policyId,
-            tag: ref.tag,
-            schema: `#${wipeVC.getSubjectType()}`,
-            messageId: vcMessageResult.getId(),
-            topicId: vcMessageResult.getTopicId(),
-        } as any);
+            
+        await PolicyUtils.updateVCRecord(
+            PolicyUtils.createVCRecord(
+                ref.policyId,
+                ref.tag,
+                DataTypes.RETIREMENT,
+                wipeVC,
+                {
+                    owner: user.did,
+                    schema: `#${wipeVC.getSubjectType()}`,
+                    messageId: vcMessageResult.getId(),
+                    topicId: vcMessageResult.getTopicId(),
+                }
+            )
+        );
 
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
@@ -152,6 +156,7 @@ export class RetirementBlock {
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);
+
         await PolicyUtils.saveVP({
             hash: vp.toCredentialHash(),
             document: vp.toJsonTree(),
