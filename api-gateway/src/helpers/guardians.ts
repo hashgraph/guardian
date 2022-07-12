@@ -46,6 +46,13 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Get environment name
+     */
+    public async getEnvironment(): Promise<string> {
+        return await this.request<string>(MessageAPI.GET_ENVIRONMENT);
+    }
+
+    /**
      * Return DID Documents
      *
      * @param {Object} params - filters
