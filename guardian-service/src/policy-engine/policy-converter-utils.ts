@@ -9,7 +9,7 @@ export class PolicyConverterUtils {
     /**
      * Base version
      */
-    public static readonly VERSION = '1.2.0';
+    public static readonly VERSION = '1.3.0';
 
     /**
      * Policy converter
@@ -47,6 +47,7 @@ export class PolicyConverterUtils {
         block = PolicyConverterUtils.v1_0_0(block, parent, index, next, prev);
         block = PolicyConverterUtils.v1_1_0(block, parent, index, next, prev);
         block = PolicyConverterUtils.v1_2_0(block, parent, index, next, prev);
+        block = PolicyConverterUtils.v1_3_0(block, parent, index, next, prev);
 
         if (block.children && block.children.length) {
             for (let i = 0; i < block.children.length; i++) {
@@ -245,6 +246,31 @@ export class PolicyConverterUtils {
                     delete block.uiMetaData.options;
                 }
             }
+        }
+        return block;
+    }
+
+    /**
+     * Create 1.3.0 version
+     * @param block
+     * @param parent
+     * @param index
+     * @param next
+     * @param prev
+     * @private
+     */
+    private static v1_3_0(
+        block: any,
+        parent?: any,
+        index?: any,
+        next?: any,
+        prev?: any
+    ): any {
+        if (block.blockType === 'mintDocumentBlock') {
+            block.accountType = block.accountType || 'default';
+        }
+        if (block.blockType === 'retirementDocumentBlock') {
+            block.accountType = block.accountType || 'default';
         }
         return block;
     }

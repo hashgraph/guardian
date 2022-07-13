@@ -8,7 +8,7 @@ import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { getMongoRepository } from 'typeorm';
 import { Token as TokenCollection } from '@entity/token';
 
@@ -66,7 +66,24 @@ export class TokenActionBlock {
         ref.log(`runAction`);
 
         const token = await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId });
-        const account = await this.users.getHederaAccount(event.user.did);
+        const field = ref.options.accountId;
+        const doc = event?.data?.data;
+
+        let account: IHederaAccount = null;
+        if (doc && field) {
+            if (field) {
+                if (doc.accounts) {
+                    account = {
+                        hederaAccountId: doc.accounts[field],
+                        hederaAccountKey: null
+                    }
+                }
+            } else {
+                account = await this.users.getHederaAccount(doc.owner);
+            }
+        }
+
+        PolicyUtils.checkAccountId(account);
 
         switch (ref.options.action) {
             case 'associate': {
@@ -112,9 +129,18 @@ export class TokenActionBlock {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            const types = [
+            const accountType = ['default', 'custom'];
+            if (accountType.indexOf(ref.options.accountType) === -1) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "accountType" must be one of ' + accountType.join(','));
+            }
+            const types = ref.options.accountType === 'default' ? [
                 'associate',
                 'dissociate',
+                'freeze',
+                'unfreeze',
+                'grantKyc',
+                'revokeKyc',
+            ] : [
                 'freeze',
                 'unfreeze',
                 'grantKyc',
@@ -129,6 +155,9 @@ export class TokenActionBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
             } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
                 resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+            }
+            if (ref.options.accountType === 'custom' && !ref.options.accountId) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

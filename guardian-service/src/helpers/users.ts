@@ -191,6 +191,9 @@ export class Users extends ServiceRequestsBase {
          */
         did: string;
     }> {
+        if (!did) {
+            throw new Error('User not found');
+        }
         const userFull = await this.getUserById(did);
         if (!userFull) {
             throw new Error('User not found');

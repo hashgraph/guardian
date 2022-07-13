@@ -313,10 +313,10 @@ export class PolicyUtils {
      * @param token
      * @param tokenValue
      * @param root
-     * @param user
+     * @param targetAccount
      * @param uuid
      */
-    public static async mint(token: Token, tokenValue: number, root: any, user: IAuthUser, uuid: string): Promise<void> {
+    public static async mint(token: Token, tokenValue: number, root: any, targetAccount: string, uuid: string): Promise<void> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
 
         console.log('Mint: Start');
@@ -324,6 +324,7 @@ export class PolicyUtils {
         const supplyKey = token.supplyKey;
         const adminId = token.adminId;
         const adminKey = token.adminKey;
+
         if (token.tokenType === 'non-fungible') {
             const metaData: any = HederaUtils.decode(uuid);
             const data = new Array(Math.floor(tokenValue));
@@ -349,7 +350,7 @@ export class PolicyUtils {
             for (let i = 0; i < serialsChunk.length; i++) {
                 const element = serialsChunk[i];
                 try {
-                    await client.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, element, uuid);
+                    await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, uuid);
                 } catch (error) {
                     console.log(`Mint: Transfer Error (${error.message})`);
                 }
@@ -359,8 +360,9 @@ export class PolicyUtils {
             }
         } else {
             await client.mint(tokenId, supplyKey, tokenValue, uuid);
-            await client.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
+            await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, uuid);
         }
+
         new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid })
         console.log('Mint: End');
     }
@@ -370,10 +372,10 @@ export class PolicyUtils {
      * @param token
      * @param tokenValue
      * @param root
-     * @param user
+     * @param targetAccount
      * @param uuid
      */
-    public static async wipe(token: Token, tokenValue: number, root: any, user: IAuthUser, uuid: string): Promise<void> {
+    public static async wipe(token: Token, tokenValue: number, root: any, targetAccount: string, uuid: string): Promise<void> {
         const tokenId = token.tokenId;
         const wipeKey = token.wipeKey;
 
@@ -381,7 +383,7 @@ export class PolicyUtils {
         if (token.tokenType === 'non-fungible') {
             throw Error('unsupported operation');
         } else {
-            await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
+            await client.wipe(tokenId, targetAccount, wipeKey, tokenValue, uuid);
         }
     }
 
@@ -631,31 +633,35 @@ export class PolicyUtils {
 
     /**
      * associate
-     * @param topicId
-     * @param userID
-     * @param userKey
+     * @param token
+     * @param user
      */
     public static async associate(token: Token, user: IHederaAccount): Promise<boolean> {
         const client = new HederaSDKHelper(user.hederaAccountId, user.hederaAccountKey);
+        if (!user.hederaAccountKey) {
+            throw new Error('Invalid Account Key');
+        }
         return await client.associate(token.tokenId, user.hederaAccountId, user.hederaAccountKey);
     }
 
     /**
      * dissociate
-     * @param topicId
-     * @param userID
-     * @param userKey
+     * @param token
+     * @param user
      */
     public static async dissociate(token: Token, user: IHederaAccount): Promise<boolean> {
         const client = new HederaSDKHelper(user.hederaAccountId, user.hederaAccountKey);
+        if (!user.hederaAccountKey) {
+            throw new Error('Invalid Account Key');
+        }
         return await client.dissociate(token.tokenId, user.hederaAccountId, user.hederaAccountKey);
     }
 
     /**
      * freeze
-     * @param topicId
-     * @param userID
-     * @param userKey
+     * @param token
+     * @param user
+     * @param root
      */
     public static async freeze(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
@@ -664,9 +670,9 @@ export class PolicyUtils {
 
     /**
      * unfreeze
-     * @param topicId
-     * @param userID
-     * @param userKey
+     * @param token
+     * @param user
+     * @param root
      */
     public static async unfreeze(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
@@ -675,9 +681,9 @@ export class PolicyUtils {
 
     /**
      * grantKyc
-     * @param topicId
-     * @param userID
-     * @param userKey
+     * @param token
+     * @param user
+     * @param root
      */
     public static async grantKyc(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
@@ -686,12 +692,22 @@ export class PolicyUtils {
 
     /**
      * revokeKyc
-     * @param topicId
-     * @param userID
-     * @param userKey
+     * @param token
+     * @param user
+     * @param root
      */
     public static async revokeKyc(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
         return await client.revokeKyc(token.tokenId, user.hederaAccountId, token.kycKey);
+    }
+
+    /**
+     * revokeKyc
+     * @param accountId
+     */
+    public static checkAccountId(account: IHederaAccount): void {
+        if (!account || !HederaSDKHelper.checkAccount(account.hederaAccountId)) {
+            throw new Error('Invalid Account');
+        }
     }
 }

@@ -22,6 +22,7 @@ import { IAuthUser } from '@guardian/common';
 @BasicBlock({
     blockType: 'retirementDocumentBlock',
     commonBlock: true,
+    publishExternalEvent: true,
     about: {
         label: 'Wipe',
         title: `Add 'Wipe' Block`,
@@ -58,11 +59,12 @@ export class RetirementBlock {
     private async createWipeVC(root: any, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.getSchema(ref.topicId, SchemaEntity.WIPE_TOKEN);
+        const amount = data as string;
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
             date: (new Date()).toISOString(),
             tokenId: token.tokenId,
-            amount: data.toString()
+            amount: amount.toString()
         }
         const wipeVC = await vcHelper.createVC(
             root.did,
@@ -93,30 +95,29 @@ export class RetirementBlock {
     /**
      * Retirement processing
      * @param token
-     * @param document
-     * @param vsMessages
+     * @param documents
+     * @param relationships
      * @param topicId
-     * @param rule
      * @param root
      * @param user
-     * @param ref
      * @private
      */
     private async retirementProcessing(
         token: TokenCollection,
-        document: VcDocument[],
-        vsMessages: string[],
+        documents: VcDocument[],
+        relationships: string[],
         topicId: string,
-        rule: string,
         root: any,
         user: IAuthUser,
-        ref: AnyBlockType
+        targetAccountId: string
     ): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+
         const uuid = GenerateUUIDv4();
-        const amount = PolicyUtils.aggregate(rule, document);
+        const amount = PolicyUtils.aggregate(ref.options.rule, documents);
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const wipeVC = await this.createWipeVC(root, token, tokenAmount, ref);
-        const vcs = [].concat(document, wipeVC);
+        const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(root, uuid, vcs);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
@@ -131,6 +132,7 @@ export class RetirementBlock {
 
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(wipeVC);
+        vcMessage.setRelationships(relationships);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
@@ -146,13 +148,16 @@ export class RetirementBlock {
                     schema: `#${wipeVC.getSubjectType()}`,
                     messageId: vcMessageResult.getId(),
                     topicId: vcMessageResult.getTopicId(),
+                    relationships: relationships
                 }
             )
         );
 
+        relationships.push(vcMessageResult.getId());
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
-        vpMessage.setRelationships(vsMessages);
+        vpMessage.setRelationships(relationships);
+
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);
@@ -168,13 +173,13 @@ export class RetirementBlock {
             topicId: vpMessageResult.getTopicId(),
         } as any);
 
-        await PolicyUtils.wipe(token, tokenValue, root, user, vpMessageResult.getId());
+        await PolicyUtils.wipe(token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
         return vp;
     }
 
     /**
-     * Run block action
+     * Run action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -184,8 +189,10 @@ export class RetirementBlock {
     @CatchErrors()
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const { tokenId, rule } = ref.options;
-        const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
+
+        const token = await getMongoRepository(TokenCollection).findOne({
+            tokenId: ref.options.tokenId
+        });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -195,40 +202,50 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const vcs: VcDocument[] = [];
-        const vsMessages: string[] = [];
-        let topicId: string;
-        for (const element of docs) {
-            if (element.signature === DocumentSignature.INVALID) {
-                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
-            }
-            vcs.push(VcDocument.fromJsonTree(element.document));
-            if (element.messageId) {
-                vsMessages.push(element.messageId);
-            }
-            if (element.topicId) {
-                topicId = element.topicId;
-            }
-        }
-
-        const curUser = await this.users.getUserById(docs[0].owner);
-        if (!curUser) {
+        const docOwner = await this.users.getUserById(docs[0].owner);
+        if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
 
-        try {
-            const root = await this.users.getHederaAccount(ref.policyOwner);
-            await this.retirementProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
+        const vcs: VcDocument[] = [];
+        const vsMessages: string[] = [];
+        const topicIds: string[] = [];
+        const field = ref.options.accountId || 'default';
+        const accounts: string[] = [];
+        for (const doc of docs) {
+            if (doc.signature === DocumentSignature.INVALID) {
+                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
+            }
+            const json = VcDocument.fromJsonTree(doc.document);
 
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
-        } catch (error) {
-            throw error;
+            vcs.push(json);
+            if (doc.messageId) {
+                vsMessages.push(doc.messageId);
+            }
+            if (doc.topicId) {
+                topicIds.push(doc.topicId);
+            }
+            if (doc.accounts) {
+                accounts.push(doc.accounts[field]);
+            }
         }
+        if (accounts.find(a => a != accounts[0])) {
+            ref.error(`More than one account found! Transfer made on the first (${accounts[0]})`);
+        }
+        const topicId = topicIds[0];
+
+        const targetAccountId: string = ref.options.accountId ?
+            accounts[0] :
+            docOwner.hederaAccountId;
+        const root = await this.users.getHederaAccount(ref.policyOwner);
+
+        await this.retirementProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
     }
 
     /**
-     * Validate block actions
+     * Validate block options
      * @param resultsContainer
      */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
@@ -246,6 +263,14 @@ export class RetirementBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
             } else if (typeof ref.options.rule !== 'string') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+            }
+
+            const accountType = ['default', 'custom'];
+            if (accountType.indexOf(ref.options.accountType) === -1) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "accountType" must be one of ' + accountType.join(','));
+            }
+            if (ref.options.accountType === 'custom' && !ref.options.accountId) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

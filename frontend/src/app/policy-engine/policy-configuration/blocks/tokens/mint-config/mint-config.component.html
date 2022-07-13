@@ -23,4 +23,21 @@
             <input [(ngModel)]="block.rule" [readonly]="readonly">
         </td>
     </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Account Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.accountType" [disabled]="readonly">
+                <mat-option value="default">Default</mat-option>
+                <mat-option value="custom">Custom</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr *ngIf="block.accountType==='custom'" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Account Id (Field)</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.accountId" [readonly]="readonly">
+        </td>
+    </tr>
 </table>
