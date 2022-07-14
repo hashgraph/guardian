@@ -11,7 +11,7 @@ import { DocumentSignature, DocumentStatus, ExternalMessageEvents, Schema, Schem
 import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { DocumentState } from '@entity/document-state';
-import { ExternalEventChannel, IAuthUser } from '@guardian/common';
+import { ExternalEventChannel } from '@guardian/common';
 
 /**
  * Data types

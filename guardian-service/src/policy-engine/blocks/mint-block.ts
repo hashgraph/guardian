@@ -148,7 +148,7 @@ export class MintBlock {
                     schema: `#${mintVC.getSubjectType()}`,
                     messageId: vcMessageResult.getId(),
                     topicId: vcMessageResult.getTopicId(),
-                    relationships: relationships
+                    relationships
                 }
             )
         );
@@ -229,7 +229,7 @@ export class MintBlock {
                 accounts.push(doc.accounts[field]);
             }
         }
-        if (accounts.find(a => a != accounts[0])) {
+        if (accounts.find(a => a !== accounts[0])) {
             ref.error(`More than one account found! Transfer made on the first (${accounts[0]})`);
         }
         const topicId = topicIds[0];
