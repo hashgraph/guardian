@@ -62,6 +62,7 @@ import { TokenActionConfigComponent } from './policy-configuration/blocks/tokens
 import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/documents/document-validator-config/document-validator-config.component';
 import { TokenConfirmationConfigComponent } from './policy-configuration/blocks/tokens/token-confirmation-config/token-confirmation-config.component';
 import { TokenConfirmationBlockComponent } from './policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component';
+import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-before-dialog.component';
 
 @NgModule({
     declarations: [
@@ -118,7 +119,8 @@ import { TokenConfirmationBlockComponent } from './policy-viewer/blocks/token-co
         TokenActionConfigComponent,
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,
-        TokenConfirmationBlockComponent
+        TokenConfirmationBlockComponent,
+	SaveBeforeDialogComponent
     ],
     imports: [
         CommonModule,

@@ -2,14 +2,14 @@
 
 ### Properties
 
-| Block Property   | Definition                                                                        | Example Input                                   | Status                                     |
-| ---------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
-| tag              | Unique name for the logic block.                                                  | mint\_token.                                    |                                            |
-| permissions      | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                              |                                            |
-| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |                                            |
-| dependencies     | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. | <mark style="color:red;">Deprecated</mark> |
-| On errors        |                                                                                   |                                                 |                                            |
-| stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                           |                                            |
+| Block Property   | Definition                                                                        | Example Input                                                                                                    | Status                                     |
+| ---------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| tag              | Unique name for the logic block.                                                  | mint\_token.                                                                                                     |                                            |
+| permissions      | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                                                                                               |                                            |
+| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                                                                                            |                                            |
+| dependencies     | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown.                                                                  | <mark style="color:red;">Deprecated</mark> |
+| On errors        | Called if the system error has occurs in the Block                                | <p></p><ul><li>No action</li></ul><ul><li>Retry</li></ul><ul><li>Go to step</li></ul><ul><li>Go to tag</li></ul> |                                            |
+| stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                                                                                            |                                            |
 
 ### UI Properties
 

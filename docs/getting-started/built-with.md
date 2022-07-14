@@ -9,7 +9,6 @@ The Guardian solution is built with the following major frameworks/libraries.
 * [Express](https://expressjs.com/)
 * [Nats](https://nats.io/)
 * [TypeORM](https://typeorm.io/)
-* [Hedera-DID-JS-SDK](https://github.com/hashgraph/did-sdk-js)
 * [W3C VC-JS-HTTP](https://w3c.github.io/vc-data-model/)
 
 **Frontend**

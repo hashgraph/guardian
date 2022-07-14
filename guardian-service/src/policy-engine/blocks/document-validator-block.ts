@@ -1,5 +1,6 @@
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, ValidatorBlock } from '@policy-engine/helpers/decorators';
+import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
@@ -141,6 +142,7 @@ export class DocumentValidatorBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
+    @CatchErrors()
     async runAction(event: IPolicyEvent<any>): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);

@@ -40,10 +40,6 @@ export class Token {
      * URL
      */
     public url: string;
-    /**
-     * Token URL
-     */
-    public tokenUrl: string;
 
     /**
      * Token constructor
@@ -65,7 +61,6 @@ export class Token {
             this.kyc = 'n/a';
         }
 
-        this.tokenUrl = 'https://testnet.dragonglass.me/hedera/tokens/' + this.tokenId.split('-')[0];
         this.url = btoa(this.tokenId);
     }
 }
