@@ -70,7 +70,7 @@ export class TokenActionBlock {
         const doc = event?.data?.data;
 
         let account: IHederaAccount = null;
-        if (doc && field) {
+        if (doc) {
             if (field) {
                 if (doc.accounts) {
                     account = {

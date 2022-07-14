@@ -1,0 +1,19 @@
+<div class="content" [hidden]="!isActive">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div class="dialog">
+        <div class="title">Token {{action}}</div>
+        <div class="description">
+            Perform <span>{{action}}</span> on account (<span>{{accountId}}</span>)
+            and <span>{{tokenName}}</span> (<span>{{tokenId}}</span>)
+        </div>
+        <form class="form" [formGroup]="dataForm" (ngSubmit)="onConfirm()">
+            <mat-form-field appearance="outline">
+                <mat-label>* Private Key</mat-label>
+                <input matInput type="text" placeholder="Private Key" formControlName="privateKey">
+            </mat-form-field>
+            <button mat-raised-button type="submit" [disabled]="!dataForm.valid">Confirm</button>
+        </form>
+    </div>
+</div>

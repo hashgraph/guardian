@@ -60,6 +60,8 @@ import { ButtonConfigComponent } from './policy-configuration/blocks/main/button
 import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
 import { TokenActionConfigComponent } from './policy-configuration/blocks/tokens/token-action-config/token-action-config.component';
 import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/documents/document-validator-config/document-validator-config.component';
+import { TokenConfirmationConfigComponent } from './policy-configuration/blocks/tokens/token-confirmation-config/token-confirmation-config.component';
+import { TokenConfirmationBlockComponent } from './policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component';
 
 @NgModule({
     declarations: [
@@ -114,7 +116,9 @@ import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/
         ButtonConfigComponent,
         ButtonBlockComponent,
         TokenActionConfigComponent,
-        DocumentValidatorConfigComponent
+        DocumentValidatorConfigComponent,
+        TokenConfirmationConfigComponent,
+        TokenConfirmationBlockComponent
     ],
     imports: [
         CommonModule,
@@ -170,7 +174,9 @@ import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/
         CronConfigDialog,
         EventsOverview,
         TokenActionConfigComponent,
-        DocumentValidatorConfigComponent
+        DocumentValidatorConfigComponent,
+        TokenConfirmationConfigComponent,
+        TokenConfirmationBlockComponent
     ],
     providers: [
         RegisteredBlocks

@@ -18,6 +18,7 @@ export enum PolicyOutputEventType {
     RunEvent = 'RunEvent',
     RefreshEvent = 'RefreshEvent',
     DropdownEvent = 'DropdownEvent',
+    Confirm = 'Confirm',
 }
 
 /**
