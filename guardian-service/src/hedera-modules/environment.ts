@@ -1,4 +1,4 @@
-import { Client } from '@hashgraph/sdk';
+import { AccountId, Client } from '@hashgraph/sdk';
 
 /**
  * Environment class
@@ -20,12 +20,24 @@ export class Environment {
      * Testnet topic API
      */
     public static readonly HEDERA_TESTNET_TOPIC_API: string = 'https://testnet.mirrornode.hedera.com/api/v1/topics/';
+    /**
+     * Localnode message API
+     */
+    public static HEDERA_LOCALNODE_MESSAGE_API: string = `https://localhost:5600/api/v1/topics/messages`;
+    /**
+     * Localnode topic API
+     */
+    public static HEDERA_LOCALNODE_TOPIC_API: string = `https://localhost:5600/api/v1/topics/`;
 
     /**
      * Network
      * @private
      */
     private static _network: string = 'testnet';
+    /**
+     * LocalNode Address
+     */
+    private static _localnodeaddress = 'localhost'
     /**
      * Message API
      * @private
@@ -43,15 +55,29 @@ export class Environment {
      * @param mirrornode
      */
     public static setNetwork(network: string, mirrornode?: string) {
-        if (network === 'mainnet') {
-            Environment._network = 'mainnet';
-            Environment._messagesApi = Environment.HEDERA_MAINNET_MESSAGE_API;
-            Environment._topicsApi = Environment.HEDERA_MAINNET_TOPIC_API;
-        } else {
-            Environment._network = 'testnet';
-            Environment._messagesApi = Environment.HEDERA_TESTNET_MESSAGE_API;
-            Environment._topicsApi = Environment.HEDERA_TESTNET_TOPIC_API;
+        switch (network) {
+            case 'mainnet':
+                Environment._network = 'mainnet';
+                Environment._messagesApi = Environment.HEDERA_MAINNET_MESSAGE_API;
+                Environment._topicsApi = Environment.HEDERA_MAINNET_TOPIC_API;
+                break;
+
+            case 'testnet':
+                Environment._network = 'testnet';
+                Environment._messagesApi = Environment.HEDERA_TESTNET_MESSAGE_API;
+                Environment._topicsApi = Environment.HEDERA_TESTNET_TOPIC_API;
+                break;
+
+            case 'localnode':
+                Environment._network = 'localnode';
+                Environment._messagesApi = Environment.HEDERA_LOCALNODE_MESSAGE_API;
+                Environment._topicsApi = Environment.HEDERA_LOCALNODE_TOPIC_API;
+                break;
+
+            default:
+                throw new Error(`Unknown network: ${Environment._network}`)
         }
+
         if (mirrornode) {
             Environment._messagesApi = `${mirrornode}/api/v1/topics/messages`;
             Environment._topicsApi = `${mirrornode}/api/v1/topics/`;
@@ -59,13 +85,31 @@ export class Environment {
     }
 
     /**
+     * Set localnode address
+     */
+    public static setLocalNodeAddress(address) {
+        Environment._localnodeaddress = address || 'localhost';
+        Environment.HEDERA_LOCALNODE_MESSAGE_API = `https://${Environment._localnodeaddress}:5600/api/v1/topics/messages`;
+        Environment.HEDERA_LOCALNODE_TOPIC_API = `https://${Environment._localnodeaddress}:5600/api/v1/topics/`;
+    }
+
+    /**
      * Create client
      */
     public static createClient(): Client {
-        if (Environment._network === 'mainnet') {
-            return Client.forMainnet();
-        } else {
-            return Client.forTestnet();
+        switch (Environment._network) {
+            case 'mainnet':
+                return Client.forMainnet();
+
+            case 'testnet':
+                return Client.forTestnet();
+
+            case 'localnode':
+                return Client.forNetwork({'127.0.0.1:50211': new AccountId(3)})
+                    .setMirrorNetwork('127.0.0.1:5600');
+
+            default:
+                throw new Error(`Unknown network: ${Environment._network}`)
         }
     }
 
