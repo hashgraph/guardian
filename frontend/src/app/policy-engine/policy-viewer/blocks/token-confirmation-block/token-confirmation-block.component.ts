@@ -113,4 +113,16 @@ export class TokenConfirmationBlockComponent implements OnInit {
             });
         }
     }
+
+    onSkip() {
+        this.loading = true;
+        this.policyEngineService.setBlockData(this.id, this.policyId, {
+            action: 'skip'
+        }).subscribe(() => {
+            this.loading = false;
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
 }

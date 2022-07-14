@@ -99,18 +99,40 @@ export class TokenConfirmationBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`setData`);
 
-        if (!data && !data.hederaAccountKey) {
-            throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
+        if (!data) {
+            throw new BlockActionError(`Data is unknown`, ref.blockType, ref.uuid)
         }
 
         const blockState = this.state[user?.did];
-
         if (!blockState) {
             throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
 
+        if (data.action === 'confirm') {
+            await this.confirm(ref, data, blockState);
+        } else if (data.action === 'skip') {
+            await this.skip(ref, data, blockState);
+        } else {
+            throw new BlockActionError(`Invalid Action`, ref.blockType, ref.uuid)
+        }
+
+        ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
+    }
+
+    /**
+     * Confirm action
+     * @param {IPolicyBlock} ref
+     * @param {any} data
+     * @param {any} state
+     */
+    private async confirm(ref: IPolicyBlock, data: any, state: any) {
+        if (!data.hederaAccountKey) {
+            throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
+        }
+
         const account = {
-            hederaAccountId: blockState.accountId,
+            hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }
 
@@ -130,9 +152,16 @@ export class TokenConfirmationBlock {
             default:
                 break;
         }
+    }
 
-        ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
+    /**
+     * Skip action
+     * @param {IPolicyBlock} ref
+     * @param {any} data
+     * @param {any} state
+     */
+    private async skip(ref: IPolicyBlock, data: any, state: any) {
+        return;
     }
 
     /**
