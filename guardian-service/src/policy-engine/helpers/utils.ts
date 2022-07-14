@@ -460,17 +460,17 @@ export class PolicyUtils {
      * @param schema
      */
     public static checkDocumentSchema(document: any, schema: SchemaCollection): boolean {
-        const iri = schema.iri;
+        const iri = schema.iri ? schema.iri.slice(1) : null;
         const context = schema.contextURL;
         if (document && document.document) {
             if (Array.isArray(document.document.credentialSubject)) {
                 return (
-                    document.document.credentialSubject[0]['@context'].indexOf(context) &&
+                    document.document.credentialSubject[0]['@context'].indexOf(context) > -1 &&
                     document.document.credentialSubject[0].type === iri
                 );
             } else {
                 return (
-                    document.document.credentialSubject['@context'].indexOf(context) &&
+                    document.document.credentialSubject['@context'].indexOf(context) > -1 &&
                     document.document.credentialSubject.type === iri
                 );
             }
