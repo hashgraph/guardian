@@ -90,9 +90,11 @@ export class TopicHelper {
             rationale
         });
 
+        console.log('0000000000000000 2');
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message1);
+            //.sendMessage(message1);
+            .sendMessageAsync(message1);
     }
 
     /**
@@ -114,9 +116,11 @@ export class TopicHelper {
             parentId: parent?.topicId,
             rationale
         });
+        console.log('0000000000000000 3');
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message1);
+            //.sendMessage(message1);
+            .sendMessageAsync(message1);
 
         if (parent) {
             const message2 = new TopicMessage(MessageAction.CreateTopic);
@@ -129,9 +133,11 @@ export class TopicHelper {
                 parentId: null,
                 rationale
             });
+            console.log('0000000000000000 4');
             await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message2);
+                //.sendMessage(message2);
+                .sendMessageAsync(message2);
         }
     }
 }

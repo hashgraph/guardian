@@ -25,6 +25,7 @@ import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } 
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { ipfsAPI } from '@api/ipfs.service';
 
 Promise.all([
     createConnection({
@@ -153,6 +154,8 @@ Promise.all([
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await setDefaultSchema();
+
+    await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
 
     await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
 

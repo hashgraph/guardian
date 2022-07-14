@@ -133,6 +133,27 @@ export class MessageServer {
         return message;
     }
 
+    private async sendIPFSAsync<T extends Message>(message: T): Promise<T> {
+        const time = await this.messageStartLog('IPFS');
+        const buffers = await message.toDocuments();
+        
+        /*const urls = [];
+        for (const buffer of buffers) {
+            const result = await IPFS.addFileAsync(buffer);
+            urls.push(result);
+        }
+        */
+
+        const promises = buffers.map(buffer => {
+            return IPFS.addFileAsync(buffer);
+        });
+        const urls = await Promise.all(promises);
+        await this.messageEndLog(time, 'IPFS');
+
+        message.setUrls(urls);
+        return message;
+    }
+
     /**
      * Load IPFS
      * @param message
@@ -277,6 +298,14 @@ export class MessageServer {
     public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
         if (sendToIPFS) {
             message = await this.sendIPFS(message);
+        }
+        message = await this.sendHedera(message);
+        return message;
+    }
+
+    public async sendMessageAsync<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
+        if (sendToIPFS) {
+            message = await this.sendIPFSAsync(message);
         }
         message = await this.sendHedera(message);
         return message;

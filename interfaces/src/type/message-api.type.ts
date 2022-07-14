@@ -26,6 +26,7 @@ export enum MessageAPI {
     DELETE_SCHEMA = 'delete-schema',
     PREVIEW_SCHEMA = 'preview-schema',
     IPFS_ADD_FILE = 'ipfs-add-file',
+    IPFS_ADD_FILE_ASYNC = 'ipfs-add-file-async',
     IPFS_GET_FILE = 'ipfs-get-file',
     GET_SCHEMA = 'get-schema',
     GENERATE_DEMO_KEY = 'GENERATE_DEMO_KEY',

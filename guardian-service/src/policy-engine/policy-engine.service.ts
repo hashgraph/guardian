@@ -214,9 +214,11 @@ export class PolicyEngineService {
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
+            console.log('0000000000000000 6');
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message);
+                //.sendMessage(message);
+                .sendMessageAsync(message);
 
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
 
@@ -322,7 +324,10 @@ export class PolicyEngineService {
 
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.sendMessage(message);
+        console.log('0000000000000000 7');
+        const result = await messageServer
+            //.sendMessage(message);
+            .sendMessageAsync(message);
         model.messageId = result.getId();
         model.instanceTopicId = rootTopic.topicId;
 

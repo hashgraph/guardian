@@ -11,7 +11,8 @@ import {
     IGetFileMessage,
     IIpfsSettingsResponse,
     IAddFileMessage,
-    IFileResponse
+    IFileResponse,
+    GenerateUUIDv4
 } from '@guardian/interfaces';
 import { MessageBrokerChannel, MessageError, MessageResponse, Logger } from '@guardian/common';
 
@@ -57,6 +58,30 @@ export async function fileAPI(
             new Logger().error(error, ['IPFS_CLIENT']);
             return new MessageError(error);
         }
+    })
+
+    channel.response<IAddFileMessage, { taskId: string; }>(MessageAPI.IPFS_ADD_FILE_ASYNC, (msg) => {
+        const taskId = GenerateUUIDv4();
+        setTimeout(async () => {
+            try {
+                let fileContent = Buffer.from(msg.content, 'base64');
+                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, msg);
+                if (data && data.body) {
+                    // If get data back from external event
+                    fileContent = Buffer.from(data.body, 'base64')
+                }
+                const blob = new Blob([fileContent]);
+                const cid = await client.storeBlob(blob);
+                const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
+                channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url, taskId });
+            }
+            catch (error) {
+                new Logger().error(error, ['IPFS_CLIENT']);
+                channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid: null, url: null, taskId, error });
+            }
+        }, 0);
+
+        return Promise.resolve(new MessageResponse({ taskId }));
     })
 
     /**

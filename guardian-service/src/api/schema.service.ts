@@ -322,8 +322,10 @@ export async function publishSchema(
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
+    console.log('0000000000000000 1');
     const result = await messageServer
-        .sendMessage(message);
+        //.sendMessage(message);
+        .sendMessageAsync(message);
 
     const messageId = result.getId();
     const topicId = result.getTopicId();
@@ -592,7 +594,10 @@ export async function schemaAPI(
                             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                             const message = new SchemaMessage(MessageAction.DeleteSchema);
                             message.setDocument(item);
-                            await messageServer.setTopicObject(topic).sendMessage(message);
+                            console.log('0000000000000000 5');
+                            await messageServer.setTopicObject(topic)
+                                //.sendMessage(message);
+                                .sendMessageAsync(message);
                         }
                     }
                     await schemaRepository.delete(item.id);
