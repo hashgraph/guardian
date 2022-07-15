@@ -66,13 +66,13 @@ export class PolicyUtils {
      */
     public static evaluateFormula(formula: string, scope: any) {
         // tslint:disable-next-line:only-arrow-functions
-        return (function (_formula: string, _scope: any) {
+        return (function (math: any, _formula: string, _scope: any) {
             try {
-                return this.evaluate(_formula, _scope);
+                return math.evaluate(_formula, _scope);
             } catch (error) {
                 return 'Incorrect formula';
             }
-        }).call(mathjs, formula, scope);
+        }).call(null, mathjs, formula, scope);
     }
 
     /**
