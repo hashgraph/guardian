@@ -849,4 +849,20 @@ export class HederaSDKHelper {
         }
         return NaN;
     }
+
+    /**
+     * Check Account
+     * @param accountId
+     */
+    public static checkAccount(accountId: string): boolean {
+        if (accountId) {
+            try {
+                AccountId.fromString(accountId);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        return false;
+    }
 }

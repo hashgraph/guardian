@@ -532,4 +532,16 @@ export class PolicyComponentsUtils {
         }
         return null;
     }
+
+    /**
+     * Get All Registered Users
+     * @param policyId
+     */
+    public static async GetAllRegisteredUsers(policyId: string): Promise<[string, string][]> {
+        const policy = await getMongoRepository(Policy).findOne(policyId);
+        if (policy && typeof policy.registeredUsers === 'object') {
+            return Object.entries(policy.registeredUsers)
+        }
+        return [];
+    }
 }

@@ -95,30 +95,34 @@ export class MintBlock {
     /**
      * Mint processing
      * @param token
-     * @param document
-     * @param vsMessages
+     * @param documents
+     * @param relationships
      * @param topicId
-     * @param rule
      * @param root
      * @param user
-     * @param ref
      * @private
      */
     private async mintProcessing(
         token: TokenCollection,
-        document: VcDocument[],
-        vsMessages: string[],
+        documents: VcDocument[],
+        relationships: string[],
         topicId: string,
-        rule: string,
         root: any,
         user: IAuthUser,
-        ref: AnyBlockType
+        targetAccountId: string
     ): Promise<any> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+
         const uuid = GenerateUUIDv4();
-        const amount = PolicyUtils.aggregate(rule, document);
+        const amount = PolicyUtils.aggregate(ref.options.rule, documents);
+
+        if (Number.isNaN(amount) || !Number.isFinite(amount)) {
+            throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
+        }
+
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
-        const vcs = [].concat(document, mintVC);
+        const vcs = [].concat(documents, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
@@ -133,29 +137,36 @@ export class MintBlock {
 
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
-        vcMessage.setRelationships(vsMessages);
+        vcMessage.setRelationships(relationships);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
-        await PolicyUtils.updateVCRecord({
-            hash: mintVC.toCredentialHash(),
-            owner: user.did,
-            document: mintVC.toJsonTree(),
-            type: DataTypes.MINT,
-            policyId: ref.policyId,
-            tag: ref.tag,
-            schema: `#${mintVC.getSubjectType()}`,
-            messageId: vcMessageResult.getId(),
-            topicId: vcMessageResult.getTopicId(),
-            relationships: vsMessages
-        } as any);
-        vsMessages.push(vcMessageResult.getId());
+
+        await PolicyUtils.updateVCRecord(
+            PolicyUtils.createVCRecord(
+                ref.policyId,
+                ref.tag,
+                DataTypes.MINT,
+                mintVC,
+                {
+                    owner: user.did,
+                    schema: `#${mintVC.getSubjectType()}`,
+                    messageId: vcMessageResult.getId(),
+                    topicId: vcMessageResult.getTopicId(),
+                    relationships
+                }
+            )
+        );
+
+        relationships.push(vcMessageResult.getId());
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
-        vpMessage.setRelationships(vsMessages);
+        vpMessage.setRelationships(relationships);
+
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);
+
         await PolicyUtils.saveVP({
             hash: vp.toCredentialHash(),
             document: vp.toJsonTree(),
@@ -167,7 +178,7 @@ export class MintBlock {
             topicId: vpMessageResult.getTopicId(),
         } as any);
 
-        await PolicyUtils.mint(token, tokenValue, root, user, vpMessageResult.getId());
+        await PolicyUtils.mint(token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
         return vp;
     }
@@ -183,8 +194,10 @@ export class MintBlock {
     @CatchErrors()
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const { tokenId, rule } = ref.options;
-        const token = await getMongoRepository(TokenCollection).findOne({ tokenId });
+
+        const token = await getMongoRepository(TokenCollection).findOne({
+            tokenId: ref.options.tokenId
+        });
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -194,31 +207,46 @@ export class MintBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const vcs: VcDocument[] = [];
-        const vsMessages: string[] = [];
-        let topicId: string;
-        for (const element of docs) {
-            if (element.signature === DocumentSignature.INVALID) {
-                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
-            }
-            vcs.push(VcDocument.fromJsonTree(element.document));
-            if (element.messageId) {
-                vsMessages.push(element.messageId);
-            }
-            if (element.topicId) {
-                topicId = element.topicId;
-            }
-        }
-
-        const curUser = await this.users.getUserById(docs[0].owner);
-        if (!curUser) {
+        const docOwner = await this.users.getUserById(docs[0].owner);
+        if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
 
+        const vcs: VcDocument[] = [];
+        const vsMessages: string[] = [];
+        const topicIds: string[] = [];
+        const field = ref.options.accountId || 'default';
+        const accounts: string[] = [];
+        for (const doc of docs) {
+            if (doc.signature === DocumentSignature.INVALID) {
+                throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
+            }
+            const json = VcDocument.fromJsonTree(doc.document);
+
+            vcs.push(json);
+            if (doc.messageId) {
+                vsMessages.push(doc.messageId);
+            }
+            if (doc.topicId) {
+                topicIds.push(doc.topicId);
+            }
+            if (doc.accounts) {
+                accounts.push(doc.accounts[field]);
+            }
+        }
+        if (accounts.find(a => a !== accounts[0])) {
+            ref.error(`More than one account found! Transfer made on the first (${accounts[0]})`);
+        }
+        const topicId = topicIds[0];
+
+        const targetAccountId: string = ref.options.accountId ?
+            accounts[0] :
+            docOwner.hederaAccountId;
         const root = await this.users.getHederaAccount(ref.policyOwner);
-        await this.mintProcessing(token, vcs, vsMessages, topicId, rule, root, curUser, ref);
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, curUser, event.data);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
+
+        await this.mintProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
     }
 
     /**
@@ -240,6 +268,14 @@ export class MintBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
             } else if (typeof ref.options.rule !== 'string') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
+            }
+
+            const accountType = ['default', 'custom'];
+            if (accountType.indexOf(ref.options.accountType) === -1) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "accountType" must be one of ' + accountType.join(','));
+            }
+            if (ref.options.accountType === 'custom' && !ref.options.accountId) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);

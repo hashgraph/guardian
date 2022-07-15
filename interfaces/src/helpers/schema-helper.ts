@@ -8,6 +8,106 @@ import { ModelHelper } from './model-helper';
  */
 export class SchemaHelper {
     /**
+     * Parse Field
+     * @param name
+     * @param property
+     * @param required
+     * @param url
+     */
+    public static parseField(name: string, property: any, required: boolean, url: string): SchemaField {
+        const field: SchemaField = {
+            name: null,
+            title: null,
+            description: null,
+            type: null,
+            format: null,
+            pattern: null,
+            unit: null,
+            unitSystem: null,
+            isArray: null,
+            isRef: null,
+            readOnly: null,
+            required: null,
+            fields: null,
+            conditions: null,
+            context: null,
+            customType: null,
+        };
+        let _property = property;
+        if (_property.oneOf && _property.oneOf.length) {
+            _property = _property.oneOf[0];
+        }
+        field.name = name;
+        field.title = _property.title || name;
+        field.description = _property.description || name;
+        field.isArray = _property.type === SchemaDataTypes.array;
+        if (field.isArray) {
+            _property = _property.items;
+        }
+        field.isRef = !!_property.$ref;
+
+        if (field.isRef) {
+            field.type = _property.$ref;
+            const { type } = SchemaHelper.parseRef(field.type);
+            field.context = {
+                type,
+                context: [url]
+            };
+        } else {
+            const { unit, unitSystem, customType } = SchemaHelper.parseFieldComment(_property.$comment);
+            field.type = _property.type ? String(_property.type) : null;
+            field.format = _property.format ? String(_property.format) : null;
+            field.pattern = _property.pattern ? String(_property.pattern) : null;
+            field.unit = unit ? String(unit) : null;
+            field.unitSystem = unitSystem ? String(unitSystem) : null;
+            field.customType = customType ? String(customType) : null;
+        }
+        field.readOnly = !!_property.readOnly;
+        field.required = required;
+        return field;
+    }
+
+    /**
+     * Build Field
+     * @param field
+     * @param name
+     * @param contextURL
+     */
+    public static buildField(field: SchemaField, name: string, contextURL: string): any {
+        let item: any;
+        const property: any = {};
+
+        property.title = field.title || name;
+        property.description = field.description || name;
+        property.readOnly = !!field.readOnly;
+
+        if (field.isArray) {
+            property.type = SchemaDataTypes.array;
+            property.items = {};
+            item = property.items;
+        } else {
+            item = property;
+        }
+
+        if (field.isRef) {
+            item.$ref = field.type;
+        } else {
+            item.type = field.type;
+
+            if (field.format) {
+                item.format = field.format;
+            }
+            if (field.pattern) {
+                item.pattern = field.pattern;
+            }
+        }
+
+        property.$comment = SchemaHelper.buildFieldComment(field, name, contextURL);
+
+        return property;
+    }
+
+    /**
      * Parse reference
      * @param data
      */
@@ -63,19 +163,6 @@ export class SchemaHelper {
                 uuid: null,
                 version: null
             };
-        }
-    }
-
-    /**
-     * Parse comment
-     * @param comment
-     */
-    public static parseComment(comment: string): any {
-        try {
-            const item = JSON.parse(comment);
-            return item || {};
-        } catch (error) {
-            return {};
         }
     }
 
@@ -139,56 +226,20 @@ export class SchemaHelper {
 
         const properties = Object.keys(document.properties);
         for (const name of properties) {
-            let property = document.properties[name];
+            const property = document.properties[name];
             if (property.readOnly) {
                 continue;
             }
-            if (property.oneOf && property.oneOf.length) {
-                property = property.oneOf[0];
+            const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
+            if (field.isRef) {
+                const subSchemas = defs || document.$defs;
+                const subDocument = subSchemas[field.type];
+                const subFields = SchemaHelper.parseFields(subDocument, contextURL, subSchemas);
+                const conditions = SchemaHelper.parseConditions(subDocument, contextURL, subFields, subSchemas);
+                field.fields = subFields;
+                field.conditions = conditions;
             }
-            const title = property.title || name;
-            const description = property.description || name;
-            const isArray = property.type === SchemaDataTypes.array;
-            if (isArray) {
-                property = property.items;
-            }
-            const isRef = !!property.$ref;
-            let ref = String(property.type);
-            let context = null;
-            let subFields: any = null
-            let conditions: any = null
-            if (isRef) {
-                ref = property.$ref;
-                const { type } = SchemaHelper.parseRef(ref);
-                context = {
-                    type,
-                    context: [contextURL]
-                };
-                subFields = SchemaHelper.parseFields(defs ? defs[property.$ref] : document.$defs[property.$ref], contextURL, defs ? defs : document.$defs);
-                conditions = SchemaHelper.parseConditions(defs ? defs[property.$ref] : document.$defs[property.$ref], contextURL, subFields, defs ? defs : document.$defs);
-            }
-            const format = isRef || !property.format ? null : String(property.format);
-            const pattern = isRef || !property.pattern ? null : String(property.pattern);
-            const readOnly = !!property.readOnly;
-            const unit = isRef || !property.unit ? null : String(property.unit);
-            const unitSystem = isRef || !property.unitSystem ? null : String(property.unitSystem);
-            fields.push({
-                name,
-                title,
-                description,
-                type: ref,
-                format,
-                pattern,
-                unit,
-                unitSystem,
-                required: !!required[name],
-                isRef,
-                isArray,
-                readOnly,
-                fields: subFields,
-                context,
-                conditions
-            });
+            fields.push(field);
         }
 
         return fields;
@@ -205,7 +256,9 @@ export class SchemaHelper {
         const ref = SchemaHelper.buildRef(type);
         const document = {
             $id: ref,
-            $comment: SchemaHelper.buildComment(type, SchemaHelper.buildUrl(schema.contextURL, ref), schema.previousVersion),
+            $comment: SchemaHelper.buildSchemaComment(
+                type, SchemaHelper.buildUrl(schema.contextURL, ref), schema.previousVersion
+            ),
             title: schema.name,
             description: schema.description,
             type: SchemaDataTypes.object,
@@ -247,7 +300,7 @@ export class SchemaHelper {
         const properties = document.properties;
         const required = document.required;
 
-        SchemaHelper.getFieldsFromObject(fields, required, properties, schema);
+        SchemaHelper.getFieldsFromObject(fields, required, properties, schema.contextURL, false);
 
         if (conditions.length === 0) {
             delete document.allOf;
@@ -268,7 +321,7 @@ export class SchemaHelper {
             let req = []
             let props = {}
 
-            SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema, true);
+            SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema.contextURL, true);
             fields.push(...element.thenFields);
             if (Object.keys(props).length > 0) {
                 condition.then = {
@@ -284,7 +337,7 @@ export class SchemaHelper {
             req = []
             props = {}
 
-            SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema, true);
+            SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema.contextURL, true);
             fields.push(...element.elseFields);
             if (Object.keys(props).length > 0) {
                 condition.else = {
@@ -308,75 +361,20 @@ export class SchemaHelper {
      * @param fields
      * @param required
      * @param properties
-     * @param schema
-     * @param parseCondition
+     * @param contextURL
+     * @param condition
      * @private
      */
-    private static getFieldsFromObject(fields, required, properties, schema, parseCondition = false) {
+    private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string, condition = false) {
         for (let i = 0; i < fields.length; i++) {
             const field = fields[i];
-            field.title = field.title || field.name;
-            field.description = field.description || field.name;
-            if (!field.readOnly && !parseCondition) {
-                field.name = `field${i}`;
-            }
-
-            let item: any;
-            let property: any;
-            if (field.isArray) {
-                item = {};
-                property = {
-                    title: field.title,
-                    description: field.description,
-                    readOnly: !!field.readOnly,
-                    type: SchemaDataTypes.array,
-                    items: item
-                };
-            } else {
-                item = {
-                    title: field.title,
-                    description: field.description,
-                    readOnly: !!field.readOnly
-                };
-                property = item;
-            }
-            if (field.isRef) {
-                property.$comment = SchemaHelper.buildComment(field.name, SchemaHelper.buildUrl(schema.contextURL, field.type));
-                item.$ref = field.type;
-            } else {
-                property.$comment = SchemaHelper.buildComment(field.name, 'https://www.schema.org/text');
-                item.type = field.type;
-                if (field.format) {
-                    item.format = field.format;
-                }
-                if (field.pattern) {
-                    item.pattern = field.pattern;
-                }
-                if (field.unit) {
-                    item.unit = field.unit;
-                }
-                if (field.unitSystem) {
-                    item.unitSystem = field.unitSystem;
-                }
-            }
+            const name = (!field.readOnly && !condition) ? `field${i}` : field.name;
+            const property = SchemaHelper.buildField(field, name, contextURL);
             if (field.required) {
-                required.push(field.name);
+                required.push(name);
             }
-            properties[field.name] = property;
+            properties[name] = property;
         }
-    }
-
-    /**
-     * Build comment
-     * @param type
-     * @param url
-     * @param version
-     */
-    public static buildComment(type: string, url: string, version?: string): string {
-        if (version) {
-            return `{"term": "${type}", "@id": "${url}", "previousVersion": "${version}"}`;
-        }
-        return `{"term": "${type}", "@id": "${url}"}`;
     }
 
     /**
@@ -420,7 +418,7 @@ export class SchemaHelper {
                 document = JSON.parse(document) as ISchemaDocument;
             }
             const { version } = SchemaHelper.parseRef(document.$id);
-            const { previousVersion } = SchemaHelper.parseComment(document.$comment);
+            const { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
             return { version, previousVersion };
         } catch (error) {
             return { version: null, previousVersion: null }
@@ -442,7 +440,9 @@ export class SchemaHelper {
         const type = SchemaHelper.buildType(uuid, version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
-        document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
+        document.$comment = SchemaHelper.buildSchemaComment(
+            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion
+        );
         data.version = version;
         data.document = document;
         return data;
@@ -460,7 +460,7 @@ export class SchemaHelper {
         }
 
         const { version, uuid } = SchemaHelper.parseRef(document.$id);
-        let { previousVersion } = SchemaHelper.parseComment(document.$comment);
+        let { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
 
         let _version = data.version || version;
         const _owner = data.creator || data.owner;
@@ -483,7 +483,9 @@ export class SchemaHelper {
         const type = SchemaHelper.buildType(_uuid, _version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
-        document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
+        document.$comment = SchemaHelper.buildSchemaComment(
+            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion
+        );
         data.document = document;
         return data;
     }
@@ -500,7 +502,7 @@ export class SchemaHelper {
         }
 
         const { version, uuid } = SchemaHelper.parseRef(document.$id);
-        const { previousVersion } = SchemaHelper.parseComment(document.$comment);
+        const { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
         data.version = data.version || version;
         data.uuid = data.uuid || uuid;
         data.owner = newOwner;
@@ -508,7 +510,9 @@ export class SchemaHelper {
         const type = SchemaHelper.buildType(data.uuid, data.version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
-        document.$comment = SchemaHelper.buildComment(type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion);
+        document.$comment = SchemaHelper.buildSchemaComment(
+            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion
+        );
         data.document = document;
         return data;
     }
@@ -732,5 +736,68 @@ export class SchemaHelper {
         json.type = schema.type;
         json['@context'] = [schema.contextURL];
         return json;
+    }
+
+    /**
+     * Build Field comment
+     * @param field
+     * @param name
+     * @param url
+     */
+    public static buildFieldComment(field: SchemaField, name: string, url: string): string {
+        const comment: any = {};
+        comment.term = name;
+        comment['@id'] = field.isRef ?
+            SchemaHelper.buildUrl(url, field.type) :
+            'https://www.schema.org/text';
+        if (field.unit) {
+            comment.unit = field.unit;
+        }
+        if (field.unitSystem) {
+            comment.unitSystem = field.unitSystem;
+        }
+        if (field.customType) {
+            comment.customType = field.customType;
+        }
+        return JSON.stringify(comment);
+    }
+
+    /**
+     * Parse Field comment
+     * @param comment
+     */
+    public static parseFieldComment(comment: string): any {
+        try {
+            const item = JSON.parse(comment);
+            return item || {};
+        } catch (error) {
+            return {};
+        }
+    }
+
+    /**
+     * Build Schema comment
+     * @param type
+     * @param url
+     * @param version
+     */
+    public static buildSchemaComment(type: string, url: string, version?: string): string {
+        if (version) {
+            return `{ "@id": "${url}", "term": "${type}", "previousVersion": "${version}" }`;
+        }
+        return `{ "@id": "${url}", "term": "${type}" }`;
+    }
+
+    /**
+     * Parse Schema comment
+     * @param comment
+     */
+    public static parseSchemaComment(comment: string): any {
+        try {
+            const item = JSON.parse(comment);
+            return item || {};
+        } catch (error) {
+            return {};
+        }
     }
 }

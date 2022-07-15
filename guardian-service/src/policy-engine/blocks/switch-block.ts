@@ -130,13 +130,13 @@ export class SwitchBlock {
             let result = false;
             if (type === 'equal') {
                 if (scope) {
-                    result = PolicyUtils.evaluate(value, scope);
+                    result = PolicyUtils.evaluateFormula(value, scope);
                 } else {
                     result = false;
                 }
             } else if (type === 'not_equal') {
                 if (scope) {
-                    result = !PolicyUtils.evaluate(value, scope);
+                    result = !PolicyUtils.evaluateFormula(value, scope);
                 } else {
                     result = false;
                 }

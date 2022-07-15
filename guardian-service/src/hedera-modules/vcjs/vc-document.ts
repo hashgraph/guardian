@@ -226,6 +226,15 @@ export class VcDocument {
     }
 
     /**
+     * Get subject field value
+     * @param path
+     * @param subjectIndex
+     */
+    public getField<T>(path: string, subjectIndex: number = 0): T {
+        return this.getCredentialSubject(subjectIndex)?.getField<T>(path);
+    }
+
+    /**
      * Length
      */
     public get length(): number {

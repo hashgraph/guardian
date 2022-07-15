@@ -141,6 +141,14 @@ export class SchemaConfigurationComponent implements OnInit {
             unit: "",
             unitSystem: UnitSystem.Prefix
         };
+        this.schemaTypeMap['hederaAccount'] = {
+            name: 'hederaAccount',
+            type: 'string',
+            format: undefined,
+            pattern: '^\\d+\\.\\d+\\.\\d+$',
+            isRef: false,
+            customType: 'hederaAccount'
+        };
     }
 
     getId(type: 'default' | 'measure' | 'schemas'): string {
@@ -427,10 +435,16 @@ export class SchemaConfigurationComponent implements OnInit {
             const key = keys[i];
             const option = this.schemaTypeMap[key];
             if (
-                option.type == field.type &&
-                option.format == field.format &&
-                option.pattern == field.pattern &&
-                option.isRef == field.isRef
+                field.customType &&
+                option.customType === field.customType
+            ) {
+                return key;
+            }
+            if (
+                option.type === field.type &&
+                option.format === field.format &&
+                option.pattern === field.pattern &&
+                option.isRef === field.isRef
             ) {
                 return key;
             }
@@ -552,6 +566,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 pattern: type.pattern,
                 unit: type.unitSystem ? unit : undefined,
                 unitSystem: type.unitSystem,
+                customType: type.customType,
                 readOnly: false,
             }
             fields.push(schemaField);
@@ -576,6 +591,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 pattern: fieldConfig.pattern,
                 unit: fieldConfig.unit,
                 unitSystem: fieldConfig.unitSystem,
+                customType: fieldConfig.customType,
                 readOnly: true,
             }
             fields.push(schemaField);
@@ -607,6 +623,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     pattern: type.pattern,
                     unit: type.unitSystem ? fieldConfig.fieldUnit : undefined,
                     unitSystem: type.unitSystem,
+                    customType: type.customType,
                     readOnly: false,
                 }
                 thenFields.push(schemaField);
@@ -633,6 +650,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     pattern: type.pattern,
                     unit: type.unitSystem ? fieldConfig.fieldUnit : undefined,
                     unitSystem: type.unitSystem,
+                    customType: type.customType,
                     readOnly: false,
                 }
                 elseFields.push(schemaField);

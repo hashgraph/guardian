@@ -1,6 +1,6 @@
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
+import { DocumentStatus } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
@@ -56,19 +56,13 @@ export class SendToGuardianBlock {
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = {
-                    hash: vc.toCredentialHash(),
-                    owner: document.owner,
-                    assign: document.assign,
-                    option: document.option,
-                    schema: document.schema,
-                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
-                    signature: document.signature || DocumentSignature.NEW,
-                    type: ref.options.entityType,
-                    policyId: ref.policyId,
-                    tag: ref.tag,
-                    document: vc.toJsonTree()
-                };
+                const doc: any = PolicyUtils.createVCRecord(
+                    ref.policyId,
+                    ref.tag,
+                    ref.options.entityType,
+                    vc,
+                    document
+                );
                 result = await PolicyUtils.updateVCRecord(doc);
                 break;
             }
@@ -139,7 +133,7 @@ export class SendToGuardianBlock {
      */
     async sendToDatabase(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
         let { documentType } = ref.options;
-        if (documentType === 'document')  {
+        if (documentType === 'document') {
             const doc = document?.document;
             if (doc && doc.verificationMethod) {
                 documentType = 'did';
@@ -153,23 +147,13 @@ export class SendToGuardianBlock {
         switch (documentType) {
             case 'vc': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = {
-                    policyId: ref.policyId,
-                    tag: ref.tag,
-                    type: ref.options.entityType || document.type,
-                    hash: vc.toCredentialHash(),
-                    document: vc.toJsonTree(),
-                    owner: document.owner,
-                    assign: document.assign,
-                    option: document.option,
-                    schema: document.schema,
-                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
-                    signature: document.signature || DocumentSignature.NEW,
-                    messageId: document.messageId || null,
-                    topicId: document.topicId || null,
-                    relationships: document.relationships || [],
-                    comment: document.comment
-                };
+                const doc: any = PolicyUtils.createVCRecord(
+                    ref.policyId,
+                    ref.tag,
+                    ref.options.entityType,
+                    vc,
+                    document
+                );
                 return await PolicyUtils.updateVCRecord(doc);
             }
             case 'did': {

@@ -11,10 +11,10 @@ import { SettingsService } from 'src/app/services/settings.service';
     styleUrls: ['./dragonglass.component.css']
 })
 export class Dragonglass {
-    url:string;
+    url: string;
 
     @Input('type') type!: string;
-    @Input('params') params!: string;
+    @Input('params') params!: string | null;
 
     constructor(private settingsService: SettingsService) {
         this.url = '';
@@ -31,7 +31,10 @@ export class Dragonglass {
                 case 'tokens':
                     this.url = `https://${urlPrefix}.dragonglass.me/hedera/tokens/${this.params}`;
                     break;
-                default: 
+                case 'accounts':
+                    this.url = `https://${urlPrefix}.dragonglass.me/hedera/accounts/${this.params}`;
+                    break;
+                default:
                     this.url = '';
                     break;
             }

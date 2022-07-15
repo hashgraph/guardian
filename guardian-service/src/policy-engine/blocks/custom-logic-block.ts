@@ -12,6 +12,7 @@ import * as mathjs from 'mathjs';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IAuthUser } from '@guardian/common';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Custom logic block
@@ -111,18 +112,18 @@ export class CustomLogicBlock {
                             }
                         );
 
-                        return {
-                            hash: newVC.toCredentialHash(),
-                            owner,
-                            document: newVC.toJsonTree(),
-                            schema: outputSchema.iri,
-                            type: outputSchema.iri,
-                            policyId: ref.policyId,
-                            tag: ref.tag,
-                            messageId: null,
-                            topicId: null,
-                            relationships: relationships.length ? relationships : null
-                        };
+                        return PolicyUtils.createVCRecord(
+                            ref.policyId,
+                            ref.tag,
+                            null,
+                            newVC,
+                            {
+                                type: outputSchema.iri,
+                                schema: outputSchema.iri,
+                                owner,
+                                relationships
+                            }
+                        );
                     }
 
                     if (Array.isArray(result)) {

@@ -14,6 +14,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Calculate block
@@ -144,18 +145,18 @@ export class CalculateContainerBlock {
         const root = await this.users.getHederaAccount(ref.policyOwner);
         const VCHelper = new VcHelper();
         const newVC = await VCHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
-        const item = {
-            hash: newVC.toCredentialHash(),
-            document: newVC.toJsonTree(),
-            owner,
-            schema: outputSchema.iri,
-            type: outputSchema.iri,
-            policyId: ref.policyId,
-            tag: ref.tag,
-            messageId: null,
-            topicId: null,
-            relationships: relationships.length ? relationships : null
-        };
+        const item = PolicyUtils.createVCRecord(
+            ref.policyId,
+            ref.tag,
+            null,
+            newVC,
+            {
+                type: outputSchema.iri,
+                schema: outputSchema.iri,
+                owner,
+                relationships
+            }
+        );
         // -->
 
         return item;

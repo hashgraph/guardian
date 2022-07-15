@@ -8,7 +8,6 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { getMongoRepository } from 'typeorm';
 import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
-import { Policy } from '@entity/policy';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IAuthUser, ExternalEventChannel, Logger } from '@guardian/common';
@@ -336,17 +335,15 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async updateBlock(state: any, user: IAuthUser, tag: string) {
                 await this.saveState();
                 if (!this.options.followUser) {
-                    const policy = await getMongoRepository(Policy).findOne(this.policyId);
-
-                    for (const [did, role] of Object.entries(policy.registeredUsers)) {
+                    const allUsers = await PolicyComponentsUtils.GetAllRegisteredUsers(this.policyId)
+                    for (const [did, role] of allUsers) {
                         if (this.permissions.includes(role)) {
                             PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
                         } else if (this.permissions.includes('ANY_ROLE')) {
                             PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
                         }
                     }
-
-                    if (this.permissions.includes('OWNER')) {
+                    if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
                         PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did: this.policyOwner } as any, tag);
                     }
                 } else {
@@ -359,8 +356,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param state
              * @return {boolean} - true if state was changed
              */
-            public updateDataState(user, state: any): boolean {
-
+            public updateDataState(user: IAuthUser, state: any): boolean {
                 this.oldDataState[user.did] = this.currentDataState[user.did];
                 this.currentDataState[user.did] = { state };
                 return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {

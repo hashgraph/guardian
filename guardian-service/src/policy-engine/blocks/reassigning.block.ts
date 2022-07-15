@@ -8,6 +8,7 @@ import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IAuthUser } from '@guardian/common';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Reassigning block
@@ -78,19 +79,20 @@ export class ReassigningBlock {
 
         const credentialSubject = vcDocument.credentialSubject[0];
         const vc: any = await this.vcHelper.createVC(root.did, root.hederaAccountKey, credentialSubject);
-        const item = {
-            hash: vc.toCredentialHash(),
-            document: vc.toJsonTree(),
-            schema: document.schema,
-            type: document.type,
-            option: document.option,
-            owner: document.owner,
-            policyId: ref.policyId,
-            tag: ref.tag,
-            messageId: null,
-            topicId: null,
-            relationships: document.messageId ? [document.messageId] : null
-        };
+        const item = PolicyUtils.createVCRecord(
+            ref.policyId,
+            ref.tag,
+            null,
+            vc,
+            {
+                schema: document.schema,
+                type: document.type,
+                option: document.option,
+                owner: document.owner,
+            },
+            document
+        );
+
         return { item, owner };
     }
 

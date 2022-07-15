@@ -58,17 +58,8 @@ export class SchemaFormViewComponent implements OnInit {
                 continue
             }
             const item: any = {
-                name: field.name,
-                description: field.description,
-                required: field.required,
-                isArray: field.isArray,
-                isRef: field.isRef,
+                ...field,
                 hide: false,
-                type: field.type,
-                format: field.format,
-                pattern: field.pattern,
-                unit: field.unit,
-                unitSystem: field.unitSystem,
                 isInvalidType: false
             }
             if (!field.isArray && !field.isRef) {

@@ -1,4 +1,4 @@
-import { SchemaField } from '..';
+import { SchemaField } from './schema-field.interface';
 
 /**
  * Schema condition

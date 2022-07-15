@@ -7,7 +7,6 @@ import { VcDocument } from '@hedera-modules';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
@@ -116,7 +115,7 @@ export class AggregateBlock {
         const element = VcDocument.fromJsonTree(doc.document);
         const scope = PolicyUtils.getVCScope(element);
         for (const expression of expressions) {
-            result[expression.name] = parseFloat(PolicyUtils.evaluate(expression.value, scope));
+            result[expression.name] = parseFloat(PolicyUtils.evaluateFormula(expression.value, scope));
         }
         return result;
     }
@@ -167,7 +166,7 @@ export class AggregateBlock {
             scopes.push(this.expressions(expressions, doc));
         }
         const scope = this.aggregateScope(scopes);
-        const result = PolicyUtils.evaluate(condition, scope);
+        const result = PolicyUtils.evaluateFormula(condition, scope);
 
         ref.log(`tick aggregate: ${owner}, ${result}, ${JSON.stringify(scope)}`);
 
@@ -188,23 +187,15 @@ export class AggregateBlock {
     async saveDocuments(ref: AnyBlockType, doc: any): Promise<void> {
         const vc = VcDocument.fromJsonTree(doc.document);
         const repository = getMongoRepository(AggregateVC);
-        const newVC = repository.create({
-            policyId: ref.policyId,
-            blockId: ref.uuid,
-            tag: doc.tag,
-            type: doc.type,
-            owner: doc.owner,
-            assign: doc.assign,
-            option: doc.option,
-            schema: doc.schema,
-            hederaStatus: doc.hederaStatus || DocumentStatus.NEW,
-            signature: doc.signature || DocumentSignature.NEW,
-            messageId: doc.messageId || null,
-            topicId: doc.topicId || null,
-            relationships: doc.relationships || [],
-            hash: vc.toCredentialHash(),
-            document: vc.toJsonTree()
-        });
+
+        const item = PolicyUtils.createVCRecord(
+            ref.policyId,
+            null,
+            null,
+            vc,
+            doc
+        );
+        const newVC = repository.create(item);
         await repository.save(newVC);
     }
 
