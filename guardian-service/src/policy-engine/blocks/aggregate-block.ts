@@ -115,7 +115,7 @@ export class AggregateBlock {
         const element = VcDocument.fromJsonTree(doc.document);
         const scope = PolicyUtils.getVCScope(element);
         for (const expression of expressions) {
-            result[expression.name] = parseFloat(PolicyUtils.evaluate(expression.value, scope));
+            result[expression.name] = parseFloat(PolicyUtils.evaluateFormula(expression.value, scope));
         }
         return result;
     }
@@ -166,7 +166,7 @@ export class AggregateBlock {
             scopes.push(this.expressions(expressions, doc));
         }
         const scope = this.aggregateScope(scopes);
-        const result = PolicyUtils.evaluate(condition, scope);
+        const result = PolicyUtils.evaluateFormula(condition, scope);
 
         ref.log(`tick aggregate: ${owner}, ${result}, ${JSON.stringify(scope)}`);
 
