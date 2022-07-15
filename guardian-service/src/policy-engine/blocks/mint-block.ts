@@ -115,6 +115,11 @@ export class MintBlock {
 
         const uuid = GenerateUUIDv4();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
+
+        if (Number.isNaN(amount) || !Number.isFinite(amount)) {
+            throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
+        }
+
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
         const vcs = [].concat(documents, mintVC);

@@ -64,11 +64,11 @@ export class PolicyUtils {
      * @param formula
      * @param scope
      */
-    public static evaluate(formula: string, scope: any) {
+    public static evaluateFormula(formula: string, scope: any) {
         // tslint:disable-next-line:only-arrow-functions
         return (function (_formula: string, _scope: any) {
             try {
-                return PolicyUtils.evaluate(_formula, _scope);
+                return this.evaluate(_formula, _scope);
             } catch (error) {
                 return 'Incorrect formula';
             }
@@ -92,7 +92,7 @@ export class PolicyUtils {
         let amount = 0;
         for (const element of vcs) {
             const scope = PolicyUtils.getVCScope(element);
-            const value = parseFloat(PolicyUtils.evaluate(rule, scope));
+            const value = parseFloat(PolicyUtils.evaluateFormula(rule, scope));
             amount += value;
         }
         return amount;
@@ -116,8 +116,8 @@ export class PolicyUtils {
      * @param array
      * @param chunk
      */
-    public static splitChunk(array: any[], chunk: number) {
-        const res = [];
+    public static splitChunk<T>(array: T[], chunk: number): T[][] {
+        const res: T[][] = [];
         let i: number;
         let j: number;
         for (i = 0, j = array.length; i < j; i += chunk) {
@@ -319,20 +319,22 @@ export class PolicyUtils {
     public static async mint(token: Token, tokenValue: number, root: any, targetAccount: string, uuid: string): Promise<void> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
 
-        console.log('Mint: Start');
+        console.log(`Mint: Start (${tokenValue})`);
         const tokenId = token.tokenId;
         const supplyKey = token.supplyKey;
         const adminId = token.adminId;
         const adminKey = token.adminKey;
 
         if (token.tokenType === 'non-fungible') {
-            const metaData: any = HederaUtils.decode(uuid);
-            const data = new Array(Math.floor(tokenValue));
+            const metaData = HederaUtils.decode(uuid);
+            const data = new Array<Uint8Array>(Math.floor(tokenValue));
             data.fill(metaData);
+            console.log(`Mint: Count (${data.length})`);
             const serials: number[] = [];
             const dataChunk = PolicyUtils.splitChunk(data, 10);
             for (let i = 0; i < dataChunk.length; i++) {
                 const element = dataChunk[i];
+                console.log(`Mint: Chunk Size (${element.length})`);
                 try {
                     const newSerials = await client.mintNFT(tokenId, supplyKey, element, uuid);
                     for (const serial of newSerials) {
