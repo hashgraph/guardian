@@ -15,35 +15,35 @@ jobs:
       - name: Build
         run: |
           pushd interfaces
-          npm install
+          npm install --force
           npm run build
           popd
           pushd logger-helper
-          npm install
+          npm install --force
           npm run build
           popd
           pushd logger-service
-          npm install
+          npm install --force
           npm run build
           popd
           pushd frontend
-          npm install
+          npm install --force
           npm run build
           popd
           pushd auth-service
-          npm install
+          npm install --force
           npm run build
           popd
           pushd guardian-service
-          npm install
+          npm install --force
           npm run build
           popd
           pushd message-broker
-          npm install
+          npm install --force
           npm run build
           popd
           pushd api-gateway
-          npm install
+          npm install --force
           npm run build
           popd
         env:
