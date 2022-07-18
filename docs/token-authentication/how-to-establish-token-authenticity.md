@@ -1,14 +1,12 @@
 # How to establish Token Authenticity
 
-1. Begin at the NFT token instance (it has a serial number)
-2. Confirm the token identifier is appropriate for this Guardian
-3. Find transaction(tx) that minted the NFT
-4. Examine mint tx memo - value is an HCS tx timestamp
-5. Query mirror for the HCS message tx - it represents the creation and logging of an VP(VC(MRV))
-6. Confirm the topic identifier is valid for this Guardian
-7. Examine message contents, grab URL param - it is an IPFS CID
-8. Resolve CID to retrieve VP(VC(MRV))
-9. Examine VP(VC(MRV)
+1. Get the serial number from the Token and check if the Token ID is compatible with Guardian
+2. Find the Transaction ID of the minted token.
+3. Take the MEMO value (which is the Hedera message timestamp) and add it to the URL after the `/messages/` to get a message from a Hedera Mirror Node, which represents the creation and logging of VP.
+4. Check whether the topic ID is valid for Guardian
+5. Examine the message contents and take the URL attribute values, which is an IPFS link with CID.
+6. VP can be displayed when the above IPFS link is copied and pasted to the browser.
+7. VP contents are displayed and verified by checking following contents:
    * Confirm it maps to the appropriate tokenID (this is logically a challenge that the VP represents a response to)
    * Verify signatures, retrieve DIDs as necessary
    * Confirm the MRV data that meets the criteria of the policy.
