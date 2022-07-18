@@ -89,7 +89,6 @@ export class HederaSDKHelper {
             .setTreasuryAccountId(treasury.id)
             .setDecimals(decimals)
             .setInitialSupply(initialSupply)
-            .setMaxTransactionFee(new Hbar(MAX_FEE))
             .setTokenMemo(tokenMemo);
 
         if (adminKey) {
@@ -525,8 +524,7 @@ export class HederaSDKHelper {
     ): Promise<string> {
         const client = this.client;
 
-        let transaction: any = new TopicCreateTransaction()
-            .setMaxTransactionFee(new Hbar(MAX_FEE));
+        let transaction: any = new TopicCreateTransaction();
 
         if (topicMemo) {
             transaction = transaction.setTopicMemo(topicMemo);
