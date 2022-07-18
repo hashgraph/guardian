@@ -23,11 +23,11 @@ export class Environment {
     /**
      * Localnode message API
      */
-    public static HEDERA_LOCALNODE_MESSAGE_API: string = `https://localhost:5600/api/v1/topics/messages`;
+    public static HEDERA_LOCALNODE_MESSAGE_API: string = `https://localhost:5551/api/v1/topics/messages`;
     /**
      * Localnode topic API
      */
-    public static HEDERA_LOCALNODE_TOPIC_API: string = `https://localhost:5600/api/v1/topics/`;
+    public static HEDERA_LOCALNODE_TOPIC_API: string = `https://localhost:5551/api/v1/topics/`;
 
     /**
      * Network
@@ -89,8 +89,8 @@ export class Environment {
      */
     public static setLocalNodeAddress(address) {
         Environment._localnodeaddress = address || 'localhost';
-        Environment.HEDERA_LOCALNODE_MESSAGE_API = `https://${Environment._localnodeaddress}:5600/api/v1/topics/messages`;
-        Environment.HEDERA_LOCALNODE_TOPIC_API = `https://${Environment._localnodeaddress}:5600/api/v1/topics/`;
+        Environment.HEDERA_LOCALNODE_MESSAGE_API = `https://${Environment._localnodeaddress}:5551/api/v1/topics/messages`;
+        Environment.HEDERA_LOCALNODE_TOPIC_API = `https://${Environment._localnodeaddress}:5551/api/v1/topics/`;
     }
 
     /**
@@ -105,8 +105,9 @@ export class Environment {
                 return Client.forTestnet();
 
             case 'localnode':
-                return Client.forNetwork({'127.0.0.1:50211': new AccountId(3)})
-                    .setMirrorNetwork('127.0.0.1:5600');
+                const node = {} as any;
+                node[`${Environment._localnodeaddress}:50211`] = new AccountId(3)
+                return Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
 
             default:
                 throw new Error(`Unknown network: ${Environment._network}`)
