@@ -20,7 +20,7 @@
 
 * [Reference Architecture](guardian-architecture/reference-architecture.md)
 * [Architecture 2](guardian-architecture/architecture-2.md)
-* [Schema Architecture](guardian-architecture/schema-architecture.md)
+* [Policies,Projects and Topics Mapping Architecture](guardian-architecture/schema-architecture.md)
 
 ## Schema Flow
 
@@ -52,6 +52,10 @@
 ## Available Schema Types
 
 * [Available Schema Types](available-schema-types/available-schema-types.md)
+
+## Token Authentication
+
+* [How to establish Token Authenticity](token-authentication/how-to-establish-token-authenticity.md)
 
 ## Available Policy Workflow Blocks
 

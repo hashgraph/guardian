@@ -233,6 +233,50 @@ cd message-broker
 npm run test
 ```
 
+### Launching the Guardian
+
+Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialise Standard Registry by completing the Setup.
+
+![](<../../.gitbook/assets/image (23).png>)
+
+The above fields are required for Initializing Standard Registry Hello World Message.
+
+The Format of the Standard Registry Hello World Message is as follows:
+
+```
+{
+	'type': 'Standard Registry',
+	'id': '35c5d340-1a93-475d-9659-818bb77d45df',
+	'did': 'did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG;hedera:testnet:tid=0.0.3423402',
+	'action': 'Init',
+	'topicId': '0.0.34234020',
+	'lang': 'en-US',
+    'attributes' : {
+    	'ISIC': '051 062',
+    	'geography' : 'USA CAN EU AUS',
+    	'law': 'USA',
+    	'tags': 'VERRA iREC'
+  }
+}
+```
+
+Where the list of `attributes` is extendable, and all attributes in it are **optional**.&#x20;
+
+#### Standard Registry Message Parameters
+
+| Parameter | Purpose                            | Example                                                        |
+| --------- | ---------------------------------- | -------------------------------------------------------------- |
+| type      | Account Type                       | Standard Registry                                              |
+| id        | Message ID                         | 35c5d340-1a93-475d-9659-818bb77d45df                           |
+| did       | Hedera DID                         | did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG |
+| action    | Action Type                        | Init                                                           |
+| topicId   | Standard Registry Message Topic ID | 0.0.34234020                                                   |
+| lang      | Language                           | ENG                                                            |
+| ISIC      | ISIC code                          | 051                                                            |
+| geography | Location                           | USA                                                            |
+| law       | Country Law                        | USA                                                            |
+| tags      | Policy Tags                        | Verra, iREC                                                    |
+
 ### .env Parameters&#x20;
 
 | Parameter                              | Purpose                                                                                                  | Example                                                                                          |

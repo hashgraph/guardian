@@ -1,3 +1,3 @@
-# Schema Architecture
+# Policies,Projects and Topics Mapping Architecture
 
-![](../.gitbook/assets/schema.png)
+![](<../.gitbook/assets/Token Authenticity.png>)
