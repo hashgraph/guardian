@@ -20,7 +20,7 @@ WORKDIR /usr/auth-service
 COPY ./auth-service/package*.json ./
 COPY ./auth-service/tsconfig.json ./
 COPY ./auth-service/.env.docker ./.env
-RUN npm install
+RUN npm install --force
 ADD ./auth-service/src ./src/.
 RUN npm run build
 
