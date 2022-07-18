@@ -87,9 +87,11 @@ Promise.all([
         await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
         throw new Error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message);
     }
+
     /////////////
     await state.updateState(ApplicationStates.STARTED);
 
+    Environment.setLocalNodeProtocol(process.env.LOCANNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCANNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
@@ -110,6 +112,14 @@ Promise.all([
         }
     });
     HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
+
+    if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
+        const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
+        const topicId = await client.newTopic(process.env.OPERATOR_KEY);
+
+        console.log(topicId);
+        process.env.INITIALIZATION_TOPIC_ID = topicId;
+    }
 
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);

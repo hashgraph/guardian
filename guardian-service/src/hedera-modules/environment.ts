@@ -28,6 +28,10 @@ export class Environment {
      * Localnode topic API
      */
     public static HEDERA_LOCALNODE_TOPIC_API: string = `https://localhost:5551/api/v1/topics/`;
+    /**
+     * Localnode protocol
+     */
+    private static _localnodeprotocol: string = 'http'
 
     /**
      * Network
@@ -89,8 +93,15 @@ export class Environment {
      */
     public static setLocalNodeAddress(address) {
         Environment._localnodeaddress = address || 'localhost';
-        Environment.HEDERA_LOCALNODE_MESSAGE_API = `https://${Environment._localnodeaddress}:5551/api/v1/topics/messages`;
-        Environment.HEDERA_LOCALNODE_TOPIC_API = `https://${Environment._localnodeaddress}:5551/api/v1/topics/`;
+        Environment.HEDERA_LOCALNODE_MESSAGE_API = `${Environment._localnodeprotocol}://${Environment._localnodeaddress}:5551/api/v1/topics/messages`;
+        Environment.HEDERA_LOCALNODE_TOPIC_API = `${Environment._localnodeprotocol}://${Environment._localnodeaddress}:5551/api/v1/topics/`;
+    }
+
+    /**
+     * Set localnode protocol
+     */
+    public static setLocalNodeProtocol(protocol: string) {
+        Environment._localnodeprotocol = protocol;
     }
 
     /**
