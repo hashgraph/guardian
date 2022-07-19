@@ -73,7 +73,6 @@
 * [filtersAddOnBlock](available-policy-workflow-blocks/filtersaddonblock.md)
 * [InterfaceActionBlock](available-policy-workflow-blocks/action-workflow-block.md)
 * [externalDataBlock](available-policy-workflow-blocks/external-data-workflow-block.md)
-* [mintDocumentBlock](available-policy-workflow-blocks/token-mint-workflow-block.md)
 * [retirementDocumentBlock](available-policy-workflow-blocks/retirementdocumentblock.md)
 * [wipeDocumentBlock](available-policy-workflow-blocks/token-wipe-workflow-block.md)
 * [calculateContainerBlock & calculateMathAddOnBlock](available-policy-workflow-blocks/calculatecontainerblock-and-calculatemathaddonblock.md)
