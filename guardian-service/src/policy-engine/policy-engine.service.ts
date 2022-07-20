@@ -39,7 +39,7 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
-import { initStatusPublisher } from '@helpers/status-publisher';
+import { initNotifier } from '@helpers/status-publisher';
 
 /**
  * Policy engine service
@@ -660,16 +660,16 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg) => {
             const { zip, user, versionOfTopicId, taskId } = msg;
-            const notifier = initStatusPublisher(this.apiGatewayChannel, taskId);
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
             try {
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const userFull = await this.users.getUser(user.username);
-                notifier.notify("Start file parsing");
+                notifier.start("File parsing");
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
-                notifier.notify("Complete file parsing");
+                notifier.completed();
                 await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, notifier, versionOfTopicId);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);

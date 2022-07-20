@@ -32,14 +32,15 @@ export class WebSocketsService {
         this.registerMessageHandler();
     }
 
-    public notifyTaskProgress(taskId, statuses?, completed?): void {
+    public notifyTaskProgress(taskId, statuses?, completed?, error?): void {
         this.wss.clients.forEach((client: any) => {
             this.send(client, {
                 type: 'UPDATE_TASK_STATUS',
                 data: {
                     taskId,
                     statuses,
-                    completed
+                    completed,
+                    error
                 }
             });
         });

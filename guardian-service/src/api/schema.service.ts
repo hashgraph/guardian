@@ -289,6 +289,9 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
         SchemaHelper.setVersion(file, '', '');
         await createSchema(file, owner);
     }
+
+    // throw new Error("Test error");
+
     const schemasMap = [];
     uuidMap.forEach((v, k) => {
         schemasMap.push({

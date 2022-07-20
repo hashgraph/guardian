@@ -14,6 +14,7 @@ import { ImportPolicyDialog } from '../../helpers/import-policy-dialog/import-po
 import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { TasksService } from 'src/app/services/tasks.service';
+import { MessageTranslationService } from 'src/app/services/message-translation-service/message-translation-service';
 
 /**
  * Component for choosing a policy and
@@ -54,6 +55,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private router: Router,
         private dialog: MatDialog,
         private toastr: ToastrService,
+        private messageTranslator: MessageTranslationService,
         // TODO: For test only. Remove!
         private taskService: TasksService
     ) {
@@ -299,7 +301,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                     /*{ taskId: string, statuses?: string[], completed?: boolean }*/
                     const subscription = this.wsService.taskSubscribe((event) => {
-                        const { taskId, statuses, completed } = event;
+                        const { taskId, statuses, completed, error } = event;
                         if (taskId != this.taskId) { return; }
 
                         if (completed) {
@@ -307,6 +309,22 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             this.taskProgressValue = 100;
                             this.subscription.remove(subscription);
                             this.taskId = undefined;
+                            if (error) {
+                                const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
+                                const header = `${error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+                                let text;
+                                if (error.message) {
+                                    text = `<div>${translatedMessage.text}</div><div>${this.messageToText(error.error)}</div>`;
+                                } else {
+                                    text = `${error.error}`;
+                                }
+                                this.toastr.error(text, header, {
+                                    timeOut: 30000,
+                                    closeButton: true,
+                                    positionClass: 'toast-bottom-right',
+                                    enableHtml: true
+                                });
+                            }
                             this.loadAllPolicy();
                             return;
                         }
@@ -339,7 +357,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         const interv = setInterval(() => {
             this.taskService.get(taskId).subscribe((data) => {
                 console.log(JSON.stringify(data));
-                if (data.result) {
+                if (data.result || data.error) {
                     count++;
                 }
             });
@@ -348,6 +366,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             }
         }, 1000);
         
+    }
+
+    // TODO: Remove?
+    messageToText(message: any) {
+        if (typeof message === 'object') {
+            return JSON.stringify(message, null, 2);
+        }
+        return message;
     }
 
     private getDistinctPolicy(): any[] {

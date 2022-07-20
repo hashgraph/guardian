@@ -46,7 +46,7 @@ export class TaskManager {
     public addError(taskId: string, error: any, skipIfNotFound: boolean = true) {
         if (this.tasks[taskId]) {
             this.tasks[taskId].error = error;
-            this.webSocketsService.notifyTaskProgress(taskId, undefined, true);
+            this.webSocketsService.notifyTaskProgress(taskId, undefined, true, error);
         } else if (skipIfNotFound) {
             return;
         } else {

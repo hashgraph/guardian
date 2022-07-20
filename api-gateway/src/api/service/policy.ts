@@ -234,7 +234,7 @@ policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Respo
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             console.log('Set error /push/import/file');
-            taskManager.addError(taskId, error);
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
         }
     });
     console.log('End /push/import/file');
