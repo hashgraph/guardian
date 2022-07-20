@@ -39,6 +39,7 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
+import { initStatusPublisher } from '@helpers/status-publisher';
 
 /**
  * Policy engine service
@@ -62,8 +63,11 @@ export class PolicyEngineService {
      */
     private readonly policyGenerator: BlockTreeGenerator;
 
-    constructor(channel: MessageBrokerChannel) {
+    private readonly apiGatewayChannel: MessageBrokerChannel;
+
+    constructor(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel) {
         this.channel = channel;
+        this.apiGatewayChannel = apiGatewayChannel;
         this.policyGenerator = new BlockTreeGenerator();
 
         PolicyComponentsUtils.BlockUpdateFn = async (...args: any[]) => {
@@ -655,15 +659,18 @@ export class PolicyEngineService {
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg) => {
+            const { zip, user, versionOfTopicId, taskId } = msg;
+            const notifier = initStatusPublisher(this.apiGatewayChannel, taskId);
             try {
-                const { zip, user, versionOfTopicId } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const userFull = await this.users.getUser(user.username);
+                notifier.notify("Start file parsing");
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
-                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId);
+                notifier.notify("Complete file parsing");
+                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, notifier, versionOfTopicId);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {

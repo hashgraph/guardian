@@ -93,6 +93,15 @@ export class PolicyEngineService {
         });
     }
 
+    public pushImportByFile(policyFile: any, versionOfTopicId?: string): Observable<any> {
+        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
+        return this.http.post<any>(`${this.url}/push/import/file${query}`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
     public previewByMessage(messageId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
     }

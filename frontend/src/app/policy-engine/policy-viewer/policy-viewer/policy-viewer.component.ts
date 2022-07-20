@@ -13,6 +13,7 @@ import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dial
 import { ImportPolicyDialog } from '../../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { TasksService } from 'src/app/services/tasks.service';
 
 /**
  * Component for choosing a policy and
@@ -37,6 +38,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     pageSize: number;
     policyCount: any;
 
+    taskId: string | undefined = undefined;
+    statuses: string[] = [];
+    expectedTaskMessages: number = 100;
+    taskProgressValue = 0;
+
     private subscription = new Subscription();
 
     constructor(
@@ -47,7 +53,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        // TODO: For test only. Remove!
+        private taskService: TasksService
     ) {
         this.policies = null;
         this.policy = null;
@@ -283,14 +291,63 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         this.loading = false;
                     });
                 } else if (type == 'file') {
-                    this.policyEngineService.importByFile(data, versionOfTopicId).subscribe((policies) => {
-                        this.loadAllPolicy();
+                    // this.policyEngineService.importByFile(data, versionOfTopicId).subscribe((policies) => {
+                    //     this.loadAllPolicy();
+                    // }, (e) => {
+                    //     this.loading = false;
+                    // });
+
+                    /*{ taskId: string, statuses?: string[], completed?: boolean }*/
+                    const subscription = this.wsService.taskSubscribe((event) => {
+                        const { taskId, statuses, completed } = event;
+                        if (taskId != this.taskId) { return; }
+
+                        if (completed) {
+                            console.log('TASK completed');
+                            this.taskProgressValue = 100;
+                            this.subscription.remove(subscription);
+                            this.taskId = undefined;
+                            this.loadAllPolicy();
+                            return;
+                        }
+
+                        this.statuses.push(...statuses);
+                        if (this.statuses.length > this.expectedTaskMessages) {
+                            this.expectedTaskMessages = this.statuses.length + 1;
+                        }
+                        this.taskProgressValue = this.statuses.length * 90 / this.expectedTaskMessages;
+                    });
+
+                    this.subscription.add(subscription);
+
+                    this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe((result) => {
+                        this.statuses.length = 0;
+                        this.expectedTaskMessages = 16 + 1;
+                        this.taskId = result.taskId;
+                        this.testTask(result.taskId);
                     }, (e) => {
                         this.loading = false;
                     });
                 }
             }
         });
+    }
+
+    // TODO: For test only. Remove!
+    private testTask(taskId: string) {
+        let count = 0;
+        const interv = setInterval(() => {
+            this.taskService.get(taskId).subscribe((data) => {
+                console.log(JSON.stringify(data));
+                if (data.result) {
+                    count++;
+                }
+            });
+            if (count > 3) {
+                clearInterval(interv);
+            }
+        }, 1000);
+        
     }
 
     private getDistinctPolicy(): any[] {

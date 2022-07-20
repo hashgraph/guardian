@@ -150,8 +150,8 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user
      * @param zip
      */
-    public async importFile(user, zip, versionOfTopicId?) {
-        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE, { zip, user, versionOfTopicId });
+    public async importFile(user, zip, versionOfTopicId?, taskId?) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE, { zip, user, versionOfTopicId, taskId });
     }
 
     /**

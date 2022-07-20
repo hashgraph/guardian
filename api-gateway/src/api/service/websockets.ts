@@ -5,6 +5,7 @@ import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI, IUpdateB
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
 import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
+import { TaskManager } from '@helpers/task-manager';
 
 /**
  * WebSocket service class
@@ -30,6 +31,20 @@ export class WebSocketsService {
         this.registerConnection();
         this.registerMessageHandler();
     }
+
+    public notifyTaskProgress(taskId, statuses?, completed?): void {
+        this.wss.clients.forEach((client: any) => {
+            this.send(client, {
+                type: 'UPDATE_TASK_STATUS',
+                data: {
+                    taskId,
+                    statuses,
+                    completed
+                }
+            });
+        });
+    }
+
 
     /**
      * Register messages handler
@@ -93,6 +108,18 @@ export class WebSocketsService {
                 });
             });
             return new MessageResponse({})
+        });
+
+        // TODO: Убрать от сюда! В TaskManager???
+        this.channel.response<any, any>('UPDATE_TASK_STATUS', async (msg) => {
+            const { taskId, statuses } = msg;
+            if (taskId) {
+                const taskManager = new TaskManager();
+                if (statuses) {
+                    taskManager.addStatuses(taskId, statuses);
+                }
+            }
+            return new MessageResponse({});
         });
     }
 

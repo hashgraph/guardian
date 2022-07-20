@@ -46,6 +46,7 @@ Promise.all([
 ]).then(async values => {
     const [db, cn] = values;
     const channel = new MessageBrokerChannel(cn, 'guardians');
+    const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
 
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
@@ -129,7 +130,7 @@ Promise.all([
     new Users().setChannel(channel);
 
     const policyGenerator = new BlockTreeGenerator();
-    const policyService = new PolicyEngineService(channel);
+    const policyService = new PolicyEngineService(channel, apiGatewayChannel);
     await policyGenerator.init();
     policyService.registerListeners();
 

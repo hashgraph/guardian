@@ -3,6 +3,7 @@ import { UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { TaskManager } from '@helpers/task-manager';
 
 export const policyAPI = Router();
 
@@ -217,6 +218,27 @@ policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) 
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
+});
+
+policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Response) => {
+    console.log('Start /push/import/file');
+    const taskManager = new TaskManager();
+    const taskId = taskManager.add('import/file');
+    const engineService = new PolicyEngine();
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
+    setImmediate(async () => {
+        try {
+            const policies = await engineService.importFile(req.user, req.body, versionOfTopicId, taskId);
+            console.log('Set result /push/import/file');
+            taskManager.addResult(taskId, policies);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            console.log('Set error /push/import/file');
+            taskManager.addError(taskId, error);
+        }
+    });
+    console.log('End /push/import/file');
+    res.status(201).send({ taskId });
 });
 
 policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {

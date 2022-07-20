@@ -18,6 +18,7 @@ import { TopicHelper } from '@helpers/topic-helper';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { PolicyUtils } from './utils';
+import { Notifier } from '@helpers/status-publisher';
 
 /**
  * Policy import export helper
@@ -134,7 +135,7 @@ export class PolicyImportExportHelper {
      *
      * @returns Policies by owner
      */
-    static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId?: any): Promise<Policy> {
+    static async importPolicy(policyToImport: any, policyOwner: string, notifier: Notifier, versionOfTopicId?: any): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
 
         delete policy.id;
@@ -149,8 +150,9 @@ export class PolicyImportExportHelper {
         policy.status = 'DRAFT';
 
         const users = new Users();
+        notifier.notify("Start resolve Hedera account");
         const root = await users.getHederaAccount(policyOwner);
-
+        notifier.notify("Complete resolve Hedera account", "Start resolve topic");
         const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const topicRow = versionOfTopicId
@@ -163,9 +165,9 @@ export class PolicyImportExportHelper {
                 policyId: null,
                 policyUUID: null
             });
-
+        notifier.notify("Complete resolve topic");
         policy.topicId = topicRow.topicId;
-
+        notifier.notify("Publish Policy in Hedera");
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
@@ -174,9 +176,9 @@ export class PolicyImportExportHelper {
             .setTopicObject(parent)
             //.sendMessage(message);
             .sendMessageAsync(message);
-
+        notifier.notify("Complete publishing of Policy in Hedera", "Start link topic and policy");
         await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
-
+        notifier.notify("Complete linking topic and policy", "Start publishing schemas");
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
         for (const schema of systemSchemas) {
@@ -190,8 +192,11 @@ export class PolicyImportExportHelper {
             }
         }
 
+        notifier.notify("Complete publishing schemas");
+
         // Import Tokens
         if (tokens) {
+            notifier.notify("Start import tokens");
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = getMongoRepository(Token);
@@ -242,8 +247,10 @@ export class PolicyImportExportHelper {
                 await tokenRepository.save(tokenObject);
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);
             }
+            notifier.notify("Complete import tokens");
         }
 
+        notifier.notify("Start saving in DB");
         // Import Schemas
         const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId);
 
@@ -258,6 +265,7 @@ export class PolicyImportExportHelper {
         topicRow.policyUUID = result.uuid;
         await getMongoRepository(Topic).update(topicRow.id, topicRow);
 
+        notifier.notify("Complete saving in DB");
         return result;
     }
 
