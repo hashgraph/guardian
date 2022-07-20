@@ -1,10 +1,10 @@
 import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
-import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock, IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
+import { IAuthUser } from '@guardian/common';
 
 /**
  * Document source block with UI
@@ -28,6 +28,12 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
     }
 })
 export class InterfaceDocumentsSource {
+    /**
+     * Get block data
+     * @param user
+     * @param uuid
+     * @param queryParams
+     */
     async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
@@ -58,17 +64,21 @@ export class InterfaceDocumentsSource {
 
         const data = await ref.getGlobalSources(user, paginationData);
         return Object.assign({
-            data: data,
+            data,
             blocks: filters,
             commonAddons
         }, ref.options.uiMetaData);
     }
 
+    /**
+     * Validate block data
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (ref.options.uiMetaData && Array.isArray(ref.options.uiMetaData.fields)) {
-                for (let tag of ref.options.uiMetaData.fields.map(i => i.bindBlock).filter(item => !!item)) {
+                for (const tag of ref.options.uiMetaData.fields.map(i => i.bindBlock).filter(item => !!item)) {
                     if (!resultsContainer.isTagExist(tag)) {
                         resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
                     }

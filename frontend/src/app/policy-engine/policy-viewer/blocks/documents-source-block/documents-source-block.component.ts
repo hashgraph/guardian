@@ -6,6 +6,7 @@ import { DialogBlock } from '../../dialog-block/dialog-block.component';
 import { forkJoin } from 'rxjs';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -45,6 +46,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private dialog: MatDialog
     ) {
@@ -58,7 +60,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
         this.loadData();
     }

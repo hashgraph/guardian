@@ -1,3 +1,6 @@
+/**
+ * Message api
+ */
 export enum MessageAPI {
     GET_DID_DOCUMENTS = 'get-did-documents',
     GET_VC_DOCUMENTS = 'get-vc-documents',
@@ -52,12 +55,18 @@ export enum MessageAPI {
     GET_SYSTEM_SCHEMAS = 'GET_SYSTEM_SCHEMAS',
     ACTIVE_SCHEMA = 'ACTIVE_SCHEMA',
     GET_SYSTEM_SCHEMA = 'GET_SYSTEM_SCHEMA',
-    GET_BALANCE='GET_BALANCE'
+    GET_BALANCE = 'GET_BALANCE',
+    GET_ENVIRONMENT='GET_ENVIRONMENT',
 }
 
+/**
+ * External message api events
+ */
 export enum ExternalMessageEvents {
-    IPFS_ADDED_FILE = "external-events.ipfs_added_file",
+    IPFS_ADDED_FILE = 'external-events.ipfs_added_file',
     TOKEN_MINTED = 'external-events.token_minted',
     ERROR_LOG = 'external-events.error_logs',
     BLOCK_RUN_EVENTS = 'external-events.block_run_action_event',
+    IPFS_BEFORE_UPLOAD_CONTENT = 'external-events.ipfs_before_upload_content',
+    IPFS_AFTER_READ_CONTENT = 'external-events.ipfs_after_read_content'
 }

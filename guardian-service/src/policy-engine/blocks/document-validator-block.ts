@@ -1,18 +1,20 @@
-import { IAuthUser } from '@auth/auth.interface';
 import { BlockActionError } from '@policy-engine/errors';
-import { ActionCallback, BasicBlock, ValidatorBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, ValidatorBlock } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 
+/**
+ * Document Validator
+ */
 @ValidatorBlock({
     blockType: 'documentValidatorBlock',
     commonBlock: false,
@@ -34,6 +36,10 @@ import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
     }
 })
 export class DocumentValidatorBlock {
+    /**
+     * Run block logic
+     * @param event
+     */
     public async run(event: IPolicyEvent<any>): Promise<boolean> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
 
@@ -118,7 +124,7 @@ export class DocumentValidatorBlock {
         }
 
         if (ref.options.conditions) {
-            for (let filter of ref.options.conditions) {
+            for (const filter of ref.options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     return false;
                 }
@@ -129,6 +135,7 @@ export class DocumentValidatorBlock {
     }
 
     /**
+     * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -136,7 +143,7 @@ export class DocumentValidatorBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<any>): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
@@ -149,6 +156,10 @@ export class DocumentValidatorBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
@@ -158,7 +169,7 @@ export class DocumentValidatorBlock {
                 'related-vc-document',
                 'related-vp-document'
             ];
-            if (types.indexOf(ref.options.documentType) == -1) {
+            if (types.indexOf(ref.options.documentType) === -1) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of ' + types.join(','));
             }
 

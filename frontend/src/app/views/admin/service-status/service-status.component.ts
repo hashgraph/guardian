@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ApplicationStates } from '@guardian/interfaces';
 import { Observable, of } from 'rxjs';
-import { StatusService } from 'src/app/services/status.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
+
 /**
  * Page for creating, editing, importing and exporting schemas.
  */
@@ -15,9 +16,9 @@ export class ServiceStatusComponent implements OnInit {
     servicesStates: any[] = [];
 
     constructor(
-        private statusService: StatusService
-    ) { 
-        this.servicesStates = this.statusService.getServicesStatesArray();
+        private wsService: WebSocketService
+    ) {
+        this.servicesStates = this.wsService.getServicesStatesArray();
     }
 
     getLoadingServices() {

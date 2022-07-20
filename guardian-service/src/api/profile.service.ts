@@ -7,7 +7,7 @@ import {
     SchemaHelper,
     TopicType
 } from '@guardian/interfaces';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcHelper } from '@helpers/vc-helper';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import {
@@ -25,12 +25,15 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
-import { TopicHelper } from '@helpers/topicHelper';
+import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
 
-const getGlobalTopic = async function (): Promise<Topic | null> {
+/**
+ * Get global topic
+ */
+async function getGlobalTopic(): Promise<Topic | null> {
     try {
         const topicId = await getMongoRepository(Settings).findOne({
             name: 'INITIALIZATION_TOPIC_ID'
@@ -49,14 +52,19 @@ const getGlobalTopic = async function (): Promise<Topic | null> {
         return null;
     }
 }
-export const updateUserBalance = function (channel: MessageBrokerChannel) {
-    return async function (client: any) {
+
+/**
+ * Update user balance
+ * @param channel
+ */
+export function updateUserBalance(channel: MessageBrokerChannel) {
+    return async (client: any) => {
         try {
             const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
             const users = new Users();
             const user: any = await users.getUserByAccount(client.operatorAccountId.toString());
             await channel.request(['api-gateway', 'update-user-balance'].join('.'), {
-                balance: balance,
+                balance,
                 unit: 'Hbar',
                 user: user ? {
                     username: user.username,
@@ -75,7 +83,7 @@ export const updateUserBalance = function (channel: MessageBrokerChannel) {
  * @param channel - channel
  *
  */
-export const profileAPI = async function (channel: MessageBrokerChannel) {
+export function profileAPI(channel: MessageBrokerChannel) {
     ApiResponse(channel, MessageAPI.GET_BALANCE, async (msg) => {
         try {
             const { username } = msg;
@@ -95,7 +103,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             const client = HederaSDKHelper.client(user.hederaAccountId, key);
             const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
             return new MessageResponse({
-                balance: balance,
+                balance,
                 unit: 'Hbar',
                 user: user ? {
                     username: user.username,
@@ -108,7 +116,6 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             return new MessageError(error, 500);
         }
     })
-
 
     ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg) => {
         try {
@@ -153,7 +160,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
             let topic: Topic = null;
             let newTopic = false;
 
-            let globalTopic = await getGlobalTopic();
+            const globalTopic = await getGlobalTopic();
 
             const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
 
@@ -263,7 +270,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
 
                 if (entity) {
                     schema = await getMongoRepository(SchemaCollection).findOne({
-                        entity: entity,
+                        entity,
                         readonly: true,
                         topicId: topic.topicId
                     });
@@ -333,7 +340,7 @@ export const profileAPI = async function (channel: MessageBrokerChannel) {
                 delete attributes['@context'];
                 const regMessage = new RegistrationMessage(MessageAction.Init);
                 regMessage.setDocument(didMessage.did, topic?.topicId, attributes);
-                const result = await messageServer
+                await messageServer
                     .setTopicObject(globalTopic)
                     .sendMessage(regMessage)
             }

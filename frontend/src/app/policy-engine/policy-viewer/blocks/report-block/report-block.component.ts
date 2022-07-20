@@ -6,6 +6,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 import { IconsArray } from './iconsArray';
 
 /**
@@ -38,6 +39,7 @@ export class ReportBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private wsService: WebSocketService,
         private fb: FormBuilder,
         public dialog: MatDialog,
         iconRegistry: MatIconRegistry,
@@ -51,7 +53,7 @@ export class ReportBlockComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
         this.loadData();
     }

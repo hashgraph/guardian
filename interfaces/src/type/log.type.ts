@@ -1,3 +1,6 @@
+/**
+ * Log type
+ */
 export enum LogType {
     WARN = 'WARN',
     INFO = 'INFO',

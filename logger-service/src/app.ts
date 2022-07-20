@@ -4,7 +4,6 @@ import { Log } from '@entity/log';
 import { ApplicationState, MessageBrokerChannel } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces'
 
-
 Promise.all([
     createConnection({
         type: 'mongodb',

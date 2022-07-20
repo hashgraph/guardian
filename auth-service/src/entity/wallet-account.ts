@@ -6,15 +6,27 @@ import {IWalletAccount} from '@guardian/interfaces';
  */
 @Entity()
 export class WalletAccount implements IWalletAccount {
+    /**
+     * Entity id
+     */
     @ObjectIdColumn()
     id: string;
 
+    /**
+     * Token
+     */
     @Column()
     token: string;
 
+    /**
+     * Type
+     */
     @Column()
     type: string; // type|did
 
+    /**
+     * Key
+     */
     @Column()
     key: string;
 }

@@ -1,13 +1,21 @@
-import { MessageBrokerChannel } from "@guardian/common";
-import { ApplicationStates, CommonSettings, MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from "@guardian/interfaces";
-import { Singleton } from "./decorators/singleton";
+import { MessageBrokerChannel } from '@guardian/common';
+import { ApplicationStates, CommonSettings, MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from '@guardian/interfaces';
+import { Singleton } from './decorators/singleton';
 
 /**
  * IPFS service
  */
 @Singleton
 export class IPFS {
+    /**
+     * Message broker channel
+     * @private
+     */
     private channel: MessageBrokerChannel;
+    /**
+     * Messages target
+     * @private
+     */
     private readonly target: string = 'ipfs-client';
 
     /**

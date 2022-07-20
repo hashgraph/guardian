@@ -1,3 +1,6 @@
+/**
+ * Policy engine events
+ */
 export enum PolicyEngineEvents {
     RECEIVE_EXTERNAL_DATA = 'receive-external-data',
     POLICY_IMPORT_MESSAGE_PREVIEW = 'policy-import-message-preview',

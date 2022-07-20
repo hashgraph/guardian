@@ -2624,6 +2624,16 @@ paths:
       tags:
         - policies
       description: Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: query
+          name: versionOfTopicId
+          schema:
+            type: string
+          description: The topic ID of policy version.
+          examples:
+            pageIndex:
+              summary: Example of a topic ID of policy version.
+              value: '0.0.00000001'
       security:
       - bearerAuth: []
       summary: Imports new policy from IPFS.
@@ -2662,6 +2672,16 @@ paths:
       tags:
         - policies
       description: Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: query
+          name: versionOfTopicId
+          schema:
+            type: string
+          description: The topic ID of policy version.
+          examples:
+            pageIndex:
+              summary: Example of a topic ID of policy version.
+              value: '0.0.00000001'
       security:
       - bearerAuth: []
       summary: Imports new policy from a zip file.
@@ -2920,13 +2940,6 @@ paths:
       description: Set settings. For users with the Standard Registry role only.
       security:
       - bearerAuth: []
-      requestBody:
-        description: Settings.
-        required: true
-        content:
-          application/json:
-              schema:
-                $ref: '#/components/schemas/CommonSettings'
       summary: Set settings.
       responses:
         200:
@@ -2935,6 +2948,28 @@ paths:
           description: Unauthorized.
         403:
           description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonSettings'
+  /settings/environment:
+    get:
+      tags:
+        - settings
+      description: Returns current environment name.
+      security:
+      - bearerAuth: []
+      summary: Returns current environment name.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'testnet'
         500:
           description: Internal server error.
           content:

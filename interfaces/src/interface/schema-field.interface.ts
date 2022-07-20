@@ -1,22 +1,84 @@
-import { SchemaCondition } from "..";
+import { SchemaCondition } from '..';
 
+/**
+ * Schema field
+ */
 export interface SchemaField {
+    /**
+     * Name
+     */
     name: string;
+    /**
+     * Title
+     */
     title?: string;
-    description?: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Is required
+     */
     required: boolean;
+    /**
+     * Is Array
+     */
     isArray: boolean;
+    /**
+     * Is ref
+     */
     isRef: boolean;
+    /**
+     * Type
+     */
     type: string;
-    format?: string;
-    pattern?: string;
+    /**
+     * Format
+     */
+    format: string;
+    /**
+     * Pattern
+     */
+    pattern: string;
+    /**
+     * Is readonly
+     */
     readOnly: boolean;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Unit system
+     */
+    unitSystem: string;
+    /**
+     * Custom Type
+     */
+    customType: string;
+    /**
+     * Fields
+     */
     fields?: SchemaField[];
+    /**
+     * Conditions
+     */
     conditions?: SchemaCondition[];
-    unit?: string,
-    unitSystem?: string,
+    /**
+     * Context
+     */
     context?: {
+        /**
+         * Type
+         */
         type: string;
-        context: string;
+        /**
+         * Context
+         */
+        context: string | string[];
     };
+    /**
+     * Full field path
+     */
+    path?: string;
 }

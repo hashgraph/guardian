@@ -1,11 +1,19 @@
-import { MessageBrokerChannel } from "@guardian/common";
-import { MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from "@guardian/interfaces";
+import { MessageBrokerChannel } from '@guardian/common';
+import { MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from '@guardian/interfaces';
 
 /**
  * IPFS service
  */
 export class IPFS {
+    /**
+     * Message broker channel
+     * @private
+     */
     private static channel: MessageBrokerChannel;
+    /**
+     * Message broker target
+     * @private
+     */
     private static readonly target: string = 'ipfs-client';
 
     /**
@@ -13,14 +21,14 @@ export class IPFS {
      * @param channel
      */
     public static setChannel(channel: MessageBrokerChannel) {
-        this.channel = channel;
+        IPFS.channel = channel;
     }
 
     /**
      * Get channel
      */
     public static getChannel(): MessageBrokerChannel {
-        return this.channel;
+        return IPFS.channel;
     }
 
     /**
@@ -29,8 +37,17 @@ export class IPFS {
      *
      * @returns {string} - hash
      */
-    public static async addFile(file: ArrayBuffer): Promise<{ cid: string, url: string }> {
-        const res = await this.channel.request<IAddFileMessage, IFileResponse>([this.target, MessageAPI.IPFS_ADD_FILE].join('.'), { content: Buffer.from(file).toString('base64') });
+    public static async addFile(file: ArrayBuffer): Promise<{
+        /**
+         * CID
+         */
+        cid: string,
+        /**
+         * URL
+         */
+        url: string
+    }> {
+        const res = await IPFS.channel.request<IAddFileMessage, IFileResponse>([IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'), { content: Buffer.from(file).toString('base64') });
         if (!res) {
             throw new Error('Invalid response');
         }
@@ -47,7 +64,7 @@ export class IPFS {
      * @returns File
      */
     public static async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = (await this.channel.request<IGetFileMessage, any>([this.target, MessageAPI.IPFS_GET_FILE].join('.'), { cid, responseType }));
+        const res = (await IPFS.channel.request<IGetFileMessage, any>([IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'), { cid, responseType }));
         if (!res) {
             throw new Error('Invalid response');
         }

@@ -1,6 +1,8 @@
-import { GenerateUUIDv4 } from '@policy-engine/helpers/uuidv4';
-import { IVC, IVCDocument } from '@guardian/interfaces';
+import { IVC, IVCDocument, GenerateUUIDv4 } from '@guardian/interfaces';
 
+/**
+ * Schema fields array
+ */
 export const SchemaFields = [
     'schema',
     'inputSchema',
@@ -8,23 +10,27 @@ export const SchemaFields = [
     'presetSchema'
 ];
 
+/**
+ * Find all entities
+ * @param obj
+ * @param names
+ */
 export function findAllEntities(obj: { [key: string]: any }, names: string[]): string[] {
     const result = [];
 
-    function finder(o: { [key: string]: any }): void {
+    const finder = (o: { [key: string]: any }): void => {
         if (!o) {
             return;
         }
 
-        for (let i = 0; i < names.length; i++) {
-            const name = names[i];
+        for (const name of names) {
             if (o.hasOwnProperty(name)) {
                 result.push(o[name]);
             }
         }
 
         if (o.hasOwnProperty('children')) {
-            for (let child of o['children']) {
+            for (const child of o.children) {
                 finder(child);
             }
         }
@@ -32,44 +38,58 @@ export function findAllEntities(obj: { [key: string]: any }, names: string[]): s
     finder(obj);
 
     const map = {};
-    for (let index = 0; index < result.length; index++) {
-        map[result[index]] = result[index];
+    for (const item of result) {
+        map[item] = item;
     }
     return Object.values(map);
 }
 
+/**
+ * Replace all entities
+ * @param obj
+ * @param names
+ * @param oldValue
+ * @param newValue
+ */
 export function replaceAllEntities(
     obj: { [key: string]: any },
     names: string[],
     oldValue: string,
     newValue: string
 ): void {
-    function finder(o: { [key: string]: any }, name: string): void {
-        if (o.hasOwnProperty(name) && o[name] == oldValue) {
+    const finder = (o: { [key: string]: any }, name: string): void => {
+        if (o.hasOwnProperty(name) && o[name] === oldValue) {
             o[name] = newValue;
         }
         if (o.hasOwnProperty('children')) {
-            for (let child of o['children']) {
+            for (const child of o.children) {
                 finder(child, name);
             }
         }
     }
-    for (let i = 0; i < names.length; i++) {
-        const name = names[i];
+    for (const name of names) {
         finder(obj, name);
     }
 }
 
-
+/**
+ * Regenerate IDs
+ * @param block
+ */
 export function regenerateIds(block: any) {
     block.id = GenerateUUIDv4();
     if (Array.isArray(block.children)) {
-        for (let child of block.children) {
+        for (const child of block.children) {
             regenerateIds(child);
         }
     }
 }
 
+/**
+ * Get VC field
+ * @param vcDocument
+ * @param name
+ */
 export function getVCField(vcDocument: IVC, name: string): any {
     if (
         vcDocument &&
@@ -81,6 +101,10 @@ export function getVCField(vcDocument: IVC, name: string): any {
     return null;
 }
 
+/**
+ * Get VC issuer
+ * @param vcDocument
+ */
 export function getVCIssuer(vcDocument: IVCDocument | IVCDocument): string {
     if (vcDocument && vcDocument.document) {
         return vcDocument.document.issuer;
@@ -88,19 +112,28 @@ export function getVCIssuer(vcDocument: IVCDocument | IVCDocument): string {
     return null;
 }
 
+/**
+ * Find options
+ * @param document
+ * @param field
+ */
 export function findOptions(document: any, field: any) {
     let value: any = null;
     if (document && field) {
         const keys = field.split('.');
         value = document;
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
+        for (const key of keys) {
             value = value[key];
         }
     }
     return value;
 }
 
+/**
+ * Replace value recursive
+ * @param document
+ * @param replaceMap
+ */
 export function replaceValueRecursive(document: any, replaceMap: Map<string, string>): any {
     let str: string;
     switch (typeof document) {
@@ -110,9 +143,13 @@ export function replaceValueRecursive(document: any, replaceMap: Map<string, str
 
         case 'object':
             str = JSON.stringify(document)
+            break;
+
+        default:
+            throw new Error('Unknown type')
     }
 
-    for (let [oldVal, newVal] of replaceMap.entries()) {
+    for (const [oldVal, newVal] of replaceMap.entries()) {
         str = str.replace(new RegExp(oldVal, 'g'), newVal);
     }
     return JSON.parse(str);

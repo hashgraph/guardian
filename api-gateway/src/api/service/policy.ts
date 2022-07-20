@@ -1,9 +1,8 @@
 import { Response, Router } from 'express';
-import { AuthenticatedRequest } from '@auth/auth.interface';
 import { UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '@helpers/policyEngine';
+import { PolicyEngine } from '@helpers/policy-engine';
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/common';
+import { AuthenticatedRequest, Logger } from '@guardian/common';
 
 export const policyAPI = Router();
 
@@ -16,7 +15,8 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             res.status(200).setHeader('X-Total-Count', 0).json([]);
             return;
         }
-        let pageIndex: any, pageSize: any;
+        let pageIndex: any;
+        let pageSize: any;
         if (req.query && req.query.pageIndex && req.query.pageSize) {
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
@@ -28,8 +28,8 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
                     owner: user.did,
                 },
                 userDid: user.did,
-                pageIndex: pageIndex,
-                pageSize: pageSize
+                pageIndex,
+                pageSize
             });
         } else {
             const filters: any = {
@@ -39,10 +39,10 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
                 filters.owner = user.parent;
             }
             result = await engineService.getPolicies({
-                filters: filters,
+                filters,
                 userDid: user.did,
-                pageIndex: pageIndex,
-                pageSize: pageSize
+                pageIndex,
+                pageSize
             });
         }
         const { policies, count } = result;
@@ -197,8 +197,9 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
 
 policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     try {
-        const policies = await engineService.importMessage(req.user, req.body.messageId);
+        const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId);
         res.status(201).send(policies);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
@@ -208,8 +209,9 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
 
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     try {
-        const policies = await engineService.importFile(req.user, req.body);
+        const policies = await engineService.importFile(req.user, req.body, versionOfTopicId);
         res.status(201).send(policies);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

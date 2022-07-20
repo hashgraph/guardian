@@ -22,7 +22,7 @@ services:
         volumes:
             - ./:/app
             - ~/.npm/:/root/.npm
-        restart: on-failure
+        restart: "no"
         command: 'node dev.js'
 
     api-docs:
@@ -120,7 +120,7 @@ services:
             - DB_HOST=mongo
             - OPERATOR_ID=${OPERATOR_ID}
             - OPERATOR_KEY=${OPERATOR_KEY}
-            - SCHEMA_TOPIC_ID=${SCHEMA_TOPIC_ID}
+            - INITIALIZATION_TOPIC_ID=${INITIALIZATION_TOPIC_ID}
         volumes:
             - ./:/app
         command: npm run dev:docker --prefix /app/guardian-service

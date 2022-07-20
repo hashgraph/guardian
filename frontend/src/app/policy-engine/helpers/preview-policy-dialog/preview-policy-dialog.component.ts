@@ -19,6 +19,9 @@ export class PreviewPolicyDialog {
     policyRoles!: string;
     newVersions: any[] = [];
 
+    versionOfTopicId: any;
+    policies: any[];
+
     constructor(
         public dialogRef: MatDialogRef<PreviewPolicyDialog>,
         private policyEngineService: PolicyEngineService,
@@ -41,6 +44,8 @@ export class PreviewPolicyDialog {
             }).join(', ');
             this.tokens = tokens.map((s: any) => s.tokenName).join(', ');
         }
+
+        this.policies = this.data.policies || [];
     }
 
     ngOnInit() {
@@ -55,7 +60,9 @@ export class PreviewPolicyDialog {
     }
 
     onImport() {
-        this.dialogRef.close(true);
+        this.dialogRef.close({
+            versionOfTopicId: this.versionOfTopicId
+        });
     }
 
     onNewVersionClick(messageId: string) {

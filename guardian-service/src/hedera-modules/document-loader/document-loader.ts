@@ -6,15 +6,26 @@ import { DocumentLoaderFunction } from './document-loader-function';
  * Used for VC validation.
  */
 export abstract class DocumentLoader {
+    /**
+     * Has context
+     * @param iri
+     */
     public abstract has(iri: string): Promise<boolean>;
 
+    /**
+     * Get document
+     * @param iri
+     */
     public abstract get(iri: string): Promise<IDocumentFormat>;
 
+    /**
+     * Build document loader
+     * @param documentLoaders
+     */
     public static build(documentLoaders: DocumentLoader[]): DocumentLoaderFunction {
         const _documentLoaders = documentLoaders || [];
-        return async function (iri: string): Promise<IDocumentFormat> {
-            for (let i = 0; i < _documentLoaders.length; i++) {
-                const documentLoader = _documentLoaders[i];
+        return async (iri: string): Promise<IDocumentFormat> => {
+            for (const documentLoader of _documentLoaders) {
                 if (await documentLoader.has(iri)) {
                     return await documentLoader.get(iri);
                 }

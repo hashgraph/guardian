@@ -58,7 +58,11 @@ import { RevokeConfigComponent } from './policy-configuration/blocks/documents/r
 import { EventsOverview } from './helpers/events-overview/events-overview';
 import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
 import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
+import { TokenActionConfigComponent } from './policy-configuration/blocks/tokens/token-action-config/token-action-config.component';
 import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/documents/document-validator-config/document-validator-config.component';
+import { TokenConfirmationConfigComponent } from './policy-configuration/blocks/tokens/token-confirmation-config/token-confirmation-config.component';
+import { TokenConfirmationBlockComponent } from './policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component';
+import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-before-dialog.component';
 
 @NgModule({
     declarations: [
@@ -112,7 +116,11 @@ import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/
         RevokeConfigComponent,
         ButtonConfigComponent,
         ButtonBlockComponent,
-        DocumentValidatorConfigComponent
+        TokenActionConfigComponent,
+        DocumentValidatorConfigComponent,
+        TokenConfirmationConfigComponent,
+        TokenConfirmationBlockComponent,
+	SaveBeforeDialogComponent
     ],
     imports: [
         CommonModule,
@@ -167,7 +175,10 @@ import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/
         ReassigningConfigComponent,
         CronConfigDialog,
         EventsOverview,
-        DocumentValidatorConfigComponent
+        TokenActionConfigComponent,
+        DocumentValidatorConfigComponent,
+        TokenConfirmationConfigComponent,
+        TokenConfirmationBlockComponent
     ],
     providers: [
         RegisteredBlocks

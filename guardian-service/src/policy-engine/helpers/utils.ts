@@ -1,19 +1,21 @@
-import { Token } from "@entity/token";
-import { HederaSDKHelper, HederaUtils, VcDocument } from "@hedera-modules";
+import { Token } from '@entity/token';
+import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { getMongoRepository } from "typeorm";
-import { AnyBlockType } from "@policy-engine/policy-engine.interface";
-import { IAuthUser } from "@auth/auth.interface";
-import { DocumentStatus, ExternalMessageEvents, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { Topic } from "@entity/topic";
-import { TopicHelper } from "@helpers/topicHelper";
-import { DocumentState } from "@entity/document-state";
-import { ExternalEventChannel } from "@guardian/common";
+import { getMongoRepository } from 'typeorm';
+import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { DocumentSignature, DocumentStatus, ExternalMessageEvents, Schema, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { Topic } from '@entity/topic';
+import { TopicHelper } from '@helpers/topic-helper';
+import { DocumentState } from '@entity/document-state';
+import { ExternalEventChannel } from '@guardian/common';
 
+/**
+ * Data types
+ */
 export enum DataTypes {
     MRV = 'mrv',
     REPORT = 'report',
@@ -21,7 +23,28 @@ export enum DataTypes {
     RETIREMENT = 'retirement'
 }
 
+/**
+ * Hedera Account interface
+ */
+export interface IHederaAccount {
+    /**
+     * Account id
+     */
+    hederaAccountId: string;
+    /**
+     * Account key
+     */
+    hederaAccountKey: string;
+}
+
+/**
+ * Policy engine utils
+ */
 export class PolicyUtils {
+    /**
+     * Variables
+     * @param formula
+     */
     public static variables(formula: string): string[] {
         const variables = [];
         try {
@@ -36,31 +59,50 @@ export class PolicyUtils {
         }
     }
 
-    public static evaluate(formula: string, scope: any) {
-        return (function (formula: string, scope: any) {
+    /**
+     * Evaluate
+     * @param formula
+     * @param scope
+     */
+    public static evaluateFormula(formula: string, scope: any) {
+        // tslint:disable-next-line:only-arrow-functions
+        return (function (math: any, _formula: string, _scope: any) {
             try {
-                return this.evaluate(formula, scope);
+                return math.evaluate(_formula, _scope);
             } catch (error) {
                 return 'Incorrect formula';
             }
-        }).call(mathjs, formula, scope);
+        }).call(null, mathjs, formula, scope);
     }
 
+    /**
+     * Get VC scope
+     * @param item
+     */
     public static getVCScope(item: VcDocument) {
         return item.getCredentialSubject(0).getFields();
     }
 
+    /**
+     * Aggregate
+     * @param rule
+     * @param vcs
+     */
     public static aggregate(rule: string, vcs: VcDocument[]): number {
         let amount = 0;
-        for (let i = 0; i < vcs.length; i++) {
-            const element = vcs[i];
+        for (const element of vcs) {
             const scope = PolicyUtils.getVCScope(element);
-            const value = parseFloat(PolicyUtils.evaluate(rule, scope));
+            const value = parseFloat(PolicyUtils.evaluateFormula(rule, scope));
             amount += value;
         }
         return amount;
     }
 
+    /**
+     * Token amount
+     * @param token
+     * @param amount
+     */
     public static tokenAmount(token: Token, amount: number): [number, string] {
         const decimals = parseFloat(token.decimals) || 0;
         const _decimals = Math.pow(10, decimals);
@@ -69,15 +111,26 @@ export class PolicyUtils {
         return [tokenValue, tokenAmount];
     }
 
-    public static splitChunk(array: any[], chunk: number) {
-        const res = [];
-        let i: number, j: number;
+    /**
+     * Split chunk
+     * @param array
+     * @param chunk
+     */
+    public static splitChunk<T>(array: T[], chunk: number): T[][] {
+        const res: T[][] = [];
+        let i: number;
+        let j: number;
         for (i = 0, j = array.length; i < j; i += chunk) {
             res.push(array.slice(i, i + chunk));
         }
         return res;
     }
 
+    /**
+     * Get Object Value
+     * @param data
+     * @param field
+     */
     public static getObjectValue<T>(data: any, field: string): T {
         if (field) {
             const keys = field.split('.');
@@ -93,6 +146,10 @@ export class PolicyUtils {
         return null;
     }
 
+    /**
+     * Get array
+     * @param data
+     */
     public static getArray<T>(data: T | T[]): T[] {
         if (Array.isArray(data)) {
             return data as T[];
@@ -101,6 +158,80 @@ export class PolicyUtils {
         }
     }
 
+    /**
+     * Get Hedera Accounts
+     * @param vc
+     * @param defaultAccount
+     * @param schema
+     */
+    public static getHederaAccounts(vc: HVcDocument, defaultAccount: string, schema: Schema): any {
+        const result: any = {};
+        const fields = schema.searchFields((f) => f.customType === 'hederaAccount');
+        for (const field of fields) {
+            result[field.path] = vc.getField(field.path);
+        }
+        result.default = defaultAccount;
+        return result;
+    }
+
+    /**
+     * Create VC record
+     * @param policyId
+     * @param tag
+     * @param type
+     * @param newVc
+     * @param oldDoc
+     */
+    public static createVCRecord(
+        policyId: string,
+        tag: string,
+        type: string,
+        newVc: HVcDocument,
+        oldDoc: any = null,
+        refDoc: any = null
+    ): VcDocumentCollection {
+        if (!oldDoc) {
+            oldDoc = {};
+        }
+
+        const item = {
+            policyId,
+            tag: tag || oldDoc.tag || null,
+            type: type || oldDoc.type || null,
+            hash: newVc.toCredentialHash(),
+            document: newVc.toJsonTree(),
+            owner: oldDoc.owner || null,
+            assign: oldDoc.assign || null,
+            option: oldDoc.option || null,
+            schema: oldDoc.schema || null,
+            hederaStatus: oldDoc.hederaStatus || DocumentStatus.NEW,
+            signature: oldDoc.signature || DocumentSignature.NEW,
+            messageId: oldDoc.messageId || null,
+            topicId: oldDoc.topicId || null,
+            relationships: oldDoc.relationships || null,
+            comment: oldDoc.comment || null,
+            accounts: oldDoc.accounts || null,
+        };
+
+        if (item.relationships && item.relationships.length) {
+            item.relationships = null;
+        }
+
+        if (refDoc && refDoc.messageId) {
+            item.relationships = [refDoc.messageId];
+        }
+
+        if (refDoc && refDoc.accounts) {
+            item.accounts = Object.assign({}, refDoc.accounts, item.accounts);
+        }
+
+        return item as VcDocumentCollection;
+    }
+
+    /**
+     * Update VC record
+     * @param row
+     */
     public static async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
         let item = await getMongoRepository(VcDocumentCollection).findOne({
             where: {
@@ -143,6 +274,10 @@ export class PolicyUtils {
         return item;
     }
 
+    /**
+     * Update did record
+     * @param row
+     */
     public static async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
         let item = await getMongoRepository(DidDocumentCollection).findOne({ did: row.did });
         if (item) {
@@ -156,40 +291,59 @@ export class PolicyUtils {
         }
     }
 
+    /**
+     * Update VP record
+     * @param row
+     */
     public static async updateVPRecord(row: VpDocumentCollection): Promise<VpDocumentCollection> {
         return await getMongoRepository(VpDocumentCollection).save(row);
     }
 
+    /**
+     * Save VP
+     * @param row
+     */
     public static async saveVP(row: VpDocumentCollection): Promise<VpDocumentCollection> {
         const doc = getMongoRepository(VpDocumentCollection).create(row);
         return await getMongoRepository(VpDocumentCollection).save(doc);
     }
 
-    public static async mint(token: Token, tokenValue: number, root: any, user: IAuthUser, uuid: string): Promise<void> {
+    /**
+     * Mint
+     * @param token
+     * @param tokenValue
+     * @param root
+     * @param targetAccount
+     * @param uuid
+     */
+    public static async mint(token: Token, tokenValue: number, root: any, targetAccount: string, uuid: string): Promise<void> {
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
 
-        console.log('Mint: Start');
+        console.log(`Mint: Start (${tokenValue})`);
         const tokenId = token.tokenId;
         const supplyKey = token.supplyKey;
         const adminId = token.adminId;
         const adminKey = token.adminKey;
-        if (token.tokenType == 'non-fungible') {
-            const metaData: any = HederaUtils.decode(uuid);
-            const data = new Array(Math.floor(tokenValue));
+
+        if (token.tokenType === 'non-fungible') {
+            const metaData = HederaUtils.decode(uuid);
+            const data = new Array<Uint8Array>(Math.floor(tokenValue));
             data.fill(metaData);
+            console.log(`Mint: Count (${data.length})`);
             const serials: number[] = [];
             const dataChunk = PolicyUtils.splitChunk(data, 10);
             for (let i = 0; i < dataChunk.length; i++) {
                 const element = dataChunk[i];
+                console.log(`Mint: Chunk Size (${element.length})`);
                 try {
                     const newSerials = await client.mintNFT(tokenId, supplyKey, element, uuid);
-                    for (let j = 0; j < newSerials.length; j++) {
-                        serials.push(newSerials[j])
+                    for (const serial of newSerials) {
+                        serials.push(serial)
                     }
                 } catch (error) {
                     console.log(`Mint: Mint Error (${error.message})`);
                 }
-                if (i % 100 == 0) {
+                if (i % 100 === 0) {
                     console.log(`Mint: Minting (${i}/${dataChunk.length})`);
                 }
             }
@@ -198,36 +352,50 @@ export class PolicyUtils {
             for (let i = 0; i < serialsChunk.length; i++) {
                 const element = serialsChunk[i];
                 try {
-                    await client.transferNFT(tokenId, user.hederaAccountId, adminId, adminKey, element, uuid);
+                    await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, uuid);
                 } catch (error) {
                     console.log(`Mint: Transfer Error (${error.message})`);
                 }
-                if (i % 100 == 0) {
+                if (i % 100 === 0) {
                     console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
                 }
             }
         } else {
             await client.mint(tokenId, supplyKey, tokenValue, uuid);
-            await client.transfer(tokenId, user.hederaAccountId, adminId, adminKey, tokenValue, uuid);
+            await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, uuid);
         }
+
         new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid })
         console.log('Mint: End');
     }
 
-    public static async wipe(token: Token, tokenValue: number, root: any, user: IAuthUser, uuid: string): Promise<void> {
+    /**
+     * Wipe
+     * @param token
+     * @param tokenValue
+     * @param root
+     * @param targetAccount
+     * @param uuid
+     */
+    public static async wipe(token: Token, tokenValue: number, root: any, targetAccount: string, uuid: string): Promise<void> {
         const tokenId = token.tokenId;
         const wipeKey = token.wipeKey;
-        const adminId = token.adminId;
-        const adminKey = token.adminKey;
 
         const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-        if (token.tokenType == 'non-fungible') {
-            throw 'unsupported operation';
+        if (token.tokenType === 'non-fungible') {
+            throw Error('unsupported operation');
         } else {
-            await client.wipe(tokenId, user.hederaAccountId, wipeKey, tokenValue, uuid);
+            await client.wipe(tokenId, targetAccount, wipeKey, tokenValue, uuid);
         }
     }
 
+    /**
+     * Get topic
+     * @param topicName
+     * @param root
+     * @param user
+     * @param ref
+     */
     public static async getTopic(topicName: string, root: any, user: any, ref: AnyBlockType): Promise<Topic> {
         const rootTopic = await getMongoRepository(Topic).findOne({
             policyId: ref.policyId,
@@ -238,9 +406,9 @@ export class PolicyUtils {
         if (topicName && topicName !== 'root') {
 
             const policyTopics = ref.policyInstance.policyTopics || [];
-            const config = policyTopics.find(e => e.name == topicName);
+            const config = policyTopics.find(e => e.name === topicName);
             if (!config) {
-                throw `Topic "${topicName}" does not exist`;
+                throw new Error(`Topic "${topicName}" does not exist`);
             }
 
             const topicOwner = config.static ? root.did : user.did;
@@ -272,10 +440,15 @@ export class PolicyUtils {
         return topic;
     }
 
+    /**
+     * Get topic by id
+     * @param topicId
+     * @param ref
+     */
     public static async getTopicById(topicId: string, ref: AnyBlockType): Promise<Topic> {
         let topic = await getMongoRepository(Topic).findOne({
             policyId: ref.policyId,
-            topicId: topicId
+            topicId
         });
         if (!topic) {
             topic = await getMongoRepository(Topic).findOne({
@@ -284,18 +457,25 @@ export class PolicyUtils {
             });
         }
         if (!topic) {
-            throw `Topic does not exist`;
+            throw new Error(`Topic does not exist`);
         }
         return topic;
     }
 
+    /**
+     * Get policy topics
+     * @param policyId
+     */
     public static async getPolicyTopics(policyId: string): Promise<Topic[]> {
-        const topics = await getMongoRepository(Topic).find({
-            policyId: policyId
-        })
-        return topics;
+        return await getMongoRepository(Topic).find({
+            policyId
+        });
     }
 
+    /**
+     * Get subject id
+     * @param data
+     */
     public static getSubjectId(data: any): string {
         try {
             if (data && data.document) {
@@ -311,24 +491,35 @@ export class PolicyUtils {
         return null;
     }
 
+    /**
+     * Get schema
+     * @param topicId
+     * @param entity
+     */
     public static async getSchema(topicId: string, entity: SchemaEntity): Promise<SchemaCollection> {
-        const policySchema = await getMongoRepository(SchemaCollection).findOne({
-            entity: entity,
+        return await getMongoRepository(SchemaCollection).findOne({
+            entity,
             readonly: true,
-            topicId: topicId
+            topicId
         });
-        return policySchema;
     }
 
+    /**
+     * Get system schema
+     * @param entity
+     */
     public static async getSystemSchema(entity: SchemaEntity): Promise<SchemaCollection> {
-        const policySchema = await getMongoRepository(SchemaCollection).findOne({
-            entity: entity,
+        return await getMongoRepository(SchemaCollection).findOne({
+            entity,
             system: true,
             active: true
         });
-        return policySchema;
     }
 
+    /**
+     * Get Document Type
+     * @param document
+     */
     public static getDocumentType(document: any): string {
         if (document && document.document && document.document.type) {
             const type = document.document.type;
@@ -351,6 +542,11 @@ export class PolicyUtils {
         return null;
     }
 
+    /**
+     * Check Document Schema
+     * @param document
+     * @param schema
+     */
     public static checkDocumentSchema(document: any, schema: SchemaCollection): boolean {
         const iri = schema.iri ? schema.iri.slice(1) : null;
         const context = schema.contextURL;
@@ -370,6 +566,11 @@ export class PolicyUtils {
         return true;
     }
 
+    /**
+     * Check Document Field
+     * @param document
+     * @param filter
+     */
     public static checkDocumentField(document: any, filter: any): boolean {
         if (document) {
             const value = PolicyUtils.getObjectValue(document, filter.field);
@@ -395,6 +596,10 @@ export class PolicyUtils {
         return false;
     }
 
+    /**
+     * Check Document Ref
+     * @param document
+     */
     public static getDocumentRef(document: any) {
         let item: any = null;
         if (document && document.document) {
@@ -425,6 +630,86 @@ export class PolicyUtils {
             return item.ref;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * associate
+     * @param token
+     * @param user
+     */
+    public static async associate(token: Token, user: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(user.hederaAccountId, user.hederaAccountKey);
+        if (!user.hederaAccountKey) {
+            throw new Error('Invalid Account Key');
+        }
+        return await client.associate(token.tokenId, user.hederaAccountId, user.hederaAccountKey);
+    }
+
+    /**
+     * dissociate
+     * @param token
+     * @param user
+     */
+    public static async dissociate(token: Token, user: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(user.hederaAccountId, user.hederaAccountKey);
+        if (!user.hederaAccountKey) {
+            throw new Error('Invalid Account Key');
+        }
+        return await client.dissociate(token.tokenId, user.hederaAccountId, user.hederaAccountKey);
+    }
+
+    /**
+     * freeze
+     * @param token
+     * @param user
+     * @param root
+     */
+    public static async freeze(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        return await client.freeze(token.tokenId, user.hederaAccountId, token.freezeKey);
+    }
+
+    /**
+     * unfreeze
+     * @param token
+     * @param user
+     * @param root
+     */
+    public static async unfreeze(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        return await client.unfreeze(token.tokenId, user.hederaAccountId, token.freezeKey);
+    }
+
+    /**
+     * grantKyc
+     * @param token
+     * @param user
+     * @param root
+     */
+    public static async grantKyc(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        return await client.grantKyc(token.tokenId, user.hederaAccountId, token.kycKey);
+    }
+
+    /**
+     * revokeKyc
+     * @param token
+     * @param user
+     * @param root
+     */
+    public static async revokeKyc(token: Token, user: IHederaAccount, root: IHederaAccount): Promise<boolean> {
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+        return await client.revokeKyc(token.tokenId, user.hederaAccountId, token.kycKey);
+    }
+
+    /**
+     * revokeKyc
+     * @param accountId
+     */
+    public static checkAccountId(account: IHederaAccount): void {
+        if (!account || !HederaSDKHelper.checkAccount(account.hederaAccountId)) {
+            throw new Error('Invalid Account');
         }
     }
 }

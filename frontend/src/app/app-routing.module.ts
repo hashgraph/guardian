@@ -19,8 +19,8 @@ import { AdminHeaderComponent } from './views/admin/admin-header/admin-panel.com
 import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
-import { StatusService } from './services/status.service';
 import { InfoComponent } from './components/info/info/info.component';
+import { WebSocketService } from './services/web-socket.service';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -128,7 +128,7 @@ export class AuditorGuard extends Guard implements CanActivate {
 export class ServicesStatusGuard implements CanActivate {
     constructor(
         private router: Router,
-        private status: StatusService
+        private status: WebSocketService
     ) {
     }
 

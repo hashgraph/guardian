@@ -11,10 +11,10 @@ import {
 import { Guardians } from '@helpers/guardians';
 import express from 'express';
 import { createServer } from 'http';
-import { authorizationHelper } from '@auth/authorizationHelper';
+import { authorizationHelper } from '@auth/authorization-helper';
 import { IPFS } from '@helpers/ipfs';
 import { policyAPI } from '@api/service/policy';
-import { PolicyEngine } from '@helpers/policyEngine';
+import { PolicyEngine } from '@helpers/policy-engine';
 import { WebSocketsService } from '@api/service/websockets';
 import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
@@ -25,7 +25,7 @@ import { MessageBrokerChannel, Logger } from '@guardian/common';
 const PORT = process.env.PORT || 3002;
 
 Promise.all([
-    MessageBrokerChannel.connect("API_GATEWAY"),
+    MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([cn]) => {
     const app = express();
     app.use(express.json());
@@ -43,7 +43,8 @@ Promise.all([
     new Wallet().setChannel(channel);
 
     const server = createServer(app);
-    new WebSocketsService(server, new MessageBrokerChannel(cn, 'api-gateway'));
+    const wsService = new WebSocketsService(server, new MessageBrokerChannel(cn, 'api-gateway'));
+    wsService.init();
 
     ////////////////////////////////////////
 

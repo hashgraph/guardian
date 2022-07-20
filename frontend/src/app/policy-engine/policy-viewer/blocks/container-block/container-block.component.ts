@@ -1,6 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
  * Component for display block of 'interfaceContainerBlock' type.
@@ -28,13 +29,14 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private wsService: WebSocketService,
         private policyHelper: PolicyHelper
     ) {
     }
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
         this.params = this.policyHelper.subscribe(this.onUpdateParams.bind(this));
         this.loadData();

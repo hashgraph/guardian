@@ -1,17 +1,18 @@
 import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
-import { VcHelper } from '@helpers/vcHelper';
+import { VcHelper } from '@helpers/vc-helper';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { IAuthUser } from '@auth/auth.interface';
+import { IAuthUser } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * External data block
@@ -35,10 +36,13 @@ import { BlockActionError } from '@policy-engine/errors';
     }
 })
 export class ExternalDataBlock {
+    /**
+     * Get Validators
+     */
     protected getValidators(): IPolicyValidatorBlock[] {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const validators: IPolicyValidatorBlock[] = [];
-        for (let child of ref.children) {
+        for (const child of ref.children) {
             if (child.blockClassName === 'ValidatorBlock') {
                 validators.push(child as IPolicyValidatorBlock);
             }
@@ -46,6 +50,11 @@ export class ExternalDataBlock {
         return validators;
     }
 
+    /**
+     * Validate Documents
+     * @param user
+     * @param state
+     */
     protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
         const validators = this.getValidators();
         for (const validator of validators) {
@@ -58,7 +67,7 @@ export class ExternalDataBlock {
                 sourceId: null,
                 target: null,
                 targetId: null,
-                user: user,
+                user,
                 data: state
             });
             if (!valid) {
@@ -67,7 +76,11 @@ export class ExternalDataBlock {
         }
         return true;
     }
-    
+
+    /**
+     * Receive external data callback
+     * @param data
+     */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
@@ -87,18 +100,22 @@ export class ExternalDataBlock {
             verify = false;
         }
 
-        const signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
         const vc = VcDocument.fromJsonTree(data.document);
-        const doc = {
-            hash: vc.toCredentialHash(),
-            owner: data.owner,
-            document: vc.toJsonTree(),
-            status: DocumentStatus.NEW,
-            signature: signature,
-            policyId: ref.policyId,
-            type: ref.options.entityType,
-            schema: ref.options.schema
-        };
+        const doc = PolicyUtils.createVCRecord(
+            ref.policyId,
+            ref.tag,
+            ref.options.entityType,
+            vc,
+            {
+                owner: data.owner,
+                hederaStatus: DocumentStatus.NEW,
+                signature: (verify ?
+                    DocumentSignature.VERIFIED :
+                    DocumentSignature.INVALID),
+                schema: ref.options.schema
+            }
+        );
+
         const state = { data: doc };
 
         const valid = await this.validateDocuments(null, state);
@@ -110,6 +127,10 @@ export class ExternalDataBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, state);
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
@@ -119,7 +140,7 @@ export class ExternalDataBlock {
                     return;
                 }
 
-                const schema = await getMongoRepository(SchemaCollection).findOne({ 
+                const schema = await getMongoRepository(SchemaCollection).findOne({
                     iri: ref.options.schema,
                     topicId: ref.topicId
                 });

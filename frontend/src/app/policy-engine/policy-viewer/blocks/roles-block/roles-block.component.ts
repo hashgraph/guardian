@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
  * Component for display block of 'policyRolesBlock' types.
@@ -28,6 +29,7 @@ export class RolesBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder
         ) {
@@ -38,7 +40,7 @@ export class RolesBlockComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
         this.loadData();
     }

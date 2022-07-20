@@ -2,9 +2,8 @@ import { SourceAddon } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IAuthUser } from '@auth/auth.interface';
 import { Users } from '@helpers/users';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 import { getMongoRepository } from 'typeorm';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
@@ -14,7 +13,11 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 import { DocumentState } from '@entity/document-state';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IAuthUser } from '@guardian/common';
 
+/**
+ * Documents source addon
+ */
 @SourceAddon({
     blockType: 'documentsSourceAddon',
     about: {
@@ -30,13 +33,22 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class DocumentsSourceAddon {
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
+    /**
+     * Get data from source
+     * @param user
+     * @param globalFilters
+     */
     async getFromSource(user: IAuthUser, globalFilters: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
-        let filters: any = {};
+        const filters: any = {};
         if (!Array.isArray(ref.options.filters)) {
             throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);
         }
@@ -53,7 +65,7 @@ export class DocumentsSourceAddon {
             filters.schema = ref.options.schema;
         }
 
-        for (let filter of ref.options.filters) {
+        for (const filter of ref.options.filters) {
             const expr = filters[filter.field] || {};
 
             switch (filter.type) {
@@ -80,7 +92,7 @@ export class DocumentsSourceAddon {
         }
 
         const dynFilters = {};
-        for (let [key, value] of Object.entries(ref.getFilters(user))) {
+        for (const [key, value] of Object.entries(ref.getFilters(user))) {
             dynFilters[key] = { $eq: value };
         }
 
@@ -95,7 +107,7 @@ export class DocumentsSourceAddon {
             if (ref.options.orderField) {
                 filtersWithOrder.order[ref.options.orderField] = ref.options.createdOrderDirection;
             } else {
-                filtersWithOrder.order['createDate'] = ref.options.createdOrderDirection;
+                filtersWithOrder.order.createDate = ref.options.createdOrderDirection;
             }
 
         }
@@ -132,11 +144,11 @@ export class DocumentsSourceAddon {
         }
 
         const documentState = getMongoRepository(DocumentState);
-        for (let i = 0; i < data.length; i++) {
+        for (const dataItem of data) {
             if (ref.options.viewHistory) {
-                data[i].history = (await documentState.find({
+                dataItem.history = (await documentState.find({
                     where: {
-                        documentId: data[i].id
+                        documentId: dataItem.id
                     },
                     order: {
                         'created': 'DESC'
@@ -149,25 +161,29 @@ export class DocumentsSourceAddon {
                     }
                 });
             }
-            data[i].__sourceTag__ = ref.tag;
+            dataItem.__sourceTag__ = ref.tag;
         }
 
         return data;
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             const types = [
-                'vc-documents', 
-                'did-documents', 
-                'vp-documents', 
-                'root-authorities', 
-                'standard-registries', 
-                'approve', 
+                'vc-documents',
+                'did-documents',
+                'vp-documents',
+                'root-authorities',
+                'standard-registries',
+                'approve',
                 'source'
             ];
-            if (types.indexOf(ref.options.dataType) == -1) {
+            if (types.indexOf(ref.options.dataType) === -1) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of ' + types.join(','));
             }
 

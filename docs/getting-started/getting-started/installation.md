@@ -233,22 +233,67 @@ cd message-broker
 npm run test
 ```
 
+### Launching the Guardian
+
+Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialise Standard Registry by completing the Setup.
+
+![](<../../.gitbook/assets/image (23).png>)
+
+The above fields are required for Initializing Standard Registry Hello World Message.
+
+The Format of the Standard Registry Hello World Message is as follows:
+
+```
+{
+	'type': 'Standard Registry',
+	'id': '35c5d340-1a93-475d-9659-818bb77d45df',
+	'did': 'did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG;hedera:testnet:tid=0.0.3423402',
+	'action': 'Init',
+	'topicId': '0.0.34234020',
+	'lang': 'en-US',
+    'attributes' : {
+    	'ISIC': '051 062',
+    	'geography' : 'USA CAN EU AUS',
+    	'law': 'USA',
+    	'tags': 'VERRA iREC'
+  }
+}
+```
+
+Where the list of `attributes` is extendable, and all attributes in it are **optional**.&#x20;
+
+#### Standard Registry Message Parameters
+
+| Parameter | Purpose                            | Example                                                        |
+| --------- | ---------------------------------- | -------------------------------------------------------------- |
+| type      | Account Type                       | Standard Registry                                              |
+| id        | Message ID                         | 35c5d340-1a93-475d-9659-818bb77d45df                           |
+| did       | Hedera DID                         | did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG |
+| action    | Action Type                        | Init                                                           |
+| topicId   | Standard Registry Message Topic ID | 0.0.34234020                                                   |
+| lang      | Language                           | ENG                                                            |
+| ISIC      | ISIC code                          | 051                                                            |
+| geography | Location                           | USA                                                            |
+| law       | Country Law                        | USA                                                            |
+| tags      | Policy Tags                        | Verra, iREC                                                    |
+
 ### .env Parameters&#x20;
 
-| Parameter                   | Purpose                                                                                                  | Example                                                                                          |
-| --------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| MQ\_ADDRESS                 | Web Socket Address                                                                                       | localhost                                                                                        |
-| SERVICE\_CHANNEL            | Version of the Guardian                                                                                  | guardian.1                                                                                       |
-| DB\_HOST                    | Hostname of the Database                                                                                 | localhost                                                                                        |
-| DB\_DATABASE                | Database Name                                                                                            | guardian\_db                                                                                     |
-| MAX\__TRANSACTION\_FEE_     | Maximum Transaction Fees Value                                                                           | 10                                                                                               |
-| INITIAL\_BALANCE            | Initial Balance Value                                                                                    | 500                                                                                              |
-| OPERATOR\_ID                | Operator ID of Hedera Testnet                                                                            | 0.0.29676495                                                                                     |
-| OPERATOR\_KEY               | Operator Key of Hedera Testnet                                                                           | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
-| HEDERA\_NET                 | Hedera Network name                                                                                      | testnet                                                                                          |
-| INITIALIZATION\__TOPIC\_ID_ | ID of the topic where the Initialisation message is posted every time a new Standard Registry is created | 0.0.46022543                                                                                     |
-| MESSAGE\_LANG               | Language of the message text of all messages                                                             | en-US                                                                                            |
-| LOG\_LEVEL                  | level of the Logs                                                                                        | 2                                                                                                |
+| Parameter                              | Purpose                                                                                                  | Example                                                                                          |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| MQ\_ADDRESS                            | Web Socket Address                                                                                       | localhost                                                                                        |
+| SERVICE\_CHANNEL                       | Version of the Guardian                                                                                  | guardian.1                                                                                       |
+| DB\_HOST                               | Hostname of the Database                                                                                 | localhost                                                                                        |
+| DB\_DATABASE                           | Database Name                                                                                            | guardian\_db                                                                                     |
+| MAX\__TRANSACTION\_FEE_                | Maximum Transaction Fees Value                                                                           | 10                                                                                               |
+| INITIAL\_BALANCE                       | Initial Balance Value                                                                                    | 500                                                                                              |
+| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                                                | 500                                                                                              |
+| OPERATOR\_ID                           | Operator ID of Hedera Testnet                                                                            | 0.0.29676495                                                                                     |
+| OPERATOR\_KEY                          | Operator Key of Hedera Testnet                                                                           | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
+| HEDERA\_NET                            | Hedera Network name                                                                                      | testnet                                                                                          |
+| INITIALIZATION\__TOPIC\_ID_            | ID of the topic where the Initialisation message is posted every time a new Standard Registry is created | 0.0.46022543                                                                                     |
+| MESSAGE\_LANG                          | Language of the message text of all messages                                                             | en-US                                                                                            |
+| LOG\_LEVEL                             | level of the Logs                                                                                        | 2                                                                                                |
 
 ### Summary of URLs and Ports
 
@@ -260,7 +305,7 @@ npm run test
 | API\_GATEWAY   | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             |
 | MRV\_SENDER    | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     |
 | TOPIC\_VIEWER  | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) |
-| API\_DOCS      | [http://localhost:3000/api-docs/v1/](ttp://localhost:3000/api-docs/v1/)    |
+| API\_DOCS      | [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/)   |
 
 #### Not in Docker:
 

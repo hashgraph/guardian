@@ -4,6 +4,7 @@ import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
+import { Environment } from '@hedera-modules';
 
 /**
  * Connecting to the message broker methods of working with root address book.
@@ -11,7 +12,7 @@ import { MessageAPI, CommonSettings } from '@guardian/interfaces';
  * @param channel - channel
  * @param approvalDocumentRepository - table with approve documents
  */
-export const configAPI = async function (
+export async function configAPI(
     channel: MessageBrokerChannel,
     settingsRepository: MongoRepository<Settings>,
     topicRepository: MongoRepository<Topic>,
@@ -71,7 +72,6 @@ export const configAPI = async function (
 
     /**
      * Get settings
-     *
      */
     ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg) => {
         try {
@@ -91,4 +91,8 @@ export const configAPI = async function (
             return new MessageError(error);
         }
     });
+
+    ApiResponse(channel, MessageAPI.GET_ENVIRONMENT, async (msg) => {
+        return new MessageResponse(Environment.network);
+    })
 }

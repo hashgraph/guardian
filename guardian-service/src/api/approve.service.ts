@@ -10,7 +10,7 @@ import { MessageAPI, IApprovalDocument } from '@guardian/interfaces';
  * @param channel - channel
  * @param approvalDocumentRepository - table with approve documents
  */
-export const approveAPI = async function (
+export async function approveAPI(
     channel: MessageBrokerChannel,
     approvalDocumentRepository: MongoRepository<ApprovalDocument>
 ): Promise<void> {
@@ -30,13 +30,13 @@ export const approveAPI = async function (
             const document = await approvalDocumentRepository.findOne(msg.id);
             return new MessageResponse([document]);
         } else {
-            const reqObj: any = { where: {} };
+            const reqObj: any = { where: {} as unknown };
             const { owner, approver, id, hash, policyId, schema, issuer, ...otherArgs } = msg;
             if (owner) {
-                reqObj.where['owner'] = { $eq: owner }
+                reqObj.where.owner = { $eq: owner }
             }
             if (approver) {
-                reqObj.where['approver'] = { $eq: approver }
+                reqObj.where.approver = { $eq: approver }
             }
             if (issuer) {
                 reqObj.where['document.issuer'] = { $eq: issuer }
@@ -45,13 +45,13 @@ export const approveAPI = async function (
                 reqObj.where['document.id'] = { $eq: id }
             }
             if (hash) {
-                reqObj.where['hash'] = { $eq: hash }
+                reqObj.where.hash = { $eq: hash }
             }
             if (policyId) {
-                reqObj.where['policyId'] = { $eq: policyId }
+                reqObj.where.policyId = { $eq: policyId }
             }
             if (schema) {
-                reqObj.where['schema'] = { $eq: schema }
+                reqObj.where.schema = { $eq: schema }
             }
             if (typeof reqObj.where !== 'object') {
                 reqObj.where = {};
@@ -74,9 +74,9 @@ export const approveAPI = async function (
         let result;
         if (id) {
             const documentObject = msg;
-            const id = documentObject.id;
+            const _id = documentObject.id;
             delete documentObject.id;
-            result = await approvalDocumentRepository.update(id, documentObject);
+            result = await approvalDocumentRepository.update(_id, documentObject);
         } else {
             const documentObject = approvalDocumentRepository.create(msg);
             result = await approvalDocumentRepository.save(documentObject)
@@ -97,5 +97,5 @@ export const approveAPI = async function (
         delete documentObject.id;
         const result = await approvalDocumentRepository.update(id, documentObject);
         return new MessageResponse(result);
-    })
+    });
 }

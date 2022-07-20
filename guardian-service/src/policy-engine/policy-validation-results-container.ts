@@ -1,32 +1,78 @@
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 
+/**
+ * Validated instance
+ */
 interface IValidatedInstance<T> {
+    /**
+     * Is valid
+     */
     isValid: boolean;
+    /**
+     * Errors
+     */
     errors: string[];
+    /**
+     * Block
+     */
     block: T;
 }
 
+/**
+ * Instance errors
+ */
 interface IInstanceErrors {
+    /**
+     * ID
+     */
     id: string,
+    /**
+     * Name
+     */
     name: string,
+    /**
+     * Errors
+     */
     errors: string[],
+    /**
+     * Is valid
+     */
     isValid: boolean
 }
 
+/**
+ * Serialized errors
+ */
 export interface ISerializedErrors {
+    /**
+     * Blocks
+     */
     blocks: IInstanceErrors[]
 }
 
+/**
+ * Validation results container
+ */
 export class PolicyValidationResultsContainer {
-    private tags: string[];
-    private permissions: string[];
+    /**
+     * Tags
+     * @private
+     */
+    private readonly tags: string[];
+    /**
+     * Permissions
+     * @private
+     */
+    private readonly permissions: string[];
 
-    private blocks: Map<string, IValidatedInstance<IPolicyBlock>>;
-    private schemas: Map<string, any>;
+    /**
+     * Blocks map
+     * @private
+     */
+    private readonly blocks: Map<string, IValidatedInstance<IPolicyBlock>>;
 
     constructor() {
         this.blocks = new Map();
-        this.schemas = new Map();
         this.tags = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
     }
@@ -40,47 +86,74 @@ export class PolicyValidationResultsContainer {
             this.blocks.set(block.uuid, {
                 isValid: true,
                 errors: [],
-                block: block
+                block
             });
         }
     }
 
+    /**
+     * Add block error
+     * @param uuid
+     * @param error
+     */
     public addBlockError(uuid: string, error: string): void {
         const block = this.blocks.get(uuid);
         block.isValid = false;
         block.errors.push(error);
     }
 
+    /**
+     * Add tag
+     * @param tag
+     */
     public addTag(tag: string): void {
         this.tags.push(tag);
     }
 
+    /**
+     * Add permission
+     * @param permission
+     */
     public addPermission(permission: string): void {
         this.permissions.push(permission);
     }
 
+    /**
+     * Add permissions
+     * @param permissions
+     */
     public addPermissions(permissions: string[]): void {
         if (permissions) {
-            for (let i = 0; i < permissions.length; i++) {
-                const permission = permissions[i];
+            for (const permission of permissions) {
                 this.permissions.push(permission);
             }
         }
     }
 
+    /**
+     * Is tag exist
+     * @param tag
+     */
     public isTagExist(tag: string): boolean {
         return !!this.tags.find(item => item === tag);
     }
 
+    /**
+     * Is permission exist
+     * @param permission
+     */
     public isPermissionExist(permission: string): boolean {
         return !!this.permissions.find(item => item === permission);
     }
 
+    /**
+     * Permissions not exist
+     * @param permissions
+     */
     public permissionsNotExist(permissions: string[]): string | null {
         if (permissions) {
-            for (let i = 0; i < permissions.length; i++) {
-                const permission = permissions[i];
-                if (this.permissions.indexOf(permission) == -1) {
+            for (const permission of permissions) {
+                if (this.permissions.indexOf(permission) === -1) {
                     return permission;
                 }
             }
@@ -88,10 +161,17 @@ export class PolicyValidationResultsContainer {
         return null;
     }
 
+    /**
+     * Count tags
+     * @param tag
+     */
     public countTags(tag: string): number {
         return this.tags.filter(t => t === tag).length;
     }
 
+    /**
+     * Get serialized errors
+     */
     public getSerializedErrors(): ISerializedErrors {
         return {
             blocks: [...this.blocks.values()].map(item => {
