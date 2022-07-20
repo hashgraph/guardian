@@ -1,6 +1,6 @@
 # revokeBlock
 
-This Block finds related messages in policy topics, and revokes those messages and sends it to Hedera topic, but it doesn’t save documents in DB. Output of this Block is the documents array.
+This block finds related messages in policy topics, and revokes those messages and sends it to Hedera topic, but it doesn’t save documents in DB. Output of this Block is the documents array.
 
 ### Properties
 
