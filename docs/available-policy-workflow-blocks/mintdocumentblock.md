@@ -1,6 +1,6 @@
 # mintDocumentBlock
 
-This Block is responsible for adding configurations on calculating the amount of tokens to be minted.
+This block is responsible for adding configurations on calculating the amount of tokens to be minted.
 
 ### Properties
 
@@ -16,7 +16,7 @@ This Block is responsible for adding configurations on calculating the amount of
 
 | UI Property        | Definition                                                                                                                             |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Token              | Token which is affected by the action                                                                                                  |
+| Token              | The token which is affected by the action                                                                                              |
 | Account Type       | The value from this field is used as the ID of the account under which the action is performed when ‘Account Type’ is set to ‘Custom’. |
 | Rule               | Math expression for calculation of the amount of tokens to mint.                                                                       |
 | Account Id (Field) | The value from this field is used as the ID of the account under which the action is performed when ‘Account Type’ is set to ‘Custom’. |
