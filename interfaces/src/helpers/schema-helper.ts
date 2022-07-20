@@ -368,12 +368,14 @@ export class SchemaHelper {
     private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string, condition = false) {
         for (let i = 0; i < fields.length; i++) {
             const field = fields[i];
-            const name = (!field.readOnly && !condition) ? `field${i}` : field.name;
-            const property = SchemaHelper.buildField(field, name, contextURL);
+            const property = SchemaHelper.buildField(field, field.name, contextURL);
             if (field.required) {
-                required.push(name);
+                required.push(field.name);
             }
-            properties[name] = property;
+            if(properties[field.name]) {
+                throw new Error(`Field with key ${field.name} already exists`)
+            }
+            properties[field.name] = property;
         }
     }
 
