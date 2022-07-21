@@ -91,8 +91,8 @@ Promise.all([
     /////////////
     await state.updateState(ApplicationStates.STARTED);
 
-    Environment.setLocalNodeProtocol(process.env.LOCANNODE_PROTOCOL);
-    Environment.setLocalNodeAddress(process.env.LOCANNODE_ADDRESS);
+    Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
+    Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
     TransactionLogger.setLogLevel(process.env.LOG_LEVEL as TransactionLogLvl);
