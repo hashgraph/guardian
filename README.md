@@ -74,6 +74,8 @@ To get a local copy up and running, follow these simple example steps. When buil
 ### To Configure Hedera LocalNode
 Need to add following parameters in `.env/.env.docker`:
  ```
+  OPERATOR_ID="0.0.2"
+  OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
   LOCALNODE_ADDRESS="11.11.11.11"
   LOCALNODE_PROTOCOL="http"
   HEDERA_NET="localnode"
@@ -81,6 +83,7 @@ Need to add following parameters in `.env/.env.docker`:
    Note: 
    1. LOCALNODE_ADDRESS to be changed to your own instance IP Address.The above given value is just shown for an example.
    2. Default value of HEDERA_NET will be testnet.
+   3. The above values of OPERATOR_ID, OPERATOR_KEY are default one, which is used for LocalNode configuration.
    
 #### Manual Installation   
    
