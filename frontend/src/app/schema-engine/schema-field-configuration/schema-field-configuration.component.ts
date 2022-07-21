@@ -12,7 +12,7 @@ import {
     FormGroup,
 } from '@angular/forms';
 import { UnitSystem } from '@guardian/interfaces';
-import { FieldControl } from '../schema-configuration/schema-configuration.component';
+import { FieldControl } from "../field-control";
 
 /**
  * Schemas constructor
@@ -44,6 +44,9 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        if (changes.extended && Object.keys(changes).length === 1) {
+            return;
+        } 
         const type = this.field.controlType.value;
         this.onTypeChange(type);
     }

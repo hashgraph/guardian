@@ -17,6 +17,7 @@ import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag-n-drop.component';
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
+import { SwitchButton } from '../components/switch-button/switch-button.component';
 
 @NgModule({
     declarations: [
@@ -31,7 +32,8 @@ import { SchemaFieldConfigurationComponent } from './schema-field-configuration/
         SchemaViewDialog,
         ExportSchemaDialog,
         FileDragNDropComponent,
-        SchemaFieldConfigurationComponent
+        SchemaFieldConfigurationComponent,
+        SwitchButton
     ],
     imports: [
         CommonModule,

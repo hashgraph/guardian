@@ -35,9 +35,13 @@
 
     <div *ngIf="fields && fields.length" class="fields">
         <div class="custom-fields">
-            <schema-field-configuration *ngFor="let field of fields" [form]="dataForm" [field]="field" [types]="types"
-                [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" (remove)="onRemove(field)">
-            </schema-field-configuration>
+            <ng-container *ngFor="let field of fields">
+                <schema-field-configuration [form]="dataForm" [field]="field" [types]="types"
+                    [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
+                    (remove)="onRemove(field)">
+                </schema-field-configuration>
+                <div class="delimiter"></div>
+            </ng-container>
         </div>
     </div>
 
@@ -56,8 +60,7 @@
                     <div class="condition-if-container">
                         <span class="condition-label">IF</span>
 
-                        <mat-form-field appearance="outline"
-                            [ngClass]="{'choose-field': !condition.field?.value}">
+                        <mat-form-field appearance="outline" [ngClass]="{'choose-field': !condition.field?.value}">
                             <mat-label>* Field</mat-label>
                             <mat-select [formControl]="condition.field"
                                 (valueChange)="onIfConditionFieldChange(condition, $event)">
@@ -69,28 +72,19 @@
 
                         <span class="condition-label" *ngIf="condition.field?.value">=</span>
 
-                        <mat-form-field appearance="outline"
-                            *ngIf="condition.field?.value
-                                && 'boolean' !== schemaTypeMap[condition.field.value.controlType.value].type
-                                && !['time', 'date-time', 'date'].includes(schemaTypeMap[condition.field.value.controlType.value].format)">
+                        <mat-form-field appearance="outline" *ngIf="isConditionType1(condition)">
                             <mat-label>{{condition.field.value.controlRequired.value ? "* Field value" :
                                 "Field value"}}</mat-label>
                             <input matInput placeholder="Field value" [formControl]="condition.fieldValue">
                         </mat-form-field>
 
 
-                        <mat-form-field
-                            *ngIf="condition.field?.value
-                                    && schemaTypeMap[condition.field.value.controlType.value].type === 'string'
-                                    && 'time' === schemaTypeMap[condition.field.value.controlType.value].format"
+                        <mat-form-field *ngIf="isConditionType2(condition)"
                             class="example-full-width required-form-field" appearance="outline">
                             <input matInput type="time" step="1" [formControl]="condition.fieldValue">
                         </mat-form-field>
 
-                        <mat-form-field
-                            *ngIf="condition.field?.value
-                                    && schemaTypeMap[condition.field.value.controlType.value].type === 'string'
-                                    && 'date-time' === schemaTypeMap[condition.field.value.controlType.value].format"
+                        <mat-form-field *ngIf="isConditionType3(condition)"
                             class="example-full-width required-form-field" appearance="outline">
                             <mat-label>Choose a date & time</mat-label>
                             <input matInput [ngxMatDatetimePicker]="dateTimePicker"
@@ -99,10 +93,7 @@
                             <ngx-mat-datetime-picker #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
                         </mat-form-field>
 
-                        <mat-form-field
-                            *ngIf="condition.field?.value
-                                    && schemaTypeMap[condition.field.value.controlType.value].type === 'string'
-                                    && 'date' === schemaTypeMap[condition.field.value.controlType.value].format"
+                        <mat-form-field *ngIf="isConditionType4(condition)"
                             class="example-full-width required-form-field" appearance="outline">
                             <mat-label>Choose a date</mat-label>
                             <input [formControl]="condition.fieldValue" matInput [matDatepicker]="dateItem">
@@ -110,8 +101,7 @@
                             <mat-datepicker #dateItem></mat-datepicker>
                         </mat-form-field>
 
-                        <div *ngIf="condition.field?.value
-                             && schemaTypeMap[condition.field.value.controlType.value].type === 'boolean'">
+                        <div *ngIf="isConditionType5(condition)">
                             <mat-radio-group [formControl]="condition.fieldValue">
                                 <mat-radio-button color="primary" class="boolean-option" [value]="true">True
                                 </mat-radio-button>
@@ -126,7 +116,7 @@
                         <div class="custom-fields">
                             <schema-field-configuration *ngFor="let conditionField of condition.thenControls"
                                 [form]="dataForm" [field]="conditionField" [types]="types" [measureTypes]="measureTypes"
-                                [schemaTypes]="schemaTypes"
+                                [schemaTypes]="schemaTypes" [extended]="extended"
                                 (remove)="onConditionFieldRemove(condition, conditionField, 'then')">
                             </schema-field-configuration>
                         </div>
@@ -142,7 +132,7 @@
                         <div class="custom-fields">
                             <schema-field-configuration *ngFor="let conditionField of condition.elseControls"
                                 [form]="dataForm" [field]="conditionField" [types]="types" [measureTypes]="measureTypes"
-                                [schemaTypes]="schemaTypes"
+                                [schemaTypes]="schemaTypes" [extended]="extended"
                                 (remove)="onConditionFieldRemove(condition, conditionField, 'else')">
                             </schema-field-configuration>
                         </div>

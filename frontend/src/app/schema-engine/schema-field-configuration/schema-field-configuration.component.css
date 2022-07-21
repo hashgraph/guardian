@@ -5,7 +5,7 @@
     grid-gap: 6px;
     column-gap: 14px;
     position: relative;
-    margin-bottom: 50px;
+    margin-bottom: 0px;
 }
 
 .custom-field-name {
@@ -135,23 +135,25 @@
 }
 
 
-.f1[extended='true'] {
+*[extended='true'] .f1 {
     grid-column-start: 1;
     grid-column-end: 2;
     grid-row-start: 1;
     grid-row-end: 2;
     margin: 0px 10px 10px 0px;
+    display: flex;
 }
 
-.f2[extended='true'] {
+*[extended='true'] .f2 {
     grid-column-start: 2;
     grid-column-end: 3;
     grid-row-start: 1;
     grid-row-end: 2;
     margin: 0px 0px 10px 10px;
+    display: flex;
 }
 
-.f3[extended='true'] {
+*[extended='true'] .f3 {
     grid-column-start: 1;
     grid-column-end: 4;
     grid-row-start: 2;
@@ -159,7 +161,7 @@
     margin: 0px 0px 10px 0px;
 }
 
-.f4[extended='true'] {
+*[extended='true'] .f4 {
     grid-column-start: 3;
     grid-column-end: 4;
     grid-row-start: 1;

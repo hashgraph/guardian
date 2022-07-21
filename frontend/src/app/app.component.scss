@@ -84,6 +84,7 @@ body {
         .g-dialog-actions {
             height: 46px;
             flex: 0;
+            display: flex;
         }
 
         .g-dialog-cancel-btn {
@@ -120,6 +121,7 @@ body {
             text-align: center;
             cursor: pointer;
             background-color: var(--button-primary-color);
+            margin-left: 10px;
 
             &[disabled="true"] {
                 background-color: #5a5a5a !important;

@@ -15,7 +15,11 @@
             New Version
         </div>
         <div class="g-dialog-actions">
-            <div *ngIf="!scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(valid && started)">
+            <div class="switch-btn">
+                <switch-button [on-label]="'Advanced'" [off-label]="'Simplified'" [(value)]="extended"></switch-button>
+            </div>
+            <div *ngIf="!scheme" class="g-dialog-actions-btn" (click)="onCreate()"
+                [attr.disabled]="!(valid && started)">
                 Create
             </div>
             <div *ngIf="scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(valid && started)">
@@ -25,15 +29,9 @@
     </div>
     <div class="g-dialog-body">
         <div style="padding: 50px 70px 30px 70px;">
-            <app-schema-configuration #document
-                [value]="scheme" 
-                [schemas-map]="schemasMap" 
-                [type]="type"
-                [policies]="policies"
-                [topicId]="topicId"
-                [system]="system"
-                (change-form)="onChangeForm($event)"
-            >
+            <app-schema-configuration #document [value]="scheme" [schemas-map]="schemasMap" [type]="type"
+                [policies]="policies" [topicId]="topicId" [system]="system" [extended]="extended"
+                (change-form)="onChangeForm($event)">
             </app-schema-configuration>
         </div>
     </div>
