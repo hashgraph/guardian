@@ -4,17 +4,8 @@
     </div>
 
     <div *ngIf="loading && taskId" class="loading">
-    <!-- TODO: To component -->
-    <!-- <div class="loading"> -->
-        <div style="width: 80%; height: 80%;">
-            <div>
-                <mat-progress-bar mode="buffer" [value]="taskProgressValue"></mat-progress-bar>
-            </div>
-            <div>
-                <mat-nav-list>
-                    <div mat-list-item href="..." *ngFor="let status of statuses"> {{ status }} </div>
-                 </mat-nav-list>
-            </div>
+        <div class="loading-progress">
+            <async-progess [expected]="expectedTaskMessages" [statuses]="statuses"></async-progess>
         </div>
     </div>
 

@@ -42,7 +42,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     taskId: string | undefined = undefined;
     statuses: string[] = [];
     expectedTaskMessages: number = 100;
-    taskProgressValue = 0;
 
     private subscription = new Subscription();
 
@@ -101,6 +100,27 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyInfo.userRoles = [message.userRole];
             }))
         );
+
+        this.subscription.add(
+            this.wsService.taskSubscribe((event) => {
+                const { taskId, statuses, completed, error } = event;
+                if (taskId != this.taskId) { return; }
+
+                if (completed) {
+                    console.log('TASK completed');
+                    this.expectedTaskMessages = 0;
+                    this.taskId = undefined;
+                    if (error) {
+                        this.showError(error);
+                    }
+                    this.loadAllPolicy();
+                    return;
+                }
+
+                console.log("this.statuses", this.statuses.length, "statuses", (statuses || []).length);
+                this.statuses.push(...statuses);
+            })
+        )
     }
 
     ngOnDestroy() {
@@ -299,48 +319,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     //     this.loading = false;
                     // });
 
-                    /*{ taskId: string, statuses?: string[], completed?: boolean }*/
-                    const subscription = this.wsService.taskSubscribe((event) => {
-                        const { taskId, statuses, completed, error } = event;
-                        if (taskId != this.taskId) { return; }
-
-                        if (completed) {
-                            console.log('TASK completed');
-                            this.taskProgressValue = 100;
-                            this.subscription.remove(subscription);
-                            this.taskId = undefined;
-                            if (error) {
-                                const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
-                                const header = `${error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
-                                let text;
-                                if (error.message) {
-                                    text = `<div>${translatedMessage.text}</div><div>${this.messageToText(error.error)}</div>`;
-                                } else {
-                                    text = `${error.error}`;
-                                }
-                                this.toastr.error(text, header, {
-                                    timeOut: 30000,
-                                    closeButton: true,
-                                    positionClass: 'toast-bottom-right',
-                                    enableHtml: true
-                                });
-                            }
-                            this.loadAllPolicy();
-                            return;
-                        }
-
-                        this.statuses.push(...statuses);
-                        if (this.statuses.length > this.expectedTaskMessages) {
-                            this.expectedTaskMessages = this.statuses.length + 1;
-                        }
-                        this.taskProgressValue = this.statuses.length * 90 / this.expectedTaskMessages;
-                    });
-
-                    this.subscription.add(subscription);
-
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe((result) => {
                         this.statuses.length = 0;
-                        this.expectedTaskMessages = 16 + 1;
+                        this.expectedTaskMessages = 16;
                         this.taskId = result.taskId;
                         this.testTask(result.taskId);
                     }, (e) => {
@@ -365,11 +346,27 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 clearInterval(interv);
             }
         }, 1000);
-        
+    }
+
+    private showError(error: any) {
+        const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
+        const header = `${error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+        let text;
+        if (error.message) {
+            text = `<div>${translatedMessage.text}</div><div>${this.messageToText(error.error)}</div>`;
+        } else {
+            text = `${error.error}`;
+        }
+        this.toastr.error(text, header, {
+            timeOut: 30000,
+            closeButton: true,
+            positionClass: 'toast-bottom-right',
+            enableHtml: true
+        });
     }
 
     // TODO: Remove?
-    messageToText(message: any) {
+    private messageToText(message: any) {
         if (typeof message === 'object') {
             return JSON.stringify(message, null, 2);
         }
