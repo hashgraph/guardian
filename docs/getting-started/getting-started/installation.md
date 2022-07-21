@@ -250,14 +250,18 @@ HEDERA_NET="localnode"
 ```
 
 {% hint style="info" %}
-Note: By Default the HEDERA\_NET is set to testnet.
+Note:&#x20;
+
+1. The above value of the LOCALNODE\_ADDRESS is just for example. User need to add their own IP ADDRESS of their LocalNode instance.
+
+2.By Default the HEDERA\_NET is set to testnet.
 {% endhint %}
 
 ### Launching the Guardian
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
 
-![](<../../.gitbook/assets/image (23).png>)
+![](<../../.gitbook/assets/image (14) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
