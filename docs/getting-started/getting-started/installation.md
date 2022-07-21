@@ -257,8 +257,10 @@ HEDERA_NET="localnode"
 Note:
 
 1. The above value of the LOCALNODE\_ADDRESS is just for example. User need to add their own IP ADDRESS of their LocalNode instance.
-2. By Default the HEDERA\_NET is set to testnet.
-3. The above values of OPERATOR\__ID, OPERATOR\_KEY are default one, which is used for LocalNode configuration._
+2. Default value of HEDERA\_NET will be testnet. It should be set to localnode.
+3. The values of OPERATOR\_ID, OPERATOR\_KEY are the ones used in the default LocalNode configuration.
+4. Need to remove INITIALIZATION\_TOPIC\_ID as the topic will be created automatically.
+5. LOCALNODE\_PROTOCOL can be http or https depending on server configuration (http is default)
 {% endhint %}
 
 To setup Local Node instance, please check the link : [https://github.com/hashgraph/hedera-local-node#docker](https://github.com/hashgraph/hedera-local-node#docker)
@@ -267,7 +269,7 @@ To setup Local Node instance, please check the link : [https://github.com/hashgr
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
 
-![](<../../.gitbook/assets/image (23).png>)
+![](<../../.gitbook/assets/image (14) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
