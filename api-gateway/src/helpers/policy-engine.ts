@@ -43,8 +43,8 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param model
      * @param user
      */
-    public async createPolicy(model, user) {
-        return await this.request(PolicyEngineEvents.CREATE_POLICIES, { model, user });
+    public async createPolicy(model, user, taskId?) {
+        return await this.request(PolicyEngineEvents.CREATE_POLICIES, { model, user, taskId });
     }
 
     /**

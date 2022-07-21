@@ -18,6 +18,7 @@ import { PolicyBlockModel, PolicyModel } from '../../policy-model';
 import { PolicyStorage } from '../../policy-storage';
 import { TreeFlatOverview } from '../../helpers/tree-flat-overview/tree-flat-overview';
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
+import { TasksService } from 'src/app/services/tasks.service';
 
 
 /**
@@ -86,6 +87,9 @@ export class PolicyConfigurationComponent implements OnInit {
     treeFlatOverview!: TreeFlatOverview;
     policyStorage: PolicyStorage;
 
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+
     constructor(
         public registeredBlocks: RegisteredBlocks,
         private schemaService: SchemaService,
@@ -93,7 +97,8 @@ export class PolicyConfigurationComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private route: ActivatedRoute,
         private router: Router,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private taskService: TasksService
     ) {
         this.newBlockType = 'interfaceContainerBlock';
         this.policyModel = new PolicyModel();
@@ -532,15 +537,40 @@ export class PolicyConfigurationComponent implements OnInit {
                     policy.previousVersion = json.version;
                 }
 
-                this.policyEngineService.create(policy).subscribe((policies: any) => {
-                    const last = policies[policies.length - 1];
-                    this.router.navigate(['/policy-configuration'], { queryParams: { policyId: last.id } });
+                // this.policyEngineService.create(policy).subscribe((policies: any) => {
+                //     const last = policies[policies.length - 1];
+                //     this.router.navigate(['/policy-configuration'], { queryParams: { policyId: last.id } });
+                // }, (e) => {
+                //     console.error(e.error);
+                //     this.loading = false;
+                // });
+                this.policyEngineService.pushCreate(policy).subscribe((result) => {
+                    this.expectedTaskMessages = 14;
+                    this.taskId = result.taskId;
                 }, (e) => {
-                    console.error(e.error);
                     this.loading = false;
                 });
             }
         });
+    }
+
+    onError(error: any) {
+        console.error(error.error);
+        this.loading = false;
+    }
+
+    onCompleted() {
+        if (this.taskId) {
+            const taskId: string = this.taskId;
+            this.taskId = undefined;
+            this.taskService.get(taskId).subscribe((task: any) => {
+                const { result } = task;
+                if (result) {
+                    const last = result[result.length - 1];
+                    this.router.navigate(['/policy-configuration'], { queryParams: { policyId: last.id } });
+                }
+            });
+        }
     }
 
     private checkState() {

@@ -196,10 +196,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         });
 
         dialogRef.afterClosed().subscribe(async (result) => {
+            debugger;
             if (result) {
                 this.loading = true;
-                this.policyEngineService.create(result).subscribe((policies: any) => {
-                    this.loadAllPolicy();
+                // this.policyEngineService.create(result).subscribe((policies: any) => {
+                //     this.loadAllPolicy();
+                // }, (e) => {
+                //     this.loading = false;
+                // });
+
+                this.policyEngineService.pushCreate(result).subscribe((result) => {
+                    this.expectedTaskMessages = 14;
+                    this.taskId = result.taskId;
+                    this.testTask(result.taskId);
                 }, (e) => {
                     this.loading = false;
                 });

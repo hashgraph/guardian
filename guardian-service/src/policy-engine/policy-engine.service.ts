@@ -39,7 +39,7 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
-import { initNotifier } from '@helpers/status-publisher';
+import { initNotifier, INotifier } from '@helpers/status-publisher';
 
 /**
  * Policy engine service
@@ -164,9 +164,10 @@ export class PolicyEngineService {
      * @param owner
      * @private
      */
-    private async createPolicy(data: Policy, owner: string): Promise<Policy> {
+    private async createPolicy(data: Policy, owner: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
+        notifier.start("Save in DB");
         const model = getMongoRepository(Policy).create(data as DeepPartial<Policy>);
         if (!model.config) {
             model.config = {
@@ -199,8 +200,11 @@ export class PolicyEngineService {
         }
 
         let newTopic: Topic;
+        notifier.completedAndStart("Resolve Hedera account");
         const root = await this.users.getHederaAccount(owner);
+        notifier.completed();
         if (!model.topicId) {
+            notifier.start("Create topic");
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await getMongoRepository(Topic).findOne({ owner, type: TopicType.UserTopic });
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
@@ -215,6 +219,7 @@ export class PolicyEngineService {
             });
             model.topicId = topic.topicId;
 
+            notifier.completedAndStart("Create policy in Hedera");
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
@@ -223,9 +228,11 @@ export class PolicyEngineService {
                 .setTopicObject(parent)
                 //.sendMessage(message);
                 .sendMessageAsync(message);
-
+            
+            notifier.completedAndStart("Link topic and policy");
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
 
+            notifier.completedAndStart("Publish schemas");
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
             for (const schema of systemSchemas) {
@@ -239,8 +246,10 @@ export class PolicyEngineService {
             }
 
             newTopic = topic;
+            notifier.completed();
         }
 
+        notifier.start("Saving in DB");
         model.codeVersion = PolicyConverterUtils.VERSION;
         const policy = await getMongoRepository(Policy).save(model);
 
@@ -250,6 +259,7 @@ export class PolicyEngineService {
             await getMongoRepository(Topic).update(newTopic.id, newTopic);
         }
 
+        notifier.completed();
         return policy;
     }
 
@@ -426,10 +436,11 @@ export class PolicyEngineService {
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.CREATE_POLICIES, async (msg) => {
+            const { user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
             try {
-                const user = msg.user;
                 const userFull = await this.users.getUser(user.username);
-                await this.createPolicy(msg.model, userFull.did);
+                await this.createPolicy(msg.model, userFull.did, notifier);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 policies.forEach(p => {
                     delete p.registeredUsers;
