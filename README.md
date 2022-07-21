@@ -71,12 +71,27 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    docker-compose up -d --build
    ```
+### To Configure Hedera LocalNode
+Need to add following parameters in `.env/.env.docker`:
+ ```
+  OPERATOR_ID="0.0.2"
+  OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
+  LOCALNODE_ADDRESS="11.11.11.11"
+  LOCALNODE_PROTOCOL="http"
+  HEDERA_NET="localnode"
+  ``` 
+   Note: 
+   1. LOCALNODE_ADDRESS to be changed to your own instance IP Address.The above given value is just shown for an example.
+   2. Default value of HEDERA_NET will be testnet. It should be set to localnode.
+   3. The above values of OPERATOR_ID, OPERATOR_KEY are default one, which is used for LocalNode configuration.
+   4. Need to remove INITIALIZATION_TOPIC_ID as the topic will be created automatically. 
+   5. LOCALNODE_PROTOCOL can be http or https depending on server configuration (http is default)
    
 #### Manual Installation   
    
 If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
- 1. **From the interfaces folder**
+  1. **From the interfaces folder**
 
    Build package
    ```sh
@@ -85,7 +100,7 @@ If you want to manually build every component with debug information, then build
    ```
 
 
- 2. **From the common folder**
+  2. **From the common folder**
 
   Build package
   ```sh
@@ -93,9 +108,7 @@ If you want to manually build every component with debug information, then build
   npm run build
   ```
 
-   ```
-
-  3. **From the Logger service folder**
+   3. **From the Logger service folder**
 
    To build the service:
 
@@ -110,7 +123,7 @@ If you want to manually build every component with debug information, then build
    npm start
    ```
 
-  4. **From the Auth service folder**
+   4. **From the Auth service folder**
 
    To build the service:
 
@@ -125,7 +138,7 @@ If you want to manually build every component with debug information, then build
    npm start
    ```
 
-  5. **From the IPFS Client folder**
+   5. **From the IPFS Client folder**
 
    To build the service:
 
@@ -140,7 +153,7 @@ If you want to manually build every component with debug information, then build
    npm start
    ```
  
-  6. **From the Guardian Service folder**
+   6. **From the Guardian Service folder**
 
    To build the service:
 
@@ -155,7 +168,7 @@ If you want to manually build every component with debug information, then build
    npm start
    ```
 
-  7. **From the API Gateway Service folder**
+   7. **From the API Gateway Service folder**
 
    To build the service:
 
@@ -170,7 +183,7 @@ If you want to manually build every component with debug information, then build
    npm start
    ```
 
-  8. **From the MRV Sender Service folder**
+   8. **From the MRV Sender Service folder**
 
    To build the service:
 
@@ -185,7 +198,7 @@ If you want to manually build every component with debug information, then build
    npm start
    ```
 
-  9. **From the Frontend folder**
+   9. **From the Frontend folder**
 
    To build the service:
 
