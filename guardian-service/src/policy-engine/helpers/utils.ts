@@ -213,7 +213,7 @@ export class PolicyUtils {
             accounts: oldDoc.accounts || null,
         };
 
-        if (item.relationships && item.relationships.length) {
+        if (!item.relationships || !item.relationships.length) {
             item.relationships = null;
         }
 
