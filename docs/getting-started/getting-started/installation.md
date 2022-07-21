@@ -238,7 +238,7 @@ npm run test
 The following parameters needs to be added in .env / .env.docker file:
 
 1. OPERATOR\_ID: The ID of the operation
-2. OPERATOR_Key: Private key of the operatorded Operator_ID
+2. OPERATOR_Key: Private key of the operator_
 3. LOCALNODE\_ADDRESS : The address of the localnode server. This can be its IP address or a domain name
 4. LOCALNODE\_PROTOCOL : Communication protocol for interactions with the local node, can be http or https.
 5. HEDERA\_NET : Type of the Hedera node to transact.
@@ -265,7 +265,7 @@ Note:&#x20;
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
 
-![](<../../.gitbook/assets/image (14) (1).png>)
+![](<../../.gitbook/assets/image (23).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
