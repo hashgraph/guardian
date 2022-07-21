@@ -40,8 +40,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     policyCount: any;
 
     taskId: string | undefined = undefined;
-    statuses: string[] = [];
-    expectedTaskMessages: number = 100;
+    expectedTaskMessages: number = 0;
 
     private subscription = new Subscription();
 
@@ -100,27 +99,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyInfo.userRoles = [message.userRole];
             }))
         );
-
-        this.subscription.add(
-            this.wsService.taskSubscribe((event) => {
-                const { taskId, statuses, completed, error } = event;
-                if (taskId != this.taskId) { return; }
-
-                if (completed) {
-                    console.log('TASK completed');
-                    this.expectedTaskMessages = 0;
-                    this.taskId = undefined;
-                    if (error) {
-                        this.showError(error);
-                    }
-                    this.loadAllPolicy();
-                    return;
-                }
-
-                console.log("this.statuses", this.statuses.length, "statuses", (statuses || []).length);
-                this.statuses.push(...statuses);
-            })
-        )
     }
 
     ngOnDestroy() {
@@ -198,6 +176,16 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.pageIndex = event.pageIndex;
             this.pageSize = event.pageSize;
         }
+        this.loadAllPolicy();
+    }
+
+    onError(error: any) {
+        this.showError(error);
+        this.loadAllPolicy();
+    }
+
+    onCompleted() {
+        this.taskId = undefined;
         this.loadAllPolicy();
     }
 
@@ -320,7 +308,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     // });
 
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe((result) => {
-                        this.statuses.length = 0;
                         this.expectedTaskMessages = 16;
                         this.taskId = result.taskId;
                         this.testTask(result.taskId);
