@@ -87,6 +87,7 @@ Need to add following parameters in `.env/.env.docker`:
    4. Need to remove INITIALIZATION_TOPIC_ID as the topic will be created automatically. 
    5. LOCALNODE_PROTOCOL can be http or https depending on server configuration (http is default)
    
+To setup Local Node instance, please check the link : https://github.com/hashgraph/hedera-local-node#docker   
 #### Manual Installation   
    
 If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
