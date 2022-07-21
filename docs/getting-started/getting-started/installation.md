@@ -233,13 +233,33 @@ cd message-broker
 npm run test
 ```
 
+### How to Configure Hedera Local Node:
+
+The following parameters needs to be added in .env / .env.docker file:
+
+1. LOCALNODE\_ADDRESS : The address of the localnode server. This can be its IP address or a domain name
+2. LOCALNODE\_PROTOCOL : Communication protocol for interactions with the local node, can be http or https.
+3. HEDERA\_NET : Type of the Hedera node to transact.
+
+Example:
+
+```
+LOCALNODE_ADDRESS="11.11.11.11"
+LOCALNODE_PROTOCOL="http"
+HEDERA_NET="localnode"
+```
+
+{% hint style="info" %}
+Note: By Default the HEDERA\_NET is set to testnet.
+{% endhint %}
+
 ### Launching the Guardian
 
-Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialise Standard Registry by completing the Setup.
+Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
 
 ![](<../../.gitbook/assets/image (23).png>)
 
-The above fields are required for Initializing Standard Registry Hello World Message.
+The above fields in UI are mandatory for Initializing Standard Registry Hello World Message only for the default Schema.
 
 The Format of the Standard Registry Hello World Message is as follows:
 
@@ -290,18 +310,20 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                                                                              |
 | OPERATOR\_ID                           | The ID of the operation                                                            | 0.0.29676495                                                                                     |
 | OPERATOR\_KEY                          | Private key of the operator                                                        | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
-| LOCANNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                                                                                          |
-| LOCANNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                                                                                       |
+| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                                                                                          |
+| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                                                                                       |
 | HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet                                                                      |
 | INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                                                                                     |
 | MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                                                                                            |
 | LOG\_LEVEL                             | level of the Logs                                                                  | 2                                                                                                |
 
+
+
 {% hint style="info" %}
 **Note:**
 
 1. To configure LocalNode, please change the value of LOCANNODE\_ADDRESS
-2. If HEDERA_NET option is set to localnode, INITIALIZATION_TOPIC\_ID can be empty in which case the topic will be created automatically.&#x20;
+2. If HEDERA\__NET option is set to localnode, INITIALIZATION\__TOPIC\_ID can be empty in which case the topic will be created automatically.&#x20;
 {% endhint %}
 
 ### Summary of URLs and Ports
