@@ -5,7 +5,8 @@ import { Singleton } from '@helpers/decorators/singleton';
 
 @Singleton
 export class TaskManager {
-    private tasks:TaskCollection = new TaskCollection();
+    // private tasks:TaskCollection = new TaskCollection(); // Default - one day
+    private tasks:TaskCollection = new TaskCollection(1000 * 60 * 5 /* 5 minutes */);
     private wsService: WebSocketsService;
     private channel: MessageBrokerChannel;
 
@@ -88,18 +89,17 @@ export class TaskManager {
 class TaskCollection {
     [taskId: string]: Task;
 
-    constructor() {
+    constructor(delay: number = 1000 * 60 * 60 * 24 /* One day */) {
         let self = this;
-        //const delta = 1000 * 60 * 60 * 24; // One day
-        const delta = 1000 * 60 * 5; // 5 minutes
+        
         setInterval(() => {
             console.log("Before: ", Object.keys(self).length);
-            const old = new Date(new Date().valueOf() - delta);
+            const old = new Date(new Date().valueOf() - delay);
             Object.keys(self)
                 .filter(key => self[key].date < old)
                 .forEach(key => { delete self[key] });
             console.log("After: ", Object.keys(self).length);
-        }, delta);
+        }, delay);
     }
 }
 

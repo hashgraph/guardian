@@ -295,8 +295,15 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 let versionOfTopicId = result.versionOfTopicId || null;
                 this.loading = true;
                 if (type == 'message') {
-                    this.policyEngineService.importByMessage(data, versionOfTopicId).subscribe((policies) => {
-                        this.loadAllPolicy();
+                    // this.policyEngineService.importByMessage(data, versionOfTopicId).subscribe((policies) => {
+                    //     this.loadAllPolicy();
+                    // }, (e) => {
+                    //     this.loading = false;
+                    // });
+                    this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe((result) => {
+                        this.expectedTaskMessages = 20;
+                        this.taskId = result.taskId;
+                        this.testTask(result.taskId);
                     }, (e) => {
                         this.loading = false;
                     });

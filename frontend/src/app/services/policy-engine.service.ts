@@ -84,6 +84,11 @@ export class PolicyEngineService {
         return this.http.post<any[]>(`${this.url}/import/message${query}`, { messageId });
     }
 
+    public pushImportByMessage(messageId: string, versionOfTopicId?: string): Observable<{ taskId: string }> {
+        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
+        return this.http.post<{ taskId: string }>(`${this.url}/push/import/message${query}`, { messageId });
+    }
+
     public importByFile(policyFile: any, versionOfTopicId?: string): Observable<any[]> {
         var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
         return this.http.post<any[]>(`${this.url}/import/file${query}`, policyFile, {
@@ -93,9 +98,9 @@ export class PolicyEngineService {
         });
     }
 
-    public pushImportByFile(policyFile: any, versionOfTopicId?: string): Observable<any> {
+    public pushImportByFile(policyFile: any, versionOfTopicId?: string): Observable<{ taskId: string }> {
         var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<any>(`${this.url}/push/import/file${query}`, policyFile, {
+        return this.http.post<{ taskId: string }>(`${this.url}/push/import/file${query}`, policyFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
             }

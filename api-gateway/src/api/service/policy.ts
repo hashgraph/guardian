@@ -208,6 +208,28 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
     }
 });
 
+policyAPI.post('/push/import/message', async (req: AuthenticatedRequest, res: Response) => {
+    console.log('Start /push/import/message');
+    const taskManager = new TaskManager();
+    const taskId = taskManager.start('import/file');
+
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
+    setImmediate(async () => {
+        try {
+            const engineService = new PolicyEngine();
+            const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId, taskId);
+            console.log('Set result /push/import/message');
+            taskManager.addResult(taskId, policies);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            console.log('Set error /push/import/message');
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        }
+    });
+    console.log('End /push/import/message');
+    res.status(201).send({ taskId });
+});
+
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;

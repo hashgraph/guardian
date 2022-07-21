@@ -729,14 +729,17 @@ export class PolicyEngineService {
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
+            const { messageId, user, versionOfTopicId, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
             try {
-                const { messageId, user, versionOfTopicId } = msg;
-                const userFull = await this.users.getUser(user.username);
                 if (!messageId) {
                     throw new Error('Policy ID in body is empty');
                 }
 
+                const userFull = await this.users.getUser(user.username);
+                notifier.start("Resolve Hedera account");
                 const root = await this.users.getHederaAccount(userFull.did);
+                notifier.completedAndStart("Load from IPFS");
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
@@ -747,9 +750,10 @@ export class PolicyEngineService {
                 if (!message.document) {
                     throw new Error('File in body is empty');
                 }
-
+                notifier.completedAndStart("File parsing");
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
-                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId);
+                notifier.completed();
+                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, notifier, versionOfTopicId);
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {

@@ -159,8 +159,8 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user
      * @param messageId
      */
-    public async importMessage(user, messageId, versionOfTopicId?) {
-        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user, versionOfTopicId });
+    public async importMessage(user, messageId, versionOfTopicId?, taskId?) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user, versionOfTopicId, taskId });
     }
 
     /**
