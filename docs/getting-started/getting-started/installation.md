@@ -237,13 +237,17 @@ npm run test
 
 The following parameters needs to be added in .env / .env.docker file:
 
-1. LOCALNODE\_ADDRESS : The address of the localnode server. This can be its IP address or a domain name
-2. LOCALNODE\_PROTOCOL : Communication protocol for interactions with the local node, can be http or https.
-3. HEDERA\_NET : Type of the Hedera node to transact.
+1. OPERATOR\_ID: The ID of the operation
+2. OPERATOR_Key: Private key of the operatorded Operator_ID
+3. LOCALNODE\_ADDRESS : The address of the localnode server. This can be its IP address or a domain name
+4. LOCALNODE\_PROTOCOL : Communication protocol for interactions with the local node, can be http or https.
+5. HEDERA\_NET : Type of the Hedera node to transact.
 
 Example:
 
 ```
+OPERATOR_ID="0.0.2"
+OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
 LOCALNODE_ADDRESS="11.11.11.11"
 LOCALNODE_PROTOCOL="http"
 HEDERA_NET="localnode"
@@ -253,8 +257,8 @@ HEDERA_NET="localnode"
 Note:&#x20;
 
 1. The above value of the LOCALNODE\_ADDRESS is just for example. User need to add their own IP ADDRESS of their LocalNode instance.
-
-2.By Default the HEDERA\_NET is set to testnet.
+2. By Default the HEDERA\_NET is set to testnet.
+3. The above values of OPERATOR\__ID, OPERATOR\_KEY are default one, which is used for LocalNode configuration._
 {% endhint %}
 
 ### Launching the Guardian
