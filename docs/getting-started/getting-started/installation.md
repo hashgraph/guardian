@@ -259,7 +259,7 @@ Once [http://localhost:3000](http://localhost:3000) is launched, we need to init
 
 ![](<../../.gitbook/assets/image (23).png>)
 
-The above fields in UI are mandatory for Initializing Standard Registry Hello World Message only for the default Schema.
+**Note:** The above fields in UI are mandatory only for this default Schema.
 
 The Format of the Standard Registry Hello World Message is as follows:
 
@@ -322,7 +322,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 {% hint style="info" %}
 **Note:**
 
-1. To configure LocalNode, please change the value of LOCANNODE\_ADDRESS
+1. To configure LocalNode, please change the value of LOCALNODE\_ADDRESS
 2. If HEDERA\__NET option is set to localnode, INITIALIZATION\__TOPIC\_ID can be empty in which case the topic will be created automatically.&#x20;
 {% endhint %}
 
