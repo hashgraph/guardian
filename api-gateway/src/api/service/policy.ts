@@ -223,11 +223,12 @@ policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) 
 policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Response) => {
     console.log('Start /push/import/file');
     const taskManager = new TaskManager();
-    const taskId = taskManager.add('import/file');
-    const engineService = new PolicyEngine();
+    const taskId = taskManager.start('import/file');
+
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     setImmediate(async () => {
         try {
+            const engineService = new PolicyEngine();
             const policies = await engineService.importFile(req.user, req.body, versionOfTopicId, taskId);
             console.log('Set result /push/import/file');
             taskManager.addResult(taskId, policies);

@@ -1,17 +1,27 @@
 import { WebSocketsService } from '@api/service/websockets';
+import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Singleton } from '@helpers/decorators/singleton';
 
 @Singleton
 export class TaskManager {
     private tasks:TaskCollection = new TaskCollection();
-    private webSocketsService: WebSocketsService;
+    private wsService: WebSocketsService;
+    private channel: MessageBrokerChannel;
 
-    public setWebSocketsService(webSocketsService: WebSocketsService) {
-        this.webSocketsService = webSocketsService;
+    public setDependecies(wsService: WebSocketsService, channel: MessageBrokerChannel) {
+        this.wsService = wsService;
+        this.channel = channel;
+        this.channel.response<any, any>('UPDATE_TASK_STATUS', async (msg) => {
+            const { taskId, statuses } = msg;
+            if (taskId && statuses) {
+                this.addStatuses(taskId, statuses);
+            }
+            return new MessageResponse({});
+        });
     }
 
-    public add(name: string): string {
+    public start(name: string): string {
         const taskId = GenerateUUIDv4();
         if (this.tasks[taskId]) {
             throw new Error(`Task ${taskId} exists.`);
@@ -24,7 +34,7 @@ export class TaskManager {
     public addStatuses(taskId: string, statuses: string[], skipIfNotFound: boolean = true): void {
         if (this.tasks[taskId]) {
             this.tasks[taskId].statuses.push(...statuses);
-            this.webSocketsService.notifyTaskProgress(taskId, statuses);
+            this.wsService.notifyTaskProgress(taskId, statuses);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -35,7 +45,7 @@ export class TaskManager {
     public addResult(taskId: string, result: any, skipIfNotFound: boolean = true) {
         if (this.tasks[taskId]) {
             this.tasks[taskId].result = result;
-            this.webSocketsService.notifyTaskProgress(taskId, undefined, true);
+            this.wsService.notifyTaskProgress(taskId, undefined, true);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -46,7 +56,7 @@ export class TaskManager {
     public addError(taskId: string, error: any, skipIfNotFound: boolean = true) {
         if (this.tasks[taskId]) {
             this.tasks[taskId].error = error;
-            this.webSocketsService.notifyTaskProgress(taskId, undefined, true, error);
+            this.wsService.notifyTaskProgress(taskId, undefined, true, error);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -83,13 +93,12 @@ class TaskCollection {
         //const delta = 1000 * 60 * 60 * 24; // One day
         const delta = 1000 * 60 * 5; // 5 minutes
         setInterval(() => {
-            console.log("Before: ", JSON.stringify(self));
+            console.log("Before: ", Object.keys(self).length);
             const old = new Date(new Date().valueOf() - delta);
-            old.setDate(old.getDate()-1);
             Object.keys(self)
                 .filter(key => self[key].date < old)
                 .forEach(key => { delete self[key] });
-            console.log("After: ", JSON.stringify(self));
+            console.log("After: ", Object.keys(self).length);
         }, delta);
     }
 }

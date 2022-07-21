@@ -36,7 +36,8 @@ Promise.all([
         limit: '4096kb',
         type: 'binary/octet-stream'
     }));
-    const channel = new MessageBrokerChannel(cn, 'guardian')
+    const channel = new MessageBrokerChannel(cn, 'guardian');
+    const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
     new Logger().setChannel(channel);
     new Guardians().setChannel(channel);
     new IPFS().setChannel(channel);
@@ -45,10 +46,10 @@ Promise.all([
     new Wallet().setChannel(channel);
 
     const server = createServer(app);
-    const wsService = new WebSocketsService(server, new MessageBrokerChannel(cn, 'api-gateway'));
+    const wsService = new WebSocketsService(server, apiGatewayChannel);
     wsService.init();
 
-    new TaskManager().setWebSocketsService(wsService);
+    new TaskManager().setDependecies(wsService, apiGatewayChannel);
 
     ////////////////////////////////////////
 

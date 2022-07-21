@@ -33,19 +33,14 @@ export class WebSocketsService {
     }
 
     public notifyTaskProgress(taskId, statuses?, completed?, error?): void {
+        console.log('Task', taskId, " statuses ", (statuses || []).length);
         this.wss.clients.forEach((client: any) => {
             this.send(client, {
                 type: 'UPDATE_TASK_STATUS',
-                data: {
-                    taskId,
-                    statuses,
-                    completed,
-                    error
-                }
+                data: { taskId, statuses, completed, error }
             });
         });
     }
-
 
     /**
      * Register messages handler
@@ -109,18 +104,6 @@ export class WebSocketsService {
                 });
             });
             return new MessageResponse({})
-        });
-
-        // TODO: Убрать от сюда! В TaskManager???
-        this.channel.response<any, any>('UPDATE_TASK_STATUS', async (msg) => {
-            const { taskId, statuses } = msg;
-            if (taskId) {
-                const taskManager = new TaskManager();
-                if (statuses) {
-                    taskManager.addStatuses(taskId, statuses);
-                }
-            }
-            return new MessageResponse({});
         });
     }
 
