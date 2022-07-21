@@ -238,7 +238,7 @@ npm run test
 The following parameters needs to be added in .env / .env.docker file:
 
 1. OPERATOR\_ID: The ID of the operation
-2. OPERATOR_Key: Private key of the operator_
+2. OPERATOR\_Key: Private key of the operator\_
 3. LOCALNODE\_ADDRESS : The address of the localnode server. This can be its IP address or a domain name
 4. LOCALNODE\_PROTOCOL : Communication protocol for interactions with the local node, can be http or https.
 5. HEDERA\_NET : Type of the Hedera node to transact.
@@ -254,16 +254,18 @@ HEDERA_NET="localnode"
 ```
 
 {% hint style="info" %}
-Note:&#x20;
+Note:
 
 1. The above value of the LOCALNODE\_ADDRESS is just for example. User need to add their own IP ADDRESS of their LocalNode instance.
 2. By Default the HEDERA\_NET is set to testnet.
 3. The above values of OPERATOR\__ID, OPERATOR\_KEY are default one, which is used for LocalNode configuration._
 {% endhint %}
 
+To setup Local Node instance, please check the link : [https://github.com/hashgraph/hedera-local-node#docker](https://github.com/hashgraph/hedera-local-node#docker)
+
 ### Launching the Guardian
 
-Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
+Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialise Standard Registry by completing the Setup.
 
 ![](<../../.gitbook/assets/image (23).png>)
 
@@ -318,20 +320,18 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                                                                              |
 | OPERATOR\_ID                           | The ID of the operation                                                            | 0.0.29676495                                                                                     |
 | OPERATOR\_KEY                          | Private key of the operator                                                        | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
-| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                                                                                          |
-| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                                                                                       |
+| LOCANNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                                                                                          |
+| LOCANNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                                                                                       |
 | HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet                                                                      |
 | INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                                                                                     |
 | MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                                                                                            |
 | LOG\_LEVEL                             | level of the Logs                                                                  | 2                                                                                                |
 
-
-
 {% hint style="info" %}
 **Note:**
 
 1. To configure LocalNode, please change the value of LOCALNODE\_ADDRESS
-2. If HEDERA\__NET option is set to localnode, INITIALIZATION\__TOPIC\_ID can be empty in which case the topic will be created automatically.&#x20;
+2. If HEDERA\_\_NET option is set to localnode, INITIALIZATION\_\_TOPIC\_ID can be empty in which case the topic will be created automatically.
 {% endhint %}
 
 ### Summary of URLs and Ports
@@ -355,4 +355,3 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
 | TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
 | API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
-
