@@ -89,11 +89,10 @@ export class ReportItemBlock {
 
                     case 'not_in':
                         if (Array.isArray(expr)) {
-                            expr = { $in: expr };
+                            expr = { $nin: expr };
                         } else if (expr) {
-                            expr = { $in: [expr] };
+                            expr = { $nin: [expr] };
                         }
-                        expr = { $nin: expr };
                         break;
 
                     default:
