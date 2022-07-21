@@ -83,7 +83,7 @@ Need to add following parameters in `.env/.env.docker`:
    Note: 
    1. LOCALNODE_ADDRESS to be changed to your own instance IP Address.The above given value is just shown for an example.
    2. Default value of HEDERA_NET will be testnet. It should be set to localnode.
-   3. The above values of OPERATOR_ID, OPERATOR_KEY are default one, which is used for LocalNode configuration.
+   3. The values of OPERATOR_ID, OPERATOR_KEY are the ones used in the default LocalNode configuration.
    4. Need to remove INITIALIZATION_TOPIC_ID as the topic will be created automatically. 
    5. LOCALNODE_PROTOCOL can be http or https depending on server configuration (http is default)
    
