@@ -10,6 +10,16 @@ export class TaskManager {
     private wsService: WebSocketsService;
     private channel: MessageBrokerChannel;
 
+    private static expectationMap = {
+        'Create policy': 14,
+        'Publish policy': 24,
+        'Import policy file': 16,
+        'Import policy message': 20,
+        'Publish schema': 14,
+        'Import schema file': 4,
+        'Import schema message': 4,
+    }
+
     public setDependecies(wsService: WebSocketsService, channel: MessageBrokerChannel) {
         this.wsService = wsService;
         this.channel = channel;
@@ -22,14 +32,16 @@ export class TaskManager {
         });
     }
 
-    public start(name: string): string {
+    public start(taskName: string): { taskId: string, expectation: number } {
         const taskId = GenerateUUIDv4();
         if (this.tasks[taskId]) {
             throw new Error(`Task ${taskId} exists.`);
         }
 
-        this.tasks[taskId] = new Task(name);
-        return taskId;
+        this.tasks[taskId] = new Task(taskName);
+
+        const expectation = this.getExpectation(taskName);
+        return { taskId, expectation };
     }
 
     public addStatuses(taskId: string, statuses: string[], skipIfNotFound: boolean = true): void {
@@ -44,14 +56,17 @@ export class TaskManager {
     }
 
     public addResult(taskId: string, result: any, skipIfNotFound: boolean = true) {
-        if (this.tasks[taskId]) {
-            this.tasks[taskId].result = result;
+        const task = this.tasks[taskId];
+        if (task) {
+            task.result = result;
             this.wsService.notifyTaskProgress(taskId, undefined, true);
         } else if (skipIfNotFound) {
             return;
         } else {
             throw new Error(`Task ${taskId} not found.`);
         }
+
+        this.correctExpectation(task);
     }
 
     public addError(taskId: string, error: any, skipIfNotFound: boolean = true) {
@@ -82,6 +97,21 @@ export class TaskManager {
             return;
         } else {
             throw new Error(`Task ${taskId} not found.`);
+        }
+    }
+
+    private getExpectation(taskName: string): number {
+        if (!TaskManager.expectationMap[taskName]) {
+            TaskManager.expectationMap[taskName] = 2;
+        }
+
+        return TaskManager.expectationMap[taskName];
+    }
+
+    private correctExpectation(task: Task): void {
+        const taskStatusCount = task.statuses.length;
+        if (TaskManager.expectationMap[task.name] < taskStatusCount) {
+            TaskManager.expectationMap[task.name] = taskStatusCount;
         }
     }
 }

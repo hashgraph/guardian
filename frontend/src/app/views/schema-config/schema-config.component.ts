@@ -343,9 +343,10 @@ export class SchemaConfigComponent implements OnInit {
                 // });
 
                 this.schemaService.pushPublish(element.id, version).subscribe((result) => {
-                    this.expectedTaskMessages = 14;
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
                     this.mode = OperationMode.publish;
-                    this.taskId = result.taskId;
                 }, (e) => {
                     this.loading = false;
                     this.taskId = undefined;
@@ -456,9 +457,10 @@ export class SchemaConfigComponent implements OnInit {
                     //     this.loading = false;
                     // });
                     this.schemaService.pushImportByMessage(data, result.topicId).subscribe((result) => {
-                        this.expectedTaskMessages = 4;
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
                         this.mode = OperationMode.import;
-                        this.taskId = result.taskId;
                     });
                 } else if (type == 'file') {
                     // this.schemaService.importByFile(data, result.topicId).subscribe((schemas) => {
@@ -467,9 +469,10 @@ export class SchemaConfigComponent implements OnInit {
                     //     this.loading = false;
                     // });
                     this.schemaService.pushImportByFile(data, result.topicId).subscribe((result) => {
-                        this.expectedTaskMessages = 4;
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
                         this.mode = OperationMode.import;
-                        this.taskId = result.taskId;
                     });
                 }
             }

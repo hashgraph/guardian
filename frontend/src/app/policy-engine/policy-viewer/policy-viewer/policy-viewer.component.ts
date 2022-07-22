@@ -255,10 +255,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 // });
 
                 this.policyEngineService.pushCreate(result).subscribe((result) => {
-                    this.expectedTaskMessages = 14;
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
                     this.mode = OperationMode.create;
-                    this.taskId = result.taskId;
-                    this.testTask(result.taskId);
                 }, (e) => {
                     this.loading = false;
                     this.taskId = undefined;
@@ -308,9 +308,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         // });
 
         this.policyEngineService.pushPublish(element.id, version).subscribe((result) => {
-            this.expectedTaskMessages = 24;
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
             this.mode = OperationMode.publish;
-            this.taskId = result.taskId;
         });
     }
 
@@ -368,10 +369,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     //     this.loading = false;
                     // });
                     this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe((result) => {
-                        this.expectedTaskMessages = 20;
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
                         this.mode = OperationMode.import;
-                        this.taskId = result.taskId;
-                        this.testTask(result.taskId);
                     }, (e) => {
                         this.loading = false;
                         this.taskId = undefined;
@@ -385,10 +386,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     // });
 
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe((result) => {
-                        this.expectedTaskMessages = 16;
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
                         this.mode = OperationMode.import;
-                        this.taskId = result.taskId;
-                        this.testTask(result.taskId);
                     }, (e) => {
                         this.loading = false;
                         this.taskId = undefined;
@@ -397,22 +398,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 }
             }
         });
-    }
-
-    // TODO: For test only. Remove!
-    private testTask(taskId: string) {
-        let count = 0;
-        const interv = setInterval(() => {
-            this.taskService.get(taskId).subscribe((data) => {
-                console.log(JSON.stringify(data));
-                if (data.result || data.error) {
-                    count++;
-                }
-            });
-            if (count > 3) {
-                clearInterval(interv);
-            }
-        }, 1000);
     }
 
     private showError(error: any) {

@@ -323,7 +323,7 @@ schemaAPI.put('/:schemaId/push/publish', permissionHelper(UserRole.STANDARD_REGI
     const schemaId = req.params.schemaId;
     const user = req.user;
     const taskManager = new TaskManager();
-    const taskId = taskManager.start(`schemaAPI ${schemaId}/push/publish`);
+    const { taskId, expectation } = taskManager.start('Publish schema');
 
     setImmediate(async () => {
         try {
@@ -361,7 +361,7 @@ schemaAPI.put('/:schemaId/push/publish', permissionHelper(UserRole.STANDARD_REGI
     });
 
     console.log('End schemaAPI /:schemaId/push/publish');
-    res.status(201).send({ taskId });
+    res.status(201).send({ taskId, expectation });
 });
 
 /**
@@ -458,7 +458,7 @@ schemaAPI.post('/:topicId/push/import/message', permissionHelper(UserRole.STANDA
     const messageId = req.body.messageId as string;
 
     const taskManager = new TaskManager();
-    const taskId = taskManager.start(`schemaAPI ${topicId}/push/push/import/message`);
+    const { taskId, expectation } = taskManager.start('Import schema message');
     setImmediate(async () => {
         try {
             const guardians = new Guardians();
@@ -473,7 +473,7 @@ schemaAPI.post('/:topicId/push/import/message', permissionHelper(UserRole.STANDA
     });
 
     console.log('End schemaAPI /:schemaId/push/publish');
-    res.status(201).send({ taskId });
+    res.status(201).send({ taskId, expectation });
 });
 
 schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
@@ -502,7 +502,7 @@ schemaAPI.post('/:topicId/push/import/file', permissionHelper(UserRole.STANDARD_
     const topicId = req.params.topicId as string;
 
     const taskManager = new TaskManager();
-    const taskId = taskManager.start(`schemaAPI ${topicId}/push/import/file`);
+    const { taskId, expectation } = taskManager.start('Import schema file');
 
     setImmediate(async () => {
         try {
@@ -524,7 +524,7 @@ schemaAPI.post('/:topicId/push/import/file', permissionHelper(UserRole.STANDARD_
     });
 
     console.log('End schemaAPI /:schemaId/push/import/file');
-    res.status(201).send({ taskId });
+    res.status(201).send({ taskId, expectation });
 });
 
 schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {

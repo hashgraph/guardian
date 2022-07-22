@@ -68,7 +68,7 @@ policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
 policyAPI.post('/push', async (req: AuthenticatedRequest, res: Response) => {
     console.log('Start policyAPI /push');
     const taskManager = new TaskManager();
-    const taskId = taskManager.start('policyAPI /push');
+    const { taskId, expectation } = taskManager.start('Create policy');
 
     setImmediate(async () => {
         const engineService = new PolicyEngine();
@@ -83,7 +83,7 @@ policyAPI.post('/push', async (req: AuthenticatedRequest, res: Response) => {
         }
     });
     console.log('End policyAPI /push');
-    res.status(201).send({ taskId });
+    res.status(201).send({ taskId, expectation });
 });
 
 policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
@@ -137,7 +137,7 @@ policyAPI.put('/:policyId/push/publish',async (req: AuthenticatedRequest, res: R
     console.log('Start policyAPI /push');
     const policyId = req.params.policyId;
     const taskManager = new TaskManager();
-    const taskId = taskManager.start(`policyAPI ${policyId}/push/publish`);
+    const { taskId, expectation } = taskManager.start('Publish policy');
 
     setImmediate(async () => {
         const engineService = new PolicyEngine();
@@ -152,7 +152,7 @@ policyAPI.put('/:policyId/push/publish',async (req: AuthenticatedRequest, res: R
     });
 
     console.log('End policyAPI /push');
-    res.status(201).send({ taskId });
+    res.status(201).send({ taskId, expectation });
 });
 
 policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
@@ -254,7 +254,7 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
 policyAPI.post('/push/import/message', async (req: AuthenticatedRequest, res: Response) => {
     console.log('Start policyAPI /push/import/message');
     const taskManager = new TaskManager();
-    const taskId = taskManager.start('policyAPI import/message');
+    const { taskId, expectation } = taskManager.start('Import policy message');
 
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     setImmediate(async () => {
@@ -270,7 +270,7 @@ policyAPI.post('/push/import/message', async (req: AuthenticatedRequest, res: Re
         }
     });
     console.log('End policyAPI /push/import/message');
-    res.status(201).send({ taskId });
+    res.status(201).send({ taskId, expectation });
 });
 
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
@@ -288,7 +288,7 @@ policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) 
 policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Response) => {
     console.log('Start policyAPI /push/import/file');
     const taskManager = new TaskManager();
-    const taskId = taskManager.start('policyAPI import/file');
+    const { taskId, expectation } = taskManager.start('Import policy file');
 
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     setImmediate(async () => {
@@ -304,7 +304,7 @@ policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Respo
         }
     });
     console.log('End policyAPI /push/import/file');
-    res.status(201).send({ taskId });
+    res.status(201).send({ taskId, expectation });
 });
 
 policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {

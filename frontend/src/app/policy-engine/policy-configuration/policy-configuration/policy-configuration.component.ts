@@ -545,8 +545,9 @@ export class PolicyConfigurationComponent implements OnInit {
                 //     this.loading = false;
                 // });
                 this.policyEngineService.pushCreate(policy).subscribe((result) => {
-                    this.expectedTaskMessages = 14;
-                    this.taskId = result.taskId;
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
                 }, (e) => {
                     this.loading = false;
                     this.taskId = undefined;

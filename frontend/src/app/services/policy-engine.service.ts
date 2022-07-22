@@ -31,8 +31,8 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/`, policy);
     }
 
-    public pushCreate(policy: any): Observable<{ taskId: string }> {
-        return this.http.post<{ taskId: string }>(`${this.url}/push`, policy);
+    public pushCreate(policy: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push`, policy);
     }
 
     public policy(policyId: string): Observable<any> {
@@ -47,8 +47,8 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
     }
 
-    public pushPublish(policyId: string, policyVersion: string): Observable<{ taskId: string }> {
-        return this.http.put<{ taskId: string }>(`${this.url}/${policyId}/push/publish`, { policyVersion });
+    public pushPublish(policyId: string, policyVersion: string): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/${policyId}/push/publish`, { policyVersion });
     }
 
     public validate(policy: any): Observable<any> {
@@ -92,9 +92,9 @@ export class PolicyEngineService {
         return this.http.post<any[]>(`${this.url}/import/message${query}`, { messageId });
     }
 
-    public pushImportByMessage(messageId: string, versionOfTopicId?: string): Observable<{ taskId: string }> {
+    public pushImportByMessage(messageId: string, versionOfTopicId?: string): Observable<{ taskId: string, expectation: number }> {
         var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<{ taskId: string }>(`${this.url}/push/import/message${query}`, { messageId });
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message${query}`, { messageId });
     }
 
     public importByFile(policyFile: any, versionOfTopicId?: string): Observable<any[]> {
@@ -106,9 +106,9 @@ export class PolicyEngineService {
         });
     }
 
-    public pushImportByFile(policyFile: any, versionOfTopicId?: string): Observable<{ taskId: string }> {
+    public pushImportByFile(policyFile: any, versionOfTopicId?: string): Observable<{ taskId: string, expectation: number }> {
         var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<{ taskId: string }>(`${this.url}/push/import/file${query}`, policyFile, {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/file${query}`, policyFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
             }
