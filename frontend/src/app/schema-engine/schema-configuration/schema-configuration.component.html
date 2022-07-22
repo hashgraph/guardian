@@ -1,4 +1,6 @@
 <form class="context" [formGroup]="dataForm">
+    <div class="block-delimiter" data-label="Schema Properties" style="top:-20px;height:80px;"></div>
+    
     <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
         <mat-label>* Schema Name</mat-label>
         <input matInput type="text" placeholder="Schema Name" formControlName="name" [tabindex]='value ? -1 : 0'>
@@ -31,7 +33,7 @@
         <input matInput type="text" placeholder="Description for Schema (optional)" formControlName="description">
     </mat-form-field>
 
-    <div class="delimiter"></div>
+    <div class="block-delimiter" data-label="Fields"></div>
 
     <div *ngIf="fields && fields.length" class="fields">
         <div class="custom-fields">
@@ -40,7 +42,6 @@
                     [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
                     (remove)="onRemove(field)">
                 </schema-field-configuration>
-                <div class="delimiter"></div>
             </ng-container>
         </div>
     </div>
@@ -51,10 +52,10 @@
         </span>
     </div>
 
-    <ng-template [ngIf]="fields && fields.length > 0">
-        <div class="delimiter" *ngIf="conditions && conditions.length"></div>
+    <div class="block-delimiter" data-label="Conditions"></div>
 
-        <div *ngIf="conditions && conditions.length">
+    <ng-template [ngIf]="fields && fields.length > 0">
+        <div *ngIf="conditions && conditions.length" class="conditions-container">
             <div *ngFor="let condition of conditions">
                 <div class="condition-item">
                     <div class="condition-if-container">
@@ -114,11 +115,13 @@
                     <p class="condition-label">THEN</p>
                     <div *ngIf="condition.thenControls">
                         <div class="custom-fields">
-                            <schema-field-configuration *ngFor="let conditionField of condition.thenControls"
-                                [form]="dataForm" [field]="conditionField" [types]="types" [measureTypes]="measureTypes"
-                                [schemaTypes]="schemaTypes" [extended]="extended"
-                                (remove)="onConditionFieldRemove(condition, conditionField, 'then')">
-                            </schema-field-configuration>
+                            <ng-container *ngFor="let conditionField of condition.thenControls">
+                                <schema-field-configuration
+                                    [form]="dataForm" [field]="conditionField" [types]="types"
+                                    [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
+                                    (remove)="onConditionFieldRemove(condition, conditionField, 'then')">
+                                </schema-field-configuration>
+                            </ng-container>
                         </div>
                     </div>
                     <div class="add-btn" (click)="onConditionFieldAdd(condition, 'then')">
@@ -130,11 +133,12 @@
                     <p class="condition-label">ELSE</p>
                     <div *ngIf="condition.elseControls">
                         <div class="custom-fields">
-                            <schema-field-configuration *ngFor="let conditionField of condition.elseControls"
-                                [form]="dataForm" [field]="conditionField" [types]="types" [measureTypes]="measureTypes"
-                                [schemaTypes]="schemaTypes" [extended]="extended"
-                                (remove)="onConditionFieldRemove(condition, conditionField, 'else')">
-                            </schema-field-configuration>
+                            <ng-container *ngFor="let conditionField of condition.elseControls">
+                                <schema-field-configuration [form]="dataForm" [field]="conditionField" [types]="types"
+                                    [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
+                                    (remove)="onConditionFieldRemove(condition, conditionField, 'else')">
+                                </schema-field-configuration>
+                            </ng-container>
                         </div>
                     </div>
 
