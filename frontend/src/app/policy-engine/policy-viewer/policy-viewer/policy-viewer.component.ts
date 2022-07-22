@@ -14,10 +14,13 @@ import { ImportPolicyDialog } from '../../helpers/import-policy-dialog/import-po
 import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { TasksService } from 'src/app/services/tasks.service';
-import { MessageTranslationService } from 'src/app/services/message-translation-service/message-translation-service';
+import { InformService } from 'src/app/services/inform.service';
 
 enum OperationMode {
-    none, create, import, publish
+    none,
+    create,
+    import,
+    publish,
 }
 
 /**
@@ -58,9 +61,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private router: Router,
         private dialog: MatDialog,
         private toastr: ToastrService,
-        private messageTranslator: MessageTranslationService,
-        // TODO: For test only. Remove!
-        private taskService: TasksService
+        private taskService: TasksService,
+        private informService: InformService
     ) {
         this.policies = null;
         this.policy = null;
@@ -73,7 +75,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             'description',
             'roles',
             'topic',
-	        'schemas',
+            'schemas',
             'version',
             'status',
             'operation',
@@ -88,7 +90,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             'version',
             'open',
         ]
-
     }
 
     ngOnInit() {
@@ -184,14 +185,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.loadAllPolicy();
     }
 
-    onError(error: any) {
-        this.showError(error);
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
         this.taskId = undefined;
         this.mode = OperationMode.none;
         this.loadAllPolicy();
     }
 
-    onCompleted() {
+    onAsyncCompleted() {
         switch (this.mode) {
             case OperationMode.create:
             case OperationMode.import:
@@ -203,31 +204,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 if (this.taskId) {
                     const taskId = this.taskId;
                     this.taskId = undefined;
-                    this.taskService.get(taskId).subscribe((task: any) => {
-                        const { result } = task;
-                        if (result) {
-                            const { policies, isValid, errors } = result;
-                            if (!isValid) {
-                                let text = [];
-                                const blocks = errors.blocks;
-                                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                                for (let i = 0; i < invalidBlocks.length; i++) {
-                                    const block = invalidBlocks[i];
-                                    for (let j = 0; j < block.errors.length; j++) {
-                                        const error = block.errors[j];
-                                        text.push(`<div>${block.id}: ${error}</div>`);
-                                    }
-                                }
-                                this.toastr.error(text.join(''), 'The policy is invalid', {
-                                    timeOut: 30000,
-                                    closeButton: true,
-                                    positionClass: 'toast-bottom-right',
-                                    enableHtml: true
-                                });
-                            }
-                            this.loadAllPolicy();
-                        }
-                    });
+                    this.processPublishResult(taskId);
                 }
                 break;
             default:
@@ -368,16 +345,18 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     // }, (e) => {
                     //     this.loading = false;
                     // });
-                    this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe((result) => {
-                        const { taskId, expectation } = result;
-                        this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
-                        this.mode = OperationMode.import;
-                    }, (e) => {
-                        this.loading = false;
-                        this.taskId = undefined;
-                        this.mode = OperationMode.none;
-                    });
+                    this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe(
+                        (result) => {
+                            const { taskId, expectation } = result;
+                            this.taskId = taskId;
+                            this.expectedTaskMessages = expectation;
+                            this.mode = OperationMode.import;
+                        },
+                        (e) => {
+                            this.loading = false;
+                            this.taskId = undefined;
+                            this.mode = OperationMode.none;
+                        });
                 } else if (type == 'file') {
                     // this.policyEngineService.importByFile(data, versionOfTopicId).subscribe((policies) => {
                     //     this.loadAllPolicy();
@@ -385,44 +364,21 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     //     this.loading = false;
                     // });
 
-                    this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe((result) => {
-                        const { taskId, expectation } = result;
-                        this.taskId = taskId;
-                        this.expectedTaskMessages = expectation;
-                        this.mode = OperationMode.import;
-                    }, (e) => {
-                        this.loading = false;
-                        this.taskId = undefined;
-                        this.mode = OperationMode.none;
-                    });
+                    this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe(
+                        (result) => {
+                            const { taskId, expectation } = result;
+                            this.taskId = taskId;
+                            this.expectedTaskMessages = expectation;
+                            this.mode = OperationMode.import;
+                        },
+                        (e) => {
+                            this.loading = false;
+                            this.taskId = undefined;
+                            this.mode = OperationMode.none;
+                        });
                 }
             }
         });
-    }
-
-    private showError(error: any) {
-        const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
-        const header = `${error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
-        let text;
-        if (error.message) {
-            text = `<div>${translatedMessage.text}</div><div>${this.messageToText(error.error)}</div>`;
-        } else {
-            text = `${error.error}`;
-        }
-        this.toastr.error(text, header, {
-            timeOut: 30000,
-            closeButton: true,
-            positionClass: 'toast-bottom-right',
-            enableHtml: true
-        });
-    }
-
-    // TODO: Remove?
-    private messageToText(message: any) {
-        if (typeof message === 'object') {
-            return JSON.stringify(message, null, 2);
-        }
-        return message;
     }
 
     private getDistinctPolicy(): any[] {
@@ -441,5 +397,45 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
         return Object.values(policyByTopic)
             .sort((a: any, b: any) => a.createDate > b.createDate ? -1 : (b.createDate > a.createDate ? 1 : 0));
+    }
+
+    private processPublishResult(taskId: string): void {
+        this.taskService.get(taskId).subscribe((task: any) => {
+            const { result } = task;
+            if (result) {
+                const { policies, isValid, errors } = result;
+                if (!isValid) {
+                    let text = [];
+                    const blocks = errors.blocks;
+                    const invalidBlocks = blocks.filter(
+                        (block: any) => !block.isValid
+                    );
+                    for (let i = 0; i < invalidBlocks.length; i++) {
+                        const block = invalidBlocks[i];
+                        for (
+                            let j = 0;
+                            j < block.errors.length;
+                            j++
+                        ) {
+                            const error = block.errors[j];
+                            text.push(
+                                `<div>${block.id}: ${error}</div>`
+                            );
+                        }
+                    }
+                    this.toastr.error(
+                        text.join(''),
+                        'The policy is invalid',
+                        {
+                            timeOut: 30000,
+                            closeButton: true,
+                            positionClass: 'toast-bottom-right',
+                            enableHtml: true,
+                        }
+                    );
+                }
+                this.loadAllPolicy();
+            }
+        });
     }
 }

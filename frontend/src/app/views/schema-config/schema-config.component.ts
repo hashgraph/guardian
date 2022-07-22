@@ -15,6 +15,7 @@ import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { HttpResponse } from '@angular/common/http';
 import { TasksService } from 'src/app/services/tasks.service';
+import { InformService } from 'src/app/services/inform.service';
 
 enum OperationMode {
     none, import, publish
@@ -76,6 +77,7 @@ export class SchemaConfigComponent implements OnInit {
         private schemaService: SchemaService,
         private policyEngineService: PolicyEngineService,
         private taskService: TasksService,
+        private informService: InformService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog) {
@@ -356,14 +358,14 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
-    onError(error: any) {
-        console.error(error.error);
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
         this.mode = OperationMode.none;
     }
 
-    onCompleted() {
+    onAsyncCompleted() {
         switch (this.mode) {
             case OperationMode.import:
                 this.taskId = undefined;

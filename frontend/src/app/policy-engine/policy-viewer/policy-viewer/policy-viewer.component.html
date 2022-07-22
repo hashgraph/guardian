@@ -4,9 +4,7 @@
     </div>
 
     <div *ngIf="loading && taskId" class="loading">
-        <div class="loading-progress">
-            <async-progess [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onError($event)" (completed)="onCompleted()"></async-progess>
-        </div>
+        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
     </div>
 
     <ng-container *ngIf="!isConfirmed">
