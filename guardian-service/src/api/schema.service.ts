@@ -268,7 +268,7 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
  * @param topicId
  */
 export async function importSchemaByFiles(owner: string, files: ISchema[], topicId: string, notifier: INotifier) {
-    notifier.start("Create schema");
+    notifier.start('Create schema');
     const uuidMap: Map<string, string> = new Map();
     for (const file of files) {
         const newUUID = GenerateUUIDv4();
@@ -378,7 +378,7 @@ export async function publishSystemSchema(
  * @param owner
  */
 export async function findAndPublishSchema(id: string, version: string, owner: string, notifier: INotifier): Promise<SchemaCollection> {
-    notifier.start("Load schema");
+    notifier.start('Load schema');
     let item = await getMongoRepository(SchemaCollection).findOne(id);
 
     if (!item) {
@@ -397,17 +397,17 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
         throw new Error('Invalid status');
     }
 
-    notifier.completedAndStart("Resolve Hedera account");
+    notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
     const root = await users.getHederaAccount(owner);
-    notifier.completedAndStart("Resolve topic");
+    notifier.completedAndStart('Resolve topic');
     const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
-    notifier.completedAndStart("Publish schema");
+    notifier.completedAndStart('Publish schema');
     item = await publishSchema(item, version, messageServer, MessageAction.PublishSchema);
 
-    notifier.completedAndStart("Update in DB");
+    notifier.completedAndStart('Update in DB');
     await getMongoRepository(SchemaCollection).update(item.id, item);
     notifier.completed();
     return item;
@@ -642,7 +642,7 @@ export async function schemaAPI(
             }
 
             const notifier = initNotifier(apiGatewayChannel, taskId);
-            notifier.start("Load schema files");
+            notifier.start('Load schema files');
             const files: ISchema[] = [];
             for (const messageId of messageIds) {
                 const newSchema = await loadSchema(messageId, null);

@@ -133,10 +133,15 @@ export class MessageServer {
         return message;
     }
 
+    /**
+     * Async send IPFS
+     * @param message
+     * @private
+     */
     private async sendIPFSAsync<T extends Message>(message: T): Promise<T> {
         const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
-        
+
         /*const urls = [];
         for (const buffer of buffers) {
             const result = await IPFS.addFileAsync(buffer);
@@ -303,6 +308,11 @@ export class MessageServer {
         return message;
     }
 
+    /**
+     * Async send message
+     * @param message
+     * @param sendToIPFS
+     */
     public async sendMessageAsync<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
         if (sendToIPFS) {
             message = await this.sendIPFSAsync(message);

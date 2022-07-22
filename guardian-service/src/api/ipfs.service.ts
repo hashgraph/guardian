@@ -30,7 +30,7 @@ export async function ipfsAPI(
                     IPFSTaskManager.Resolve(taskId, { cid, url });
                 }
             }
-            
+
             return Promise.resolve(new MessageResponse<unknown>(null));
         } catch (error) {
             new Logger().error(error.message, ['IPFS_SERVICE']);

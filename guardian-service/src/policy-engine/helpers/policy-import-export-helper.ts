@@ -150,9 +150,9 @@ export class PolicyImportExportHelper {
         policy.status = 'DRAFT';
 
         const users = new Users();
-        notifier.start("Resolve Hedera account");
+        notifier.start('Resolve Hedera account');
         const root = await users.getHederaAccount(policyOwner);
-        notifier.completedAndStart("Resolve topic");
+        notifier.completedAndStart('Resolve topic');
         const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const topicRow = versionOfTopicId
@@ -167,7 +167,7 @@ export class PolicyImportExportHelper {
             });
         notifier.completed();
         policy.topicId = topicRow.topicId;
-        notifier.start("Publish Policy in Hedera");
+        notifier.start('Publish Policy in Hedera');
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
@@ -176,9 +176,9 @@ export class PolicyImportExportHelper {
             .setTopicObject(parent)
             //.sendMessage(message);
             .sendMessageAsync(message);
-        notifier.completedAndStart("Link topic and policy");
+        notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
-        notifier.completedAndStart("Publishing schemas");
+        notifier.completedAndStart('Publishing schemas');
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
         for (const schema of systemSchemas) {
@@ -196,7 +196,7 @@ export class PolicyImportExportHelper {
 
         // Import Tokens
         if (tokens) {
-            notifier.start("Import tokens");
+            notifier.start('Import tokens');
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = getMongoRepository(Token);
@@ -253,7 +253,7 @@ export class PolicyImportExportHelper {
         // Import Schemas
         const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
 
-        notifier.start("Saving in DB");
+        notifier.start('Saving in DB');
         // Replace id
         await PolicyImportExportHelper.replaceConfig(policy, schemasMap);
 

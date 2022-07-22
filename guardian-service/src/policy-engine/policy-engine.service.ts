@@ -63,6 +63,9 @@ export class PolicyEngineService {
      */
     private readonly policyGenerator: BlockTreeGenerator;
 
+    /**
+     * API-gateway message broker service
+     */
     private readonly apiGatewayChannel: MessageBrokerChannel;
 
     constructor(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel) {
@@ -167,7 +170,7 @@ export class PolicyEngineService {
     private async createPolicy(data: Policy, owner: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
-        notifier.start("Save in DB");
+        notifier.start('Save in DB');
         const model = getMongoRepository(Policy).create(data as DeepPartial<Policy>);
         if (!model.config) {
             model.config = {
@@ -200,11 +203,11 @@ export class PolicyEngineService {
         }
 
         let newTopic: Topic;
-        notifier.completedAndStart("Resolve Hedera account");
+        notifier.completedAndStart('Resolve Hedera account');
         const root = await this.users.getHederaAccount(owner);
         notifier.completed();
         if (!model.topicId) {
-            notifier.start("Create topic");
+            notifier.start('Create topic');
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await getMongoRepository(Topic).findOne({ owner, type: TopicType.UserTopic });
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
@@ -219,7 +222,7 @@ export class PolicyEngineService {
             });
             model.topicId = topic.topicId;
 
-            notifier.completedAndStart("Create policy in Hedera");
+            notifier.completedAndStart('Create policy in Hedera');
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
@@ -228,11 +231,11 @@ export class PolicyEngineService {
                 .setTopicObject(parent)
                 //.sendMessage(message);
                 .sendMessageAsync(message);
-            
-            notifier.completedAndStart("Link topic and policy");
+
+            notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
 
-            notifier.completedAndStart("Publish schemas");
+            notifier.completedAndStart('Publish schemas');
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
             for (const schema of systemSchemas) {
@@ -249,7 +252,7 @@ export class PolicyEngineService {
             notifier.completed();
         }
 
-        notifier.start("Saving in DB");
+        notifier.start('Saving in DB');
         model.codeVersion = PolicyConverterUtils.VERSION;
         const policy = await getMongoRepository(Policy).save(model);
 
@@ -312,24 +315,24 @@ export class PolicyEngineService {
     private async publishPolicy(model: Policy, owner: string, version: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
         logger.info('Publish Policy', ['GUARDIAN_SERVICE']);
-        notifier.start("Resolve Hedera account");
+        notifier.start('Resolve Hedera account');
         const root = await this.users.getHederaAccount(owner);
-        notifier.completedAndStart("Find topic");
+        notifier.completedAndStart('Find topic');
         const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
             .setTopicObject(topic);
 
-        notifier.completedAndStart("Publish schemas");
+        notifier.completedAndStart('Publish schemas');
         model = await this.publishSchemas(model, owner);
         model.status = 'PUBLISH';
         model.version = version;
 
-        notifier.completedAndStart("Generate file");
+        notifier.completedAndStart('Generate file');
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
 
-        notifier.completedAndStart("Create topic");
+        notifier.completedAndStart('Create topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
@@ -340,7 +343,7 @@ export class PolicyEngineService {
             policyUUID: model.uuid
         });
 
-        notifier.completedAndStart("Publish policy");
+        notifier.completedAndStart('Publish policy');
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
         console.log('0000000000000000 7');
@@ -349,10 +352,10 @@ export class PolicyEngineService {
             .sendMessageAsync(message);
         model.messageId = result.getId();
         model.instanceTopicId = rootTopic.topicId;
-        notifier.completedAndStart("Link topic and policy");
+        notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 
-        notifier.completedAndStart("Update policy schema");
+        notifier.completedAndStart('Update policy schema');
         const messageId = result.getId();
         const url = result.getUrl();
 
@@ -377,7 +380,7 @@ export class PolicyEngineService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
-        notifier.completedAndStart("Create VC");
+        notifier.completedAndStart('Create VC');
         const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
         const doc = getMongoRepository(VcDocumentCollection).create({
             hash: vc.toCredentialHash(),
@@ -389,7 +392,7 @@ export class PolicyEngineService {
         await getMongoRepository(VcDocumentCollection).save(doc);
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
-        notifier.completedAndStart("Saving in DB");
+        notifier.completedAndStart('Saving in DB');
         const retVal = await getMongoRepository(Policy).save(model);
         notifier.completed();
         return retVal
@@ -483,7 +486,7 @@ export class PolicyEngineService {
                 const userFull = await this.users.getUser(user.username);
                 const owner = userFull.did;
 
-                notifier.start("Find and validate policy");
+                notifier.start('Find and validate policy');
                 const policy = await getMongoRepository(Policy).findOne(policyId);
                 if (!policy) {
                     throw new Error('Unknown policy');
@@ -513,7 +516,7 @@ export class PolicyEngineService {
                     await this.policyGenerator.generate(newPolicy.id.toString());
                 }
 
-                notifier.start("Build result")
+                notifier.start('Build result');
                 const policies = (await getMongoRepository(Policy).find({ owner })).map(item => {
                     delete item.registeredUsers;
                     return item;
@@ -689,7 +692,7 @@ export class PolicyEngineService {
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const userFull = await this.users.getUser(user.username);
-                notifier.start("File parsing");
+                notifier.start('File parsing');
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
                 notifier.completed();
                 await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, notifier, versionOfTopicId);
@@ -759,9 +762,9 @@ export class PolicyEngineService {
                 }
 
                 const userFull = await this.users.getUser(user.username);
-                notifier.start("Resolve Hedera account");
+                notifier.start('Resolve Hedera account');
                 const root = await this.users.getHederaAccount(userFull.did);
-                notifier.completedAndStart("Load from IPFS");
+                notifier.completedAndStart('Load from IPFS');
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
@@ -772,7 +775,7 @@ export class PolicyEngineService {
                 if (!message.document) {
                     throw new Error('File in body is empty');
                 }
-                notifier.completedAndStart("File parsing");
+                notifier.completedAndStart('File parsing');
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
                 notifier.completed();
                 await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, notifier, versionOfTopicId);
