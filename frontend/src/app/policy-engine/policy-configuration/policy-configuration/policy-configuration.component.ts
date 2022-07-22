@@ -549,6 +549,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     this.taskId = result.taskId;
                 }, (e) => {
                     this.loading = false;
+                    this.taskId = undefined;
                 });
             }
         });
@@ -557,6 +558,7 @@ export class PolicyConfigurationComponent implements OnInit {
     onError(error: any) {
         console.error(error.error);
         this.loading = false;
+        this.taskId = undefined;
     }
 
     onCompleted() {

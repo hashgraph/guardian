@@ -186,6 +186,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     onError(error: any) {
         this.showError(error);
+        this.taskId = undefined;
+        this.mode = OperationMode.none;
         this.loadAllPolicy();
     }
 
@@ -194,6 +196,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             case OperationMode.create:
             case OperationMode.import:
                 this.taskId = undefined;
+                this.mode = OperationMode.none;
                 this.loadAllPolicy();
                 break;
             case OperationMode.publish:
@@ -258,6 +261,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.testTask(result.taskId);
                 }, (e) => {
                     this.loading = false;
+                    this.taskId = undefined;
+                    this.mode = OperationMode.none;
                 });
             }
         });
@@ -369,6 +374,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         this.testTask(result.taskId);
                     }, (e) => {
                         this.loading = false;
+                        this.taskId = undefined;
+                        this.mode = OperationMode.none;
                     });
                 } else if (type == 'file') {
                     // this.policyEngineService.importByFile(data, versionOfTopicId).subscribe((policies) => {
@@ -384,6 +391,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         this.testTask(result.taskId);
                     }, (e) => {
                         this.loading = false;
+                        this.taskId = undefined;
+                        this.mode = OperationMode.none;
                     });
                 }
             }

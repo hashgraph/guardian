@@ -14,6 +14,11 @@ import { ExportSchemaDialog } from 'src/app/schema-engine/export-schema-dialog/e
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { HttpResponse } from '@angular/common/http';
+import { TasksService } from 'src/app/services/tasks.service';
+
+enum OperationMode {
+    none, import, publish
+}
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -61,11 +66,16 @@ export class SchemaConfigComponent implements OnInit {
     policyNameByTopic: any;
     system: boolean = false;
 
+    mode: OperationMode = OperationMode.none;
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private policyEngineService: PolicyEngineService,
+        private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog) {
@@ -324,15 +334,60 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (version) => {
             if (version) {
                 this.loading = true;
-                this.schemaService.publish(element.id, version).subscribe((data: any) => {
-                    const schemas = SchemaHelper.map(data);
-                    this.schemaMapping(schemas);
-                    this.loadSchemas();
+                // this.schemaService.publish(element.id, version).subscribe((data: any) => {
+                //     const schemas = SchemaHelper.map(data);
+                //     this.schemaMapping(schemas);
+                //     this.loadSchemas();
+                // }, (e) => {
+                //     this.loading = false;
+                // });
+
+                this.schemaService.pushPublish(element.id, version).subscribe((result) => {
+                    this.expectedTaskMessages = 14;
+                    this.mode = OperationMode.publish;
+                    this.taskId = result.taskId;
                 }, (e) => {
                     this.loading = false;
+                    this.taskId = undefined;
+                    this.mode = OperationMode.none;
                 });
             }
         });
+    }
+
+    onError(error: any) {
+        console.error(error.error);
+        this.loading = false;
+        this.taskId = undefined;
+        this.mode = OperationMode.none;
+    }
+
+    onCompleted() {
+        switch (this.mode) {
+            case OperationMode.import:
+                this.taskId = undefined;
+                this.mode = OperationMode.none;
+                this.loadSchemas();
+                break;
+            case OperationMode.publish:
+                if (this.taskId) {
+                    const taskId: string = this.taskId;
+                    this.taskId = undefined;
+                    this.mode = OperationMode.none;
+                    this.taskService.get(taskId).subscribe((task: any) => {
+                        const { result } = task;
+                        if (result) {
+                            const { schemas } = result;
+                            this.schemaMapping(schemas);
+                            this.loadSchemas();
+                        }
+                    });
+                }
+                break;
+            default:
+                console.log(`Not allowed mode ${this.mode}`);
+                break;
+        }
     }
 
     unpublished(element: any) {
@@ -395,16 +450,26 @@ export class SchemaConfigComponent implements OnInit {
             if (result && result.topicId) {
                 this.loading = true;
                 if (type == 'message') {
-                    this.schemaService.importByMessage(data, result.topicId).subscribe((schemas) => {
-                        this.loadSchemas();
-                    }, (e) => {
-                        this.loading = false;
+                    // this.schemaService.importByMessage(data, result.topicId).subscribe((schemas) => {
+                    //     this.loadSchemas();
+                    // }, (e) => {
+                    //     this.loading = false;
+                    // });
+                    this.schemaService.pushImportByMessage(data, result.topicId).subscribe((result) => {
+                        this.expectedTaskMessages = 4;
+                        this.mode = OperationMode.import;
+                        this.taskId = result.taskId;
                     });
                 } else if (type == 'file') {
-                    this.schemaService.importByFile(data, result.topicId).subscribe((schemas) => {
-                        this.loadSchemas();
-                    }, (e) => {
-                        this.loading = false;
+                    // this.schemaService.importByFile(data, result.topicId).subscribe((schemas) => {
+                    //     this.loadSchemas();
+                    // }, (e) => {
+                    //     this.loading = false;
+                    // });
+                    this.schemaService.pushImportByFile(data, result.topicId).subscribe((result) => {
+                        this.expectedTaskMessages = 4;
+                        this.mode = OperationMode.import;
+                        this.taskId = result.taskId;
                     });
                 }
             }

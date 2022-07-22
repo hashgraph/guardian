@@ -12,6 +12,10 @@ const empty: INotifier = {
     completedAndStart: (nextStep: string) => { },
 };
 
+export function emptyNotifier() {
+    return empty;
+}
+
 export function initNotifier(channel: MessageBrokerChannel, taskId: string): INotifier {
     const chanelEvent = 'api-gateway.UPDATE_TASK_STATUS';
     const startSuffix = " - start";

@@ -62,6 +62,10 @@ export class SchemaService {
         return this.http.put<any[]>(`${this.url}/${id}/publish`, { version });
     }
 
+    public pushPublish(id: string, version: string): Observable<{ taskId: string }> {
+        return this.http.put<{ taskId: string }>(`${this.url}/${id}/push/publish`, { version });
+    }
+
     public unpublished(id: string): Observable<ISchema[]> {
         return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
     }
@@ -84,8 +88,20 @@ export class SchemaService {
         return this.http.post<any[]>(`${this.url}/${topicId}/import/message`, { messageId });
     }
 
+    public pushImportByMessage(messageId: string, topicId: any): Observable<{ taskId: string }> {
+        return this.http.post<{ taskId: string }>(`${this.url}/${topicId}/push/import/message`, { messageId });
+    }
+
     public importByFile(schemasFile: any, topicId: any): Observable<ISchema[]> {
         return this.http.post<any[]>(`${this.url}/${topicId}/import/file`, schemasFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public pushImportByFile(schemasFile: any, topicId: any): Observable<{ taskId: string }> {
+        return this.http.post<{ taskId: string }>(`${this.url}/${topicId}/push/import/file`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
             }

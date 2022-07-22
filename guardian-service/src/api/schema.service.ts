@@ -19,6 +19,7 @@ import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { initNotifier, INotifier } from '@helpers/status-publisher';
 
 export const schemaCache = {};
 
@@ -266,7 +267,8 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
  * @param files
  * @param topicId
  */
-export async function importSchemaByFiles(owner: string, files: ISchema[], topicId: string) {
+export async function importSchemaByFiles(owner: string, files: ISchema[], topicId: string, notifier: INotifier) {
+    notifier.start("Create schema");
     const uuidMap: Map<string, string> = new Map();
     for (const file of files) {
         const newUUID = GenerateUUIDv4();
@@ -301,6 +303,8 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
             newIRI: `#${v}`
         })
     });
+
+    notifier.completed();
     return schemasMap;
 }
 
@@ -373,7 +377,8 @@ export async function publishSystemSchema(
  * @param version
  * @param owner
  */
-export async function findAndPublishSchema(id: string, version: string, owner: string): Promise<SchemaCollection> {
+export async function findAndPublishSchema(id: string, version: string, owner: string, notifier: INotifier): Promise<SchemaCollection> {
+    notifier.start("Load schema");
     let item = await getMongoRepository(SchemaCollection).findOne(id);
 
     if (!item) {
@@ -392,16 +397,19 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
         throw new Error('Invalid status');
     }
 
+    notifier.completedAndStart("Resolve Hedera account");
     const users = new Users();
     const root = await users.getHederaAccount(owner);
+    notifier.completedAndStart("Resolve topic");
     const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
-
+    notifier.completedAndStart("Publish schema");
     item = await publishSchema(item, version, messageServer, MessageAction.PublishSchema);
 
+    notifier.completedAndStart("Update in DB");
     await getMongoRepository(SchemaCollection).update(item.id, item);
-
+    notifier.completed();
     return item;
 }
 
@@ -413,6 +421,7 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
  */
 export async function schemaAPI(
     channel: MessageBrokerChannel,
+    apiGatewayChannel: MessageBrokerChannel,
     schemaRepository: MongoRepository<SchemaCollection>
 ): Promise<void> {
 
@@ -559,12 +568,14 @@ export async function schemaAPI(
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA, async (msg) => {
+        const { id, version, owner, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
         try {
-            if (msg) {
-                const id = msg.id as string;
-                const version = msg.version as string;
-                const owner = msg.owner as string;
-                const item = await findAndPublishSchema(id, version, owner);
+            if (id) {
+                // const id = msg.id as string;
+                // const version = msg.version as string;
+                // const owner = msg.owner as string;
+                const item = await findAndPublishSchema(id, version, owner, notifier);
                 return new MessageResponse(item);
             } else {
                 return new MessageError('Invalid id');
@@ -625,18 +636,20 @@ export async function schemaAPI(
             if (!msg) {
                 return new MessageError('Invalid import schema parameter');
             }
-            const { owner, messageIds, topicId } = msg;
+            const { owner, messageIds, topicId, taskId } = msg;
             if (!owner || !messageIds) {
                 return new MessageError('Invalid import schema parameter');
             }
 
+            const notifier = initNotifier(apiGatewayChannel, taskId);
+            notifier.start("Load schema files");
             const files: ISchema[] = [];
             for (const messageId of messageIds) {
                 const newSchema = await loadSchema(messageId, null);
                 files.push(newSchema);
             }
-
-            const schemasMap = await importSchemaByFiles(owner, files, topicId);
+            notifier.completed();
+            const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
             return new MessageResponse(schemasMap);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -657,12 +670,13 @@ export async function schemaAPI(
             if (!msg) {
                 return new MessageError('Invalid import schema parameter');
             }
-            const { owner, files, topicId } = msg;
+            const { owner, files, topicId, taskId } = msg;
             if (!owner || !files) {
                 return new MessageError('Invalid import schema parameter');
             }
 
-            const schemasMap = await importSchemaByFiles(owner, files, topicId);
+            const notifier = initNotifier(apiGatewayChannel, taskId);
+            const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
             return new MessageResponse(schemasMap);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

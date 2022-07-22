@@ -39,7 +39,7 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
-import { initNotifier, INotifier } from '@helpers/status-publisher';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/status-publisher';
 
 /**
  * Policy engine service
@@ -296,7 +296,7 @@ export class PolicyEngineService {
             if (schema.status === SchemaStatus.PUBLISHED) {
                 continue;
             }
-            const newSchema = await findAndPublishSchema(schema.id, schema.version, owner);
+            const newSchema = await findAndPublishSchema(schema.id, schema.version, owner, emptyNotifier());
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
         }
         return model;

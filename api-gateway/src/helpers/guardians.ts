@@ -357,8 +357,8 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {any[]} - Schema Document
      */
-    public async importSchemasByMessages(messageIds: string[], owner: string, topicId: string): Promise<any[]> {
-        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, { messageIds, owner, topicId });
+    public async importSchemasByMessages(messageIds: string[], owner: string, topicId: string, taskId? ): Promise<any[]> {
+        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, { messageIds, owner, topicId, taskId });
     }
 
     /**
@@ -370,8 +370,8 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {any[]} - Schema Document
      */
-    public async importSchemasByFile(files: ISchema[], owner: string, topicId: string): Promise<any[]> {
-        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_FILE, { files, owner, topicId });
+    public async importSchemasByFile(files: ISchema[], owner: string, topicId: string, taskId?): Promise<any[]> {
+        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_FILE, { files, owner, topicId, taskId });
     }
 
     /**
@@ -438,8 +438,8 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema} - message
      */
-    public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
-        return await this.request<ISchema>(MessageAPI.PUBLISH_SCHEMA, { id, version, owner });
+    public async publishSchema(id: string, version: string, owner: string, taskId?: string): Promise<ISchema> {
+        return await this.request<ISchema>(MessageAPI.PUBLISH_SCHEMA, { id, version, owner, taskId });
     }
 
     /**

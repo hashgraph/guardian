@@ -250,10 +250,10 @@ export class PolicyImportExportHelper {
             notifier.completed();
         }
 
-        notifier.start("Saving in DB");
         // Import Schemas
-        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId);
+        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
 
+        notifier.start("Saving in DB");
         // Replace id
         await PolicyImportExportHelper.replaceConfig(policy, schemasMap);
 

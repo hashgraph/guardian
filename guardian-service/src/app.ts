@@ -146,7 +146,7 @@ Promise.all([
     state.updateState(ApplicationStates.INITIALIZING);
 
     await configAPI(channel, settingsRepository, topicRepository);
-    await schemaAPI(channel, schemaRepository);
+    await schemaAPI(channel, apiGatewayChannel, schemaRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await profileAPI(channel);

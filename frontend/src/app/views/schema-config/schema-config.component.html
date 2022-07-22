@@ -223,4 +223,9 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
+    <div *ngIf="loading && taskId" class="loading">
+        <div class="loading-progress">
+            <async-progess [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onError($event)" (completed)="onCompleted()"></async-progess>
+        </div>
+    </div>
 </div>
