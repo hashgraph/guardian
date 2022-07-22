@@ -366,8 +366,7 @@ export class SchemaHelper {
      * @private
      */
     private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string, condition = false) {
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
+        for (const field of fields) {
             const property = SchemaHelper.buildField(field, field.name, contextURL);
             if (field.required) {
                 required.push(field.name);
