@@ -3,14 +3,28 @@ import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Singleton } from '@helpers/decorators/singleton';
 
+/**
+ * Task manager
+ */
 @Singleton
 export class TaskManager {
-    // private tasks:TaskCollection = new TaskCollection(); // Default - one day
-    private tasks:TaskCollection = new TaskCollection(1000 * 60 * 5 /* 5 minutes */);
+    /**
+     * Map of tasks
+     */
+    private readonly tasks: TaskCollection = new TaskCollection(); // Default - one day
+    /**
+     * WebSocket service
+     */
     private wsService: WebSocketsService;
+    /**
+     * Message broker channel
+     */
     private channel: MessageBrokerChannel;
 
-    private static expectationMap = {
+    /**
+     * Cache of task expectations
+     */
+    private static readonly expectationMap = {
         'Create policy': 14,
         'Publish policy': 24,
         'Import policy file': 16,
@@ -20,6 +34,11 @@ export class TaskManager {
         'Import schema message': 4,
     }
 
+    /**
+     * Set task manager dependecies
+     * @param wsService
+     * @param channel
+     */
     public setDependecies(wsService: WebSocketsService, channel: MessageBrokerChannel) {
         this.wsService = wsService;
         this.channel = channel;
@@ -32,7 +51,12 @@ export class TaskManager {
         });
     }
 
-    public start(taskName: string): { taskId: string, expectation: number } {
+    /**
+     * Start new task
+     * @param taskName
+     * @returns { string, number } - task id and expected count of task phases
+     */
+    public start(taskName: string): NewTask {
         const taskId = GenerateUUIDv4();
         if (this.tasks[taskId]) {
             throw new Error(`Task ${taskId} exists.`);
@@ -44,6 +68,12 @@ export class TaskManager {
         return { taskId, expectation };
     }
 
+    /**
+     * Add task statuses
+     * @param taskId
+     * @param statuses
+     * @param skipIfNotFound
+     */
     public addStatuses(taskId: string, statuses: string[], skipIfNotFound: boolean = true): void {
         if (this.tasks[taskId]) {
             this.tasks[taskId].statuses.push(...statuses);
@@ -55,7 +85,13 @@ export class TaskManager {
         }
     }
 
-    public addResult(taskId: string, result: any, skipIfNotFound: boolean = true) {
+    /**
+     * Set result for task
+     * @param taskId
+     * @param result
+     * @param skipIfNotFound
+     */
+    public addResult(taskId: string, result: any, skipIfNotFound: boolean = true): void {
         const task = this.tasks[taskId];
         if (task) {
             task.result = result;
@@ -69,7 +105,13 @@ export class TaskManager {
         this.correctExpectation(task);
     }
 
-    public addError(taskId: string, error: any, skipIfNotFound: boolean = true) {
+    /**
+     * Set error for task
+     * @param taskId
+     * @param error
+     * @param skipIfNotFound
+     */
+    public addError(taskId: string, error: any, skipIfNotFound: boolean = true): void {
         if (this.tasks[taskId]) {
             this.tasks[taskId].error = error;
             this.wsService.notifyTaskProgress(taskId, undefined, true, error);
@@ -80,16 +122,12 @@ export class TaskManager {
         }
     }
 
-    public getStatuses(taskId: string, skipIfNotFound: boolean = true): string[] {
-        if (this.tasks[taskId]) {
-            return this.tasks[taskId].statuses;
-        } else if (skipIfNotFound) {
-            return;
-        } else {
-            throw new Error(`Task ${taskId} not found.`);
-        }
-    }
-
+    /**
+     * Return task
+     * @param taskId
+     * @param skipIfNotFound
+     * @returns {Task} - task data
+     */
     public getState(taskId: string, skipIfNotFound: boolean = true): Task {
         if (this.tasks[taskId]) {
             return this.tasks[taskId];
@@ -100,6 +138,11 @@ export class TaskManager {
         }
     }
 
+    /**
+     * Return expectation for task
+     * @param taskName
+     * @returns {number} - expected count of task phases
+     */
     private getExpectation(taskName: string): number {
         if (!TaskManager.expectationMap[taskName]) {
             TaskManager.expectationMap[taskName] = 2;
@@ -108,6 +151,10 @@ export class TaskManager {
         return TaskManager.expectationMap[taskName];
     }
 
+    /**
+     * Fix expectation by task
+     * @param task
+     */
     private correctExpectation(task: Task): void {
         const taskStatusCount = task.statuses.length;
         if (TaskManager.expectationMap[task.name] < taskStatusCount) {
@@ -116,27 +163,56 @@ export class TaskManager {
     }
 }
 
+/**
+ * New task interface
+ */
+interface NewTask {
+    /**
+     * Task id
+     */
+    taskId: string;
+    /**
+     * Expected count of task phases
+     */
+    expectation: number;
+}
+
+/**
+ * Map of tasks
+ */
 class TaskCollection {
     [taskId: string]: Task;
 
     constructor(delay: number = 1000 * 60 * 60 * 24 /* One day */) {
-        let self = this;
-        
+        const self = this;
         setInterval(() => {
-            console.log("Before: ", Object.keys(self).length);
             const old = new Date(new Date().valueOf() - delay);
             Object.keys(self)
                 .filter(key => self[key].date < old)
                 .forEach(key => { delete self[key] });
-            console.log("After: ", Object.keys(self).length);
         }, delay);
     }
 }
 
+/**
+ * Task
+ */
 class Task {
+    /**
+     * Date&time of task creation
+     */
     public date: Date = new Date();
+    /**
+     * Task statuses
+     */
     public statuses: string[] = [];
+    /**
+     * Result of task
+     */
     public result: any;
+    /**
+     * Error of task
+     */
     public error: any;
 
     constructor(public name: string) {}

@@ -60,9 +60,16 @@ export async function fileAPI(
         }
     })
 
-    channel.response<IAddFileMessage, { taskId: string; }>(MessageAPI.IPFS_ADD_FILE_ASYNC, (msg) => {
+    /**
+     * Async add file and return hash
+     *
+     * @param {ArrayBuffer} [payload] - file to add
+     *
+     * @returns {string} - task id of adding file
+     */
+    channel.response<IAddFileMessage, any>(MessageAPI.IPFS_ADD_FILE_ASYNC, (msg) => {
         const taskId = GenerateUUIDv4();
-        setTimeout(async () => {
+        setImmediate(async () => {
             try {
                 let fileContent = Buffer.from(msg.content, 'base64');
                 const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, msg);
@@ -79,7 +86,7 @@ export async function fileAPI(
                 new Logger().error(error, ['IPFS_CLIENT']);
                 channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid: null, url: null, taskId, error });
             }
-        }, 0);
+        });
 
         return Promise.resolve(new MessageResponse({ taskId }));
     })

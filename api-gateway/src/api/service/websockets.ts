@@ -5,7 +5,6 @@ import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI, IUpdateB
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
 import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager';
 
 /**
  * WebSocket service class
@@ -32,8 +31,14 @@ export class WebSocketsService {
         this.registerMessageHandler();
     }
 
+    /**
+     * Notify about task changes
+     * @param taskId
+     * @param statuses
+     * @param completed
+     * @param error
+     */
     public notifyTaskProgress(taskId, statuses?, completed?, error?): void {
-        console.log('Task', taskId, " statuses ", (statuses || []).length);
         this.wss.clients.forEach((client: any) => {
             this.send(client, {
                 type: 'UPDATE_TASK_STATUS',

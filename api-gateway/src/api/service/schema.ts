@@ -328,7 +328,7 @@ schemaAPI.put('/:schemaId/push/publish', permissionHelper(UserRole.STANDARD_REGI
     setImmediate(async () => {
         try {
             const guardians = new Guardians();
-            taskManager.addStatuses(taskId, [ "Load schema data - start" ]);
+            taskManager.addStatuses(taskId, [ 'Load schema data - start' ]);
             const schema = await guardians.getSchemaById(schemaId);
             if (!schema) {
                 taskManager.addError(taskId, { code: 500, message: 'Schema does not exist.' });
@@ -342,15 +342,15 @@ schemaAPI.put('/:schemaId/push/publish', permissionHelper(UserRole.STANDARD_REGI
                 taskManager.addError(taskId, { code: 500, message: 'Schema is system.' });
                 return;
             }
-    
+
             const allVersion = await guardians.getSchemasByUUID(schema.uuid);
             const { version } = req.body;
             if (allVersion.findIndex(s => s.version === version) !== -1) {
                 taskManager.addError(taskId, { code: 500, message: 'Version already exists.' });
             }
-            taskManager.addStatuses(taskId, [ "Load schema data - competed" ]);
+            taskManager.addStatuses(taskId, [ 'Load schema data - competed' ]);
             await guardians.publishSchema(schemaId, version, user.did, taskId);
-    
+
             const { schemas, count } = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(schemas, user.did);
             taskManager.addResult(taskId, { count, schemas: toOld(schemas) });
@@ -506,12 +506,12 @@ schemaAPI.post('/:topicId/push/import/file', permissionHelper(UserRole.STANDARD_
 
     setImmediate(async () => {
         try {
-            taskManager.addStatuses(taskId, [ "Parse file - start" ]);
+            taskManager.addStatuses(taskId, [ 'Parse file - start' ]);
             if (!zip) {
                 throw new Error('file in body is empty');
             }
             const files = await parseZipFile(zip);
-            taskManager.addStatuses(taskId, [ "Parse file - competed" ]);
+            taskManager.addStatuses(taskId, [ 'Parse file - competed' ]);
             const guardians = new Guardians();
             await guardians.importSchemasByFile(files, req.user.did, topicId, taskId);
             const { schemas, count } = await guardians.getSchemasByOwner(user.did);
