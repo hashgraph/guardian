@@ -17,8 +17,7 @@ export class FieldControl {
     public controlUnit: FormControl;
 
     constructor(field: SchemaField | null, type: string, name?: string) {
-        this.name = "field" + Date.now();
-
+        this.name = `field${Date.now()}${Math.floor(Math.random() * 1000000)}`;
         if (field) {
             this.controlKey = new FormControl(field.name, Validators.required);
             this.controlTitle = new FormControl(field.title, Validators.required);

@@ -216,6 +216,8 @@ export class SchemaConfigurationComponent implements OnInit {
                     entity: this.defaultFields,
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
+                }, {
+                    validators: this.fieldNameValidator()
                 });
                 this.dataForm.valueChanges.subscribe(() => {
                     this.changeForm.emit(this);
@@ -229,6 +231,8 @@ export class SchemaConfigurationComponent implements OnInit {
                     entity: this.defaultFields,
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
+                }, {
+                    validators: this.fieldNameValidator()
                 });
                 this.dataForm.valueChanges.subscribe(() => {
                     this.changeForm.emit(this);
@@ -758,5 +762,51 @@ export class SchemaConfigurationComponent implements OnInit {
             !!type &&
             this.schemaTypeMap[type].type === 'boolean'
         );
+    }
+
+
+    private fieldNameValidator(): ValidatorFn {
+        return (group: any): ValidationErrors | null => {
+            const all: FormControl[] = [];
+            const map: any = {};
+
+            const fields = group.get('fields');
+            const conditions = group.get('conditions');
+            for (const fieldName in fields.controls) {
+                const control = fields.get(fieldName).get('controlKey');
+                all.push(control);
+                map[control.value] = (map[control.value] || 0) + 1;
+            }
+            for (const conditionName in conditions.controls) {
+                const control1 = conditions.get(conditionName).get('thenFieldControls');
+                const control2 = conditions.get(conditionName).get('elseFieldControls');
+                for (const fieldName in control1.controls) {
+                    const control = control1.get(fieldName).get('controlKey');
+                    all.push(control);
+                    map[control.value] = (map[control.value] || 0) + 1;
+                }
+                for (const fieldName in control2.controls) {
+                    const control = control2.get(fieldName).get('controlKey');
+                    all.push(control);
+                    map[control.value] = (map[control.value] || 0) + 1;
+                }
+            }
+            let error = null;
+            for (const control of all) {
+                if (map[control.value] > 1) {
+                    error = { unique: true };
+                    control.setErrors(error);
+                } else if(control.errors) {
+                    delete control.errors.unique;
+                    if(Object.keys(control.errors).length === 0) {
+                        control.setErrors(null);
+                    } else {
+                        control.setErrors(control.errors);
+                    }
+                }
+            }
+
+            return error;
+        };
     }
 }

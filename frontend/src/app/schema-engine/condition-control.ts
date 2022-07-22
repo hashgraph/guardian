@@ -22,7 +22,8 @@ export class ConditionControl {
     public fieldChange: Subscription | null = null;
 
     constructor(field: FieldControl | undefined, fieldValue: string) {
-        this.name = "condition" + Date.now();
+        this.name = `condition${Date.now()}${Math.floor(Math.random() * 1000000)}`;
+
 
         this.thenControls = [];
         this.elseControls = [];
