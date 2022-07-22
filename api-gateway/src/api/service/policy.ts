@@ -133,6 +133,28 @@ policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Respo
     }
 });
 
+policyAPI.put('/:policyId/push/publish',async (req: AuthenticatedRequest, res: Response) => {
+    console.log('Start policyAPI /push');
+    const policyId = req.params.policyId;
+    const taskManager = new TaskManager();
+    const taskId = taskManager.start(`policyAPI ${policyId}/push/publish`);
+
+    setImmediate(async () => {
+        const engineService = new PolicyEngine();
+        try {
+            const result = await engineService.publishPolicy(req.body, req.user, req.params.policyId, taskId);
+            console.log(`Set result policyAPI ${policyId}/push/publish`);
+            taskManager.addResult(taskId, result);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: error.message || error });
+        }
+    });
+
+    console.log('End policyAPI /push');
+    res.status(201).send({ taskId });
+});
+
 policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {

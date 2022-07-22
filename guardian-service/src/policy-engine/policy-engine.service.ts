@@ -309,23 +309,27 @@ export class PolicyEngineService {
      * @param version
      * @private
      */
-    private async publishPolicy(model: Policy, owner: string, version: string): Promise<Policy> {
+    private async publishPolicy(model: Policy, owner: string, version: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
         logger.info('Publish Policy', ['GUARDIAN_SERVICE']);
-
+        notifier.start("Resolve Hedera account");
         const root = await this.users.getHederaAccount(owner);
+        notifier.completedAndStart("Find topic");
         const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
             .setTopicObject(topic);
 
+        notifier.completedAndStart("Publish schemas");
         model = await this.publishSchemas(model, owner);
         model.status = 'PUBLISH';
         model.version = version;
 
+        notifier.completedAndStart("Generate file");
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
 
+        notifier.completedAndStart("Create topic");
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
@@ -336,6 +340,7 @@ export class PolicyEngineService {
             policyUUID: model.uuid
         });
 
+        notifier.completedAndStart("Publish policy");
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
         console.log('0000000000000000 7');
@@ -344,9 +349,10 @@ export class PolicyEngineService {
             .sendMessageAsync(message);
         model.messageId = result.getId();
         model.instanceTopicId = rootTopic.topicId;
-
+        notifier.completedAndStart("Link topic and policy");
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 
+        notifier.completedAndStart("Update policy schema");
         const messageId = result.getId();
         const url = result.getUrl();
 
@@ -371,6 +377,7 @@ export class PolicyEngineService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
+        notifier.completedAndStart("Create VC");
         const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
         const doc = getMongoRepository(VcDocumentCollection).create({
             hash: vc.toCredentialHash(),
@@ -382,8 +389,10 @@ export class PolicyEngineService {
         await getMongoRepository(VcDocumentCollection).save(doc);
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
-
-        return await getMongoRepository(Policy).save(model);
+        notifier.completedAndStart("Saving in DB");
+        const retVal = await getMongoRepository(Policy).save(model);
+        notifier.completed();
+        return retVal
     }
 
     /**
@@ -463,33 +472,34 @@ export class PolicyEngineService {
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.PUBLISH_POLICIES, async (msg) => {
+            const { model, policyId, user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
             try {
-                if (!msg.model || !msg.model.policyVersion) {
+                if (!model || !model.policyVersion) {
                     throw new Error('Policy version in body is empty');
                 }
 
-                const policyId = msg.policyId;
-                const version = msg.model.policyVersion;
-                const user = msg.user;
+                const version = model.policyVersion;
                 const userFull = await this.users.getUser(user.username);
                 const owner = userFull.did;
 
-                const model = await getMongoRepository(Policy).findOne(policyId);
-                if (!model) {
+                notifier.start("Find and validate policy");
+                const policy = await getMongoRepository(Policy).findOne(policyId);
+                if (!policy) {
                     throw new Error('Unknown policy');
                 }
-                if (!model.config) {
+                if (!policy.config) {
                     throw new Error('The policy is empty');
                 }
                 if (!ModelHelper.checkVersionFormat(version)) {
                     throw new Error('Invalid version format');
                 }
-                if (ModelHelper.versionCompare(version, model.previousVersion) <= 0) {
-                    throw new Error('Version must be greater than ' + model.previousVersion);
+                if (ModelHelper.versionCompare(version, policy.previousVersion) <= 0) {
+                    throw new Error('Version must be greater than ' + policy.previousVersion);
                 }
                 const countModels = await getMongoRepository(Policy).count({
                     version,
-                    uuid: model.uuid
+                    uuid: policy.uuid
                 });
                 if (countModels > 0) {
                     throw new Error('Policy with current version already was published');
@@ -497,17 +507,18 @@ export class PolicyEngineService {
 
                 const errors = await this.policyGenerator.validate(policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
-
+                notifier.completed();
                 if (isValid) {
-                    const newPolicy = await this.publishPolicy(model, owner, version);
+                    const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
                     await this.policyGenerator.generate(newPolicy.id.toString());
                 }
 
+                notifier.start("Build result")
                 const policies = (await getMongoRepository(Policy).find({ owner })).map(item => {
                     delete item.registeredUsers;
                     return item;
                 });
-
+                notifier.completed();
                 return new MessageResponse({
                     policies,
                     isValid,
