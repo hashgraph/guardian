@@ -3,8 +3,6 @@ import { Subscription, NatsConnection, StringCodec, connect, JSONCodec } from 'n
 import { IMessageResponse, MessageError } from '../models/message-response';
 import * as zlib from 'zlib';
 
-const MQ_TIMEOUT = +process.env.MQ_TIMEOUT || 300000;
-
 /**
  * Message broker channel
  */
