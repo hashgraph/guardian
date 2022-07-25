@@ -79,9 +79,9 @@ export class ConditionControl {
 
     public removeControl(type: 'then' | 'else', control: FieldControl) {
         if (type == 'then') {
-            this.addThenControl(control);
+            this.removeThenControl(control);
         } else {
-            this.addElseControl(control);
+            this.removeElseControl(control);
         }
     }
 
