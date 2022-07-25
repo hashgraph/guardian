@@ -19,6 +19,7 @@ import { PolicyStorage } from '../../policy-storage';
 import { TreeFlatOverview } from '../../helpers/tree-flat-overview/tree-flat-overview';
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { TasksService } from 'src/app/services/tasks.service';
+import { InformService } from 'src/app/services/inform.service';
 
 
 /**
@@ -98,7 +99,8 @@ export class PolicyConfigurationComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
-        private taskService: TasksService
+        private taskService: TasksService,
+        private informService: InformService
     ) {
         this.newBlockType = 'interfaceContainerBlock';
         this.policyModel = new PolicyModel();
@@ -549,22 +551,19 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    onError(error: any) {
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
         console.error(error.error);
         this.loading = false;
         this.taskId = undefined;
     }
 
-    onCompleted() {
+    onAsyncCompleted() {
         if (this.taskId) {
             const taskId: string = this.taskId;
             this.taskId = undefined;
             this.taskService.get(taskId).subscribe((task: any) => {
-                const { result } = task;
-                if (result) {
-                    const last = result[result.length - 1];
-                    this.router.navigate(['/policy-configuration'], { queryParams: { policyId: last.id } });
-                }
+                this.router.navigate(['/policy-configuration'], { queryParams: { policyId: task.result } });
             });
         }
     }

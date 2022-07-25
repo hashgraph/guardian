@@ -348,11 +348,11 @@ schemaAPI.put('/:schemaId/push/publish', permissionHelper(UserRole.STANDARD_REGI
                 taskManager.addError(taskId, { code: 500, message: 'Version already exists.' });
             }
             taskManager.addStatuses(taskId, [ 'Load schema data - competed' ]);
-            await guardians.publishSchema(schemaId, version, user.did, taskId);
+            await guardians.publishSchemaAsync(schemaId, version, user.did, taskId);
 
-            const { schemas, count } = await guardians.getSchemasByOwner(user.did);
-            SchemaHelper.updatePermission(schemas, user.did);
-            taskManager.addResult(taskId, { count, schemas: toOld(schemas) });
+            // const { schemas, count } = await guardians.getSchemasByOwner(user.did);
+            // SchemaHelper.updatePermission(schemas, user.did);
+            // taskManager.addResult(taskId, { count, schemas: toOld(schemas) });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: error.message });
@@ -459,10 +459,10 @@ schemaAPI.post('/:topicId/push/import/message', permissionHelper(UserRole.STANDA
     setImmediate(async () => {
         try {
             const guardians = new Guardians();
-            await guardians.importSchemasByMessages([messageId], user.did, topicId, taskId);
-            const { schemas, count } = await guardians.getSchemasByOwner(user.did);
-            SchemaHelper.updatePermission(schemas, user.did);
-            taskManager.addResult(taskId, { count, schemas: toOld(schemas) })
+            await guardians.importSchemasByMessagesAsync([messageId], user.did, topicId, taskId);
+            // const { schemas, count } = await guardians.getSchemasByOwner(user.did);
+            // SchemaHelper.updatePermission(schemas, user.did);
+            // taskManager.addResult(taskId, { count, schemas: toOld(schemas) })
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: error.message });
@@ -508,10 +508,10 @@ schemaAPI.post('/:topicId/push/import/file', permissionHelper(UserRole.STANDARD_
             const files = await parseZipFile(zip);
             taskManager.addStatuses(taskId, [ 'Parse file - competed' ]);
             const guardians = new Guardians();
-            await guardians.importSchemasByFile(files, user.did, topicId, taskId);
-            const { schemas, count } = await guardians.getSchemasByOwner(user.did);
-            SchemaHelper.updatePermission(schemas, user.did);
-            taskManager.addResult(taskId, { count, schemas: toOld(schemas) });
+            await guardians.importSchemasByFileAsync(files, user.did, topicId, taskId);
+            // const { schemas, count } = await guardians.getSchemasByOwner(user.did);
+            // SchemaHelper.updatePermission(schemas, user.did);
+            // taskManager.addResult(taskId, { count, schemas: toOld(schemas) });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: error.message });

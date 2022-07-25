@@ -75,9 +75,7 @@ export class MessageBrokerChannel {
                     stringPayload = '{}';
             }
 
-            const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), {
-                timeout: timeout || MQ_TIMEOUT,
-            });
+            const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload));
 
             const unpackedString = zlib.inflateSync(new Buffer(StringCodec().decode(msg.data), 'binary')).toString();
             return JSON.parse(unpackedString);

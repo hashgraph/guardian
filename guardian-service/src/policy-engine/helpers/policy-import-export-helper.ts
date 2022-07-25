@@ -171,11 +171,9 @@ export class PolicyImportExportHelper {
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
-        console.log('!!!!!!!!!!!!!!!!!!!!');
         const messageStatus = await messageServer
             .setTopicObject(parent)
-            //.sendMessage(message);
-            .sendMessageAsync(message);
+            .sendMessage(message);
         notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
         notifier.completedAndStart('Publishing schemas');

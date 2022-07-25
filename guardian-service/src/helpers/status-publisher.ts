@@ -17,6 +17,16 @@ export interface INotifier {
      * Notify about compliteing of started part of process and starting of new one
      */
     completedAndStart: (nextStep: string) => void;
+
+    /**
+     * Nofity about error
+     */
+    error: (error: any) => void;
+
+    /**
+     * Notify about result
+     */
+    result: (result: any) => void;
 }
 
 const empty: INotifier = {
@@ -24,6 +34,8 @@ const empty: INotifier = {
     start: (step: string) => { },
     completed: () => { },
     completedAndStart: (nextStep: string) => { },
+    error: (error: any) => { },
+    result: (result: any) => { }
     /* tslint:enable:no-empty */
 };
 
@@ -70,6 +82,18 @@ export function initNotifier(channel: MessageBrokerChannel, taskId: string): INo
                     this.completed();
                 }
             },
+            error: async (error: any) => {
+                await channel.request(chanelEvent, {
+                    taskId,
+                    error
+                });
+            },
+            result: async (result: any) => {
+                await channel.request(chanelEvent, {
+                    taskId,
+                    result
+                });
+            }
         }
         return notifier;
     } else {

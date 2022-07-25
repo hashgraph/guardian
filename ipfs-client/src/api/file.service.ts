@@ -84,10 +84,9 @@ export async function fileAPI(
             }
             catch (error) {
                 new Logger().error(error, ['IPFS_CLIENT']);
-                channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid: null, url: null, taskId, error });
+                channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { taskId, error });
             }
         });
-
         return Promise.resolve(new MessageResponse({ taskId }));
     })
 
@@ -116,7 +115,10 @@ export async function fileAPI(
             const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
             let fileContent = fileRes.data;
             if (fileContent instanceof Buffer) {
-                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, { content: fileContent.toString('base64') });
+                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
+                    responseType: msg.responseType,
+                    content: fileContent.toString('base64'),
+                });
                 if (data && data.body) {
                     // If get data back from external event
                     fileContent = Buffer.from(data.body, 'base64')
@@ -137,6 +139,53 @@ export async function fileAPI(
             return new MessageResponse({ error: error.message });
         }
     })
+
+    channel.response<IGetFileMessage, any>(MessageAPI.IPFS_GET_FILE_ASYNC, async (msg) => {
+        const taskId = GenerateUUIDv4();
+        setImmediate(async () => {
+            try {
+                axiosRetry(axios, {
+                    retries: 3,
+                    shouldResetTimeout: true,
+                    retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error)
+                        || error.code === 'ECONNABORTED',
+                    retryDelay: (retryCount) => 10000
+                });
+
+                if (!msg || !msg.cid || !msg.responseType) {
+                    throw new Error('Invalid cid');
+                }
+
+                const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
+                let fileContent = fileRes.data;
+                if (fileContent instanceof Buffer) {
+                    const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, { content: fileContent.toString('base64') });
+                    if (data && data.body) {
+                        // If get data back from external event
+                        fileContent = Buffer.from(data.body, 'base64')
+                    }
+                }
+
+                switch (msg.responseType) {
+                    case 'str':
+                        fileContent = Buffer.from(fileContent, 'binary').toString();
+                        break;
+                    case 'json':
+                        fileContent = Buffer.from(fileContent, 'binary').toJSON();
+                        break;
+                    default:
+                        break;
+                }
+
+                channel.publish(ExternalMessageEvents.IPFS_LOADED_FILE, { taskId, fileContent });
+            }
+            catch (error) {
+                new Logger().error(error, ['IPFS_CLIENT']);
+                channel.publish(ExternalMessageEvents.IPFS_LOADED_FILE, { taskId, error });
+            }
+        });
+        return Promise.resolve(new MessageResponse({ taskId }));
+    });
 
     /**
      * Update settings.

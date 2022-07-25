@@ -43,10 +43,19 @@ export class TaskManager {
         this.wsService = wsService;
         this.channel = channel;
         this.channel.response<any, any>(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
-            const { taskId, statuses } = msg;
-            if (taskId && statuses) {
-                this.addStatuses(taskId, statuses);
+            const { taskId, statuses, result, error } = msg;
+            if (taskId) {
+                if (statuses) {
+                    this.addStatuses(taskId, statuses);
+                }
+
+                if (error) {
+                    this.addError(taskId, error);
+                } else if (result) {
+                    this.addResult(taskId, result);
+                }
             }
+
             return new MessageResponse({});
         });
     }

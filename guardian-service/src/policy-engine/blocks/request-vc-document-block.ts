@@ -346,11 +346,9 @@ export class RequestVcDocumentBlock {
                 message.setDocument(didObject);
 
                 const client = new MessageServer(userHederaAccount, userHederaKey);
-                console.log('0000000000000000 8');
                 const messageResult = await client
                     .setTopicObject(topic)
-                    //.sendMessage(message);
-                    .sendMessageAsync(message);
+                    .sendMessage(message);
 
                 const doc = getMongoRepository(DidDocumentCollection).create({
                     did,

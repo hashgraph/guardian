@@ -43,8 +43,18 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param model
      * @param user
      */
-    public async createPolicy(model, user, taskId?) {
-        return await this.request(PolicyEngineEvents.CREATE_POLICIES, { model, user, taskId });
+    public async createPolicy(model, user) {
+        return await this.request(PolicyEngineEvents.CREATE_POLICIES, { model, user });
+    }
+
+    /**
+     * Async create policy
+     * @param model
+     * @param user
+     * @param taskId
+     */
+    public async createPolicyAsync(model, user, taskId) {
+        return await this.request(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, user, taskId });
     }
 
     /**
@@ -63,8 +73,19 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user
      * @param policyId
      */
-    public async publishPolicy(model, user, policyId, taskId?) {
-        return await this.request(PolicyEngineEvents.PUBLISH_POLICIES, { model, user, policyId, taskId });
+    public async publishPolicy(model, user, policyId) {
+        return await this.request(PolicyEngineEvents.PUBLISH_POLICIES, { model, user, policyId });
+    }
+
+    /**
+     * Async publish policy
+     * @param model
+     * @param user
+     * @param policyId
+     * @param taskId
+     */
+    public async publishPolicyAsync(model, user, policyId, taskId) {
+        return await this.request(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, user, policyId, taskId });
     }
 
     /**
@@ -150,8 +171,19 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user
      * @param zip
      */
-    public async importFile(user, zip, versionOfTopicId?, taskId?) {
-        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE, { zip, user, versionOfTopicId, taskId });
+    public async importFile(user, zip, versionOfTopicId?) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE, { zip, user, versionOfTopicId });
+    }
+
+    /**
+     * Async load policy file for import
+     * @param user
+     * @param zip
+     * @param versionOfTopicId
+     * @param taskId
+     */
+    public async importFileAsync(user, zip, versionOfTopicId, taskId) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, { zip, user, versionOfTopicId, taskId });
     }
 
     /**
@@ -159,8 +191,19 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user
      * @param messageId
      */
-    public async importMessage(user, messageId, versionOfTopicId?, taskId?) {
-        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user, versionOfTopicId, taskId });
+    public async importMessage(user, messageId, versionOfTopicId) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user, versionOfTopicId });
+    }
+
+    /**
+     * Async import policy from message
+     * @param user
+     * @param messageId
+     * @param versionOfTopicId
+     * @param taskId
+     */
+    public async importMessageAsync(user, messageId, versionOfTopicId, taskId) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, { messageId, user, versionOfTopicId, taskId });
     }
 
     /**

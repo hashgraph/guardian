@@ -361,7 +361,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.taskService.get(taskId).subscribe((task: any) => {
             const { result } = task;
             if (result) {
-                const { policies, isValid, errors } = result;
+                const { isValid, errors } = result;
                 if (!isValid) {
                     let text = [];
                     const blocks = errors.blocks;

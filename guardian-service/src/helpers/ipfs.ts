@@ -108,4 +108,29 @@ export class IPFS {
         }
         return res.body;
     }
+
+    /**
+     * Async returns file by IPFS CID
+     * @param cid IPFS CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public static async getFileAsync(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
+        const res = (await IPFS.channel.request<IGetFileMessage, any>([IPFS.target, MessageAPI.IPFS_GET_FILE_ASYNC].join('.'), { cid, responseType }));
+        if (!res) {
+            throw new Error('Invalid response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+
+        const { taskId } = res.body;
+        if (!taskId) {
+            throw new Error('Invalid response: taskId excepted');
+        }
+        const getFilePromise = new Promise<IFileResponse>((resolve, reject) => {
+            IPFSTaskManager.AddTask(taskId, resolve, reject);
+        });
+        return getFilePromise;
+    }
 }

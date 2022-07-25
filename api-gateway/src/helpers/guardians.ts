@@ -357,8 +357,20 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {any[]} - Schema Document
      */
-    public async importSchemasByMessages(messageIds: string[], owner: string, topicId: string, taskId? ): Promise<any[]> {
-        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, { messageIds, owner, topicId, taskId });
+    public async importSchemasByMessages(messageIds: string[], owner: string, topicId: string ): Promise<any[]> {
+        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, { messageIds, owner, topicId });
+    }
+
+    /**
+     * Async import schema
+     *
+     * @param {string[]} messageIds - schema uuid
+     * @param {string} owner
+     * @param {string} topicId
+     * @param {string} taskId
+     */
+    public async importSchemasByMessagesAsync(messageIds: string[], owner: string, topicId: string, taskId: string ): Promise<any[]> {
+        return await this.request<any>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, taskId });
     }
 
     /**
@@ -370,8 +382,19 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {any[]} - Schema Document
      */
-    public async importSchemasByFile(files: ISchema[], owner: string, topicId: string, taskId?): Promise<any[]> {
-        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_FILE, { files, owner, topicId, taskId });
+    public async importSchemasByFile(files: ISchema[], owner: string, topicId: string): Promise<any[]> {
+        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_FILE, { files, owner, topicId });
+    }
+
+    /**
+     * Async import schema
+     * @param {ISchema[]} files
+     * @param {owner} owner
+     * @param {string} topicId
+     * @param {string} taskId
+     */
+    public async importSchemasByFileAsync(files: ISchema[], owner: string, topicId: string, taskId: string): Promise<any[]> {
+        return await this.request<any>(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, taskId });
     }
 
     /**
@@ -438,8 +461,22 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema} - message
      */
-    public async publishSchema(id: string, version: string, owner: string, taskId?: string): Promise<ISchema> {
-        return await this.request<ISchema>(MessageAPI.PUBLISH_SCHEMA, { id, version, owner, taskId });
+    public async publishSchema(id: string, version: string, owner: string): Promise<ISchema> {
+        return await this.request<ISchema>(MessageAPI.PUBLISH_SCHEMA, { id, version, owner });
+    }
+
+    /**
+     * Async changing the status of a schema on PUBLISHED.
+     *
+     * @param {string} id - schema id
+     * @param {string} version - schema version
+     * @param {string} owner - schema message
+     * @param {string} taskId - task id
+     *
+     * @returns {ISchema} - message
+     */
+    public async publishSchemaAsync(id: string, version: string, owner: string, taskId: string) {
+        return await this.request<any>(MessageAPI.PUBLISH_SCHEMA_ASYNC, { id, version, owner, taskId });
     }
 
     /**

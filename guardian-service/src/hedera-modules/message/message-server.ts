@@ -123,31 +123,6 @@ export class MessageServer {
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
         const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
-        const urls = [];
-        for (const buffer of buffers) {
-            const result = await IPFS.addFile(buffer);
-            urls.push(result);
-        }
-        await this.messageEndLog(time, 'IPFS');
-        message.setUrls(urls);
-        return message;
-    }
-
-    /**
-     * Async send IPFS
-     * @param message
-     * @private
-     */
-    private async sendIPFSAsync<T extends Message>(message: T): Promise<T> {
-        const time = await this.messageStartLog('IPFS');
-        const buffers = await message.toDocuments();
-
-        /*const urls = [];
-        for (const buffer of buffers) {
-            const result = await IPFS.addFileAsync(buffer);
-            urls.push(result);
-        }
-        */
 
         const promises = buffers.map(buffer => {
             return IPFS.addFileAsync(buffer);
@@ -166,11 +141,10 @@ export class MessageServer {
      */
     private async loadIPFS<T extends Message>(message: T): Promise<T> {
         const urls = message.getUrls();
-        const documents = [];
-        for (const url of urls) {
-            const document = await IPFS.getFile(url.cid, message.responseType);
-            documents.push(document);
-        }
+        const promises = urls.map(url => {
+            return IPFS.getFileAsync(url.cid, message.responseType);
+        });
+        const documents = await Promise.all(promises);
         message = message.loadDocuments(documents) as T;
         return message;
     }
@@ -303,19 +277,6 @@ export class MessageServer {
     public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
         if (sendToIPFS) {
             message = await this.sendIPFS(message);
-        }
-        message = await this.sendHedera(message);
-        return message;
-    }
-
-    /**
-     * Async send message
-     * @param message
-     * @param sendToIPFS
-     */
-    public async sendMessageAsync<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
-        if (sendToIPFS) {
-            message = await this.sendIPFSAsync(message);
         }
         message = await this.sendHedera(message);
         return message;

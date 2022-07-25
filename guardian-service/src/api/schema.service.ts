@@ -19,7 +19,7 @@ import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
-import { initNotifier, INotifier } from '@helpers/status-publisher';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/status-publisher';
 
 export const schemaCache = {};
 
@@ -329,10 +329,8 @@ export async function publishSchema(
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
-    console.log('0000000000000000 1');
     const result = await messageServer
-        //.sendMessage(message);
-        .sendMessageAsync(message);
+        .sendMessage(message);
 
     const messageId = result.getId();
     const topicId = result.getTopicId();
@@ -568,14 +566,12 @@ export async function schemaAPI(
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA, async (msg) => {
-        const { id, version, owner, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
         try {
-            if (id) {
-                // const id = msg.id as string;
-                // const version = msg.version as string;
-                // const owner = msg.owner as string;
-                const item = await findAndPublishSchema(id, version, owner, notifier);
+            if (msg) {
+                const id = msg.id as string;
+                const version = msg.version as string;
+                const owner = msg.owner as string;
+                const item = await findAndPublishSchema(id, version, owner, emptyNotifier());
                 return new MessageResponse(item);
             } else {
                 return new MessageError('Invalid id');
@@ -585,6 +581,25 @@ export async function schemaAPI(
             console.error(error);
             return new MessageError(error);
         }
+    });
+
+    ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA_ASYNC, async (msg) => {
+        const { id, version, owner, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                if (id) {
+                    const item = await findAndPublishSchema(id, version, owner, notifier);
+                    notifier.result(item.id);
+                } else {
+                    notifier.error('Invalid id');
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+        return new MessageResponse({ taskId });
     });
 
     /**
@@ -608,10 +623,8 @@ export async function schemaAPI(
                             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                             const message = new SchemaMessage(MessageAction.DeleteSchema);
                             message.setDocument(item);
-                            console.log('0000000000000000 5');
                             await messageServer.setTopicObject(topic)
-                                //.sendMessage(message);
-                                .sendMessageAsync(message);
+                                .sendMessage(message);
                         }
                     }
                     await schemaRepository.delete(item.id);
@@ -636,26 +649,50 @@ export async function schemaAPI(
             if (!msg) {
                 return new MessageError('Invalid import schema parameter');
             }
-            const { owner, messageIds, topicId, taskId } = msg;
+            const { owner, messageIds, topicId } = msg;
             if (!owner || !messageIds) {
                 return new MessageError('Invalid import schema parameter');
             }
 
-            const notifier = initNotifier(apiGatewayChannel, taskId);
-            notifier.start('Load schema files');
             const files: ISchema[] = [];
             for (const messageId of messageIds) {
                 const newSchema = await loadSchema(messageId, null);
                 files.push(newSchema);
             }
-            notifier.completed();
-            const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
+
+            const schemasMap = await importSchemaByFiles(owner, files, topicId, emptyNotifier());
             return new MessageResponse(schemasMap);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
             return new MessageError(error);
         }
+    });
+
+    ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, async (msg) => {
+        const { owner, messageIds, topicId, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                if (!owner || !messageIds) {
+                    notifier.error('Invalid import schema parameter');
+                }
+
+                notifier.start('Load schema files');
+                const files: ISchema[] = [];
+                for (const messageId of messageIds) {
+                    const newSchema = await loadSchema(messageId, null);
+                    files.push(newSchema);
+                }
+                notifier.completed();
+                const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
+                notifier.result(schemasMap);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+        return new MessageResponse({ taskId });
     });
 
     /**
@@ -670,19 +707,37 @@ export async function schemaAPI(
             if (!msg) {
                 return new MessageError('Invalid import schema parameter');
             }
-            const { owner, files, topicId, taskId } = msg;
+            const { owner, files, topicId } = msg;
             if (!owner || !files) {
                 return new MessageError('Invalid import schema parameter');
             }
 
-            const notifier = initNotifier(apiGatewayChannel, taskId);
-            const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
+            const schemasMap = await importSchemaByFiles(owner, files, topicId, emptyNotifier());
             return new MessageResponse(schemasMap);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
             return new MessageError(error);
         }
+    });
+
+    ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, async (msg) => {
+        const { owner, files, topicId, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                if (!owner || !files) {
+                    notifier.error('Invalid import schema parameter');
+                }
+
+                const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
+                notifier.result(schemasMap);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+        return new MessageResponse({ taskId });
     });
 
     /**

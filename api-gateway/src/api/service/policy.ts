@@ -74,8 +74,7 @@ policyAPI.post('/push', async (req: AuthenticatedRequest, res: Response) => {
     setImmediate(async () => {
         const engineService = new PolicyEngine();
         try {
-            const policies = await engineService.createPolicy(model, user, taskId);
-             taskManager.addResult(taskId, policies);
+            await engineService.createPolicyAsync(model, user, taskId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: error.message });
@@ -141,8 +140,7 @@ policyAPI.put('/:policyId/push/publish',async (req: AuthenticatedRequest, res: R
     setImmediate(async () => {
         const engineService = new PolicyEngine();
         try {
-            const result = await engineService.publishPolicy(model, user, policyId, taskId);
-            taskManager.addResult(taskId, result);
+            await engineService.publishPolicyAsync(model, user, policyId, taskId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: error.message || error });
@@ -258,8 +256,7 @@ policyAPI.post('/push/import/message', async (req: AuthenticatedRequest, res: Re
     setImmediate(async () => {
         try {
             const engineService = new PolicyEngine();
-            const policies = await engineService.importMessage(user, messageId, versionOfTopicId, taskId);
-            taskManager.addResult(taskId, policies);
+            await engineService.importMessageAsync(user, messageId, versionOfTopicId, taskId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -290,8 +287,7 @@ policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Respo
     setImmediate(async () => {
         try {
             const engineService = new PolicyEngine();
-            const policies = await engineService.importFile(user, zip, versionOfTopicId, taskId);
-            taskManager.addResult(taskId, policies);
+            await engineService.importFileAsync(user, zip, versionOfTopicId, taskId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
