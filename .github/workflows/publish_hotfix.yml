@@ -3,7 +3,7 @@ on:
   release:
     types: [published]
     branches:
-      - main
+      - 'hotfix/*'
 
 jobs:
   docker:
@@ -44,7 +44,7 @@ jobs:
           context: .
           file: ./logger-service/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/logger-service:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/logger-service:latest'
+          tags: 'gcr.io/hedera-registry/logger-service:${{ steps.package-version.outputs.current-version}}'
 
       - name: auth-service
         uses: docker/build-push-action@v2
@@ -52,7 +52,7 @@ jobs:
           context: .
           file: ./auth-service/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/auth-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/auth-service:latest'
+          tags: 'gcr.io/hedera-registry/auth-service:${{ steps.package-version.outputs.current-version}}'
 
       - name: api-gateway
         uses: docker/build-push-action@v2
@@ -60,7 +60,7 @@ jobs:
           context: .
           file: ./api-gateway/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/api-gateway:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/api-gateway:latest'
+          tags: 'gcr.io/hedera-registry/api-gateway:${{ steps.package-version.outputs.current-version}}'
 
       - name: guardian-service
         uses: docker/build-push-action@v2
@@ -68,7 +68,7 @@ jobs:
           context: .
           file: ./guardian-service/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/guardian-service:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/guardian-service:latest'
+          tags: 'gcr.io/hedera-registry/guardian-service:${{ steps.package-version.outputs.current-version}}'
 
       - name: ipfs-client
         uses: docker/build-push-action@v2
@@ -76,7 +76,7 @@ jobs:
           context: .
           file: ./ipfs-client/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/ipfs-client:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/ipfs-client:latest'
+          tags: 'gcr.io/hedera-registry/ipfs-client:${{ steps.package-version.outputs.current-version}}'
 
       - name: topic-viewer
         uses: docker/build-push-action@v2
@@ -84,7 +84,7 @@ jobs:
           context: .
           file: ./topic-viewer/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/topic-viewer:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/topic-viewer:latest'
+          tags: 'gcr.io/hedera-registry/topic-viewer:${{ steps.package-version.outputs.current-version}}'
 
       - name: api-docs
         uses: docker/build-push-action@v2
@@ -92,7 +92,7 @@ jobs:
           context: .
           file: ./api-docs/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/api-docs:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/api-docs:latest'
+          tags: 'gcr.io/hedera-registry/api-docs:${{ steps.package-version.outputs.current-version}}njxyj'
 
       - name: web-proxy
         uses: docker/build-push-action@v2
@@ -100,4 +100,4 @@ jobs:
           context: .
           file: ./web-proxy/Dockerfile.ci
           push: true
-          tags: 'gcr.io/hedera-registry/frontend:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/frontend:latest'
+          tags: 'gcr.io/hedera-registry/frontend:${{ steps.package-version.outputs.current-version}}'
