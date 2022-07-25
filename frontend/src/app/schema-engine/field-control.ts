@@ -1,6 +1,6 @@
 import {
     FormControl,
-    FormGroup, Validators
+    FormGroup, ValidationErrors, ValidatorFn, Validators
 } from '@angular/forms';
 import { SchemaField } from '@guardian/interfaces';
 
@@ -19,7 +19,10 @@ export class FieldControl {
     constructor(field: SchemaField | null, type: string, name?: string) {
         this.name = `field${Date.now()}${Math.floor(Math.random() * 1000000)}`;
         if (field) {
-            this.controlKey = new FormControl(field.name, Validators.required);
+            this.controlKey = new FormControl(field.name, [
+                Validators.required, 
+                this.keyValidator()
+            ]);
             this.controlTitle = new FormControl(field.title, Validators.required);
             this.controlDescription = new FormControl(field.description, Validators.required);
             this.controlType = new FormControl(type, Validators.required);
@@ -27,7 +30,10 @@ export class FieldControl {
             this.controlArray = new FormControl(field.isArray);
             this.controlUnit = new FormControl(field.unit);
         } else {
-            this.controlKey = new FormControl(name || this.name, Validators.required);
+            this.controlKey = new FormControl(name || this.name, [
+                Validators.required, 
+                this.keyValidator()
+            ]);
             this.controlTitle = new FormControl(name || this.name, Validators.required);
             this.controlDescription = new FormControl('', Validators.required);
             this.controlType = new FormControl(type, Validators.required);
@@ -107,5 +113,18 @@ export class FieldControl {
 
     public remove(parentControl: FormGroup) {
         parentControl.removeControl(this.name);
+    }
+
+    private keyValidator(): ValidatorFn {
+        return (control: any): ValidationErrors | null => {
+            if(!control.value || /\s/.test(control.value)) {
+                return {
+                    key: {
+                        valid: false
+                    }
+                };
+            }
+            return null;
+        };
     }
 }

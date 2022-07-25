@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { ISchema, UserRole, SchemaHelper, SchemaEntity } from '@guardian/interfaces';
+import { ISchema, UserRole, SchemaHelper, SchemaEntity, Schema } from '@guardian/interfaces';
 import { permissionHelper } from '@auth/authorization-helper';
 import JSZip from 'jszip';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
@@ -62,6 +62,7 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
         newSchema.topicId = topicId;
     }
 
+    SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     const schemas = (await guardians.createSchema(newSchema));
     SchemaHelper.updatePermission(schemas, owner);
@@ -83,6 +84,7 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
     if (schema.creator !== owner) {
         throw new Error('Invalid creator.');
     }
+    SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     const schemas = (await guardians.updateSchema(newSchema));
     SchemaHelper.updatePermission(schemas, owner);

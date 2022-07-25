@@ -147,6 +147,7 @@ export class PolicyImportExportHelper {
         policy.creator = policyOwner;
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
+        policy.instanceTopicId = null;
 
         const users = new Users();
         const root = await users.getHederaAccount(policyOwner);
