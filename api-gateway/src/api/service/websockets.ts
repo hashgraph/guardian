@@ -38,10 +38,10 @@ export class WebSocketsService {
      * @param completed
      * @param error
      */
-    public notifyTaskProgress(taskId, statuses?, completed?, error?): void {
+    public notifyTaskProgress(taskId: string, statuses?: string[], completed?: boolean, error?: any): void {
         this.wss.clients.forEach((client: any) => {
             this.send(client, {
-                type: 'UPDATE_TASK_STATUS',
+                type: MessageAPI.UPDATE_TASK_STATUS,
                 data: { taskId, statuses, completed, error }
             });
         });

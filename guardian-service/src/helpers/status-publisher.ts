@@ -1,4 +1,5 @@
 import { MessageBrokerChannel } from '@guardian/common';
+import { MessageAPI } from '@guardian/interfaces';
 
 /**
  * Interface of notifier
@@ -34,6 +35,10 @@ export function emptyNotifier(): INotifier {
     return empty;
 }
 
+const chanelEvent = [ 'api-gateway', MessageAPI.UPDATE_TASK_STATUS ].join('.');
+const startSuffix = ' - start';
+const completedSuffix = ' - competed';
+
 /**
  * Init task notifier
  * @param channel
@@ -41,9 +46,6 @@ export function emptyNotifier(): INotifier {
  * @returns {INotifier} - notifier for task or empty notifier
  */
 export function initNotifier(channel: MessageBrokerChannel, taskId: string): INotifier {
-    const chanelEvent = 'api-gateway.UPDATE_TASK_STATUS';
-    const startSuffix = ' - start';
-    const completedSuffix = ' - competed';
     if (taskId) {
         let currentStep: string;
         const notifier = {

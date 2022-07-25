@@ -176,9 +176,7 @@ export class WebSocketService {
                     this.userInfoUpdateSubject.next(event.data);
                     break;
                 }
-                case 'UPDATE_TASK_STATUS': {
-                    console.log("UPDATE_TASK_STATUS ", JSON.stringify(event.data));
-                    /*{ taskId: string, statuses?: string[], completed?: boolean }*/
+                case MessageAPI.UPDATE_TASK_STATUS: {
                     this.taskStatusSubject.next(event.data);
                     break;
                 }

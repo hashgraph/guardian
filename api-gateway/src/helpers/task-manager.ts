@@ -1,6 +1,6 @@
 import { WebSocketsService } from '@api/service/websockets';
 import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from '@helpers/decorators/singleton';
 
 /**
@@ -42,7 +42,7 @@ export class TaskManager {
     public setDependecies(wsService: WebSocketsService, channel: MessageBrokerChannel) {
         this.wsService = wsService;
         this.channel = channel;
-        this.channel.response<any, any>('UPDATE_TASK_STATUS', async (msg) => {
+        this.channel.response<any, any>(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
             const { taskId, statuses } = msg;
             if (taskId && statuses) {
                 this.addStatuses(taskId, statuses);
