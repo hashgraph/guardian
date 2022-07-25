@@ -537,13 +537,6 @@ export class PolicyConfigurationComponent implements OnInit {
                     policy.previousVersion = json.version;
                 }
 
-                // this.policyEngineService.create(policy).subscribe((policies: any) => {
-                //     const last = policies[policies.length - 1];
-                //     this.router.navigate(['/policy-configuration'], { queryParams: { policyId: last.id } });
-                // }, (e) => {
-                //     console.error(e.error);
-                //     this.loading = false;
-                // });
                 this.policyEngineService.pushCreate(policy).subscribe((result) => {
                     const { taskId, expectation } = result;
                     this.taskId = taskId;

@@ -220,7 +220,7 @@
         Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
     </div>
 
-    <div *ngIf="loading" class="loading">
+    <div *ngIf="loading && !taskId" class="loading">
         <mat-spinner></mat-spinner>
     </div>
     <div *ngIf="loading && taskId" class="loading">

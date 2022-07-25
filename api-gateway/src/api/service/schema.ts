@@ -319,12 +319,12 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY)
 });
 
 schemaAPI.put('/:schemaId/push/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    console.log('Start schemaAPI /:schemaId/push/publish');
-    const schemaId = req.params.schemaId;
-    const user = req.user;
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Publish schema');
 
+    const schemaId = req.params.schemaId;
+    const user = req.user;
+    const version = req.body.version;
     setImmediate(async () => {
         try {
             const guardians = new Guardians();
@@ -344,7 +344,6 @@ schemaAPI.put('/:schemaId/push/publish', permissionHelper(UserRole.STANDARD_REGI
             }
 
             const allVersion = await guardians.getSchemasByUUID(schema.uuid);
-            const { version } = req.body;
             if (allVersion.findIndex(s => s.version === version) !== -1) {
                 taskManager.addError(taskId, { code: 500, message: 'Version already exists.' });
             }
@@ -360,7 +359,6 @@ schemaAPI.put('/:schemaId/push/publish', permissionHelper(UserRole.STANDARD_REGI
         }
     });
 
-    console.log('End schemaAPI /:schemaId/push/publish');
     res.status(201).send({ taskId, expectation });
 });
 
@@ -452,17 +450,16 @@ schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.STANDARD_RE
 });
 
 schemaAPI.post('/:topicId/push/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    console.log('End schemaAPI /:topicId/push/import/message');
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Import schema message');
+
     const user = req.user;
     const topicId = req.params.topicId as string;
     const messageId = req.body.messageId as string;
-
-    const taskManager = new TaskManager();
-    const { taskId, expectation } = taskManager.start('Import schema message');
     setImmediate(async () => {
         try {
             const guardians = new Guardians();
-            await guardians.importSchemasByMessages([messageId], req.user.did, topicId, taskId);
+            await guardians.importSchemasByMessages([messageId], user.did, topicId, taskId);
             const { schemas, count } = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(schemas, user.did);
             taskManager.addResult(taskId, { count, schemas: toOld(schemas) })
@@ -472,7 +469,6 @@ schemaAPI.post('/:topicId/push/import/message', permissionHelper(UserRole.STANDA
         }
     });
 
-    console.log('End schemaAPI /:schemaId/push/publish');
     res.status(201).send({ taskId, expectation });
 });
 
@@ -497,13 +493,12 @@ schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.STANDARD_REGIS
 });
 
 schemaAPI.post('/:topicId/push/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    const user = req.user;
-    const zip = req.body;
-    const topicId = req.params.topicId as string;
-
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Import schema file');
 
+    const user = req.user;
+    const zip = req.body;
+    const topicId = req.params.topicId as string;
     setImmediate(async () => {
         try {
             taskManager.addStatuses(taskId, [ 'Parse file - start' ]);
@@ -513,7 +508,7 @@ schemaAPI.post('/:topicId/push/import/file', permissionHelper(UserRole.STANDARD_
             const files = await parseZipFile(zip);
             taskManager.addStatuses(taskId, [ 'Parse file - competed' ]);
             const guardians = new Guardians();
-            await guardians.importSchemasByFile(files, req.user.did, topicId, taskId);
+            await guardians.importSchemasByFile(files, user.did, topicId, taskId);
             const { schemas, count } = await guardians.getSchemasByOwner(user.did);
             SchemaHelper.updatePermission(schemas, user.did);
             taskManager.addResult(taskId, { count, schemas: toOld(schemas) });
@@ -523,7 +518,6 @@ schemaAPI.post('/:topicId/push/import/file', permissionHelper(UserRole.STANDARD_
         }
     });
 
-    console.log('End schemaAPI /:schemaId/push/import/file');
     res.status(201).send({ taskId, expectation });
 });
 

@@ -336,14 +336,6 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (version) => {
             if (version) {
                 this.loading = true;
-                // this.schemaService.publish(element.id, version).subscribe((data: any) => {
-                //     const schemas = SchemaHelper.map(data);
-                //     this.schemaMapping(schemas);
-                //     this.loadSchemas();
-                // }, (e) => {
-                //     this.loading = false;
-                // });
-
                 this.schemaService.pushPublish(element.id, version).subscribe((result) => {
                     const { taskId, expectation } = result;
                     this.taskId = taskId;

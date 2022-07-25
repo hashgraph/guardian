@@ -225,12 +225,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             debugger;
             if (result) {
                 this.loading = true;
-                // this.policyEngineService.create(result).subscribe((policies: any) => {
-                //     this.loadAllPolicy();
-                // }, (e) => {
-                //     this.loading = false;
-                // });
-
                 this.policyEngineService.pushCreate(result).subscribe((result) => {
                     const { taskId, expectation } = result;
                     this.taskId = taskId;
@@ -259,31 +253,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     private publish(element: any, version: string) {
         this.loading = true;
-        // this.policyEngineService.publish(element.id, version).subscribe((data: any) => {
-        //     const { policies, isValid, errors } = data;
-        //     if (!isValid) {
-        //         let text = [];
-        //         const blocks = errors.blocks;
-        //         const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-        //         for (let i = 0; i < invalidBlocks.length; i++) {
-        //             const block = invalidBlocks[i];
-        //             for (let j = 0; j < block.errors.length; j++) {
-        //                 const error = block.errors[j];
-        //                 text.push(`<div>${block.id}: ${error}</div>`);
-        //             }
-        //         }
-        //         this.toastr.error(text.join(''), 'The policy is invalid', {
-        //             timeOut: 30000,
-        //             closeButton: true,
-        //             positionClass: 'toast-bottom-right',
-        //             enableHtml: true
-        //         });
-        //     }
-        //     this.loadAllPolicy();
-        // }, (e) => {
-        //     this.loading = false;
-        // });
-
         this.policyEngineService.pushPublish(element.id, version).subscribe((result) => {
             const { taskId, expectation } = result;
             this.taskId = taskId;
@@ -340,11 +309,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 let versionOfTopicId = result.versionOfTopicId || null;
                 this.loading = true;
                 if (type == 'message') {
-                    // this.policyEngineService.importByMessage(data, versionOfTopicId).subscribe((policies) => {
-                    //     this.loadAllPolicy();
-                    // }, (e) => {
-                    //     this.loading = false;
-                    // });
                     this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe(
                         (result) => {
                             const { taskId, expectation } = result;
@@ -358,12 +322,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             this.mode = OperationMode.none;
                         });
                 } else if (type == 'file') {
-                    // this.policyEngineService.importByFile(data, versionOfTopicId).subscribe((policies) => {
-                    //     this.loadAllPolicy();
-                    // }, (e) => {
-                    //     this.loading = false;
-                    // });
-
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe(
                         (result) => {
                             const { taskId, expectation } = result;

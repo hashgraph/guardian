@@ -66,23 +66,21 @@ policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 policyAPI.post('/push', async (req: AuthenticatedRequest, res: Response) => {
-    console.log('Start policyAPI /push');
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Create policy');
 
+    const model = req.body;
+    const user = req.user;
     setImmediate(async () => {
         const engineService = new PolicyEngine();
         try {
-            const policies = await engineService.createPolicy(req.body, req.user, taskId);
-            console.log('Set result policyAPI /push');
-            taskManager.addResult(taskId, policies);
+            const policies = await engineService.createPolicy(model, user, taskId);
+             taskManager.addResult(taskId, policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            console.log('Set error policyAPI /push');
             taskManager.addError(taskId, { code: 500, message: error.message });
         }
     });
-    console.log('End policyAPI /push');
     res.status(201).send({ taskId, expectation });
 });
 
@@ -134,16 +132,16 @@ policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Respo
 });
 
 policyAPI.put('/:policyId/push/publish',async (req: AuthenticatedRequest, res: Response) => {
-    console.log('Start policyAPI /push');
-    const policyId = req.params.policyId;
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Publish policy');
 
+    const model = req.body;
+    const user = req.user;
+    const policyId = req.params.policyId;
     setImmediate(async () => {
         const engineService = new PolicyEngine();
         try {
-            const result = await engineService.publishPolicy(req.body, req.user, req.params.policyId, taskId);
-            console.log(`Set result policyAPI ${policyId}/push/publish`);
+            const result = await engineService.publishPolicy(model, user, policyId, taskId);
             taskManager.addResult(taskId, result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -151,7 +149,6 @@ policyAPI.put('/:policyId/push/publish',async (req: AuthenticatedRequest, res: R
         }
     });
 
-    console.log('End policyAPI /push');
     res.status(201).send({ taskId, expectation });
 });
 
@@ -252,24 +249,22 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
 });
 
 policyAPI.post('/push/import/message', async (req: AuthenticatedRequest, res: Response) => {
-    console.log('Start policyAPI /push/import/message');
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Import policy message');
 
+    const user = req.user;
+    const messageId = req.body.messageId;
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     setImmediate(async () => {
         try {
             const engineService = new PolicyEngine();
-            const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId, taskId);
-            console.log('Set result policyAPI /push/import/message');
+            const policies = await engineService.importMessage(user, messageId, versionOfTopicId, taskId);
             taskManager.addResult(taskId, policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            console.log('Set error policyAPI /push/import/message');
             taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
         }
     });
-    console.log('End policyAPI /push/import/message');
     res.status(201).send({ taskId, expectation });
 });
 
@@ -286,24 +281,22 @@ policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) 
 });
 
 policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Response) => {
-    console.log('Start policyAPI /push/import/file');
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Import policy file');
 
+    const user = req.user;
+    const zip = req.body;
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     setImmediate(async () => {
         try {
             const engineService = new PolicyEngine();
-            const policies = await engineService.importFile(req.user, req.body, versionOfTopicId, taskId);
-            console.log('Set result policyAPI /push/import/file');
+            const policies = await engineService.importFile(user, zip, versionOfTopicId, taskId);
             taskManager.addResult(taskId, policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            console.log('Set error policyAPI /push/import/file');
             taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
         }
     });
-    console.log('End policyAPI /push/import/file');
     res.status(201).send({ taskId, expectation });
 });
 

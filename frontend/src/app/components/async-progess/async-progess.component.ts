@@ -36,8 +36,6 @@ export class AsyncProgessComponent implements OnInit, OnDestroy {
               }
               return;
           }
-
-          console.log("this.statuses", this.statuses.length, "statuses", (statuses || []).length);
           this.statuses.push(...statuses);
           this.applyChanges();
       })
