@@ -10,14 +10,10 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v5.4
-
       - uses: haya14busa/action-cond@v1
         id: latestTag
         with:
-          cond: ${{ steps.branch-name.outputs.current_branch == 'main' }}
+          cond: ${{ github.event.release.target_commitish == 'main' }}
           if_true: "latest"
           if_false: "hotfix"
 
