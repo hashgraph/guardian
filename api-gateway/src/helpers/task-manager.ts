@@ -1,6 +1,6 @@
 import { WebSocketsService } from '@api/service/websockets';
 import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
+import { GenerateUUIDv4, IStatus, MessageAPI, StatusType } from '@guardian/interfaces';
 import { Singleton } from '@helpers/decorators/singleton';
 
 /**
@@ -83,7 +83,7 @@ export class TaskManager {
      * @param statuses
      * @param skipIfNotFound
      */
-    public addStatuses(taskId: string, statuses: string[], skipIfNotFound: boolean = true): void {
+    public addStatuses(taskId: string, statuses: IStatus[], skipIfNotFound: boolean = true): void {
         if (this.tasks[taskId]) {
             this.tasks[taskId].statuses.push(...statuses);
             this.wsService.notifyTaskProgress(taskId, statuses);
@@ -92,6 +92,17 @@ export class TaskManager {
         } else {
             throw new Error(`Task ${taskId} not found.`);
         }
+    }
+
+    /**
+     * Add task status
+     * @param taskId
+     * @param message
+     * @param type
+     * @param skipIfNotFound
+     */
+    public addStatus(taskId: string, message: string, type: StatusType, skipIfNotFound: boolean = true) {
+        this.addStatuses(taskId, [ { message, type } ], skipIfNotFound);
     }
 
     /**
@@ -214,7 +225,7 @@ class Task {
     /**
      * Task statuses
      */
-    public statuses: string[] = [];
+    public statuses: IStatus[] = [];
     /**
      * Result of task
      */

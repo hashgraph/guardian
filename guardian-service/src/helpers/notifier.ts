@@ -1,5 +1,5 @@
 import { MessageBrokerChannel } from '@guardian/common';
-import { MessageAPI } from '@guardian/interfaces';
+import { MessageAPI, StatusType, IStatus } from '@guardian/interfaces';
 
 /**
  * Interface of notifier
@@ -19,6 +19,11 @@ export interface INotifier {
     completedAndStart: (nextStep: string) => void;
 
     /**
+     * Notify with info-message
+     */
+    info: (message: string) => void;
+
+    /**
      * Nofity about error
      */
     error: (error: any) => void;
@@ -34,6 +39,7 @@ const empty: INotifier = {
     start: (step: string) => { },
     completed: () => { },
     completedAndStart: (nextStep: string) => { },
+    info: (message: string) => {},
     error: (error: any) => { },
     result: (result: any) => { }
     /* tslint:enable:no-empty */
@@ -48,8 +54,6 @@ export function emptyNotifier(): INotifier {
 }
 
 const chanelEvent = [ 'api-gateway', MessageAPI.UPDATE_TASK_STATUS ].join('.');
-const startSuffix = ' - start';
-const completedSuffix = ' - competed';
 
 /**
  * Init task notifier
@@ -60,39 +64,36 @@ const completedSuffix = ' - competed';
 export function initNotifier(channel: MessageBrokerChannel, taskId: string): INotifier {
     if (taskId) {
         let currentStep: string;
+        const sendStatuses = async (...statuses: IStatus[]) => {
+            await channel.request(chanelEvent, { taskId, statuses });
+        };
         const notifier = {
             start: async (step: string) => {
                 currentStep = step;
-                await channel.request(chanelEvent, { taskId, statuses: [step + startSuffix]});
+                await sendStatuses({ message: step, type: StatusType.PROCESSING });
             },
             completed: async () => {
                 const oldStep = currentStep;
                 currentStep = undefined;
-                await channel.request(chanelEvent, { taskId, statuses: [oldStep + completedSuffix]});
+                await sendStatuses({ message: oldStep, type: StatusType.COMPLETED });
             },
             completedAndStart: async (nextStep: string) => {
                 const oldStep = currentStep;
                 if (oldStep) {
                     currentStep = nextStep;
-                    await channel.request(chanelEvent, {
-                        taskId,
-                        statuses: [oldStep + completedSuffix, currentStep + startSuffix]
-                    });
+                    await sendStatuses({ message: oldStep, type: StatusType.COMPLETED }, { message: currentStep, type: StatusType.PROCESSING });
                 } else {
-                    this.completed();
+                    this.start(nextStep);
                 }
             },
+            info: async (message: string) => {
+                await sendStatuses({ message, type: StatusType.INFO });
+            },
             error: async (error: any) => {
-                await channel.request(chanelEvent, {
-                    taskId,
-                    error
-                });
+                await channel.request(chanelEvent, { taskId, error });
             },
             result: async (result: any) => {
-                await channel.request(chanelEvent, {
-                    taskId,
-                    result
-                });
+                await channel.request(chanelEvent, { taskId, result });
             }
         }
         return notifier;

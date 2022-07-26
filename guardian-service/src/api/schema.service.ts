@@ -19,7 +19,7 @@ import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/status-publisher';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 
 export const schemaCache = {};
 

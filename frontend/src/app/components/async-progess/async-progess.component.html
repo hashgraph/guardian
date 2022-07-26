@@ -3,8 +3,9 @@
 </div>
 <div>
     <mat-nav-list>
-        <div mat-list-item href="..." *ngFor="let status of statuses">
-            {{ status }}
+        <div mat-list-item href="..." *ngFor="let status of statuses" class="status-grid">
+            <div [ngClass]="{'info': isInfo(status)}"><span *ngIf="isInfo(status)">INFO: </span>{{ status.message }}</div>
+            <div class="status"><span *ngIf="!isInfo(status)">{{ status.type }}</span></div>
         </div>
      </mat-nav-list>
 </div>

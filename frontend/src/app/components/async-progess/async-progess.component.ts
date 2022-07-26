@@ -1,15 +1,19 @@
 import { Component, OnDestroy, OnInit, Input, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { Subscription } from 'rxjs';
+import { IStatus, StatusType } from '@guardian/interfaces';
 
 @Component({
   selector: 'async-progess',
   templateUrl: './async-progess.component.html',
+  styleUrls: ['./async-progess.component.css']
 })
 export class AsyncProgessComponent implements OnInit, OnDestroy {
 
   progressValue!: number;
-  statuses: string[] = [];
+  statusesCount: number = 0;
+  statuses: IStatus[] = [];
+  statusesRefMap: any = {};
 
   @Input('taskId') taskId!: string;
   @Input('expected') expected!: number;
@@ -36,7 +40,33 @@ export class AsyncProgessComponent implements OnInit, OnDestroy {
               }
               return;
           }
-          this.statuses.push(...statuses);
+
+          const newStatuses: IStatus[] = statuses || [];
+          newStatuses.forEach((status) => {
+            switch (status.type) {
+              case StatusType.INFO:
+                this.statuses.push(status);
+                break;
+              case StatusType.PROCESSING:
+                this.statusesRefMap[status.message] = status;
+                this.statuses.push(status);
+                this.statusesCount++;
+                break;
+              case StatusType.COMPLETED:
+                if (this.statusesRefMap[status.message]) {
+                  this.statusesRefMap[status.message].type = status.type;
+                  this.statusesCount++;
+                } else {
+                  this.statusesRefMap[status.message] = status;
+                  this.statuses.push(status);
+                  this.statusesCount = this.statusesCount + 2;
+                }
+                break;
+              default:
+                console.log('Unknown status type');
+                break;
+            }
+          });
           this.applyChanges();
       })
     );
@@ -48,9 +78,14 @@ export class AsyncProgessComponent implements OnInit, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.taskId) {
+      this.statusesCount = 0;
       this.statuses.length = 0;
       this.progressValue = 0;
     }
+  }
+
+  isInfo(status: IStatus) {
+    return status.type == StatusType.INFO;
   }
 
   private applyChanges() {
@@ -58,9 +93,9 @@ export class AsyncProgessComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.statuses.length > this.expected) {
-      this.expected = this.statuses.length + 1;
+    if (this.statusesCount > this.expected) {
+      this.expected = this.statusesCount + 1;
     }
-    this.progressValue = this.statuses.length * 90 / this.expected;
+    this.progressValue = this.statusesCount * 90 / this.expected;
   }
 }

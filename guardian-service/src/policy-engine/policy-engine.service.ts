@@ -39,7 +39,7 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/status-publisher';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 
 /**
  * Policy engine service
@@ -236,6 +236,8 @@ export class PolicyEngineService {
             notifier.completedAndStart('Publish schemas');
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
+            notifier.info(`Found ${systemSchemas.length} schemas`);
+            let num: number = 0;
             for (const schema of systemSchemas) {
                 logger.info('Create Policy: Publish System Schema', ['GUARDIAN_SERVICE']);
                 messageServer.setTopicObject(topic);
@@ -244,6 +246,9 @@ export class PolicyEngineService {
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 const newItem = getMongoRepository(SchemaCollection).create(item);
                 await getMongoRepository(SchemaCollection).save(newItem);
+                const name = newItem.name;
+                num++;
+                notifier.info(`Schema ${num} (${name || '-'}) published`);
             }
 
             newTopic = topic;
@@ -289,16 +294,28 @@ export class PolicyEngineService {
      * @param owner
      * @private
      */
-    private async publishSchemas(model: Policy, owner: string): Promise<Policy> {
+    private async publishSchemas(model: Policy, owner: string, notifier: INotifier): Promise<Policy> {
         const schemas = await getMongoRepository(SchemaCollection).find({ topicId: model.topicId });
+        notifier.info(`Found ${schemas.length} schemas`);
         const schemaIRIs = schemas.map(s => s.iri);
+        let num: number = 0;
+        let skipped: number = 0;
         for (const schemaIRI of schemaIRIs) {
             const schema = await incrementSchemaVersion(schemaIRI, owner);
             if (schema.status === SchemaStatus.PUBLISHED) {
+                skipped++;
                 continue;
             }
             const newSchema = await findAndPublishSchema(schema.id, schema.version, owner, emptyNotifier());
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
+
+            const name = newSchema.name;
+            num++;
+            notifier.info(`Schema ${num} (${name || '-'}) published`);
+        }
+
+        if (skipped) {
+            notifier.info(`Skip published ${skipped}`);
         }
         return model;
     }
@@ -321,7 +338,7 @@ export class PolicyEngineService {
             .setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
-        model = await this.publishSchemas(model, owner);
+        model = await this.publishSchemas(model, owner, notifier);
         model.status = 'PUBLISH';
         model.version = version;
 

@@ -222,7 +222,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         });
 
         dialogRef.afterClosed().subscribe(async (result) => {
-            debugger;
             if (result) {
                 this.loading = true;
                 this.policyEngineService.pushCreate(result).subscribe((result) => {

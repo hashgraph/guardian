@@ -18,7 +18,7 @@ import { TopicHelper } from '@helpers/topic-helper';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { PolicyUtils } from './utils';
-import { INotifier } from '@helpers/status-publisher';
+import { INotifier } from '@helpers/notifier';
 
 /**
  * Policy import export helper
@@ -178,16 +178,21 @@ export class PolicyImportExportHelper {
         await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
         notifier.completedAndStart('Publishing schemas');
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-
+        notifier.info(`Found ${systemSchemas.length} schemas`);
+        let num: number = 0;
         for (const schema of systemSchemas) {
             messageServer.setTopicObject(topicRow);
+            let name: string;
             if(schema) {
                 schema.creator = policyOwner;
                 schema.owner = policyOwner;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 const newItem = getMongoRepository(Schema).create(item);
                 await getMongoRepository(Schema).save(newItem);
+                name = newItem.name;
             }
+            num++;
+            notifier.info(`Schema ${num} (${name || '-'}) published`);
         }
 
         notifier.completed();
