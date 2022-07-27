@@ -22,6 +22,8 @@ import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
+import { ConditionControl } from '../condition-control';
+import { FieldControl } from '../field-control';
 
 /**
  * Schemas constructor
@@ -42,10 +44,14 @@ export class SchemaConfigurationComponent implements OnInit {
     @Input('policies') policies!: any[];
     @Input('topicId') topicId!: any;
     @Input('system') system!: boolean;
+    @Input('extended') extended!: boolean;
 
     @Output('change-form') changeForm = new EventEmitter<any>();
 
     started = false;
+    fields!: FieldControl[];
+    conditions!: ConditionControl[];
+
     fieldsForm!: FormGroup;
     conditionsForm!: FormGroup;
     dataForm!: FormGroup;
@@ -54,8 +60,7 @@ export class SchemaConfigurationComponent implements OnInit {
     typesMap!: any;
     types!: any[];
     measureTypes!: any[];
-    fields!: any[];
-    conditions!: any[];
+
     schemaTypes!: any[];
     schemaTypeMap!: any;
     destroy$: Subject<boolean> = new Subject<boolean>();
@@ -173,8 +178,11 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        if (changes.extended && Object.keys(changes).length === 1) {
+            return;
+        }
         if (this.system) {
-            this.updateSubSchemas(undefined);
+            this.updateSubSchemas(null);
         } else {
             this.updateSubSchemas(this.value?.topicId || this.topicId);
         }
@@ -208,6 +216,8 @@ export class SchemaConfigurationComponent implements OnInit {
                     entity: this.defaultFields,
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
+                }, {
+                    validators: this.fieldNameValidator()
                 });
                 this.dataForm.valueChanges.subscribe(() => {
                     this.changeForm.emit(this);
@@ -221,6 +231,8 @@ export class SchemaConfigurationComponent implements OnInit {
                     entity: this.defaultFields,
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
+                }, {
+                    validators: this.fieldNameValidator()
                 });
                 this.dataForm.valueChanges.subscribe(() => {
                     this.changeForm.emit(this);
@@ -236,74 +248,14 @@ export class SchemaConfigurationComponent implements OnInit {
         this.changeForm.emit(this);
     }
 
-    private createFieldControl(field: SchemaField | null, index: number) {
-        const fieldName = "fieldName" + index;
-        const fieldType = "fieldType" + index;
-        const fieldRequired = "fieldRequired" + index;
-        const fieldArray = "fieldArray" + index;
-        const fieldUnit = "fieldUnit" + index;
-        const control: any = {
-            name: null,
-            fieldName: fieldName,
-            fieldType: fieldType,
-            fieldRequired: fieldRequired,
-            fieldArray: fieldArray,
-            fieldUnit: fieldUnit,
-            required: false,
-            isArray: false,
-            controlName: null,
-            controlType: null,
-            controlRequired: null,
-            controlArray: null,
-            controlUnit: null,
-        }
-
-        if (field) {
-            const typeIndex = this.getType(field);
-            control.name = field.name;
-            control.controlName = new FormControl(field.description, Validators.required);
-            control.controlType = new FormControl(typeIndex, Validators.required);
-            control.controlRequired = new FormControl(field.required);
-            control.controlArray = new FormControl(field.isArray);
-            control.controlUnit = new FormControl(field.unit);
-        } else {
-            control.name = '';
-            control.controlName = new FormControl('', Validators.required);
-            control.controlType = new FormControl(this.types[0].value, Validators.required);
-            control.controlRequired = new FormControl(false);
-            control.controlArray = new FormControl(false);
-            control.controlUnit = new FormControl('');
-        }
-        return control;
-    }
-
-    private registerFieldControl(control: any, form: FormGroup, controls: any[]) {
-        controls.push(control);
-        form.addControl(control.fieldName, control.controlName);
-        form.addControl(control.fieldType, control.controlType);
-        form.addControl(control.fieldRequired, control.controlRequired);
-        form.addControl(control.fieldArray, control.controlArray);
-        form.addControl(control.fieldUnit, control.controlUnit);
-    }
-
-    private registerFieldGroup(control: any) {
-        return new FormGroup({
-            fieldName: control.controlName,
-            fieldType: control.controlType,
-            fieldRequired: control.controlRequired,
-            fieldArray: control.controlArray,
-            fieldUnit: control.controlUnit,
-        });
-    }
-
     onFilter(event: any) {
         const topicId = event.value;
         this.updateSubSchemas(topicId);
     }
 
-    updateSubSchemas(topicId: any) {
+    updateSubSchemas(topicId: string | null) {
         this.schemaTypes = [];
-        if (this.schemasMap) {
+        if (this.schemasMap && topicId) {
             this.schemas = this.schemasMap[topicId];
         }
         if (this.schemas) {
@@ -332,56 +284,38 @@ export class SchemaConfigurationComponent implements OnInit {
         for (let index = 0; index < conditions.length; index++) {
             const condition = conditions[index];
             const fieldNameInCondition = condition.ifCondition.field.name;
-            const newCondition: any = {
-                name: "conditionName" + index,
-                ifControl: {
-                    field: new FormControl(this.fields.find(item => item.name === fieldNameInCondition), Validators.required),
-                    fieldValue: new FormControl(condition.ifCondition.fieldValue, Validators.required)
-                },
-                thenControls: [],
-                elseControls: []
-            };
+            const field = this.fields.find(item => item.controlKey.value === fieldNameInCondition)
+            const newCondition = new ConditionControl(
+                field,
+                condition.ifCondition.fieldValue
+            )
 
-            this.onIfConditionFieldChange(newCondition, newCondition.ifControl.field!.value);
+            this.onIfConditionFieldChange(newCondition, newCondition.field!.value);
 
-            const thenFieldsControls = new FormGroup({});
-            const elseFieldsControls = new FormGroup({});
-
-            condition.thenFields.forEach((field: any, index: number) => {
-                const fieldValue = this.createFieldControl(field, index);
-                thenFieldsControls.addControl(fieldValue.fieldName, this.registerFieldGroup(fieldValue));
-                newCondition.thenControls.push(fieldValue);
+            condition.thenFields.forEach((field) => {
+                const fieldValue = new FieldControl(field, this.getType(field), this.getFieldName());
+                newCondition.addThenControl(fieldValue);
             });
 
-            condition.elseFields?.forEach((field: any, index: number) => {
-                const fieldValue = this.createFieldControl(field, index);
-                elseFieldsControls.addControl(fieldValue.fieldName, this.registerFieldGroup(fieldValue));
-                newCondition.elseControls.push(fieldValue);
+            condition.elseFields?.forEach((field) => {
+                const fieldValue = new FieldControl(field, this.getType(field), this.getFieldName());
+                newCondition.addElseControl(fieldValue);
             });
-
-            const conditionForm = new FormGroup({
-                ifCondition: new FormGroup({
-                    field: newCondition.ifControl.field,
-                    fieldValue: newCondition.ifControl.fieldValue
-                }),
-                thenFieldControls: thenFieldsControls,
-                elseFieldControls: elseFieldsControls
-            }, this.countThenElseFieldsValidator());
 
             this.conditions.push(newCondition);
-            this.conditionsForm.addControl(newCondition.name, conditionForm);
+            this.conditionsForm.addControl(newCondition.name, newCondition.createGroup());
         }
     }
 
-    updateFieldControls(fields: SchemaField[], conditionsFields: any[]) {
+    updateFieldControls(fields: SchemaField[], conditionsFields: string[]) {
         this.fields = [];
-        for (let index = 0; index < fields.length; index++) {
-            const field = fields[index];
+        for (const field of fields) {
             if (field.readOnly || conditionsFields.find(elem => elem === field.name)) {
                 continue;
             }
-            const control = this.createFieldControl(field, this.fields.length);
-            this.registerFieldControl(control, this.fieldsForm, this.fields);
+            const control = new FieldControl(field, this.getType(field), this.getFieldName());
+            control.append(this.fieldsForm);
+            this.fields.push(control);
         }
     }
 
@@ -398,32 +332,20 @@ export class SchemaConfigurationComponent implements OnInit {
 
         const fields = this.value.fields;
         const conditions = this.value.conditions || [];
-        const conditionsFields: any[] = [];
+        const conditionsFields: string[] = [];
         conditions.forEach(item => {
             conditionsFields.push(...item.thenFields.map(thenf => thenf.name))
             conditionsFields.push(...item.elseFields!.map(elsef => elsef.name))
         });
 
-        this.updateConditionControls(conditions);
         this.updateFieldControls(fields, conditionsFields);
+        this.updateConditionControls(conditions);
     }
 
-    public countThenElseFieldsValidator(): ValidatorFn {
-        return (group: any): ValidationErrors | null => {
-            const thenFieldControls = group.controls.thenFieldControls;
-            const elseFieldControls = group.controls.elseFieldControls;
-            if (Object.keys(thenFieldControls.controls).length > 0 || Object.keys(elseFieldControls.controls).length > 0) {
-                return null;
-            }
-            return {
-                noConditionFields: {
-                    valid: false
-                }
-            };
-        };
-    }
-
-    getType(field: SchemaField): string {
+    getType(field: SchemaField | null): string {
+        if (!field) {
+            return this.types[0].value;
+        }
         if (field.unitSystem == UnitSystem.Prefix) {
             return UnitSystem.Prefix;
         }
@@ -434,107 +356,114 @@ export class SchemaConfigurationComponent implements OnInit {
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const option = this.schemaTypeMap[key];
-            if (
-                field.customType &&
-                option.customType === field.customType
-            ) {
+            if (field.customType && option.customType === field.customType) {
                 return key;
             }
-            if (
-                option.type === field.type &&
-                option.format === field.format &&
-                option.pattern === field.pattern &&
-                option.isRef === field.isRef
-            ) {
-                return key;
+
+            if (option.type === field.type) {
+                if (
+                    ((!option.format && !field.format) || (option.format === field.format)) &&
+                    ((!option.pattern && !field.pattern) || (option.pattern === field.pattern)) &&
+                    ((!option.isRef && !field.isRef) || (option.isRef === field.isRef))
+                ) {
+                    return key;
+                }
             }
         }
         return '';
     }
 
-    onConditionFieldRemove(condition: any, conditionField: any, type: 'then' | 'else') {
-        const conditionControl = this.conditionsForm.get(condition.name);
-
-        switch (type) {
-            case 'then':
-                (conditionControl!.get("thenFieldControls") as FormGroup).removeControl(conditionField.fieldName);
-                condition.thenControls = condition.thenControls.filter((e: any) => e !== conditionField);
-                break;
-            case 'else':
-                (conditionControl!.get("elseFieldControls") as FormGroup).removeControl(conditionField.fieldName);
-                condition.elseControls = condition.elseControls.filter((e: any) => e !== conditionField);
-                break;
+    private getFieldName(): string | undefined {
+        const map: any = {};
+        for (const f of this.fields) {
+            map[f.key] = true;
         }
+        for (const c of this.conditions) {
+            for (const f of c.thenControls) {
+                map[f.key] = true;
+            }
+            for (const f of c.elseControls) {
+                map[f.key] = true;
+            }
+        }
+        for (let index = 0; index < 1000; index++) {
+            const element = `field${index}`;
+            if (!map[element]) {
+                return element;
+            }
+        }
+        return undefined;
     }
 
-    onConditionFieldAdd(condition: any, type: 'then' | 'else') {
-        const conditionControl = this.conditionsForm.get(condition.name);
+    onConditionFieldRemove(condition: ConditionControl, conditionField: FieldControl, type: 'then' | 'else') {
+        condition.removeControl(type, conditionField);
+    }
 
-
-        if (type == 'then') {
-            const field = this.createFieldControl(null, condition.thenControls.length);
-            field.name = "field" + Date.now();
-            (conditionControl!.get("thenFieldControls") as FormGroup).addControl(field.name, this.registerFieldGroup(field));
-            condition.thenControls.push(field);
-        } else {
-            const field = this.createFieldControl(null, condition.elseControls.length);
-            field.name = "field" + Date.now();
-            (conditionControl!.get("elseFieldControls") as FormGroup).addControl(field.name, this.registerFieldGroup(field));
-            condition.elseControls.push(field);
-        }
+    onConditionFieldAdd(condition: ConditionControl, type: 'then' | 'else') {
+        const field = new FieldControl(null, this.getType(null), this.getFieldName());
+        condition.addControl(type, field);
     }
 
     onConditionAdd() {
-        const condition = {
-            name: "conditionName" + this.conditions.length,
-            ifControl: {
-                field: new FormControl('', Validators.required),
-                fieldValue: new FormControl('')
-            },
-            thenControls: [],
-            elseControls: []
-        };
-
+        const condition = new ConditionControl(undefined, '');
         this.conditions.push(condition);
-
-        const conditionForm = new FormGroup({
-            ifCondition: new FormGroup(condition.ifControl),
-            thenFieldControls: new FormGroup({}),
-            elseFieldControls: new FormGroup({})
-        }, this.countThenElseFieldsValidator());
-
-        this.conditionsForm.addControl(condition.name, conditionForm);
+        this.conditionsForm.addControl(condition.name, condition.createGroup());
     }
 
-    onConditionRemove(condition: any) {
+    onConditionRemove(condition: ConditionControl) {
         this.conditions = this.conditions.filter(e => e != condition);
         this.conditionsForm.removeControl(condition.name);
     }
 
     onAdd(event: MouseEvent) {
         event.preventDefault();
-        const control = this.createFieldControl(null, this.fields.length);
-        this.registerFieldControl(control, this.fieldsForm, this.fields);
+        const control = new FieldControl(null, this.getType(null), this.getFieldName());
+        control.append(this.fieldsForm)
+        this.fields.push(control);
         this.fields = this.fields.slice();
     }
 
-    onRemove(item: any) {
+    onRemove(item: FieldControl) {
         this.removeConditionsByField(item);
         this.fields = this.fields.filter(e => e != item);
-        this.fieldsForm.removeControl(item.fieldName);
-        this.fieldsForm.removeControl(item.fieldType);
-        this.fieldsForm.removeControl(item.fieldRequired);
-        this.fieldsForm.removeControl(item.fieldArray);
-        this.fieldsForm.removeControl(item.fieldUnit);
+        item.remove(this.fieldsForm);
     }
 
-    private removeConditionsByField(field: any) {
+    private removeConditionsByField(field: FieldControl) {
         const conditionsToRemove = this.conditions.filter(item => {
-            return item.ifControl.field.value === field;
+            return item.field.value === field;
         });
+        for (const condition of conditionsToRemove) {
+            this.conditions = this.conditions.filter(e => e != condition);
+            this.conditionsForm.removeControl(condition.name);
+        }
+    }
 
-        for (let i = 0; i < conditionsToRemove.length; i++) {
-            this.onConditionRemove(conditionsToRemove[i]);
+    buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
+        const {
+            key,
+            title,
+            description,
+            typeIndex,
+            required,
+            isArray,
+            unit
+        } = fieldConfig.getValue(data);
+        const type = this.schemaTypeMap[typeIndex];
+        return {
+            name: key,
+            title: title,
+            description: description,
+            required: required,
+            isArray: isArray,
+            isRef: type.isRef,
+            type: type.type,
+            format: type.format,
+            pattern: type.pattern,
+            unit: type.unitSystem ? unit : undefined,
+            unitSystem: type.unitSystem,
+            customType: type.customType,
+            readOnly: false,
         }
     }
 
@@ -546,33 +475,13 @@ export class SchemaConfigurationComponent implements OnInit {
 
         const fields: SchemaField[] = [];
         const fieldsWithNames: any[] = []
-        for (let i = 0; i < this.fields.length; i++) {
-            const fieldConfig = this.fields[i];
-            const name = value.fields[fieldConfig.fieldName];
-            const typeIndex = value.fields[fieldConfig.fieldType];
-            const required = value.fields[fieldConfig.fieldRequired];
-            const isArray = value.fields[fieldConfig.fieldArray];
-            const unit = value.fields[fieldConfig.fieldUnit];
-            const type = this.schemaTypeMap[typeIndex];
-            const schemaField: SchemaField = {
-                name: name,
-                title: name,
-                description: name,
-                required: required,
-                isArray: isArray,
-                isRef: type.isRef,
-                type: type.type,
-                format: type.format,
-                pattern: type.pattern,
-                unit: type.unitSystem ? unit : undefined,
-                unitSystem: type.unitSystem,
-                customType: type.customType,
-                readOnly: false,
-            }
+
+        for (const fieldConfig of this.fields) {
+            const schemaField = this.buildSchemaField(fieldConfig, value.fields);
             fields.push(schemaField);
             fieldsWithNames.push({
                 field: schemaField,
-                name: fieldConfig.fieldName
+                name: fieldConfig.name
             })
         }
 
@@ -598,67 +507,24 @@ export class SchemaConfigurationComponent implements OnInit {
         }
 
         const conditions: SchemaCondition[] = [];
-        for (let i = 0; i < this.conditions.length; i++) {
-            const element = this.conditions[i];
+        for (const element of this.conditions) {
             const conditionValue = value.conditions[element.name];
-            const thenFields = [];
-            const thenFieldsControls = conditionValue.thenFieldControls;
-            const thenFieldNames = Object.keys(thenFieldsControls);
+            const thenFields: SchemaField[] = [];
+            const elseFields: SchemaField[] = [];
 
-            for (let j = 0; j < thenFieldNames.length; j++) {
-                const name = thenFieldNames[j];
-                const fieldConfig = thenFieldsControls[name];
-                const typeIndex = fieldConfig.fieldType;
-                const type = this.schemaTypeMap[typeIndex];
-
-                const schemaField: SchemaField = {
-                    name: name,
-                    title: fieldConfig.fieldName,
-                    description: fieldConfig.fieldName,
-                    required: fieldConfig.fieldRequired,
-                    isArray: fieldConfig.fieldArray,
-                    isRef: type.isRef,
-                    type: type.type,
-                    format: type.format,
-                    pattern: type.pattern,
-                    unit: type.unitSystem ? fieldConfig.fieldUnit : undefined,
-                    unitSystem: type.unitSystem,
-                    customType: type.customType,
-                    readOnly: false,
-                }
+            for (const thenField of element.thenControls) {
+                const schemaField = this.buildSchemaField(thenField, conditionValue.thenFieldControls);
                 thenFields.push(schemaField);
             }
-
-            const elseFields = [];
-            const elseFieldsControls = conditionValue.elseFieldControls;
-            const elseFieldNames = Object.keys(elseFieldsControls);
-            for (let j = 0; j < elseFieldNames.length; j++) {
-                const name = elseFieldNames[j];
-                const fieldConfig = elseFieldsControls[name];
-                const typeIndex = fieldConfig.fieldType;
-                const type = this.schemaTypeMap[typeIndex];
-
-                const schemaField: SchemaField = {
-                    name: name,
-                    title: fieldConfig.fieldName,
-                    description: fieldConfig.fieldName,
-                    required: fieldConfig.fieldRequired,
-                    isArray: fieldConfig.fieldArray,
-                    isRef: type.isRef,
-                    type: type.type,
-                    format: type.format,
-                    pattern: type.pattern,
-                    unit: type.unitSystem ? fieldConfig.fieldUnit : undefined,
-                    unitSystem: type.unitSystem,
-                    customType: type.customType,
-                    readOnly: false,
-                }
+            for (const elseField of element.elseControls) {
+                const schemaField = this.buildSchemaField(elseField, conditionValue.elseFieldControls);
                 elseFields.push(schemaField);
             }
 
+            const item = fieldsWithNames.find(item => item.name === conditionValue.ifCondition.field.name);
             conditions.push({
                 ifCondition: {
-                    field: fieldsWithNames.find(item => item.name === conditionValue.ifCondition.field.fieldName).field,
+                    field: item.field,
                     fieldValue: conditionValue.ifCondition.fieldValue
                 },
                 thenFields: thenFields,
@@ -681,39 +547,38 @@ export class SchemaConfigurationComponent implements OnInit {
         return schema;
     }
 
-    onIfConditionFieldChange(condition: any, field: any) {
+    onIfConditionFieldChange(condition: ConditionControl, field: FieldControl) {
         if (condition.changeEvents) {
-            condition.ifControl.fieldValue.patchValue('', {
+            condition.fieldValue.patchValue('', {
                 emitEvent: false
             });
+            condition.changeEvents.forEach((item: any) => item.unsubscribe());
         }
 
-        condition.changeEvents?.forEach((item: any) => item.unsubscribe());
-
-        condition.changeEvents = []
+        condition.changeEvents = [];
+        condition.changeEvents.push(field.controlType.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                condition.fieldValue.patchValue('', {
+                    emitEvent: false
+                });
+                this.ifFormatValue(condition, field);
+            }));
         condition.changeEvents.push(field.controlRequired.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
                 this.ifFormatValue(condition, field);
             }));
-        condition.changeEvents.push(field.controlType.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                condition.ifControl.fieldValue.patchValue('', {
-                    emitEvent: false
-                });
-                this.ifFormatValue(condition, field);
-            }));
         condition.changeEvents.push(field.controlArray.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
-                condition.ifControl.field.patchValue(null);
+                this.ifFormatValue(condition, field);
             }));
 
         this.ifFormatValue(condition, field);
     }
 
-    private ifFormatValue(condition: any, field: any) {
+    private ifFormatValue(condition: ConditionControl, field: FieldControl) {
         const type = this.schemaTypeMap[field.controlType.value];
         const isNumber = ['number', 'integer'].includes(type.type) || type.format === 'duration';
 
@@ -727,23 +592,23 @@ export class SchemaConfigurationComponent implements OnInit {
             validators.push(this.isNumberOrEmptyValidator());
         }
 
-        (condition.ifControl.fieldValue as FormControl).clearValidators();
-        (condition.ifControl.fieldValue as FormControl).setValidators(validators);
+        condition.fieldValue.clearValidators();
+        condition.fieldValue.setValidators(validators);
         condition.fieldChange?.unsubscribe();
 
         if (type.type === 'boolean' && !field.controlRequired.value) {
-            (condition.ifControl.field as FormControl).patchValue(null);
+            condition.field.patchValue(null);
             return;
         }
 
         if (['date', 'date-time'].includes(type.format)) {
-            condition.fieldChange = this.subscribeFormatDateValue(condition.ifControl.fieldValue, type.format);
+            condition.fieldChange = this.subscribeFormatDateValue(condition.fieldValue, type.format);
         }
         if (isNumber) {
-            condition.fieldChange = this.subscribeFormatNumberValue(condition.ifControl.fieldValue, type.format || type.type);
+            condition.fieldChange = this.subscribeFormatNumberValue(condition.fieldValue, type.format || type.type);
         }
 
-        condition.ifControl.fieldValue.updateValueAndValidity();
+        condition.fieldValue.updateValueAndValidity();
     }
 
     private subscribeFormatDateValue(control: FormControl, format: string) {
@@ -789,7 +654,7 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     private subscribeFormatNumberValue(control: FormControl, type: string, pattern?: string) {
-        control.valueChanges
+        return control.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe((val: any) => {
                 let valueToSet: any = val;
@@ -834,10 +699,12 @@ export class SchemaConfigurationComponent implements OnInit {
         };
     }
 
-    getFieldsForCondition() {
+    getFieldsForCondition(): FieldControl[] {
         return this.fields.filter(item =>
-            !item.controlArray.value && item.controlName.value && !this.schemaTypeMap[item.controlType.value].isRef
-            && (this.schemaTypeMap[item.controlType.value].type === 'boolean' ? item.controlRequired.value : true)
+            !item.controlArray.value &&
+            item.controlDescription.value &&
+            !this.schemaTypeMap[item.controlType.value].isRef &&
+            (this.schemaTypeMap[item.controlType.value].type === 'boolean' ? item.controlRequired.value : true)
         );
     }
 
@@ -851,5 +718,95 @@ export class SchemaConfigurationComponent implements OnInit {
             return this.dataForm.valid;
         }
         return false;
+    }
+
+    isConditionType1(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            'boolean' !== this.schemaTypeMap[type].type &&
+            !['time', 'date-time', 'date'].includes(this.schemaTypeMap[type].format)
+        );
+    }
+
+    isConditionType2(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            this.schemaTypeMap[type].type === 'string' &&
+            this.schemaTypeMap[type].format === 'time'
+        );
+    }
+
+    isConditionType3(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            this.schemaTypeMap[type].type === 'string' &&
+            this.schemaTypeMap[type].format === 'date-time'
+        );
+    }
+
+    isConditionType4(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            this.schemaTypeMap[type].type === 'string' &&
+            this.schemaTypeMap[type].format === 'date'
+        );
+    }
+
+    isConditionType5(condition: ConditionControl): boolean {
+        const type = condition.fieldControl?.type;
+        return (
+            !!type &&
+            this.schemaTypeMap[type].type === 'boolean'
+        );
+    }
+
+
+    private fieldNameValidator(): ValidatorFn {
+        return (group: any): ValidationErrors | null => {
+            const all: FormControl[] = [];
+            const map: any = {};
+
+            const fields = group.get('fields');
+            const conditions = group.get('conditions');
+            for (const fieldName in fields.controls) {
+                const control = fields.get(fieldName).get('controlKey');
+                all.push(control);
+                map[control.value] = (map[control.value] || 0) + 1;
+            }
+            for (const conditionName in conditions.controls) {
+                const control1 = conditions.get(conditionName).get('thenFieldControls');
+                const control2 = conditions.get(conditionName).get('elseFieldControls');
+                for (const fieldName in control1.controls) {
+                    const control = control1.get(fieldName).get('controlKey');
+                    all.push(control);
+                    map[control.value] = (map[control.value] || 0) + 1;
+                }
+                for (const fieldName in control2.controls) {
+                    const control = control2.get(fieldName).get('controlKey');
+                    all.push(control);
+                    map[control.value] = (map[control.value] || 0) + 1;
+                }
+            }
+            let error = null;
+            for (const control of all) {
+                if (map[control.value] > 1) {
+                    error = { unique: true };
+                    control.setErrors(error);
+                } else if(control.errors) {
+                    delete control.errors.unique;
+                    if(Object.keys(control.errors).length === 0) {
+                        control.setErrors(null);
+                    } else {
+                        control.setErrors(control.errors);
+                    }
+                }
+            }
+
+            return error;
+        };
     }
 }

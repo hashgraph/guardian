@@ -366,14 +366,18 @@ export class SchemaHelper {
      * @private
      */
     private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string, condition = false) {
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
-            const name = (!field.readOnly && !condition) ? `field${i}` : field.name;
-            const property = SchemaHelper.buildField(field, name, contextURL);
-            if (field.required) {
-                required.push(name);
+        for (const field of fields) {
+            const property = SchemaHelper.buildField(field, field.name, contextURL);
+            if (/\s/.test(field.name)) {
+                throw new Error(`Field key '${field.name}' must not contain spaces`);
             }
-            properties[name] = property;
+            if (properties[field.name]) {
+                throw new Error(`Field with key '${field.name}' already exists`);
+            }
+            if (field.required) {
+                required.push(field.name);
+            }
+            properties[field.name] = property;
         }
     }
 
@@ -799,5 +803,21 @@ export class SchemaHelper {
         } catch (error) {
             return {};
         }
+    }
+
+    /**
+     * Check Schema Key
+     * @param schema
+     * @private
+     */
+    public static checkSchemaKey(schema: ISchema): boolean {
+        if (schema?.document?.properties) {
+            for (const key in schema?.document?.properties) {
+                if (/\s/.test(key)) {
+                    throw new Error(`Field key '${key}' must not contain spaces`);
+                }
+            }
+        }
+        return true;
     }
 }

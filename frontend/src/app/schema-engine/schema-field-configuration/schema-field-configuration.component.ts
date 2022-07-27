@@ -12,6 +12,7 @@ import {
     FormGroup,
 } from '@angular/forms';
 import { UnitSystem } from '@guardian/interfaces';
+import { FieldControl } from "../field-control";
 
 /**
  * Schemas constructor
@@ -23,24 +24,12 @@ import { UnitSystem } from '@guardian/interfaces';
 })
 export class SchemaFieldConfigurationComponent implements OnInit {
     @Input('form') form!: FormGroup;
-    @Input('field') field!: {
-        name: string;
-        fieldName: string;
-        fieldType: string;
-        fieldRequired: string;
-        fieldArray: string;
-        controlName: FormControl;
-        controlType: FormControl;
-        controlRequired: FormControl;
-        controlArray: FormControl;
-        required: boolean;
-        isArray: boolean;
-        controlUnit: FormControl
-    };
+    @Input('field') field!: FieldControl;
 
     @Input('types') types!: any[];
     @Input('measureTypes') measureTypes!: any[];
     @Input('schemaTypes') schemaTypes!: any[];
+    @Input('extended') extended!: boolean;
 
     @Output('remove') remove = new EventEmitter<any>();
 
@@ -55,6 +44,9 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        if (changes.extended && Object.keys(changes).length === 1) {
+            return;
+        } 
         const type = this.field.controlType.value;
         this.onTypeChange(type);
     }

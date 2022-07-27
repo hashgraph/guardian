@@ -12,3 +12,14 @@ form {
 textarea {
     min-height: 100px;
 }
+
+.switch-btn {
+    height: 46px;
+    font-weight: 500;
+    font-size: 20px;
+    color: #fff;
+    box-sizing: border-box;
+    min-width: 250px;
+    text-align: center;
+    cursor: pointer;
+}
