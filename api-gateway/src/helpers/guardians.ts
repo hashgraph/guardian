@@ -253,6 +253,26 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Create user
+     * @param username
+     * @param profile
+     */
+    public async createUserProfileCommon(username: string, profile: IUser): Promise<string> {
+        return await this.request<string>(MessageAPI.CREATE_USER_PROFILE_COMMON, { username, profile });
+    }
+
+    /**
+     * Async create user
+     * @param username
+     * @param profile
+     * @param taskId
+     */
+    public async createUserProfileCommonAsync(username: string, profile: IUser, taskId: string): Promise<any> {
+        console.log(JSON.stringify({ username, profile, taskId }));
+        return await this.request<any>(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, { username, profile, taskId });
+    }
+
+    /**
      * Get user balance
      * @param username
      */
@@ -275,6 +295,15 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async generateDemoKey(role: string): Promise<any> {
         return await this.request(MessageAPI.GENERATE_DEMO_KEY, { role });
+    }
+
+    /**
+     * Async generate Demo Key
+     * @param role
+     * @param taskId
+     */
+    public async generateDemoKeyAsync(role: string, taskId: string): Promise<any> {
+        return await this.request(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, taskId });
     }
 
     /**

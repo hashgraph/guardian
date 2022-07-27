@@ -34,7 +34,9 @@ export class TaskManager {
         'Import schema message': 4,
         'Create schema': 10,
         'Preview schema message': 6,
-    }
+        'Create random key': 4,
+        'Connect user': 16,
+    };
 
     /**
      * Set task manager dependecies

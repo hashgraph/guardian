@@ -149,9 +149,9 @@ Promise.all([
     await schemaAPI(channel, apiGatewayChannel, schemaRepository);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await profileAPI(channel);
+    await profileAPI(channel, apiGatewayChannel);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-    await demoAPI(channel, settingsRepository);
+    await demoAPI(channel, apiGatewayChannel, settingsRepository);
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await setDefaultSchema();

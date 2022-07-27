@@ -30,6 +30,7 @@ import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 
 /**
  * Get global topic
@@ -78,7 +79,12 @@ export function updateUserBalance(channel: MessageBrokerChannel) {
     }
 }
 
-async function createUserProfile(profile: any): Promise<string> {
+/**
+ * Create user profile
+ * @param profile
+ * @param notifier
+ */
+async function createUserProfile(profile: any, notifier: INotifier): Promise<string> {
     const logger = new Logger();
 
     const {
@@ -92,6 +98,7 @@ async function createUserProfile(profile: any): Promise<string> {
     let topic: Topic = null;
     let newTopic = false;
 
+    notifier.start('Resolve topic');
     const globalTopic = await getGlobalTopic();
 
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
@@ -104,6 +111,7 @@ async function createUserProfile(profile: any): Promise<string> {
     }
 
     if (!topic) {
+        notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
         topic = await topicHelper.create({
@@ -123,6 +131,7 @@ async function createUserProfile(profile: any): Promise<string> {
     // ------------------------
     // <-- Publish DID Document
     // ------------------------
+    notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
     const didObject = DIDDocument.create(hederaAccountKey, topic.topicId);
     const userDID = didObject.getDid();
@@ -154,6 +163,7 @@ async function createUserProfile(profile: any): Promise<string> {
     // ------------------
     // <-- Publish Schema
     // ------------------
+    notifier.completedAndStart('Publish Schema');
     let schemaObject: Schema;
     try {
         let schema: SchemaCollection = null;
@@ -170,6 +180,7 @@ async function createUserProfile(profile: any): Promise<string> {
                 active: true
             });
             if (schema) {
+                notifier.info('Publish System Schema (STANDARD_REGISTRY)');
                 logger.info('Publish System Schema (STANDARD_REGISTRY)', ['GUARDIAN_SERVICE']);
                 schema.creator = didMessage.did;
                 schema.owner = didMessage.did;
@@ -191,6 +202,7 @@ async function createUserProfile(profile: any): Promise<string> {
                 active: true
             });
             if (schema) {
+                notifier.info('Publish System Schema (USER)');
                 logger.info('Publish System Schema (USER)', ['GUARDIAN_SERVICE']);
                 schema.creator = didMessage.did;
                 schema.owner = didMessage.did;
@@ -220,6 +232,7 @@ async function createUserProfile(profile: any): Promise<string> {
     // -----------------------
     // <-- Publish VC Document
     // -----------------------
+    notifier.completedAndStart('Publish VC Document');
     if (vcDocument) {
         logger.info('Create VC Document', ['GUARDIAN_SERVICE']);
 
@@ -260,6 +273,7 @@ async function createUserProfile(profile: any): Promise<string> {
     // Publish VC Document -->
     // -----------------------
 
+    notifier.completedAndStart('Save changes');
     if (newTopic) {
         topic.owner = didMessage.did;
         topic.parent = globalTopic?.topicId;
@@ -277,6 +291,7 @@ async function createUserProfile(profile: any): Promise<string> {
             .sendMessage(regMessage)
     }
 
+    notifier.completed();
     return userDID;
 }
 
@@ -286,7 +301,7 @@ async function createUserProfile(profile: any): Promise<string> {
  * @param channel - channel
  *
  */
-export function profileAPI(channel: MessageBrokerChannel) {
+export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel) {
     ApiResponse(channel, MessageAPI.GET_BALANCE, async (msg) => {
         try {
             const { username } = msg;
@@ -348,9 +363,12 @@ export function profileAPI(channel: MessageBrokerChannel) {
         }
     });
 
+    /**
+     * @deprecated 2022-07-27
+     */
     ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE, async (msg) => {
         try {
-            const userDID = await createUserProfile(msg);
+            const userDID = await createUserProfile(msg, emptyNotifier());
 
             return new MessageResponse(userDID);
         } catch (error) {
@@ -360,13 +378,12 @@ export function profileAPI(channel: MessageBrokerChannel) {
         }
     });
 
-    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE + '_COMMON', async (msg) => {
+    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE_COMMON, async (msg) => {
         try {
             const { username, profile } = msg;
 
             const users = new Users();
             const wallet = new Wallet();
-            //const guardians = new Guardians();
 
             if (!profile.hederaAccountId) {
                 return new MessageError('Invalid Hedera Account Id', 403);
@@ -380,18 +397,18 @@ export function profileAPI(channel: MessageBrokerChannel) {
             let did: string;
             if (user.role === UserRole.STANDARD_REGISTRY) {
                 profile.entity = SchemaEntity.STANDARD_REGISTRY;
-                did = await createUserProfile(profile);
+                did = await createUserProfile(profile, emptyNotifier());
             } else if (user.role === UserRole.USER) {
                 profile.entity = SchemaEntity.USER;
-                did = await createUserProfile(profile);
+                did = await createUserProfile(profile, emptyNotifier());
             }
-    
+
             await users.updateCurrentUser(username, {
                 did,
                 parent: profile.parent,
                 hederaAccountId: profile.hederaAccountId
             });
-    
+
             await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
 
         } catch (error) {
@@ -399,5 +416,54 @@ export function profileAPI(channel: MessageBrokerChannel) {
             console.error(error);
             return new MessageError(error, 500);
         }
+    });
+
+    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
+        const { username, profile, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                const users = new Users();
+                const wallet = new Wallet();
+
+                if (!profile.hederaAccountId) {
+                    notifier.error('Invalid Hedera Account Id');
+                    return;
+                }
+                if (!profile.hederaAccountKey) {
+                    notifier.error('Invalid Hedera Account Key');
+                    return;
+                }
+
+                notifier.start('Get user');
+                const user = await users.getUser(username);
+                notifier.completed();
+                let did: string;
+                if (user.role === UserRole.STANDARD_REGISTRY) {
+                    profile.entity = SchemaEntity.STANDARD_REGISTRY;
+                    did = await createUserProfile(profile, notifier);
+                } else if (user.role === UserRole.USER) {
+                    profile.entity = SchemaEntity.USER;
+                    did = await createUserProfile(profile, notifier);
+                }
+
+                notifier.start('Update user');
+                await users.updateCurrentUser(username, {
+                    did,
+                    parent: profile.parent,
+                    hederaAccountId: profile.hederaAccountId
+                });
+                notifier.completedAndStart('Set up wallet');
+                await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
+                notifier.completed();
+                notifier.result(did);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
     });
 }

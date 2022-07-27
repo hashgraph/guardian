@@ -9,6 +9,12 @@ import { IUser, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces'
 import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
+import { InformService } from 'src/app/services/inform.service';
+import { TasksService } from 'src/app/services/tasks.service';
+
+enum OperationMode {
+    None, Generate, Connect
+}
 
 /**
  * Standard Registry profile settings page.
@@ -39,11 +45,17 @@ export class RootConfigComponent implements OnInit {
     formValid: boolean = false;
     schema!: Schema;
 
+    operationMode: OperationMode = OperationMode.None;
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private otherService: DemoService,
+        private informService: InformService,
+        private taskService: TasksService,
         private fb: FormBuilder,
         public dialog: MatDialog,
         private headerProps: HeaderPropsService) {
@@ -131,12 +143,12 @@ export class RootConfigComponent implements OnInit {
             }
             this.loading = true;
             this.headerProps.setLoading(true);
-            this.setProgress(true);
-            this.profileService.setProfile(data).subscribe(() => {
-                this.setProgress(false);
-                this.loadProfile();
+            this.profileService.pushSetProfile(data).subscribe((result) => {
+                const { taskId, expectation } = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+                this.operationMode = OperationMode.Connect;
             }, (error) => {
-                this.setProgress(false);
                 this.loading = false;
                 this.headerProps.setLoading(false);
                 console.error(error);
@@ -190,15 +202,14 @@ export class RootConfigComponent implements OnInit {
     randomKey() {
         this.loading = true;
         const value = this.hederaForm.value;
-        this.otherService.getRandomKey().subscribe((account) => {
+        this.otherService.pushGetRandomKey().subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.Generate;
+        }, (e) => {
             this.loading = false;
-            this.hederaForm.setValue({
-                hederaAccountId: account.id,
-                hederaAccountKey: account.key,
-                vc: value.vc
-            });
-        }, (error) => {
-            this.loading = false;
+            this.taskId = undefined;
         });
     }
 
@@ -241,6 +252,41 @@ export class RootConfigComponent implements OnInit {
                     this.prepareDataFrom(dataElem);
                 }
             }
+        }
+    }
+
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
+        this.loading = false;
+        this.taskId = undefined;
+    }
+
+    onAsyncCompleted() {
+        if (this.taskId) {
+            const taskId = this.taskId;
+            this.taskId = undefined;
+            this.taskService.get(taskId).subscribe((task) => {
+                switch (this.operationMode) {
+                    case OperationMode.Generate: {
+                        const { id, key} = task.result;
+                        const value = this.hederaForm.value;
+                        this.hederaForm.setValue({
+                                hederaAccountId: id,
+                                hederaAccountKey: key,
+                                vc: value.vc
+                            });
+                        break;
+                    }
+                    case OperationMode.Connect: {
+                        this.loadProfile();
+                        break;
+                    }
+                }
+                this.operationMode = OperationMode.None;
+                this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
         }
     }
 }
