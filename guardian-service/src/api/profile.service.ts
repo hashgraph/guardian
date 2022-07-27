@@ -5,7 +5,8 @@ import {
     Schema,
     SchemaEntity,
     SchemaHelper,
-    TopicType
+    TopicType,
+    UserRole
 } from '@guardian/interfaces';
 import { VcHelper } from '@helpers/vc-helper';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -317,7 +318,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
             console.error(error);
             return new MessageError(error, 500);
         }
-    })
+    });
 
     ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg) => {
         try {
@@ -345,7 +346,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
             console.error(error);
             return new MessageError(error, 500);
         }
-    })
+    });
 
     ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE, async (msg) => {
         try {
@@ -357,5 +358,46 @@ export function profileAPI(channel: MessageBrokerChannel) {
             console.error(error);
             return new MessageError(error, 500);
         }
-    })
+    });
+
+    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE + '_COMMON', async (msg) => {
+        try {
+            const { username, profile } = msg;
+
+            const users = new Users();
+            const wallet = new Wallet();
+            //const guardians = new Guardians();
+
+            if (!profile.hederaAccountId) {
+                return new MessageError('Invalid Hedera Account Id', 403);
+            }
+            if (!profile.hederaAccountKey) {
+                return new MessageError('Invalid Hedera Account Key', 403);
+            }
+
+            const user = await users.getUser(username);
+
+            let did: string;
+            if (user.role === UserRole.STANDARD_REGISTRY) {
+                profile.entity = SchemaEntity.STANDARD_REGISTRY;
+                did = await createUserProfile(profile);
+            } else if (user.role === UserRole.USER) {
+                profile.entity = SchemaEntity.USER;
+                did = await createUserProfile(profile);
+            }
+    
+            await users.updateCurrentUser(username, {
+                did,
+                parent: profile.parent,
+                hederaAccountId: profile.hederaAccountId
+            });
+    
+            await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
+
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            return new MessageError(error, 500);
+        }
+    });
 }
