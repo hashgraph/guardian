@@ -32,6 +32,8 @@ export class TaskManager {
         'Publish schema': 14,
         'Import schema file': 4,
         'Import schema message': 4,
+        'Create schema': 10,
+        'Preview schema message': 6,
     }
 
     /**

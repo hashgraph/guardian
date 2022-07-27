@@ -201,12 +201,15 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
  * @param newSchema
  * @param owner
  */
-async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCollection> {
+async function createSchema(newSchema: ISchema, owner: string, notifier: INotifier): Promise<SchemaCollection> {
     const users = new Users();
+    notifier.start('Resolve Hedera account');
     const root = await users.getHederaAccount(owner);
+    notifier.completedAndStart('Save in DB');
     const schemaObject = getMongoRepository(SchemaCollection)
         .create(newSchema) as SchemaCollection;
 
+    notifier.completedAndStart('Resolve Topic');
     let topic: Topic;
     if (newSchema.topicId) {
         topic = await getMongoRepository(Topic).findOne({ topicId: newSchema.topicId });
@@ -253,12 +256,16 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
         throw new Error('Schema identifier already exist');
     }
 
+    notifier.completedAndStart('Save to IPFS & Hedera');
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
     const message = new SchemaMessage(MessageAction.CreateSchema);
     message.setDocument(schemaObject);
     await messageServer.setTopicObject(topic).sendMessage(message);
 
-    return await getMongoRepository(SchemaCollection).save(schemaObject);
+    notifier.completedAndStart('Update schema in DB');
+    const savedSchema = await getMongoRepository(SchemaCollection).save(schemaObject);
+    notifier.completed();
+    return savedSchema;
 }
 
 /**
@@ -289,10 +296,8 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
         file.topicId = topicId;
         file.status = SchemaStatus.DRAFT;
         SchemaHelper.setVersion(file, '', '');
-        await createSchema(file, owner);
+        await createSchema(file, owner, emptyNotifier());
     }
-
-    // throw new Error("Test error");
 
     const schemasMap = [];
     uuidMap.forEach((v, k) => {
@@ -435,13 +440,31 @@ export async function schemaAPI(
             const schemaObject = msg as ISchema;
             console.log('c', schemaObject)
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
-            await createSchema(schemaObject, schemaObject.owner);
+            await createSchema(schemaObject, schemaObject.owner, emptyNotifier());
             const schemas = await schemaRepository.find();
             return new MessageResponse(schemas);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
+    });
+
+    ApiResponse(channel, MessageAPI.CREATE_SCHEMA_ASYNC, async (msg) => {
+        const { item, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                const schemaObject = item as ISchema;
+                console.log('c', schemaObject)
+                SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
+                const schema = await createSchema(schemaObject, schemaObject.owner, notifier);
+                notifier.result(schema.id);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+        return new MessageResponse({ taskId });
     });
 
     /**
@@ -804,6 +827,81 @@ export async function schemaAPI(
             console.error(error);
             return new MessageError(error);
         }
+    });
+
+    /**
+     * Async preview schema by message identifier
+     *
+     * @param {string} [payload.messageId] Message identifier
+     *
+     * @returns {Schema} Found or uploaded schema
+     */
+    ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA_ASYNC, async (msg) => {
+        const { messageIds, taskId } = msg as {
+            /**
+             * Message ids
+             */
+            messageIds: string[];
+            /**
+             * Task id
+             */
+            taskId: string;
+        };
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                notifier.start('Load schema file');
+                if (!messageIds) {
+                    return new MessageError('Invalid preview schema parameters');
+                }
+                const result = [];
+                for (const messageId of messageIds) {
+                    const schema = await loadSchema(messageId, null);
+                    result.push(schema);
+                }
+
+                notifier.completedAndStart('Parse schema');
+                const messageServer = new MessageServer();
+                const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
+                const anotherSchemas: SchemaMessage[] = [];
+                for (const topicId of uniqueTopics) {
+                    const anotherVersions = await messageServer.getMessages<SchemaMessage>(
+                        topicId, MessageType.Schema, MessageAction.PublishSchema
+                    );
+                    for (const ver of anotherVersions) {
+                        anotherSchemas.push(ver);
+                    }
+                }
+
+                notifier.completedAndStart('Verifying');
+                for (const schema of result) {
+                    if (!schema.version) {
+                        continue;
+                    }
+                    const newVersions = [];
+                    const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
+                    for (const topicMessage of topicMessages) {
+                        if (topicMessage.version &&
+                            ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
+                            newVersions.push({
+                                messageId: topicMessage.getId(),
+                                version: topicMessage.version
+                            });
+                        }
+                    }
+                    if (newVersions && newVersions.length !== 0) {
+                        schema.newVersions = newVersions.reverse();
+                    }
+                }
+                notifier.completed();
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
     });
 
     /**

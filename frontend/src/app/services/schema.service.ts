@@ -22,6 +22,10 @@ export class SchemaService {
         return this.http.post<any[]>(`${this.url}/${topicId}`, schema);
     }
 
+    public pushCreate(schema: Schema, topicId: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/${topicId}/push`, schema);
+    }
+
     public update(schema: Schema, id?: string): Observable<ISchema[]> {
         const data = Object.assign({}, schema, { id: id || schema.id });
         return this.http.put<any[]>(`${this.url}`, data);
@@ -110,6 +114,10 @@ export class SchemaService {
 
     public previewByMessage(messageId: string): Observable<ISchema> {
         return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+    }
+
+    public pushPreviewByMessage(messageId: string): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message/preview`, { messageId });
     }
 
     public previewByFile(schemasFile: any): Observable<ISchema[]> {

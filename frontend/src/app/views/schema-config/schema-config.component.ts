@@ -206,11 +206,13 @@ export class SchemaConfigComponent implements OnInit {
                         this.loading = false;
                     });
                 } else {
-                    this.schemaService.create(schema, schema.topicId).subscribe((data) => {
-                        this.loadSchemas();
+                    this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
                     }, (e) => {
-                        console.error(e.error);
                         this.loading = false;
+                        this.taskId = undefined;
                     });
                 }
             }
@@ -308,13 +310,13 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.create(schema, schema.topicId).subscribe((data) => {
-                    const schemas = SchemaHelper.map(data);
-                    this.schemaMapping(schemas);
-                    this.loadSchemas();
+                this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
                 }, (e) => {
-                    console.error(e.error);
                     this.loading = false;
+                    this.taskId = undefined;
                 });
             }
         });

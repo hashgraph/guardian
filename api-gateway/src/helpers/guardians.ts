@@ -369,7 +369,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param {string} topicId
      * @param {string} taskId
      */
-    public async importSchemasByMessagesAsync(messageIds: string[], owner: string, topicId: string, taskId: string ): Promise<any[]> {
+    public async importSchemasByMessagesAsync(messageIds: string[], owner: string, topicId: string, taskId: string ): Promise<any> {
         return await this.request<any>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, taskId });
     }
 
@@ -393,7 +393,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param {string} topicId
      * @param {string} taskId
      */
-    public async importSchemasByFileAsync(files: ISchema[], owner: string, topicId: string, taskId: string): Promise<any[]> {
+    public async importSchemasByFileAsync(files: ISchema[], owner: string, topicId: string, taskId: string): Promise<any> {
         return await this.request<any>(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, taskId });
     }
 
@@ -406,6 +406,16 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async previewSchemasByMessages(messageIds: string[]): Promise<ISchema[]> {
         return await this.request<ISchema[]>(MessageAPI.PREVIEW_SCHEMA, { messageIds });
+    }
+
+    /**
+     * Async get schema preview
+     *
+     * @param {string} messageIds Message identifier
+     * @param {string} taskId Task id
+     */
+    public async previewSchemasByMessagesAsync(messageIds: string[], taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.PREVIEW_SCHEMA_ASYNC, { messageIds, taskId });
     }
 
     /**
@@ -428,6 +438,15 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async createSchema(item: ISchema | any): Promise<ISchema[]> {
         return await this.request<ISchema[]>(MessageAPI.CREATE_SCHEMA, item);
+    }
+
+    /**
+     * Async create or update schema
+     * @param {ISchema} item - schema
+     * @param {string} taskId - task id
+     */
+    public async createSchemaAsync(item: ISchema | any, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.CREATE_SCHEMA_ASYNC, { item, taskId });
     }
 
     /**
@@ -475,7 +494,7 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema} - message
      */
-    public async publishSchemaAsync(id: string, version: string, owner: string, taskId: string) {
+    public async publishSchemaAsync(id: string, version: string, owner: string, taskId: string): Promise<any> {
         return await this.request<any>(MessageAPI.PUBLISH_SCHEMA_ASYNC, { id, version, owner, taskId });
     }
 

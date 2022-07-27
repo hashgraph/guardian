@@ -3,7 +3,9 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ImportType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
+import { InformService } from 'src/app/services/inform.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { TasksService } from 'src/app/services/tasks.service';
 /**
  * Dialog allowing you to select a file and load schemas.
  */
@@ -19,12 +21,18 @@ export class ImportSchemaDialog {
   });
   loading: boolean = false;
 
+  messageId: any;
+  taskId: string | undefined = undefined;
+  expectedTaskMessages: number = 0;
+
   public isImportTypeSelected: boolean = false;
 
   constructor(
     public dialogRef: MatDialogRef<ImportSchemaDialog>,
     private fb: FormBuilder,
     private schemaService: SchemaService,
+    private informService: InformService,
+    private taskService: TasksService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       if (data.timeStamp) {
         this.importType = ImportType.IPFS;
@@ -51,19 +59,40 @@ export class ImportSchemaDialog {
     }
 
     this.loading = true;
-    const messageId = this.dataForm.get('timestamp')?.value;
+    this.messageId = this.dataForm.get('timestamp')?.value;
 
-    this.schemaService.previewByMessage(messageId)
-      .subscribe(result => {
+    this.schemaService.pushPreviewByMessage(this.messageId).subscribe((result) => {
+      const { taskId, expectation } = result;
+      this.taskId = taskId;
+      this.expectedTaskMessages = expectation;
+    }, (e) => {
+      this.loading = false;
+      this.taskId = undefined;
+    });
+  }
+
+  onAsyncError(error: any) {
+      this.informService.processAsyncError(error);
+      this.loading = false;
+      this.taskId = undefined;
+  }
+
+  onAsyncCompleted() {
+    if (this.taskId) {
+      const taskId: string = this.taskId;
+      this.taskId = undefined;
+      this.taskService.get(taskId).subscribe((task) => {
         this.loading = false;
+        const { result } = task;
         this.dialogRef.close({
-          type: 'message',
-          data: messageId,
-          schemas: result
-        });
+                type: 'message',
+                data: this.messageId,
+                schemas: result
+              });
       }, error => {
         this.loading = false;
       });
+    }
   }
 
   importFromFile(file: any) {
