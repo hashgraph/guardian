@@ -66,7 +66,7 @@ export class HederaSDKHelper {
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
-        dryRun: boolean
+        dryRun: boolean = false
     ) {
         this.dryRun = dryRun || false;
         this.client = Environment.createClient();

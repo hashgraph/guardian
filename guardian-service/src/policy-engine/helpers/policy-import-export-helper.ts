@@ -152,7 +152,7 @@ export class PolicyImportExportHelper {
         const root = await users.getHederaAccount(policyOwner);
 
         const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, false);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
         let topicRow: Topic;
         if (versionOfTopicId) {
@@ -173,7 +173,7 @@ export class PolicyImportExportHelper {
 
         policy.topicId = topicRow.topicId;
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
         const messageStatus = await messageServer
@@ -197,7 +197,7 @@ export class PolicyImportExportHelper {
 
         // Import Tokens
         if (tokens) {
-            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, false);
+            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = getMongoRepository(Token);
             for (const token of tokens) {

@@ -143,7 +143,7 @@ export class TransactionLogger {
 
             if (TransactionLogger.logLvl === TransactionLogLvl.DEBUG) {
                 try {
-                    const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY, false);
+                    const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
                     const balance = await client.balance(operatorAccountId);
                     attr.push(balance);
                 } catch (error) {

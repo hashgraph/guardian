@@ -34,6 +34,11 @@
                         <span>Publish</span>
                     </div>
 
+                    <div class="btn-new-block btn-status-edit" (click)="tryRunPolicy()" title="Dry-run Policy">
+                        <mat-icon>public</mat-icon>
+                        <span>Dry-run</span>
+                    </div>
+
                     <div class="delimiter"></div>
 
                     <div *ngIf="readonly" class="btn-new-block btn-status-all" [routerLink]="['/policy-viewer']"

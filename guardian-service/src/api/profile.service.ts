@@ -135,7 +135,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const client = new HederaSDKHelper(user.hederaAccountId, key, false);
+            const client = new HederaSDKHelper(user.hederaAccountId, key);
             const balance = await client.balance(user.hederaAccountId);
             return new MessageResponse(balance);
         } catch (error) {
@@ -162,7 +162,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
 
             const globalTopic = await getGlobalTopic();
 
-            const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, false);
+            const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
 
             if (parent) {
                 topic = await getMongoRepository(Topic).findOne({
@@ -173,7 +173,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
 
             if (!topic) {
                 logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
-                const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, false);
+                const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
                 topic = await topicHelper.create({
                     type: TopicType.UserTopic,
                     name: TopicType.UserTopic,

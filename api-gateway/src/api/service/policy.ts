@@ -33,7 +33,7 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             });
         } else {
             const filters: any = {
-                status: 'PUBLISH',
+                status: { $in: ['PUBLISH', 'DRY-RUN'] },
             }
             if (user.parent) {
                 filters.owner = user.parent;
@@ -105,6 +105,26 @@ policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Respo
     const engineService = new PolicyEngine();
     try {
         res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.put('/:policyId/dry-run', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.json(await engineService.dryRunPolicy(req.body, req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.put('/:policyId/draft', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.json(await engineService.draft(req.body, req.user, req.params.policyId));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message || error });

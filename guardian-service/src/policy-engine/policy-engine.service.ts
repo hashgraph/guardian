@@ -199,7 +199,7 @@ export class PolicyEngineService {
         if (!model.topicId) {
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await getMongoRepository(Topic).findOne({ owner, type: TopicType.UserTopic });
-            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, false);
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
             let topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
@@ -214,7 +214,7 @@ export class PolicyEngineService {
             );
             model.topicId = topic.topicId;
 
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
             const messageStatus = await messageServer
@@ -302,7 +302,7 @@ export class PolicyEngineService {
 
         const root = await this.users.getHederaAccount(owner);
         const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false)
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
             .setTopicObject(topic);
 
         model = await this.publishSchemas(model, owner);
@@ -313,7 +313,7 @@ export class PolicyEngineService {
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
 
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, false);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         let rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
             name: model.name || TopicType.InstancePolicyTopic,
@@ -367,6 +367,90 @@ export class PolicyEngineService {
             policyId: `${model.id}`
         });
         await getMongoRepository(VcDocumentCollection).save(doc);
+
+        logger.info('Published Policy', ['GUARDIAN_SERVICE']);
+
+        return await getMongoRepository(Policy).save(model);
+    }
+
+    /**
+     * Publish policy
+     * @param model
+     * @param owner
+     * @param version
+     * @private
+     */
+    private async dryRunPolicy(model: Policy, owner: string, version: string): Promise<Policy> {
+        const logger = new Logger();
+        logger.info('Dry-run Policy', ['GUARDIAN_SERVICE']);
+
+        const root = await this.users.getHederaAccount(owner);
+        const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
+
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, true)
+            .setTopicObject(topic);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, true);
+        const databaseServer = new DatabaseServer(true, model.id.toString());
+
+        // model = await this.publishSchemas(model, owner);
+        model.status = 'DRY-RUN';
+        model.version = version;
+
+        this.policyGenerator.regenerateIds(model.config);
+        const zip = await PolicyImportExportHelper.generateZipFile(model);
+        const buffer = await zip.generateAsync({ type: 'arraybuffer' });
+
+        let rootTopic = await topicHelper.create({
+            type: TopicType.InstancePolicyTopic,
+            name: model.name || TopicType.InstancePolicyTopic,
+            description: model.topicDescription || TopicType.InstancePolicyTopic,
+            owner,
+            policyId: model.id.toString(),
+            policyUUID: model.uuid
+        });
+        databaseServer.saveTopic(rootTopic)
+
+        const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
+        message.setDocument(model, buffer);
+        const result = await messageServer.sendMessage(message);
+        model.messageId = result.getId();
+        model.instanceTopicId = rootTopic.topicId;
+
+        await topicHelper.twoWayLink(rootTopic, topic, result.getId());
+
+        const messageId = result.getId();
+        const url = result.getUrl();
+
+        const vcHelper = new VcHelper();
+        let credentialSubject: any = {
+            id: messageId,
+            name: model.name,
+            description: model.description,
+            topicDescription: model.topicDescription,
+            version: model.version,
+            policyTag: model.policyTag,
+            owner: model.owner,
+            cid: url.cid,
+            url: url.url,
+            uuid: model.uuid,
+            operation: 'PUBLISH'
+        }
+
+        const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
+        if (policySchema) {
+            const schemaObject = new Schema(policySchema);
+            credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
+        }
+
+        const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
+
+        const doc = await databaseServer.saveVC({
+            hash: vc.toCredentialHash(),
+            owner,
+            document: vc.toJsonTree(),
+            type: SchemaEntity.POLICY,
+            policyId: `${model.id}`
+        })
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
 
@@ -498,6 +582,90 @@ export class PolicyEngineService {
                     policies,
                     isValid,
                     errors
+                });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES, async (msg) => {
+            try {
+                if (!msg.model) {
+                    throw new Error('Policy is empty');
+                }
+
+                const policyId = msg.policyId;
+                const user = msg.user;
+                const userFull = await this.users.getUser(user.username);
+                const owner = userFull.did;
+
+                const model = await getMongoRepository(Policy).findOne(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (!model.config) {
+                    throw new Error('The policy is empty');
+                }
+
+                const errors = await this.policyGenerator.validate(policyId);
+                const isValid = !errors.blocks.some(block => !block.isValid);
+
+                if (isValid) {
+                    const newPolicy = await this.dryRunPolicy(model, owner, '0.0.0');
+                    await this.policyGenerator.generate(newPolicy.id.toString());
+                }
+
+                const policies = (await getMongoRepository(Policy).find({ owner })).map(item => {
+                    delete item.registeredUsers;
+                    return item;
+                });
+
+                return new MessageResponse({
+                    policies,
+                    isValid,
+                    errors
+                });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.DRAFT_POLICIES, async (msg) => {
+            try {
+                if (!msg.model) {
+                    throw new Error('Policy is empty');
+                }
+
+                const policyId = msg.policyId;
+                const user = msg.user;
+                const userFull = await this.users.getUser(user.username);
+                const owner = userFull.did;
+
+                const model = await getMongoRepository(Policy).findOne(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (!model.config) {
+                    throw new Error('The policy is empty');
+                }
+
+                model.status = 'DRAFT';
+                model.version = '';
+
+                await getMongoRepository(Policy).save(model);
+
+                const databaseServer = new DatabaseServer(true, model.id.toString());
+                await databaseServer.clearDryRun();
+
+                const policies = (await getMongoRepository(Policy).find({ owner })).map(item => {
+                    delete item.registeredUsers;
+                    return item;
+                });
+
+                return new MessageResponse({
+                    policies
                 });
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -684,7 +852,7 @@ export class PolicyEngineService {
                 new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
 
                 const root = await this.users.getHederaAccount(userFull.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
                 if (message.type !== MessageType.InstancePolicy) {
@@ -731,7 +899,7 @@ export class PolicyEngineService {
                 }
 
                 const root = await this.users.getHederaAccount(userFull.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
                 if (message.type !== MessageType.InstancePolicy) {

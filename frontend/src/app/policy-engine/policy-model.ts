@@ -670,7 +670,7 @@ export class PolicyModel {
     }
 
     public get readonly(): boolean {
-        return this.status == 'PUBLISH';
+        return this.status == 'PUBLISH' || this.status == 'DRY-RUN';
     }
 
     public get policyRoles(): PolicyRoleModel[] {

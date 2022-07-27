@@ -38,7 +38,12 @@ export class BlockTreeGenerator {
      * Initialization
      */
     public async init(): Promise<void> {
-        const policies = await getMongoRepository(Policy).find({ status: 'PUBLISH' });
+        const policies = await getMongoRepository(Policy).find({
+            where: {
+                status: { $in: ['PUBLISH', 'DRY-RUN'] }
+            }
+        });
+        console.log(policies.length)
         for (const policy of policies) {
             try {
                 await this.generate(policy.id.toString());
@@ -53,7 +58,7 @@ export class BlockTreeGenerator {
      * @param policy
      * @param skipRegistration
      */
-    public async generate(policy: Policy| string, skipRegistration?: boolean): Promise<IPolicyBlock>;
+    public async generate(policy: Policy | string, skipRegistration?: boolean): Promise<IPolicyBlock>;
 
     public async generate(arg: any, skipRegistration?: boolean): Promise<IPolicyBlock> {
         let policy;

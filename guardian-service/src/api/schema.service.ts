@@ -94,7 +94,7 @@ async function loadSchema(messageId: string, owner: string) {
         if (schemaCache[messageId]) {
             return schemaCache[messageId];
         }
-        const messageServer = new MessageServer(null, null, false);
+        const messageServer = new MessageServer(null, null);
         log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
         const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
         log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
@@ -211,7 +211,7 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
     }
 
     if (!topic) {
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, false);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         topic = await topicHelper.create({
             type: TopicType.SchemaTopic,
             name: TopicType.SchemaTopic,
@@ -254,7 +254,7 @@ async function createSchema(newSchema: ISchema, owner: string): Promise<SchemaCo
         throw new Error('Schema identifier already exist');
     }
 
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
     const message = new SchemaMessage(MessageAction.CreateSchema);
     message.setDocument(schemaObject);
     await messageServer.setTopicObject(topic).sendMessage(message);
@@ -392,7 +392,7 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
     const users = new Users();
     const root = await users.getHederaAccount(owner);
     const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false)
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
 
     item = await publishSchema(item, version, messageServer, MessageAction.PublishSchema);
@@ -591,7 +591,7 @@ export async function schemaAPI(
                         if (topic) {
                             const users = new Users();
                             const root = await users.getHederaAccount(item.owner);
-                            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
+                            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
                             const message = new SchemaMessage(MessageAction.DeleteSchema);
                             message.setDocument(item);
                             await messageServer.setTopicObject(topic).sendMessage(message);
@@ -692,7 +692,7 @@ export async function schemaAPI(
                 result.push(schema);
             }
 
-            const messageServer = new MessageServer(null, null, false);
+            const messageServer = new MessageServer(null, null);
             const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
             const anotherSchemas: SchemaMessage[] = [];
             for (const topicId of uniqueTopics) {

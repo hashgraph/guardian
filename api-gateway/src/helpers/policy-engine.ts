@@ -68,6 +68,26 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Dry-run policy
+     * @param model
+     * @param user
+     * @param policyId
+     */
+    public async dryRunPolicy(model, user, policyId) {
+        return await this.request(PolicyEngineEvents.DRY_RUN_POLICIES, { model, user, policyId });
+    }
+
+    /**
+     * Dry-run policy
+     * @param model
+     * @param user
+     * @param policyId
+     */
+    public async draft(model, user, policyId) {
+        return await this.request(PolicyEngineEvents.DRAFT_POLICIES, { model, user, policyId });
+    }
+
+    /**
      * Validate policy
      * @param model
      * @param user

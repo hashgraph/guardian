@@ -23,7 +23,11 @@ export class TopicHelper {
      */
     private dryRun: boolean = false;
 
-    constructor(operatorId: string, operatorKey: string, dryRun: boolean) {
+    constructor(
+        operatorId: string,
+        operatorKey: string,
+        dryRun: boolean = false
+    ) {
         this.dryRun = dryRun || false;
         this.hederaAccountId = operatorId;
         this.hederaAccountKey = operatorKey;

@@ -8,6 +8,8 @@ export enum PolicyEngineEvents {
     CREATE_POLICIES = 'create-policies',
     SAVE_POLICIES = 'save-policies',
     PUBLISH_POLICIES = 'publish-policies',
+    DRY_RUN_POLICIES = 'dry-run-policies',
+    DRAFT_POLICIES = 'draft-policies',
     VALIDATE_POLICIES = 'validate-policies',
     POLICY_BLOCKS = 'get-policy-blocks',
     GET_BLOCK_DATA = 'get-block-data',

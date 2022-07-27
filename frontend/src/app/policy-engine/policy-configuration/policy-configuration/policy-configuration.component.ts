@@ -416,6 +416,24 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
+    public tryRunPolicy() {
+        if (this.hasChanges) {
+            const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
+                width: '500px',
+                autoFocus: false,
+            });
+            dialogRef.afterClosed().subscribe((result) => {
+                if (result) {
+                    this.doSavePolicy().subscribe(() => {
+                        this.dryRunPolicy();
+                    });
+                }
+            });
+        } else {
+            this.dryRunPolicy();
+        }
+    }
+    
     private doSavePolicy(): Observable<void> {
         return new Observable<void>(subscriber => {
             this.chanceView('blocks');
@@ -451,6 +469,30 @@ export class PolicyConfigurationComponent implements OnInit {
     private publishPolicy(version: string) {
         this.loading = true;
         this.policyEngineService.publish(this.policyId, version).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (isValid) {
+                this.loadPolicy();
+            } else {
+                const blocks = errors.blocks;
+                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
+                this.errors = invalidBlocks;
+                this.errorsCount = invalidBlocks.length;
+                this.errorsMap = {};
+                for (let i = 0; i < invalidBlocks.length; i++) {
+                    const element = invalidBlocks[i];
+                    this.errorsMap[element.id] = element.errors;
+                }
+                this.loading = false;
+            }
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    private dryRunPolicy() {
+        this.loading = true;
+        this.policyEngineService.dryRun(this.policyId).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (isValid) {
                 this.loadPolicy();

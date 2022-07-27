@@ -158,7 +158,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 );
                 this.dryRun = true;
                 this.logger = new Logger();
-                this.databaseServer = new DatabaseServer(this.dryRun);
+                this.databaseServer = new DatabaseServer(this.dryRun, this.policyId);
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
@@ -396,6 +396,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public setPolicyId(id: string): void {
                 this.policyId = id;
+                this.databaseServer.setPolicyId(this.policyId);
             }
 
             /**

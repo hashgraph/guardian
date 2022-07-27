@@ -60,7 +60,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             'description',
             'roles',
             'topic',
-	        'schemas',
+            'schemas',
             'version',
             'status',
             'operation',
@@ -189,6 +189,44 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         });
     }
 
+    dryRun(element: any) {
+        this.loading = true;
+        this.policyEngineService.dryRun(element.id).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (!isValid) {
+                let text = [];
+                const blocks = errors.blocks;
+                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
+                for (let i = 0; i < invalidBlocks.length; i++) {
+                    const block = invalidBlocks[i];
+                    for (let j = 0; j < block.errors.length; j++) {
+                        const error = block.errors[j];
+                        text.push(`<div>${block.id}: ${error}</div>`);
+                    }
+                }
+                this.toastr.error(text.join(''), 'The policy is invalid', {
+                    timeOut: 30000,
+                    closeButton: true,
+                    positionClass: 'toast-bottom-right',
+                    enableHtml: true
+                });
+            }
+            this.loadAllPolicy();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    draft(element: any) {
+        this.loading = true;
+        this.policyEngineService.draft(element.id).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            this.loadAllPolicy();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
     setVersion(element: any) {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
@@ -228,6 +266,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.loading = false;
         });
     }
+
+
 
     exportPolicy(element: any) {
         this.policyEngineService.exportInMessage(element.id)

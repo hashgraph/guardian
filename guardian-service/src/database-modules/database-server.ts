@@ -1,4 +1,4 @@
-import { getMongoRepository } from 'typeorm';
+import { DeepPartial, EntityTarget, getMongoRepository } from 'typeorm';
 
 import { BlockState } from '@entity/block-state';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
@@ -11,6 +11,7 @@ import { AggregateVC } from '@entity/aggregate-documents';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
+import { DryRun } from '@entity/dry-run';
 
 import { DocumentSignature, DocumentStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { VcDocument as HVcDocument } from '@hedera-modules';
@@ -25,37 +26,140 @@ export class DatabaseServer {
      */
     private readonly dryRun: boolean = false;
 
-    constructor(dryRun: boolean) {
+    /**
+     * Dry-run
+     * @private
+     */
+    private readonly classMap: Map<any, string> = new Map();
+
+    /**
+     * Policy id
+     */
+    public policyId: string;
+
+    constructor(dryRun: boolean = false, policyId: string = null) {
         this.dryRun = dryRun || false;
+        this.policyId = policyId || null;
+
+        this.classMap.set(BlockState, 'BlockState');
+        this.classMap.set(VcDocumentCollection, 'VcDocumentCollection');
+        this.classMap.set(VpDocumentCollection, 'VpDocumentCollection');
+        this.classMap.set(DidDocumentCollection, 'DidDocumentCollection');
+        this.classMap.set(SchemaCollection, 'SchemaCollection');
+        this.classMap.set(DocumentState, 'DocumentState');
+        this.classMap.set(Policy, 'Policy');
+        this.classMap.set(AggregateVC, 'AggregateVC');
+        this.classMap.set(ApprovalDocumentCollection, 'ApprovalDocumentCollection');
+        this.classMap.set(TokenCollection, 'TokenCollection');
+        this.classMap.set(TopicCollection, 'TopicCollection');
+        this.classMap.set(DryRun, 'DryRun');
+    }
+
+    /**
+     * Set policy id
+     * @param id
+     */
+    public setPolicyId(id: string): void {
+        this.policyId = id;
+    }
+
+    public async clearDryRun(): Promise<void> {
+        const item = await getMongoRepository(DryRun).find({ dryRunId: this.policyId });
+        await getMongoRepository(DryRun).remove(item);
+    }
+
+    private async findOne<T>(entityClass: EntityTarget<T>, filters: any): Promise<T> {
+        if (this.dryRun) {
+            const _filters: any = { ...filters };
+            if(_filters.where) {
+                _filters.where.dryRunId = this.policyId;
+                _filters.where.dryRunClass = this.classMap.get(entityClass);
+            } else {
+                _filters.dryRunId = this.policyId;
+                _filters.dryRunClass = this.classMap.get(entityClass);
+            }
+            return (await getMongoRepository(DryRun).findOne(filters)) as any;
+        } else {
+            return await getMongoRepository(entityClass).findOne(filters);
+        }
+    }
+
+    private async find<T>(entityClass: EntityTarget<T>, filters: any): Promise<T[]> {
+        if (this.dryRun) {
+            const _filters: any = { ...filters };
+            if(_filters.where) {
+                _filters.where.dryRunId = this.policyId;
+                _filters.where.dryRunClass = this.classMap.get(entityClass);
+            } else {
+                _filters.dryRunId = this.policyId;
+                _filters.dryRunClass = this.classMap.get(entityClass);
+            }
+            return (await getMongoRepository(DryRun).find(filters)) as any;
+        } else {
+            return await getMongoRepository(entityClass).find(filters);
+        }
+    }
+
+    private create<T>(entityClass: EntityTarget<T>, item: DeepPartial<T>): T {
+        if (this.dryRun) {
+            return (getMongoRepository(DryRun).create(item)) as any;
+        } else {
+            return getMongoRepository(entityClass).create(item);
+        }
+    }
+
+    private async save<T>(entityClass: EntityTarget<T>, item: DeepPartial<T>): Promise<T> {
+        if (this.dryRun) {
+            const _item: any = { ...item };
+            _item.dryRunId = this.policyId;
+            _item.dryRunClass = this.classMap.get(entityClass);
+            return await getMongoRepository(DryRun).save(_item);
+        } else {
+            return await getMongoRepository(entityClass).save(item);
+        }
+    }
+
+    private async update<T>(entityClass: EntityTarget<T>, criteria: any, row: T): Promise<void> {
+        if (this.dryRun) {
+            await getMongoRepository(DryRun).update(criteria, row);
+        } else {
+            await getMongoRepository(entityClass).update(criteria, row);
+        }
+    }
+
+    private async remove<T>(entityClass: EntityTarget<T>, entities: T[]): Promise<void> {
+        if (this.dryRun) {
+            await getMongoRepository(DryRun).remove(entities as any);
+        } else {
+            await getMongoRepository(entityClass).remove(entities);
+        }
     }
 
     public async saveBlockState(policyId: string, uuid: string, state: any): Promise<void> {
-        const repo = getMongoRepository(BlockState);
-        let stateEntity = await repo.findOne({
+        let stateEntity = await this.findOne(BlockState, {
             policyId: policyId,
             blockId: uuid
         });
         if (!stateEntity) {
-            stateEntity = repo.create({
+            stateEntity = this.create(BlockState, {
                 policyId: policyId,
                 blockId: uuid,
             })
         }
-
         stateEntity.blockState = JSON.stringify(state);
-
-        await repo.save(stateEntity);
+        await this.save(BlockState, stateEntity);
     }
 
     public async getBlockState(policyId: string, uuid: string): Promise<BlockState> {
-        return await getMongoRepository(BlockState).findOne({
+        return await this.findOne(BlockState, {
             policyId: policyId,
             blockId: uuid
         });
     }
 
     public async saveDocumentState(documentId: string, status: any): Promise<DocumentState> {
-        return await getMongoRepository(DocumentState).save({ documentId, status });
+        const item = this.create(DocumentState, { documentId, status });
+        return await this.save(DocumentState, item);
     }
 
     /**
@@ -117,7 +221,7 @@ export class DatabaseServer {
      * @param row
      */
     public async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
-        let item = await getMongoRepository(VcDocumentCollection).findOne({
+        let item = await this.findOne(VcDocumentCollection, {
             where: {
                 hash: { $eq: row.hash },
                 hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
@@ -141,18 +245,18 @@ export class DatabaseServer {
             item.topicId = row.topicId || item.topicId;
             item.comment = row.comment;
             item.relationships = row.relationships;
-            await getMongoRepository(VcDocumentCollection).update(item.id, item);
+            await this.update(VcDocumentCollection, item.id, item);
         } else {
-            item = getMongoRepository(VcDocumentCollection).create(row);
+            item = this.create(VcDocumentCollection, row);
             updateStatus = !!item.option?.status;
-            await getMongoRepository(VcDocumentCollection).save(item);
+            await this.save(VcDocumentCollection, item);
         }
         if (updateStatus) {
-            getMongoRepository(DocumentState).save({
+            await this.save(DocumentState, this.create(DocumentState, {
                 documentId: item.id,
                 status: item.option.status,
                 reason: item.comment
-            });
+            }));
         }
         return item;
     }
@@ -162,7 +266,7 @@ export class DatabaseServer {
      * @param row
      */
     public async updateVCRecordById(row: VcDocumentCollection): Promise<VcDocumentCollection> {
-        await getMongoRepository(VcDocumentCollection).update(row.id, row);
+        await this.update(VcDocumentCollection, row.id, row);
         return row;
     }
 
@@ -171,15 +275,15 @@ export class DatabaseServer {
      * @param row
      */
     public async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
-        let item = await getMongoRepository(DidDocumentCollection).findOne({ did: row.did });
+        let item = await this.findOne(DidDocumentCollection, { did: row.did });
         if (item) {
             item.document = row.document;
             item.status = row.status;
-            await getMongoRepository(DidDocumentCollection).update(item.id, item);
+            await this.update(DidDocumentCollection, item.id, item);
             return item;
         } else {
-            item = getMongoRepository(DidDocumentCollection).create(row as DidDocumentCollection);
-            return await getMongoRepository(DidDocumentCollection).save(item);
+            item = this.create(DidDocumentCollection, row as DidDocumentCollection);
+            return await this.save(DidDocumentCollection, item);
         }
     }
 
@@ -188,7 +292,8 @@ export class DatabaseServer {
      * @param row
      */
     public async updateVPRecord(row: VpDocumentCollection): Promise<VpDocumentCollection> {
-        return await getMongoRepository(VpDocumentCollection).save(row);
+        const doc = this.create(VpDocumentCollection, row);
+        return await this.save(VpDocumentCollection, doc);
     }
 
     /**
@@ -198,7 +303,7 @@ export class DatabaseServer {
     public async updateApprovalRecord(row: ApprovalDocumentCollection): Promise<ApprovalDocumentCollection> {
         let item: ApprovalDocumentCollection;
         if (row.id) {
-            item = await getMongoRepository(ApprovalDocumentCollection).findOne(row.id);
+            item = await this.findOne(ApprovalDocumentCollection, row.id);
         }
         if (item) {
             item.owner = row.owner;
@@ -208,27 +313,161 @@ export class DatabaseServer {
             item.tag = row.tag;
             item.type = row.type;
         } else {
-            item = getMongoRepository(ApprovalDocumentCollection).create(row as ApprovalDocumentCollection);
+            item = this.create(ApprovalDocumentCollection, row as ApprovalDocumentCollection);
         }
-        return await getMongoRepository(ApprovalDocumentCollection).save(item);
+        return await this.save(ApprovalDocumentCollection, item);
+    }
+
+    /**
+     * Save VC
+     * @param row
+     */
+    public async saveVC(row: DeepPartial<VcDocumentCollection>): Promise<VcDocumentCollection> {
+        const doc = this.create(VcDocumentCollection, row);
+        return await this.save(VcDocumentCollection, doc);
     }
 
     /**
      * Save VP
      * @param row
      */
-    public async saveVP(row: VpDocumentCollection): Promise<VpDocumentCollection> {
-        const doc = getMongoRepository(VpDocumentCollection).create(row);
-        return await getMongoRepository(VpDocumentCollection).save(doc);
+    public async saveVP(row: DeepPartial<VpDocumentCollection>): Promise<VpDocumentCollection> {
+        const doc = this.create(VpDocumentCollection, row);
+        return await this.save(VpDocumentCollection, doc);
     }
 
-    public async saveDid(row: DidDocumentCollection): Promise<DidDocumentCollection> {
-        const doc = getMongoRepository(DidDocumentCollection).create(row);
-        return await getMongoRepository(DidDocumentCollection).save(doc);
+    public async saveDid(row: DeepPartial<DidDocumentCollection>): Promise<DidDocumentCollection> {
+        const doc = this.create(DidDocumentCollection, row);
+        return await this.save(DidDocumentCollection, doc);
     }
 
     public async getPolicy(policyId: string): Promise<Policy> {
-        return await getMongoRepository(Policy).findOne(policyId);
+        return await this.findOne(Policy, policyId);
+    }
+
+    public async getAggregateDocuments(policyId: string, blockId: string, owner?: string): Promise<AggregateVC[]> {
+        if (owner) {
+            return await this.find(AggregateVC, { policyId, blockId, owner });
+        } else {
+            return await this.find(AggregateVC, { policyId, blockId });
+        }
+    }
+
+    public async removeAggregateDocuments(removeMsp: AggregateVC[]): Promise<void> {
+        await this.remove(AggregateVC, removeMsp);
+    }
+
+    public async createAggregateDocuments(item: VcDocumentCollection, blockId: string): Promise<void> {
+        (item as any).blockId = blockId;
+        const newVC = this.create(AggregateVC, item);
+        await this.save(AggregateVC, newVC);
+    }
+
+    public async getVcDocument(filters: any): Promise<VcDocumentCollection> {
+        return await this.findOne(VcDocumentCollection, filters);
+    }
+
+    public async getVpDocument(filters: any): Promise<VpDocumentCollection> {
+        return await this.findOne(VpDocumentCollection, filters);
+    }
+
+    public async getApprovalDocument(filters: any): Promise<ApprovalDocumentCollection> {
+        return await this.findOne(ApprovalDocumentCollection, filters);
+    }
+
+    public async getVcDocuments(filters: any): Promise<VcDocumentCollection[]> {
+        return await this.find(VcDocumentCollection, filters);
+    }
+
+    public async getVpDocuments(filters: any): Promise<VpDocumentCollection[]> {
+        return await this.find(VpDocumentCollection, filters);
+    }
+
+    public async getDidDocuments(filters: any): Promise<DidDocumentCollection[]> {
+        return await this.find(DidDocumentCollection, filters);
+    }
+
+    public async getApprovalDocuments(filters: any): Promise<ApprovalDocumentCollection[]> {
+        return await this.find(ApprovalDocumentCollection, filters);
+    }
+
+    public async getDocumentStates(filters: any): Promise<DocumentState[]> {
+        return await this.find(DocumentState, filters);
+    }
+
+    /**
+     * Get Topic
+     * @param filters
+     */
+    public async getTopic(
+        filters: {
+            /**
+             * policyId
+             */
+            policyId?: string,
+            /**
+             * type
+             */
+            type?: TopicType,
+            /**
+             * name
+             */
+            name?: string,
+            /**
+             * owner
+             */
+            owner?: string,
+            /**
+             * topicId
+             */
+            topicId?: string
+        }
+    ): Promise<TopicCollection> {
+        return await this.findOne(TopicCollection, filters);
+    }
+
+    /**
+     * Get Topics
+     * @param filters
+     */
+    public async getTopics(
+        filters: {
+            /**
+             * policyId
+             */
+            policyId?: string,
+            /**
+             * type
+             */
+            type?: TopicType,
+            /**
+             * name
+             */
+            name?: string,
+            /**
+             * owner
+             */
+            owner?: string,
+            /**
+             * topicId
+             */
+            topicId?: string
+        }
+    ): Promise<TopicCollection[]> {
+        return await this.find(TopicCollection, filters);
+    }
+
+    public async getTokenById(tokenId: string): Promise<TokenCollection> {
+        return await getMongoRepository(TokenCollection).findOne({ tokenId });
+    }
+
+    /**
+     * Get Topics
+     * @param topic
+     */
+    public async saveTopic(topic: TopicCollection): Promise<TopicCollection> {
+        const topicObject = this.create(TopicCollection, topic);
+        return await this.save(TopicCollection, topicObject);
     }
 
     public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection> {
@@ -237,60 +476,6 @@ export class DatabaseServer {
         } else {
             return await getMongoRepository(SchemaCollection).findOne({ iri });
         }
-    }
-
-    public async getAggregateDocuments(policyId: string, blockId: string, owner?: string): Promise<AggregateVC[]> {
-        if (owner) {
-            return await getMongoRepository(AggregateVC).find({ policyId, blockId, owner });
-        } else {
-            return await getMongoRepository(AggregateVC).find({ policyId, blockId });
-        }
-    }
-
-    public async removeAggregateDocuments(removeMsp: AggregateVC[]): Promise<void> {
-        await getMongoRepository(AggregateVC).remove(removeMsp);
-    }
-
-    public async createAggregateDocuments(item: VcDocumentCollection, blockId: string): Promise<void> {
-        (item as any).blockId = blockId;
-        const newVC = getMongoRepository(AggregateVC).create(item);
-        await getMongoRepository(AggregateVC).save(newVC);
-    }
-
-    public async getVcDocument(filters: any): Promise<VcDocumentCollection> {
-        return await getMongoRepository(VcDocumentCollection).findOne(filters);
-    }
-
-    public async getVpDocument(filters: any): Promise<VpDocumentCollection> {
-        return await getMongoRepository(VpDocumentCollection).findOne(filters);
-    }
-
-    public async getApprovalDocument(filters: any): Promise<ApprovalDocumentCollection> {
-        return await getMongoRepository(ApprovalDocumentCollection).findOne(filters);
-    }
-
-    public async getVcDocuments(filters: any): Promise<VcDocumentCollection[]> {
-        return await getMongoRepository(VcDocumentCollection).find(filters);
-    }
-
-    public async getVpDocuments(filters: any): Promise<VpDocumentCollection[]> {
-        return await getMongoRepository(VpDocumentCollection).find(filters);
-    }
-
-    public async getDidDocuments(filters: any): Promise<DidDocumentCollection[]> {
-        return await getMongoRepository(DidDocumentCollection).find(filters);
-    }
-
-    public async getApprovalDocuments(filters: any): Promise<ApprovalDocumentCollection[]> {
-        return await getMongoRepository(ApprovalDocumentCollection).find(filters);
-    }
-
-    public async getDocumentStates(filters: any): Promise<DocumentState[]> {
-        return await getMongoRepository(DocumentState).find(filters);
-    }
-
-    public async getTokenById(tokenId: string): Promise<TokenCollection> {
-        return await getMongoRepository(TokenCollection).findOne({ tokenId });
     }
 
     /**
@@ -329,76 +514,5 @@ export class DatabaseServer {
             system: true,
             active: true
         });
-    }
-
-    /**
-     * Get Topic
-     * @param filters
-     */
-    public async getTopic(
-        filters: {
-            /**
-             * policyId
-             */
-            policyId?: string,
-            /**
-             * type
-             */
-            type?: TopicType,
-            /**
-             * name
-             */
-            name?: string,
-            /**
-             * owner
-             */
-            owner?: string,
-            /**
-             * topicId
-             */
-            topicId?: string
-        }
-    ): Promise<TopicCollection> {
-        return await getMongoRepository(TopicCollection).findOne(filters);
-    }
-
-    /**
-     * Get Topics
-     * @param filters
-     */
-    public async getTopics(
-        filters: {
-            /**
-             * policyId
-             */
-            policyId?: string,
-            /**
-             * type
-             */
-            type?: TopicType,
-            /**
-             * name
-             */
-            name?: string,
-            /**
-             * owner
-             */
-            owner?: string,
-            /**
-             * topicId
-             */
-            topicId?: string
-        }
-    ): Promise<TopicCollection[]> {
-        return await getMongoRepository(TopicCollection).find(filters);
-    }
-
-    /**
-     * Get Topics
-     * @param topic
-     */
-    public async createTopic(topic: TopicCollection): Promise<TopicCollection> {
-        const topicObject = getMongoRepository(TopicCollection).create(topic);
-        return await getMongoRepository(TopicCollection).save(topicObject);
     }
 }

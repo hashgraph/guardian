@@ -556,7 +556,7 @@ export class PolicyUtils {
                 policyUUID: null
             });
             await topicHelper.twoWayLink(topic, rootTopic, null);
-            topic = await ref.databaseServer.createTopic(topic);
+            topic = await ref.databaseServer.saveTopic(topic);
         }
 
         return topic;

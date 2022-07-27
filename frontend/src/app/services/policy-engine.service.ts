@@ -43,6 +43,14 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
     }
 
+    public dryRun(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/dry-run`, null);
+    }
+
+    public draft(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/draft`, null);
+    }
+    
     public validate(policy: any): Observable<any> {
         return this.http.post<any>(`${this.url}/validate`, policy);
     }

@@ -53,10 +53,28 @@ export class MessageServer {
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
-        dryRun: boolean
+        dryRun: boolean = false
     ) {
         this.dryRun = dryRun || false;
         this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
+    }
+
+    private async addFile(file: ArrayBuffer) {
+        if(this.dryRun) {
+            const id = GenerateUUIDv4();
+            return {
+                cid: id,
+                url: id
+            }
+        }
+        return await IPFS.addFile(file);
+    }
+
+    private async getFile(cid: string, responseType: "json" | "raw" | "str") {
+        if(this.dryRun) {
+            throw new Error('<-getFile->')
+        }
+        return await IPFS.getFile(cid, responseType);
     }
 
     /**
@@ -136,7 +154,7 @@ export class MessageServer {
         const buffers = await message.toDocuments();
         const urls = [];
         for (const buffer of buffers) {
-            const result = await IPFS.addFile(buffer);
+            const result = await this.addFile(buffer);
             urls.push(result);
         }
         await this.messageEndLog(time, 'IPFS');
@@ -153,7 +171,7 @@ export class MessageServer {
         const urls = message.getUrls();
         const documents = [];
         for (const url of urls) {
-            const document = await IPFS.getFile(url.cid, message.responseType);
+            const document = await this.getFile(url.cid, message.responseType);
             documents.push(document);
         }
         message = message.loadDocuments(documents) as T;
