@@ -1,12 +1,9 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
-import { getMongoRepository } from 'typeorm';
-import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { UserType, Schema } from '@guardian/interfaces';
-import { Schema as SchemaEntity } from '@entity/schema'
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { DidDocumentBase } from '@hedera-modules';
@@ -118,13 +115,13 @@ export class InterfaceDocumentActionBlock {
 
         if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
-            const policy = await getMongoRepository(Policy).findOne(ref.policyId);
+            const policy = await ref.databaseServer.getPolicy(ref.policyId);
             const userFull = await this.users.getUserById(document.owner);
             const hederaAccountId = userFull.hederaAccountId;
             const userDID = userFull.did;
             const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
-            const schemaObject = await getMongoRepository(SchemaEntity).findOne({ iri: ref.options.schema });
+            const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
             const schema = new Schema(schemaObject);
             const didDocument = DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
             return {
@@ -205,7 +202,7 @@ export class InterfaceDocumentActionBlock {
                             break;
                         }
 
-                        const schema = await getMongoRepository(SchemaEntity).findOne({ iri: ref.options.schema });
+                        const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
                         if (!schema) {
                             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                             break;

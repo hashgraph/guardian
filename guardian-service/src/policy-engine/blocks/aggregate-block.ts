@@ -1,5 +1,4 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregate-documents';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
@@ -63,11 +62,7 @@ export class AggregateBlock {
 
         ref.log(`tick scheduler, ${users.length}`);
 
-        const repository = getMongoRepository(AggregateVC);
-        const rawEntities = await repository.find({
-            policyId: ref.policyId,
-            blockId: ref.uuid
-        });
+        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid);
 
         const map = new Map<string, AggregateVC[]>();
         const removeMsp: AggregateVC[] = [];
@@ -84,14 +79,14 @@ export class AggregateBlock {
         }
 
         if (removeMsp.length) {
-            await repository.remove(removeMsp);
+            await ref.databaseServer.removeAggregateDocuments(removeMsp);
         }
 
         for (const did of users) {
             const user = await this.users.getUserById(did);
             const documents = map.get(did);
             if (documents.length) {
-                await repository.remove(documents);
+                await ref.databaseServer.removeAggregateDocuments(documents);
             }
             if (documents.length || ref.options.emptyData) {
                 const state = { data: documents };
@@ -154,12 +149,7 @@ export class AggregateBlock {
     private async tickAggregate(ref: AnyBlockType, owner: string) {
         const { expressions, condition } = ref.options;
 
-        const repository = getMongoRepository(AggregateVC);
-        const rawEntities = await repository.find({
-            owner,
-            policyId: ref.policyId,
-            blockId: ref.uuid
-        });
+        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, owner);
 
         const scopes: any[] = [];
         for (const doc of rawEntities) {
@@ -172,7 +162,7 @@ export class AggregateBlock {
 
         if (result === true) {
             const user = await this.users.getUserById(owner);
-            await repository.remove(rawEntities);
+            await ref.databaseServer.removeAggregateDocuments(rawEntities);
             const state = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -186,17 +176,14 @@ export class AggregateBlock {
      */
     async saveDocuments(ref: AnyBlockType, doc: any): Promise<void> {
         const vc = VcDocument.fromJsonTree(doc.document);
-        const repository = getMongoRepository(AggregateVC);
-
-        const item = PolicyUtils.createVCRecord(
+        const item = ref.databaseServer.createVCRecord(
             ref.policyId,
             null,
             null,
             vc,
             doc
         );
-        const newVC = repository.create(item);
-        await repository.save(newVC);
+        await ref.databaseServer.createAggregateDocuments(item, ref.uuid);
     }
 
     /**

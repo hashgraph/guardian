@@ -8,8 +8,6 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from '@hedera-modules';
-import { getMongoRepository } from 'typeorm';
-import { ApprovalDocument } from '@entity/approval-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -56,36 +54,22 @@ export class SendToGuardianBlock {
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = PolicyUtils.createVCRecord(
+                const doc: any = ref.databaseServer.createVCRecord(
                     ref.policyId,
                     ref.tag,
                     ref.options.entityType,
                     vc,
                     document
                 );
-                result = await PolicyUtils.updateVCRecord(doc);
+                result = await ref.databaseServer.updateVCRecord(doc);
                 break;
             }
             case 'did-documents': {
-                result = await PolicyUtils.updateDIDRecord(document);
+                result = await ref.databaseServer.updateDIDRecord(document);
                 break;
             }
             case 'approve': {
-                let item: ApprovalDocument;
-                if (document.id) {
-                    item = await getMongoRepository(ApprovalDocument).findOne(document.id);
-                }
-                if (item) {
-                    item.owner = document.owner;
-                    item.option = document.option;
-                    item.schema = document.schema;
-                    item.document = document.document;
-                    item.tag = document.tag;
-                    item.type = document.type;
-                } else {
-                    item = getMongoRepository(ApprovalDocument).create(document as ApprovalDocument);
-                }
-                result = await getMongoRepository(ApprovalDocument).save(item);
+                result = await ref.databaseServer.updateApprovalRecord(document)
                 break;
             }
             case 'hedera': {
@@ -147,20 +131,20 @@ export class SendToGuardianBlock {
         switch (documentType) {
             case 'vc': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = PolicyUtils.createVCRecord(
+                const doc: any = ref.databaseServer.createVCRecord(
                     ref.policyId,
                     ref.tag,
                     ref.options.entityType,
                     vc,
                     document
                 );
-                return await PolicyUtils.updateVCRecord(doc);
+                return await ref.databaseServer.updateVCRecord(doc);
             }
             case 'did': {
-                return await PolicyUtils.updateDIDRecord(document);
+                return await ref.databaseServer.updateDIDRecord(document);
             }
             case 'vp': {
-                return await PolicyUtils.updateVPRecord(document);
+                return await ref.databaseServer.updateVPRecord(document);
             }
             default:
                 throw new BlockActionError(`documentType "${documentType}" is unknown`, ref.blockType, ref.uuid)
@@ -190,13 +174,13 @@ export class SendToGuardianBlock {
                 throw new Error(`Topic owner not found`);
             }
 
-            const topic = await PolicyUtils.getTopic(ref.options.topic, root, topicOwner, ref);
+            const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner);
             const vc = HVcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setDocument(vc);
             vcMessage.setRelationships(document.relationships);
-            const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey);
+            const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
             const vcMessageResult = await messageServer
                 .setTopicObject(topic)
                 .sendMessage(vcMessage);

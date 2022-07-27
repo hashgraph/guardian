@@ -14,9 +14,6 @@ import {
 } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Users } from '@helpers/users';
-import { getMongoRepository } from 'typeorm';
-import { VpDocument } from '@entity/vp-document';
-import { VcDocument } from '@entity/vc-document';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IAuthUser } from '@guardian/common';
@@ -152,7 +149,7 @@ export class ReportBlock {
                 documents
             }
 
-            const vp = await getMongoRepository(VpDocument).findOne({ hash, policyId: ref.policyId });
+            const vp = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
 
             if (vp) {
                 const vpDocument: IVPReport = {
@@ -192,7 +189,7 @@ export class ReportBlock {
                 variables.documentId = doc.id;
                 variables.documentSubjectId = doc.credentialSubject[0].id;
             } else {
-                const vc = await getMongoRepository(VcDocument).findOne({ hash, policyId: ref.policyId })
+                const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })
 
                 if (vc) {
                     const vcDocument: IVCReport = {
@@ -210,7 +207,7 @@ export class ReportBlock {
                 }
             }
 
-            const policy = await getMongoRepository(VcDocument).findOne({
+            const policy = await ref.databaseServer.getVcDocument({
                 type: SchemaEntity.POLICY,
                 policyId: ref.policyId
             });
@@ -228,7 +225,7 @@ export class ReportBlock {
                 }
                 report.policyDocument = policyDocument;
 
-                const policyCreator = await getMongoRepository(VcDocument).findOne({
+                const policyCreator = await ref.databaseServer.getVcDocument({
                     type: SchemaEntity.POLICY,
                     owner: policy.owner
                 });

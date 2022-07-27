@@ -44,8 +44,19 @@ export class MessageServer {
      */
     private static lang: string;
 
-    constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
-        this.client = new HederaSDKHelper(operatorId, operatorKey);
+    /**
+     * Dry-run
+     * @private
+     */
+    private readonly dryRun: boolean = false;
+
+    constructor(
+        operatorId: string | AccountId | null,
+        operatorKey: string | PrivateKey | null,
+        dryRun: boolean
+    ) {
+        this.dryRun = dryRun || false;
+        this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
     }
 
     /**

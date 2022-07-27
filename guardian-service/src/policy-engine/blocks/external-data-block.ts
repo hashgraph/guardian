@@ -4,15 +4,12 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * External data block
@@ -101,7 +98,7 @@ export class ExternalDataBlock {
         }
 
         const vc = VcDocument.fromJsonTree(data.document);
-        const doc = PolicyUtils.createVCRecord(
+        const doc = ref.databaseServer.createVCRecord(
             ref.policyId,
             ref.tag,
             ref.options.entityType,
@@ -140,10 +137,7 @@ export class ExternalDataBlock {
                     return;
                 }
 
-                const schema = await getMongoRepository(SchemaCollection).findOne({
-                    iri: ref.options.schema,
-                    topicId: ref.topicId
-                });
+                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;

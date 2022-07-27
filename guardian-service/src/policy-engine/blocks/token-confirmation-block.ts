@@ -9,7 +9,6 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { getMongoRepository } from 'typeorm';
 import { Token as TokenCollection } from '@entity/token';
 import { BlockActionError } from '@policy-engine/errors';
 
@@ -63,9 +62,7 @@ export class TokenConfirmationBlock {
     async getToken(): Promise<TokenCollection> {
         if (!this.token) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            this.token = await getMongoRepository(TokenCollection).findOne({
-                tokenId: ref.options.tokenId
-            });
+            this.token = await ref.databaseServer.getTokenById(ref.options.tokenId);
         }
         return this.token;
     }
@@ -142,11 +139,11 @@ export class TokenConfirmationBlock {
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(token, account);
+                await PolicyUtils.associate(ref, token, account);
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.associate(token, account);
+                await PolicyUtils.dissociate(ref, token, account);
                 break;
             }
             default:
@@ -223,7 +220,7 @@ export class TokenConfirmationBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
             } else if (typeof ref.options.tokenId !== 'string') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
+            } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
                 resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
             }
             if (ref.options.accountType === 'custom' && !ref.options.accountId) {

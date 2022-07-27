@@ -22,6 +22,7 @@
             "@policy-engine/*": ["policy-engine/*"],
             "@auth/*": ["auth/*"],
             "@hedera-modules": ["hedera-modules/index"],
+            "@database-modules": ["database-modules/index"],
             "@document-loader/*": ["document-loader/*"]
         }
     },

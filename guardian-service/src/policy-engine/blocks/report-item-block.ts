@@ -6,8 +6,6 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
 import { IReportItem } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
-import { getMongoRepository } from 'typeorm';
-import { VcDocument } from '@entity/vc-document';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
@@ -103,7 +101,7 @@ export class ReportItemBlock {
         }
         filtersToVc.policyId = { $eq: ref.policyId };
 
-        const vcDocument = await getMongoRepository(VcDocument).findOne(filtersToVc);
+        const vcDocument = await ref.databaseServer.getVcDocument(filtersToVc);
 
         if (vcDocument) {
             item.tag = vcDocument.tag;

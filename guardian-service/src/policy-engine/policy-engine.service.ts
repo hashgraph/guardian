@@ -19,7 +19,8 @@ import {
     MessageAction,
     MessageServer,
     MessageType,
-    PolicyMessage
+    PolicyMessage,
+    TopicHelper
 } from '@hedera-modules'
 import { replaceAllEntities, SchemaFields } from '@helpers/utils';
 import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
@@ -36,9 +37,8 @@ import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
-import { TopicHelper } from '@helpers/topic-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
-import { PolicyUtils } from './helpers/utils';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Policy engine service
@@ -199,9 +199,9 @@ export class PolicyEngineService {
         if (!model.topicId) {
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await getMongoRepository(Topic).findOne({ owner, type: TopicType.UserTopic });
-            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, false);
 
-            const topic = await topicHelper.create({
+            let topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: model.name || TopicType.PolicyTopic,
                 description: model.topicDescription || TopicType.PolicyTopic,
@@ -209,9 +209,12 @@ export class PolicyEngineService {
                 policyId: null,
                 policyUUID: null
             });
+            topic = await getMongoRepository(Topic).save(
+                getMongoRepository(Topic).create(topic)
+            );
             model.topicId = topic.topicId;
 
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
             const messageStatus = await messageServer
@@ -299,7 +302,7 @@ export class PolicyEngineService {
 
         const root = await this.users.getHederaAccount(owner);
         const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false)
             .setTopicObject(topic);
 
         model = await this.publishSchemas(model, owner);
@@ -310,8 +313,8 @@ export class PolicyEngineService {
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
 
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        const rootTopic = await topicHelper.create({
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, false);
+        let rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
             name: model.name || TopicType.InstancePolicyTopic,
             description: model.topicDescription || TopicType.InstancePolicyTopic,
@@ -319,6 +322,9 @@ export class PolicyEngineService {
             policyId: model.id.toString(),
             policyUUID: model.uuid
         });
+        rootTopic = await getMongoRepository(Topic).save(
+            getMongoRepository(Topic).create(rootTopic)
+        );
 
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
@@ -331,7 +337,7 @@ export class PolicyEngineService {
         const messageId = result.getId();
         const url = result.getUrl();
 
-        const policySchema = await PolicyUtils.getSchema(model.topicId, SchemaEntity.POLICY);
+        const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
 
         const vcHelper = new VcHelper();
         let credentialSubject: any = {
@@ -678,7 +684,7 @@ export class PolicyEngineService {
                 new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
 
                 const root = await this.users.getHederaAccount(userFull.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
                 if (message.type !== MessageType.InstancePolicy) {
@@ -725,7 +731,7 @@ export class PolicyEngineService {
                 }
 
                 const root = await this.users.getHederaAccount(userFull.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, false);
                 const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
                 if (message.type !== MessageType.InstancePolicy) {

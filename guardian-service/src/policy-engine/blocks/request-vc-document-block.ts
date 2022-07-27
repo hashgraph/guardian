@@ -12,7 +12,6 @@ import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
 import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { IAuthUser } from '@guardian/common';
-import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
@@ -150,10 +149,7 @@ export class RequestVcDocumentBlock {
     async getSchema(): Promise<Schema> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-            const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema,
-                topicId: ref.topicId
-            });
+            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
             this.schema = schema ? new Schema(schema) : null;
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
@@ -192,11 +188,12 @@ export class RequestVcDocumentBlock {
      * @param refId
      */
     async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         try {
             if (refId) {
                 let documentRef: any = null;
                 if (typeof (refId) === 'string') {
-                    documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                    documentRef = await ref.databaseServer.getVcDocument({
                         where: {
                             'policyId': { $eq: policyId },
                             'document.credentialSubject.id': { $eq: refId }
@@ -204,13 +201,13 @@ export class RequestVcDocumentBlock {
                     });
                 } else if (typeof (refId) === 'object') {
                     if (refId.id) {
-                        documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
+                        documentRef = await ref.databaseServer.getVcDocument(refId.id);
                         if (documentRef && documentRef.policyId !== policyId) {
                             documentRef = null;
                         }
                     } else {
                         const id = PolicyUtils.getSubjectId(documentRef);
-                        documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                        documentRef = await ref.databaseServer.getVcDocument({
                             where: {
                                 'policyId': { $eq: policyId },
                                 'document.credentialSubject.id': { $eq: id }
@@ -218,7 +215,7 @@ export class RequestVcDocumentBlock {
                         });
                     }
                 }
-                if(!documentRef) {
+                if (!documentRef) {
                     throw new Error('Invalid relationships');
                 }
                 return documentRef;
@@ -288,7 +285,7 @@ export class RequestVcDocumentBlock {
 
             const vc = await VCHelper.createVC(user.did, userHederaKey, credentialSubject);
             const accounts = PolicyUtils.getHederaAccounts(vc, userHederaAccount, schema);
-            const item = PolicyUtils.createVCRecord(
+            const item = ref.databaseServer.createVCRecord(
                 ref.policyId,
                 ref.tag,
                 null,
@@ -335,7 +332,7 @@ export class RequestVcDocumentBlock {
                 return GenerateUUIDv4();
             }
             if (idType === 'DID') {
-                const topic = await PolicyUtils.getTopic('root', null, null, ref);
+                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
 
                 const didObject = DIDDocument.create(null, topic.topicId);
                 const did = didObject.getDid();
@@ -345,20 +342,18 @@ export class RequestVcDocumentBlock {
                 const message = new DIDMessage(MessageAction.CreateDID);
                 message.setDocument(didObject);
 
-                const client = new MessageServer(userHederaAccount, userHederaKey);
+                const client = new MessageServer(userHederaAccount, userHederaKey, ref.dryRun);
                 const messageResult = await client
                     .setTopicObject(topic)
                     .sendMessage(message);
 
-                const doc = getMongoRepository(DidDocumentCollection).create({
+                const doc = ref.databaseServer.saveDid({
                     did,
                     document,
                     status: DidDocumentStatus.CREATE,
                     messageId: messageResult.getId(),
                     topicId: messageResult.getTopicId()
-                });
-
-                await getMongoRepository(DidDocumentCollection).save(doc);
+                } as any);
 
                 await this.wallet.setKey(user.walletToken, KeyType.KEY, did, key);
                 return did;
@@ -389,19 +384,13 @@ export class RequestVcDocumentBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema,
-                topicId: ref.topicId
-            });
+            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;
             }
             if (ref.options.presetSchema) {
-                const presetSchema = await getMongoRepository(SchemaCollection).findOne({
-                    iri: ref.options.presetSchema,
-                    topicId: ref.topicId
-                });
+                const presetSchema = await ref.databaseServer.getSchemaByIRI(ref.options.presetSchema, ref.topicId);
                 if (!presetSchema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
                     return;

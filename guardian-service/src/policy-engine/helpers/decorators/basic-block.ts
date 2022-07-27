@@ -5,12 +5,11 @@ import { ExternalMessageEvents, PolicyRole } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { getMongoRepository } from 'typeorm';
-import { BlockState } from '@entity/block-state';
 import deepEqual from 'deep-equal';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IAuthUser, ExternalEventChannel, Logger } from '@guardian/common';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Basic block decorator
@@ -99,6 +98,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected logger: Logger;
             /**
+             * Database instance
+             * @protected
+             */
+            protected databaseServer: DatabaseServer;
+            /**
              * Policy id
              */
             public policyId: string;
@@ -127,6 +131,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public actions: any[];
             /**
+             * Dry-run
+             */
+            public readonly dryRun: boolean;
+            /**
              * Block class name
              */
             public readonly blockClassName = 'BasicBlock';
@@ -148,7 +156,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     defaultOptions.blockType, defaultOptions.commonBlock,
                     tag, active, permissions, _uuid, parent, _options
                 );
+                this.dryRun = true;
                 this.logger = new Logger();
+                this.databaseServer = new DatabaseServer(this.dryRun);
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
@@ -465,22 +475,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async saveState(): Promise<void> {
                 const stateFields = PolicyComponentsUtils.GetStateFields(this);
                 if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
-                    const repo = getMongoRepository(BlockState);
-                    let stateEntity = await repo.findOne({
-                        policyId: this.policyId,
-                        blockId: this.uuid
-                    });
-                    if (!stateEntity) {
-                        stateEntity = repo.create({
-                            policyId: this.policyId,
-                            blockId: this.uuid,
-                        })
-                    }
-
-                    stateEntity.blockState = JSON.stringify(stateFields);
-
-                    await repo.save(stateEntity)
-
+                    await this.databaseServer.saveBlockState(this.policyId, this.uuid, stateFields);
                 }
             }
 
@@ -488,10 +483,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Restore block state
              */
             public async restoreState(): Promise<void> {
-                const stateEntity = await getMongoRepository(BlockState).findOne({
-                    policyId: this.policyId,
-                    blockId: this.uuid
-                });
+                const stateEntity = await this.databaseServer.getBlockState(this.policyId, this.uuid);
 
                 if (!stateEntity) {
                     return;

@@ -1,26 +1,42 @@
+import { TopicType } from "@guardian/interfaces";
+import { HederaSDKHelper, MessageAction, MessageServer, TopicMessage } from "@hedera-modules";
 import { Topic } from '@entity/topic';
-import { HederaSDKHelper, MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
-import { TopicType } from '@guardian/interfaces';
-import { getMongoRepository } from 'typeorm';
 
 /**
- * Topic helper class
+ * Topic Helper
  */
 export class TopicHelper {
     /**
      * Account ID
      * @private
      */
-    private readonly hederaAccountId: any;
+    private hederaAccountId: string;
     /**
      * Account key
      * @private
      */
-    private readonly hederaAccountKey: any;
+    private hederaAccountKey: string;
 
-    constructor(hederaAccountId: string, hederaAccountKey: string) {
-        this.hederaAccountId = hederaAccountId;
-        this.hederaAccountKey = hederaAccountKey;
+    /**
+     * Dry-run
+     * @private
+     */
+    private dryRun: boolean = false;
+
+    constructor(operatorId: string, operatorKey: string, dryRun: boolean) {
+        this.dryRun = dryRun || false;
+        this.hederaAccountId = operatorId;
+        this.hederaAccountKey = operatorKey;
+    }
+
+    /**
+     * Create instance
+     * @param operatorId
+     * @param operatorKey
+     */
+    public setOperator(operatorId: string, operatorKey: string): void {
+        this.hederaAccountId = operatorId;
+        this.hederaAccountKey = operatorKey;
     }
 
     /**
@@ -55,9 +71,9 @@ export class TopicHelper {
             policyUUID?: string
         }
     ): Promise<Topic> {
-        const client = new HederaSDKHelper(this.hederaAccountId, this.hederaAccountKey);
+        const client = new HederaSDKHelper(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
         const topicId = await client.newTopic(this.hederaAccountKey, this.hederaAccountKey, config.type);
-        const topicObject = getMongoRepository(Topic).create({
+        return {
             topicId,
             name: config.name,
             description: config.description,
@@ -66,8 +82,7 @@ export class TopicHelper {
             key: this.hederaAccountKey,
             policyId: config.policyId,
             policyUUID: config.policyUUID
-        });
-        return await getMongoRepository(Topic).save(topicObject);
+        } as Topic;
     }
 
     /**
@@ -77,7 +92,7 @@ export class TopicHelper {
      * @param rationale
      */
     public async oneWayLink(topic: Topic, parent: Topic, rationale: string) {
-        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey);
+        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
@@ -102,7 +117,7 @@ export class TopicHelper {
      * @param rationale
      */
     public async twoWayLink(topic: Topic, parent: Topic, rationale: string) {
-        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey);
+        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({

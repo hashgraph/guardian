@@ -36,7 +36,7 @@ export async function demoAPI(
             } catch (error) {
                 initialBalance = null;
             }
-            const client = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY);
+            const client = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY, false);
             const treasury = await client.newAccount(initialBalance);
             return new MessageResponse({
                 id: treasury.id.toString(),

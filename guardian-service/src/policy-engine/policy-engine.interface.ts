@@ -3,6 +3,7 @@ import { IAuthUser } from '@guardian/common';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Policy roles interface
@@ -129,6 +130,16 @@ export interface IPolicyBlock {
      * Next block
      */
     readonly next: IPolicyBlock;
+
+    /**
+     * Database Server
+     */
+    readonly databaseServer: DatabaseServer;
+    
+    /**
+     * Dry-run
+     */
+    readonly dryRun: boolean;
 
     /**
      * Set policy id

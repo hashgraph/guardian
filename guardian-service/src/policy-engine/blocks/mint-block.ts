@@ -2,13 +2,12 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { getMongoRepository } from 'typeorm';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
@@ -58,7 +57,7 @@ export class MintBlock {
      */
     private async createMintVC(root: any, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-        const policySchema = await PolicyUtils.getSchema(ref.topicId, SchemaEntity.MINT_TOKEN);
+        const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.MINT_TOKEN);
         const amount = data as string;
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
@@ -125,14 +124,9 @@ export class MintBlock {
         const vcs = [].concat(documents, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
-        let topic: any;
-        if (topicId) {
-            topic = await PolicyUtils.getTopicById(topicId, ref);
-        } else {
-            topic = await PolicyUtils.getTopic('root', root, user, ref);
-        }
+        const topic = await PolicyUtils.getTopicById(ref, topicId);
         ref.log(`Topic Id: ${topic?.id}`);
 
         const vcMessage = new VCMessage(MessageAction.CreateVC);
@@ -142,8 +136,8 @@ export class MintBlock {
             .setTopicObject(topic)
             .sendMessage(vcMessage);
 
-        await PolicyUtils.updateVCRecord(
-            PolicyUtils.createVCRecord(
+        await ref.databaseServer.updateVCRecord(
+            ref.databaseServer.createVCRecord(
                 ref.policyId,
                 ref.tag,
                 DataTypes.MINT,
@@ -167,7 +161,7 @@ export class MintBlock {
             .setTopicObject(topic)
             .sendMessage(vpMessage);
 
-        await PolicyUtils.saveVP({
+        await ref.databaseServer.saveVP({
             hash: vp.toCredentialHash(),
             document: vp.toJsonTree(),
             owner: user.did,
@@ -178,7 +172,7 @@ export class MintBlock {
             topicId: vpMessageResult.getTopicId(),
         } as any);
 
-        await PolicyUtils.mint(token, tokenValue, root, targetAccountId, vpMessageResult.getId());
+        await PolicyUtils.mint(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
         return vp;
     }
@@ -195,9 +189,7 @@ export class MintBlock {
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const token = await getMongoRepository(TokenCollection).findOne({
-            tokenId: ref.options.tokenId
-        });
+        const token = await ref.databaseServer.getTokenById(ref.options.tokenId);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -260,7 +252,7 @@ export class MintBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
             } else if (typeof ref.options.tokenId !== 'string') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
+            } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
                 resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
             }
 

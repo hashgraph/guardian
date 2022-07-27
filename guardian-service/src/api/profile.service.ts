@@ -17,6 +17,7 @@ import {
     MessageAction,
     MessageServer,
     RegistrationMessage,
+    TopicHelper,
     VCMessage
 } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
@@ -25,7 +26,6 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
-import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
@@ -135,7 +135,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const client = new HederaSDKHelper(user.hederaAccountId, key);
+            const client = new HederaSDKHelper(user.hederaAccountId, key, false);
             const balance = await client.balance(user.hederaAccountId);
             return new MessageResponse(balance);
         } catch (error) {
@@ -162,7 +162,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
 
             const globalTopic = await getGlobalTopic();
 
-            const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
+            const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, false);
 
             if (parent) {
                 topic = await getMongoRepository(Topic).findOne({
@@ -173,7 +173,7 @@ export function profileAPI(channel: MessageBrokerChannel) {
 
             if (!topic) {
                 logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
-                const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
+                const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, false);
                 topic = await topicHelper.create({
                     type: TopicType.UserTopic,
                     name: TopicType.UserTopic,
@@ -182,6 +182,9 @@ export function profileAPI(channel: MessageBrokerChannel) {
                     policyId: null,
                     policyUUID: null
                 });
+                topic = await getMongoRepository(Topic).save(
+                    getMongoRepository(Topic).create(topic)
+                );
                 await topicHelper.oneWayLink(topic, globalTopic, null);
                 newTopic = true;
             }

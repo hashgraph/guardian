@@ -8,7 +8,6 @@ import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IAuthUser } from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Reassigning block
@@ -79,7 +78,7 @@ export class ReassigningBlock {
 
         const credentialSubject = vcDocument.credentialSubject[0];
         const vc: any = await this.vcHelper.createVC(root.did, root.hederaAccountKey, credentialSubject);
-        const item = PolicyUtils.createVCRecord(
+        const item = ref.databaseServer.createVCRecord(
             ref.policyId,
             ref.tag,
             null,

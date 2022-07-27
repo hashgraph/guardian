@@ -114,7 +114,7 @@ Promise.all([
     HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-        const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
+        const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY, false);
         const topicId = await client.newTopic(process.env.OPERATOR_KEY);
 
         console.log(topicId);

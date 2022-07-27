@@ -2,8 +2,6 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
-import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { VcHelper } from '@helpers/vc-helper';
 import { SchemaHelper } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
@@ -12,7 +10,6 @@ import * as mathjs from 'mathjs';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IAuthUser } from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Custom logic block
@@ -91,10 +88,7 @@ export class CustomLogicBlock {
             const done = async (result) => {
                 try {
                     const root = await this.users.getHederaAccount(ref.policyOwner);
-                    const outputSchema = await getMongoRepository(SchemaCollection).findOne({
-                        iri: ref.options.outputSchema,
-                        topicId: ref.topicId
-                    });
+                    const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
                     const context = SchemaHelper.getContext(outputSchema);
                     const owner = documents[0].owner;
                     const relationships = documents.filter(d => !!d.messageId).map(d => d.messageId);
@@ -112,7 +106,7 @@ export class CustomLogicBlock {
                             }
                         );
 
-                        return PolicyUtils.createVCRecord(
+                        return ref.databaseServer.createVCRecord(
                             ref.policyId,
                             ref.tag,
                             null,
