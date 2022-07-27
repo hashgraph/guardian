@@ -35,6 +35,21 @@
     margin: 0px 5px;
     cursor: pointer;
     font-weight: 500;
+    width: 74px;
+    text-align: center;
+}
+
+.btn-draft {
+    background: #2196f3;
+    border-radius: 6px;
+    color: #fff;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    width: 74px;
+    text-align: center;
 }
 
 

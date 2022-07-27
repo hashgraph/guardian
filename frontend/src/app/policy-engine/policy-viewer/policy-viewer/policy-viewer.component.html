@@ -137,10 +137,10 @@
                         <div *ngIf="element.status =='DRAFT'" class="btn-approve" (click)="setVersion(element)">
                             Publish
                         </div>
-                        <div *ngIf="element.status =='DRAFT'" class="btn-approve" (click)="dryRun(element)">
+                        <div *ngIf="element.status =='DRAFT'" class="btn-draft" (click)="dryRun(element)">
                             Dry-run
                         </div>
-                        <div *ngIf="element.status =='DRY-RUN'" class="btn-approve" (click)="draft(element)">
+                        <div *ngIf="element.status =='DRY-RUN'" class="btn-draft" (click)="draft(element)">
                             Draft
                         </div>
                     </td>
